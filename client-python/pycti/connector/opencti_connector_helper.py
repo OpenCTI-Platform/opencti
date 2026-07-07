@@ -47,7 +47,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
-from pika.exceptions import NackError, UnroutableError
+from pika.exceptions import AMQPError, NackError, UnroutableError
 from pydantic import TypeAdapter
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
@@ -2472,6 +2472,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=self.connector_config["connection"]["pass"],
         )
+        self._publisher_lock = threading.RLock()
+        self._publisher_connection = None
+        self._publisher_channel = None
+        self._publisher_heartbeat = 10
+        self._publisher_last_used_at = None
 
         # Initialize S3 config from backend, allow local overrides
         if "s3" in self.connector_config:
@@ -2749,6 +2754,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # if self.listen_stream:
         #     self.listen_stream.stop()
         self.ping.stop()
+        self._close_publisher_connection()
         self.api.connector.unregister(self.connector_id)
 
     def get_name(self) -> Optional[Union[bool, int, str]]:
@@ -3515,6 +3521,90 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             .replace("+00:00", "Z")
         )
 
+    def _open_publisher_connection(self):
+        """Open a RabbitMQ connection and confirmed channel for bundle publishing."""
+
+        pika_credentials = pika.PlainCredentials(
+            self.connector_config["connection"]["user"],
+            self.connector_config["connection"]["pass"],
+        )
+        pika_parameters = pika.ConnectionParameters(
+            heartbeat=self._publisher_heartbeat,
+            host=self.connector_config["connection"]["host"],
+            port=self.connector_config["connection"]["port"],
+            virtual_host=self.connector_config["connection"]["vhost"],
+            credentials=pika_credentials,
+            ssl_options=(
+                pika.SSLOptions(
+                    create_mq_ssl_context(self.config),
+                    self.connector_config["connection"]["host"],
+                )
+                if self.connector_config["connection"]["use_ssl"]
+                else None
+            ),
+        )
+        pika_connection = pika.BlockingConnection(pika_parameters)
+        channel = pika_connection.channel()
+        try:
+            channel.confirm_delivery()
+        except Exception as err:  # pylint: disable=broad-except
+            self.connector_logger.warning(str(err))
+        return pika_connection, channel
+
+    def _close_publisher_connection(self) -> None:
+        """Close and clear the cached RabbitMQ publisher resources."""
+
+        with self._publisher_lock:
+            channel = self._publisher_channel
+            connection = self._publisher_connection
+            self._publisher_channel = None
+            self._publisher_connection = None
+            self._publisher_last_used_at = None
+            if channel is not None and not channel.is_closed:
+                try:
+                    channel.close()
+                except AMQPError:
+                    pass
+            if connection is not None and not connection.is_closed:
+                try:
+                    connection.close()
+                except AMQPError:
+                    pass
+
+    def _get_publisher_channel(self):
+        """Return a cached healthy publisher channel, opening one if needed."""
+
+        if (
+            self._publisher_connection is not None
+            and self._publisher_channel is not None
+            and not self._publisher_connection.is_closed
+            and not self._publisher_channel.is_closed
+        ):
+            if (
+                self._publisher_last_used_at is not None
+                and time.monotonic() - self._publisher_last_used_at
+                >= self._publisher_heartbeat
+            ):
+                self._close_publisher_connection()
+            else:
+                try:
+                    self._publisher_connection.process_data_events(time_limit=0)
+                except AMQPError:
+                    self._close_publisher_connection()
+
+        if (
+            self._publisher_connection is None
+            or self._publisher_channel is None
+            or self._publisher_connection.is_closed
+            or self._publisher_channel.is_closed
+        ):
+            self._close_publisher_connection()
+            (
+                self._publisher_connection,
+                self._publisher_channel,
+            ) = self._open_publisher_connection()
+        return self._publisher_channel
+
     # Push Stix2 helper
     def send_stix2_bundle(self, bundle: str, **kwargs) -> list:
         """Send a STIX2 bundle to the OpenCTI platform.
@@ -3746,47 +3836,27 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if self.queue_protocol == "amqp":
                 if work_id:
                     self.api.work.add_expectations(work_id, expectations_number)
-                pika_credentials = pika.PlainCredentials(
-                    self.connector_config["connection"]["user"],
-                    self.connector_config["connection"]["pass"],
-                )
-                pika_parameters = pika.ConnectionParameters(
-                    heartbeat=10,
-                    host=self.connector_config["connection"]["host"],
-                    port=self.connector_config["connection"]["port"],
-                    virtual_host=self.connector_config["connection"]["vhost"],
-                    credentials=pika_credentials,
-                    ssl_options=(
-                        pika.SSLOptions(
-                            create_mq_ssl_context(self.config),
-                            self.connector_config["connection"]["host"],
+                with self._publisher_lock:
+                    try:
+                        channel = self._get_publisher_channel()
+                        self.connector_logger.info(
+                            self.connect_name + " sending bundle to queue"
                         )
-                        if self.connector_config["connection"]["use_ssl"]
-                        else None
-                    ),
-                )
-                pika_connection = pika.BlockingConnection(pika_parameters)
-                channel = pika_connection.channel()
-                try:
-                    channel.confirm_delivery()
-                except Exception as err:  # pylint: disable=broad-except
-                    self.connector_logger.warning(str(err))
-                self.connector_logger.info(
-                    self.connect_name + " sending bundle to queue"
-                )
-                for sequence, bundle in enumerate(bundles, start=1):
-                    self._send_bundle(
-                        channel,
-                        bundle,
-                        work_id=work_id,
-                        entities_types=entities_types,
-                        sequence=sequence,
-                        update=update,
-                        draft_id=draft_id,
-                        no_split=no_split,
-                    )
-                channel.close()
-                pika_connection.close()
+                        for sequence, bundle in enumerate(bundles, start=1):
+                            self._send_bundle(
+                                channel,
+                                bundle,
+                                work_id=work_id,
+                                entities_types=entities_types,
+                                sequence=sequence,
+                                update=update,
+                                draft_id=draft_id,
+                                no_split=no_split,
+                            )
+                        self._publisher_last_used_at = time.monotonic()
+                    except AMQPError:
+                        self._close_publisher_connection()
+                        raise
             elif self.queue_protocol == "api":
                 self.api.send_bundle_to_api(
                     connector_id=self.connector_id, bundle=bundle, work_id=work_id
