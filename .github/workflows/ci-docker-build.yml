@@ -1,4 +1,5 @@
 name: Build OpenCTI Platform and worker images
+# TO be removed when feature branch is refactor to new place.
 
 on:
   workflow_call:
