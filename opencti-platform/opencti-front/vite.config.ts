@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import * as path from 'node:path';
 import relay from 'vite-plugin-relay';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 
 // Handle ESM/CJS interop for vite-plugin-monaco-editor
@@ -44,17 +43,6 @@ export default defineConfig({
   },
 
   plugins: [
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'src/static/ext/*',
-          dest: 'static/ext',
-          rename: {
-            stripBase: true
-          }
-        }
-      ]
-    }),
     {
       name: 'html-transform',
       enforce: "pre",
@@ -64,8 +52,8 @@ export default defineConfig({
           .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
           .replace(/%APP_TITLE%/g, "OpenCTI Dev")
           .replace(/%APP_DESCRIPTION%/g, "OpenCTI Development platform")
-          .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
-          .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
+          .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`)
+          .replace(/%APP_MANIFEST%/g, `${basePath}/assets/static/manifest.json`)
       }
     },
     react(),
