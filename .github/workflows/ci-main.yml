@@ -1,4 +1,7 @@
 name: OpenCTI CI
+# This workflow is used to run non regression tests on PR and on main branches (master and lts).
+# It build the platform and worker docker image and then use them for test run
+
 on:
   workflow_dispatch:
   push:
@@ -11,18 +14,40 @@ on:
       - '**/*.md'
 
 jobs:
-  wf-build-image:
-      name: Build image
-      uses: ./.github/workflows/ci-docker-build.yml
-      with:
-        checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
-        client_python_local: true
-      secrets: inherit
+  wf-build-platform-image:
+    name: Build opencti:platform image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-platform
+        with:
+          checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+          client_python_local: true
+
+  wf-build-worker-image:
+    name: Build opencti:worker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-worker
+        with:
+          checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+          client_python_local: true
+
+  wf-build-builder-image:
+    name: Build opencti:builder image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-builder
+        with:
+          checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+          client_python_local: true
 
   wf-backend-test:
       name: Backend
       uses: ./.github/workflows/ci-test-backend.yml
-      needs: wf-build-image
+      needs:  [wf-build-platform-image,wf-build-worker-image,wf-build-builder-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
@@ -38,7 +63,7 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: wf-build-image
+      needs: [wf-build-platform-image,wf-build-worker-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
