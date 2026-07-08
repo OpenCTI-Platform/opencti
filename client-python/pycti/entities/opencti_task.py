@@ -584,7 +584,9 @@ class Task:
         :return: Task object
         :rtype: dict or None
         """
-        self.opencti.app_logger.info("Updating Task", {"data": json.dumps(kwargs)})
+        self.opencti.app_logger.info(
+            "Updating Task", lambda: {"data": json.dumps(kwargs)}
+        )
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:

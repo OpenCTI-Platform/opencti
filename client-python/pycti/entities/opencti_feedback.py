@@ -811,7 +811,9 @@ class Feedback:
         :return: Feedback object
         :rtype: dict or None
         """
-        self.opencti.app_logger.info("Updating Feedback", {"data": json.dumps(kwargs)})
+        self.opencti.app_logger.info(
+            "Updating Feedback", lambda: {"data": json.dumps(kwargs)}
+        )
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:
