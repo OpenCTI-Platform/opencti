@@ -33,6 +33,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { type BasicStoreEntitySavedFilter, ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
 import { elAggregationCount, elCount } from '../database/engine';
 import {
   READ_INDEX_FILES,
@@ -66,6 +67,8 @@ import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
+import { fullEntitiesList } from '../database/middleware-loader';
+import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -104,7 +107,8 @@ const booleanTrueFilter = (key: string) => ({
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
 const SCHEDULE_TIME = conf.get('telemetry_manager:interval') || 60000; // 1 minute default
 const FILIGRAN_OTLP_TELEMETRY = DEV_MODE
-  ? 'https://telemetry.staging.filigran.io/v1/metrics' : 'https://telemetry.filigran.io/v1/metrics';
+  ? 'https://telemetry.staging.filigran.io/v1/metrics'
+  : 'https://telemetry.filigran.io/v1/metrics';
 
 const ONE_MINUTE = 60 * 1000;
 const ONE_HOUR = 60 * ONE_MINUTE;
@@ -146,6 +150,7 @@ export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
+export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
@@ -282,6 +287,11 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addSharedSavedFiltersPermissionChangesCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES, 1)
+    .catch((reason) => logApp.warn('Error adding shared saved filters permission changes count to telemetry', { reason }));
 };
 
 export const addWorkflowPublishCount = () => {
@@ -542,6 +552,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setSecurityCoveragesCount(securityCoveragesCount);
     // endregion
 
+    // region Shared saved filters
+    const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
+      context,
+      TELEMETRY_MANAGER_USER,
+      [ENTITY_TYPE_SAVED_FILTER],
+      { includeAuthorities: true, baseData: true, baseFields: ['creator_id', 'restricted_members'] },
+    );
+    const sharedSavedFilters = savedFilters.filter((f) => isSavedFilterShared(f));
+    manager.setSharedSavedFiltersCount(sharedSavedFilters.length);
+    // endregion
+
     // region Knowledge graph scale
     // The three independent ES queries run in parallel.
     const [knowledgeAggregation, observablesCount, relationshipsCount] = await Promise.all([
@@ -721,6 +742,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
     manager.setCustomViewEnabledCount(customViewEnabledCountInRedis);
+    const sharedSavedFiltersPermissionChangesCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES);
+    manager.setSharedSavedFiltersPermissionChangesCount(sharedSavedFiltersPermissionChangesCountInRedis);
     const workflowPublishCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKFLOW_PUBLISH);
     manager.setWorkflowPublishCount(workflowPublishCountInRedis);
     const chatbotMessageCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CHATBOT_MESSAGE);
