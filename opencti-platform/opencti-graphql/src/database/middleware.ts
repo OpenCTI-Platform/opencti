@@ -915,7 +915,7 @@ export const distributionRelations = async (
     relationship_type: string[];
     dateAttribute?: string | null;
     onlyInferred?: boolean; } & RelationFilters<BasicStoreCommon>,
-) => {
+): ReturnType<typeof convertAggregateDistributions> => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;

@@ -1,9 +1,10 @@
 import { BUS_TOPICS } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, deleteElementById } from '../../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
-import { FilterMode, FilterOperator, type SecurityCoverageResultAddInput } from '../../../generated/graphql';
+import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
+import { loadThroughDenormalized } from '../../../resolvers/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
@@ -53,40 +54,6 @@ export const findSecurityCoverageResultPaginated = (
     user,
     [ENTITY_TYPE_SECURITY_COVERAGE_RESULT],
     args,
-  );
-};
-
-/**
- * Find all security coverage results for a security coverage.
- *
- * @param context
- * @param user User making the request.
- * @param resultOfId ID of the security coverage.
- * @returns List of security coverage results.
- */
-export const listSecurityCoverageResultsByResultOf = async (
-  context: AuthContext,
-  user: AuthUser,
-  resultOfId: string,
-) => {
-  return fullEntitiesList<BasicStoreEntitySecurityCoverageResult>(
-    context,
-    user,
-    [ENTITY_TYPE_SECURITY_COVERAGE_RESULT],
-    {
-      filters: {
-        mode: FilterMode.And,
-        filterGroups: [],
-        filters: [
-          {
-            mode: FilterMode.Or,
-            operator: FilterOperator.Eq,
-            key: [INPUT_RESULT_OF],
-            values: [resultOfId],
-          },
-        ],
-      },
-    },
   );
 };
 
@@ -161,14 +128,10 @@ export const deleteSecurityCoverageResult = async (
 export const deleteSecurityCoverageResultsByResultOf = async (
   context: AuthContext,
   user: AuthUser,
-  resultOfId: string,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
 ) => {
   const deletedIds: string[] = [];
-  const results = await listSecurityCoverageResultsByResultOf(
-    context,
-    user,
-    resultOfId,
-  );
+  const results = await loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
   for (const result of results) {
     const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
       context,

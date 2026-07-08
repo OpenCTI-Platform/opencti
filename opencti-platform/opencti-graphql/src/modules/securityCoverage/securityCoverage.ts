@@ -1,7 +1,7 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
-import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
+import { coverageInformation, createdAt, creators, updatedAt } from '../../schema/attribute-definition';
 import {
   ATTRIBUTE_COVERED,
   ENTITY_TYPE_SECURITY_COVERAGE,
@@ -48,6 +48,12 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     creators,
     createdAt,
     updatedAt,
+    // TODO kept here to keep the history working
+    { name: 'external_uri', label: 'External URI', type: 'string', format: 'short', mandatoryType: 'no', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'coverage_last_result', label: 'Last coverage', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'coverage_valid_from', label: 'Valid coverage from', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'coverage_valid_to', label: 'Valid coverage to', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    coverageInformation,
   ],
   relations: [],
   relationsRefs: [
