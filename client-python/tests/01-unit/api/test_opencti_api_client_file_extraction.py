@@ -1,3 +1,5 @@
+import io
+
 from pycti.api.opencti_api_client import File, OpenCTIApiClient
 
 
@@ -65,3 +67,61 @@ def test_extract_files_preserves_multiple_and_mixed_upload_paths():
         {"key": "files", "file": [first_upload, second_upload], "multiple": True},
         {"key": "mixed.1", "file": mixed_upload, "multiple": False},
     ]
+
+
+class _UploadResponse:
+    status_code = 200
+
+    @staticmethod
+    def json():
+        return {"data": {"ok": True}}
+
+
+class _TrackingFile(io.BytesIO):
+    def __init__(self, payload):
+        super().__init__(payload)
+        self.read_calls = 0
+
+    def read(self, *args, **kwargs):
+        self.read_calls += 1
+        return super().read(*args, **kwargs)
+
+
+class _UploadSession:
+    def __init__(self, upload):
+        self.upload = upload
+        self.body = None
+        self.content_type = None
+        self.read_calls_before_post = None
+
+    def post(self, *args, **kwargs):
+        del args
+        self.read_calls_before_post = self.upload.read_calls
+        assert "files" not in kwargs
+        multipart_stream = kwargs["data"]
+        self.content_type = kwargs["headers"]["Content-Type"]
+        self.body = b"".join(multipart_stream)
+        return _UploadResponse()
+
+
+def test_query_streams_multipart_file_body():
+    upload = _TrackingFile(b"payload")
+    client = _client()
+    client.api_url = "http://benchmark.invalid/graphql"
+    client.request_headers = {}
+    client.ssl_verify = False
+    client.cert = None
+    client.proxies = None
+    client.session_requests_timeout = 300
+    client.session = _UploadSession(upload)
+
+    result = client.query(
+        "mutation Upload($file: Upload!) { uploadImport(file: $file) { id } }",
+        {"file": File("artifact.txt", upload, "text/plain")},
+    )
+
+    assert result == {"data": {"ok": True}}
+    assert client.session.read_calls_before_post == 0
+    assert client.session.content_type.startswith("multipart/form-data; boundary=")
+    assert b'filename="artifact.txt"' in client.session.body
+    assert b"payload" in client.session.body

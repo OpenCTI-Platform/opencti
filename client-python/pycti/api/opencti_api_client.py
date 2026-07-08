@@ -10,10 +10,12 @@ import shutil
 import signal
 import tempfile
 import threading
+import uuid
 from typing import Any, Dict, Optional, Tuple, Union
 
 import magic
 import requests
+from urllib3.fields import RequestField
 
 from pycti import __version__
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
@@ -153,6 +155,82 @@ class File:
         self.name = name
         self.data = data
         self.mime = mime
+
+
+class _MultipartStream:
+    """Streaming multipart body for GraphQL file uploads."""
+
+    _CHUNK_SIZE = 1024 * 1024
+
+    def __init__(self, fields):
+        self.boundary = uuid.uuid4().hex
+        self.content_type = f"multipart/form-data; boundary={self.boundary}"
+        self._parts = []
+        self._length = 0
+
+        for name, value in fields:
+            if isinstance(value, tuple):
+                filename, data, mime = value
+                data, data_length = self._normalize_data(data)
+                field = RequestField(name=name, data=None, filename=filename)
+                field.make_multipart(content_type=mime)
+            else:
+                data, data_length = self._normalize_data(value)
+                field = RequestField(name=name, data=None)
+                field.make_multipart()
+
+            prefix = (f"--{self.boundary}\r\n" + field.render_headers()).encode("utf-8")
+            suffix = b"\r\n"
+            self._parts.append((prefix, data, suffix))
+            self._length += len(prefix) + data_length + len(suffix)
+
+        self._closing_boundary = f"--{self.boundary}--\r\n".encode("ascii")
+        self._length += len(self._closing_boundary)
+
+    @staticmethod
+    def _normalize_data(data):
+        if isinstance(data, str):
+            data = data.encode("utf-8", "replace")
+        if isinstance(data, memoryview):
+            data = data.tobytes()
+        if data is None:
+            data = b""
+        if isinstance(data, (bytes, bytearray)):
+            return data, len(data)
+        if hasattr(data, "read"):
+            try:
+                position = data.tell()
+                data.seek(0, os.SEEK_END)
+                data_length = data.tell() - position
+                data.seek(position)
+                return data, data_length
+            except (AttributeError, OSError, io.UnsupportedOperation):
+                buffered = data.read()
+                if isinstance(buffered, str):
+                    buffered = buffered.encode("utf-8", "replace")
+                return buffered, len(buffered)
+        raise TypeError(f"Unsupported multipart data type: {type(data)!r}")
+
+    def __len__(self):
+        return self._length
+
+    def __iter__(self):
+        for prefix, data, suffix in self._parts:
+            yield prefix
+            if isinstance(data, bytes):
+                yield data
+            elif isinstance(data, bytearray):
+                yield bytes(data)
+            else:
+                while True:
+                    chunk = data.read(self._CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    if isinstance(chunk, str):
+                        chunk = chunk.encode("utf-8", "replace")
+                    yield chunk
+            yield suffix
+        yield self._closing_boundary
 
 
 class OpenCTIApiClient:
@@ -658,9 +736,9 @@ class OpenCTIApiClient:
             del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query
         if len(files_vars) > 0:
-            multipart_data = {
-                "operations": json.dumps({"query": query, "variables": query_var})
-            }
+            multipart_fields = [
+                ("operations", json.dumps({"query": query, "variables": query_var}))
+            ]
             # Build the multipart map
             map_index = 0
             file_vars = {}
@@ -675,10 +753,9 @@ class OpenCTIApiClient:
                 else:
                     file_vars[str(map_index)] = [var_name]
                     map_index += 1
-            multipart_data["map"] = json.dumps(file_vars)
+            multipart_fields.append(("map", json.dumps(file_vars)))
             # Add the files
             file_index = 0
-            multipart_files = []
             for file_var_item in files_vars:
                 files = file_var_item["file"]
                 is_multiple_files = file_var_item["multiple"]
@@ -698,7 +775,7 @@ class OpenCTIApiClient:
                                 str(file_index),
                                 (file.name, file.data, file.mime),
                             )
-                        multipart_files.append(file_multi)
+                        multipart_fields.append(file_multi)
                         file_index += 1
                 else:
                     if isinstance(files.data, str):
@@ -715,13 +792,14 @@ class OpenCTIApiClient:
                             str(file_index),
                             (files.name, files.data, files.mime),
                         )
-                    multipart_files.append(file_multi)
+                    multipart_fields.append(file_multi)
                     file_index += 1
+            multipart_stream = _MultipartStream(fields=multipart_fields)
+            query_headers["Content-Type"] = multipart_stream.content_type
             # Send the multipart request
             r = self.session.post(
                 self.api_url,
-                data=multipart_data,
-                files=multipart_files,
+                data=multipart_stream,
                 headers=query_headers,
                 verify=self.ssl_verify,
                 cert=self.cert,
