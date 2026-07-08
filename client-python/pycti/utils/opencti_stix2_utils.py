@@ -290,15 +290,15 @@ class OpenCTIStix2Utils:
         :rtype: int
         """
         refs_number = 0
-        for key in list(entity.keys()):
-            if key.endswith("_refs") and entity[key] is not None:
-                refs_number += len(entity[key])
+        for key, value in entity.items():
+            if key.endswith("_refs") and value is not None:
+                refs_number += len(value)
             elif key.endswith("_ref"):
                 refs_number += 1
-            elif key == "external_references" and entity[key] is not None:
-                refs_number += len(entity[key])
-            elif key == "kill_chain_phases" and entity[key] is not None:
-                refs_number += len(entity[key])
+            elif key == "external_references" and value is not None:
+                refs_number += len(value)
+            elif key == "kill_chain_phases" and value is not None:
+                refs_number += len(value)
         return refs_number
 
 
