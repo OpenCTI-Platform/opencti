@@ -9,7 +9,6 @@ import type { StoreEntitySecurityCoverageResult } from './securityCoverageResult
 export const getAverageCoverageInformation = async (results: StoreEntitySecurityCoverageResult[]) => {
   const mapOfScores = new Map<string, number[]>();
   results.forEach(({ coverage_information }) => {
-    console.log(coverage_information);
     (coverage_information ?? []).forEach(({ coverage_name, coverage_score }) => {
       if (mapOfScores.has(coverage_name)) {
         mapOfScores.get(coverage_name)!.push(coverage_score);
@@ -18,7 +17,6 @@ export const getAverageCoverageInformation = async (results: StoreEntitySecurity
       }
     });
   });
-  console.log(mapOfScores);
   return Array.from(mapOfScores, ([coverage_name, scores]) => ({
     coverage_name,
     coverage_score: scores.reduce((sum, num) => sum + num, 0) / scores.length,
