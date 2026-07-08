@@ -1,6 +1,5 @@
 import { ApolloServer } from '@apollo/server';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
-import { dissocPath } from 'ramda';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { GraphQLError } from 'graphql';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
@@ -124,10 +123,19 @@ const createApolloServer = () => {
     formatError: (error) => {
       // To maintain compatibility with client in version 3.
       const enrichedError = { ...error, name: error.extensions?.code ?? error.name };
-      // Remove the exception stack in production.
-      let limitedError = dissocPath(['extensions', 'stacktrace'], enrichedError);
-      limitedError = dissocPath(['locations'], limitedError);
-      return DEV_MODE ? enrichedError : limitedError;
+      // Limited errors based on config
+      if (!GRAPHQL_ARMOR_DISABLED) {
+        return {
+          name: enrichedError.name,
+        };
+      }
+      if (!DEV_MODE) {
+        return {
+          message: enrichedError.message,
+          name: enrichedError.name,
+        };
+      }
+      return enrichedError;
     },
   });
   return { schema, apolloServer };
