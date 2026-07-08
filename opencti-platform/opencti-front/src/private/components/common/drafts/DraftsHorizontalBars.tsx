@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';

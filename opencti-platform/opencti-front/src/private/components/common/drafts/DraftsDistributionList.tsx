@@ -7,7 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

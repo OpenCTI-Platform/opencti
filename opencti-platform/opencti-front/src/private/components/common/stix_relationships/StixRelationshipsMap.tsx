@@ -14,7 +14,7 @@ import {
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsMapStixRelationshipsDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMapStixRelationshipsDistributionQuery(

@@ -11,7 +11,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsRadarDistributionQuery } from './__generated__/StixCoreObjectsRadarDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsRadarDistributionQuery = graphql`
   query StixCoreObjectsRadarDistributionQuery(

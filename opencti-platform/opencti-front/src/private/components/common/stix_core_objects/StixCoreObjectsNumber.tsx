@@ -12,7 +12,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCoreObjectsNumberNumberSeriesQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { ReactNode, Suspense } from 'react';
 
 const stixCoreObjectsNumberNumberQuery = graphql`

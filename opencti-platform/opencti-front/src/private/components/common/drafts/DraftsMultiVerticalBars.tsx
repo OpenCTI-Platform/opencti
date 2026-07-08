@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';

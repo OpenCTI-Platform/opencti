@@ -4,7 +4,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';

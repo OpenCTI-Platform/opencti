@@ -13,7 +13,7 @@ import { StixRelationshipsHorizontalBarsDistributionQuery } from './__generated_
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(

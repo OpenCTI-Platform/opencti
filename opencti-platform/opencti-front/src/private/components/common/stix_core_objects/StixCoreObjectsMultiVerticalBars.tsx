@@ -11,7 +11,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 

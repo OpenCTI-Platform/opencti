@@ -19,7 +19,7 @@ import {
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { ReactNode, Suspense } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { ApexOptions } from 'apexcharts';
 
 const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`

@@ -12,7 +12,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(

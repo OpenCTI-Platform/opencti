@@ -16,7 +16,7 @@ import {
   StixRelationshipsOrdering,
   StixRelationshipsTimelineStixRelationshipQuery,
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsTimelineStixRelationshipQuery.graphql';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   query StixRelationshipsTimelineStixRelationshipQuery(

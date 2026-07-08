@@ -1,7 +1,7 @@
 import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
 import useAuth from '../../utils/hooks/useAuth';
-import { resolveDataSelection } from './dashboard-viz-utils';
-import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
+import { resolveDataSelection } from './dashboardVizUtils';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
 import { useQueryLoader } from 'react-relay';
@@ -33,15 +33,33 @@ const useDashboardViz = <TQuery extends OperationType>({
   const setQueryPending = useDashboardSetQueryPending();
   const queryIdRef = useRef(`dashboard-viz-${Math.random().toString(36).slice(2)}`);
   const { filterKeysSchema } = useAuth().schema;
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
-    filterKeysSchema,
-    dataSelection,
-    perspective,
-    host,
-  }), [filterKeysSchema, dataSelection, perspective, host]);
+
+  const [resolvedDataSelection, setResolvedDataSelection] = useState<WidgetDataSelection[]>([]);
+  const [isMissingHostEntity, setIsMissingHostEntity] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    resolveDataSelection({
+      filterKeysSchema,
+      dataSelection,
+      perspective,
+      host,
+    }).then((result) => {
+      // Only update state if the effect has not been cleaned up (component unmounted or deps changed)
+      if (!cancelled) {
+        setResolvedDataSelection(result.resolvedDataSelection);
+        setIsMissingHostEntity(result.isMissingHostEntity);
+        setIsPreviewMode(result.isPreviewMode);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [filterKeysSchema, dataSelection, perspective, host]);
 
   const queryVariables = useMemo(
-    () => (buildQueryVariables && config
+    () => (buildQueryVariables && config && resolvedDataSelection.length > 0
       ? buildQueryVariables(resolvedDataSelection, config, parameters)
       : null),
     [buildQueryVariables, resolvedDataSelection, config, parameters],
@@ -100,7 +118,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   // Used by dashboard token refresh to rebuild variables from latest inputs
   // before forcing the load.
   const forceReloadWithFreshVariables = useCallback(() => {
-    if (!buildQueryVariables || !config) {
+    if (!buildQueryVariables || !config || resolvedDataSelection.length === 0) {
       reloadData(true);
       return;
     }

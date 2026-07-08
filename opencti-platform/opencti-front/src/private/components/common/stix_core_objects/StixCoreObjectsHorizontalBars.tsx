@@ -12,7 +12,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { StixCoreObjectsHorizontalBarsDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsHorizontalBarsDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
     query StixCoreObjectsHorizontalBarsDistributionQuery(

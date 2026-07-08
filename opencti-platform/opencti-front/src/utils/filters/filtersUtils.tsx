@@ -390,7 +390,6 @@ export const buildFiltersAndOptionsForWidgets = (
     dateAttribute?: string;
     isKnowledgeRelationshipWidget?: boolean;
   } = {},
-  filters_id: string | null = null,
 ) => {
   const {
     removeTypeAll = false,
@@ -399,10 +398,6 @@ export const buildFiltersAndOptionsForWidgets = (
     dateAttribute = 'created_at',
     isKnowledgeRelationshipWidget = false,
   } = opts;
-  // if a saved filter is selected, it overrides eventual other filters
-  if (filters_id) {
-    // TODO
-  }
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
