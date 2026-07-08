@@ -105,7 +105,7 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
         name
         parent_types
         entity_type
-        vulnerabilities: stixCoreRelationships(
+        vulnerabilities: stixCoreRelationshipsFromResults(
           relationship_type: "has-covered"
           orderBy: created_at
           orderMode: asc

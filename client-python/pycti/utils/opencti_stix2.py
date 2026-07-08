@@ -3273,6 +3273,8 @@ class OpenCTIStix2:
             self.opencti.external_reference.delete(item["id"])
         elif item["type"] == "sighting":
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
+        elif item["type"] == "security-coverage":
+            self.opencti.security_coverage.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
         elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):
