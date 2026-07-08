@@ -2196,8 +2196,8 @@ class OpenCTIStix2:
         if "stop_time" in entity and entity["stop_time"].startswith("5138"):
             del entity["stop_time"]
 
-        entity_copy = entity.copy()
         if no_custom_attributes:
+            entity_copy = entity.copy()
             if "external_references" in entity:
                 del entity["external_references"]
             for key in entity_copy.keys():

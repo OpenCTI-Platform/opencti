@@ -1,4 +1,5 @@
 import datetime
+from types import SimpleNamespace
 
 import pytest
 
@@ -532,3 +533,31 @@ def test_prepare_export_keeps_non_embedded_markdown_image_uri(
     assert len(result) == 1
     assert result[0]["description"] == "desc ![img](/storage/get/import/global/a.png)"
     assert len(fetch_calls) == 0
+
+
+def test_prepare_export_removes_custom_attributes_when_requested():
+    opencti_stix2 = OpenCTIStix2.__new__(OpenCTIStix2)
+    opencti_stix2.opencti = SimpleNamespace(
+        stix_nested_ref_relationship=SimpleNamespace(list=lambda **kwargs: []),
+        api_url="http://localhost/graphql",
+    )
+
+    entity = {
+        "id": "indicator--22222222-2222-4222-8222-222222222222",
+        "type": "indicator",
+        "x_opencti_id": "internal-indicator-id",
+        "x_opencti_score": 80,
+        "name": "indicator",
+    }
+
+    result = opencti_stix2.prepare_export(
+        entity=entity, mode="simple", no_custom_attributes=True
+    )
+
+    assert result == [
+        {
+            "id": "indicator--22222222-2222-4222-8222-222222222222",
+            "type": "indicator",
+            "name": "indicator",
+        }
+    ]
