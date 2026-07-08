@@ -3,7 +3,7 @@ import { Box, List, ListItem, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
-import type { WidgetColumn } from 'src/utils/widget/widget';
+import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemAuthor from '../../../components/ItemAuthor';
 import ItemConfidence from '../../../components/ItemConfidence';
@@ -23,8 +23,6 @@ import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRend
 import ListItemText from '@mui/material/ListItemText';
 import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
 import { EMPTY_VALUE } from 'src/utils/String';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ItemIcon from 'src/components/ItemIcon';
 
 export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
 
@@ -32,6 +30,7 @@ interface WidgetCustomAttributesCardProps {
   column: WidgetColumn;
   data: StixCoreObject | null | undefined;
   isCustomViewReadOnly?: boolean;
+  host?: WidgetHost;
 }
 
 const isString = (v: unknown): v is string => typeof v === 'string';
@@ -123,21 +122,6 @@ const renderByAttributeType = (
       );
     }
 
-    case 'entity_ref': {
-      const value = getField<{ id: string; entity_type: string; representative?: { main?: string } }>(data, attribute);
-      if (!value?.representative?.main) return empty();
-      return (
-        <List sx={{ py: 0 }}>
-          <ListItem dense divider>
-            <ListItemIcon>
-              <ItemIcon type={value.entity_type} />
-            </ListItemIcon>
-            <ListItemText primary={value.representative.main} />
-          </ListItem>
-        </List>
-      );
-    }
-
     case 'markdown': {
       const value = getField(data, attribute, isString);
       if (!value) return empty();
@@ -186,6 +170,7 @@ const renderAttributeValue = (
   data: StixCoreObject | null | undefined,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
+  host?: WidgetHost,
 ) => {
   const { attribute } = column;
   if (!attribute) return null;
@@ -205,7 +190,7 @@ const renderAttributeValue = (
       ?? (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
 
   if (specificRenderer) {
-    return specificRenderer(data, t_i18n, fldt);
+    return specificRenderer(data, t_i18n, fldt, host);
   }
 
   const byType = renderByAttributeType(column, data, t_i18n, fldt);
@@ -317,6 +302,7 @@ const renderAttributeValue = (
 const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardProps> = ({
   column,
   data,
+  host,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
@@ -327,7 +313,7 @@ const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardPr
       <Typography variant="h4" sx={{ marginBottom: theme.spacing(0.5) }}>
         {t_i18n(label)}
       </Typography>
-      {renderAttributeValue(column, data, t_i18n, fldt)}
+      {renderAttributeValue(column, data, t_i18n, fldt, host)}
     </Box>
   );
 };

@@ -505,6 +505,13 @@ export const stixCoreObjectsCustomAttributesQuery = graphql`
         updated_at
         revoked
         x_opencti_reliability
+        coverage_valid_from
+        coverage_valid_to
+        coverage_last_result
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
         objectCovered {
           id
           entity_type
@@ -540,12 +547,14 @@ interface StixCoreObjectsCustomAttributesContentProps {
   queryRef: PreloadedQuery<StixCoreObjectsCustomAttributesQuery>;
   columns: readonly WidgetColumn[];
   layout: WidgetColumnsLayout;
+  host?: WidgetHost;
 }
 
 const StixCoreObjectsCustomAttributesContent = ({
   queryRef,
   columns,
   layout,
+  host,
 }: StixCoreObjectsCustomAttributesContentProps) => {
   const data = usePreloadedQuery(stixCoreObjectsCustomAttributesQuery, queryRef);
 
@@ -556,6 +565,7 @@ const StixCoreObjectsCustomAttributesContent = ({
       data={data.stixCoreObject}
       columns={columns}
       layout={layout}
+      host={host}
     />
   );
 };
@@ -621,6 +631,7 @@ const StixCoreObjectsCustomAttributes = ({
                     queryRef={queryRef}
                     columns={columns}
                     layout={layout}
+                    host={host}
                   />
                 </React.Suspense>
               )

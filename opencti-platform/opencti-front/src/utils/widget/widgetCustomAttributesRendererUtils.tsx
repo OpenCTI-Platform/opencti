@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { StixCoreObject } from '@components/widgets/WidgetCustomAttributesCard';
 import FieldOrEmpty from '../../components/FieldOrEmpty';
-import { List, ListItem, Stack, Typography } from '@mui/material';
+import { List, ListItem, ListItemButton, ListItemIcon, Stack, Typography } from '@mui/material';
 import ItemCopy from '../../components/ItemCopy';
 import ListItemText from '@mui/material/ListItemText';
 import ExpandablePre from '../../components/ExpandablePre';
@@ -10,11 +10,16 @@ import ItemSeverity from 'src/components/ItemSeverity';
 import TextList from '@common/text/TextList';
 import ItemOpenVocab from 'src/components/ItemOpenVocab';
 import { EMPTY_VALUE } from 'src/utils/String';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
+import ItemIcon from '../../components/ItemIcon';
+import { Link } from 'react-router-dom';
+import { WidgetHost } from 'src/utils/widget/widget';
 
 type AttributeRenderer = (
   data: StixCoreObject,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
+  host?: WidgetHost,
 ) => ReactNode;
 
 type EntityRenderers = Partial<Record<string, AttributeRenderer>>;
@@ -209,6 +214,61 @@ const artifactRenderers: EntityRenderers = {
   hash_sha512: makeHashRenderer('SHA-512'),
 };
 
+const securityCoverageRenderers: EntityRenderers = {
+  objectCovered: (data, _t_i18n, _fldt, host) => {
+    const covered = getField<{
+      id: string;
+      entity_type: string;
+      representative?: { main?: string };
+    }>(data, 'objectCovered');
+
+    const isPreview = host?.kind === 'custom-view'
+      && Boolean(host.customViewTargetEntityId)
+      && host.previewMode === true;
+    const isClickable = !isPreview;
+
+    return (
+      <FieldOrEmpty source={covered}>
+        {covered && (
+          <List sx={{ py: 0 }}>
+            <ListItem dense divider disablePadding={isClickable}>
+              {isClickable ? (
+                <ListItemButton component={Link} to={`/dashboard/id/${covered.id}`}>
+                  <ListItemIcon>
+                    <ItemIcon type={covered.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText primary={covered.representative?.main} />
+                </ListItemButton>
+              ) : (
+                <>
+                  <ListItemIcon>
+                    <ItemIcon type={covered.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText primary={covered.representative?.main} />
+                </>
+              )}
+            </ListItem>
+          </List>
+        )}
+      </FieldOrEmpty>
+    );
+  },
+
+  coverage_information: (data) => {
+    const coverageInformation = getField<ReadonlyArray<{
+      coverage_name: string;
+      coverage_score: number;
+    }>>(data, 'coverage_information');
+
+    return (
+      <SecurityCoverageScores
+        coverage_information={coverageInformation ?? []}
+        variant="details"
+      />
+    );
+  },
+};
+
 export const entityTypeRenderers: Record<string, EntityRenderers> = {
   Indicator: indicatorRenderers,
   'Threat-Actor-Individual': threatActorIndividualRenderers,
@@ -216,4 +276,5 @@ export const entityTypeRenderers: Record<string, EntityRenderers> = {
   Vulnerability: vulnerabilityRenderers,
   'Stix-Cyber-Observable': stixCyberObservableRenderers,
   Artifact: artifactRenderers,
+  'Security-Coverage': securityCoverageRenderers,
 };
