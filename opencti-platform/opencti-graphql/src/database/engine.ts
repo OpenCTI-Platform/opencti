@@ -2094,6 +2094,7 @@ const BASE_SEARCH_ATTRIBUTES = [
   'aliases',
   'x_opencti_aliases',
   'persona_name',
+  'source_name',
   'roles',
   'objective',
   'content',
@@ -4267,7 +4268,7 @@ export const elRemoveRelationConnection = async (
                   ctx._source[params.rel_key].remove(cleanupIndex);
                 }
             }
-          }  
+          }
           `;
           // Only impact the updated at on the from side of the ref relationship
           const fromSide = side === 'from';
@@ -4416,13 +4417,13 @@ export const elRemoveDraftIdFromElements = async (
   elementsIds: string[],
 ) => {
   const revertDraftIdSource = `
-    if (ctx._source.containsKey('draft_ids')) { 
+    if (ctx._source.containsKey('draft_ids')) {
       for (int i = 0; i < ctx._source.draft_ids.length; ++i){
         if(ctx._source.draft_ids[i] == params.draftId){
           ctx._source.draft_ids.remove(i);
         }
       }
-    }  
+    }
   `;
 
   if (elementsIds.length > 0) {
@@ -4472,15 +4473,15 @@ export const copyLiveElementToDraft = async (
   const addDraftIdScript = {
     script: {
       source: `
-        if (ctx._source.containsKey('draft_ids')) { 
+        if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
             if (!params.allDraftIds.contains(ctx._source['draft_ids'][i])) {
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}'); 
-        } 
-        else 
+          ctx._source['draft_ids'].add('${draftContext}');
+        }
+        else
           {ctx._source.draft_ids = ['${draftContext}']}
       `,
       params: { allDraftIds },
@@ -4827,7 +4828,7 @@ export const elIndexElements = async (
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         if (isStixRefUnidirectionalRelationship(t.relation)) {
           // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) { 
+          script += `for(refId in params['${field}']) {
           if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;
