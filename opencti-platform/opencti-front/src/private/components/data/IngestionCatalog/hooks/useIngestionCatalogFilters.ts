@@ -45,9 +45,11 @@ const CONNECTOR_TYPE_ORDER: string[] = [
   'INTERNAL_INGESTION',
 ];
 
+// Deduplicated so hand-crafted URLs with repeated values (type=STREAM,STREAM)
+// cannot produce duplicate filter chips or duplicate React keys.
 const parseListParam = (value: string | null): string[] => {
   if (!value) return [];
-  return value.split(',').map((v) => v.trim()).filter((v) => v.length > 0);
+  return [...new Set(value.split(',').map((v) => v.trim()).filter((v) => v.length > 0))];
 };
 
 const matchesStatus = (entry: CatalogContractEntry, status: CatalogStatusFacet): boolean => {
