@@ -37599,8 +37599,11 @@ export type WidgetDataSelection = {
   columns?: Maybe<Array<WidgetColumn>>;
   date_attribute?: Maybe<Scalars['String']['output']>;
   dynamicFrom?: Maybe<Scalars['String']['output']>;
+  dynamicFrom_id?: Maybe<Scalars['String']['output']>;
   dynamicTo?: Maybe<Scalars['String']['output']>;
+  dynamicTo_id?: Maybe<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
+  filters_id?: Maybe<Scalars['String']['output']>;
   instance_id?: Maybe<Scalars['String']['output']>;
   isTo?: Maybe<Scalars['Boolean']['output']>;
   label?: Maybe<Scalars['String']['output']>;
@@ -52945,8 +52948,11 @@ export type WidgetDataSelectionResolvers<ContextType = any, ParentType extends R
   columns?: Resolver<Maybe<Array<ResolversTypes['WidgetColumn']>>, ParentType, ContextType>;
   date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dynamicFrom?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dynamicFrom_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   dynamicTo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dynamicTo_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  filters_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instance_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isTo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -892,6 +892,9 @@ type WidgetDataSelection {
   filters: String
   dynamicFrom: String
   dynamicTo: String
+  filters_id: String
+  dynamicFrom_id: String
+  dynamicTo_id: String
   columns: [WidgetColumn!]
   instance_id: String
   sort_by: String
