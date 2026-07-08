@@ -1,4 +1,5 @@
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
@@ -10,8 +11,9 @@ import AuthorFormPageModel from '../model/form/authorForm.pageModel';
 import LabelFormPageModel from '../model/form/labelForm.pageModel';
 import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-// import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
+
+const baseDir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Content of the test
@@ -116,7 +118,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await reportForm.markingsAutocomplete.selectOption('TLP:GREEN');
   await expect(reportForm.markingsAutocomplete.getOption('TLP:GREEN')).toBeVisible();
 
-  await reportForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/report.test.md'));
+  await reportForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.md'));
   await expect(reportForm.associatedFileField.getByText('report.test.md')).toBeVisible();
 
   await reportForm.getCreateButton().click();
@@ -359,7 +361,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/report.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.pdf'));
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
   await expect(reportForm.externalReferencesAutocomplete.getOption('external ref')).toBeVisible();

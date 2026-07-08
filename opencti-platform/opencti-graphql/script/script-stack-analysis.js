@@ -1,30 +1,45 @@
-/* eslint-disable no-console */
-import { readFileSync } from 'fs';
+import { readFile, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { SourceMapConsumer } from 'source-map';
+
+const readStdin = () => new Promise((resolve) => {
+  let data = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => { data += chunk; });
+  process.stdin.on('end', () => resolve(data));
+});
 
 /**
  * This code will allow you to convert a built stack error to the real lines of code
  * For that you need to align your code version and build the backend/frontend to have the correct back.js.map file
  * For the backend, <yarn build> in opencti-graphql
- * For the frontend, <yarn build:standalone> in opencti-front
+ * For the frontend, <yarn build> in opencti-front
  * Then you just have to put your json log of the error in a .env files at the root directory of opencti-graphql
  * .env => backend_log='{...}' or frontend_log='{...}'
  * and start the script yarn stack:analysis
  */
 
 const BACKEND_MAP = './build/back.js.map';
-const FRONT_MAP = '../opencti-front/builder/prod/build/static/js/front.js.map';
+const FRONT_ASSETS_DIR = '../opencti-front/dist/assets';
 const isExecTypeBack = process.argv[process.argv.length - 1] === 'back';
-const stackData = isExecTypeBack ? process.env.BACKEND_LOG : process.env.FRONTEND_LOG;
+const stackData = (isExecTypeBack ? process.env.BACKEND_LOG : process.env.FRONTEND_LOG) ?? await readStdin();
 
-const sourceMapFile = readFileSync(isExecTypeBack ? BACKEND_MAP : FRONT_MAP, 'utf8');
-const sourceMapContent = JSON.parse(sourceMapFile);
+let sourceMapContents;
+if (isExecTypeBack) {
+  const sourceMapFile = await readFile(BACKEND_MAP, 'utf8');
+  sourceMapContents = [JSON.parse(sourceMapFile)];
+} else {
+  const files = await readdir(FRONT_ASSETS_DIR);
+  const mapFiles = files.filter((f) => f.endsWith('.js.map'));
+  sourceMapContents = await Promise.all(
+    mapFiles.map(async (f) => JSON.parse(await readFile(join(FRONT_ASSETS_DIR, f), 'utf8')))
+  );
+}
 
 const specificErrorKeys = ['componentStack', 'codeStack'];
 const specificStartErrorMessages = ['Error', 'GraphQLError', 'TypeError'];
 const getAllLogStacks = (obj, results = []) => {
   if (typeof obj === 'object' && obj !== null) {
-    // eslint-disable-next-line no-restricted-syntax
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
@@ -39,8 +54,8 @@ const getAllLogStacks = (obj, results = []) => {
   return results;
 };
 
-const parseStackTrace = async (stackTrace, sourceMap) => {
-  const consumer = await new SourceMapConsumer(sourceMap);
+const parseStackTrace = async (stackTrace, sourceMaps) => {
+  const consumers = await Promise.all(sourceMaps.map((sm) => new SourceMapConsumer(sm)));
   const lines = stackTrace.split('\n');
   const mappedLines = lines.map((line) => {
     // Updated regular expression to handle both formats
@@ -49,37 +64,41 @@ const parseStackTrace = async (stackTrace, sourceMap) => {
       if (match[1]) {
         // Format: at functionName (file:line:column)
         const [, functionName,, lineNumber, columnNumber] = match;
-        const originalPosition = consumer.originalPositionFor({
-          line: parseInt(lineNumber, 10),
-          column: parseInt(columnNumber, 10)
-        });
-        if (originalPosition.source) {
-          return `at ${functionName} (${originalPosition.source}:${originalPosition.line}:${originalPosition.column})`;
+        for (const consumer of consumers) {
+          const originalPosition = consumer.originalPositionFor({
+            line: parseInt(lineNumber, 10),
+            column: parseInt(columnNumber, 10),
+          });
+          if (originalPosition.source) {
+            return `at ${functionName} (${originalPosition.source}:${originalPosition.line}:${originalPosition.column})`;
+          }
         }
       } else {
         // Format: at file:line:column
         const [, lineNumber, columnNumber] = match.slice(5);
-        const originalPosition = consumer.originalPositionFor({
-          line: parseInt(lineNumber, 10),
-          column: parseInt(columnNumber, 10)
-        });
-        if (originalPosition.source) {
-          return `at ${originalPosition.source}:${originalPosition.line}:${originalPosition.column}`;
+        for (const consumer of consumers) {
+          const originalPosition = consumer.originalPositionFor({
+            line: parseInt(lineNumber, 10),
+            column: parseInt(columnNumber, 10),
+          });
+          if (originalPosition.source) {
+            return `at ${originalPosition.source}:${originalPosition.line}:${originalPosition.column}`;
+          }
         }
       }
     }
     return line;
   });
-  consumer.destroy();
+  consumers.forEach((c) => c.destroy());
   return mappedLines.join('\n');
 };
 
 const traces = getAllLogStacks(JSON.parse(stackData));
 for (let i = 0; i < traces.length; i += 1) {
   const stackTrace = traces[i];
-  parseStackTrace(stackTrace, sourceMapContent).then((mappedStackTrace) => {
-    console.log(mappedStackTrace);
-  }).catch((err) => {
-    console.error(err);
-  });
+  try {
+    console.log(await parseStackTrace(stackTrace, sourceMapContents));
+  } catch (error) {
+    console.error(error);
+  }
 }

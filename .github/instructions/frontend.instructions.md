@@ -54,7 +54,6 @@ yarn start        # Alt: relay + Node-based dev server (SSR-like)
 
 # Build
 yarn build        # Production build
-yarn build:standalone # Keep artifacts
 
 # Linting & Types
 yarn check-ts     # Check types

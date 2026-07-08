@@ -579,7 +579,7 @@ export const getClusterInstances = async () => {
 };
 // endregion
 
-// playground handling
+// playbook handling
 const PLAYBOOK_EXECUTION_TTL = 90 * 24 * 60 * 60; // 90 days
 export const PLAYBOOK_EXECUTIONS_MAX_LENGTH = 20;
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {

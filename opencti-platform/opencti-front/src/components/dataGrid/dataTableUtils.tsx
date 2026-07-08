@@ -25,7 +25,7 @@ import ItemBoolean from '../ItemBoolean';
 import ItemSeverity from '../ItemSeverity';
 import ItemOperations from '../ItemOperations';
 import ItemDueDate from '../ItemDueDate';
-import { APP_BASE_PATH } from '../../relay/environment';
+import { findFlagUrl } from '../../utils/flags';
 import FieldOrEmpty from '../FieldOrEmpty';
 import ItemHistory from '../ItemHistory';
 import { useFormatter } from '../i18n';
@@ -88,10 +88,8 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
     case 'IPv6-Addr': {
       const country = observable.countries?.edges?.[0]?.node;
       if (country) {
-        const flag = (country.x_opencti_aliases ?? []).filter(
-          (n: string) => n.length === 2,
-        )[0];
-        if (flag) {
+        const flagUrl = findFlagUrl(country.x_opencti_aliases);
+        if (flagUrl) {
           return (
             <div
               style={{
@@ -103,7 +101,7 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
               <Tooltip title={country.name}>
                 <img
                   style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  src={flagUrl}
                   alt={country.name}
                 />
               </Tooltip>
@@ -1562,8 +1560,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         return defaultRender(EMPTY_VALUE);
       }
       if (entity_type === 'Country') {
-        const flag = x_opencti_aliases.filter((n: string) => n.length === 2)[0];
-        if (flag) {
+        const flagUrl = findFlagUrl(x_opencti_aliases);
+        if (flagUrl) {
           return (
             <div
               style={{
@@ -1575,7 +1573,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               <Tooltip title={x_opencti_aliases}>
                 <img
                   style={{ width: 20 }}
-                  src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                  src={flagUrl}
                   alt={x_opencti_aliases}
                 />
               </Tooltip>
