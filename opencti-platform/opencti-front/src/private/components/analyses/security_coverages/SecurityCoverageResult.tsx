@@ -196,14 +196,14 @@ export const securityCoverageResultLinesFragment = graphql`
       securityCoverage(id: $id) {
           id
           entity_type
-          stixCoreRelationships(
+          stixCoreRelationshipsFromResults(
               search: $search
               first: $count
               after: $cursor
               orderBy: $orderBy
               orderMode: $orderMode
               filters: $filters
-          ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationships") {
+          ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationshipsFromResults") {
               edges {
                   node {
                       id
@@ -336,12 +336,12 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
             linesQuery: securityCoverageResultLinesQuery,
             linesFragment: securityCoverageResultLinesFragment,
             queryRef,
-            nodePath: ['securityCoverage', 'stixCoreRelationships', 'pageInfo', 'globalCount'],
+            nodePath: ['securityCoverage', 'stixCoreRelationshipsFromResults', 'pageInfo', 'globalCount'],
             setNumberOfElements: storageHelpers.handleSetNumberOfElements,
           } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
           entityTypes={['stix-core-relationship']}
           availableFilterKeys={['toTypes']}
-          resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationshipsFromResults?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
