@@ -204,12 +204,14 @@ class WorkbenchFileToolbar extends Component {
                 </IconButton>
               </Typography>
               <IconButton
+                aria-label={t('Apply marking')}
                 disabled={numberOfSelectedElements === 0}
                 onClick={this.handleOpenApplyMarking.bind(this)}
               >
                 <CenterFocusStrongOutlined />
               </IconButton>
               <IconButton
+                aria-label={t('Delete')}
                 disabled={numberOfSelectedElements === 0}
                 onClick={this.handleOpenDelete.bind(this)}
               >

@@ -45,7 +45,7 @@ const UploadImport = ({
         />
       )}
       {variant === 'icon' ? (
-        <Tooltip title={title} aria-label={title}>
+        <Tooltip title={title}>
           <IconButton
             size={size}
             aria-haspopup="true"

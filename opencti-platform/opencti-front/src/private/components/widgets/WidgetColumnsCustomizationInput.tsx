@@ -4,10 +4,10 @@ import { List, ListItem, ListItemIcon, ListItemText, IconButton, Checkbox, Typog
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
-import type { Theme } from '../../../components/Theme';
-import { useFormatter } from '../../../components/i18n';
-import type { WidgetColumn } from '../../../utils/widget/widget';
-import { Accordion, AccordionSummary } from '../../../components/Accordion';
+import type { Theme } from 'src/components/Theme';
+import { useFormatter } from 'src/components/i18n';
+import type { WidgetColumn } from 'src/utils/widget/widget';
+import { Accordion, AccordionSummary } from 'src/components/Accordion';
 import useWidgetColumnsCustomization from './useWidgetColumnsCustomization';
 
 type WidgetConfigColumnsCustomizationProps = {
@@ -91,7 +91,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
                               height: 42,
                             }}
                             secondaryAction={(
-                              <IconButton onClick={() => handleToggleColumn(column.attribute)}>
+                              <IconButton aria-label={t_i18n('Close')} onClick={() => handleToggleColumn(column.attribute)}>
                                 <Close />
                               </IconButton>
                             )}

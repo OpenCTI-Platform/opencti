@@ -849,7 +849,9 @@ export const completeSpecialFilterKeys = async (
         const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
         finalFilters.push(newFilter);
       }
-    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
+    } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey))
+      && !arrayKeys.some((filterKey) => filterKey === 'connections')
+    ) {
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }

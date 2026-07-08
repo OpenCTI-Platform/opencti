@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
@@ -36,11 +36,14 @@ import {
 import { aiActivity, aiForecast, aiHistory } from '../../../src/domain/stixCoreObject';
 import { aiSummary } from '../../../src/domain/container';
 import { askEntityExport, askListExport } from '../../../src/domain/stix';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
 
 describe('Telemetry manager test coverage', () => {
-  test('Verify that metrics get collected from both elastic and redis', async () => {
-    // GIVEN a configured telemetry
+  let filigranTelemetryMeterManager: TelemetryMeterManager;
+
+  beforeAll(() => {
+    // given a configured telemetry
     const filigranResource = resourceFromAttributes({
       [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
       [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
@@ -48,12 +51,81 @@ describe('Telemetry manager test coverage', () => {
       'service.instance.creation': new Date().toUTCString(),
     });
     const resource = defaultResource().merge(filigranResource);
-
     // no readers so no data is sent for this test
     const filigranMeterProvider = new MeterProvider(({ resource, readers: [] }));
-    const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
+    filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
     filigranTelemetryMeterManager.registerFiligranTelemetry();
-    // AND Given starting from clean state in redis
+  });
+
+  describe('Verify saved filters telemetry metrics get collected', () => {
+    let sharedFilterId: string;
+    let unsharedFilterId: string;
+    let shareWithCreatorFilterId: string;
+
+    beforeAll(async () => {
+      // create shared saved filters
+
+      const savedFilter = JSON.stringify({
+        mode: 'and',
+        filters: [{ key: 'objectLabel', value: [], operator: 'nil' }],
+        filterGroups: [],
+      });
+
+      // Create a saved filter and share it with someone else than the creator
+      const sharedSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+        name: 'telemetry-shared-filter',
+        filters: savedFilter,
+        scope: 'Incident',
+      });
+      sharedFilterId = sharedSavedFilter.id;
+      await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, sharedFilterId, [
+        { id: ADMIN_USER.id, access_right: 'admin' },
+        { id: USER_EDITOR.id, access_right: 'view' },
+      ]);
+
+      // Create a saved filter that is NOT shared
+      const unshareSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+        name: 'telemetry-unshared-filter',
+        filters: savedFilter,
+        scope: 'Incident',
+      });
+      unsharedFilterId = unshareSavedFilter.id;
+
+      // Create a saved filter that is artificially shared with the creator at creation
+      const shareWithCreatorSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+        name: 'telemetry-unshared-filter',
+        filters: savedFilter,
+        scope: 'Incident',
+      });
+      shareWithCreatorFilterId = shareWithCreatorSavedFilter.id;
+      await savedFilterEditAuthorizedMembers(testContext, ADMIN_USER, shareWithCreatorFilterId, [
+        { id: ADMIN_USER.id, access_right: 'admin' },
+      ]);
+
+      // Wait for cache refresh and fire-and-forget Redis writes
+      await waitInSec(2);
+    });
+
+    afterAll(async () => {
+      // delete the shared saved filters
+      await deleteSavedFilter(testContext, ADMIN_USER, sharedFilterId);
+      await deleteSavedFilter(testContext, ADMIN_USER, unsharedFilterId);
+      await deleteSavedFilter(testContext, ADMIN_USER, shareWithCreatorFilterId);
+    });
+
+    test('shared saved filters count and permission changes are collected', async () => {
+      // WHEN telemetry data is fetched after filter creation
+      await fetchTelemetryData(filigranTelemetryMeterManager);
+
+      // THEN 1 shared saved filter should be counted (shared with non-creator members)
+      expect(filigranTelemetryMeterManager.sharedSavedFiltersCount).toEqual(1);
+      // AND 1 permission change event was recorded (the share with USER_EDITOR)
+      expect(filigranTelemetryMeterManager.sharedSavedFiltersPermissionChangesCount).toEqual(1);
+    });
+  });
+
+  test('Verify that metrics get collected from both elastic and redis', async () => {
+    // GIVEN starting from clean state in redis
     await redisClearTelemetry();
     const disseminationGaugeValueReset = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     expect(disseminationGaugeValueReset).toBe(0);
@@ -165,7 +237,11 @@ describe('Telemetry manager test coverage', () => {
     // AND WHEN export generations are requested (no export connector registered:
     // the calls resolve or fail downstream, the attempts are counted either way)
     await attempt(() => askListExport(testContext, ADMIN_USER, { entity_type: 'Report' }, 'application/json', [], {}, 'simple', [], []));
-    await attempt(() => askEntityExport(testContext, ADMIN_USER, 'application/json', { id: 'unknown-entity-id', entity_type: 'Report', name: 'unknown' }, 'simple', [], []));
+    await attempt(() => askEntityExport(testContext, ADMIN_USER, 'application/json', {
+      id: 'unknown-entity-id',
+      entity_type: 'Report',
+      name: 'unknown',
+    }, 'simple', [], []));
 
     // THEN every Ask AI feature has been counted exactly once under its
     // dimensional key, and the scalar NLQ / export counters as well.

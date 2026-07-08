@@ -28,7 +28,9 @@ describe('getVisualizationTypes', () => {
     it('all visualization types but attribute or custom-attributes are available', () => {
       expect(getVisualizationTypes({
         kind: 'workspace',
-      }, false).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'));
+      }).map(({ key }) => key)).toStrictEqual(
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
+      );
     });
   });
 
@@ -39,23 +41,18 @@ describe('getVisualizationTypes', () => {
         fintelEntityType: 'Report',
         fintelWidgets: [],
         fintelEditorValue: '',
-      }, false).map(({ key }) => key)).toStrictEqual(['list']);
+      }).map(({ key }) => key)).toStrictEqual(['list']);
     });
   });
 
   describe('when host is a custom view', () => {
-    it('all visualization types but attribute are available when feature flag is enabled', () => {
+    it('all visualization types but attribute are available (custom-attributes always included)', () => {
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
-      }, true).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'));
-    });
-
-    it('custom-attributes is not available when feature flag is disabled', () => {
-      expect(getVisualizationTypes({
-        kind: 'custom-view',
-        customViewTargetEntityType: 'Malware',
-      }, false).map(({ key }) => key)).toStrictEqual(ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'));
+      }).map(({ key }) => key)).toStrictEqual(
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute'),
+      );
     });
   });
 });

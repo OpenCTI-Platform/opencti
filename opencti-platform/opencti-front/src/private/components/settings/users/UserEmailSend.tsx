@@ -80,6 +80,7 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
 
   const renderMainButton = () => (
     <IconButton
+      aria-label={t_i18n('Send email')}
       onClick={() => setIsEmailTemplateSelectionShown(true)}
       value="sendEmail"
       size="small"

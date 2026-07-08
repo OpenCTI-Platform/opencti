@@ -234,6 +234,7 @@ const ExternalReferenceEnrichment = (props) => {
                         secondaryAction={(
                           <div style={{ right: 0 }}>
                             <IconButton
+                              aria-label={t('delete')}
                               onClick={() => deleteWork(work.id)}
                             >
                               <Delete />

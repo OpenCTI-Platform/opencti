@@ -1555,6 +1555,7 @@ class DataTableToolBar extends Component {
               )}
             />
             <IconButton
+              aria-label={t('Create')}
               onClick={() => this.setState({ containerCreation: true })}
               edge="end"
               style={{ position: 'absolute', top: 80, right: 50 }}
@@ -2862,6 +2863,7 @@ class DataTableToolBar extends Component {
                     ))}
                   <div className={classes.add}>
                     <IconButton
+                      aria-label={t('Add step')}
                       disabled={!this.areStepValid()}
                       variant="secondary"
                       size="small"
@@ -3196,6 +3198,7 @@ class DataTableToolBar extends Component {
                   label={t('Also include first neighbours')}
                 />
                 <IconButton
+                  aria-label={t('Create container')}
                   onClick={() => this.setState({ containerCreation: true })}
                   edge="end"
                   style={{ position: 'absolute', top: 80, right: 50 }}
@@ -3291,6 +3294,7 @@ class DataTableToolBar extends Component {
                   disableClearable
                 />
                 <IconButton
+                  aria-label={t('Create organization')}
                   onClick={() => this.setState({ organizationCreation: true })}
                   edge="end"
                   style={{ position: 'absolute', top: 80, right: 50 }}

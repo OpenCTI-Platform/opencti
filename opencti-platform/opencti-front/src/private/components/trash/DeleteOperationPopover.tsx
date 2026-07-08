@@ -135,6 +135,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
   return (
     <>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         color="primary"
         onClick={handleOpen}
         disabled={disabled}

@@ -163,6 +163,7 @@ const StixCoreObjectContentFilesList = ({
                     <IconButton
                       onClick={(e) => openPopover(e, file)}
                       aria-haspopup="true"
+                      aria-label={t_i18n('Open menu')}
                       color="primary"
                       size="small"
                     >

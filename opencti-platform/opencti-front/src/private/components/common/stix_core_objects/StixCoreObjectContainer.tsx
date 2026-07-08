@@ -224,6 +224,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
                     <>
                       <InputAdornment position="end">
                         <IconButton
+                          aria-label={t_i18n('Create')}
                           onClick={handleToggleContainerCreationDrawer(true)}
                           size="small"
                         >

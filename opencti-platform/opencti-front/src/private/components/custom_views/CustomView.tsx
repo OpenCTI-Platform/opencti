@@ -1,12 +1,15 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ErrorBoundary } from '@components/Error';
-import { MESSAGING$ } from '../../../relay/environment';
+import { MESSAGING$ } from 'src/relay/environment';
 import Loader from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useDashboard from '../../../components/dashboard/useDashboard';
 import DashboardContent from '../../../components/dashboard/DashboardContent';
 import { CustomView_Query } from './__generated__/CustomView_Query.graphql';
+import { DashboardConfig } from 'src/components/dashboard/dashboard-types';
+import DashboardTimeFilters from 'src/components/dashboard/DashboardTimeFilters';
+import { Stack } from '@mui/material';
 
 const customViewQuery = graphql`
   query CustomView_Query($id: ID!) {
@@ -35,18 +38,56 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
   }
 
   const helpers = useDashboard({ entity: customView });
+
+  const [dateOverride, setDateOverride] = useState<DashboardConfig | null>(null);
+  const effectiveConfig = dateOverride ?? helpers.config;
+
+  const handleDateChange = (
+    type: 'startDate' | 'endDate' | 'relativeDate',
+    value: string | null,
+  ) => {
+    setDateOverride((prev) => {
+      const base = prev ?? helpers.config;
+      const normalizedValue = value === 'none' ? null : value;
+
+      let nextConfig: DashboardConfig = {
+        startDate: base?.startDate ?? null,
+        endDate: base?.endDate ?? null,
+        relativeDate: base?.relativeDate ?? null,
+        [type]: normalizedValue,
+      };
+
+      if (type === 'relativeDate' && value !== 'none') {
+        nextConfig = {
+          ...nextConfig,
+          startDate: null,
+          endDate: null,
+        };
+      }
+
+      return nextConfig;
+    });
+  };
+
   const host = useMemo(() => ({
     kind: 'custom-view' as const,
     customViewTargetEntityType: entityType,
     customViewTargetEntityId: entityId,
   }), [entityType]);
+
   return (
-    <DashboardContent
-      helpers={helpers}
-      isEditable={false}
-      entity={customView}
-      host={host}
-    />
+    <Stack gap={2}>
+      <DashboardTimeFilters
+        config={effectiveConfig}
+        handleDateChange={handleDateChange}
+      />
+      <DashboardContent
+        helpers={{ ...helpers, config: effectiveConfig }}
+        isEditable={false}
+        entity={customView}
+        host={host}
+      />
+    </Stack>
   );
 };
 

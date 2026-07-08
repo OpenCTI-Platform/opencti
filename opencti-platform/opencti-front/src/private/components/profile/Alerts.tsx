@@ -179,20 +179,18 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
         </IconButton>
       </Tooltip>
       <Tooltip title={t_i18n('Delete this notification')}>
-        <span>
-          <IconButton
-            disabled={updating}
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              handleOpenDelete();
-            }}
-            size="small"
-            color="primary"
-          >
-            <DeleteOutlined fontSize="small" />
-          </IconButton>
-        </span>
+        <IconButton
+          disabled={updating}
+          onClick={(event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            handleOpenDelete();
+          }}
+          size="small"
+          color="primary"
+        >
+          <DeleteOutlined fontSize="small" />
+        </IconButton>
       </Tooltip>
     </div>
   );
