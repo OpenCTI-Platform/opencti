@@ -37,7 +37,13 @@ describe('PublishButton', () => {
   describe('Null validation status', () => {
     it('should return null when validationStatus is null', () => {
       const { container } = renderWithTheme(
-        <PublishButton validationStatus={null} onPublish={mockOnPublish} onReset={mockOnReset} onRestore={mockOnRestore} />,
+        <PublishButton
+          validationStatus={null}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
       );
       expect(container.firstChild).toBeNull();
     });
@@ -51,6 +57,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -81,6 +88,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -97,6 +105,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -113,6 +122,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -129,6 +139,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -148,6 +159,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -168,6 +180,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -185,6 +198,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -203,6 +217,7 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -221,6 +236,24 @@ describe('PublishButton', () => {
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      const restoreItem = screen.getByRole('menuitem', { name: /Restore published version/i });
+      expect(restoreItem).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('should disable "Restore published version" menu item when workflow has never been published', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ published: false, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={false}
         />,
       );
 

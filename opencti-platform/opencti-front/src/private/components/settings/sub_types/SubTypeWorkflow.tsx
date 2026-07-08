@@ -14,6 +14,7 @@ export const workflowQuery = graphql`
       id
       name
       published
+      hasPublishedVersion
       errors {
         type
         message

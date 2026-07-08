@@ -24,6 +24,7 @@ interface PublishButtonProps {
   onPublish: () => void;
   onReset: () => void;
   onRestore: () => void;
+  hasPublishedVersion: boolean;
   disabled?: boolean;
 }
 
@@ -32,6 +33,7 @@ const PublishButton = ({
   onPublish,
   onReset,
   onRestore,
+  hasPublishedVersion,
   disabled,
 }: PublishButtonProps) => {
   const { t_i18n } = useFormatter();
@@ -137,7 +139,7 @@ const PublishButton = ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
-                  <MenuItem onClick={handleRestoreClick} disabled={published}>
+                  <MenuItem onClick={handleRestoreClick} disabled={published || !hasPublishedVersion}>
                     {t_i18n('Restore published version')}
                   </MenuItem>
                   <MenuItem onClick={handleResetClick}>
@@ -176,7 +178,7 @@ const PublishButton = ({
           <Button variant="secondary" onClick={() => setRestoreConfirmOpen(false)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button onClick={handleConfirmRestore}>
+          <Button intent="destructive" onClick={handleConfirmRestore}>
             {t_i18n('Restore')}
           </Button>
         </DialogActions>

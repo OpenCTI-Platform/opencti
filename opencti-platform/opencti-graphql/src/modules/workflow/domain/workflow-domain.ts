@@ -250,6 +250,7 @@ const getDefinitionData = async (
         id: workflowDefinitionEntity.id,
         name: workflowDefinitionEntity.name,
         published,
+        hasPublishedVersion: !!publishedVersion,
         errors,
       };
     }

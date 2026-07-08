@@ -29,6 +29,7 @@ type WorkflowSchema {
     id: ID!
     name: String!
     published: Boolean!
+    hasPublishedVersion: Boolean!
     errors: [WorkflowValidationError!]
     initialState: String!
     states: [WorkflowSerializedState!]!

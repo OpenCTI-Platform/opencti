@@ -46,6 +46,7 @@ describe('useWorkflowInitialElements', () => {
     id: 'workflow-1',
     name: 'Sample Workflow',
     published: false,
+    hasPublishedVersion: false,
     errors: [],
     initialState: 'status-open',
     states: [

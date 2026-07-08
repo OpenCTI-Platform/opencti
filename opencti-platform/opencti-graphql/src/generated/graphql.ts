@@ -38253,6 +38253,7 @@ export type WorkflowPendingTransition = {
 export type WorkflowSchema = {
   __typename?: 'WorkflowSchema';
   errors?: Maybe<Array<WorkflowValidationError>>;
+  hasPublishedVersion: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   initialState: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -53219,6 +53220,7 @@ export type WorkflowPendingTransitionResolvers<ContextType = any, ParentType ext
 
 export type WorkflowSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSchema'] = ResolversParentTypes['WorkflowSchema']> = ResolversObject<{
   errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowValidationError']>>, ParentType, ContextType>;
+  hasPublishedVersion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
