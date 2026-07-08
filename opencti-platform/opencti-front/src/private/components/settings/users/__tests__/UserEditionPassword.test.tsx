@@ -62,7 +62,7 @@ describe('UserEditionPassword', () => {
   });
 
   it('commits force password change mutation with password_valid_until', async () => {
-    const { user } = testRender(<UserEditionPassword user={baseUser} />);
+    const { user } = testRender(<UserEditionPassword user={baseUser} />, ffEnabled);
 
     await user.click(screen.getByRole('button', { name: 'Force password change' }));
 
@@ -103,7 +103,7 @@ describe('UserEditionPassword', () => {
 
   it('renders formatted expiry date when provided', () => {
     const expiry = '2026-01-02T00:00:00.000Z';
-    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />);
+    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />, ffEnabled);
 
     const formatted = new Intl.DateTimeFormat(undefined, {
       year: 'numeric',
@@ -115,7 +115,13 @@ describe('UserEditionPassword', () => {
   });
 
   it('does not render expiry for invalid date', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: 'not-a-date' }} />);
+    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: 'not-a-date' }} />, ffEnabled);
+    expect(screen.queryByText(/^Expiry:/)).toBeNull();
+  });
+
+  it('does not render expiry when FF is disabled even with valid date', () => {
+    const expiry = '2026-01-02T00:00:00.000Z';
+    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />);
     expect(screen.queryByText(/^Expiry:/)).toBeNull();
   });
 });

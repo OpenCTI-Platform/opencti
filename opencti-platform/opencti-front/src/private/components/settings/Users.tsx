@@ -19,6 +19,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -106,7 +107,7 @@ const Users = () => {
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isOnlyAdminOrganization = !isSetAccess && isAdminOrganization;
-  const { me } = useAuth();
+  const { me, settings } = useAuth();
   const organization = me.administrated_organizations?.[0] ?? null;
 
   const initialValues = {
@@ -179,6 +180,8 @@ const Users = () => {
     organization,
   ]);
 
+  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
+
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 15,
@@ -198,11 +201,13 @@ const Users = () => {
     otp: {
       percentWidth: 5,
     },
-    password_valid_until: {
-      label: 'Password valid until',
-      percentWidth: 15,
-      render: ({ password_valid_until }) => fd(password_valid_until),
-    },
+    ...(forcePasswordChangeEnabled ? {
+      password_valid_until: {
+        label: 'Password valid until',
+        percentWidth: 15,
+        render: ({ password_valid_until }) => fd(password_valid_until),
+      },
+    } : {}),
     created_at: {
       percentWidth: 15,
     },
