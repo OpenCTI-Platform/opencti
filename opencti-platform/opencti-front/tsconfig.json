@@ -25,7 +25,7 @@
       "src/*": ["./src/*"],
       "tests_e2e/*": ["./tests_e2e/*"]
     },
-    "types": ["@testing-library/jest-dom"]
+    "types": ["@testing-library/jest-dom", "vite/client"]
   },
   "include": [
     "src", "index.d.ts", ".eslintrc.js", "tests_e2e"

@@ -15,7 +15,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { findFlagUrl } from '../../../../utils/flags';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -398,12 +398,8 @@ const StixCoreRelationshipCreationFromEntityList = ({
                 .map((edge) => {
                   const { node } = edge;
                   const alreadyAdded = existingIds.includes(node.id);
-                  const flag = node.entity_type === 'Country'
-                    && R.head(
-                      (node.x_opencti_aliases ?? []).filter(
-                        (n) => n?.length === 2,
-                      ),
-                    );
+                  const flagUrl = node.entity_type === 'Country'
+                    && findFlagUrl(node.x_opencti_aliases);
                   return (
                     <ListItemButton
                       dense
@@ -416,10 +412,10 @@ const StixCoreRelationshipCreationFromEntityList = ({
                           <CheckCircle classes={{ root: classes.icon }} />
                         ) : (
                           <>
-                            {flag ? (
+                            {flagUrl ? (
                               <img
                                 style={{ width: 20 }}
-                                src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                                src={flagUrl}
                                 alt={node.name}
                               />
                             ) : (

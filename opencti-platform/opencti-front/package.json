@@ -1,6 +1,7 @@
 {
   "name": "opencti-front",
   "version": "7.260706.0",
+  "type": "module",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -9,11 +10,9 @@
     "relay": "relay-compiler relay.config.json",
     "dev": "yarn relay && vite",
     "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
-    "start": "yarn relay && node builder/dev/dev.js",
-    "esbuild": "node builder/prod/prod.js",
-    "build": "yarn relay && yarn esbuild",
-    "build:standalone": "yarn relay && yarn esbuild --keep",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
+    "start": "yarn dev",
+    "build": "yarn relay && vite build",
+    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
     "control": "yarn npm audit --environment production",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -55,7 +54,7 @@
     "@rjsf/utils": "6.6.2",
     "@rjsf/validator-ajv8": "6.6.2",
     "analytics": "0.8.19",
-    "apexcharts": "4.7.0",
+    "apexcharts": "4.4.0",
     "axios": "1.18.1",
     "ckeditor5": "48.3.0",
     "classnames": "2.5.1",
@@ -71,7 +70,6 @@
     "formik-mui": "5.0.0-alpha.0",
     "formik-mui-lab": "1.0.0",
     "graphiql": "5.2.4",
-    "graphql": "16.14.2",
     "graphql-ws": "6.0.8",
     "html-react-parser": "6.1.4",
     "html-to-image": "1.11.13",
@@ -88,8 +86,6 @@
     "mdi-material-ui": "7.9.4",
     "moment": "2.30.1",
     "moment-timezone": "0.6.2",
-    "monaco-editor": "0.52.2",
-    "monaco-graphql": "1.8.0",
     "pdfmake": "0.3.11",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
@@ -158,8 +154,6 @@
     "@vitejs/plugin-react": "6.0.3",
     "@vitest/coverage-v8": "4.1.9",
     "babel-plugin-relay": "21.0.1",
-    "chokidar": "5.0.0",
-    "compression": "1.8.1",
     "esbuild": "0.28.1",
     "eslint": "10.6.0",
     "eslint-import-resolver-typescript": "4.4.5",
@@ -167,9 +161,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "2.0.0",
     "eslint-plugin-react": "7.37.5",
-    "express": "5.2.1",
     "globals": "17.7.0",
-    "http-proxy-middleware": "4.2.0",
     "i18n-auto-translation": "2.2.3",
     "jsdom": "29.1.1",
     "knip": "6.24.0",
@@ -182,7 +174,6 @@
     "vite": "8.1.3",
     "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "4.1.1",
     "vitest": "4.1.9"
   },
   "packageManager": "yarn@4.17.0+sha512.c2957de2f9025ab14d63b24d0d8be1f1655810e22c341042c27f7ecd017b180ec12db73d69ac366d71b304ef9f069349ce462de96f04f8f1da317f4f762c95ae",
@@ -194,18 +185,13 @@
     "@filigran/chatbot/uuid": "14.0.1",
     "@types/pdfmake": "0.3.3",
     "axios": "1.18.1",
-    "cookie": "1.1.1",
     "d3-color": "3.1.0",
-    "glob-parent": "6.0.2",
     "json5": "2.2.3",
     "react": "19.2.7",
     "webpack": "5.108.4",
     "unrs-resolver": "1.11.1"
   },
   "dependenciesMeta": {
-    "canvas": {
-      "built": false
-    },
     "core-js": {
       "built": false
     },

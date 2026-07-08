@@ -58,12 +58,7 @@ RUN yarn install --immutable
 
 # Copy all remaining sources and build
 COPY opencti-front/ ./
-RUN <<EOT
-  set -euxo pipefail
-
-  mkdir -p ../opencti-graphql/public; \
-  yarn build
-EOT
+RUN yarn build
 
 ##############################
 ### Build production image
@@ -93,9 +88,8 @@ WORKDIR /opt/opencti
 
 COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
 COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
-COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/ ./src/python/
-COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
-COPY --from=builder-front /opt/opencti/opencti-graphql/public/ ./public/
+COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
+COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"

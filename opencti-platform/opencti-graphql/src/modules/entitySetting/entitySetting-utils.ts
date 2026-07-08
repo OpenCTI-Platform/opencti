@@ -166,52 +166,71 @@ export const getDefaultValues = (attributeConfiguration: AttributeConfiguration,
   return undefined;
 };
 
+const getStaticDefaultValues = (input: any, entitySetting: BasicStoreEntityEntitySetting) => {
+  const staticDefaultValues = new Map();
+  if (!entitySetting) {
+    return staticDefaultValues;
+  }
+  const entityType = entitySetting.target_type;
+  const entityAttributes = [...schemaAttributesDefinition.getAttributes(entityType).values()];
+  const attributesWithDefaultNullValues = entityAttributes.filter((a) => a.defaultValue !== undefined);
+  if (attributesWithDefaultNullValues.length === 0) {
+    return staticDefaultValues;
+  }
+  attributesWithDefaultNullValues.forEach((attr) => {
+    if (input[attr.name] === undefined || input[attr.name] === null) {
+      staticDefaultValues.set(attr.name, attr.defaultValue);
+    }
+  });
+  return staticDefaultValues;
+};
+
 export const fillDefaultValues = (user: any, input: any, entitySetting: any) => {
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
-  if (!attributesConfiguration) {
-    return input;
-  }
   const filledValues = new Map();
-  attributesConfiguration.filter((attr) => attr.default_values)
-    .forEach((attr) => {
-      // Do not compute default value if we already have a value in the input.
-      // Empty is a valid value (i.e. [] for arrays or "" for strings).
-      if (input[attr.name] === undefined || input[attr.name] === null) {
-        const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
-        const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
-        let isMultiple = false;
-        if (attributeDef) {
-          isMultiple = attributeDef.multiple;
-        } else if (refDef) {
-          isMultiple = refDef.multiple;
-        }
-        const defaultValue = getDefaultValues(attr, isMultiple);
-
-        const isNumeric = isNumericAttribute(attr.name);
-        const isBoolean = isBooleanAttribute(attr.name);
-        let parsedValue: any = defaultValue;
-        if (isNumeric) parsedValue = Number(defaultValue);
-        if (isBoolean) parsedValue = defaultValue === 'true';
-
-        if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
-          const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
-          // Replace dynamic creator rule with the id of the user making the query.
-          const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
-          if (creatorRule) {
-            creatorRule.id = user.id;
+  const staticDefaultValues = getStaticDefaultValues(input, entitySetting);
+  if (attributesConfiguration) {
+    attributesConfiguration.filter((attr) => attr.default_values)
+      .forEach((attr) => {
+        // Do not compute default value if we already have a value in the input.
+        // Empty is a valid value (i.e. [] for arrays or "" for strings).
+        if (input[attr.name] === undefined || input[attr.name] === null) {
+          const attributeDef = schemaAttributesDefinition.getAttribute(entitySetting.target_type, attr.name);
+          const refDef = schemaRelationsRefDefinition.getRelationRef(entitySetting.target_type, attr.name);
+          let isMultiple = false;
+          if (attributeDef) {
+            isMultiple = attributeDef.multiple;
+          } else if (refDef) {
+            isMultiple = refDef.multiple;
           }
-          filledValues.set(attr.name, defaultAuthorizedMembers);
-        } else if (attr.name === INPUT_MARKINGS && parsedValue) {
-          const defaultMarkings = user?.default_marking ?? [];
-          const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
-          if (!isEmptyField(globalDefaultMarking)) {
-            filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
-          }
-        } else {
-          filledValues.set(attr.name, parsedValue);
-        }
-      }
-    });
+          const defaultValue = getDefaultValues(attr, isMultiple);
 
-  return { ...input, ...Object.fromEntries(filledValues) };
+          const isNumeric = isNumericAttribute(attr.name);
+          const isBoolean = isBooleanAttribute(attr.name);
+          let parsedValue: any = defaultValue;
+          if (isNumeric) parsedValue = Number(defaultValue);
+          if (isBoolean) parsedValue = defaultValue === 'true';
+
+          if (attr.name === INPUT_AUTHORIZED_MEMBERS && parsedValue) {
+            const defaultAuthorizedMembers = (parsedValue as string[]).map((v) => JSON.parse(v));
+            // Replace dynamic creator rule with the id of the user making the query.
+            const creatorRule = defaultAuthorizedMembers.find((v) => v.id === MEMBER_ACCESS_CREATOR);
+            if (creatorRule) {
+              creatorRule.id = user.id;
+            }
+            filledValues.set(attr.name, defaultAuthorizedMembers);
+          } else if (attr.name === INPUT_MARKINGS && parsedValue) {
+            const defaultMarkings = user?.default_marking ?? [];
+            const globalDefaultMarking = (defaultMarkings.find((entry: any) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m: any) => m.id);
+            if (!isEmptyField(globalDefaultMarking)) {
+              filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+            }
+          } else {
+            filledValues.set(attr.name, parsedValue);
+          }
+        }
+      });
+  }
+
+  return { ...input, ...Object.fromEntries(staticDefaultValues), ...Object.fromEntries(filledValues) };
 };

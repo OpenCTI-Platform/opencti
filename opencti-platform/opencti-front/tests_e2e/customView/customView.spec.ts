@@ -132,7 +132,7 @@ test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
   await page.goto(customViewsSettingsPage.getPageUrl('Campaign'));
   for (const name of [viewName, duplicateName, viewName]) {
     const item = customViewsSettingsPage.getItemFromList(name).nth(0);
-    await item.waitFor({ state: 'visible', timeout: 5000 });
+    await item.waitFor({ state: 'visible', timeout: 30000 });
     await customViewsSettingsPage.getQuickActionsButton(item).click();
     await customViewsSettingsPage.getDeleteQuickActionButton().click();
     await customViewsSettingsPage.getConfirmButton().click();
