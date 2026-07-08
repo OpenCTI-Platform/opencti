@@ -24,7 +24,7 @@ import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 import { LtsLicenseRootQuery, LtsLicenseRootQuery$data } from '@components/__generated__/LtsLicenseRootQuery.graphql';
 import { ConnectedThemeProvider } from '../../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
@@ -35,7 +35,7 @@ import { useFormatter } from '../../components/i18n';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import Message from '../../components/Message';
 import { isEmptyField } from '../../utils/utils';
-import ItemCopy from "../../components/ItemCopy";
+import ItemCopy from '../../components/ItemCopy';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -114,7 +114,8 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
             {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a> {t_i18n('and provide your platform identifier.')}
             <br /><br />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {t_i18n('Platform identifier')}:<ItemCopy content={settings.id} variant="inLine" />
+              {t_i18n('Platform identifier')}
+              <ItemCopy content={settings.id} variant="inLine" />
             </Box>
           </Alert>
           {isNoLicenseByConfig ? (
