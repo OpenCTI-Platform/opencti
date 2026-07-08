@@ -36,8 +36,37 @@ This section encompasses a comprehensive set of parameters defining the local pa
 | `Number of words (split on hyphen, space) must be greater or equals to` | Enforce a minimum count of words in a password.               |
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
+| `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
 
 ![Local password policies](./assets/local-password-policies.png)
+
+
+## Password validity and forced password change
+
+When a non-zero password validity duration is configured, each user's password is assigned an expiration date (visible in the user overview and user list as "Password valid until"). Once expired, the user is redirected to a dedicated password change screen upon their next interaction with the platform.
+
+### How it works
+
+1. **Admin configures the policy**: In "Settings > Security > Policies > Local password policies", set the "Password validity duration in days" to a non-zero value (e.g., 90).
+2. **Expiration is computed**: When a user sets or changes their password, the expiration date is set to `now + N days`.
+3. **Enforcement**: Once the date is reached, the user cannot perform any action until they set a new password.
+4. **Admin-triggered reset**: Administrators can also force a password change for specific users (individually or in bulk) via the user management interface.
+
+### Admin actions
+
+- **Individual reset**: In the user edition drawer (Password tab), click "Force password change". This immediately sets the user's `password_valid_until` to the current time, forcing a change on their next request.
+- **Bulk reset**: In the users list, select multiple users and use the toolbar action "Force password change" to expire all selected users' passwords at once.
+- **Policy change**: When the validity duration is changed, all existing users' expiration dates are adjusted proportionally. Setting the value back to `0` clears all expiration dates.
+
+### User experience
+
+- **Authenticated users**: When a password expires while the user is logged in, they are redirected to a full-screen password change page at `/dashboard/change-password`.
+- **At login**: If the password is already expired at login time, the user is shown a password change form directly within the login page.
+- **Session invalidation**: After changing an expired password, all other active sessions for that user are terminated.
+
+!!! note "Feature flag"
+
+    This feature is gated behind the `FORCE_PASSWORD_CHANGE` feature flag. It must be enabled in `app.enabled_dev_features` or as a platform feature flag to activate the functionality.
 
 
 ## Login messages
