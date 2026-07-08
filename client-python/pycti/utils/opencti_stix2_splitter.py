@@ -302,18 +302,14 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
 
-        elements_with_deps = list(
-            map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
-        )
-
         number_expectations = 0
-        for entity in elements_with_deps:
-            number_expectations += len(entity["elements"])
+        for element in self.elements:
+            number_expectations += 1
             bundles.append(
                 self.stix2_create_bundle(
                     bundle_data["id"],
-                    entity["nb_deps"],
-                    entity["elements"],
+                    element["nb_deps"],
+                    [element],
                     use_json,
                     event_version,
                 )
