@@ -11,6 +11,7 @@ import useGranted, {
 import Loader from '../../../../components/Loader';
 import AccessesMenu from '../AccessesMenu';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../../utils/Security'));
 const Groups = lazy(() => import('../Groups'));
@@ -58,6 +59,8 @@ const AccessesRedirect = () => {
 
 const RootAccesses = () => {
   const fallbackUrl = useSettingsFallbackUrl();
+  const { isFeatureEnable } = useHelper();
+  const isSmtpConfigurationEnabled = isFeatureEnable('SMTP_CONFIGURATION');
 
   return (
     <>
@@ -247,7 +250,7 @@ const RootAccesses = () => {
                 needs={[SETTINGS_SETACCESSES]}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
-                <SmtpConfiguration />
+                {isSmtpConfigurationEnabled ? <SmtpConfiguration /> : <Navigate to={fallbackUrl} />}
               </Security>
             )}
           />
