@@ -70,7 +70,7 @@ const IngestionRssCreationMutation = graphql`
 `;
 
 interface IngestionRssCreationProps {
-  paginationOptions?: IngestionRssLinesDataTableQuery$variables;
+  paginationOptions: IngestionRssLinesDataTableQuery$variables;
   handleClose?: () => void;
   ingestionRssData?: IngestionRssImportQuery$data['ingestionRssAddInputFromImport'];
   triggerButton?: boolean;

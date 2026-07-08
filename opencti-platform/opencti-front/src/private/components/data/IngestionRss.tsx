@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
+import { RssBox } from 'mdi-material-ui';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import IngestionRssPopover from './ingestionRss/IngestionRssPopover';
 import { ingestionRssLineFragment, ingestionRssLinesFragment, ingestionRssLinesQuery } from './ingestionRss/IngestionRss.graphql';
@@ -136,6 +137,7 @@ const IngestionRss = () => {
           contextFilters={contextFilters}
           entityTypes={['IngestionRss']}
           searchContextFinal={{ entityTypes: ['IngestionRss'] }}
+          icon={() => (<RssBox color="primary" />)}
           disableLineSelection
           disableNavigation
           actions={(row) => (
