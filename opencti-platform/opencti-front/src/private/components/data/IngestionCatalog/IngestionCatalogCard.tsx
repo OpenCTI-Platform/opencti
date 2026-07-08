@@ -69,7 +69,7 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
     <Tooltip title={title} placement="bottom-start">
       <Typography
         sx={{
-          fontSize: 13.5,
+          fontSize: 15,
           fontWeight: 600,
           lineHeight: 1.35,
           display: '-webkit-box',
@@ -191,7 +191,7 @@ const IngestionCatalogCard = ({
               variant="body2"
               sx={{
                 color: theme.palette.primary.main,
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 500,
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',

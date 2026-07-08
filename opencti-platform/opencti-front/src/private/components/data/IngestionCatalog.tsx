@@ -4,7 +4,7 @@ import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters, { CatalogSection, CatalogSortMode } from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useSearchParams } from 'react-router-dom';
-import { Box, Chip, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { ExtensionOutlined, HubOutlined, Search, VerifiedOutlined, WorkspacesOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
@@ -19,7 +19,7 @@ import { IngestionConnectorsCatalogsQuery } from '@components/data/IngestionCata
 import IngestionConnectorsCatalogs, { ingestionConnectorsCatalogsQuery } from '@components/data/IngestionCatalog/IngestionConnectorsCatalog';
 import { IngestionConnectorsQuery } from '@components/data/IngestionCatalog/__generated__/IngestionConnectorsQuery.graphql';
 import IngestionConnectors, { ingestionConnectorsQuery } from '@components/data/IngestionCatalog/IngestionConnectors';
-import IngestionCatalogFacetSidebar, { useCatalogStatusLabel } from '@components/data/IngestionCatalog/IngestionCatalogFacetSidebar';
+import IngestionCatalogFacetSidebar from '@components/data/IngestionCatalog/IngestionCatalogFacetSidebar';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -123,11 +123,11 @@ const HeroStatChip = ({ icon: Icon, value, label }: HeroStatChipProps) => {
         backgroundColor: alpha(theme.palette.text.primary, 0.04),
       }}
     >
-      <Icon sx={{ fontSize: 15, color: theme.palette.primary.main }} />
-      <Typography sx={{ fontSize: 12, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+      <Icon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+      <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </Typography>
-      <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary }}>
+      <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary }}>
         {label}
       </Typography>
     </Stack>
@@ -268,7 +268,7 @@ const CatalogSectionHeader = ({ type, count }: CatalogSectionHeaderProps) => {
         component="h2"
         sx={{
           fontFamily: theme.typography.h1.fontFamily,
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: 600,
         }}
       >
@@ -281,7 +281,7 @@ const CatalogSectionHeader = ({ type, count }: CatalogSectionHeaderProps) => {
           paddingBlock: '1px',
           borderRadius: 0.5,
           backgroundColor: alpha(theme.palette.text.primary, 0.06),
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: 500,
           fontVariantNumeric: 'tabular-nums',
           color: theme.palette.text.secondary,
@@ -304,7 +304,6 @@ const IngestionCatalogComponent = ({
   const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
   const [searchParams] = useSearchParams();
-  const statusLabel = useCatalogStatusLabel();
 
   const { hasActiveManagers } = useConnectorManagerStatus();
 
@@ -355,24 +354,6 @@ const IngestionCatalogComponent = ({
   };
 
   const verifiedCount = entries.filter((entry) => entry.connector.verified).length;
-
-  const activeChips = [
-    ...filters.types.map((type) => ({
-      key: `type-${type}`,
-      label: getConnectorMetadata(type as IngestionConnectorType, t_i18n).label,
-      remove: () => setFilters((prev) => ({ ...prev, types: prev.types.filter((v) => v !== type) })),
-    })),
-    ...filters.useCases.map((useCase) => ({
-      key: `useCase-${useCase}`,
-      label: useCase,
-      remove: () => setFilters((prev) => ({ ...prev, useCases: prev.useCases.filter((v) => v !== useCase) })),
-    })),
-    ...filters.statuses.map((status) => ({
-      key: `status-${status}`,
-      label: statusLabel(status),
-      remove: () => setFilters((prev) => ({ ...prev, statuses: prev.statuses.filter((v) => v !== status) })),
-    })),
-  ];
 
   return (
     <div data-testid="catalog-page">
@@ -425,7 +406,7 @@ const IngestionCatalogComponent = ({
                   paddingBlock: 0.5,
                   borderRadius: 1,
                   backgroundColor: alpha(theme.palette.text.primary, 0.06),
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: 500,
                   fontVariantNumeric: 'tabular-nums',
                   color: theme.palette.text.secondary,
@@ -437,28 +418,6 @@ const IngestionCatalogComponent = ({
                 })()}
               </Box>
             </Stack>
-
-            {activeChips.length > 0 && (
-              <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1}>
-                {activeChips.map((chip) => (
-                  <Chip
-                    key={chip.key}
-                    size="small"
-                    label={chip.label}
-                    onDelete={chip.remove}
-                    sx={{
-                      borderRadius: 1,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                    }}
-                  />
-                ))}
-                <Button variant="tertiary" size="small" onClick={handleResetFilters}>
-                  {t_i18n('Clear all')}
-                </Button>
-              </Stack>
-            )}
 
             {sections.length === 0 ? (
               <CatalogsEmptyState

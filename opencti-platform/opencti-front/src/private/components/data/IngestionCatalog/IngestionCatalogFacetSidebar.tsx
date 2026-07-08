@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Box, ButtonBase, Stack, Typography } from '@mui/material';
+import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
 import { Check } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
@@ -80,21 +80,25 @@ const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: FacetChe
           }}
         />
       )}
-      <Typography
-        variant="body2"
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          fontSize: 12,
-          fontWeight: checked ? 500 : 400,
-          color: checked ? theme.palette.text.primary : theme.palette.text.secondary,
-        }}
-      >
-        {label}
-      </Typography>
+      {/* Facet labels (especially use cases) can be longer than the sidebar
+          width: the full value is exposed through a tooltip. */}
+      <Tooltip title={label} placement="right">
+        <Typography
+          variant="body2"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontSize: 13,
+            fontWeight: checked ? 500 : 400,
+            color: checked ? theme.palette.text.primary : theme.palette.text.secondary,
+          }}
+        >
+          {label}
+        </Typography>
+      </Tooltip>
       <Box
         component="span"
         sx={{
@@ -103,7 +107,7 @@ const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: FacetChe
           paddingBlock: '1px',
           borderRadius: 0.5,
           backgroundColor: alpha(theme.palette.text.primary, 0.06),
-          fontSize: 10,
+          fontSize: 11,
           fontVariantNumeric: 'tabular-nums',
           color: theme.palette.text.secondary,
         }}
@@ -121,7 +125,7 @@ const FacetGroupLabel = ({ children }: { children: React.ReactNode }) => {
       sx={{
         paddingInline: 1,
         fontFamily: theme.typography.h1.fontFamily,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         letterSpacing: '0.12em',
         textTransform: 'uppercase',
@@ -200,7 +204,7 @@ const IngestionCatalogFacetSidebar = ({
           <Typography
             sx={{
               fontFamily: theme.typography.h1.fontFamily,
-              fontSize: 14,
+              fontSize: 15,
               fontWeight: 600,
             }}
           >
