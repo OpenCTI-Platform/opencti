@@ -383,9 +383,26 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean; startDate?: string | null; endDate?: string | null; dateAttribute?: string; isKnowledgeRelationshipWidget?: boolean } = {},
+  opts: {
+    removeTypeAll?: boolean;
+    startDate?: string | null;
+    endDate?: string | null;
+    dateAttribute?: string;
+    isKnowledgeRelationshipWidget?: boolean;
+  } = {},
+  filters_id: string | null = null,
 ) => {
-  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
+  const {
+    removeTypeAll = false,
+    startDate = null,
+    endDate = null,
+    dateAttribute = 'created_at',
+    isKnowledgeRelationshipWidget = false,
+  } = opts;
+  // if a saved filter is selected, it overrides eventual other filters
+  if (filters_id) {
+    // TODO
+  }
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {

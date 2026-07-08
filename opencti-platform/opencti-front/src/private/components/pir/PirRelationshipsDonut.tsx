@@ -94,7 +94,7 @@ const PirRelationshipsDonut = ({ pirId }: PirRelationshipsDonutProps) => {
       relationship_type: 'in-pir',
       pirId,
     };
-    const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters); ;
+    const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
 
     const finalField = selection?.attribute || 'entity_type';
     const variables = {
