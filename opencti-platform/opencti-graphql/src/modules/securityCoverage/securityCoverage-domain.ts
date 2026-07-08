@@ -200,11 +200,7 @@ export const getSecurityCoverageResultProperty = async (
   property: keyof BasicStoreEntitySecurityCoverageResult,
 ) => {
   const results = await loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
-
-  if (!results[0]) {
-    return undefined;
-  }
-
+  if (results.length !== 1) return undefined;
   return results[0][property];
 };
 
