@@ -18,7 +18,7 @@ const App = () => (
             <Routes>
               <Route path="/dashboard/*" Component={PrivateRoot} />
               <Route path="/public/*" Component={PublicRoot} />
-              {/* By default, redirect to dashboard */}
+              {/* By default, redirect to dashboard test */}
               <Route
                 path="/*"
                 element={<Navigate to="/dashboard" replace={true} />}
