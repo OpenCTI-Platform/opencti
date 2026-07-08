@@ -24,6 +24,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import {
   AccessOperation,
   type AuthorizedMember,
+  BYPASS,
   isUserHasCapabilities,
   isValidMemberAccessRight,
   MEMBER_ACCESS_ALL,
@@ -175,7 +176,11 @@ export const buildRestrictedMembers = async (
     if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {
       throw FunctionalError('You can\'t grant access to everyone in an organization sharing context');
     }
-    if (!skipAdminValidation) {
+    // Skip the admin presence check only when explicitly requested by a privileged
+    // system actor (one with BYPASS capability, e.g. WORKFLOW_MANAGER_USER).
+    // This prevents accidental misuse of the flag by regular callers.
+    const bypassAllowed = skipAdminValidation && isUserHasCapabilities(user, [BYPASS]);
+    if (!bypassAllowed) {
       const hasValidAdmin = await containsValidAdmin(
         context,
         filteredInput,
