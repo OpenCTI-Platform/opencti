@@ -2,48 +2,48 @@
 # Last matching pattern takes the most precedence.
 
 # Project Leadership Scope
-*                                             @OpenCTI-Platform/opencti-director-principal
+*                                             @OpenCTI-Platform/ent:opencti-director-principal
 
 # --------------------------------------------------------------------------------------
 # Tech Leadership Scope
-package.json                                  @OpenCTI-Platform/opencti-staff-em
-yarn.lock                                     @OpenCTI-Platform/opencti-staff-em
-/client-python/                               @OpenCTI-Platform/opencti-staff-em
-/docs/                                        @OpenCTI-Platform/opencti-staff-em
-/opencti-platform/                            @OpenCTI-Platform/opencti-staff-em
-/opencti-worker/                              @OpenCTI-Platform/opencti-staff-em
+package.json                                  @OpenCTI-Platform/ent:opencti-staff-em
+yarn.lock                                     @OpenCTI-Platform/ent:opencti-staff-em
+/client-python/                               @OpenCTI-Platform/ent:opencti-staff-em
+/docs/                                        @OpenCTI-Platform/ent:opencti-staff-em
+/opencti-platform/                            @OpenCTI-Platform/ent:opencti-staff-em
+/opencti-worker/                              @OpenCTI-Platform/ent:opencti-staff-em
 
 # --------------------------------------------------------------------------------------
 # Development Team Scope
-/client-python/docs/                          @OpenCTI-Platform/opencti
-/client-python/examples/                      @OpenCTI-Platform/opencti
-/client-python/tests/                         @OpenCTI-Platform/opencti
-/client-python/pycti/                         @OpenCTI-Platform/opencti
+/client-python/docs/                          @OpenCTI-Platform/ent:opencti
+/client-python/examples/                      @OpenCTI-Platform/ent:opencti
+/client-python/tests/                         @OpenCTI-Platform/ent:opencti
+/client-python/pycti/                         @OpenCTI-Platform/ent:opencti
 
-/opencti-platform/opencti-front/lang/         @OpenCTI-Platform/opencti
-/opencti-platform/opencti-front/scripts/      @OpenCTI-Platform/opencti
-/opencti-platform/opencti-front/src/          @OpenCTI-Platform/opencti
-/opencti-platform/opencti-front/tests_e2e/    @OpenCTI-Platform/opencti
+/opencti-platform/opencti-front/lang/         @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-front/scripts/      @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-front/src/          @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-front/tests_e2e/    @OpenCTI-Platform/ent:opencti
 
-/opencti-platform/opencti-graphql/config/     @OpenCTI-Platform/opencti
-/opencti-platform/opencti-graphql/scripts/    @OpenCTI-Platform/opencti
-/opencti-platform/opencti-graphql/src/        @OpenCTI-Platform/opencti
-/opencti-platform/opencti-graphql/static/     @OpenCTI-Platform/opencti
-/opencti-platform/opencti-graphql/tests/      @OpenCTI-Platform/opencti
+/opencti-platform/opencti-graphql/config/     @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-graphql/scripts/    @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-graphql/src/        @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-graphql/static/     @OpenCTI-Platform/ent:opencti
+/opencti-platform/opencti-graphql/tests/      @OpenCTI-Platform/ent:opencti
 
-/opencti-worker/src/                          @OpenCTI-Platform/opencti
+/opencti-worker/src/                          @OpenCTI-Platform/ent:opencti
 
-/.github/agents                               @OpenCTI-Platform/opencti
-/.github/instructions                         @OpenCTI-Platform/opencti
-/.github/prompts                              @OpenCTI-Platform/opencti
-/.github/skills                               @OpenCTI-Platform/opencti
-/.github/copilot-instructions.md              @OpenCTI-Platform/opencti
+/.github/agents                               @OpenCTI-Platform/ent:opencti
+/.github/instructions                         @OpenCTI-Platform/ent:opencti
+/.github/prompts                              @OpenCTI-Platform/ent:opencti
+/.github/skills                               @OpenCTI-Platform/ent:opencti
+/.github/copilot-instructions.md              @OpenCTI-Platform/ent:opencti
 
 # --------------------------------------------------------------------------------------
 # Product Team Scope
-/docs/docs/                                   @OpenCTI-Platform/opencti-product
-/docs/mkdocs.yml                              @OpenCTI-Platform/opencti-product
+/docs/docs/                                   @OpenCTI-Platform/ent:opencti-product
+/docs/mkdocs.yml                              @OpenCTI-Platform/ent:opencti-product
 
 # --------------------------------------------------------------------------------------
 # CODEOWNER Protection
-/.github/CODEOWNERS                           @OpenCTI-Platform/opencti-director-principal
+/.github/CODEOWNERS                           @OpenCTI-Platform/ent:opencti-director-principal
