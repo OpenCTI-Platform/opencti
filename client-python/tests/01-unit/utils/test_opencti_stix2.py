@@ -1,3 +1,4 @@
+import base64
 import datetime
 from types import SimpleNamespace
 
@@ -115,6 +116,122 @@ def test_filter_objects(opencti_stix2: OpenCTIStix2):
     result = opencti_stix2.filter_objects(["123", "124", "126"], objects)
     assert len(result) == 1
     assert "126" not in result
+
+
+class _ExternalReferenceRecorder:
+    def __init__(self):
+        self.create_calls = 0
+
+    @staticmethod
+    def generate_id(url, source_name, external_id):
+        if url is not None:
+            return f"external-reference--{url}"
+        return f"external-reference--{source_name}|{external_id}"
+
+    def create(self, **kwargs):
+        self.create_calls += 1
+        return {
+            "id": self.generate_id(
+                kwargs["url"], kwargs["source_name"], kwargs["external_id"]
+            )
+        }
+
+
+def _external_reference_opencti():
+    return SimpleNamespace(
+        external_reference=_ExternalReferenceRecorder(),
+        app_logger=SimpleNamespace(warning=lambda *args, **kwargs: None),
+        get_draft_id=lambda: "",
+        get_attribute_in_extension=lambda _attribute, _entity: None,
+        query=lambda _query: {"data": {"vocabularyCategories": []}},
+        file=lambda name, data, mime_type: SimpleNamespace(
+            name=name, data=data, mime=mime_type
+        ),
+    )
+
+
+@pytest.mark.parametrize(
+    "field_name", ["external_references", "x_opencti_external_references"]
+)
+def test_extract_embedded_relationships_reuses_external_reference_without_files(
+    field_name,
+):
+    opencti = _external_reference_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    stix_object = {
+        "type": "malware",
+        field_name: [
+            {
+                "source_name": "benchmark",
+                "url": "https://example.test/reference",
+                "external_id": "REF-1",
+            }
+        ],
+    }
+
+    first = opencti_stix2.extract_embedded_relationships(dict(stix_object))
+    second = opencti_stix2.extract_embedded_relationships(dict(stix_object))
+
+    assert first["external_references"] == second["external_references"]
+    assert opencti.external_reference.create_calls == 1
+
+
+def test_extract_embedded_relationships_keeps_file_upload_external_reference_uncached():
+    opencti = _external_reference_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    stix_object = {
+        "type": "malware",
+        "external_references": [
+            {
+                "source_name": "benchmark",
+                "url": "https://example.test/reference",
+                "external_id": "REF-1",
+                "x_opencti_files": [
+                    {
+                        "name": "payload.txt",
+                        "data": base64.b64encode(b"payload").decode("ascii"),
+                    }
+                ],
+            }
+        ],
+    }
+
+    opencti_stix2.extract_embedded_relationships(dict(stix_object))
+    opencti_stix2.extract_embedded_relationships(dict(stix_object))
+
+    assert opencti.external_reference.create_calls == 2
+
+
+def test_extract_embedded_relationships_keeps_changed_external_reference_uncached():
+    opencti = _external_reference_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    first = {
+        "type": "malware",
+        "external_references": [
+            {
+                "source_name": "benchmark",
+                "url": "https://example.test/reference",
+                "external_id": "REF-1",
+                "description": "first",
+            }
+        ],
+    }
+    second = {
+        "type": "malware",
+        "external_references": [
+            {
+                "source_name": "benchmark",
+                "url": "https://example.test/reference",
+                "external_id": "REF-1",
+                "description": "second",
+            }
+        ],
+    }
+
+    opencti_stix2.extract_embedded_relationships(first)
+    opencti_stix2.extract_embedded_relationships(second)
+
+    assert opencti.external_reference.create_calls == 2
 
 
 def test_pick_aliases(opencti_stix2: OpenCTIStix2) -> None:

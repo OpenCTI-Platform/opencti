@@ -136,9 +136,12 @@ class OpenCTIStix2:
         :rtype: dict or None
         """
         api_draft_id = self.opencti.get_draft_id()
-        if data_id + api_draft_id in self.mapping_cache:
-            return self.mapping_cache[data_id + api_draft_id]
-        return None
+        cache_key = (
+            data_id + api_draft_id
+            if isinstance(data_id, str)
+            else (data_id, api_draft_id)
+        )
+        return self.mapping_cache.get(cache_key)
 
     def set_in_cache(self, data_id, data):
         """Store an item in the cache.
@@ -149,7 +152,84 @@ class OpenCTIStix2:
         :type data: dict
         """
         api_draft_id = self.opencti.get_draft_id()
-        self.mapping_cache[data_id + api_draft_id] = data
+        cache_key = (
+            data_id + api_draft_id
+            if isinstance(data_id, str)
+            else (data_id, api_draft_id)
+        )
+        self.mapping_cache[cache_key] = data
+
+    @staticmethod
+    def _external_reference_cache_key(
+        generated_ref_id, source_name, url, external_id, description
+    ):
+        return (
+            "external_reference",
+            generated_ref_id,
+            source_name,
+            url,
+            external_id,
+            description,
+        )
+
+    def _create_or_get_external_reference(
+        self, generated_ref_id, source_name, url, external_id, description, file_objs
+    ):
+        external_reference_cache_key = self._external_reference_cache_key(
+            generated_ref_id,
+            source_name,
+            url,
+            external_id,
+            description,
+        )
+        external_reference_cache_data = (
+            self.get_in_cache(external_reference_cache_key) if not file_objs else None
+        )
+        if external_reference_cache_data is not None:
+            return external_reference_cache_data["id"]
+
+        files_to_upload = []
+        files_markings = []
+        no_trigger_import = []
+        embedded_flags = []
+        for file_obj in file_objs:
+            data = None
+            if "data" in file_obj:
+                data = base64.b64decode(file_obj["data"])
+            if data is not None:
+                files_to_upload.append(
+                    self.opencti.file(
+                        file_obj["name"],
+                        data,
+                        file_obj.get("mime_type", "application/octet-stream"),
+                    )
+                )
+                files_markings.append(file_obj.get("object_marking_refs", None))
+                no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                embedded_flags.append(file_obj.get("embedded", False))
+
+        if file_objs and not files_to_upload:
+            external_reference_cache_data = self.get_in_cache(
+                external_reference_cache_key
+            )
+            if external_reference_cache_data is not None:
+                return external_reference_cache_data["id"]
+
+        external_reference_id = self.opencti.external_reference.create(
+            source_name=source_name,
+            url=url,
+            external_id=external_id,
+            description=description,
+            files=files_to_upload if files_to_upload else None,
+            filesMarkings=files_markings if files_markings else None,
+            noTriggerImport=no_trigger_import if no_trigger_import else None,
+            embedded=embedded_flags if embedded_flags else None,
+        )["id"]
+        self.set_in_cache(
+            external_reference_cache_key,
+            {"id": external_reference_id},
+        )
+        return external_reference_id
 
     ######### UTILS
     # region utils
@@ -798,6 +878,7 @@ class OpenCTIStix2:
                         if "external_id" in external_reference
                         else None
                     )
+                    description = external_reference.get("description")
                     generated_ref_id = self.opencti.external_reference.generate_id(
                         url, source_name, external_id
                     )
@@ -820,50 +901,14 @@ class OpenCTIStix2:
                                 )
                             )
 
-                        # Prepare all files for upload during creation
-                        files_to_upload = []
-                        files_markings = []
-                        no_trigger_import = []
-                        embedded_flags = []
-                        for file_obj in ext_ref_files:
-                            data = None
-                            if "data" in file_obj:
-                                data = base64.b64decode(file_obj["data"])
-                            if data is not None:
-                                files_to_upload.append(
-                                    self.opencti.file(
-                                        file_obj["name"],
-                                        data,
-                                        file_obj.get(
-                                            "mime_type", "application/octet-stream"
-                                        ),
-                                    )
-                                )
-                                files_markings.append(
-                                    file_obj.get("object_marking_refs", None)
-                                )
-                                no_trigger_import.append(
-                                    file_obj.get("no_trigger_import", False)
-                                )
-                                embedded_flags.append(file_obj.get("embedded", False))
-
-                        # Create external reference with all files attached
-                        external_reference_id = self.opencti.external_reference.create(
-                            source_name=source_name,
-                            url=url,
-                            external_id=external_id,
-                            description=(
-                                external_reference["description"]
-                                if "description" in external_reference
-                                else None
-                            ),
-                            files=files_to_upload if files_to_upload else None,
-                            filesMarkings=files_markings if files_markings else None,
-                            noTriggerImport=(
-                                no_trigger_import if no_trigger_import else None
-                            ),
-                            embedded=embedded_flags if embedded_flags else None,
-                        )["id"]
+                        external_reference_id = self._create_or_get_external_reference(
+                            generated_ref_id,
+                            source_name,
+                            url,
+                            external_id,
+                            description,
+                            ext_ref_files,
+                        )
 
                     external_references_ids.append(external_reference_id)
                     if stix_object["type"] in [
@@ -992,6 +1037,7 @@ class OpenCTIStix2:
                     if "external_id" in external_reference
                     else None
                 )
+                description = external_reference.get("description")
                 generated_ref_id = self.opencti.external_reference.generate_id(
                     url, source_name, external_id
                 )
@@ -1014,49 +1060,14 @@ class OpenCTIStix2:
                             )
                         )
 
-                    # Prepare all files for direct upload during creation
-                    files_to_upload = []
-                    files_markings = []
-                    no_trigger_import = []
-                    embedded_flags = []
-                    for file_obj in all_files:
-                        data = None
-                        if "data" in file_obj:
-                            data = base64.b64decode(file_obj["data"])
-                        if data is not None:
-                            files_to_upload.append(
-                                self.opencti.file(
-                                    file_obj["name"],
-                                    data,
-                                    file_obj.get(
-                                        "mime_type", "application/octet-stream"
-                                    ),
-                                )
-                            )
-                            files_markings.append(
-                                file_obj.get("object_marking_refs", None)
-                            )
-                            no_trigger_import.append(
-                                file_obj.get("no_trigger_import", False)
-                            )
-                            embedded_flags.append(file_obj.get("embedded", False))
-
-                    external_reference_id = self.opencti.external_reference.create(
-                        source_name=source_name,
-                        url=url,
-                        external_id=external_id,
-                        description=(
-                            external_reference["description"]
-                            if "description" in external_reference
-                            else None
-                        ),
-                        files=files_to_upload if files_to_upload else None,
-                        filesMarkings=files_markings if files_markings else None,
-                        noTriggerImport=(
-                            no_trigger_import if no_trigger_import else None
-                        ),
-                        embedded=embedded_flags if embedded_flags else None,
-                    )["id"]
+                    external_reference_id = self._create_or_get_external_reference(
+                        generated_ref_id,
+                        source_name,
+                        url,
+                        external_id,
+                        description,
+                        all_files,
+                    )
 
                 external_references_ids.append(external_reference_id)
         # Granted refs
