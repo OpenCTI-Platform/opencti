@@ -23,8 +23,14 @@ import {
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResult/securityCoverageResult-domain';
-import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, INPUT_RESULT_OF, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-types';
+import {
+  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+  INPUT_RESULT_OF,
+  type BasicStoreEntitySecurityCoverageResult,
+  type StoreEntitySecurityCoverageResult,
+} from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
+import { getAverageCoverageInformation, getMostRecentLastCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -200,4 +206,32 @@ export const getSecurityCoverageResultProperty = async (
   }
 
   return results[0][property];
+};
+
+export const mostRecentLastCoverageResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+) => {
+  const results: StoreEntitySecurityCoverageResult[] = await loadThroughDenormalized(
+    context,
+    user,
+    securityCoverage,
+    INPUT_RESULT_OF,
+  );
+  return getMostRecentLastCoverageResult(results);
+};
+
+export const averageCoverageInformation = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+) => {
+  const results = await loadThroughDenormalized(
+    context,
+    user,
+    securityCoverage,
+    INPUT_RESULT_OF,
+  );
+  return getAverageCoverageInformation(results);
 };
