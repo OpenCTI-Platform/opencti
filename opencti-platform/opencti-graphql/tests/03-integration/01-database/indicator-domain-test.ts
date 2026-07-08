@@ -14,6 +14,7 @@ import { logApp } from '../../../src/config/conf';
 import * as indicatorUtils from '../../../src/modules/indicator/indicator-utils';
 import * as decayExclusionRuleDomain from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
 import type { BasicStoreEntityDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
 
 describe('Testing field patch and upsert on indicator for trio {score, valid until, revoked}', () => {
   // Region Mock and Spy setup
@@ -343,6 +344,30 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     const indicatorUpsertEntity = await createIndicator(ADMIN_USER, indicatorUpsert);
     expect(indicatorUpsertEntity.revoked).toBeFalsy();
     expect(indicatorUpsertEntity.x_opencti_score).toBe(80);
+  });
+
+  it('should preserve IPv4 main observable type when upserting same pattern without explicit main observable type', async () => {
+    isDecayEnabledSpy.mockResolvedValue(true);
+
+    const indicatorWithMainObservableType: IndicatorAddInput = {
+      name: 'Indicator domain test - preserve IPv4 main observable type on upsert',
+      pattern: "[ipv4-addr:value = '8.7.8.9']",
+      pattern_type: STIX_PATTERN_TYPE,
+      x_opencti_main_observable_type: ENTITY_IPV4_ADDR,
+    };
+    const createdIndicator = await createIndicator(ADMIN_USER, indicatorWithMainObservableType);
+    expect((createdIndicator as unknown as { x_opencti_main_observable_type: string }).x_opencti_main_observable_type).toBe(ENTITY_IPV4_ADDR);
+
+    const indicatorWithoutMainObservableType: IndicatorAddInput = {
+      name: 'Indicator domain test - preserve IPv4 main observable type on upsert',
+      pattern: "[ipv4-addr:value = '8.7.8.9']",
+      pattern_type: STIX_PATTERN_TYPE,
+    };
+    const upsertedIndicator = await createIndicator(ADMIN_USER, indicatorWithoutMainObservableType);
+    expect(upsertedIndicator.id).toBe(createdIndicator.id);
+
+    const loadedIndicator = await findById(testContext, ADMIN_USER, createdIndicator.id);
+    expect((loadedIndicator as unknown as { x_opencti_main_observable_type: string }).x_opencti_main_observable_type).toBe(ENTITY_IPV4_ADDR);
   });
 
   it('should upsert 2 times with same source and same score be ignored', async () => {
