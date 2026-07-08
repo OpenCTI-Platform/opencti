@@ -1112,14 +1112,18 @@ class OpenCTIApiClient:
                         name
                     }
                 }
-             """
+            """
             if data is None:
-                with open(file_name, "rb") as f:
-                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                with open(file_name, "rb") as file_handle:
+                    query_vars = {"file": File(file_name, file_handle, mime_type)}
+                    # optional file markings
+                    if file_markings is not None:
+                        query_vars["fileMarkings"] = file_markings
+                    return self.query(query, query_vars)
             query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
@@ -1195,12 +1199,19 @@ class OpenCTIApiClient:
                     }
                  """
             if data is None:
-                with open(file_name, "rb") as f:
-                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                with open(file_name, "rb") as file_handle:
+                    return self.query(
+                        query,
+                        {
+                            "file": File(file_name, file_handle, mime_type),
+                            "entityId": entity_id,
+                            "file_markings": file_markings,
+                        },
+                    )
             return self.query(
                 query,
                 {

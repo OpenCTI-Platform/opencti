@@ -1,5 +1,7 @@
 import io
 
+import pytest
+
 from pycti.api.opencti_api_client import File, OpenCTIApiClient
 
 
@@ -125,3 +127,32 @@ def test_query_streams_multipart_file_body():
     assert client.session.content_type.startswith("multipart/form-data; boundary=")
     assert b'filename="artifact.txt"' in client.session.body
     assert b"payload" in client.session.body
+
+
+class _NullLogger:
+    def info(self, *args, **kwargs):
+        del args, kwargs
+
+
+@pytest.mark.parametrize("method_name", ["upload_file", "upload_pending_file"])
+def test_path_upload_helpers_stream_file_data_and_close_handle(tmp_path, method_name):
+    upload_path = tmp_path / "payload.json"
+    upload_path.write_bytes(b"payload")
+    client = _client()
+    client.app_logger = _NullLogger()
+    captured = {}
+
+    def query(query, variables):
+        del query
+        upload = variables["file"]
+        captured["handle"] = upload.data
+        assert not upload.data.closed
+        assert upload.data.read() == b"payload"
+        return {"data": {"ok": True}}
+
+    client.query = query
+
+    result = getattr(client, method_name)(file_name=str(upload_path))
+
+    assert result == {"data": {"ok": True}}
+    assert captured["handle"].closed
