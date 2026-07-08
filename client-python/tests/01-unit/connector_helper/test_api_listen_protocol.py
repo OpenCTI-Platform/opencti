@@ -59,9 +59,7 @@ class TestApiListenProtocol(IsolatedAsyncioTestCase):
     async def test_health_route_registered_once(self):
         # Registered at module import; must appear exactly once even though
         # ListenQueue.run() may be entered multiple times in a process.
-        health_routes = [
-            r for r in app.routes if getattr(r, "path", None) == "/health"
-        ]
+        health_routes = [r for r in app.routes if getattr(r, "path", None) == "/health"]
         self.assertEqual(len(health_routes), 1)
 
     async def test_callbacks_are_serialized(self):
