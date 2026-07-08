@@ -104,13 +104,13 @@ class OpenCTIStix2Splitter:
         item = raw_data[item_id]
         if self.cache_refs.get(item_id) is None:
             self.cache_refs[item_id] = set()
-        for key in list(item.keys()):
+        for key in tuple(item):
             value = item[key]
             # Recursive enlist for every refs
-            if key.endswith("_refs") and item[key] is not None:
+            if key.endswith("_refs") and value is not None:
                 to_keep = []
                 to_keep_ids = set()
-                for element_ref in item[key]:
+                for element_ref in value:
                     # We need to check if this ref is not already a reference
                     is_missing_ref = raw_data.get(element_ref) is None
                     must_be_cleaned = is_missing_ref and cleanup_inconsistent_bundle
@@ -163,12 +163,12 @@ class OpenCTIStix2Splitter:
                 else:
                     item[key] = None
             # Case for embedded elements (deduplicating and cleanup)
-            elif key == "external_references" and item[key] is not None:
+            elif key == "external_references" and value is not None:
                 # specific case of splitting external references
                 # reference_ids = []
                 deduplicated_references = []
                 deduplicated_references_cache = {}
-                references = item[key]
+                references = value
                 for reference in references:
                     reference_id = external_reference_generate_id(
                         url=reference.get("url"),
@@ -189,12 +189,12 @@ class OpenCTIStix2Splitter:
                         #     reference_ids.append(reference_id)
                         # nb_deps += self.enlist_element(reference_id, raw_data)
                 item[key] = deduplicated_references
-            elif key == "kill_chain_phases" and item[key] is not None:
+            elif key == "kill_chain_phases" and value is not None:
                 # specific case of splitting kill_chain phases
                 # kill_chain_ids = []
                 deduplicated_kill_chain = []
                 deduplicated_kill_chain_cache = {}
-                kill_chains = item[key]
+                kill_chains = value
                 for kill_chain in kill_chains:
                     kill_chain_id = kill_chain_phase_generate_id(
                         kill_chain_name=kill_chain.get("kill_chain_name"),
