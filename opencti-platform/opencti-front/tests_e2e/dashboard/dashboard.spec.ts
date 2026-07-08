@@ -182,23 +182,24 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const errors = page.getByText('An unknown error occurred.');
   await expect(errors).toHaveCount(0);
 
+  // Wait for dashboard queries to settle before exporting.
+  // The refresh button is disabled while at least one widget query is pending.
+  await expect(page.getByRole('button', { name: 'Refresh' })).toBeEnabled({ timeout: 120000 });
   await expect(dashboardDetailsPage.getExportPDFButton()).toBeVisible();
 
   // Export dashboard as PDF, should succeed to get a file.
   // Dark mode
-  const downloadPDFPromiseDark = page.waitForEvent('download');
   await dashboardDetailsPage.getExportPDFButton().click();
+  const downloadPdfDarkPromise = page.waitForEvent('download');
   await dashboardDetailsPage.getExportPDFButtonThemeMenu('Dark').click();
-
-  const downloadPdfDark = await downloadPDFPromiseDark;
+  const downloadPdfDark = await downloadPdfDarkPromise;
   expect(downloadPdfDark.suggestedFilename()).toBeDefined();
   await downloadPdfDark.saveAs(`./test-results/e2e-files/${downloadPdfDark.suggestedFilename()}`);
   // Light mode
-  const downloadPDFPromiseLight = page.waitForEvent('download');
   await dashboardDetailsPage.getExportPDFButton().click();
+  const downloadPdfLightPromise = page.waitForEvent('download');
   await dashboardDetailsPage.getExportPDFButtonThemeMenu('Light').click();
-
-  const downloadPdfLight = await downloadPDFPromiseLight;
+  const downloadPdfLight = await downloadPdfLightPromise;
   expect(downloadPdfLight.suggestedFilename()).toBeDefined();
   await downloadPdfLight.saveAs(`./test-results/e2e-files/${downloadPdfLight.suggestedFilename()}`);
   // End Export dashboard as PDF

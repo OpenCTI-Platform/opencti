@@ -42,7 +42,7 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   // Memoize on the primitive date config fields so the resolved dates stay stable
   // across unrelated re-renders (e.g. changing the refresh rate). Otherwise the
   // relativeDate branch recomputes a fresh "now" on every render, changing the
-  // widget query variables and triggering a spurious refetch.
+  // widget query variables and triggering a bad refetch.
   const startDate = React.useMemo(
     () => (config?.relativeDate ? computeRelativeDate(config.relativeDate) : config?.startDate),
     [config?.relativeDate, config?.startDate],
