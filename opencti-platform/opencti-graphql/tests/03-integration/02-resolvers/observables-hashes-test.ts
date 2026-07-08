@@ -1,5 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import { randomUUID } from 'node:crypto';
 import { type EditInput, EditOperation, type StixFileAddInput } from '../../../src/generated/graphql';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -479,6 +480,84 @@ describe('Observables with hashes: management of other stix ids', () => {
       variables: { id: file5StandardIdByMd5 },
     });
     expect(fileByMd5?.data?.stixCyberObservable.standard_id).toEqual(file5StandardIdByMd5);
+  });
+
+  it('should merge by hash update without lock-context regressions', async () => {
+    const randomHex = (length: number) => randomUUID().replace(/-/g, '').padEnd(length, 'a').slice(0, length);
+    const md5 = randomHex(32);
+    const sha1 = randomHex(40);
+    const targetMd5StandardId = generateStandardId('StixFile', { hashes: { MD5: md5 } });
+    let mergeSourceId: string | undefined;
+    let mergeTargetId: string | undefined;
+
+    try {
+      const mergeSourceResult = await queryAsAdmin({
+        query: CREATE_STIX_FILE_QUERY,
+        variables: {
+          input: {
+            name: `merge-source-${randomUUID()}`,
+            hashes: [{ algorithm: 'SHA-1', hash: sha1 }],
+          },
+        },
+      });
+      expect(mergeSourceResult.errors ?? []).toHaveLength(0);
+      mergeSourceId = mergeSourceResult?.data?.stixCyberObservableAdd?.id;
+
+      const mergeTargetResult = await queryAsAdmin({
+        query: CREATE_STIX_FILE_QUERY,
+        variables: {
+          input: {
+            name: `merge-target-${randomUUID()}`,
+            hashes: [{ algorithm: 'MD5', hash: md5 }],
+          },
+        },
+      });
+      expect(mergeTargetResult.errors ?? []).toHaveLength(0);
+      mergeTargetId = mergeTargetResult?.data?.stixCyberObservableAdd?.id;
+      expect(mergeSourceId).not.toBeNull();
+      expect(mergeTargetId).not.toBeNull();
+      expect(mergeSourceId).not.toEqual(mergeTargetId);
+
+      const mergeViaUpdateResult = await queryAsAdmin({
+        query: EDIT_STIX_FILE_QUERY,
+        variables: {
+          id: mergeSourceId,
+          input: [{
+            key: 'hashes',
+            object_path: '/hashes/MD5',
+            value: [md5],
+          }],
+        },
+      });
+
+      expect(mergeViaUpdateResult.errors ?? []).toHaveLength(0);
+      expect(mergeViaUpdateResult?.data?.stixCyberObservableEdit?.fieldPatch?.standard_id).toEqual(targetMd5StandardId);
+
+      const fileByMd5 = await queryAsAdmin({
+        query: FIND_BY_ID_QUERY,
+        variables: { id: targetMd5StandardId },
+      });
+      expect(fileByMd5?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
+
+      const fileByMergeSourceId = await queryAsAdmin({
+        query: FIND_BY_ID_QUERY,
+        variables: { id: mergeSourceId },
+      });
+      expect(fileByMergeSourceId?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
+
+      // mergeTarget was merged into mergeSource and deleted — querying by its internal_id should return null
+      const fileByMergeTargetId = await queryAsAdmin({
+        query: FIND_BY_ID_QUERY,
+        variables: { id: mergeTargetId },
+      });
+      expect(fileByMergeTargetId?.data?.stixCyberObservable).toBeNull();
+    } finally {
+      const idsToDelete = [...new Set([mergeSourceId, mergeTargetId].filter(Boolean))];
+      await Promise.all(idsToDelete.map((id) => queryAsAdmin({
+        query: DELETE_STIX_FILE_QUERY,
+        variables: { id },
+      })));
+    }
   });
 
   it('should clean standard from x_opencti_stix_ids if correlated data is removed', async () => {

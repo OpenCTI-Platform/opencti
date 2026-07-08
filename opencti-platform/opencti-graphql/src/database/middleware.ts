@@ -1,13 +1,15 @@
+import Bluebird, { Promise as BluePromise } from 'bluebird';
+import DataLoader from 'dataloader';
 import moment from 'moment';
 import * as R from 'ramda';
-import DataLoader from 'dataloader';
-import Bluebird, { Promise as BluePromise } from 'bluebird';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { compareUnsorted } from 'js-deep-equals';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
+import { compareUnsorted } from 'js-deep-equals';
 import nconf from 'nconf';
+import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
 import {
   AccessRequiredError,
   ALREADY_DELETED_ERROR,
@@ -22,54 +24,53 @@ import {
   UnsupportedError,
   ValidationError,
 } from '../config/errors';
-import { extractEntityRepresentativeName } from './entity-representative';
+import { telemetry } from '../config/tracing';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
+import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
+import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
+import { lockResources } from '../lock/master-lock';
+import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
+import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
+import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, type StoreEntityOrganization } from '../modules/organization/organization-types';
+import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
+import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
+import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
+import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import {
-  computeAverage,
-  extractIdsFromStoreObject,
-  extractObjectsPirsFromInputs,
-  extractObjectsRestrictionsFromInputs,
-  fillTimeSeries,
-  INDEX_INFERRED_RELATIONSHIPS,
-  inferIndexFromConceptType,
-  isDraftIndex,
-  isEmptyField,
-  isInferredIndex,
-  isNotEmptyField,
-  isObjectPathTargetMultipleAttribute,
-  READ_DATA_INDICES,
-  READ_DATA_INDICES_INFERRED,
-  READ_INDEX_HISTORY,
-  READ_INDEX_INFERRED_RELATIONSHIPS,
-  READ_RELATIONSHIPS_INDICES,
-  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
-} from './utils';
+  dateForEndAttributes,
+  dateForLimitsAttributes,
+  dateForStartAttributes,
+  extractNotFuzzyHashValues,
+  isModifiedObject,
+  isUpdatedAtObject,
+  noReferenceAttributes,
+} from '../schema/fieldDataAdapter';
 import {
-  type AggregationRelationsCount,
-  elAggregationCount,
-  elAggregationRelationsCount,
-  elConnection,
-  elDeleteElements,
-  elFindByIds,
-  type ElFindByIdsOpts,
-  elHistogramCount,
-  elIndexElements,
-  elList,
-  elMarkElementsAsDraftDelete,
-  elPaginate,
-  elUpdateElement,
-  elUpdateEntityConnections,
-  elUpdateRelationConnections,
-  ES_MAX_CONCURRENCY,
-  ES_MAX_PAGINATION,
-  isImpactedTypeAndSide,
-  MAX_BULK_OPERATIONS,
-  type RepaginateOpts,
-  ROLE_FROM,
-  ROLE_TO,
-} from './engine';
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  BASE_TYPE_ENTITY,
+  BASE_TYPE_RELATION,
+  buildRefRelationKey,
+  ID_INTERNAL,
+  ID_STANDARD,
+  IDS_STIX,
+  INPUT_CREATED_BY,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INTERNAL_IDS_ALIASES,
+  INTERNAL_PREFIX,
+  REL_INDEX_PREFIX,
+  RULE_PREFIX,
+} from '../schema/general';
 import {
   FIRST_OBSERVED,
   FIRST_SEEN,
@@ -97,51 +98,17 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions } from './redis';
-import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
-import { cleanStixIds } from './stix';
-import {
-  ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  BASE_TYPE_ENTITY,
-  BASE_TYPE_RELATION,
-  buildRefRelationKey,
-  ID_INTERNAL,
-  ID_STANDARD,
-  IDS_STIX,
-  INPUT_CREATED_BY,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INTERNAL_IDS_ALIASES,
-  INTERNAL_PREFIX,
-  REL_INDEX_PREFIX,
-  RULE_PREFIX,
-} from '../schema/general';
-import { isAnId, isValidDate } from '../schema/schemaUtils';
-import {
-  isStixRefRelationship,
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT,
-  RELATION_OBJECT_MARKING,
-  STIX_REF_RELATIONSHIP_TYPES,
-} from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import { modules } from '../schema/module';
+import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { idLabel } from '../schema/schema-labels';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { isAnId, isValidDate } from '../schema/schemaUtils';
 import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
-import {
-  dateForEndAttributes,
-  dateForLimitsAttributes,
-  dateForStartAttributes,
-  extractNotFuzzyHashValues,
-  isModifiedObject,
-  isUpdatedAtObject,
-  noReferenceAttributes,
-} from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -155,106 +122,25 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
-import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
-import { checkObservableSyntax } from '../utils/syntax';
-import { elUpdateRemovedFiles } from './file-search';
-import {
-  AccessOperation,
-  CONTAINER_SHARING_USER,
-  controlUserRestrictDeleteAgainstElement,
-  executionContext,
-  isBypassUser,
-  isMarkingAllowed,
-  isOrganizationAllowed,
-  isUserCanAccessStoreElement,
-  isUserHasCapability,
-  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  RULE_MANAGER_USER,
-  SYSTEM_USER,
-  userFilterStoreElements,
-  validateUserAccessOperation,
-} from '../utils/access';
-import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
-import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
-import { convertStoreToStix } from './stix-common-converter';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
-  buildAggregationRelationFilter,
-  buildEntityFilters,
-  buildThingsFilters,
-  type EntityFilters,
-  type EntityOptions,
-  fullEntitiesThroughRelationsToList,
-  fullRelationsList,
-  internalFindByIds,
-  internalLoadById,
-  type RelationFilters,
-  storeLoadById,
-  topEntitiesList,
-  topRelationsList,
-} from './middleware-loader';
-import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
-import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
-import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
-import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, type StoreEntityOrganization } from '../modules/organization/organization-types';
-import {
-  adaptUpdateInputsConfidence,
-  controlCreateInputWithUserConfidence,
-  controlUpsertInputWithUserConfidence,
-  controlUserConfidenceAgainstElement,
-  type ObjectWithConfidence,
-  shouldCheckConfidenceOnRefRelationship,
-} from '../utils/confidence-level';
-import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
-import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
-import { getFileContent } from './raw-file-storage';
-import { getDraftContext } from '../utils/draftContext';
-import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
-import { lockResources } from '../lock/master-lock';
+  isStixRefRelationship,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+  STIX_REF_RELATIONSHIP_TYPES,
+} from '../schema/stixRefRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { BasicStoreSettings } from '../types/settings';
+import type * as S2 from '../types/stix-2-0-common';
+import type * as S from '../types/stix-2-1-common';
+import type { StixId } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
-import {
-  collectTempImageTokensFromDescriptionFields,
-  resolveEmbeddedImagesInDescriptionFieldsForExport,
-  rewriteEmbeddedDataUriImagesInDescriptions,
-  rewriteEmbeddedDataUriImagesInUpdateInputs,
-  rewriteTempImageTokensInDescriptions,
-} from './middlewareEmbeddedImages';
-import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
-import { idLabel } from '../schema/schema-labels';
-import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
-import { modules } from '../schema/module';
-import { doYield } from '../utils/eventloop-utils';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
-import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
-import { pushAll } from '../utils/arrayUtil';
-import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicConnection,
   BasicStoreBase,
@@ -272,11 +158,125 @@ import type {
   StoreProxyRelation,
   StoreRelation,
 } from '../types/store';
-import type { BasicStoreSettings } from '../types/settings';
-import type * as S from '../types/stix-2-1-common';
-import type { StixId } from '../types/stix-2-1-common';
-import type * as S2 from '../types/stix-2-0-common';
-import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { AuthContext, AuthUser } from '../types/user';
+import {
+  AccessOperation,
+  CONTAINER_SHARING_USER,
+  controlUserRestrictDeleteAgainstElement,
+  executionContext,
+  isBypassUser,
+  isMarkingAllowed,
+  isOrganizationAllowed,
+  isUserCanAccessStoreElement,
+  isUserHasCapability,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  RULE_MANAGER_USER,
+  SYSTEM_USER,
+  userFilterStoreElements,
+  validateUserAccessOperation,
+} from '../utils/access';
+import { pushAll } from '../utils/arrayUtil';
+import {
+  adaptUpdateInputsConfidence,
+  controlCreateInputWithUserConfidence,
+  controlUpsertInputWithUserConfidence,
+  controlUserConfidenceAgainstElement,
+  type ObjectWithConfidence,
+  shouldCheckConfidenceOnRefRelationship,
+} from '../utils/confidence-level';
+import { getDraftContext } from '../utils/draftContext';
+import { doYield } from '../utils/eventloop-utils';
+import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
+import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
+import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
+import { checkObservableSyntax } from '../utils/syntax';
+import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
+import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
+import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
+import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
+import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
+import {
+  type AggregationRelationsCount,
+  elAggregationCount,
+  elAggregationRelationsCount,
+  elConnection,
+  elDeleteElements,
+  elFindByIds,
+  type ElFindByIdsOpts,
+  elHistogramCount,
+  elIndexElements,
+  elList,
+  elMarkElementsAsDraftDelete,
+  elPaginate,
+  elUpdateElement,
+  elUpdateEntityConnections,
+  elUpdateRelationConnections,
+  ES_MAX_CONCURRENCY,
+  ES_MAX_PAGINATION,
+  isImpactedTypeAndSide,
+  MAX_BULK_OPERATIONS,
+  type RepaginateOpts,
+  ROLE_FROM,
+  ROLE_TO,
+} from './engine';
+import { extractEntityRepresentativeName } from './entity-representative';
+import { elUpdateRemovedFiles } from './file-search';
+import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
+import { encodeEmbeddedStoragePathForMarkdownUrl, findRemovedEmbeddedStoragePathsFromMarkdownFields } from './markdown-embedded-images';
+import {
+  buildAggregationRelationFilter,
+  buildEntityFilters,
+  buildThingsFilters,
+  type EntityFilters,
+  type EntityOptions,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  internalLoadById,
+  type RelationFilters,
+  storeLoadById,
+  topEntitiesList,
+  topRelationsList,
+} from './middleware-loader';
+import {
+  collectTempImageTokensFromDescriptionFields,
+  resolveEmbeddedImagesInDescriptionFieldsForExport,
+  rewriteEmbeddedDataUriImagesInDescriptions,
+  rewriteEmbeddedDataUriImagesInUpdateInputs,
+  rewriteTempImageTokensInDescriptions,
+} from './middlewareEmbeddedImages';
+import { getFileContent } from './raw-file-storage';
+import { notify, redisAddDeletions } from './redis';
+import { cleanStixIds } from './stix';
+import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
+import { convertStoreToStix } from './stix-common-converter';
+import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
+import {
+  computeAverage,
+  extractIdsFromStoreObject,
+  extractObjectsPirsFromInputs,
+  extractObjectsRestrictionsFromInputs,
+  fillTimeSeries,
+  INDEX_INFERRED_RELATIONSHIPS,
+  inferIndexFromConceptType,
+  isDraftIndex,
+  isEmptyField,
+  isInferredIndex,
+  isNotEmptyField,
+  isObjectPathTargetMultipleAttribute,
+  READ_DATA_INDICES,
+  READ_DATA_INDICES_INFERRED,
+  READ_INDEX_HISTORY,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE,
+} from './utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -1925,7 +1925,13 @@ export const mergeEntities = async (
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
     }
-    await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
+    // When the surviving entity's standard_id changed during the merge to match a source entity's standard_id
+    // (standard_id collision), the remote knows the survivor by its OLD standard_id (initialInstance.standard_id).
+    // Emitting the source as the pre-merge state of the survivor lets remotes correctly merge the two entities.
+    const standardIdChangedToMatchSource = initialInstance.standard_id !== mergedInstance.standard_id
+      && sources.some((s) => s.standard_id === mergedInstance.standard_id);
+    const eventSources = standardIdChangedToMatchSource ? [initialInstance] : sources;
+    await storeMergeEvent(context, user, initialInstance, mergedInstance, eventSources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
     // - END TRANSACTION
@@ -2652,9 +2658,15 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
-          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
+          const uniqueRefs = R.uniqBy((r: any) => r.internal_id, refs);
+          const candidateIds = uniqueRefs.map((r) => r.internal_id);
+          const currentRels = await fullRelationsList(context, user, relType, {
+            indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+            fromId: initial.internal_id,
+            toId: candidateIds,
+          });
+          const currentIds = new Set(currentRels.map((r: BasicStoreRelation) => r.toId));
+          const refsToCreate = uniqueRefs.filter((r) => !currentIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);
@@ -2901,6 +2913,39 @@ export const updateAttribute = async <T extends StoreObject>(
   }
   return data;
 };
+
+// Lock-first variant: acquires the resource lock before loading refs to avoid stale-snapshot races.
+export const updateAttributeLockFirst = async <T extends StoreObject>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  type: string,
+  inputs: EditInput[],
+  opts: { noEnrich?: boolean } & UpdateAttributeOpts = {},
+) => {
+  const draftId = getDraftContext(context, user);
+  let lock;
+  try {
+    lock = await lockResources([id], { draftId });
+    const initial = await storeLoadByIdWithRefs<T>(context, user, id, { ...opts, type });
+    if (!initial) {
+      throw FunctionalError('Cant find element to update', { id, type });
+    }
+    const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
+    await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
+    const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), id]) };
+    const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
+    if (!opts.noEnrich && data.event) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+    }
+    return data;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 type PatchAttributeOpts = UpdateAttributeOpts & {
   operations?: Record<string, undefined | 'add' | 'remove' | 'replace'>;
 };

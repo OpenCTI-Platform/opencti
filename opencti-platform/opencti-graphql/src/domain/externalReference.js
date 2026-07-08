@@ -7,7 +7,7 @@ import {
   deleteRelationsByFromAndTo,
   topEntitiesOrRelationsList,
   pageEntitiesOrRelationsConnection,
-  updateAttribute,
+  updateAttributeLockFirst,
 } from '../database/middleware';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
@@ -116,7 +116,7 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
 export const externalReferenceEditField = async (context, user, externalReferenceId, input, opts = {}) => {
   const currentReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   const dataInputs = currentReference.fileId ? input.filter((i) => i.key !== 'url') : input;
-  const { element } = await updateAttribute(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, dataInputs, opts);
+  const { element } = await updateAttributeLockFirst(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, dataInputs, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, element, user);
 };
 

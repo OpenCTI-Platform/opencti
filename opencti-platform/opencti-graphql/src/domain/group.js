@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttributeLockFirst } from '../database/middleware';
 import {
   fullEntitiesThroughRelationsFromList,
   fullEntitiesThroughRelationsToList,
@@ -165,7 +165,7 @@ export const groupDelete = async (context, user, groupId) => {
 
 const groupAttributesUserCacheNoReset = ['name', 'description'];
 export const groupEditField = async (context, user, groupId, input) => {
-  const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
+  const { element } = await updateAttributeLockFirst(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
