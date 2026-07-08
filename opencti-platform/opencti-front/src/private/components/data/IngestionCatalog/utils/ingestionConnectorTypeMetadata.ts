@@ -18,9 +18,10 @@ const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   STREAM: StreamOutlined,
 };
 
-export const getConnectorTypeIcon = (containerType: IngestionConnectorType): SvgIconComponent => {
-  // Fallback kept on purpose: catalog data may carry types unknown to this build.
-  return CONNECTOR_TYPE_ICONS[containerType] ?? ExtensionOutlined;
+// Accepts any string on purpose: catalog data may carry connector types
+// unknown to this build, which fall back to the generic extension icon.
+export const getConnectorTypeIcon = (containerType: string): SvgIconComponent => {
+  return CONNECTOR_TYPE_ICONS[containerType as IngestionConnectorType] ?? ExtensionOutlined;
 };
 
 export const getConnectorMetadata = (
