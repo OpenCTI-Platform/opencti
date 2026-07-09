@@ -265,6 +265,7 @@ const FintelDesigns = () => {
                 id={fintelDesignToDelete}
                 isOpen={!!fintelDesignToDelete}
                 handleClose={() => setFintelDesignToDelete(null)}
+                paginationOptions={queryPaginationOptions}
               />
             )}
           </>

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/styles';
@@ -65,6 +65,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const navigate = useNavigate();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const [openDelete, setOpenDelete] = useState(false);
 
@@ -140,6 +141,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             id={fintelDesign.id}
             isOpen={openDelete}
             handleClose={handleCloseDelete}
+            onDeleteComplete={() => navigate('/dashboard/settings/customization/fintel_designs')}
           />
           <FintelDesignEdition
             fintelDesignId={fintelDesign.id}
