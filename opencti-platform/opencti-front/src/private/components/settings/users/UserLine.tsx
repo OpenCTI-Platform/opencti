@@ -122,12 +122,12 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               )}
             </div>
             {dataColumns.password_valid_until && (
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.password_valid_until.width }}
-            >
-              {passwordValidUntilDisplay}
-            </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.password_valid_until.width }}
+              >
+                {passwordValidUntilDisplay}
+              </div>
             )}
             <div
               className={classes.bodyItem}
