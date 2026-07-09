@@ -117,7 +117,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   ): FileConnection
   # Identity
   identity_class: String!
-  name: String
+  name: String!
   description: String
   contact_information: String
   roles: [String]
