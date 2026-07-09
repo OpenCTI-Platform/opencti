@@ -47,6 +47,27 @@ class _RelationshipCollection:
         return relationships
 
 
+class _FilteredRelationshipCollection:
+    def __init__(self, relationships_by_root):
+        self.relationships_by_root = relationships_by_root
+        self.list_calls = 0
+        self.filters = []
+
+    def list(self, **kwargs):
+        self.list_calls += 1
+        filters = kwargs["filters"]
+        self.filters.append(filters)
+        from_or_to_ids = filters["filters"][0]["values"]
+        relationships = []
+        seen_relationship_ids = set()
+        for from_or_to_id in from_or_to_ids:
+            for relationship in self.relationships_by_root.get(from_or_to_id, []):
+                if relationship["id"] not in seen_relationship_ids:
+                    seen_relationship_ids.add(relationship["id"])
+                    relationships.append(relationship)
+        return relationships
+
+
 class _CountingRelatedObjectLister:
     def __init__(self, targets_by_id):
         self.targets_by_id = targets_by_id
@@ -537,5 +558,151 @@ def test_export_selected_batches_core_relationship_listing_in_bounded_chunks():
     assert relationship_collection.list_calls == 2
     assert len(relationship_collection.from_or_to_ids[0]) == EXPORT_PREFETCH_BATCH_SIZE
     assert relationship_collection.from_or_to_ids[1] == [
+        f"root-{EXPORT_PREFETCH_BATCH_SIZE}"
+    ]
+
+
+def test_export_selected_batches_sighting_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection(
+        {
+            "root-1": [_relationship("sighting--1", "target-1")],
+            "root-2": [_relationship("sighting--2", "target-2")],
+            "root-3": [_relationship("sighting--3", "target-3")],
+        }
+    )
+    helper.opencti.stix_sighting_relationship = relationship_collection
+    for index, relationship in enumerate(
+        relationship_collection.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.filters == [
+        {
+            "mode": "and",
+            "filters": [
+                {"key": "fromOrToId", "values": ["root-1", "root-2", "root-3"]}
+            ],
+            "filterGroups": [],
+        }
+    ]
+    assert [
+        item["id"] for item in result["objects"] if item["id"].startswith("sighting--")
+    ] == [
+        "sighting--1",
+        "sighting--2",
+        "sighting--3",
+    ]
+
+
+def test_export_list_batches_sighting_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection(
+        {
+            "root-1": [_relationship("sighting--1", "target-1")],
+            "root-2": [_relationship("sighting--2", "target-2")],
+            "root-3": [_relationship("sighting--3", "target-3")],
+        }
+    )
+    helper.opencti.stix_sighting_relationship = relationship_collection
+    for index, relationship in enumerate(
+        relationship_collection.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Indicator", mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.filters == [
+        {
+            "mode": "and",
+            "filters": [
+                {"key": "fromOrToId", "values": ["root-1", "root-2", "root-3"]}
+            ],
+            "filterGroups": [],
+        }
+    ]
+    assert [
+        item["id"] for item in result["objects"] if item["id"].startswith("sighting--")
+    ] == [
+        "sighting--1",
+        "sighting--2",
+        "sighting--3",
+    ]
+
+
+def test_export_selected_batch_sighting_relationships_keep_shared_root_relationships_usable():
+    helper = _helper([])
+    relationship = _relationship("sighting--1", "root-2")
+    relationship["to"]["id"] = "root-2"
+    relationship["to"]["standard_id"] = "indicator--root-2"
+    relationship["to"]["entity_type"] = "Indicator"
+    relationship_collection = _FilteredRelationshipCollection(
+        {"root-1": [relationship], "root-2": [relationship]}
+    )
+    helper.opencti.stix_sighting_relationship = relationship_collection
+    relationship["from"]["id"] = "root-1"
+    relationship["from"]["standard_id"] = "indicator--root-1"
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 3)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert [item["id"] for item in result["objects"]] == [
+        "indicator--root-1",
+        "sighting--1",
+        "indicator--root-2",
+    ]
+
+
+def test_export_selected_batches_sighting_relationship_listing_in_bounded_chunks():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection({})
+    helper.opencti.stix_sighting_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(EXPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 2
+    assert (
+        len(relationship_collection.filters[0]["filters"][0]["values"])
+        == EXPORT_PREFETCH_BATCH_SIZE
+    )
+    assert relationship_collection.filters[1]["filters"][0]["values"] == [
         f"root-{EXPORT_PREFETCH_BATCH_SIZE}"
     ]
