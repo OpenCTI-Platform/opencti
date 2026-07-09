@@ -17,6 +17,7 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamColl
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../modules/workflow/types/workflow-types';
+import { ENTITY_TYPE_SMTP_CONFIGURATION } from '../modules/smtpConfiguration/smtpConfiguration-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -70,6 +71,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_CUSTOM_VIEW,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
+  ENTITY_TYPE_SMTP_CONFIGURATION,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -109,6 +111,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
+  ENTITY_TYPE_SMTP_CONFIGURATION,
 ];
 const HISTORY_OBJECTS = [
   ENTITY_TYPE_WORK,

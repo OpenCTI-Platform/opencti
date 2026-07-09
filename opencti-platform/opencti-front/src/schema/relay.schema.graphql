@@ -9757,6 +9757,7 @@ type Query {
   exclusionList(id: String!): ExclusionList
   exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
   exclusionListCacheStatus: ExclusionListCacheStatus
+  smtpConfiguration: SmtpConfiguration
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
@@ -10694,6 +10695,10 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
+  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
+  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
   draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
@@ -15219,6 +15224,68 @@ input ExclusionListFileAddInput {
   description: String
   exclusion_list_entity_types: [String!]!
   file: Upload!
+}
+
+type SmtpConfiguration {
+  id: ID!
+  smtp_enabled: Boolean!
+  use_db_config: Boolean!
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_issuer: String
+  oauth_refresh_token_expires_at: DateTime
+}
+
+enum SmtpAuthType {
+  basic
+  oauth2
+}
+
+input SmtpConfigurationAddInput {
+  smtp_enabled: Boolean
+  use_db_config: Boolean
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  password: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_client_secret: String
+  oauth_issuer: String
+  oauth_access_token: String
+  oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
+}
+
+input SmtpConfigurationEditInput {
+  smtp_enabled: Boolean
+  use_db_config: Boolean
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  password: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_client_secret: String
+  oauth_issuer: String
+  oauth_access_token: String
+  oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
 }
 
 enum DraftStatus {
