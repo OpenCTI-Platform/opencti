@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from pycti.utils.opencti_stix2 import OpenCTIStix2
+from pycti.utils.opencti_stix2 import EXPORT_ACCESS_LISTER_ATTRIBUTES, OpenCTIStix2
 
 
 class _StaticCollection:
@@ -39,6 +39,20 @@ class _CountingRelatedObjectLister:
         self.list_calls += 1
         self.filters.append(kwargs["filters"])
         return [self.targets_by_id[target_id] for target_id in kwargs["filters"]]
+
+
+class _CountingAccessCollection:
+    def __init__(self):
+        self.list_calls = 0
+        self.kwargs = []
+
+    def list(self, **kwargs):
+        self.list_calls += 1
+        self.kwargs.append(kwargs)
+        entity_ids = kwargs["filters"]
+        if isinstance(entity_ids, str):
+            entity_ids = [entity_ids]
+        return [{"id": entity_id} for entity_id in entity_ids]
 
 
 def _relationship(identifier, target_identifier=None):
@@ -157,6 +171,35 @@ def test_prepare_export_full_checks_only_unseen_repeated_relation_endpoints_once
     helper.prepare_export(entity=entity, mode="full")
 
     assert access_collection.list_calls == 1
+
+
+def test_prepare_export_full_batches_unique_relation_endpoint_access_checks():
+    helper = _helper(
+        [
+            _relationship("relationship--1", "target-1"),
+            _relationship("relationship--2", "target-2"),
+            _relationship("relationship--3", "target-3"),
+        ]
+    )
+    access_collection = _CountingAccessCollection()
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    entity = {
+        "id": "indicator--root",
+        "type": "indicator",
+        "x_opencti_id": "root",
+    }
+
+    helper.prepare_export(entity=entity, mode="full")
+
+    assert access_collection.list_calls == 1
+    assert access_collection.kwargs == [
+        {
+            "filters": ["target-target-1", "target-target-2", "target-target-3"],
+            "getAll": True,
+            "customAttributes": EXPORT_ACCESS_LISTER_ATTRIBUTES,
+        }
+    ]
 
 
 def test_prepare_export_full_batches_unique_related_object_reads_by_type():
