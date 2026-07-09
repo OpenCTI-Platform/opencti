@@ -928,6 +928,46 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
   }
 };
 
+// region ingestion log history (FIFO, last 20 per feed)
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-';
+const INGESTION_LOG_MAX_SIZE = 20;
+
+const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
+
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<AuthLogEntry, 'timestamp'>) => {
+  try {
+    const key = ingestionLogListKey(feedId);
+    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    await redisTx(getClientBase(), async (tx) => {
+      tx.lpush(key, value);
+      tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+    });
+  } catch (err) {
+    logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
+  }
+};
+
+export const redisGetIngestionLogHistory = async (feedId: string): Promise<AuthLogEntry[]> => {
+  const listKey = ingestionLogListKey(feedId);
+  const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
+  return rawList.map((s) => {
+    try {
+      return JSON.parse(s) as AuthLogEntry;
+    } catch {
+      return null;
+    }
+  }).filter((e): e is AuthLogEntry => e !== null);
+};
+
+export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
+  try {
+    await getClientBase().del(ingestionLogListKey(feedId));
+  } catch (err) {
+    logApp.error('Failed to delete ingestion log history from Redis', { cause: err });
+  }
+};
+// endregion
+
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';
 
