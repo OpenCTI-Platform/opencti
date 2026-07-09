@@ -13,24 +13,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
+import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsDistributionListDistributionQuery } from '@components/common/audits/__generated__/AuditsDistributionListDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsDistributionListDistributionQuery = graphql`
   query AuditsDistributionListDistributionQuery(
@@ -171,8 +167,6 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
 }) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
 
   const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]) => {
     const selection = resolvedDataSelection[0];
@@ -203,34 +197,6 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
   });
   const selection = resolvedDataSelection[0];
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AuditsDistributionListComponent
-          queryRef={queryRef}
-          selection={selection}
-          hasSetAccess={hasSetAccess}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -239,7 +205,18 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsDistributionListComponent
+          queryRef={queryRef!}
+          selection={selection}
+          hasSetAccess={hasSetAccess}
+        />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
 };

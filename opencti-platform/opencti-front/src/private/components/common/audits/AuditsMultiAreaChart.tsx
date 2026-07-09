@@ -13,26 +13,21 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import { AuditsMultiAreaChartTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiAreaChartTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import { getWidgetInterval, showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetMultiTimeSeries, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsMultiAreaChartTimeSeriesQuery = graphql`
   query AuditsMultiAreaChartTimeSeriesQuery(
@@ -186,41 +181,6 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
     buildQueryVariables,
   });
 
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AuditsMultiAreaChartComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          interval={parameters.interval ?? undefined}
-          isStacked={parameters.stacked ?? undefined}
-          hasLegend={parameters.legend ?? undefined}
-          onMounted={setChart}
-          onShowWarning={setShowWarning}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="small"
@@ -232,7 +192,22 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
       showPreviewTag={isPreviewMode}
       warning={warning}
     >
-      {renderContent()}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsMultiAreaChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          interval={parameters.interval ?? undefined}
+          isStacked={parameters.stacked ?? undefined}
+          hasLegend={parameters.legend ?? undefined}
+          onMounted={setChart}
+          onShowWarning={setShowWarning}
+        />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
 };

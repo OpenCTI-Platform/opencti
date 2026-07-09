@@ -13,23 +13,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { AuditsWordCloudDistributionQuery } from '@components/common/audits/__generated__/AuditsWordCloudDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsWordCloudDistributionQuery = graphql`
   query AuditsWordCloudDistributionQuery(
@@ -135,8 +130,7 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
   host,
 }) => {
   const { t_i18n } = useFormatter();
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
+
   const buildQueryVariables = useCallback((
     resolvedDataSelection: WidgetDataSelection[],
     _config: DashboardConfig,
@@ -171,33 +165,6 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
   });
   const selection = resolvedDataSelection[0];
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AuditsWordCloudComponent
-          queryRef={queryRef}
-          selection={selection}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -206,7 +173,17 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsWordCloudComponent
+          queryRef={queryRef!}
+          selection={selection}
+        />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
 };

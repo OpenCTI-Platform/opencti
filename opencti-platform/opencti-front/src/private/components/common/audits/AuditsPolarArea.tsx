@@ -14,24 +14,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { CSSProperties, ReactNode, Suspense, useCallback, useState } from 'react';
+import React, { CSSProperties, ReactNode, useCallback, useState } from 'react';
 import ApexCharts from 'apexcharts';
 import { AuditsPolarAreaDistributionQuery } from '@components/common/audits/__generated__/AuditsPolarAreaDistributionQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsPolarAreaDistributionQuery = graphql`
   query AuditsPolarAreaDistributionQuery(
@@ -131,7 +126,7 @@ interface AuditsPolarAreaProps {
   host?: WidgetHost;
 }
 
-const AuditsPolarAreaQueyRef = ({
+const AuditsPolarArea = ({
   startDate,
   endDate,
   dataSelection,
@@ -145,9 +140,6 @@ const AuditsPolarAreaQueyRef = ({
 }: AuditsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
 
   const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsPolarAreaDistributionQuery['variables'] => {
     const selection = resolvedSelection[0];
@@ -177,34 +169,6 @@ const AuditsPolarAreaQueyRef = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AuditsPolarAreaComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          onMounted={setChart}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="small"
@@ -215,30 +179,20 @@ const AuditsPolarAreaQueyRef = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsPolarAreaComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          onMounted={setChart}
+        />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
-};
-
-const AuditsPolarArea = (props: AuditsPolarAreaProps) => {
-  const { t_i18n } = useFormatter();
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
-
-  if (!isGrantedToSettings || !isEnterpriseEdition) {
-    const { height, parameters, variant } = props;
-    return (
-      <WidgetContainer
-        padding="small"
-        height={height}
-        title={parameters.title ?? t_i18n('Distribution of history')}
-        variant={variant}
-      >
-        <WidgetAccessDenied />
-      </WidgetContainer>
-    );
-  }
-  return <AuditsPolarAreaQueyRef {...props} />;
 };
 
 export default AuditsPolarArea;
