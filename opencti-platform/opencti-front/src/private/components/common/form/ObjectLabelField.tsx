@@ -94,6 +94,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
           helperText: helpertext,
           onFocus: searchLabels,
         }}
+        preserveCase
         noOptionsText={t_i18n('No available options')}
         options={labels}
         onInputChange={searchLabels}

@@ -2,7 +2,7 @@ import { CloseOutlined } from '@mui/icons-material';
 import { Chip, ChipProps, SxProps, Theme, Tooltip, alpha, lighten, useTheme } from '@mui/material';
 import React, { CSSProperties, ReactElement } from 'react';
 
-interface TagProps extends Omit<ChipProps, 'color'> {
+export interface TagProps extends Omit<ChipProps, 'color'> {
   label?: string | number | ReactElement | null;
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;

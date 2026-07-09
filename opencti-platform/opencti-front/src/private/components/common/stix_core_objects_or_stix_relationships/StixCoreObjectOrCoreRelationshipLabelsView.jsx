@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
+import RawTag from '@common/tag/RawTag';
 import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
@@ -169,15 +170,17 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
-              <Tag
+              <RawTag
                 key={label.id}
                 label={label.value}
                 color={label.color}
-                onDelete={canUpdateKnowledge ? () => (
-                  enableReferences
-                    ? handleOpenCommitDelete(label)
-                    : handleRemoveLabel(label.id)
-                ) : undefined
+                onDelete={
+                  canUpdateKnowledge
+                    ? () =>
+                        enableReferences
+                          ? handleOpenCommitDelete(label)
+                          : handleRemoveLabel(label.id)
+                    : undefined
                 }
               />
             ),
@@ -203,11 +206,14 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      onDelete={canUpdateKnowledge ? () => (
-                        enableReferences
-                          ? handleOpenCommitDelete(label)
-                          : handleRemoveLabel(label.id)
-                      ) : undefined
+                      labelTextTransform="none"
+                      onDelete={
+                        canUpdateKnowledge
+                          ? () =>
+                              enableReferences
+                                ? handleOpenCommitDelete(label)
+                                : handleRemoveLabel(label.id)
+                          : undefined
                       }
                     />
                   ),
@@ -265,6 +271,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   label: t_i18n('Labels'),
                   onFocus: searchLabels,
                 }}
+                preserveCase
                 noOptionsText={t_i18n('No available options')}
                 options={stateLabels}
                 onInputChange={searchLabels}
