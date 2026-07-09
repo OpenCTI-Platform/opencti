@@ -79,10 +79,7 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
               additionalProperties: contract.config_schema.additionalProperties,
             };
             try {
-              // Stable key: the contract is uniquely identified by its title/slug,
-              // and its shape doesn't change from one call to another
-              getOrCompileValidator(`catalog-contract:${contract.title}`, jsonValidation);
-            } catch (err) {
+              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
               throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
             }
           }
