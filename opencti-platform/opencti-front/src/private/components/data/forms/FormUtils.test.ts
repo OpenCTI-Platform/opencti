@@ -285,13 +285,13 @@ describe('container content attribute mapping', () => {
   ];
 
   it('should not expose content as an open vocabulary attribute', () => {
-    const openVocabAttributes = getAttributesForEntityType('Case-Incident', 'openvocab', entityTypes as any, t_i18n);
+    const openVocabAttributes = getAttributesForEntityType('Case-Incident', 'openvocab', entityTypes, t_i18n);
 
     expect(openVocabAttributes).toEqual([]);
   });
 
   it('should keep mandatory content field as textarea', () => {
-    const mandatoryFields = getInitialMandatoryFields('Case-Incident', entityTypes as any, t_i18n);
+    const mandatoryFields = getInitialMandatoryFields('Case-Incident', entityTypes, t_i18n);
 
     expect(mandatoryFields).toHaveLength(1);
     expect(mandatoryFields[0].attributeMapping.attributeName).toBe('content');
