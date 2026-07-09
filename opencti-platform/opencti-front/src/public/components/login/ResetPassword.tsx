@@ -18,7 +18,6 @@ import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAs
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
 import PasswordPoliciesAlert, { PasswordPolicies } from '../../../components/PasswordPoliciesAlert';
-import { FLASH_CODE_MESSAGES } from './AlertFlashError';
 
 interface InternalFormProps extends PropsWithChildren {
   action?: ReactNode;
@@ -106,9 +105,6 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
-  const flashMessage = flashError
-    ? t_i18n(FLASH_CODE_MESSAGES[flashError] ?? flashError)
-    : '';
 
   useEffect(() => {
     return () => {
@@ -334,8 +330,8 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
       {resetPwdStep === ResetPwdStep.VALIDATE_OTP && (
         <Formik
           onSubmit={onSubmitValidateOtp}
-          initialTouched={{ otp: !!flashMessage }}
-          initialErrors={{ otp: flashMessage }}
+          initialTouched={{ otp: !!flashError }}
+          initialErrors={{ otp: flashError ? t_i18n(flashError) : '' }}
           validationSchema={otpValidation(t_i18n)}
           initialValues={{ otp: '' }}
         >
@@ -385,8 +381,8 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
       {resetPwdStep === ResetPwdStep.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
-          initialTouched={{ password: !!flashMessage }}
-          initialErrors={{ password: flashMessage }}
+          initialTouched={{ password: !!flashError }}
+          initialErrors={{ password: flashError ? t_i18n(flashError) : '' }}
           validationSchema={passwordValidation(t_i18n)}
           initialValues={{ password: '', password_validation: '' }}
         >
