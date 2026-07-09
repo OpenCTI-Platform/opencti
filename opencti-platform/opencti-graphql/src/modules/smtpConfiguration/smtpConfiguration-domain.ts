@@ -2,16 +2,22 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { patchAttribute } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { FunctionalError } from '../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
 import { SmtpAuthType, type SmtpConfigurationAddInput, type SmtpConfigurationEditInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { smtpTest } from '../../database/smtp';
 import { encryptSmtpSecret } from './smtpConfiguration-crypto';
 
 const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
+
+const checkSmtpConfigurationFeatureEnabled = () => {
+  if (!isFeatureEnabled('SMTP_CONFIGURATION')) {
+    throw ForbiddenAccess('SMTP configuration feature is disabled');
+  }
+};
 
 const encryptSmtpInput = async (input: Record<string, unknown>): Promise<Record<string, unknown>> => {
   const result: Record<string, unknown> = { ...input };
@@ -53,6 +59,7 @@ export const smtpConfigurationAdd = async (
   user: AuthUser,
   input: SmtpConfigurationAddInput,
 ): Promise<BasicStoreEntitySmtpConfiguration> => {
+  checkSmtpConfigurationFeatureEnabled();
   const existing = await getSmtpConfiguration(context, user);
   if (existing) {
     throw FunctionalError('An SMTP configuration already exists');
@@ -67,6 +74,9 @@ export const smtpConfigurationAdd = async (
   );
 };
 
+// No feature-flag guard here: this function is also used internally (e.g. database/smtp.js)
+// to send emails and by the boot-time system dependencies check, independently of the
+// admin-facing SMTP configuration management feature flag.
 export const getSmtpConfiguration = async (
   context: AuthContext,
   user: AuthUser,
@@ -82,12 +92,22 @@ export const getSmtpConfiguration = async (
   return configurations[0] ?? null;
 };
 
+// Used by the GraphQL Query only, to gate the admin-facing read access behind the feature flag.
+export const getSmtpConfigurationForAdmin = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<BasicStoreEntitySmtpConfiguration | null> => {
+  checkSmtpConfigurationFeatureEnabled();
+  return getSmtpConfiguration(context, user);
+};
+
 export const smtpConfigurationUpdate = async (
   context: AuthContext,
   user: AuthUser,
   id: string,
   input: SmtpConfigurationEditInput,
 ): Promise<BasicStoreEntitySmtpConfiguration> => {
+  checkSmtpConfigurationFeatureEnabled();
   validateSmtpConfigurationInput(input);
   const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
   const { element } = await patchAttribute<StoreEntitySmtpConfiguration>(
@@ -114,6 +134,7 @@ export const smtpConfigurationTest = async (
   _user: AuthUser,
   email: string,
 ): Promise<boolean> => {
+  checkSmtpConfigurationFeatureEnabled();
   return smtpTest(email);
 };
 
@@ -122,5 +143,6 @@ export const smtpConfigurationDelete = async (
   user: AuthUser,
   id: string,
 ): Promise<string> => {
+  checkSmtpConfigurationFeatureEnabled();
   return deleteInternalObject(context, user, id, ENTITY_TYPE_SMTP_CONFIGURATION);
 };
