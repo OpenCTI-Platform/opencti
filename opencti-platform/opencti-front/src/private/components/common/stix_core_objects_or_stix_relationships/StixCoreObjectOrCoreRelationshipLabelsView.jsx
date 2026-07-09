@@ -88,12 +88,15 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       orderMode: 'asc',
     }).toPromise();
 
+    const existingLabelIds = new Set((labels ?? []).map((l) => l.id));
     const edges = data?.labels?.edges ?? [];
-    const labelOptions = edges.map((n) => ({
-      label: n.node.value,
-      value: n.node.id,
-      color: n.node.color,
-    }));
+    const labelOptions = edges
+      .filter((n) => !existingLabelIds.has(n.node.id))
+      .map((n) => ({
+        label: n.node.value,
+        value: n.node.id,
+        color: n.node.color,
+      }));
 
     setStateLabels(labelOptions);
   };
