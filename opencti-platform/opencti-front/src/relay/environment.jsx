@@ -144,9 +144,8 @@ export const defaultCommitMutation = {
 export const relayErrorHandling = (error, setSubmitting, onError) => {
   if (setSubmitting) setSubmitting(false);
   if (error && error.res && error.res.errors) {
-    const passwordChangeRequired = R.any(
-      (e) => R.pathOr(undefined, ['extensions', 'code'], e) === 'PASSWORD_CHANGE_REQUIRED',
-      error.res.errors,
+    const passwordChangeRequired = error.res.errors.some(
+      (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
     );
     if (passwordChangeRequired) {
       const alreadyOnForcePasswordChange = window.location.pathname.startsWith(FORCE_PASSWORD_CHANGE_ROUTE);
@@ -155,11 +154,10 @@ export const relayErrorHandling = (error, setSubmitting, onError) => {
       }
       return;
     }
-    const authRequired = R.filter(
-      (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
-      error.res.errors,
+    const authRequired = error.res.errors.filter(
+      (e) => (e?.data?.type ?? e.message) === 'authentication',
     );
-    if (!R.isEmpty(authRequired)) {
+    if (authRequired.length > 0) {
       MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
     } else if (onError) {
       const messages = buildErrorMessages(error);

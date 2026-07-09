@@ -38,6 +38,7 @@ export const setCookieError = (res: Response, message: string) => {
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),
     sameSite: 'strict',
+    path: '/',
   });
 };
 

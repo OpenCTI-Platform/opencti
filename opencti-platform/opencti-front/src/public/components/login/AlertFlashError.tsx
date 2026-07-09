@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import { useFormatter } from '../../../components/i18n';
 import LoginAlert from './LoginAlert';
+import { useLoginContext } from './loginContext';
 
 const FLASH_COOKIE = 'opencti_flash';
 
@@ -14,9 +16,18 @@ export const FLASH_CODE_MESSAGES: Record<string, string> = {
 
 const AlertFlashError = () => {
   const { t_i18n } = useFormatter();
+  const { setValue } = useLoginContext();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
-  removeCookie(FLASH_COOKIE);
+
+  useEffect(() => {
+    if (flashError) {
+      removeCookie(FLASH_COOKIE);
+      if (flashError === 'PASSWORD_CHANGE_REQUIRED') {
+        setValue('forcePasswordChange', true);
+      }
+    }
+  }, [flashError]);
 
   if (!flashError) return null;
 

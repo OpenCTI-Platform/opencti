@@ -184,16 +184,16 @@ const Users = () => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 15,
+      percentWidth: forcePasswordChangeEnabled ? 15 : 20,
     },
     user_email: {
-      percentWidth: 15,
+      percentWidth: forcePasswordChangeEnabled ? 15 : 20,
     },
     firstname: {
-      percentWidth: 12.5,
+      percentWidth: forcePasswordChangeEnabled ? 12.5 : 15,
     },
     lastname: {
-      percentWidth: 12.5,
+      percentWidth: forcePasswordChangeEnabled ? 12.5 : 15,
     },
     effective_confidence_level: {
       percentWidth: 10,
