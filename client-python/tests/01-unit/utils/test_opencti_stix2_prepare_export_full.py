@@ -11,6 +11,16 @@ class _StaticCollection:
         return self.items
 
 
+class _CountingCollection(_StaticCollection):
+    def __init__(self, items):
+        super().__init__(items)
+        self.list_calls = 0
+
+    def list(self, **kwargs):
+        self.list_calls += 1
+        return super().list(**kwargs)
+
+
 def _relationship(identifier, target_identifier=None):
     target_identifier = target_identifier or identifier
     return {
@@ -105,3 +115,24 @@ def test_prepare_export_full_reads_repeated_related_object_once():
         "relationship--3",
         "malware--shared",
     ]
+
+
+def test_prepare_export_full_checks_repeated_relation_endpoints_once():
+    helper = _helper(
+        [
+            _relationship("relationship--1", "shared"),
+            _relationship("relationship--2", "shared"),
+            _relationship("relationship--3", "shared"),
+        ]
+    )
+    access_collection = _CountingCollection([{}])
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    entity = {
+        "id": "indicator--root",
+        "type": "indicator",
+        "x_opencti_id": "root",
+    }
+
+    helper.prepare_export(entity=entity, mode="full")
+
+    assert access_collection.list_calls == 2

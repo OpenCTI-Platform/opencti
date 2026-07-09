@@ -2134,12 +2134,33 @@ class OpenCTIStix2:
                 ],
             }
 
+    def _is_exportable_related_object(
+        self,
+        entity_id: str,
+        access_filter: Dict,
+        related_object_access_cache: Dict[str, bool],
+    ) -> bool:
+        if entity_id not in related_object_access_cache:
+            query_filters = self.prepare_id_filters_export(
+                entity_id=entity_id, access_filter=access_filter
+            )
+            related_object_access_cache[entity_id] = (
+                len(
+                    self.opencti.opencti_stix_object_or_stix_relationship.list(
+                        filters=query_filters
+                    )
+                )
+                > 0
+            )
+        return related_object_access_cache[entity_id]
+
     def prepare_export(
         self,
         entity: Dict,
         mode: str = "simple",
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
+        related_object_access_cache: Optional[Dict[str, bool]] = None,
     ) -> List:
         """Prepare an entity for STIX2 export with related objects.
 
@@ -2151,9 +2172,13 @@ class OpenCTIStix2:
         :type access_filter: Dict, optional
         :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
         :type no_custom_attributes: bool, optional
+        :param related_object_access_cache: Export-scoped cache for repeated endpoint visibility checks
+        :type related_object_access_cache: dict, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
         """
+        if related_object_access_cache is None:
+            related_object_access_cache = {}
         result = []
         objects_to_get = []
         self._rewrite_embedded_image_uris_for_export(entity)
@@ -2341,28 +2366,18 @@ class OpenCTIStix2:
             entity["type"] = "sighting"
             entity["count"] = entity["attribute_count"]
             del entity["attribute_count"]
-            from_to_check = entity["from"]["id"]
-            relationships_from_filter = self.prepare_id_filters_export(
-                entity_id=from_to_check, access_filter=access_filter
-            )
-            x = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_from_filter
-            )
-            if len(x) > 0:
+            if self._is_exportable_related_object(
+                entity["from"]["id"], access_filter, related_object_access_cache
+            ):
                 entity["sighting_of_ref"] = entity["from"]["standard_id"]
                 # handle from and to separately like Stix Core Relationship and call 2 requests
                 objects_to_get.append(
                     entity["from"]
                 )  # what happen with unauthorized objects ?
 
-            to_to_check = [entity["to"]["id"]]
-            relationships_to_filter = self.prepare_id_filters_export(
-                entity_id=to_to_check, access_filter=access_filter
-            )
-            y = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_to_filter
-            )
-            if len(y) > 0:
+            if self._is_exportable_related_object(
+                entity["to"]["id"], access_filter, related_object_access_cache
+            ):
                 entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
                 objects_to_get.append(entity["to"])
 
@@ -2372,14 +2387,9 @@ class OpenCTIStix2:
         if "from" in entity or "to" in entity:
             entity["type"] = "relationship"
         if "from" in entity:
-            from_to_check = entity["from"]["id"]
-            relationships_from_filter = self.prepare_id_filters_export(
-                entity_id=from_to_check, access_filter=access_filter
-            )
-            x = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_from_filter
-            )
-            if len(x) > 0:
+            if self._is_exportable_related_object(
+                entity["from"]["id"], access_filter, related_object_access_cache
+            ):
                 entity["source_ref"] = entity["from"]["standard_id"]
                 # handle from and to separately like Stix Core Relationship and call 2 requests
                 objects_to_get.append(
@@ -2387,14 +2397,9 @@ class OpenCTIStix2:
                 )  # what happen with unauthorized objects ?
             del entity["from"]
         if "to" in entity:
-            to_to_check = [entity["to"]["id"]]
-            relationships_to_filter = self.prepare_id_filters_export(
-                entity_id=to_to_check, access_filter=access_filter
-            )
-            y = self.opencti.opencti_stix_object_or_stix_relationship.list(
-                filters=relationships_to_filter
-            )
-            if len(y) > 0:
+            if self._is_exportable_related_object(
+                entity["to"]["id"], access_filter, related_object_access_cache
+            ):
                 entity["target_ref"] = entity["to"]["standard_id"]
                 objects_to_get.append(entity["to"])
             del entity["to"]
@@ -2563,6 +2568,7 @@ class OpenCTIStix2:
                         entity=self.generate_export(stix_core_relationship),
                         mode="simple",
                         access_filter=access_filter,
+                        related_object_access_cache=related_object_access_cache,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2586,6 +2592,7 @@ class OpenCTIStix2:
                         entity=self.generate_export(stix_sighting_relationship),
                         mode="simple",
                         access_filter=access_filter,
+                        related_object_access_cache=related_object_access_cache,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2618,6 +2625,7 @@ class OpenCTIStix2:
                         entity=self.generate_export(entity_object_data),
                         mode="simple",
                         access_filter=access_filter,
+                        related_object_access_cache=related_object_access_cache,
                     )
                     # Add to result
                     entity_object_bundle = self.filter_objects(
