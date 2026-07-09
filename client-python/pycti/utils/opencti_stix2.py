@@ -2597,12 +2597,17 @@ class OpenCTIStix2:
             if no_custom_attributes:
                 del entity["x_opencti_id"]
             # Get extra objects
+            read_object_keys = set()
             for entity_object in objects_to_get:
                 resolve_type = entity_object["entity_type"]
                 if "stix-core-relationship" in entity_object["parent_types"]:
                     resolve_type = "stix-core-relationship"
                 if "stix-ref-relationship" in entity_object["parent_types"]:
                     resolve_type = "stix-ref-relationship"
+                read_object_key = (resolve_type, entity_object["id"])
+                if read_object_key in read_object_keys:
+                    continue
+                read_object_keys.add(read_object_key)
                 do_read = self.get_reader(resolve_type)
                 query_filters = self.prepare_id_filters_export(
                     entity_object["id"], access_filter

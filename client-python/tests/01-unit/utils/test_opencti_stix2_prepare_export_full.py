@@ -11,7 +11,8 @@ class _StaticCollection:
         return self.items
 
 
-def _relationship(identifier):
+def _relationship(identifier, target_identifier=None):
+    target_identifier = target_identifier or identifier
     return {
         "id": identifier,
         "type": "uses",
@@ -23,8 +24,8 @@ def _relationship(identifier):
             "parent_types": ["Stix-Domain-Object"],
         },
         "to": {
-            "id": f"target-{identifier}",
-            "standard_id": f"malware--{identifier}",
+            "id": f"target-{target_identifier}",
+            "standard_id": f"malware--{target_identifier}",
             "entity_type": "Malware",
             "parent_types": ["Stix-Domain-Object"],
         },
@@ -65,4 +66,42 @@ def test_prepare_export_full_deduplicates_relationship_bundles():
         "indicator--root",
         "relationship--1",
         "relationship--2",
+    ]
+
+
+def test_prepare_export_full_reads_repeated_related_object_once():
+    helper = _helper(
+        [
+            _relationship("relationship--1", "shared"),
+            _relationship("relationship--2", "shared"),
+            _relationship("relationship--3", "shared"),
+        ]
+    )
+    read_calls = []
+
+    def read(filters):
+        read_calls.append(filters)
+        return {
+            "id": "malware--shared",
+            "type": "malware",
+            "x_opencti_id": "target-shared",
+        }
+
+    helper.get_reader = lambda resolve_type: read
+    helper.generate_export = lambda entity: entity.copy()
+    entity = {
+        "id": "indicator--root",
+        "type": "indicator",
+        "x_opencti_id": "root",
+    }
+
+    result = helper.prepare_export(entity=entity, mode="full")
+
+    assert len(read_calls) == 1
+    assert [item["id"] for item in result] == [
+        "indicator--root",
+        "relationship--1",
+        "relationship--2",
+        "relationship--3",
+        "malware--shared",
     ]
