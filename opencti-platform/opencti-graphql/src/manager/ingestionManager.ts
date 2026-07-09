@@ -52,6 +52,7 @@ const INGESTION_MANAGER_KEY = conf.get('ingestion_manager:lock_key') || 'ingesti
 const INGESTION_MANAGER_TAXII_FEED_LIMIT_PER_REQUEST = conf.get('ingestion_manager:taxii_feed:limit_per_request') || 0;
 const RSS_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:rss_feed:min_interval_minutes') || 5;
 const RSS_FEED_USER_AGENT = conf.get('ingestion_manager:rss_feed:user_agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0';
+const FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 30000;
 const CSV_FEED_MIN_INTERVAL_MINUTES = conf.get('ingestion_manager:csv_feed:min_interval_minutes') || 5;
 
 let running = false;
@@ -166,6 +167,7 @@ export const rssHttpClientOptions = (ingestion: BasicStoreEntityIngestionRss) =>
   const httpClientOptions: GetHttpClient = {
     responseType: 'text',
     headers: { 'User-Agent': RSS_FEED_USER_AGENT },
+    timeout: FEED_REQUEST_TIMEOUT,
     rejectUnauthorized: ingestion.ssl_verify ?? false,
   };
   return httpClientOptions;
@@ -345,7 +347,13 @@ export const buildTaxiiHttpClientOptions = async (ingestion: BasicStoreEntityIng
     certificates = { cert: decryptedAuthValue.split(':')[0], key: decryptedAuthValue.split(':')[1], ca: decryptedAuthValue.split(':')[2] };
   }
 
-  const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: ingestion.ssl_verify ?? false, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = {
+    headers: octiHeaders,
+    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    timeout: FEED_REQUEST_TIMEOUT,
+    responseType: 'json',
+    certificates,
+  };
   return httpClientOptions;
 };
 
@@ -539,7 +547,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
-    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
+    const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion, { timeout: FEED_REQUEST_TIMEOUT });
     await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
     throw UnknownError(e, { ingestionName: ingestion.name, ingestionId: ingestion.id });

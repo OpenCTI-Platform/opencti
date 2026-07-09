@@ -243,8 +243,12 @@ interface CsvResponseData {
   addedLast: string | undefined | null;
 }
 
-export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: BasicStoreEntityIngestionCsv, opts: { limit?: number } = {}): Promise<CsvResponseData> => {
-  const { limit = undefined } = opts;
+export const fetchCsvFromUrl = async (
+  csvMapper: CsvMapperParsed,
+  ingestion: BasicStoreEntityIngestionCsv,
+  opts: { limit?: number; timeout?: number } = {},
+): Promise<CsvResponseData> => {
+  const { limit = undefined, timeout = undefined } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
   const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);
@@ -261,7 +265,13 @@ export const fetchCsvFromUrl = async (csvMapper: CsvMapperParsed, ingestion: Bas
     const [cert, key, ca] = (decryptedAuthValue || '').split(':');
     certificates = { cert, key, ca };
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ingestion.ssl_verify ?? false, responseType: 'arraybuffer', certificates };
+  const httpClientOptions: GetHttpClient = {
+    headers,
+    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    timeout,
+    responseType: 'arraybuffer',
+    certificates,
+  };
   const httpClient = getHttpClient(httpClientOptions);
   const { data, headers: resultHeaders } = await httpClient.get(ingestion.uri);
   const dataLines = data.toString().split(/\r?\n/);
