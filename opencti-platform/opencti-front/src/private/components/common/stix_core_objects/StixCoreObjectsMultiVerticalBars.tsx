@@ -1,14 +1,12 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -150,28 +148,6 @@ const StixCoreObjectsMultiVerticalBars = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsMultiVerticalBarsComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="small"
@@ -181,7 +157,18 @@ const StixCoreObjectsMultiVerticalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsMultiVerticalBarsComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

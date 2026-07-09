@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense, useRef } from 'react';
+import React, { ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
@@ -6,10 +6,8 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -513,29 +511,6 @@ const StixCoreObjectsList = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsListComponent
-          queryRef={queryRef}
-          rootRef={rootRef}
-          dataSelection={resolvedDataSelection}
-          widgetId={widgetId}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="horizontal"
@@ -546,7 +521,19 @@ const StixCoreObjectsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsListComponent
+            queryRef={queryRef!}
+            rootRef={rootRef}
+            dataSelection={resolvedDataSelection}
+            widgetId={widgetId}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

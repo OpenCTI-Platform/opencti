@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
@@ -6,10 +6,8 @@ import { computeLevel } from '../../../../utils/Number';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import {
   StixRelationshipsMapStixRelationshipsDistributionQuery,
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsMapStixRelationshipsDistributionQuery.graphql';
@@ -209,28 +207,6 @@ const StixRelationshipsMap = ({
     config,
     buildQueryVariables,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsMapComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -241,7 +217,17 @@ const StixRelationshipsMap = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsMapComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

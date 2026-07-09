@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -7,10 +7,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsDistributionListDistributionQuery } from './__generated__/StixCoreObjectsDistributionListDistributionQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -191,28 +189,6 @@ const StixCoreObjectsDistributionList = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsDistributionListComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          hasSetAccess={hasSetAccess}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -222,7 +198,18 @@ const StixCoreObjectsDistributionList = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsDistributionListComponent
+            queryRef={queryRef!}
+            dataSelection={resolvedDataSelection}
+            hasSetAccess={hasSetAccess}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

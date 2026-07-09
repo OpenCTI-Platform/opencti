@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
@@ -7,10 +7,8 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixRelationshipsDistributionListDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDistributionListDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -210,28 +208,6 @@ const StixRelationshipsDistributionList = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsDistributionListComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          hasSetAccess={hasSetAccess}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -241,7 +217,18 @@ const StixRelationshipsDistributionList = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixRelationshipsDistributionListComponent
+            queryRef={queryRef!}
+            dataSelection={resolvedDataSelection}
+            hasSetAccess={hasSetAccess}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

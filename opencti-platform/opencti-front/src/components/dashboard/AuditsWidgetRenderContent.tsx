@@ -13,14 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { ReactNode, Suspense } from 'react';
-import Loader, { LoaderVariant } from '../Loader';
-import WidgetNoHostEntity from './WidgetNoHostEntity';
-import WidgetNoSavedFilters from './WidgetNoSavedFilters';
-import WidgetAccessDenied from './WidgetAccessDenied';
+import React, { ReactNode } from 'react';
 import type { WidgetHost } from '../../utils/widget/widget';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from 'src/utils/hooks/useGranted';
 import useEnterpriseEdition from 'src/utils/hooks/useEnterpriseEdition';
+import WidgetRenderContent from 'src/components/dashboard/WidgetRenderContent';
 
 interface AuditsWidgetRenderContentParams {
   isMissingHostEntity: boolean;
@@ -45,26 +42,16 @@ const AuditsWidgetRenderContent = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  if (isMissingHostEntity) {
-    return <WidgetNoHostEntity host={host} />;
-  }
-
-  if (isMissingSavedFilters) {
-    return <WidgetNoSavedFilters />;
-  }
-
-  if (!isGrantedToSettings || !isEnterpriseEdition) {
-    return <WidgetAccessDenied />;
-  }
-
-  if (!queryRef) {
-    return <Loader variant={LoaderVariant.inElement} />;
-  }
-
   return (
-    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <WidgetRenderContent
+      isMissingHostEntity={isMissingHostEntity}
+      isMissingSavedFilters={isMissingSavedFilters}
+      isGranted={isGrantedToSettings && isEnterpriseEdition}
+      queryRef={queryRef}
+      host={host}
+    >
       {children}
-    </Suspense>
+    </WidgetRenderContent>
   );
 };
 

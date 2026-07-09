@@ -4,17 +4,15 @@ import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCoreObjectsNumberNumberSeriesQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { ReactNode, Suspense } from 'react';
+import { ReactNode } from 'react';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
     query StixCoreObjectsNumberNumberSeriesQuery(
@@ -132,28 +130,6 @@ const StixCoreObjectsNumber = ({
     config,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsNumberComponent
-          queryRef={queryRef}
-          entityType={entityType}
-          label={translatedTitle}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="medium"
@@ -164,7 +140,18 @@ const StixCoreObjectsNumber = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsNumberComponent
+            queryRef={queryRef!}
+            entityType={entityType}
+            label={translatedTitle}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );
