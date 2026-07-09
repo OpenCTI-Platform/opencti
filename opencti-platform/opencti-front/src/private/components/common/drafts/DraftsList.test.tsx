@@ -49,12 +49,13 @@ vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
 }));
 
 import DraftsList from './DraftsList';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 describe('DraftsList', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       date_attribute: 'created_at',
       sort_by: 'created_at',
     }],

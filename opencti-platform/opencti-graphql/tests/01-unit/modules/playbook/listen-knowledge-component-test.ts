@@ -8,6 +8,7 @@ import * as ee from '../../../../src/enterprise-edition/ee';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import { testContext } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 const buildPlaybook = (componentId: string, configuration: object, playbookStart = 'node-1') => ({
   playbook_start: playbookStart,
@@ -335,7 +336,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
   });
 
   it('should return empty when entity does not pass playbook filters', async () => {
-    const filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+    const filters = JSON.stringify(emptyFilterGroup);
     vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
       buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true, filters }),
     ]);
@@ -348,7 +349,7 @@ describe('findPlaybooksForEnrollmentByFilters', () => {
   });
 
   it('should pass filters and search to stixLoadByFilters', async () => {
-    const filters = { mode: 'and', filters: [], filterGroups: [] };
+    const filters = emptyFilterGroup;
     vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
       buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true }),
     ]);

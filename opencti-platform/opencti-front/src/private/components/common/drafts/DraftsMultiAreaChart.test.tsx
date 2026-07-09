@@ -54,12 +54,13 @@ vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
 }));
 
 import DraftsMultiAreaChart from './DraftsMultiAreaChart';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 describe('DraftsMultiAreaChart', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       date_attribute: 'created_at',
     }],
     parameters: {},

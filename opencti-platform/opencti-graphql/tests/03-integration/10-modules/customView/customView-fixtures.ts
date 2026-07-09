@@ -1,5 +1,6 @@
 import { toB64 } from '../../../../src/utils/base64';
 import type { BasicStoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
+import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 type BasicStoreEntityCustomViewForTestsKeys = Extract<
   keyof BasicStoreEntityCustomView,
@@ -37,21 +38,9 @@ export const DASHBOARD_MANIFEST_OBJECT = {
           date_attribute: 'created_at',
           perspective: null,
           isTo: true,
-          filters: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
-          dynamicFrom: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
-          dynamicTo: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
+          filters: emptyFilterGroup,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
         },
       ],
       layout: {
@@ -107,16 +96,8 @@ export const DASHBOARD_MANIFEST_OBJECT = {
             ],
             filterGroups: [],
           },
-          dynamicFrom: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
-          dynamicTo: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
           columns: [
             {
               attribute: 'entity_type',
@@ -196,16 +177,8 @@ export const DASHBOARD_MANIFEST_OBJECT = {
             ],
             filterGroups: [],
           },
-          dynamicFrom: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
-          dynamicTo: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
         },
       ],
       layout: {

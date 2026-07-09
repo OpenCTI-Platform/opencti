@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 vi.mock('../../../../relay/environment', () => ({
   APP_BASE_PATH: '',
@@ -60,7 +61,7 @@ describe('DraftsHorizontalBars', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       attribute: 'entity_type',
       date_attribute: 'created_at',
     }],

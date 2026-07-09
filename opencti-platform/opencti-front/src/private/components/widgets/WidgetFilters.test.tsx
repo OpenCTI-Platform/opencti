@@ -1,6 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import WidgetFilters from './WidgetFilters';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 vi.mock('@components/common/lists/Filters', () => ({
   default: () => <div data-testid="filters" />,
@@ -40,11 +42,9 @@ vi.mock('../../../utils/filters/filtersUtils', () => ({
   },
 }));
 
-import WidgetFilters from './WidgetFilters';
-
 describe('WidgetFilters', () => {
   const baseDataSelection = {
-    filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+    filters: emptyFilterGroup,
     dynamicFrom: undefined,
     dynamicTo: undefined,
   };

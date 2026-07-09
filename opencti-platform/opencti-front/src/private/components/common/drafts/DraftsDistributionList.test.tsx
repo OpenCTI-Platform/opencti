@@ -1,6 +1,8 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
+import DraftsDistributionList from './DraftsDistributionList';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 vi.mock('../../../../relay/environment', () => ({
   APP_BASE_PATH: '',
@@ -53,13 +55,11 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
   SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
 }));
 
-import DraftsDistributionList from './DraftsDistributionList';
-
 describe('DraftsDistributionList', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       attribute: 'entity_type',
       date_attribute: 'created_at',
     }],

@@ -11,6 +11,7 @@ import {
   type StixEntity,
   type StixFilterMatchFn,
 } from '../../../../src/modules/playbook/playbook-enrollment';
+import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 const buildPlaybook = (
   componentId: string,
@@ -26,8 +27,6 @@ const buildPlaybook = (
     }],
   }),
 } as unknown as BasicStoreEntityPlaybook);
-
-const VALID_FILTERS: FilterGroup = { mode: 'and', filters: [], filterGroups: [] } as unknown as FilterGroup;
 
 const buildPlaybookWithFilters = (filters: FilterGroup): BasicStoreEntityPlaybook => buildPlaybook(
   'PLAYBOOK_INTERNAL_DATA_STREAM',
@@ -76,10 +75,10 @@ describe('getEnrollmentEligibility', () => {
   });
 
   it('returns eligible with parsed filters', () => {
-    const playbook = buildPlaybookWithFilters(VALID_FILTERS);
+    const playbook = buildPlaybookWithFilters(emptyFilterGroup);
     const result = getEnrollmentEligibility(playbook);
     expect(result).not.toBeNull();
-    expect(result!.jsonFilters).toEqual(VALID_FILTERS);
+    expect(result!.jsonFilters).toEqual(emptyFilterGroup);
   });
 
   it('treats canEnrollManually as true when undefined', () => {
@@ -105,7 +104,7 @@ describe('allEntitiesMatchFilters', () => {
 
   it('returns true when all entities match', async () => {
     const entities = [fakeEntity('a'), fakeEntity('b')];
-    const result = await allEntitiesMatchFilters(entities, VALID_FILTERS, alwaysMatch);
+    const result = await allEntitiesMatchFilters(entities, emptyFilterGroup, alwaysMatch);
     expect(result).toBe(true);
   });
 
@@ -116,7 +115,7 @@ describe('allEntitiesMatchFilters', () => {
       return callCount !== 2;
     };
     const entities = [fakeEntity('a'), fakeEntity('b'), fakeEntity('c')];
-    const result = await allEntitiesMatchFilters(entities, VALID_FILTERS, matchSecondFails);
+    const result = await allEntitiesMatchFilters(entities, emptyFilterGroup, matchSecondFails);
     expect(result).toBe(false);
   });
 
@@ -127,12 +126,12 @@ describe('allEntitiesMatchFilters', () => {
       return false;
     };
     const entities = [fakeEntity('a'), fakeEntity('b'), fakeEntity('c')];
-    await allEntitiesMatchFilters(entities, VALID_FILTERS, matchFn);
+    await allEntitiesMatchFilters(entities, emptyFilterGroup, matchFn);
     expect(callCount).toBe(1);
   });
 
   it('returns true for empty entity list', async () => {
-    const result = await allEntitiesMatchFilters([], VALID_FILTERS, neverMatch);
+    const result = await allEntitiesMatchFilters([], emptyFilterGroup, neverMatch);
     expect(result).toBe(true);
   });
 });
@@ -149,25 +148,25 @@ describe('matchPlaybooksToEntities', () => {
   });
 
   it('includes playbooks when all entities match filters', async () => {
-    const playbook = buildPlaybookWithFilters(VALID_FILTERS);
-    const eligible = [{ playbook, jsonFilters: VALID_FILTERS }];
+    const playbook = buildPlaybookWithFilters(emptyFilterGroup);
+    const eligible = [{ playbook, jsonFilters: emptyFilterGroup }];
     const result = await matchPlaybooksToEntities(eligible, [fakeEntity('x')], alwaysMatch);
     expect(result).toEqual([playbook]);
   });
 
   it('excludes playbooks when any entity does not match', async () => {
-    const playbook = buildPlaybookWithFilters(VALID_FILTERS);
-    const eligible = [{ playbook, jsonFilters: VALID_FILTERS }];
+    const playbook = buildPlaybookWithFilters(emptyFilterGroup);
+    const eligible = [{ playbook, jsonFilters: emptyFilterGroup }];
     const result = await matchPlaybooksToEntities(eligible, [fakeEntity('x')], neverMatch);
     expect(result).toEqual([]);
   });
 
   it('handles mixed eligible playbooks correctly', async () => {
     const noFilterPlaybook = buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', {});
-    const withFilterPlaybook = buildPlaybookWithFilters(VALID_FILTERS);
+    const withFilterPlaybook = buildPlaybookWithFilters(emptyFilterGroup);
     const eligible = [
       { playbook: noFilterPlaybook, jsonFilters: null },
-      { playbook: withFilterPlaybook, jsonFilters: VALID_FILTERS },
+      { playbook: withFilterPlaybook, jsonFilters: emptyFilterGroup },
     ];
     const result = await matchPlaybooksToEntities(eligible, [fakeEntity('x')], neverMatch);
     expect(result).toEqual([noFilterPlaybook]);
