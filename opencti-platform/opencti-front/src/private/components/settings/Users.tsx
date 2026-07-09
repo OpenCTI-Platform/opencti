@@ -19,7 +19,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+
 
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
@@ -107,7 +107,7 @@ const Users = () => {
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isAdminOrganization = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isOnlyAdminOrganization = !isSetAccess && isAdminOrganization;
-  const { me, settings } = useAuth();
+  const { me } = useAuth();
   const organization = me.administrated_organizations?.[0] ?? null;
 
   const initialValues = {

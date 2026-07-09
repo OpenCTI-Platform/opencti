@@ -8,7 +8,7 @@ import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlP
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper, { isFeatureEnable } from '../utils/platformModulesHelper';
+import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';

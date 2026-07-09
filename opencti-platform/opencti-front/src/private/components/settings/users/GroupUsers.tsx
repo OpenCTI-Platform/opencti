@@ -10,8 +10,7 @@ import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__genera
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
 import Card from '../../../../components/common/card/Card';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 
 interface GroupUsersProps {
   groupId: string;
@@ -30,7 +29,6 @@ export const initialStaticPaginationForGroupUsers = {
 
 const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
   const { t_i18n, fd } = useFormatter();
-  const { settings } = useAuth();
   const LOCAL_STORAGE_KEY = `group-${groupId}-users`;
   const {
     viewStorage,

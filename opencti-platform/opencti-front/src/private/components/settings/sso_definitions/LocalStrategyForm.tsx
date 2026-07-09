@@ -15,8 +15,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
     settings {
@@ -90,7 +89,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { settings: appSettings } = useAuth();
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
   const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;

@@ -33,7 +33,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -211,7 +211,7 @@ interface UserProps {
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
-  const { me, settings } = useAuth();
+  const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
   const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
