@@ -23,7 +23,7 @@ export const savedFilterQuery = graphql`
  * substituting host entity IDs for custom views, and removing unavailable filter keys.
  * Returns the resolved selections along with flags indicating missing host entity or preview mode.
  */
-export const resolveDataSelection = ({
+export const resolveDataSelection = async ({
   filterKeysSchema,
   dataSelection,
   perspective,
@@ -44,52 +44,47 @@ export const resolveDataSelection = ({
   const availableFilterKeysMain = getAvailableFilterKeysForEntityTypes(filterKeysSchema, mainEntityTypes, true);
   const availableFilterKeysSecondary = getAvailableFilterKeysForEntityTypes(filterKeysSchema, ['Stix-Core-Object'], true);
   let hostEntityNeeded = false;
-  const updatedDataSelection = dataSelection.map((data) => {
-      let filters = [data.filters, data.dynamicFrom, data.dynamicTo];
+  const updatedDataSelection = await Promise.all(
+    dataSelection.map(async (data) => {
+      const filters = [data.filters, data.dynamicFrom, data.dynamicTo];
       // Handle eventual saved filters
       if (data.filters_id) {
-        fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise().then((data) => {
-          const result = data as dashboardVizUtilsSavedFilterQuery$data;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[0] = JSON.parse(result.savedFilter.filters);
-          }
-        });
+        const result = await fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+        if (!result?.savedFilter) {
+          isMissingSavedFilters = true;
+        } else {
+          filters[0] = JSON.parse(result.savedFilter.filters);
+        }
       }
       if (data.dynamicFrom_id) {
-        fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise().then((data) => {
-          const result = data as dashboardVizUtilsSavedFilterQuery$data;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[1] = JSON.parse(result.savedFilter.filters);
-          }
-        });
+        const result = await fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+        if (!result?.savedFilter) {
+          isMissingSavedFilters = true;
+        } else {
+          filters[1] = JSON.parse(result.savedFilter.filters);
+        }
       }
       if (data.dynamicTo_id) {
-        fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise().then((data) => {
-          const result = data as dashboardVizUtilsSavedFilterQuery$data;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[2] = JSON.parse(result.savedFilter.filters);
-          }
-        });
+        const result = await fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+        if (!result?.savedFilter) {
+          isMissingSavedFilters = true;
+        } else {
+          filters[2] = JSON.parse(result.savedFilter.filters);
+        }
       }
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID
+      let resolvedFilters = filters;
       if (host?.kind === 'custom-view') {
-        const resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
+        resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
         hostEntityNeeded = hostEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
-        filters = resolvedFilters;
       }
       return {
         ...data,
-        filters: removeIdAndIncorrectKeysFromFilterGroupObject(filters[0], availableFilterKeysMain),
-        dynamicFrom: removeIdAndIncorrectKeysFromFilterGroupObject(filters[1], availableFilterKeysSecondary),
-        dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(filters[2], availableFilterKeysSecondary),
+        filters: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[0], availableFilterKeysMain),
+        dynamicFrom: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[1], availableFilterKeysSecondary),
+        dynamicTo: removeIdAndIncorrectKeysFromFilterGroupObject(resolvedFilters[2], availableFilterKeysSecondary),
       };
-    });
+    }));
   const isMissingHostEntity = host?.kind === 'custom-view'
     && hostEntityNeeded
     && !host.customViewTargetEntityId;
