@@ -106,7 +106,7 @@ const WidgetSavedFiltersSelection = ({
   );
 
   const handleRefetch = useCallback(() => {
-    loadQuery(variables, { fetchPolicy: 'network-only' });
+    loadQuery({}, { fetchPolicy: 'network-only' });
   }, [loadQuery, scope]);
 
   return (
