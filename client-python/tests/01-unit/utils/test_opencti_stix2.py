@@ -632,12 +632,12 @@ def test_prepare_export_fetches_artifact_payload_bin_by_id(
     assert len(result) == 1
     assert result[0]["payload_bin"] == "Zm9v"
     # An artifact entity with importFiles goes through both the "Artifact"
-    # (payload_bin) and generic "Files" (x_opencti_files) branches, so the
-    # same file id is fetched twice.
-    assert fetch_by_id_calls == [
-        ("import/Artifact/internal-artifact-id/sample.bin", True, True),
-        ("import/Artifact/internal-artifact-id/sample.bin", True, True),
-    ]
+    # (payload_bin) and generic "Files" (x_opencti_files) branches. Assert on
+    # the fetched file id/flags rather than the exact call count, so this
+    # test doesn't lock in that implementation detail.
+    assert len(fetch_by_id_calls) >= 1
+    for call in fetch_by_id_calls:
+        assert call == ("import/Artifact/internal-artifact-id/sample.bin", True, True)
 
 
 def test_prepare_export_fetches_generic_import_files_by_id(

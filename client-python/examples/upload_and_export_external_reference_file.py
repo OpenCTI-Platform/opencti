@@ -61,9 +61,12 @@ for stix_object in bundle["objects"]:
         if exported_external_reference.get("source_name") != "debug-fetch-by-id-source":
             continue
         exported_files = exported_external_reference.get("x_opencti_files", [])
+        if not exported_files:
+            continue
         # the external reference may be reused across script runs (dedup on
-        # source_name + url), so pick the most recently uploaded file
-        latest_file = sorted(exported_files, key=lambda f: f["version"])[-1]
+        # source_name + url), so pick the most recently uploaded file;
+        # "version" may be missing/None, so fall back to "" for sorting
+        latest_file = max(exported_files, key=lambda f: f.get("version") or "")
         exported_data = latest_file["data"]
 
 assert exported_data is not None, "file not found in exported bundle"
