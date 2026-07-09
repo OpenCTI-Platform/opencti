@@ -29,6 +29,7 @@ import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../..
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
@@ -145,6 +146,9 @@ const AuditsPolarAreaQueyRef = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
+  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const buildQueryVariables = useCallback((resolvedSelection: WidgetDataSelection[]): AuditsPolarAreaDistributionQuery['variables'] => {
     const selection = resolvedSelection[0];
     return {
@@ -162,7 +166,7 @@ const AuditsPolarAreaQueyRef = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -172,6 +176,34 @@ const AuditsPolarAreaQueyRef = ({
     parameters,
     buildQueryVariables,
   });
+
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
+    }
+
+    if (!isGrantedToSettings || !isEnterpriseEdition) {
+      return <WidgetAccessDenied />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsPolarAreaComponent
+          queryRef={queryRef}
+          dataSelection={resolvedDataSelection}
+          onMounted={setChart}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -183,19 +215,7 @@ const AuditsPolarAreaQueyRef = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {isMissingHostEntity ? (
-        <WidgetNoHostEntity host={host} />
-      ) : queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <AuditsPolarAreaComponent
-            queryRef={queryRef}
-            dataSelection={resolvedDataSelection}
-            onMounted={setChart}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

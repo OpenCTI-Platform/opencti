@@ -8,6 +8,7 @@ import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsTreeMapDistributionQuery } from './__generated__/StixRelationshipsTreeMapDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '@components/common/charts/Chart';
@@ -177,7 +178,7 @@ const StixRelationshipsTreeMap = ({
 }: StixRelationshipsTreeMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -190,6 +191,10 @@ const StixRelationshipsTreeMap = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

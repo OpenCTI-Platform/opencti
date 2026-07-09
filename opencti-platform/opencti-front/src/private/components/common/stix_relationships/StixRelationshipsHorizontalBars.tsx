@@ -9,6 +9,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ReactNode, Suspense, useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsHorizontalBarsDistributionQuery } from './__generated__/StixRelationshipsHorizontalBarsDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -198,7 +199,7 @@ const StixRelationshipsHorizontalBars = ({
 }: StixRelationshipsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -211,6 +212,10 @@ const StixRelationshipsHorizontalBars = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

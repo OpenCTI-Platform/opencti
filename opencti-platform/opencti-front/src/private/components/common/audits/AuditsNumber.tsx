@@ -28,6 +28,7 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -154,7 +155,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -168,12 +169,38 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
   const title = parameters.title ?? t_i18n('Audits number');
   const translatedTitle = translateEntityType(title);
 
-  if (!isGrantedToSettings || !isEnterpriseEdition) {
-    return <WidgetAccessDenied />;
-  }
-
   const selection = resolvedDataSelection[0];
   const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
+
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
+    }
+
+    if (!isGrantedToSettings || !isEnterpriseEdition) {
+      return <WidgetAccessDenied />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsNumberComponent
+          queryRef={queryRef}
+          entityType={entityType}
+          label={translatedTitle}
+          isUnique={Boolean(selection.unique)}
+          onShowWarning={setShowWarning}
+        />
+      </Suspense>
+    );
+  };
 
   return (
     <WidgetContainer
@@ -185,21 +212,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
       showPreviewTag={isPreviewMode}
       warning={warning}
     >
-      {isMissingHostEntity ? (
-        <WidgetNoHostEntity host={host} />
-      ) : queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <AuditsNumberComponent
-            queryRef={queryRef}
-            entityType={entityType}
-            label={translatedTitle}
-            isUnique={Boolean(selection.unique)}
-            onShowWarning={setShowWarning}
-          />
-        </Suspense>
-      ) : (
-        <Loader variant={LoaderVariant.inElement} />
-      )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

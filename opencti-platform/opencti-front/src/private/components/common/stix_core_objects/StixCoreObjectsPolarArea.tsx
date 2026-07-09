@@ -11,6 +11,7 @@ import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../..
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -175,7 +176,7 @@ const StixCoreObjectsPolarArea = ({
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -189,6 +190,10 @@ const StixCoreObjectsPolarArea = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

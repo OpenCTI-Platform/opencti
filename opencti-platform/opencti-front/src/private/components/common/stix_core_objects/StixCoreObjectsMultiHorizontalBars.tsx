@@ -13,6 +13,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import {
   StixCoreObjectsMultiHorizontalBarsDistributionQuery,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHorizontalBarsDistributionQuery.graphql';
@@ -549,7 +550,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   host,
 }: StixCoreObjectsMultiHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -562,6 +563,10 @@ const stixCoreObjectsMultiHorizontalBars = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

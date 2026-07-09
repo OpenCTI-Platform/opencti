@@ -9,6 +9,7 @@ import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalB
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiVerticalBarsTimeSeriesQuery } from './__generated__/StixRelationshipsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -144,7 +145,7 @@ const StixRelationshipsMultiVerticalBars = ({
 }: StixRelationshipsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -158,6 +159,10 @@ const StixRelationshipsMultiVerticalBars = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

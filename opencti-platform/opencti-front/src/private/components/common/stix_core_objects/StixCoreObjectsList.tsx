@@ -9,6 +9,7 @@ import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCo
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -502,7 +503,7 @@ const StixCoreObjectsList = ({
 }: StixCoreObjectsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -515,6 +516,10 @@ const StixCoreObjectsList = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

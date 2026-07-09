@@ -13,6 +13,7 @@ import type { DashboardConfig } from '../../../../components/dashboard/dashboard
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsDistributionListQuery$data } from './__generated__/DraftsDistributionListQuery.graphql';
 
@@ -99,7 +100,7 @@ const DraftsDistributionList = ({
     return () => clearInterval(interval);
   }, [refreshRate, refreshToken]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
     host,
@@ -108,6 +109,9 @@ const DraftsDistributionList = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
     const selection = resolvedDataSelection[0];
     return (

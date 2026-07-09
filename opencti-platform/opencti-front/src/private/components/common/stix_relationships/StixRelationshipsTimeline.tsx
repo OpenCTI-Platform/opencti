@@ -10,6 +10,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import {
   OrderingMode,
@@ -1083,7 +1084,7 @@ const StixRelationshipsTimeline = ({
   refreshRate = null,
 }: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -1096,6 +1097,10 @@ const StixRelationshipsTimeline = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

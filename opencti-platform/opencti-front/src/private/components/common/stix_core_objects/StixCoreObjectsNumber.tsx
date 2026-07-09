@@ -9,6 +9,7 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCoreObjectsNumberNumberSeriesQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -121,7 +122,7 @@ const StixCoreObjectsNumber = ({
   const title = parameters.title ?? t_i18n('Entities number');
   const translatedTitle = translateEntityType(title);
 
-  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -134,6 +135,10 @@ const StixCoreObjectsNumber = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

@@ -7,6 +7,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ReactNode, Suspense } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixCoreObjectsDonutDistributionQuery } from './__generated__/StixCoreObjectsDonutDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -170,7 +171,7 @@ const StixCoreObjectsDonut = ({
   host,
 }: StixCoreObjectsDonutProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -185,6 +186,10 @@ const StixCoreObjectsDonut = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

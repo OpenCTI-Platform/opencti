@@ -28,6 +28,7 @@ import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import { getWidgetInterval, showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetMultiTimeSeries, WidgetParameters } from '../../../../utils/widget/widget';
@@ -174,7 +175,7 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -191,6 +192,10 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

@@ -7,6 +7,7 @@ import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixCoreObjectsWordCloudDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsWordCloudDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -170,7 +171,7 @@ const StixCoreObjectsWordCloud = ({
   refreshRate = null,
 }: StixCoreObjectsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -183,6 +184,10 @@ const StixCoreObjectsWordCloud = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

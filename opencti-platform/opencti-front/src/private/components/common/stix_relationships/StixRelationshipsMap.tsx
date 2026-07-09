@@ -9,6 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import {
   StixRelationshipsMapStixRelationshipsDistributionQuery,
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsMapStixRelationshipsDistributionQuery.graphql';
@@ -199,7 +200,7 @@ const StixRelationshipsMap = ({
   refreshRate = null,
 }: StixRelationshipsMapProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -211,6 +212,10 @@ const StixRelationshipsMap = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

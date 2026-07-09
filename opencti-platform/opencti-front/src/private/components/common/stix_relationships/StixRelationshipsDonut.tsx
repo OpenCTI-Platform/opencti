@@ -10,6 +10,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsDonutDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
@@ -184,7 +185,7 @@ const StixRelationshipsDonut = ({
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -197,6 +198,10 @@ const StixRelationshipsDonut = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

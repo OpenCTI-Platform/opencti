@@ -8,6 +8,7 @@ import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsWordCloudDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsWordCloudDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -188,7 +189,7 @@ const StixRelationshipsWordCloud = ({
   refreshRate = null,
 }: StixRelationshipsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsWordCloudDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -200,6 +201,10 @@ const StixRelationshipsWordCloud = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

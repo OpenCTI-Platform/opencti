@@ -8,6 +8,7 @@ import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsRadarDistributionQuery } from './__generated__/StixCoreObjectsRadarDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -172,7 +173,7 @@ const StixCoreObjectsRadar = ({
   refreshRate = null,
 }: StixCoreObjectsRadarProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -185,6 +186,10 @@ const StixCoreObjectsRadar = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

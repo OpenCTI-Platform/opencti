@@ -26,6 +26,7 @@ import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -170,7 +171,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -185,6 +186,9 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return <WidgetAccessDenied />;

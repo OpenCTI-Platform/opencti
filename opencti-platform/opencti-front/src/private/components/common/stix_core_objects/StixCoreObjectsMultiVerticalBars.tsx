@@ -8,6 +8,7 @@ import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalB
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -138,7 +139,7 @@ const StixCoreObjectsMultiVerticalBars = ({
   host,
 }: StixCoreObjectsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -152,6 +153,10 @@ const StixCoreObjectsMultiVerticalBars = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

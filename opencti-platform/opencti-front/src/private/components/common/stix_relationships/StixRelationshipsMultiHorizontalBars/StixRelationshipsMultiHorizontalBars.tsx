@@ -9,10 +9,11 @@ import type { DashboardConfig } from '../../../../../components/dashboard/dashbo
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
-import Loader from '../../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from '../../../../../components/dashboard/WidgetNoSavedFilters';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
 import { useDashboardRefreshToken } from '../../../../../components/dashboard/DashboardRefreshContext';
 import type {
@@ -450,7 +451,7 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -541,6 +542,34 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
     });
   }, [refreshToken, loadQuery, startTransition, variables]);
 
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
+    }
+
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <StixRelationshipsMultiHorizontalBarsComponent
+          queryRef={queryRef}
+          parameters={parameters}
+          finalField={finalField}
+          queryToCall={queryToCall}
+          subSelection={subSelection}
+          finalSubDistributionField={finalSubDistributionField}
+          onMounted={setChart}
+        />
+      </Suspense>
+    );
+  };
+
   return (
     <WidgetContainer
       padding="small"
@@ -551,24 +580,7 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {isMissingHostEntity
-        ? <WidgetNoHostEntity host={host} />
-        : (
-            <Suspense fallback={<Loader />}>
-              {queryRef && (
-                <StixRelationshipsMultiHorizontalBarsComponent
-                  queryRef={queryRef}
-                  parameters={parameters}
-                  finalField={finalField}
-                  queryToCall={queryToCall}
-                  subSelection={subSelection}
-                  finalSubDistributionField={finalSubDistributionField}
-                  onMounted={setChart}
-                />
-              )}
-            </Suspense>
-          )
-      }
+      {renderContent()}
     </WidgetContainer>
   );
 };

@@ -26,6 +26,7 @@ import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -188,7 +189,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsTreeMapDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -204,6 +205,10 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

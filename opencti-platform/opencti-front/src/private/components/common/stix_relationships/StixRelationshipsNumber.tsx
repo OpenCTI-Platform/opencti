@@ -9,6 +9,7 @@ import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsNumberNumberSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsNumberNumberSeriesQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { ReactNode, Suspense } from 'react';
@@ -148,7 +149,7 @@ const StixRelationshipsNumber = ({
 }: StixRelationshipsNumberProps) => {
   const { t_i18n } = useFormatter();
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsNumberNumberSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -161,6 +162,10 @@ const StixRelationshipsNumber = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

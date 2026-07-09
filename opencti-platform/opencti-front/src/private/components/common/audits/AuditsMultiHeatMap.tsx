@@ -28,6 +28,7 @@ import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeat
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
@@ -166,7 +167,7 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiHeatMapTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiHeatMapTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -180,6 +181,10 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

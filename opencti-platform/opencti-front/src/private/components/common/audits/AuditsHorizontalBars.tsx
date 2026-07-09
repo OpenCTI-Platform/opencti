@@ -32,6 +32,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -195,7 +196,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -210,6 +211,10 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

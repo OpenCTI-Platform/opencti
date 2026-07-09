@@ -12,6 +12,7 @@ import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCo
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsListQuery$data } from './__generated__/DraftsListQuery.graphql';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -125,7 +126,7 @@ const DraftsList = ({
     return () => clearInterval(interval);
   }, [refreshRate, refreshToken]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
     host,
@@ -144,6 +145,46 @@ const DraftsList = ({
 
   const rootRef = useRef(null);
 
+  const renderContent = () => {
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
+    }
+
+    return (
+      <QueryRenderer
+        key={localRefreshKey}
+        query={draftsListQuery}
+        variables={{
+          first: selection.number ?? 10,
+          orderBy: sortBy,
+          orderMode: selection.sort_mode ?? 'desc',
+          filters,
+        }}
+        render={({ props }: { props: DraftsListQuery$data }) => {
+          if (props && props.draftWorkspaces && props.draftWorkspaces.edges.length > 0) {
+            return (
+              <WidgetListCoreObjects
+                data={[...props.draftWorkspaces.edges]}
+                rootRef={rootRef.current ?? undefined}
+                widgetId={widgetId}
+                pageSize={selection.number ?? 10}
+                columns={columns}
+              />
+            );
+          }
+          if (props) {
+            return <WidgetNoData />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    );
+  };
+
   return (
     <WidgetContainer
       padding="horizontal"
@@ -154,37 +195,7 @@ const DraftsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {isMissingHostEntity
-          ? <WidgetNoHostEntity host={host} />
-          : (
-              <QueryRenderer
-                key={localRefreshKey}
-                query={draftsListQuery}
-                variables={{
-                  first: selection.number ?? 10,
-                  orderBy: sortBy,
-                  orderMode: selection.sort_mode ?? 'desc',
-                  filters,
-                }}
-                render={({ props }: { props: DraftsListQuery$data }) => {
-                  if (props && props.draftWorkspaces && props.draftWorkspaces.edges.length > 0) {
-                    return (
-                      <WidgetListCoreObjects
-                        data={[...props.draftWorkspaces.edges]}
-                        rootRef={rootRef.current ?? undefined}
-                        widgetId={widgetId}
-                        pageSize={selection.number ?? 10}
-                        columns={columns}
-                      />
-                    );
-                  }
-                  if (props) {
-                    return <WidgetNoData />;
-                  }
-                  return <Loader variant={LoaderVariant.inElement} />;
-                }}
-              />
-            )}
+        {renderContent()}
       </div>
     </WidgetContainer>
   );

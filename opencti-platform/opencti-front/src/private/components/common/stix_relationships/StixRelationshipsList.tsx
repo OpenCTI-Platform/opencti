@@ -9,6 +9,7 @@ import WidgetListRelationships from '../../../../components/dashboard/WidgetList
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { StixRelationshipsListQuery, StixRelationshipsOrdering } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { OrderingMode } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -4558,7 +4559,7 @@ const StixRelationshipsList = ({
 }: StixRelationshipsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsListQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -4570,6 +4571,10 @@ const StixRelationshipsList = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

@@ -30,6 +30,7 @@ import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../..
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 
 const auditsDistributionListDistributionQuery = graphql`
   query AuditsDistributionListDistributionQuery(
@@ -190,7 +191,7 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsDistributionListDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -205,6 +206,10 @@ const AuditsDistributionList: FunctionComponent<AuditsDistributionListProps> = (
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

@@ -28,6 +28,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { UNIQUE_COUNT_ESTIMATION_WARNING, getWidgetInterval, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -170,7 +171,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -187,6 +188,10 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {

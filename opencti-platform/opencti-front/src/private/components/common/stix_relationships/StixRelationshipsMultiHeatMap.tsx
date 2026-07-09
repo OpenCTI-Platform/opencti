@@ -8,6 +8,7 @@ import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeat
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { StixRelationshipsMultiHeatMapTimeSeriesQuery } from './__generated__/StixRelationshipsMultiHeatMapTimeSeriesQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -149,7 +150,7 @@ const StixRelationshipsMultiHeatMap = ({
 }: StixRelationshipsMultiHeatMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -163,6 +164,10 @@ const StixRelationshipsMultiHeatMap = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

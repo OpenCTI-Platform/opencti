@@ -11,6 +11,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
@@ -149,7 +150,7 @@ const StixCoreObjectsTimeline = ({
   refreshRate = null,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -161,6 +162,10 @@ const StixCoreObjectsTimeline = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

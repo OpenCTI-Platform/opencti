@@ -9,6 +9,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ReactNode, Suspense, useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -148,7 +149,7 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -162,6 +163,10 @@ const StixRelationshipsMultiAreaChart = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) {

@@ -10,6 +10,7 @@ import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/d
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsDistributionListDistributionQuery } from './__generated__/StixCoreObjectsDistributionListDistributionQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -180,7 +181,7 @@ const StixCoreObjectsDistributionList = ({
 }: StixCoreObjectsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -193,6 +194,10 @@ const StixCoreObjectsDistributionList = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!queryRef) return null;

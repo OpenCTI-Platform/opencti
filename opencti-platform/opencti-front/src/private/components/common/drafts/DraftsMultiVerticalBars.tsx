@@ -13,6 +13,7 @@ import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalB
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsMultiVerticalBarsTimeSeriesQuery$data } from './__generated__/DraftsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
@@ -63,7 +64,7 @@ const DraftsMultiVerticalBars = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
     perspective: 'entities',
     dataSelection,
     host,
@@ -104,6 +105,9 @@ const DraftsMultiVerticalBars = ({
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
     return (
       <QueryRenderer

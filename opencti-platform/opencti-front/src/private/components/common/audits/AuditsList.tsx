@@ -27,6 +27,7 @@ import WidgetListAudits from '../../../../components/dashboard/WidgetListAudits'
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 
@@ -137,7 +138,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -148,6 +149,26 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
     buildQueryVariables,
   });
 
+  const renderContent = () => {
+    if (!isGrantedToSettings || !isEnterpriseEdition) {
+      return <WidgetAccessDenied />;
+    }
+    if (isMissingHostEntity) {
+      return <WidgetNoHostEntity host={host} />;
+    }
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
+    }
+    if (!queryRef) {
+      return <Loader variant={LoaderVariant.inElement} />;
+    }
+    return (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <AuditsListComponent queryRef={queryRef} />
+      </Suspense>
+    );
+  };
+
   return (
     <WidgetContainer
       padding="horizontal"
@@ -157,19 +178,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {(!isGrantedToSettings || !isEnterpriseEdition)
-        ? <WidgetAccessDenied />
-        : isMissingHostEntity
-          ? <WidgetNoHostEntity host={host} />
-          : (
-              <>
-                {queryRef && (
-                  <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <AuditsListComponent queryRef={queryRef} />
-                  </Suspense>
-                )}
-              </>
-            )}
+      {renderContent()}
     </WidgetContainer>
   );
 };

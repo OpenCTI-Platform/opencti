@@ -28,6 +28,7 @@ import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalB
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
@@ -159,7 +160,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -176,6 +177,10 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
+    }
+
+    if (isMissingSavedFilters) {
+      return <WidgetNoSavedFilters />;
     }
 
     if (!isGrantedToSettings || !isEnterpriseEdition) {
