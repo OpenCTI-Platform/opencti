@@ -16006,7 +16006,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   fintelTemplates: [FintelTemplate!]
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   identity_class: String!
-  name: String
+  name: String!
   description: String
   contact_information: String
   roles: [String]
