@@ -4455,6 +4455,7 @@
   "The retention policy will be applied on history logs of knowledge entities": "Die Aufbewahrungspolitik wird auf Verlaufsprotokolle von Wissenseinheiten angewendet",
   "The rule has been disabled, clean-up launched...": "Die Regel wurde deaktiviert, Bereinigung eingeleitet...",
   "The rule has been enabled, rescan of platform data launched...": "Die Regel wurde aktiviert, erneuter Scan der Plattformdaten gestartet...",
+  "The saved filter used by this widget is not available.": "Der von diesem Widget verwendete gespeicherte Filter ist nicht verfügbar.",
   "The scenario has been correctly generated in your OpenBAS platform.": "Das Szenario wurde in Ihrer OpenBAS-Plattform korrekt erstellt.",
   "The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.": "Das SMTP-OAuth2-Aktualisierungstoken ist abgelaufen. Der E-Mail-Versand ist wahrscheinlich unterbrochen. Erneuern Sie es so schnell wie möglich.",
   "The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.": "Das SMTP-OAuth2-Aktualisierungstoken läuft bald ab. Erneuern Sie es, um eine Unterbrechung des E-Mail-Versands zu vermeiden.",

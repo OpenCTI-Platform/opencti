@@ -4455,6 +4455,7 @@
   "The retention policy will be applied on history logs of knowledge entities": "보존 정책은 지식 엔티티의 기록 로그에 적용됩니다",
   "The rule has been disabled, clean-up launched...": "규칙이 비활성화되었습니다, 정리 시작...",
   "The rule has been enabled, rescan of platform data launched...": "규칙이 활성화되었습니다, 플랫폼 데이터 다시 스캔 시작...",
+  "The saved filter used by this widget is not available.": "이 위젯에서 사용하는 저장된 필터를 사용할 수 없습니다.",
   "The scenario has been correctly generated in your OpenBAS platform.": "시나리오가 OpenBAS 플랫폼에서 올바르게 생성되었습니다.",
   "The SMTP OAuth2 refresh token has expired. Email sending is likely interrupted, renew it as soon as possible.": "SMTP OAuth2 갱신 토큰의 유효 기간이 만료되었습니다. 이메일 발송이 중단되었을 가능성이 있으니, 가능한 한 빨리 갱신해 주십시오.",
   "The SMTP OAuth2 refresh token is about to expire. Renew it to avoid interrupting email sending.": "SMTP OAuth2 갱신 토큰의 유효 기간이 곧 만료됩니다. 이메일 발송이 중단되지 않도록 갱신해 주십시오.",
