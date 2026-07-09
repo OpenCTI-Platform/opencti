@@ -231,4 +231,6 @@ input SecurityCoverageResultAddInput {
 type Mutation {
   securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageResultDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }

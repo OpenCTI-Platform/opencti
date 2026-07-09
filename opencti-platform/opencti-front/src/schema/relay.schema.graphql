@@ -10583,6 +10583,8 @@ type Mutation {
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   securityCoverageResultAdd(input: SecurityCoverageResultAddInput!): SecurityCoverageResult
   securityCoverageResultDelete(id: ID!): ID
+  securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
