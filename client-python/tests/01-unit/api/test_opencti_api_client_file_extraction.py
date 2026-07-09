@@ -133,6 +133,9 @@ class _NullLogger:
     def info(self, *args, **kwargs):
         del args, kwargs
 
+    def warning(self, *args, **kwargs):
+        del args, kwargs
+
 
 @pytest.mark.parametrize("method_name", ["upload_file", "upload_pending_file"])
 def test_path_upload_helpers_stream_file_data_and_close_handle(tmp_path, method_name):
@@ -156,3 +159,53 @@ def test_path_upload_helpers_stream_file_data_and_close_handle(tmp_path, method_
 
     assert result == {"data": {"ok": True}}
     assert captured["handle"].closed
+
+
+class _DownloadResponse:
+    ok = True
+
+    def __init__(self, chunks):
+        self.chunks = chunks
+        self.closed = False
+        self.chunk_size = None
+
+    def iter_content(self, chunk_size):
+        self.chunk_size = chunk_size
+        yield from self.chunks
+
+    def close(self):
+        self.closed = True
+
+
+class _DownloadSession:
+    def __init__(self, response):
+        self.response = response
+        self.kwargs = None
+
+    def get(self, *args, **kwargs):
+        del args
+        self.kwargs = kwargs
+        return self.response
+
+
+def test_fetch_opencti_file_streams_binary_serialization_and_closes_response():
+    response = _DownloadResponse([b"ab", b"", b"cdef", b"g"])
+    client = _client()
+    client.request_headers = {}
+    client.ssl_verify = False
+    client.cert = None
+    client.proxies = None
+    client.session_requests_timeout = 300
+    client.app_logger = _NullLogger()
+    client.session = _DownloadSession(response)
+
+    result = client.fetch_opencti_file(
+        "http://benchmark.invalid/storage/get/file",
+        binary=True,
+        serialize=True,
+    )
+
+    assert result == "YWJjZGVmZw=="
+    assert client.session.kwargs["stream"] is True
+    assert response.chunk_size == 2 * 1024 * 1024
+    assert response.closed

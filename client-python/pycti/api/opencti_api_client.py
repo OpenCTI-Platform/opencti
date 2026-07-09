@@ -854,15 +854,19 @@ class OpenCTIApiClient:
         :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
         :rtype: str, bytes, or None
         """
+        stream_response = binary and serialize
+        r = None
         try:
-            r = self.session.get(
-                fetch_uri,
-                headers=self.request_headers,
-                verify=self.ssl_verify,
-                cert=self.cert,
-                proxies=self.proxies,
-                timeout=self.session_requests_timeout,
-            )
+            request_kwargs = {
+                "headers": self.request_headers,
+                "verify": self.ssl_verify,
+                "cert": self.cert,
+                "proxies": self.proxies,
+                "timeout": self.session_requests_timeout,
+            }
+            if stream_response:
+                request_kwargs["stream"] = True
+            r = self.session.get(fetch_uri, **request_kwargs)
             # Check if request was successful
             if not r.ok:
                 self.app_logger.warning(
@@ -872,7 +876,7 @@ class OpenCTIApiClient:
                 return None
             if binary:
                 if serialize:
-                    return base64.b64encode(r.content).decode("utf-8")
+                    return self._serialize_binary_response_content(r)
                 return r.content
             if serialize:
                 return base64.b64encode(r.text.encode("utf-8")).decode("utf-8")
@@ -882,6 +886,28 @@ class OpenCTIApiClient:
                 "Error fetching file", {"uri": fetch_uri, "error": str(e)}
             )
             return None
+        finally:
+            if stream_response and r is not None:
+                r.close()
+
+    @staticmethod
+    def _serialize_binary_response_content(response, chunk_size=2 * 1024 * 1024):
+        encoded_chunks = []
+        pending_bytes = b""
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if not chunk:
+                continue
+            if pending_bytes:
+                chunk = pending_bytes + chunk
+            complete_length = len(chunk) - (len(chunk) % 3)
+            if complete_length > 0:
+                encoded_chunks.append(
+                    base64.b64encode(chunk[:complete_length]).decode("ascii")
+                )
+            pending_bytes = chunk[complete_length:]
+        if pending_bytes:
+            encoded_chunks.append(base64.b64encode(pending_bytes).decode("ascii"))
+        return "".join(encoded_chunks)
 
     def health_check(self):
         """Submit an example request to the OpenCTI API.
