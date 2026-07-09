@@ -24,7 +24,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
-import { buildRateLimiterOptions } from './httpUtils';
+import { buildRateLimiterOptions, logOutUser } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
@@ -116,11 +116,44 @@ const createHttpServer = async () => {
     server: httpServer,
     path: `${basePath}/graphql`,
   });
+  const userConnections = new Map();
   wsServer.on('error', (e) => {
     throw e;
   });
+  const trackConnections = async (user, activity, timeoutId) => {
+    const userId = user.id;
+    if (activity === 'connection') {
+      if (!userConnections.has(userId)) {
+        userConnections.set(userId, 1);
+      } else {
+        userConnections.set(userId, userConnections.get(userId) + 1);
+      }
+    } else {
+      const userConnectionCount = userConnections.get(userId);
+      if (userConnectionCount === 1) {
+        await logOutUser(user);
+        userConnections.delete(userId);
+      } else if (userConnectionCount > 1) {
+        userConnections.set(userId, userConnections.get(userId) - 1);
+      }
+    }
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  };
   const serverCleanup = useServer({
     schema,
+    onConnect: async (ctx) => {
+      const session = await extractWsSessionContext(ctx);
+      await trackConnections(session.user, 'connection');
+    },
+    onDisconnect: async (ctx) => {
+      // timeout to prevent logouts due to refresh or network issues
+      const timeoutId = setTimeout(async () => {
+        const session = await extractWsSessionContext(ctx);
+        await trackConnections(session.user, 'disconnection', timeoutId);
+      }, 4000);
+    },
     context: extractWsSessionContext,
   }, wsServer);
 
