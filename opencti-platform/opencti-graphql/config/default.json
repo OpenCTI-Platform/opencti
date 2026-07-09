@@ -326,7 +326,7 @@
     "interval": 30000,
     "uri_deny_list": [],
     "feed": {
-      "request_timeout": 30000
+      "request_timeout": 300000
     },
     "taxii_feed": {
       "limit_per_request": 0
