@@ -204,3 +204,83 @@ def test_export_list_reuses_related_endpoint_access_across_roots():
     helper.export_list(entity_type="Indicator", mode="full")
 
     assert access_collection.list_calls == 1
+
+
+def test_export_selected_reuses_related_object_reads_across_roots():
+    helper = _helper([])
+    helper.opencti.stix_core_relationship = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "shared")],
+            "root-2": [_relationship("relationship--2", "shared")],
+            "root-3": [_relationship("relationship--3", "shared")],
+        }
+    )
+    for index, relationship in enumerate(
+        helper.opencti.stix_core_relationship.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    read_calls = []
+
+    def read(filters):
+        read_calls.append(filters)
+        return {
+            "id": "malware--shared",
+            "type": "malware",
+            "x_opencti_id": "target-shared",
+        }
+
+    helper.get_reader = lambda resolve_type: read
+    helper.generate_export = lambda entity: entity.copy()
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert len(read_calls) == 1
+
+
+def test_export_list_reuses_related_object_reads_across_roots():
+    helper = _helper([])
+    helper.opencti.stix_core_relationship = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "shared")],
+            "root-2": [_relationship("relationship--2", "shared")],
+            "root-3": [_relationship("relationship--3", "shared")],
+        }
+    )
+    for index, relationship in enumerate(
+        helper.opencti.stix_core_relationship.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    read_calls = []
+
+    def read(filters):
+        read_calls.append(filters)
+        return {
+            "id": "malware--shared",
+            "type": "malware",
+            "x_opencti_id": "target-shared",
+        }
+
+    helper.get_reader = lambda resolve_type: read
+    helper.generate_export = lambda entity: entity.copy()
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    helper.export_list(entity_type="Indicator", mode="full")
+
+    assert len(read_calls) == 1

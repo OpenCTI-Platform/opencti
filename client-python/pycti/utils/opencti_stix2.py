@@ -2161,6 +2161,9 @@ class OpenCTIStix2:
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
         related_object_access_cache: Optional[Dict[str, bool]] = None,
+        related_object_export_cache: Optional[
+            Dict[Tuple[str, str], Optional[List[Dict]]]
+        ] = None,
     ) -> List:
         """Prepare an entity for STIX2 export with related objects.
 
@@ -2174,11 +2177,15 @@ class OpenCTIStix2:
         :type no_custom_attributes: bool, optional
         :param related_object_access_cache: Export-scoped cache for repeated endpoint visibility checks
         :type related_object_access_cache: dict, optional
+        :param related_object_export_cache: Export-scoped cache for repeated related-object reads and simple exports
+        :type related_object_export_cache: dict, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
         """
         if related_object_access_cache is None:
             related_object_access_cache = {}
+        if related_object_export_cache is None:
+            related_object_export_cache = {}
         if mode == "full" and "x_opencti_id" in entity:
             related_object_access_cache[entity["x_opencti_id"]] = True
         result = []
@@ -2571,6 +2578,7 @@ class OpenCTIStix2:
                         mode="simple",
                         access_filter=access_filter,
                         related_object_access_cache=related_object_access_cache,
+                        related_object_export_cache=related_object_export_cache,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2595,6 +2603,7 @@ class OpenCTIStix2:
                         mode="simple",
                         access_filter=access_filter,
                         related_object_access_cache=related_object_access_cache,
+                        related_object_export_cache=related_object_export_cache,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2617,18 +2626,25 @@ class OpenCTIStix2:
                 if read_object_key in read_object_keys:
                     continue
                 read_object_keys.add(read_object_key)
-                do_read = self.get_reader(resolve_type)
-                query_filters = self.prepare_id_filters_export(
-                    entity_object["id"], access_filter
-                )
-                entity_object_data = do_read(filters=query_filters)
-                if entity_object_data is not None:
-                    stix_entity_object = self.prepare_export(
-                        entity=self.generate_export(entity_object_data),
-                        mode="simple",
-                        access_filter=access_filter,
-                        related_object_access_cache=related_object_access_cache,
+                if read_object_key not in related_object_export_cache:
+                    do_read = self.get_reader(resolve_type)
+                    query_filters = self.prepare_id_filters_export(
+                        entity_object["id"], access_filter
                     )
+                    entity_object_data = do_read(filters=query_filters)
+                    related_object_export_cache[read_object_key] = (
+                        self.prepare_export(
+                            entity=self.generate_export(entity_object_data),
+                            mode="simple",
+                            access_filter=access_filter,
+                            related_object_access_cache=related_object_access_cache,
+                            related_object_export_cache=related_object_export_cache,
+                        )
+                        if entity_object_data is not None
+                        else None
+                    )
+                stix_entity_object = related_object_export_cache[read_object_key]
+                if stix_entity_object is not None:
                     # Add to result
                     entity_object_bundle = self.filter_objects(
                         uuids, stix_entity_object
@@ -2940,6 +2956,7 @@ class OpenCTIStix2:
         if entities_list is not None:
             uuids = set()
             related_object_access_cache = {} if mode == "full" else None
+            related_object_export_cache = {} if mode == "full" else None
             for entity in entities_list:
                 export_entity = self.generate_export(entity)
                 if related_object_access_cache is None:
@@ -2954,6 +2971,7 @@ class OpenCTIStix2:
                         mode=mode,
                         access_filter=access_filter,
                         related_object_access_cache=related_object_access_cache,
+                        related_object_export_cache=related_object_export_cache,
                     )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
@@ -2987,6 +3005,7 @@ class OpenCTIStix2:
 
         uuids = set()
         related_object_access_cache = {} if mode == "full" else None
+        related_object_export_cache = {} if mode == "full" else None
         for entity in entities_list:
             export_entity = self.generate_export(entity)
             if related_object_access_cache is None:
@@ -3001,6 +3020,7 @@ class OpenCTIStix2:
                     mode=mode,
                     access_filter=access_filter,
                     related_object_access_cache=related_object_access_cache,
+                    related_object_export_cache=related_object_export_cache,
                 )
             if entity_bundle is not None:
                 entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
