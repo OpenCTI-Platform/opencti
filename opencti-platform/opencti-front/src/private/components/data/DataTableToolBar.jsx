@@ -961,7 +961,6 @@ class DataTableToolBar extends Component {
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
 
-    const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
     let options = [];
     if (isUserDatatable) {
       if (['ADD', 'REMOVE'].includes(actionsInputs[i]?.type)) {

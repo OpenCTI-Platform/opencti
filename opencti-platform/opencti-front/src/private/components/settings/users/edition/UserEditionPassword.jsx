@@ -9,8 +9,6 @@ import { commitMutation, handleError, MESSAGING$ } from '../../../../../relay/en
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import PasswordPolicies from '../../../common/form/PasswordPolicies';
-import useAuth from '../../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../../utils/platformModulesHelper';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionPasswordFieldPatchMutation(
@@ -46,8 +44,6 @@ const formatExpiryDate = (value) => {
 const UserEditionPasswordComponent = ({ user }) => {
   const { t_i18n: t } = useFormatter();
   const theme = useTheme();
-  const { settings } = useAuth();
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
   const external = user.external === true;
   const isLocked = user.account_status === 'Locked';
   const formattedExpiry = formatExpiryDate(user.password_valid_until);
@@ -115,7 +111,7 @@ const UserEditionPasswordComponent = ({ user }) => {
             />
           </Stack>
           <div style={{ marginTop: 20, textAlign: 'right' }}>
-            {forcePasswordChangeEnabled && !external && !isLocked && (
+            {!external && !isLocked && (
               <Button
                 variant="secondary"
                 onClick={handleForcePasswordChange}
@@ -132,7 +128,7 @@ const UserEditionPasswordComponent = ({ user }) => {
               {t('Update')}
             </Button>
           </div>
-          {forcePasswordChangeEnabled && formattedExpiry && (
+          {formattedExpiry && (
             <FormHelperText style={{ marginTop: 8 }}>
               {`Expiry: ${formattedExpiry}`}
             </FormHelperText>

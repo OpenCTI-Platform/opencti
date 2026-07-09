@@ -303,7 +303,6 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
   const passwordValidUntil = (user as { password_valid_until?: string | null }).password_valid_until;
   const passwordValidUntilDate = passwordValidUntil ? fd(passwordValidUntil) : EMPTY_VALUE;
   const isServiceAccount = user.user_service_account;
@@ -354,14 +353,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
                   </Grid>
-                  {forcePasswordChangeEnabled && (
-                    <Grid item xs={4}>
-                      <Label>
-                        {t_i18n('Password valid until')}
-                      </Label>
-                      {passwordValidUntilDate}
-                    </Grid>
-                  )}
+                  <Grid item xs={4}>
+                    <Label>
+                      {t_i18n('Password valid until')}
+                    </Label>
+                    {passwordValidUntilDate}
+                  </Grid>
                 </>
               )}
               {isServiceAccount && (

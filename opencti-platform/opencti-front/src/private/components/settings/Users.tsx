@@ -180,20 +180,18 @@ const Users = () => {
     organization,
   ]);
 
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
-
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: forcePasswordChangeEnabled ? 15 : 20,
+      percentWidth: 15,
     },
     user_email: {
-      percentWidth: forcePasswordChangeEnabled ? 15 : 20,
+      percentWidth: 15,
     },
     firstname: {
-      percentWidth: forcePasswordChangeEnabled ? 12.5 : 15,
+      percentWidth: 12.5,
     },
     lastname: {
-      percentWidth: forcePasswordChangeEnabled ? 12.5 : 15,
+      percentWidth: 12.5,
     },
     effective_confidence_level: {
       percentWidth: 10,
@@ -201,13 +199,11 @@ const Users = () => {
     otp: {
       percentWidth: 5,
     },
-    ...(forcePasswordChangeEnabled ? {
-      password_valid_until: {
-        label: 'Password valid until',
-        percentWidth: 15,
-        render: ({ password_valid_until }) => fd(password_valid_until),
-      },
-    } : {}),
+    password_valid_until: {
+      label: 'Password valid until',
+      percentWidth: 15,
+      render: ({ password_valid_until }) => fd(password_valid_until),
+    },
     created_at: {
       percentWidth: 15,
     },

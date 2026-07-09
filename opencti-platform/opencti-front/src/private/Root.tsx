@@ -508,8 +508,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
   }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
     schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
 
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
-  const passwordExpired = forcePasswordChangeEnabled && isPasswordExpiredFront(me);
+  const passwordExpired = isPasswordExpiredFront(me);
   const onForcePasswordChangeRoute = location.pathname.startsWith(FORCE_PASSWORD_CHANGE_PATH);
 
   if (passwordExpired && !onForcePasswordChangeRoute) {
