@@ -2,7 +2,7 @@
 # Last matching pattern takes the most precedence.
 
 # Project Leadership Scope
-*                                             @OpenCTI-Platform/ent:opencti-director-principal
+*                                             @/opencti-director-principal
 
 # --------------------------------------------------------------------------------------
 # Tech Leadership Scope
