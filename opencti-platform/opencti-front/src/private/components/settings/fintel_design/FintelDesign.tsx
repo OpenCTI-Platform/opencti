@@ -22,6 +22,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import FintelDesignPopover from './FintelDesignPopover';
+import Tag from '../../../../components/common/tag/Tag';
 
 const fintelDesignQuery = graphql`
   query FintelDesignQuery($id: String!) {
@@ -114,11 +115,19 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
             { label: `${fintelDesign.name}`, current: true },
           ]}
         />
-        <Stack direction="row" mb={3}>
-          <TitleMainEntity sx={{ flex: 1 }}>
-            {fintelDesign.name}
-          </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
+        <Stack direction="row" mb={3} alignItems="center">
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0, mr: 1 }}>
+            <TitleMainEntity>
+              {fintelDesign.name}
+            </TitleMainEntity>
+            {fintelDesign.default && (
+              <Tag
+                color={theme.palette.success.main}
+                label={t_i18n('Default')}
+              />
+            )}
+          </Stack>
+          <div style={{ marginRight: theme.spacing(1) }}>
             <FintelDesignPopover
               fintelDesignId={fintelDesign.id}
               isDefault={!!fintelDesign.default}

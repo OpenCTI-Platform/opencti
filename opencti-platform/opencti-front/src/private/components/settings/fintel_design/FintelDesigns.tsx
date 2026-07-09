@@ -166,8 +166,7 @@ const FintelDesigns = () => {
       render: ({ default: isDefault }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
-          labelTextTransform="uppercase"
-          label="default"
+          label={isDefault ? t_i18n('Default') : ''}
         />
       ) : '-',
     },

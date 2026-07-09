@@ -150,10 +150,10 @@ const FintelDesignPopover = ({
           setAnchorEl(undefined);
         }}
       >
-        {onDelete && <MenuItem onClick={onDeleteClick}>{t_i18n('Delete')}</MenuItem>}
         {isDefault
           ? <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
           : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>}
+        {onDelete && <MenuItem onClick={onDeleteClick}>{t_i18n('Delete')}</MenuItem>}
       </Menu>
 
       <FintelDesignReplaceDefaultDialog
