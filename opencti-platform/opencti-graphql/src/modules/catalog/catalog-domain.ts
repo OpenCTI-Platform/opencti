@@ -24,8 +24,8 @@ const getOrCompileValidator = (cacheKey: string, jsonValidation: object): Valida
   let validate = validatorCache.get(cacheKey);
   if (!validate) {
     if (validatorCache.size >= MAX_VALIDATOR_CACHE_SIZE) {
-      logApp.warn('Validator cache size limit reached, clearing cache', { size: validatorCache.size });
-      validatorCache.clear();
+      logApp.warn('Validator cache size limit reached, compiling without caching', { size: validatorCache.size });
+      return ajv.compile(jsonValidation);
     }
     validate = ajv.compile(jsonValidation);
     validatorCache.set(cacheKey, validate);
@@ -80,6 +80,7 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
             };
             try {
               getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
+            } catch (err) {
               throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
             }
           }
