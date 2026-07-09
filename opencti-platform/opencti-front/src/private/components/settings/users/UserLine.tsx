@@ -57,8 +57,8 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const passwordValidUntil = (node as { password_valid_until?: string | null }).password_valid_until;
   const passwordValidUntilDisplay = dataColumns.password_valid_until
     ? (dataColumns.password_valid_until.render
-      ? dataColumns.password_valid_until.render(passwordValidUntil)
-      : (passwordValidUntil ? fd(passwordValidUntil) : '-'))
+        ? dataColumns.password_valid_until.render(passwordValidUntil)
+        : (passwordValidUntil ? fd(passwordValidUntil) : '-'))
     : null;
 
   return (
