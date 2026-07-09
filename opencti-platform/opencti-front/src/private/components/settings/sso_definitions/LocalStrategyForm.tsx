@@ -249,15 +249,15 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             fullWidth
           />
           {forcePasswordChangeEnabled && (
-          <Field
-            component={TextField}
-            type="number"
-            variant="standard"
-            style={{ marginTop: 20 }}
-            name="password_policy_validity_days"
-            label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
-            fullWidth
-          />
+            <Field
+              component={TextField}
+              type="number"
+              variant="standard"
+              style={{ marginTop: 20 }}
+              name="password_policy_validity_days"
+              label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
+              fullWidth
+            />
           )}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button

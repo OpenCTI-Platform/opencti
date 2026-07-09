@@ -355,12 +355,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </pre>
                   </Grid>
                   {forcePasswordChangeEnabled && (
-                  <Grid item xs={4}>
-                    <Label>
-                      {t_i18n('Password valid until')}
-                    </Label>
-                    {passwordValidUntilDate}
-                  </Grid>
+                    <Grid item xs={4}>
+                      <Label>
+                        {t_i18n('Password valid until')}
+                      </Label>
+                      {passwordValidUntilDate}
+                    </Grid>
                   )}
                 </>
               )}
