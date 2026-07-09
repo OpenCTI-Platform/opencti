@@ -32,7 +32,8 @@ export type WidgetColumnAttributeType
     | 'cvss_score'
     | 'open_vocab'
     | 'open_vocab_list'
-    | 'copy';
+    | 'copy'
+    | 'entity_ref';
 
 interface WidgetColumn {
   attribute: string | null;

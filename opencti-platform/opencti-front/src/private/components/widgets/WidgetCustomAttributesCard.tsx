@@ -3,7 +3,7 @@ import { Box, List, ListItem, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
-import type { WidgetColumn } from 'src/utils/widget/widget';
+import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemAuthor from '../../../components/ItemAuthor';
 import ItemConfidence from '../../../components/ItemConfidence';
@@ -30,6 +30,7 @@ interface WidgetCustomAttributesCardProps {
   column: WidgetColumn;
   data: StixCoreObject | null | undefined;
   isCustomViewReadOnly?: boolean;
+  host?: WidgetHost;
 }
 
 const isString = (v: unknown): v is string => typeof v === 'string';
@@ -169,6 +170,7 @@ const renderAttributeValue = (
   data: StixCoreObject | null | undefined,
   t_i18n: (s: string) => string,
   fldt: (s: unknown) => string,
+  host?: WidgetHost,
 ) => {
   const { attribute } = column;
   if (!attribute) return null;
@@ -188,7 +190,7 @@ const renderAttributeValue = (
       ?? (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
 
   if (specificRenderer) {
-    return specificRenderer(data, t_i18n, fldt);
+    return specificRenderer(data, t_i18n, fldt, host);
   }
 
   const byType = renderByAttributeType(column, data, t_i18n, fldt);
@@ -300,6 +302,7 @@ const renderAttributeValue = (
 const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardProps> = ({
   column,
   data,
+  host,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
@@ -310,7 +313,7 @@ const WidgetCustomAttributesCard: FunctionComponent<WidgetCustomAttributesCardPr
       <Typography variant="h4" sx={{ marginBottom: theme.spacing(0.5) }}>
         {t_i18n(label)}
       </Typography>
-      {renderAttributeValue(column, data, t_i18n, fldt)}
+      {renderAttributeValue(column, data, t_i18n, fldt, host)}
     </Box>
   );
 };
