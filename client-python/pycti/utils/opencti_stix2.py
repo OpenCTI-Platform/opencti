@@ -71,6 +71,45 @@ MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "x_opencti_description",
     "content",
 )
+EXPORT_ENTITY_LISTER_ATTRIBUTES = {
+    "Stix-Core-Object": "stix_core_object",
+    "Stix-Domain-Object": "stix_domain_object",
+    "Attack-Pattern": "attack_pattern",
+    "Campaign": "campaign",
+    "Channel": "channel",
+    "Event": "event",
+    "Note": "note",
+    "Observed-Data": "observed_data",
+    "Opinion": "opinion",
+    "Report": "report",
+    "Grouping": "grouping",
+    "Case-Incident": "case_incident",
+    "Feedback": "feedback",
+    "Case-Rfi": "case_rfi",
+    "Case-Rft": "case_rft",
+    "Task": "task",
+    "Course-Of-Action": "course_of_action",
+    "Data-Component": "data_component",
+    "Data-Source": "data_source",
+    "Identity": "identity",
+    "Indicator": "indicator",
+    "Infrastructure": "infrastructure",
+    "Intrusion-Set": "intrusion_set",
+    "Location": "location",
+    "Language": "language",
+    "Malware": "malware",
+    "Malware-Analysis": "malware_analysis",
+    "Threat-Actor": "threat_actor_group",
+    "Threat-Actor-Group": "threat_actor_group",
+    "Threat-Actor-Individual": "threat_actor_individual",
+    "Tool": "tool",
+    "Narrative": "narrative",
+    "Vulnerability": "vulnerability",
+    "Incident": "incident",
+    "Stix-Cyber-Observable": "stix_cyber_observable",
+    "stix-sighting-relationship": "stix_sighting_relationship",
+    "stix-core-relationship": "stix_core_relationship",
+}
 
 meter = metrics.get_meter(__name__)
 bundles_timeout_error_counter = meter.create_counter(
@@ -1183,6 +1222,29 @@ class OpenCTIStix2:
         return readers.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
         )
+
+    def get_lister(self, entity_type: str):
+        """Get the export list function for a given entity type when available.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :return: List function for the entity type or None
+        :rtype: callable or None
+        """
+        if IdentityTypes.has_value(entity_type):
+            entity_type = "Identity"
+        if LocationTypes.has_value(entity_type):
+            entity_type = "Location"
+        if StixCyberObservableTypes.has_value(entity_type):
+            entity_type = "Stix-Cyber-Observable"
+        if entity_type == "Container":
+            entity_type = "Stix-Domain-Object"
+
+        lister_attribute = EXPORT_ENTITY_LISTER_ATTRIBUTES.get(entity_type)
+        if lister_attribute is None:
+            return None
+        lister_owner = getattr(self.opencti, lister_attribute, None)
+        return getattr(lister_owner, "list", None)
 
     # endregion
 
@@ -2615,7 +2677,9 @@ class OpenCTIStix2:
             if no_custom_attributes:
                 del entity["x_opencti_id"]
             # Get extra objects
-            read_object_keys = set()
+            read_object_keys = []
+            seen_read_object_keys = set()
+            uncached_object_ids_by_type = {}
             for entity_object in objects_to_get:
                 resolve_type = entity_object["entity_type"]
                 if "stix-core-relationship" in entity_object["parent_types"]:
@@ -2623,16 +2687,48 @@ class OpenCTIStix2:
                 if "stix-ref-relationship" in entity_object["parent_types"]:
                     resolve_type = "stix-ref-relationship"
                 read_object_key = (resolve_type, entity_object["id"])
-                if read_object_key in read_object_keys:
+                if read_object_key in seen_read_object_keys:
                     continue
-                read_object_keys.add(read_object_key)
+                seen_read_object_keys.add(read_object_key)
+                read_object_keys.append(read_object_key)
                 if read_object_key not in related_object_export_cache:
-                    do_read = self.get_reader(resolve_type)
-                    query_filters = self.prepare_id_filters_export(
-                        entity_object["id"], access_filter
+                    uncached_object_ids_by_type.setdefault(resolve_type, []).append(
+                        entity_object["id"]
                     )
-                    entity_object_data = do_read(filters=query_filters)
-                    related_object_export_cache[read_object_key] = (
+
+            for resolve_type, entity_ids in uncached_object_ids_by_type.items():
+                do_list = self.get_lister(resolve_type) if len(entity_ids) > 1 else None
+                if do_list is None:
+                    do_read = self.get_reader(resolve_type)
+                    for entity_id in entity_ids:
+                        query_filters = self.prepare_id_filters_export(
+                            entity_id, access_filter
+                        )
+                        entity_object_data = do_read(filters=query_filters)
+                        related_object_export_cache[(resolve_type, entity_id)] = (
+                            self.prepare_export(
+                                entity=self.generate_export(entity_object_data),
+                                mode="simple",
+                                access_filter=access_filter,
+                                related_object_access_cache=related_object_access_cache,
+                                related_object_export_cache=related_object_export_cache,
+                            )
+                            if entity_object_data is not None
+                            else None
+                        )
+                    continue
+
+                query_filters = self.prepare_id_filters_export(
+                    entity_ids, access_filter
+                )
+                entity_objects_data = do_list(filters=query_filters, getAll=True) or []
+                entity_objects_by_id = {
+                    entity_object_data["id"]: entity_object_data
+                    for entity_object_data in entity_objects_data
+                }
+                for entity_id in entity_ids:
+                    entity_object_data = entity_objects_by_id.get(entity_id)
+                    related_object_export_cache[(resolve_type, entity_id)] = (
                         self.prepare_export(
                             entity=self.generate_export(entity_object_data),
                             mode="simple",
@@ -2643,6 +2739,8 @@ class OpenCTIStix2:
                         if entity_object_data is not None
                         else None
                     )
+
+            for read_object_key in read_object_keys:
                 stix_entity_object = related_object_export_cache[read_object_key]
                 if stix_entity_object is not None:
                     # Add to result
@@ -2829,61 +2927,9 @@ class OpenCTIStix2:
         :return: List of entity dictionaries
         :rtype: List[Dict]
         """
-        if IdentityTypes.has_value(entity_type):
-            entity_type = "Identity"
-
-        if LocationTypes.has_value(entity_type):
-            entity_type = "Location"
-
-        if StixCyberObservableTypes.has_value(entity_type):
-            entity_type = "Stix-Cyber-Observable"
-
-        if entity_type == "Container":
-            entity_type = "Stix-Domain-Object"
-
-        # List
-        lister = {
-            "Stix-Core-Object": self.opencti.stix_core_object.list,
-            "Stix-Domain-Object": self.opencti.stix_domain_object.list,
-            "Attack-Pattern": self.opencti.attack_pattern.list,
-            "Campaign": self.opencti.campaign.list,
-            "Channel": self.opencti.channel.list,
-            "Event": self.opencti.event.list,
-            "Note": self.opencti.note.list,
-            "Observed-Data": self.opencti.observed_data.list,
-            "Opinion": self.opencti.opinion.list,
-            "Report": self.opencti.report.list,
-            "Grouping": self.opencti.grouping.list,
-            "Case-Incident": self.opencti.case_incident.list,
-            "Feedback": self.opencti.feedback.list,
-            "Case-Rfi": self.opencti.case_rfi.list,
-            "Case-Rft": self.opencti.case_rft.list,
-            "Task": self.opencti.task.list,
-            "Course-Of-Action": self.opencti.course_of_action.list,
-            "Data-Component": self.opencti.data_component.list,
-            "Data-Source": self.opencti.data_source.list,
-            "Identity": self.opencti.identity.list,
-            "Indicator": self.opencti.indicator.list,
-            "Infrastructure": self.opencti.infrastructure.list,
-            "Intrusion-Set": self.opencti.intrusion_set.list,
-            "Location": self.opencti.location.list,
-            "Language": self.opencti.language.list,
-            "Malware": self.opencti.malware.list,
-            "Malware-Analysis": self.opencti.malware_analysis.list,
-            "Threat-Actor": self.opencti.threat_actor_group.list,
-            "Threat-Actor-Group": self.opencti.threat_actor_group.list,
-            "Threat-Actor-Individual": self.opencti.threat_actor_individual.list,
-            "Tool": self.opencti.tool.list,
-            "Narrative": self.opencti.narrative.list,
-            "Vulnerability": self.opencti.vulnerability.list,
-            "Incident": self.opencti.incident.list,
-            "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.list,
-            "stix-sighting-relationship": self.opencti.stix_sighting_relationship.list,
-            "stix-core-relationship": self.opencti.stix_core_relationship.list,
-        }
-        do_list = lister.get(
-            entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
-        )
+        do_list = self.get_lister(entity_type)
+        if do_list is None:
+            do_list = lambda **kwargs: self.unknown_type({"type": entity_type})
 
         if getAll and (orderBy is None or orderBy == "_score"):
             orderBy = "created_at"
