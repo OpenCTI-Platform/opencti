@@ -34,15 +34,21 @@ const WidgetVerticalBars = ({
       formatter = yd;
     }
 
+    // All intervals are rendered on a 'category' x-axis (isTimeSeries = false) with
+    // tickAmount = 'dataPoints'. A 'datetime' axis (previously used for day/week) aligns its
+    // ticks to calendar boundaries and does not guarantee a tick on the last data point, which
+    // dropped the label of the most recent bar. A category axis labels every bar, including the
+    // most recent one, and the time-series buckets are already gap-filled and evenly spaced by
+    // the backend, so discrete categories render correctly.
     return verticalBarsChartOptions(
       theme,
       formatter,
       simpleNumberFormat,
       false,
-      !interval || ['day', 'week'].includes(interval),
+      false,
       isStacked,
       hasLegend,
-      interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
+      'dataPoints',
     ) as ApexOptions;
   }, [theme, interval, isStacked, hasLegend]);
 
