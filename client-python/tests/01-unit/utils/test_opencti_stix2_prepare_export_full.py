@@ -115,6 +115,25 @@ def _relationship(identifier, target_identifier=None):
     }
 
 
+def _nested_ref_relationship(identifier, from_identifier, target_identifier):
+    return {
+        "id": identifier,
+        "relationship_type": "sample",
+        "from": {
+            "id": from_identifier,
+            "standard_id": f"indicator--{from_identifier}",
+            "entity_type": "Indicator",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+        "to": {
+            "id": f"target-{target_identifier}",
+            "standard_id": f"malware--{target_identifier}",
+            "entity_type": "Malware",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+    }
+
+
 def _helper(relationships):
     helper = OpenCTIStix2.__new__(OpenCTIStix2)
     helper.opencti = SimpleNamespace(
@@ -687,6 +706,141 @@ def test_export_selected_batches_sighting_relationship_listing_in_bounded_chunks
     helper = _helper([])
     relationship_collection = _FilteredRelationshipCollection({})
     helper.opencti.stix_sighting_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(EXPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 2
+    assert (
+        len(relationship_collection.filters[0]["filters"][0]["values"])
+        == EXPORT_PREFETCH_BATCH_SIZE
+    )
+    assert relationship_collection.filters[1]["filters"][0]["values"] == [
+        f"root-{EXPORT_PREFETCH_BATCH_SIZE}"
+    ]
+
+
+def test_export_selected_batches_nested_ref_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "target-1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "target-2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "target-3")],
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.filters == [
+        {
+            "mode": "and",
+            "filters": [{"key": "fromId", "values": ["root-1", "root-2", "root-3"]}],
+            "filterGroups": [],
+        }
+    ]
+    assert [
+        item["sample_refs"]
+        for item in result["objects"]
+        if item["id"].startswith("indicator--root-")
+    ] == [
+        ["malware--target-1"],
+        ["malware--target-2"],
+        ["malware--target-3"],
+    ]
+
+
+def test_export_list_batches_nested_ref_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "target-1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "target-2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "target-3")],
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Indicator", mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.filters == [
+        {
+            "mode": "and",
+            "filters": [{"key": "fromId", "values": ["root-1", "root-2", "root-3"]}],
+            "filterGroups": [],
+        }
+    ]
+    assert [
+        item["sample_refs"]
+        for item in result["objects"]
+        if item["id"].startswith("indicator--root-")
+    ] == [
+        ["malware--target-1"],
+        ["malware--target-2"],
+        ["malware--target-3"],
+    ]
+
+
+def test_export_selected_batch_nested_ref_relationships_apply_only_to_source_roots():
+    helper = _helper([])
+    relationship = _nested_ref_relationship("nested-ref--1", "root-1", "root-2")
+    relationship["to"]["id"] = "root-2"
+    relationship["to"]["standard_id"] = "indicator--root-2"
+    relationship["to"]["entity_type"] = "Indicator"
+    relationship_collection = _FilteredRelationshipCollection(
+        {"root-1": [relationship]}
+    )
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 3)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+    root_objects = {
+        item["id"]: item
+        for item in result["objects"]
+        if item["id"].startswith("indicator--root-")
+    }
+
+    assert root_objects["indicator--root-1"]["sample_refs"] == ["indicator--root-2"]
+    assert "sample_refs" not in root_objects["indicator--root-2"]
+
+
+def test_export_selected_batches_nested_ref_relationship_listing_in_bounded_chunks():
+    helper = _helper([])
+    relationship_collection = _FilteredRelationshipCollection({})
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
     entities = [
         {
             "id": f"indicator--root-{index}",

@@ -100,6 +100,8 @@ class StixNestedRefRelationship:
         :type first: int
         :param after: ID of the first row for pagination
         :type after: str
+        :param getAll: whether to retrieve all results
+        :type getAll: bool
         :return: List of stix nested ref relationship objects
         :rtype: list
         """
@@ -119,6 +121,7 @@ class StixNestedRefRelationship:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
+        get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
@@ -172,9 +175,50 @@ class StixNestedRefRelationship:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["stixNestedRefRelationships"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(
+                result["data"]["stixNestedRefRelationships"]
+            )
+            final_data.extend(data)
+            while result["data"]["stixNestedRefRelationships"]["pageInfo"][
+                "hasNextPage"
+            ]:
+                after = result["data"]["stixNestedRefRelationships"]["pageInfo"][
+                    "endCursor"
+                ]
+                self.opencti.app_logger.debug(
+                    "Listing StixNestedRefRelationships", {"after": after}
+                )
+                result = self.opencti.query(
+                    query,
+                    {
+                        "fromOrToId": from_or_to_id,
+                        "fromId": from_id,
+                        "fromTypes": from_types,
+                        "toId": to_id,
+                        "toTypes": to_types,
+                        "relationship_type": relationship_type,
+                        "startTimeStart": start_time_start,
+                        "startTimeStop": start_time_stop,
+                        "stopTimeStart": stop_time_start,
+                        "stopTimeStop": stop_time_stop,
+                        "filters": filters,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["stixNestedRefRelationships"]
+                )
+                final_data.extend(data)
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["stixNestedRefRelationships"], with_pagination
+            )
 
     def read(self, **kwargs):
         """Read a stix nested ref relationship object.

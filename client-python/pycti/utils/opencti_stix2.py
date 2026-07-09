@@ -2371,6 +2371,50 @@ class OpenCTIStix2:
             )
         return relationships_by_entity_id
 
+    @staticmethod
+    def _group_export_nested_ref_relationships_by_entity_id(
+        stix_nested_ref_relationships: List[Dict],
+        relationships_by_entity_id: Dict[str, List[Dict]],
+        seen_relationship_ids: set,
+    ) -> None:
+        for stix_nested_ref_relationship in stix_nested_ref_relationships:
+            relationship_id = stix_nested_ref_relationship["id"]
+            if relationship_id in seen_relationship_ids:
+                continue
+            seen_relationship_ids.add(relationship_id)
+            from_id = stix_nested_ref_relationship["from"]["id"]
+            if from_id in relationships_by_entity_id:
+                relationships_by_entity_id[from_id].append(stix_nested_ref_relationship)
+
+    def _prefetch_export_nested_ref_relationships(
+        self, entities_list: List[Dict], access_filter: Dict
+    ) -> Optional[Dict[str, List[Dict]]]:
+        entity_ids = self._get_export_entity_ids(entities_list)
+        if len(entity_ids) <= 1:
+            return None
+
+        relationships_by_entity_id = {entity_id: [] for entity_id in entity_ids}
+        seen_relationship_ids = set()
+        for start_index in range(0, len(entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
+            batch_entity_ids = entity_ids[
+                start_index : start_index + EXPORT_PREFETCH_BATCH_SIZE
+            ]
+            stix_nested_ref_relationships = (
+                self.opencti.stix_nested_ref_relationship.list(
+                    getAll=True,
+                    filters=self._prepare_export_relationship_filter(
+                        "fromId", batch_entity_ids, access_filter
+                    ),
+                )
+                or []
+            )
+            self._group_export_nested_ref_relationships_by_entity_id(
+                stix_nested_ref_relationships,
+                relationships_by_entity_id,
+                seen_relationship_ids,
+            )
+        return relationships_by_entity_id
+
     def prepare_export(
         self,
         entity: Dict,
@@ -2383,6 +2427,9 @@ class OpenCTIStix2:
         ] = None,
         stix_core_relationships_by_entity_id: Optional[Dict[str, List[Dict]]] = None,
         stix_sighting_relationships_by_entity_id: Optional[
+            Dict[str, List[Dict]]
+        ] = None,
+        stix_nested_ref_relationships_by_entity_id: Optional[
             Dict[str, List[Dict]]
         ] = None,
     ) -> List:
@@ -2404,6 +2451,8 @@ class OpenCTIStix2:
         :type stix_core_relationships_by_entity_id: dict, optional
         :param stix_sighting_relationships_by_entity_id: Export-scoped top-level sighting relationship prefetch grouped by endpoint ID
         :type stix_sighting_relationships_by_entity_id: dict, optional
+        :param stix_nested_ref_relationships_by_entity_id: Export-scoped top-level nested ref relationship prefetch grouped by source ID
+        :type stix_nested_ref_relationships_by_entity_id: dict, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
         """
@@ -2702,9 +2751,21 @@ class OpenCTIStix2:
             del entity["importFilesIds"]
 
         # StixRefRelationship
-        stix_nested_ref_relationships = self.opencti.stix_nested_ref_relationship.list(
-            fromId=entity["x_opencti_id"], filters=access_filter
-        )
+        if (
+            stix_nested_ref_relationships_by_entity_id is not None
+            and entity["x_opencti_id"] in stix_nested_ref_relationships_by_entity_id
+        ):
+            stix_nested_ref_relationships = stix_nested_ref_relationships_by_entity_id[
+                entity["x_opencti_id"]
+            ]
+        else:
+            stix_nested_ref_relationships = (
+                self.opencti.stix_nested_ref_relationship.list(
+                    fromId=entity["x_opencti_id"],
+                    getAll=True,
+                    filters=access_filter,
+                )
+            )
         for stix_nested_ref_relationship in stix_nested_ref_relationships:
             if "standard_id" in stix_nested_ref_relationship["to"]:
                 # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
@@ -3218,6 +3279,13 @@ class OpenCTIStix2:
                 if mode == "full"
                 else None
             )
+            stix_nested_ref_relationships_by_entity_id = (
+                self._prefetch_export_nested_ref_relationships(
+                    entities_list, access_filter
+                )
+                if mode == "full"
+                else None
+            )
             for entity in entities_list:
                 export_entity = self.generate_export(entity)
                 if related_object_access_cache is None:
@@ -3235,6 +3303,7 @@ class OpenCTIStix2:
                         related_object_export_cache=related_object_export_cache,
                         stix_core_relationships_by_entity_id=stix_core_relationships_by_entity_id,
                         stix_sighting_relationships_by_entity_id=stix_sighting_relationships_by_entity_id,
+                        stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                     )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
@@ -3279,6 +3348,11 @@ class OpenCTIStix2:
             if mode == "full"
             else None
         )
+        stix_nested_ref_relationships_by_entity_id = (
+            self._prefetch_export_nested_ref_relationships(entities_list, access_filter)
+            if mode == "full"
+            else None
+        )
         for entity in entities_list:
             export_entity = self.generate_export(entity)
             if related_object_access_cache is None:
@@ -3296,6 +3370,7 @@ class OpenCTIStix2:
                     related_object_export_cache=related_object_export_cache,
                     stix_core_relationships_by_entity_id=stix_core_relationships_by_entity_id,
                     stix_sighting_relationships_by_entity_id=stix_sighting_relationships_by_entity_id,
+                    stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                 )
             if entity_bundle is not None:
                 entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
