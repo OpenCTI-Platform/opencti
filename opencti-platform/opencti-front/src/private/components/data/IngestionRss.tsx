@@ -135,7 +135,6 @@ const IngestionRss = () => {
           dataColumns={dataColumns}
           lineFragment={ingestionRssLineFragment}
           contextFilters={contextFilters}
-          entityTypes={['IngestionRss']}
           searchContextFinal={{ entityTypes: ['IngestionRss'] }}
           icon={() => (<RssBox color="primary" />)}
           disableLineSelection
