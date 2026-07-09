@@ -554,7 +554,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   }
 };
 
-const csvExecutor = async (context: AuthContext) => {
+export const csvExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
     filters: [{ key: 'ingestion_running', values: [true] }],
