@@ -11,6 +11,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
 import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
+import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -182,57 +183,85 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {isFilterGroupNotEmpty(filtersDynamicFrom) && (
-          <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
-          </div>
+        {(dataSelection.dynamicFrom_id || isFilterGroupNotEmpty(filtersDynamicFrom))
+          && (
+            <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
+              {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
+            </div>
+          )
+        }
+        {dataSelection.dynamicFrom_id ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.dynamicFrom_id}
+            entityTypes={['Stix-Core-Object']}
+            chipColor="warning"
+          />
+        ) : (
+          <FilterIconButton
+            filters={filtersDynamicFrom}
+            helpers={helpersDynamicFrom}
+            chipColor="warning"
+            entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
+            host={host}
+          />
         )}
-        <FilterIconButton
-          filters={filtersDynamicFrom}
-          helpers={helpersDynamicFrom}
-          chipColor="warning"
-          entityTypes={['Stix-Core-Object']}
-          searchContext={searchContext}
-          availableEntityTypes={[
-            'Stix-Domain-Object',
-            'Stix-Cyber-Observable',
-          ]}
-          host={host}
-        />
 
-        {isFilterGroupNotEmpty(filtersDynamicTo)
+        {(dataSelection.dynamicTo_id || isFilterGroupNotEmpty(filtersDynamicTo))
           && (
             <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
               {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
             </div>
           )
         }
-        <FilterIconButton
-          filters={filtersDynamicTo}
-          helpers={helpersDynamicTo}
-          chipColor="success"
-          entityTypes={['Stix-Core-Object']}
-          searchContext={searchContext}
-          availableEntityTypes={[
-            'Stix-Domain-Object',
-            'Stix-Cyber-Observable',
-          ]}
-          host={host}
-        />
-
-        {isFilterGroupNotEmpty(filters) && perspective === 'relationships' && (
-          <div style={{ marginTop: 8, marginBottom: 4 }}>
-            {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
-          </div>
+        {dataSelection.dynamicTo_id ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.dynamicTo_id}
+            entityTypes={['Stix-Core-Object']}
+            chipColor="success"
+          />
+        ) : (
+          <FilterIconButton
+            filters={filtersDynamicTo}
+            helpers={helpersDynamicTo}
+            chipColor="success"
+            entityTypes={['Stix-Core-Object']}
+            searchContext={searchContext}
+            availableEntityTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
+            host={host}
+          />
         )}
-        <FilterIconButton
-          filters={filters}
-          helpers={helpers}
-          searchContext={searchContext}
-          availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
-          entityTypes={searchContext.entityTypes}
-          host={host}
-        />
+
+        {perspective === 'relationships'
+          && (dataSelection.filters_id || isFilterGroupNotEmpty(filters))
+          && (
+            <div style={{ marginTop: 8, marginBottom: 4 }}>
+              {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
+            </div>
+          )
+        }
+        {dataSelection.filters_id ? (
+          <WidgetSavedFilterChips
+            filterId={dataSelection.filters_id}
+            entityTypes={searchContext.entityTypes}
+          />
+        ) : (
+          <FilterIconButton
+            filters={filters}
+            helpers={helpers}
+            searchContext={searchContext}
+            availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
+            entityTypes={searchContext.entityTypes}
+            host={host}
+          />
+        )}
       </Box>
     </>
   );
