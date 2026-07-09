@@ -85,14 +85,21 @@ export const jsonMapperImport = async (context: AuthContext, user: AuthUser, fil
 
 export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jsonMapper: BasicStoreEntityJsonMapper) => {
   const { name, representations, variables } = jsonMapper;
-  const parsedRepresentations: JsonMapperRepresentation[] = JSON.parse(representations);
+  let parsedRepresentations: JsonMapperRepresentation[];
+  let parsedVariables;
+  try {
+    parsedRepresentations = JSON.parse(representations);
+    parsedVariables = variables ? JSON.parse(variables) : [];
+  } catch (error) {
+    throw FunctionalError('Could not parse JSON mapper: representations or variables is not a valid JSON', { name, error });
+  }
   await convertRepresentationsIds(context, user, parsedRepresentations, 'internal');
   return JSON.stringify({
     openCTI_version: pjson.version,
     type: 'jsonMapper',
     configuration: {
       name,
-      variables: variables ? JSON.parse(variables) : [],
+      variables: parsedVariables,
       representations: parsedRepresentations,
     },
   });
