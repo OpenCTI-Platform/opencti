@@ -66,6 +66,7 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
+EXPORT_PREFETCH_BATCH_SIZE: int = 1000
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -2271,6 +2272,52 @@ class OpenCTIStix2:
         for entity_id in unseen_entity_ids:
             related_object_access_cache[entity_id] = entity_id in exportable_ids
 
+    def _prefetch_export_core_relationships(
+        self, entities_list: List[Dict], access_filter: Dict
+    ) -> Optional[Dict[str, List[Dict]]]:
+        entity_ids = []
+        seen_entity_ids = set()
+        for entity in entities_list:
+            entity_id = entity.get("x_opencti_id") or entity.get("id")
+            if entity_id is not None and entity_id not in seen_entity_ids:
+                seen_entity_ids.add(entity_id)
+                entity_ids.append(entity_id)
+
+        if len(entity_ids) <= 1:
+            return None
+
+        relationships_by_entity_id = {entity_id: [] for entity_id in entity_ids}
+        seen_relationship_ids = set()
+        for start_index in range(0, len(entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
+            batch_entity_ids = entity_ids[
+                start_index : start_index + EXPORT_PREFETCH_BATCH_SIZE
+            ]
+            stix_core_relationships = (
+                self.opencti.stix_core_relationship.list(
+                    fromOrToId=batch_entity_ids, getAll=True, filters=access_filter
+                )
+                or []
+            )
+            for stix_core_relationship in stix_core_relationships:
+                relationship_id = stix_core_relationship["id"]
+                if relationship_id in seen_relationship_ids:
+                    continue
+                seen_relationship_ids.add(relationship_id)
+                from_id = stix_core_relationship["from"]["id"]
+                to_id = stix_core_relationship["to"]["id"]
+                matching_entity_ids = []
+                if from_id in relationships_by_entity_id:
+                    matching_entity_ids.append(from_id)
+                if to_id != from_id and to_id in relationships_by_entity_id:
+                    matching_entity_ids.append(to_id)
+                for index, entity_id in enumerate(matching_entity_ids):
+                    relationships_by_entity_id[entity_id].append(
+                        stix_core_relationship
+                        if index == 0
+                        else stix_core_relationship.copy()
+                    )
+        return relationships_by_entity_id
+
     def prepare_export(
         self,
         entity: Dict,
@@ -2281,6 +2328,7 @@ class OpenCTIStix2:
         related_object_export_cache: Optional[
             Dict[Tuple[str, str], Optional[List[Dict]]]
         ] = None,
+        stix_core_relationships_by_entity_id: Optional[Dict[str, List[Dict]]] = None,
     ) -> List:
         """Prepare an entity for STIX2 export with related objects.
 
@@ -2296,6 +2344,8 @@ class OpenCTIStix2:
         :type related_object_access_cache: dict, optional
         :param related_object_export_cache: Export-scoped cache for repeated related-object reads and simple exports
         :type related_object_export_cache: dict, optional
+        :param stix_core_relationships_by_entity_id: Export-scoped top-level core relationship prefetch grouped by endpoint ID
+        :type stix_core_relationships_by_entity_id: dict, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
         """
@@ -2680,9 +2730,19 @@ class OpenCTIStix2:
                                 }
                             )
             # Get extra relations (from AND to)
-            stix_core_relationships = self.opencti.stix_core_relationship.list(
-                fromOrToId=entity["x_opencti_id"], getAll=True, filters=access_filter
-            )
+            if (
+                stix_core_relationships_by_entity_id is not None
+                and entity["x_opencti_id"] in stix_core_relationships_by_entity_id
+            ):
+                stix_core_relationships = stix_core_relationships_by_entity_id[
+                    entity["x_opencti_id"]
+                ]
+            else:
+                stix_core_relationships = self.opencti.stix_core_relationship.list(
+                    fromOrToId=entity["x_opencti_id"],
+                    getAll=True,
+                    filters=access_filter,
+                )
             stix_core_related_object_ids = []
             for stix_core_relationship in stix_core_relationships:
                 related_object = (
@@ -3076,6 +3136,11 @@ class OpenCTIStix2:
             uuids = set()
             related_object_access_cache = {} if mode == "full" else None
             related_object_export_cache = {} if mode == "full" else None
+            stix_core_relationships_by_entity_id = (
+                self._prefetch_export_core_relationships(entities_list, access_filter)
+                if mode == "full"
+                else None
+            )
             for entity in entities_list:
                 export_entity = self.generate_export(entity)
                 if related_object_access_cache is None:
@@ -3091,6 +3156,7 @@ class OpenCTIStix2:
                         access_filter=access_filter,
                         related_object_access_cache=related_object_access_cache,
                         related_object_export_cache=related_object_export_cache,
+                        stix_core_relationships_by_entity_id=stix_core_relationships_by_entity_id,
                     )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
@@ -3125,6 +3191,11 @@ class OpenCTIStix2:
         uuids = set()
         related_object_access_cache = {} if mode == "full" else None
         related_object_export_cache = {} if mode == "full" else None
+        stix_core_relationships_by_entity_id = (
+            self._prefetch_export_core_relationships(entities_list, access_filter)
+            if mode == "full"
+            else None
+        )
         for entity in entities_list:
             export_entity = self.generate_export(entity)
             if related_object_access_cache is None:
@@ -3140,6 +3211,7 @@ class OpenCTIStix2:
                     access_filter=access_filter,
                     related_object_access_cache=related_object_access_cache,
                     related_object_export_cache=related_object_export_cache,
+                    stix_core_relationships_by_entity_id=stix_core_relationships_by_entity_id,
                 )
             if entity_bundle is not None:
                 entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)

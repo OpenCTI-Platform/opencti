@@ -1,6 +1,10 @@
 from types import SimpleNamespace
 
-from pycti.utils.opencti_stix2 import EXPORT_ACCESS_LISTER_ATTRIBUTES, OpenCTIStix2
+from pycti.utils.opencti_stix2 import (
+    EXPORT_ACCESS_LISTER_ATTRIBUTES,
+    EXPORT_PREFETCH_BATCH_SIZE,
+    OpenCTIStix2,
+)
 
 
 class _StaticCollection:
@@ -24,9 +28,23 @@ class _CountingCollection(_StaticCollection):
 class _RelationshipCollection:
     def __init__(self, relationships_by_root):
         self.relationships_by_root = relationships_by_root
+        self.list_calls = 0
+        self.from_or_to_ids = []
 
     def list(self, **kwargs):
-        return self.relationships_by_root.get(kwargs["fromOrToId"], [])
+        self.list_calls += 1
+        from_or_to_ids = kwargs["fromOrToId"]
+        self.from_or_to_ids.append(from_or_to_ids)
+        if isinstance(from_or_to_ids, str):
+            from_or_to_ids = [from_or_to_ids]
+        relationships = []
+        seen_relationship_ids = set()
+        for from_or_to_id in from_or_to_ids:
+            for relationship in self.relationships_by_root.get(from_or_to_id, []):
+                if relationship["id"] not in seen_relationship_ids:
+                    seen_relationship_ids.add(relationship["id"])
+                    relationships.append(relationship)
+        return relationships
 
 
 class _CountingRelatedObjectLister:
@@ -394,3 +412,130 @@ def test_export_list_reuses_related_object_reads_across_roots():
     helper.export_list(entity_type="Indicator", mode="full")
 
     assert len(read_calls) == 1
+
+
+def test_export_selected_batches_core_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "target-1")],
+            "root-2": [_relationship("relationship--2", "target-2")],
+            "root-3": [_relationship("relationship--3", "target-3")],
+        }
+    )
+    helper.opencti.stix_core_relationship = relationship_collection
+    for index, relationship in enumerate(
+        relationship_collection.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.from_or_to_ids == [["root-1", "root-2", "root-3"]]
+    assert [
+        item["id"] for item in result["objects"] if item["type"] == "relationship"
+    ] == [
+        "relationship--1",
+        "relationship--2",
+        "relationship--3",
+    ]
+
+
+def test_export_list_batches_core_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "target-1")],
+            "root-2": [_relationship("relationship--2", "target-2")],
+            "root-3": [_relationship("relationship--3", "target-3")],
+        }
+    )
+    helper.opencti.stix_core_relationship = relationship_collection
+    for index, relationship in enumerate(
+        relationship_collection.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Indicator", mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.from_or_to_ids == [["root-1", "root-2", "root-3"]]
+    assert [
+        item["id"] for item in result["objects"] if item["type"] == "relationship"
+    ] == [
+        "relationship--1",
+        "relationship--2",
+        "relationship--3",
+    ]
+
+
+def test_export_selected_batch_core_relationships_keep_shared_root_relationships_usable():
+    helper = _helper([])
+    relationship = _relationship("relationship--1", "root-2")
+    relationship["to"]["id"] = "root-2"
+    relationship["to"]["standard_id"] = "indicator--root-2"
+    relationship["to"]["entity_type"] = "Indicator"
+    relationship_collection = _RelationshipCollection(
+        {"root-1": [relationship], "root-2": [relationship]}
+    )
+    helper.opencti.stix_core_relationship = relationship_collection
+    relationship["from"]["id"] = "root-1"
+    relationship["from"]["standard_id"] = "indicator--root-1"
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 3)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 1
+    assert [item["id"] for item in result["objects"]] == [
+        "indicator--root-1",
+        "relationship--1",
+        "indicator--root-2",
+    ]
+
+
+def test_export_selected_batches_core_relationship_listing_in_bounded_chunks():
+    helper = _helper([])
+    relationship_collection = _RelationshipCollection({})
+    helper.opencti.stix_core_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(EXPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert relationship_collection.list_calls == 2
+    assert len(relationship_collection.from_or_to_ids[0]) == EXPORT_PREFETCH_BATCH_SIZE
+    assert relationship_collection.from_or_to_ids[1] == [
+        f"root-{EXPORT_PREFETCH_BATCH_SIZE}"
+    ]
