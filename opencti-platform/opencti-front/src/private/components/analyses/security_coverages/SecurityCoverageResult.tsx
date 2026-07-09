@@ -174,6 +174,14 @@ const securityCoverageResultLineFragment = graphql`
                 name
             }
         }
+        from {
+            ... on SecurityCoverageResult {
+                id
+                entity_type
+                name
+            }
+        }
+        updated_at
         coverage_information{
             coverage_name
             coverage_score
@@ -292,11 +300,12 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
 
   const dataColumns: DataTableProps['dataColumns'] = {
     to_entity_type: {
-      label: 'Type',
+      label: 'Tested entity Type',
+      percentWidth: 12,
     },
     to_name: {
-      label: 'Name',
-      percentWidth: 35,
+      label: 'Tested entity Name',
+      percentWidth: 22,
       isSortable: false,
       render: ({ to, coverage_information }) => (
         <span style={coverage_information?.length ? {} : { color: theme.palette.text.disabled }}>
@@ -304,9 +313,17 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
         </span>
       ),
     },
-    coverage: {
-      label: 'Coverage',
+    to_object_label: {
+      label: 'Tested entity labels',
       percentWidth: 15,
+    },
+    to_object_marking: {
+      label: 'Tested Entity Marking',
+      percentWidth: 12,
+    },
+    coverage: {
+      label: 'Coverage Score',
+      percentWidth: 11,
       isSortable: false,
       render: ({ coverage_information }) =>
         coverage_information?.length
@@ -321,8 +338,12 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
               </Tooltip>
             ),
     },
-    to_object_label: {},
-    to_object_marking: {},
+    coverage_last_modified_date: {
+      percentWidth: 16,
+    },
+    security_coverage_result_name: {
+      percentWidth: 12,
+    },
   };
 
   return (

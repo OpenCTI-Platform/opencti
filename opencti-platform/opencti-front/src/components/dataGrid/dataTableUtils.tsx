@@ -267,6 +267,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
   },
+  coverage_last_modified_date: {
+    id: 'coverage_last_modified_date',
+    label: 'Coverage Last modified date',
+    percentWidth: 16,
+    isSortable: false,
+    render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
+  },
   created: {
     id: 'created',
     label: 'Original creation date',
@@ -1075,6 +1082,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ secondary_motivations }) => {
       return defaultRender(secondary_motivations);
     },
+  },
+  security_coverage_result_name: {
+    id: 'security_coverage_result_name',
+    label: 'Security Coverage Result Name',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ from }) => defaultRender(from?.name),
   },
   security_platform_type: {
     id: 'security_platform_type',
