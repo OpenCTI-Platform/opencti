@@ -56,18 +56,18 @@ describe('Function getAverageCoverageInformation()', () => {
       { name: 'result 3' },
     ] as StoreEntitySecurityCoverageResult[];
     expect(await getAverageCoverageInformation(results))
-      .toEqual([{ coverage_name: 'vulnerability', score: 40 }]);
+      .toEqual([{ coverage_name: 'vulnerability', coverage_score: 40 }]);
   });
 
   it('should return the average coverage_information', async () => {
     const results = [
-      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 60 }, { coverage_name: 'detection', coverage_score: 60 }] },
-      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 40 }] },
+      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 60 }, { coverage_name: 'detection', coverage_score: 15 }] },
+      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 40 }, { coverage_name: 'detection', coverage_score: 20 }] },
       { name: 'result 3' },
     ] as StoreEntitySecurityCoverageResult[];
     expect(await getAverageCoverageInformation(results)).toEqual([
-      { coverage_name: 'vulnerability', score: 50 },
-      { coverage_name: 'detection', score: 40 },
+      { coverage_name: 'vulnerability', coverage_score: 50 },
+      { coverage_name: 'detection', coverage_score: 18 },
     ]);
   });
 });

@@ -19,7 +19,7 @@ export const getAverageCoverageInformation = async (results: StoreEntitySecurity
   });
   return Array.from(mapOfScores, ([coverage_name, scores]) => ({
     coverage_name,
-    coverage_score: scores.reduce((sum, num) => sum + num, 0) / scores.length,
+    coverage_score: Math.round(scores.reduce((sum, num) => sum + num, 0) / scores.length),
   }));
 };
 
