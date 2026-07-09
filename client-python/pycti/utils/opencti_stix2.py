@@ -2393,10 +2393,41 @@ class OpenCTIStix2:
         if len(entity_ids) <= 1:
             return None
 
-        relationships_by_entity_id = {entity_id: [] for entity_id in entity_ids}
+        return self._prefetch_export_nested_ref_relationships_by_entity_ids(
+            entity_ids, access_filter
+        )
+
+    def _prefetch_export_nested_ref_relationships_by_entity_ids(
+        self,
+        entity_ids: List[str],
+        access_filter: Dict,
+        relationships_by_entity_id: Optional[Dict[str, List[Dict]]] = None,
+    ) -> Optional[Dict[str, List[Dict]]]:
+        unseen_entity_ids = []
+        seen_entity_ids = set()
+        for entity_id in entity_ids:
+            if (
+                entity_id is not None
+                and entity_id not in seen_entity_ids
+                and (
+                    relationships_by_entity_id is None
+                    or entity_id not in relationships_by_entity_id
+                )
+            ):
+                seen_entity_ids.add(entity_id)
+                unseen_entity_ids.append(entity_id)
+
+        if len(unseen_entity_ids) <= 1:
+            return relationships_by_entity_id
+
+        if relationships_by_entity_id is None:
+            relationships_by_entity_id = {}
+        for entity_id in unseen_entity_ids:
+            relationships_by_entity_id[entity_id] = []
+
         seen_relationship_ids = set()
-        for start_index in range(0, len(entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
-            batch_entity_ids = entity_ids[
+        for start_index in range(0, len(unseen_entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
+            batch_entity_ids = unseen_entity_ids[
                 start_index : start_index + EXPORT_PREFETCH_BATCH_SIZE
             ]
             stix_nested_ref_relationships = (
@@ -2451,7 +2482,7 @@ class OpenCTIStix2:
         :type stix_core_relationships_by_entity_id: dict, optional
         :param stix_sighting_relationships_by_entity_id: Export-scoped top-level sighting relationship prefetch grouped by endpoint ID
         :type stix_sighting_relationships_by_entity_id: dict, optional
-        :param stix_nested_ref_relationships_by_entity_id: Export-scoped top-level nested ref relationship prefetch grouped by source ID
+        :param stix_nested_ref_relationships_by_entity_id: Export-scoped nested ref relationship prefetch grouped by source ID
         :type stix_nested_ref_relationships_by_entity_id: dict, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
@@ -2876,15 +2907,25 @@ class OpenCTIStix2:
                 access_filter,
                 related_object_access_cache,
             )
+            stix_nested_ref_relationships_by_entity_id = (
+                self._prefetch_export_nested_ref_relationships_by_entity_ids(
+                    [
+                        stix_core_relationship.get("x_opencti_id")
+                        for stix_core_relationship in stix_core_relationships
+                    ]
+                    + [entity_object.get("id") for entity_object in objects_to_get],
+                    access_filter,
+                    stix_nested_ref_relationships_by_entity_id,
+                )
+            )
             for stix_core_relationship in stix_core_relationships:
-                relation_object_data = (
-                    self.prepare_export(  # ICI -> remove max marking ?
-                        entity=self.generate_export(stix_core_relationship),
-                        mode="simple",
-                        access_filter=access_filter,
-                        related_object_access_cache=related_object_access_cache,
-                        related_object_export_cache=related_object_export_cache,
-                    )
+                relation_object_data = self.prepare_export(  # ICI -> remove max marking ?
+                    entity=self.generate_export(stix_core_relationship),
+                    mode="simple",
+                    access_filter=access_filter,
+                    related_object_access_cache=related_object_access_cache,
+                    related_object_export_cache=related_object_export_cache,
+                    stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                 )
                 relation_object_bundle = self.filter_objects(
                     uuids, relation_object_data
@@ -2922,15 +2963,25 @@ class OpenCTIStix2:
                 access_filter,
                 related_object_access_cache,
             )
+            stix_nested_ref_relationships_by_entity_id = (
+                self._prefetch_export_nested_ref_relationships_by_entity_ids(
+                    [
+                        stix_sighting_relationship.get("x_opencti_id")
+                        for stix_sighting_relationship in stix_sighting_relationships
+                    ]
+                    + [entity_object.get("id") for entity_object in objects_to_get],
+                    access_filter,
+                    stix_nested_ref_relationships_by_entity_id,
+                )
+            )
             for stix_sighting_relationship in stix_sighting_relationships:
-                relation_object_data = (
-                    self.prepare_export(  # ICI -> remove max marking ?
-                        entity=self.generate_export(stix_sighting_relationship),
-                        mode="simple",
-                        access_filter=access_filter,
-                        related_object_access_cache=related_object_access_cache,
-                        related_object_export_cache=related_object_export_cache,
-                    )
+                relation_object_data = self.prepare_export(  # ICI -> remove max marking ?
+                    entity=self.generate_export(stix_sighting_relationship),
+                    mode="simple",
+                    access_filter=access_filter,
+                    related_object_access_cache=related_object_access_cache,
+                    related_object_export_cache=related_object_export_cache,
+                    stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                 )
                 relation_object_bundle = self.filter_objects(
                     uuids, relation_object_data
@@ -2960,6 +3011,17 @@ class OpenCTIStix2:
                         entity_object["id"]
                     )
 
+            stix_nested_ref_relationships_by_entity_id = (
+                self._prefetch_export_nested_ref_relationships_by_entity_ids(
+                    [
+                        entity_id
+                        for entity_ids in uncached_object_ids_by_type.values()
+                        for entity_id in entity_ids
+                    ],
+                    access_filter,
+                    stix_nested_ref_relationships_by_entity_id,
+                )
+            )
             for resolve_type, entity_ids in uncached_object_ids_by_type.items():
                 do_list = self.get_lister(resolve_type) if len(entity_ids) > 1 else None
                 if do_list is None:
@@ -2976,6 +3038,7 @@ class OpenCTIStix2:
                                 access_filter=access_filter,
                                 related_object_access_cache=related_object_access_cache,
                                 related_object_export_cache=related_object_export_cache,
+                                stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                             )
                             if entity_object_data is not None
                             else None
@@ -2999,6 +3062,7 @@ class OpenCTIStix2:
                             access_filter=access_filter,
                             related_object_access_cache=related_object_access_cache,
                             related_object_export_cache=related_object_export_cache,
+                            stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
                         )
                         if entity_object_data is not None
                         else None

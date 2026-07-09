@@ -68,6 +68,31 @@ class _FilteredRelationshipCollection:
         return relationships
 
 
+class _NestedRefRelationshipCollection:
+    def __init__(self, relationships_by_root):
+        self.relationships_by_root = relationships_by_root
+        self.list_calls = 0
+        self.from_id_queries = []
+
+    def list(self, **kwargs):
+        self.list_calls += 1
+        if kwargs.get("filters") is not None:
+            from_ids = kwargs["filters"]["filters"][0]["values"]
+        else:
+            from_ids = kwargs["fromId"]
+        if isinstance(from_ids, str):
+            from_ids = [from_ids]
+        self.from_id_queries.append(from_ids)
+        relationships = []
+        seen_relationship_ids = set()
+        for from_id in from_ids:
+            for relationship in self.relationships_by_root.get(from_id, []):
+                if relationship["id"] not in seen_relationship_ids:
+                    seen_relationship_ids.add(relationship["id"])
+                    relationships.append(relationship)
+        return relationships
+
+
 class _CountingRelatedObjectLister:
     def __init__(self, targets_by_id):
         self.targets_by_id = targets_by_id
@@ -312,6 +337,75 @@ def test_prepare_export_full_batches_unique_related_object_reads_by_type():
         "malware--target-2",
         "malware--target-3",
     ]
+
+
+def test_prepare_export_full_batches_nested_refs_for_relationships_and_related_objects():
+    helper = _helper(
+        [
+            _relationship("relationship--1", "target-1"),
+            _relationship("relationship--2", "target-2"),
+            _relationship("relationship--3", "target-3"),
+        ]
+    )
+    nested_ref_collection = _NestedRefRelationshipCollection(
+        {
+            "target-target-1": [
+                _nested_ref_relationship(
+                    "nested-ref--target-1", "target-target-1", "sample-1"
+                )
+            ]
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-target-{index}": {
+                "id": f"target-target-{index}",
+                "standard_id": f"malware--target-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable related objects should not use the reader")
+    )
+    entity = {
+        "id": "indicator--root",
+        "type": "indicator",
+        "x_opencti_id": "root",
+    }
+
+    result = helper.prepare_export(entity=entity, mode="full")
+    target_objects = {
+        item["id"]: item for item in result if item["id"].startswith("malware--")
+    }
+
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["root"],
+        [
+            "internal-relationship--1",
+            "internal-relationship--2",
+            "internal-relationship--3",
+            "target-target-1",
+            "target-target-2",
+            "target-target-3",
+        ],
+    ]
+    assert target_objects["malware--target-1"]["sample_refs"] == ["malware--sample-1"]
 
 
 def test_export_selected_reuses_related_endpoint_access_across_roots():
