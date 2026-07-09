@@ -325,6 +325,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 const newLabel = {
                   label: data.labelAdd.value,
                   value: data.labelAdd.id,
+                  color: data.labelAdd.color ?? undefined,
                 };
                 setFieldValue('new_labels', [...values.new_labels, newLabel]);
               }}

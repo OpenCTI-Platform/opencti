@@ -30,6 +30,7 @@ const labelContextualMutation = graphql`
     labelAdd(input: $input) {
       id
       value
+      color
     }
   }
 `;
