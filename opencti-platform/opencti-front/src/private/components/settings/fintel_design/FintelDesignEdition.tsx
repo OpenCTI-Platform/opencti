@@ -19,11 +19,17 @@ const fintelDesignEditionFocus = graphql`
 interface FintelDesignEditionProps {
   fintelDesignId: string;
   overviewData: FintelDesignEditionOverview_fintelDesign$key;
+  isOpen?: boolean;
+  hideControlledDial?: boolean;
+  onClose?: () => void;
 }
 
 const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
   overviewData,
   fintelDesignId,
+  isOpen,
+  hideControlledDial,
+  onClose,
 }) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation<FintelDesignEditionFocusMutation>(
@@ -37,13 +43,15 @@ const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
         input: { focusOn: '' },
       },
     });
+    onClose?.();
   };
 
   return (
     <Drawer
       title={t_i18n('Update a Fintel design')}
+      open={isOpen}
       onClose={handleClose}
-      controlledDial={EditEntityControlledDial}
+      controlledDial={hideControlledDial ? undefined : EditEntityControlledDial}
     >
       <FintelDesignEditionOverview data={overviewData} />
     </Drawer>

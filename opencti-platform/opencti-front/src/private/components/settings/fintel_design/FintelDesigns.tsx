@@ -25,7 +25,9 @@ import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material';
 import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import FintelDesignDeletion from '@components/settings/fintel_design/FintelDesignDeletion';
+import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/FintelDesignEditionOverview_fintelDesign.graphql';
 
 const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -93,6 +95,7 @@ const fintelDesignsLineFragment = graphql`
     gradiantToColor
     textColor
     default
+    ...FintelDesignEditionOverview_fintelDesign
   }
 `;
 
@@ -144,6 +147,7 @@ const FintelDesigns = () => {
     queryPaginationOptions,
   );
   const [fintelDesignToDelete, setFintelDesignToDelete] = useState<string | null>(null);
+  const [fintelDesignToEdit, setFintelDesignToEdit] = useState<FintelDesignRow | null>(null);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -241,9 +245,19 @@ const FintelDesigns = () => {
                     fintelDesignId={row.id}
                     isDefault={!!row.default}
                     currentDefaultName={row.currentDefaultName}
+                    onUpdate={() => setFintelDesignToEdit(row)}
                     onDelete={canDelete ? () => setFintelDesignToDelete(row.id) : undefined}
                   />
                 )}
+              />
+            )}
+            {fintelDesignToEdit && (
+              <FintelDesignEdition
+                fintelDesignId={fintelDesignToEdit.id}
+                overviewData={fintelDesignToEdit as unknown as FintelDesignEditionOverview_fintelDesign$key}
+                isOpen={!!fintelDesignToEdit}
+                hideControlledDial
+                onClose={() => setFintelDesignToEdit(null)}
               />
             )}
             {fintelDesignToDelete && (

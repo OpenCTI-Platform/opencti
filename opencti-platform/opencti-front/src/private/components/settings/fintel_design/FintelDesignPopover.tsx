@@ -37,6 +37,7 @@ interface FintelDesignPopoverProps {
   isDefault: boolean;
   currentDefaultName?: string;
   inline?: boolean;
+  onUpdate?: () => void;
   onDelete?: () => void;
 }
 
@@ -45,6 +46,7 @@ const FintelDesignPopover = ({
   isDefault,
   currentDefaultName,
   inline = true,
+  onUpdate,
   onDelete,
 }: FintelDesignPopoverProps) => {
   const { t_i18n } = useFormatter();
@@ -114,6 +116,12 @@ const FintelDesignPopover = ({
     onDelete?.();
   };
 
+  const onUpdateClick = (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    onUpdate?.();
+  };
+
   return (
     <>
       {inline ? (
@@ -150,6 +158,7 @@ const FintelDesignPopover = ({
           setAnchorEl(undefined);
         }}
       >
+        {onUpdate && <MenuItem onClick={onUpdateClick}>{t_i18n('Update')}</MenuItem>}
         {isDefault
           ? <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
           : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>}
