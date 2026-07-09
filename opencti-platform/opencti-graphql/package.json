@@ -81,7 +81,7 @@
     "@opentelemetry/sdk-metrics": "2.9.0",
     "@opentelemetry/sdk-trace-base": "2.9.0",
     "@opentelemetry/sdk-trace-node": "2.9.0",
-    "@opentelemetry/semantic-conventions": "1.41.1",
+    "@opentelemetry/semantic-conventions": "1.42.0",
     "@pyroscope/nodejs": "0.4.13",
     "@sesamecare-oss/redlock": "1.4.0",
     "@types/passport": "1.0.17",
