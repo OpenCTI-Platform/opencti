@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import { convertFormBuilderDataToSchema, getAttributesForEntityType, getInitialMandatoryFields, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
 import type { FormBuilderData } from './Form.d';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
@@ -262,5 +262,39 @@ describe('convertFormBuilderDataToSchema', () => {
       ],
     });
     expect(schema.fields[0].isReadOnly).toBe(false);
+  });
+});
+
+describe('container content attribute mapping', () => {
+  const t_i18n = (key: string) => key;
+
+  const entityTypes = [
+    {
+      value: 'Case-Incident',
+      label: 'Case Incident',
+      attributes: [
+        {
+          value: 'content',
+          name: 'content',
+          label: 'Content',
+          type: 'markdown',
+          mandatory: true,
+        },
+      ],
+    },
+  ];
+
+  it('should not expose content as an open vocabulary attribute', () => {
+    const openVocabAttributes = getAttributesForEntityType('Case-Incident', 'openvocab', entityTypes as any, t_i18n);
+
+    expect(openVocabAttributes).toEqual([]);
+  });
+
+  it('should keep mandatory content field as textarea', () => {
+    const mandatoryFields = getInitialMandatoryFields('Case-Incident', entityTypes as any, t_i18n);
+
+    expect(mandatoryFields).toHaveLength(1);
+    expect(mandatoryFields[0].attributeMapping.attributeName).toBe('content');
+    expect(mandatoryFields[0].type).toBe('textarea');
   });
 });
