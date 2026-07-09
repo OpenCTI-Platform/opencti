@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender from '../../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import UserEditionPassword from '../edition/UserEditionPassword';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 
@@ -42,22 +42,33 @@ describe('UserEditionPassword', () => {
     password_valid_until: null,
   };
 
+  const ffEnabled = {
+    userContext: createMockUserContext({
+      settings: { platform_feature_flags: [{ id: 'FORCE_PASSWORD_CHANGE', enable: true }] },
+    }),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders force password change button for internal active users', () => {
-    testRender(<UserEditionPassword user={baseUser} />);
+    testRender(<UserEditionPassword user={baseUser} />, ffEnabled);
     expect(screen.getByRole('button', { name: 'Force password change' })).toBeDefined();
   });
 
+  it('hides force password change button when FF is disabled', () => {
+    testRender(<UserEditionPassword user={baseUser} />);
+    expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
+  });
+
   it('hides force password change button for external users', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, external: true }} />);
+    testRender(<UserEditionPassword user={{ ...baseUser, external: true }} />, ffEnabled);
     expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
   });
 
   it('hides force password change button for locked users', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, account_status: 'Locked' }} />);
+    testRender(<UserEditionPassword user={{ ...baseUser, account_status: 'Locked' }} />, ffEnabled);
     expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
   });
 
