@@ -10,15 +10,37 @@ import filigranCatalog from '../../__generated__/opencti-manifest.json';
 import conf, { logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import { readFile } from 'node:fs/promises';
+import type { ValidateFunction } from 'ajv';
+
+const validatorCache = new Map<string, ValidateFunction>();
+const MAX_VALIDATOR_CACHE_SIZE = 500;
+
+/**
+ * Compiles (or retrieves from cache) an AJV validator for a given schema.
+ * The cacheKey must accurately reflect the exact shape of the schema (properties + required)
+ * to avoid cache false positives.
+ */
+const getOrCompileValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
+  let validate = validatorCache.get(cacheKey);
+  if (!validate) {
+    if (validatorCache.size >= MAX_VALIDATOR_CACHE_SIZE) {
+      logApp.warn('Validator cache size limit reached, clearing cache', { size: validatorCache.size });
+      validatorCache.clear();
+    }
+    validate = ajv.compile(jsonValidation);
+    validatorCache.set(cacheKey, validate);
+  }
+  return validate;
+};
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
 const ajv = new Ajv({ coerceTypes: true });
 addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 
 // Cache of catalog to read on disk and parse only once
-let catalogMap: Record<string, CatalogType> | undefined;
+let catalogMap: Promise<Record<string, CatalogType>> | undefined;
 // cache for contracts by image map
-let contractsByImageCache: Map<string, CatalogContract> | undefined;
+let contractsByImageCache: Promise<Map<string, CatalogContract>> | undefined;
 
 // Build catalog map from files
 const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
@@ -57,7 +79,9 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
               additionalProperties: contract.config_schema.additionalProperties,
             };
             try {
-              ajv.compile(jsonValidation);
+              // Stable key: the contract is uniquely identified by its title/slug,
+              // and its shape doesn't change from one call to another
+              getOrCompileValidator(`catalog-contract:${contract.title}`, jsonValidation);
             } catch (err) {
               throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
             }
@@ -98,12 +122,20 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
 // Enable custom catalogs - clears cache and enables live catalog loading
 export const resetCatalogs = () => {
   catalogMap = undefined;
+  contractsByImageCache = undefined;
+  validatorCache.clear();
 };
 
 const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
-  // Normal mode: use cached catalog map or build it
   if (!catalogMap) {
-    catalogMap = await buildCatalogMap();
+    // We memoize the Promise immediately (not after it resolves) so that
+    // all concurrent calls share the same in-flight execution.
+    catalogMap = buildCatalogMap().catch((err) => {
+      // On failure, we reset the cache to allow a retry on the next call,
+      // rather than staying stuck with a rejected Promise cached forever.
+      catalogMap = undefined;
+      throw err;
+    });
   }
   return catalogMap;
 };
@@ -342,7 +374,15 @@ export const validateContractConfigurations = (
     additionalProperties: false,
   };
 
-  const validate = ajv.compile(jsonValidation);
+  // The key must exactly capture the shape of validationProperties, since it varies
+  // depending on which optional fields are actually present in the request.
+  const cacheKey = [
+    targetContract.slug ?? targetContract.title,
+    filteredRequired.slice().sort().join(','),
+    Object.keys(validationProperties).sort().join(','),
+  ].join('|');
+
+  const validate = getOrCompileValidator(cacheKey, jsonValidation);
   const validContractObject = validate(contractObject);
 
   if (!validContractObject) {
@@ -409,13 +449,17 @@ export const computeConnectorTargetContract = (
   return contractConfigurations;
 };
 
-export const getSupportedContractsByImage = async () => {
+export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
   if (!contractsByImageCache) {
-    const catalogDefinitions = await getCatalogs();
-    const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
-    contractsByImageCache = new Map(contracts.map((contract) => [contract.container_image, contract]));
+    contractsByImageCache = (async () => {
+      const catalogDefinitions = await getCatalogs();
+      const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
+      return new Map(contracts.map((contract) => [contract.container_image, contract]));
+    })().catch((err) => {
+      contractsByImageCache = undefined;
+      throw err;
+    });
   }
-
   return contractsByImageCache;
 };
 
