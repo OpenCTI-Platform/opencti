@@ -340,7 +340,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
             setNumberOfElements: storageHelpers.handleSetNumberOfElements,
           } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
           entityTypes={['stix-core-relationship']}
-          availableFilterKeys={['toTypes']}
+          availableFilterKeys={['toTypes', 'coverageScore']}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
