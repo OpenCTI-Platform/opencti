@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+from contextlib import nullcontext
 
 import magic
 
@@ -243,31 +244,35 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         }
                     }
                  """
+            data_context = nullcontext(data)
             if data is None:
-                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                data_context = open(file_name, "rb")
             self.opencti.app_logger.info(
                 "Uploading a file in Stix-Cyber-Observable",
                 {"file": final_file_name, "id": id},
             )
-            return self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "file": (self.opencti.file(final_file_name, data, mime_type)),
-                    "fileMarkings": file_markings,
-                    "version": version,
-                    "noTriggerImport": (
-                        no_trigger_import
-                        if isinstance(no_trigger_import, bool)
-                        else no_trigger_import == "True"
-                    ),
-                    "embedded": embedded,
-                },
-            )
+            with data_context as upload_data:
+                return self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "file": (
+                            self.opencti.file(final_file_name, upload_data, mime_type)
+                        ),
+                        "fileMarkings": file_markings,
+                        "version": version,
+                        "noTriggerImport": (
+                            no_trigger_import
+                            if isinstance(no_trigger_import, bool)
+                            else no_trigger_import == "True"
+                        ),
+                        "embedded": embedded,
+                    },
+                )
         else:
             self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable] Missing parameters: id or file_name"
@@ -1661,23 +1666,27 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     }
                 }
             """
+            data_context = nullcontext(data)
             if data is None:
-                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                data_context = open(file_name, "rb")
 
-            result = self.opencti.query(
-                query,
-                {
-                    "file": (self.opencti.file(final_file_name, data, mime_type)),
-                    "x_opencti_description": x_opencti_description,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "objectLabel": object_label,
-                },
-            )
+            with data_context as upload_data:
+                result = self.opencti.query(
+                    query,
+                    {
+                        "file": (
+                            self.opencti.file(final_file_name, upload_data, mime_type)
+                        ),
+                        "x_opencti_description": x_opencti_description,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                    },
+                )
             return self.opencti.process_multiple_fields(
                 result["data"]["artifactImport"]
             )
