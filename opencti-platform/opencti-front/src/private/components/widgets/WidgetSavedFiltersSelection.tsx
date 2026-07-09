@@ -2,10 +2,9 @@ import React, { Suspense, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import getSavedFilterScopeFilter from 'src/components/saved_filters/getSavedFilterScopeFilter';
-import useAuth from 'src/utils/hooks/useAuth';
 import { type SavedFiltersAutocompleteOptionType, type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { type WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
+import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 
 const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
@@ -46,23 +45,10 @@ const WidgetSavedFiltersComponent = ({
   selectedFilterId,
   onRefetch,
 }: WidgetSavedFiltersComponentProps) => {
-  const { me } = useAuth();
   const { savedFilters } = usePreloadedQuery(widgetSavedFiltersSelectionQuery, queryRef);
   const data = savedFilters?.edges?.map(({ node }) => node) ?? [];
 
-  const options: SavedFiltersAutocompleteOptionType[] = data.map((item) => {
-    const isOwner = item.creator_id === me.id;
-    const ownerName = !isOwner
-      ? item.authorizedMembers?.find((m) => m.member_id === item.creator_id)?.name
-      : undefined;
-    return {
-      label: item.name,
-      value: item as SavedFiltersSelectionData,
-      isOwner,
-      ownerName: ownerName ?? undefined,
-      canManage: item.currentUserAccessRight === 'admin',
-    };
-  });
+  const options = useBuildSavedFiltersOptions(data);
 
   const selectedOption = selectedFilterId
     ? options.find((o) => o.value.id === selectedFilterId)
@@ -114,12 +100,9 @@ const WidgetSavedFiltersSelection = ({
   onClear,
   selectedFilterId,
 }: WidgetSavedFiltersSelectionProps) => {
-  const filters = getSavedFilterScopeFilter(scope);
-  const variables = { filters };
-
   const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<WidgetSavedFiltersSelectionQuery>(
     widgetSavedFiltersSelectionQuery,
-    variables,
+    {},
   );
 
   const handleRefetch = useCallback(() => {
