@@ -22,7 +22,7 @@ import {
   TransformOutlined,
   UnpublishedOutlined,
 } from '@mui/icons-material';
-import { DialogContentText, FormControlLabel, Switch } from '@mui/material';
+import { FormControlLabel, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
@@ -2683,11 +2683,15 @@ class DataTableToolBar extends Component {
                 open={this.state.displayTask}
                 onClose={this.handleCloseTask.bind(this)}
                 data-testid="background-task-popup"
-                title={t('Launch a background task')}
+                title={(
+                  <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <span>{t('Launch a background task')}</span>
+                    <span style={{ fontSize: '0.875rem' }}>
+                      {n(numberOfSelectedElements)} {t('selected element(s)')}
+                    </span>
+                  </span>
+                )}
               >
-                <DialogContentText>
-                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                </DialogContentText>
                 {numberOfSelectedElements > 1000 && (
                   <Alert severity="warning">
                     {t(
