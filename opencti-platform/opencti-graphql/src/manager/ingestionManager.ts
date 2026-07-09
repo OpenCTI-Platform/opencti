@@ -621,7 +621,9 @@ export const jsonExecutor = async (context: AuthContext) => {
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
-        const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+        const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
+          timeout: FEED_REQUEST_TIMEOUT,
+        });
         logApp.info('pushBundleToConnectorQueue', objects.length);
         // Push the bundle to absorption queue if required
         if (objects.length > 0) {

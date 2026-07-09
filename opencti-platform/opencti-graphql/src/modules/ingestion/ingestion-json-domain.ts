@@ -38,6 +38,7 @@ import { encryptIngestionCredential, decryptIngestionCredential } from './ingest
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
+  timeout?: number;
 }
 
 const getValueFromPath = (path: string, json: any) => {
@@ -92,7 +93,7 @@ const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: R
 };
 
 export const executeJsonQuery = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson, opts: JsonQueryFetchOpts = {}) => {
-  const { maxResults = 0 } = opts;
+  const { maxResults = 0, timeout = undefined } = opts;
   let certificates;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/json';
@@ -124,7 +125,13 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       ca: certificateAuthenticationValue.split(':')[2],
     };
   }
-  const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ingestion.ssl_verify ?? false, responseType: 'json', certificates };
+  const httpClientOptions: GetHttpClient = {
+    headers,
+    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    timeout,
+    responseType: 'json',
+    certificates,
+  };
   const httpClient = getHttpClient(httpClientOptions);
   // Prepare query params
   const queryVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'query_param');
