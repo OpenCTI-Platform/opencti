@@ -95,3 +95,74 @@ class TestFetchOpenctiFileById:
                 "status_code": 404,
             },
         )
+
+    def test_builds_url_without_double_slash_when_url_has_trailing_slash(self):
+        """A trailing slash on the platform url must not produce a double slash
+        in the generated storage url."""
+        with patch.object(OpenCTIApiClient, "_setup_proxy_certificates"):
+            client = OpenCTIApiClient(
+                url="http://localhost:4000/",
+                token="test-token",
+                ssl_verify=False,
+                perform_health_check=False,
+            )
+            client.app_logger = MagicMock()
+
+        with patch.object(
+            client, "fetch_opencti_file", return_value="content"
+        ) as mocked_fetch:
+            client.fetch_opencti_file_by_id("file-id-123")
+
+        mocked_fetch.assert_called_once_with(
+            "http://localhost:4000/storage/get/file-id-123",
+            binary=False,
+            serialize=False,
+        )
+
+    def test_passes_file_id_with_special_characters_unchanged(self, api_client):
+        """A file id that looks like a path (with spaces/subfolders) must be
+        forwarded as-is, with no accidental encoding."""
+        file_id = "import/Artifact/some-id/my file (v2).bin"
+
+        with patch.object(
+            api_client, "fetch_opencti_file", return_value="content"
+        ) as mocked_fetch:
+            api_client.fetch_opencti_file_by_id(file_id, binary=True, serialize=True)
+
+        mocked_fetch.assert_called_once_with(
+            f"http://localhost:4000/storage/get/{file_id}",
+            binary=True,
+            serialize=True,
+        )
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "http://localhost:4000",
+            "https://opencti.example.com",
+            "http://192.168.1.10:4000",
+        ],
+    )
+    def test_url_equivalent_to_legacy_replace_based_construction(self, url):
+        """Characterization test: the new base_url-based storage url must be
+        byte-identical to the old api_url.replace("graphql", "storage/get/")
+        construction it replaces at the opencti_stix2.py call sites."""
+        with patch.object(OpenCTIApiClient, "_setup_proxy_certificates"):
+            client = OpenCTIApiClient(
+                url=url,
+                token="test-token",
+                ssl_verify=False,
+                perform_health_check=False,
+            )
+            client.app_logger = MagicMock()
+
+        file_id = "some-file-id"
+        legacy_url = client.api_url.replace("graphql", "storage/get/") + file_id
+
+        with patch.object(
+            client, "fetch_opencti_file", return_value="content"
+        ) as mocked_fetch:
+            client.fetch_opencti_file_by_id(file_id)
+
+        new_url = mocked_fetch.call_args[0][0]
+        assert new_url == legacy_url
