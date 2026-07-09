@@ -43,6 +43,7 @@ import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../m
 import { decryptIngestionCredential } from '../modules/ingestion/ingestion-common';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
+import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -77,7 +78,7 @@ const asArray = (data: unknown) => {
  *  - the configured period has fully elapsed since last_execution_date
  * Used by all ingestion types (RSS, TAXII, CSV, JSON).
  */
-export const isMustExecuteIteration = (last_execution_date: Date | undefined, scheduling_period: string) => {
+export const isMustExecuteIteration = (last_execution_date: Date | string | undefined, scheduling_period: string) => {
   if (isNotEmptyField(scheduling_period) && scheduling_period !== 'auto' && last_execution_date) {
     const schedulingPeriod = schedulingPeriodToMs(scheduling_period);
     const isInRange = isDateInRange(last_execution_date, schedulingPeriod, utcDate());
@@ -306,7 +307,7 @@ export interface TaxiiResponseData {
 
 interface TaxiiGetParams {
   next: string | undefined;
-  added_after: Date | undefined;
+  added_after: string | undefined;
   limit?: string | undefined;
 }
 
@@ -386,7 +387,12 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
   return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
 
-type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;
+type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<TaxiiExecutionResult>;
+
+interface TaxiiExecutionResult {
+  objectsCount: number;
+  objects: StixObject[];
+}
 
 export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntityIngestionTaxii | BasicStoreEntityIngestionTaxiiCollection, objects: StixObject[]) => {
   if (ingestion.confidence_to_score === true) {
@@ -414,7 +420,11 @@ export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntit
   return objects;
 };
 
-export const processTaxiiResponse = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii, taxiResponse: TaxiiResponseData) => {
+export const processTaxiiResponse = async (
+  context: AuthContext,
+  ingestion: BasicStoreEntityIngestionTaxii,
+  taxiResponse: TaxiiResponseData
+): Promise<TaxiiExecutionResult> => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
     logApp.info(`[OPENCTI-MODULE] Taxii ingestion execution for ${data.objects.length} items, sending stix bundle to workers.`, { ingestionId: ingestion.id });
@@ -441,6 +451,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
       await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: connectorState });
     }
+    return { objectsCount: data.objects.length, objects };
   } else {
     const ingestionUpdate = await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), current_state_cursor: undefined });
     const connectorState = { current_state_cursor: ingestionUpdate.current_state_cursor, added_after_start: ingestionUpdate.added_after_start };
@@ -452,13 +463,14 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
       ingestionId: ingestion.id,
       ingestionName: ingestion.name,
     });
+    return { objectsCount: 0, objects: [] };
   }
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
   logApp.info(`[OPENCTI-MODULE] Executing Taxii ingestion for ${ingestion.name}`);
   const taxiResponse = await taxiiHttpGet(ingestion);
-  await processTaxiiResponse(context, ingestion, taxiResponse);
+  return processTaxiiResponse(context, ingestion, taxiResponse);
 };
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler,
@@ -482,13 +494,51 @@ export const taxiiExecutor = async (context: AuthContext) => {
         if (!taxiiHandler) {
           throw UnsupportedError(`[OPENCTI-MODULE] Taxii version ${ingestion.version} is not yet supported`);
         }
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'taxii');
+        ingestionLogger.info('Feed execution started', { uri: ingestion.uri, collection: ingestion.collection });
         const ingestionPromise = taxiiHandler(context, ingestion)
-          .catch((e) => {
-            logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii ingestion execution', { cause: e, name: ingestion.name });
+          .then(async ({ objectsCount, objects }: TaxiiExecutionResult) => {
+            logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler resolved', { count: objectsCount, name: ingestion.name });
+            try {
+              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success' });
+            } catch (patchErr) {
+              logApp.warn('[OPENCTI-MODULE] Failed to patch taxii ingestion success status', { cause: patchErr });
+            }
+            if (objectsCount === 0) {
+              await ingestionLogger.success('Feed fetched successfully', {
+                objects_count: 0,
+                collection: ingestion.collection,
+                uri: ingestion.uri,
+              });
+            } else {
+              for (let objectIndex = 0; objectIndex < objects.length; objectIndex += 1) {
+                const object = objects[objectIndex];
+                await ingestionLogger.success('Entity fetched successfully', {
+                  objects_count: objectsCount,
+                  object_index: objectIndex + 1,
+                  collection: ingestion.collection,
+                  uri: ingestion.uri,
+                  entity_type: object.type,
+                  entity_id: object.id,
+                  object,
+                });
+              }
+            }
+          })
+          .catch(async (e: Error) => {
+            logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler rejected', { error: e.message, name: ingestion.name });
+            try {
+              await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' });
+            } catch (patchErr) {
+              logApp.warn('[OPENCTI-MODULE] Failed to patch taxii ingestion error status', { cause: patchErr });
+            }
+            await ingestionLogger.error('Feed fetch failed', buildIngestionErrorMeta(e));
           });
         ingestionPromises.push(ingestionPromise);
       } else {
-        // Update the state
+        // Queue not empty — log buffering state and skip fetch
+        const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'taxii');
+        ingestionLogger.info('Feed is buffering, waiting for queue to drain', { messages_number, messages_size });
         const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
         ingestionPromises.push(ingestionPromise);
       }

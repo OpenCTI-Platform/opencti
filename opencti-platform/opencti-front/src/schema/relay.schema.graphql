@@ -9713,6 +9713,7 @@ type Query {
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
+  ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
   ingestionCsv(id: String!): IngestionCsv
@@ -13879,6 +13880,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -13913,6 +13916,22 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   added_after_start: String
+}
+
+enum IngestionLogLevel {
+  success
+  info
+  warn
+  error
+}
+
+type IngestionEntry {
+  timestamp: DateTime!
+  level: IngestionLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
 }
 
 input IngestionTaxiiAddInput {
