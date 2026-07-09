@@ -10,6 +10,7 @@ import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
+import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -40,11 +41,14 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   let availableEntityTypes;
   let searchContext;
+  let savedFiltersScope: string;
   if (perspective === 'relationships') {
     searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label'] };
+    savedFiltersScope = 'stix-core-relationship';
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
+    savedFiltersScope = 'History';
   } else { // perspective = 'entities'
     availableEntityTypes = [
       'Stix-Domain-Object',
@@ -55,6 +59,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     searchContext = isDraftWorkspaceOnly
       ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
       : { entityTypes: ['Stix-Core-Object'] };
+    savedFiltersScope = 'Stix-Core-Object';
   }
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
@@ -68,6 +73,54 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const bookmarkAvailableEntityTypes = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
 
+  const handleSavedFilterSelect = (savedFilterId: string) => {
+    setDataSelection({
+      ...dataSelection,
+      filters_id: savedFilterId,
+      filters: undefined,
+    });
+  };
+
+  const handleSavedFilterClear = () => {
+    setDataSelection({
+      ...dataSelection,
+      filters_id: null,
+      filters,
+    });
+  };
+
+  const handleSavedFilterSelectDynamicFrom = (savedFilterId: string) => {
+    setDataSelection({
+      ...dataSelection,
+      dynamicFrom_id: savedFilterId,
+      dynamicFrom: undefined,
+    });
+  };
+
+  const handleSavedFilterClearDynamicFrom = () => {
+    setDataSelection({
+      ...dataSelection,
+      dynamicFrom_id: null,
+      dynamicFrom: filtersDynamicFrom,
+    });
+  };
+
+  const handleSavedFilterSelectDynamicTo = (savedFilterId: string) => {
+    setDataSelection({
+      ...dataSelection,
+      dynamicTo_id: savedFilterId,
+      dynamicTo: undefined,
+    });
+  };
+
+  const handleSavedFilterClearDynamicTo = () => {
+    setDataSelection({
+      ...dataSelection,
+      dynamicTo_id: null,
+      dynamicTo: filtersDynamicTo,
+    });
+  };
+
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
@@ -77,6 +130,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             availableEntityTypes={availableEntityTypes}
             helpers={helpers}
             searchContext={type === 'bookmark' ? undefined : searchContext}
+          />
+          <WidgetSavedFiltersSelection
+            scope={savedFiltersScope}
+            onSelect={handleSavedFilterSelect}
+            onClear={handleSavedFilterClear}
+            selectedFilterId={dataSelection.filters_id}
           />
         </Box>
 
@@ -93,6 +152,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 type="from"
                 searchContext={{ entityTypes: ['Stix-Core-Object'] }}
               />
+              <WidgetSavedFiltersSelection
+                scope="Stix-Core-Object"
+                onSelect={handleSavedFilterSelectDynamicFrom}
+                onClear={handleSavedFilterClearDynamicFrom}
+                selectedFilterId={dataSelection.dynamicFrom_id}
+              />
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Filters
@@ -104,6 +169,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpersDynamicTo}
                 type="to"
                 searchContext={{ entityTypes: ['Stix-Core-Object'] }}
+              />
+              <WidgetSavedFiltersSelection
+                scope="Stix-Core-Object"
+                onSelect={handleSavedFilterSelectDynamicTo}
+                onClear={handleSavedFilterClearDynamicTo}
+                selectedFilterId={dataSelection.dynamicTo_id}
               />
             </Box>
           </>
