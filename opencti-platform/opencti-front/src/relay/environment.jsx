@@ -84,7 +84,16 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn,
 });
 const store = new Store(new RecordSource());
-export const environment = new Environment({ network, store });
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
+const getDataID = (fieldValue, typeName) => {
+  const id = fieldValue?.id;
+  if (!id) return null;
+  if (namespacedTypenames.has(typeName)) {
+    return `${typeName}:${id}`;
+  }
+  return id;
+};
+export const environment = new Environment({ network, store, getDataID });
 
 // Components
 export class QueryRenderer extends Component {
@@ -121,6 +130,8 @@ const buildErrorMessages = (error) => R.map(
   error.res.errors,
 );
 
+const FORCE_PASSWORD_CHANGE_ROUTE = '/dashboard/change-password';
+
 export const defaultCommitMutation = {
   updater: undefined,
   optimisticUpdater: undefined,
@@ -133,11 +144,20 @@ export const defaultCommitMutation = {
 export const relayErrorHandling = (error, setSubmitting, onError) => {
   if (setSubmitting) setSubmitting(false);
   if (error && error.res && error.res.errors) {
-    const authRequired = R.filter(
-      (e) => R.pathOr(e.message, ['data', 'type'], e) === 'authentication',
-      error.res.errors,
+    const passwordChangeRequired = error.res.errors.some(
+      (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
     );
-    if (!R.isEmpty(authRequired)) {
+    if (passwordChangeRequired) {
+      const alreadyOnForcePasswordChange = window.location.pathname.startsWith(FORCE_PASSWORD_CHANGE_ROUTE);
+      if (!alreadyOnForcePasswordChange) {
+        MESSAGING$.redirect.next(FORCE_PASSWORD_CHANGE_ROUTE);
+      }
+      return;
+    }
+    const authRequired = error.res.errors.filter(
+      (e) => (e?.data?.type ?? e.message) === 'authentication',
+    );
+    if (authRequired.length > 0) {
       MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
     } else if (onError) {
       const messages = buildErrorMessages(error);

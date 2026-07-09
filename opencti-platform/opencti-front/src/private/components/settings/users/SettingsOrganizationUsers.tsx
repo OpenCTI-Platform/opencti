@@ -18,6 +18,8 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -92,6 +94,7 @@ const settingsOrganizationUsersLineFragment = graphql`
     otp_activated
     entity_type
     user_service_account
+    password_valid_until
     created_at
     effective_confidence_level {
       max_confidence
@@ -109,7 +112,9 @@ interface MembersListContainerProps {
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
+  const { settings } = useAuth();
+  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -171,23 +176,30 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 25,
+      percentWidth: forcePasswordChangeEnabled ? 20 : 22,
     },
     user_email: {
-      percentWidth: 30,
+      percentWidth: forcePasswordChangeEnabled ? 25 : 28,
     },
     firstname: {
-      percentWidth: 10,
+      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
     },
     lastname: {
-      percentWidth: 10,
+      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
     },
     effective_confidence_level: {
       percentWidth: 10,
     },
     otp: {
-      percentWidth: 5,
+      percentWidth: forcePasswordChangeEnabled ? 5 : 6,
     },
+    ...(forcePasswordChangeEnabled ? {
+      password_valid_until: {
+        label: 'Password valid until',
+        percentWidth: 10,
+        render: (date) => (date ? fd(date) : '-'),
+      },
+    } : {}),
     created_at: {
       percentWidth: 10,
     },

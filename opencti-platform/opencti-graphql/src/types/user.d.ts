@@ -63,6 +63,7 @@ interface AuthUser extends BasicStoreIdentifier {
   personal_notifiers?: Array<string>;
   draft_context?: string | undefined;
   otp_activated?: boolean;
+  password_valid_until?: Date | null;
   otp_secret?: string;
   creator_id?: string | string[];
   unsubscribed_news_feed_types?: string[];

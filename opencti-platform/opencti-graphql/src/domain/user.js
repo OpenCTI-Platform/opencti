@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -12,12 +13,22 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
+  isFeatureEnabled,
   logApp,
 } from '../config/conf';
-import { AuthenticationFailure, ConfigurationError, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import {
+  AuthenticationFailure,
+  ConfigurationError,
+  DatabaseError,
+  DraftLockedError,
+  ForbiddenAccess,
+  FunctionalError,
+  PasswordChangeRequired,
+  UnsupportedError,
+} from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
+import { elLoadBy, elRawDeleteByQuery, ES_MAX_CONCURRENCY } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -644,6 +655,65 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
+export const FEATURE_FORCE_PASSWORD_CHANGE = 'FORCE_PASSWORD_CHANGE';
+
+export const computePasswordValidUntilFromPolicy = async (context) => {
+  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
+    return null;
+  }
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const validityDays = Number(settings.password_policy_validity_days ?? 0);
+  if (!Number.isFinite(validityDays) || validityDays <= 0) {
+    return null;
+  }
+  return DateTime.now().plus({ days: validityDays }).toUTC().toString();
+};
+
+/**
+ * Clears `password_valid_until` on all internal users.
+ * Called when the admin disables the password validity policy (sets validity days to 0).
+ */
+export const clearAllUsersPasswordValidUntil = async (context) => {
+  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
+  const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
+  await BluePromise.map(usersWithExpiry, (user) => {
+    const inputs = [{ key: 'password_valid_until', value: [null] }];
+    return updateAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, inputs);
+  }, { concurrency: ES_MAX_CONCURRENCY });
+};
+
+/**
+ * Adjusts `password_valid_until` on all internal users when the validity policy duration changes.
+ * When coming from a disabled state (oldDays <= 0), all users get now + newDays.
+ * When shifting between active policies, shifts existing dates by the difference.
+ * Example: old=600 days, new=30 days → diff=-570 days → all dates shifted back by 570 days.
+ *
+ * @param {number} oldDays - Previous validity duration in days
+ * @param {number} newDays - New validity duration in days
+ */
+export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays) => {
+  const diffDays = newDays - oldDays;
+  if (diffDays === 0) return;
+  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
+  const internalUsers = allUsers.filter((u) => !u.external);
+  await BluePromise.map(internalUsers, (currentUser) => {
+    if (oldDays <= 0 || currentUser.password_valid_until == null) {
+      // Coming from disabled state OR user has no expiry: set fresh now + newDays
+      const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
+      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
+    }
+    // Active policy shift: move existing expiry by the diff
+    const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
+    if (currentExpiry.isValid) {
+      const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
+      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
+      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
+    }
+    return undefined;
+  }, { concurrency: ES_MAX_CONCURRENCY });
+};
+
 export const sendEmailToUser = async (context, user, input) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
@@ -758,6 +828,7 @@ export const addUser = async (context, user, newUser) => {
   } else { // If local user, check the password policy
     await checkPasswordFromPolicy(context, userPassword);
   }
+  const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
   let userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('password', bcrypt.hashSync(userPassword)),
@@ -766,6 +837,7 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('external', newUser.external ? newUser.external : false),
     R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
     R.assoc('account_lock_after_date', newUser.account_lock_after_date),
+    R.assoc('password_valid_until', userServiceAccount ? null : passwordValidUntil),
     R.assoc('unit_system', newUser.unit_system),
     R.assoc('user_confidence_level', newUser.user_confidence_level ?? null), // can be null
     R.assoc('personal_notifiers', [STATIC_NOTIFIER_UI, STATIC_NOTIFIER_EMAIL]),
@@ -918,9 +990,10 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
 
 // User related
 export const userEditField = async (context, user, userId, rawInputs) => {
-  const inputs = [];
+  let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
+  const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (userToUpdate.external && input.key === 'name') {
@@ -928,6 +1001,9 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     }
     if (userToUpdate.external && input.key === 'user_email') {
       throw FunctionalError('Email cannot be updated for external user', { userId });
+    }
+    if (userToUpdate.external && input.key === 'password_valid_until') {
+      throw FunctionalError('Cannot force password change for external user', { userId });
     }
     if (input.key === 'password') {
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
@@ -997,6 +1073,12 @@ export const userEditField = async (context, user, userId, rawInputs) => {
     if (!skipThisInput) {
       inputs.push(input);
     }
+  }
+  // Reset the password validity window whenever the password changes.
+  if (hasPasswordUpdate) {
+    const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
+    inputs = inputs.filter((input) => input.key !== 'password_valid_until');
+    inputs.push({ key: 'password_valid_until', value: [passwordValidUntil] });
   }
   // Editing the draft context (entering/exiting a draft) is a navigation action performed on the
   // user's own entity, which is never part of the draft data. It must run outside of any draft
@@ -1097,13 +1179,32 @@ export const meEditField = async (context, user, userId, inputs, password = null
     }
     // Check password confirmation in case of password change
     if (key === 'password') {
-      const dbPassword = user.password;
-      const match = bcrypt.compareSync(password, dbPassword);
-      if (!match) {
-        throw FunctionalError('The current password you have provided is not valid');
+      // Skip current password check if the password is expired (force change scenario)
+      const passwordExpired = isPasswordExpired(user);
+      if (!passwordExpired) {
+        if (typeof password !== 'string' || password.length === 0) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
+        const dbPassword = user.password;
+        const match = bcrypt.compareSync(password, dbPassword);
+        if (!match) {
+          throw FunctionalError('The current password you have provided is not valid');
+        }
       }
     }
   });
+  // If password was expired, kill all other sessions of this user (force change scenario)
+  const hasPasswordInput = inputs.some((i) => i.key === 'password');
+  if (hasPasswordInput && isPasswordExpired(user)) {
+    const currentSessionId = context.req?.session?.id;
+    const userSessions = await findUserSessions(userId);
+    const otherSessionIds = userSessions
+      .filter((s) => currentSessionId && !s.id.endsWith(currentSessionId))
+      .map((s) => s.id);
+    if (otherSessionIds.length > 0) {
+      await killSessions(otherSessionIds);
+    }
+  }
   return userEditField(context, user, userId, inputs);
 };
 
@@ -1576,6 +1677,11 @@ export const sessionLogin = async (context, input) => {
     }
   }
   if (loggedUser) {
+    // After session creation, check if the password is expired.
+    // The session is kept so the user can call meEdit to set a new password.
+    if (isPasswordExpired(loggedUser)) {
+      throw PasswordChangeRequired();
+    }
     // [SECURITY] api_token plaintext is no longer returned from the login mutation.
     // The session has been created above; the token value must not be exposed via this endpoint.
     return null;
@@ -1910,13 +2016,33 @@ const internalAuthenticateUser = async (context, req, user) => {
 };
 
 /**
+ * Returns true when the user must change the password before using the platform.
+ *
+ * @param {AuthUser} user
+ * @returns {boolean}
+ */
+export const isPasswordExpired = (user) => {
+  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
+    return false;
+  }
+  if (user.password_valid_until == null) {
+    return false;
+  }
+  // Use an inclusive comparison: if validity is set to "now", login must be blocked immediately.
+  return !utcDate().isBefore(utcDate(user.password_valid_until));
+};
+
+/**
  * Validates a user before granting authorization.
  *
  * @param {AuthUser} user
  * @param {Object} settings
+ * @param {Object} [opts]
+ * @param {boolean} [opts.skipForcePasswordCheck] - When true, skips the password_valid_until expiration check.
+ *   Used at session creation so the user can authenticate and be redirected to the password screen.
  * @throws {AuthenticationFailure} if the user has an invalid account status.
  */
-const validateUser = (user, settings) => {
+const validateUser = (user, settings, { skipForcePasswordCheck = false } = {}) => {
   // Check organization consistency
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -1928,6 +2054,11 @@ const validateUser = (user, settings) => {
   // Validate user's account status
   if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
     throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
+  }
+  // Require users with expired password validity to update their password before using the platform.
+  // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.
+  if (!skipForcePasswordCheck && isPasswordExpired(user)) {
+    throw PasswordChangeRequired();
   }
 };
 
@@ -1964,11 +2095,12 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
     logged = platformUsers.get(user.internal_id);
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  validateUser(logged, settings);
+  // Password expiration is enforced after login by the frontend guard on /change-password.
+  validateUser(logged, settings, { skipForcePasswordCheck: true });
   const withOrigin = userWithOrigin(req, logged);
   const numberOfKilledSessions = await enforceSessionLimit(withOrigin, settings);
   // Build and save the session
-  req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
+  req.session.user = { id: user.id, session_creation: now(), otp_validated: false, password_valid_until: logged.password_valid_until ?? null };
   req.session.session_provider = provider;
   req.session.save();
   // Publish the login event

@@ -85,6 +85,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -616,6 +617,8 @@ class DataTableToolBar extends Component {
     if (key === 'field') {
       if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else if (value === 'password_valid_until') {
+        actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
       } else {
         const values = [];
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
@@ -949,7 +952,7 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, settings) {
     const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
 
@@ -958,6 +961,7 @@ class DataTableToolBar extends Component {
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
 
+    const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
     let options = [];
     if (isUserDatatable) {
       if (['ADD', 'REMOVE'].includes(actionsInputs[i]?.type)) {
@@ -971,7 +975,8 @@ class DataTableToolBar extends Component {
           ...options,
           { label: t('Account status'), value: 'account_status' },
           { label: t('Account expiration date'), value: 'account_lock_after_date' },
-        ];
+          forcePasswordChangeEnabled && { label: t('Force password change date'), value: 'password_valid_until' },
+        ].filter(Boolean);
       }
     } else {
       options = [
@@ -2105,6 +2110,21 @@ class DataTableToolBar extends Component {
             format="yyyy-MM-dd hh:mm:ss a"
           />
         );
+      case 'password_valid_until':
+        return (
+          <>
+            <DateTimePicker
+              variant="inline"
+              disableToolbar={false}
+              autoOk={true}
+              allowKeyboardControl={true}
+              onChange={this.handleChangeDate.bind(this, i)}
+              onAccept={this.handleAcceptDate.bind(this, i)}
+              views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+              format="yyyy-MM-dd hh:mm:ss a"
+            />
+          </>
+        );
       default:
         return (
           <TextField
@@ -2852,7 +2872,7 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, settings)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>

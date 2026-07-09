@@ -54,6 +54,12 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
   const userServiceAccount = node.user_service_account;
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
+  const passwordValidUntil = (node as { password_valid_until?: string | null }).password_valid_until;
+  const passwordValidUntilDisplay = dataColumns.password_valid_until
+    ? (dataColumns.password_valid_until.render
+        ? dataColumns.password_valid_until.render(passwordValidUntil)
+        : (passwordValidUntil ? fd(passwordValidUntil) : '-'))
+    : null;
 
   return (
     <ListItemButton
@@ -115,6 +121,14 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                 <HorizontalRule fontSize="small" color="primary" />
               )}
             </div>
+            {dataColumns.password_valid_until && (
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.password_valid_until.width }}
+              >
+                {passwordValidUntilDisplay}
+              </div>
+            )}
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
@@ -146,6 +160,7 @@ export const UserLine = createFragmentContainer(UserLineComponent, {
         max_confidence 
       }
       otp_activated
+      password_valid_until
       created_at
     }
   `,
@@ -232,6 +247,17 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 animation="wave"
                 variant="rectangular"
                 width={40}
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.password_valid_until.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width={100}
                 height="100%"
               />
             </div>

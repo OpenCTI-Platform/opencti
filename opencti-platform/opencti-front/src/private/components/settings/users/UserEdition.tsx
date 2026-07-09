@@ -163,7 +163,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             <UserEditionOverview user={user} context={user.editContext} />
           )}
           {currentTab === 1 && (
-            <UserEditionPassword user={user} context={user.editContext} />
+            <UserEditionPassword user={user} />
           )}
           {currentTab === 2 && <UserEditionGroups user={user} />}
           {hasSetAccess && currentTab === 3 && (
