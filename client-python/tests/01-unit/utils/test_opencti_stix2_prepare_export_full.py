@@ -954,3 +954,71 @@ def test_export_selected_batches_nested_ref_relationship_listing_in_bounded_chun
     assert relationship_collection.filters[1]["filters"][0]["values"] == [
         f"root-{EXPORT_PREFETCH_BATCH_SIZE}"
     ]
+
+
+def test_export_selected_simple_batches_nested_ref_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _NestedRefRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "target-1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "target-2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "target-3")],
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_selected(entities_list=entities, mode="simple")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.from_id_queries == [["root-1", "root-2", "root-3"]]
+    assert [
+        item["sample_refs"]
+        for item in result["objects"]
+        if item["id"].startswith("indicator--root-")
+    ] == [
+        ["malware--target-1"],
+        ["malware--target-2"],
+        ["malware--target-3"],
+    ]
+
+
+def test_export_list_simple_batches_nested_ref_relationship_listing_across_roots():
+    helper = _helper([])
+    relationship_collection = _NestedRefRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "target-1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "target-2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "target-3")],
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = relationship_collection
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Indicator", mode="simple")
+
+    assert relationship_collection.list_calls == 1
+    assert relationship_collection.from_id_queries == [["root-1", "root-2", "root-3"]]
+    assert [
+        item["sample_refs"]
+        for item in result["objects"]
+        if item["id"].startswith("indicator--root-")
+    ] == [
+        ["malware--target-1"],
+        ["malware--target-2"],
+        ["malware--target-3"],
+    ]
