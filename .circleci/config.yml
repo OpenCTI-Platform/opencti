@@ -247,6 +247,15 @@ jobs:
           event: fail
           template: basic_fail_1
 
+  notify:
+    docker:
+      - image: "cimg/base:stable"
+    steps:
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+
   tag_package_musl:
     working_directory: ~/opencti_musl
     docker:
