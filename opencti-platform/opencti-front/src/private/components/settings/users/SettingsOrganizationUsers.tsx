@@ -176,22 +176,22 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 20,
+      percentWidth: forcePasswordChangeEnabled ? 20 : 22,
     },
     user_email: {
-      percentWidth: 25,
+      percentWidth: forcePasswordChangeEnabled ? 25 : 28,
     },
     firstname: {
-      percentWidth: 10,
+      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
     },
     lastname: {
-      percentWidth: 10,
+      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
     },
     effective_confidence_level: {
       percentWidth: 10,
     },
     otp: {
-      percentWidth: 5,
+      percentWidth: forcePasswordChangeEnabled ? 5 : 6,
     },
     ...(forcePasswordChangeEnabled ? {
       password_valid_until: {
