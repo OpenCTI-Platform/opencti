@@ -206,6 +206,7 @@ export const rssDataParser = async (turndownService: TurndownService, data: conv
 };
 
 const rssDataHandler = async (context: AuthContext, httpRssGet: Getter, turndownService: TurndownService, ingestion: BasicStoreEntityIngestionRss) => {
+  logApp.info(`[OPENCTI-MODULE] Executing Rss ingestion for ${ingestion.name}`);
   const data = await httpRssGet(ingestion.uri);
   const items = await rssDataParser(turndownService, data, ingestion.current_state_date);
   // Build Stix bundle from items
@@ -455,6 +456,7 @@ export const processTaxiiResponse = async (context: AuthContext, ingestion: Basi
 };
 
 const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => {
+  logApp.info(`[OPENCTI-MODULE] Executing Taxii ingestion for ${ingestion.name}`);
   const taxiResponse = await taxiiHttpGet(ingestion);
   await processTaxiiResponse(context, ingestion, taxiResponse);
 };
@@ -547,6 +549,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
   const csvMapperParsed = parseCsvMapper(csvMapper);
   csvMapperParsed.user_chosen_markings = ingestion.markings ?? [];
   try {
+    logApp.info(`[OPENCTI-MODULE] Executing CSV ingestion for ${ingestion.name}`);
     const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion, { timeout: FEED_REQUEST_TIMEOUT });
     await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
@@ -621,10 +624,11 @@ export const jsonExecutor = async (context: AuthContext) => {
     if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
       const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
       if (messages_number === 0) { // If no more ingestion to do
+        logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
         const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
           timeout: FEED_REQUEST_TIMEOUT,
         });
-        logApp.info('pushBundleToConnectorQueue', objects.length);
+        logApp.info(`[OPENCTI-MODULE] Json ingestion execution for ${objects.length} items`);
         // Push the bundle to absorption queue if required
         if (objects.length > 0) {
           const bundle: StixBundle = {
