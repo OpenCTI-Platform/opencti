@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { addSecurityCoverage, securityCoverageDelete } from '../../../src/modules/securityCoverage/securityCoverage-domain';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addReport, reportDeleteWithElements } from '../../../src/domain/report';
-import type { StoreEntityReport } from '../../../src/types/store';
-import { loadThroughDenormalized } from '../../../src/resolvers/stix';
-import { INPUT_RESULT_OF } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { addSecurityCoverage, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
+import type { StoreEntityReport } from '../../../../src/types/store';
+import { loadThroughDenormalized } from '../../../../src/resolvers/stix';
+import { INPUT_RESULT_OF } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
 describe('SecurityCoverage domain', () => {
   let report: StoreEntityReport;
