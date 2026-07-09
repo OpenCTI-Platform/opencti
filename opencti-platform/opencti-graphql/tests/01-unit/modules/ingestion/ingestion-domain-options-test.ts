@@ -23,6 +23,20 @@ vi.mock('../../../../src/utils/http-client', () => ({
   getHttpClient: getHttpClientMock,
 }));
 
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (key: string) => {
+        if (key === 'ingestion_manager:feed:request_timeout') return 7777;
+        return actual.default.get(key);
+      },
+    },
+  };
+});
+
 vi.mock('../../../../src/modules/ingestion/ingestion-common', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/modules/ingestion/ingestion-common')>();
   return {
@@ -77,6 +91,26 @@ describe('Ingestion domain timeout options', () => {
     );
   });
 
+  it('should fallback to configured timeout for csv when timeout option is omitted', async () => {
+    httpGetMock.mockResolvedValue({
+      data: Buffer.from('header\nvalue'),
+      headers: {},
+    });
+
+    const csvMapper = { skipLineChar: '#' } as any;
+    const ingestion = {
+      uri: 'http://localhost/csv',
+      authentication_type: 'none',
+      ssl_verify: false,
+    } as any;
+
+    await fetchCsvFromUrl(csvMapper, ingestion);
+
+    expect(getHttpClientMock).toHaveBeenCalledWith(
+      expect.objectContaining({ timeout: 7777, responseType: 'arraybuffer' }),
+    );
+  });
+
   it('should pass timeout to json http client options', async () => {
     httpCallMock.mockResolvedValueOnce({
       data: { items: [] },
@@ -108,6 +142,40 @@ describe('Ingestion domain timeout options', () => {
 
     expect(getHttpClientMock).toHaveBeenCalledWith(
       expect.objectContaining({ timeout: 4321, responseType: 'json' }),
+    );
+  });
+
+  it('should fallback to configured timeout for json when timeout option is omitted', async () => {
+    httpCallMock.mockResolvedValueOnce({
+      data: { items: [] },
+      headers: {},
+    });
+    findJsonMapperByIdMock.mockResolvedValue({
+      representations: '[]',
+      variables: '[]',
+    });
+    getEntitiesMapFromCacheMock.mockResolvedValue(new Map());
+    jsonMappingExecutionMock.mockResolvedValue([]);
+
+    const ingestion = {
+      headers: [],
+      ingestion_json_state: null,
+      query_attributes: [],
+      authentication_type: 'none',
+      ssl_verify: false,
+      uri: 'http://localhost/json',
+      body: '{}',
+      verb: 'POST',
+      json_mapper_id: 'json-mapper--1',
+      user_id: null,
+      pagination_with_sub_page: false,
+      pagination_with_sub_page_attribute_path: null,
+    } as any;
+
+    await executeJsonQuery({} as any, ingestion);
+
+    expect(getHttpClientMock).toHaveBeenCalledWith(
+      expect.objectContaining({ timeout: 7777, responseType: 'json' }),
     );
   });
 });

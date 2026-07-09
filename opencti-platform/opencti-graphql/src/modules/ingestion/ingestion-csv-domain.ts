@@ -14,7 +14,7 @@ import {
   IngestionCsvMapperType,
 } from '../../generated/graphql';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
+import conf, { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import {
   type BasicStoreEntityCsvMapper,
@@ -40,6 +40,7 @@ import { createOnTheFlyUser } from '../user/user-domain';
 import { findDefaultIngestionGroups } from '../../domain/group';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
+const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
 
 export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
@@ -248,7 +249,7 @@ export const fetchCsvFromUrl = async (
   ingestion: BasicStoreEntityIngestionCsv,
   opts: { limit?: number; timeout?: number } = {},
 ): Promise<CsvResponseData> => {
-  const { limit = undefined, timeout = undefined } = opts;
+  const { limit = undefined, timeout = DEFAULT_FEED_REQUEST_TIMEOUT } = opts;
   const headers = new OpenCTIHeaders();
   headers.Accept = 'application/csv';
   const decryptedAuthValue = await decryptIngestionCredential(ingestion.authentication_value);
