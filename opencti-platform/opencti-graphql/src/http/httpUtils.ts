@@ -24,8 +24,6 @@ export const setCookieError = (res: Response, message: string) => {
   let flashCode: string;
   if (normalized.includes('ip address is not allowed')) {
     flashCode = 'IP_NOT_ALLOWED';
-  } else if (normalized.includes('must change your password')) {
-    flashCode = 'PASSWORD_CHANGE_REQUIRED';
   } else if (normalized.includes('not available')) {
     flashCode = 'PROVIDER_NOT_AVAILABLE';
   } else if (normalized.includes('enterprise edition')) {

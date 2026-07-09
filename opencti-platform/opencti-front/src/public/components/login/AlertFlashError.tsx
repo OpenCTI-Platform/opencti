@@ -1,14 +1,11 @@
-import { useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import { useFormatter } from '../../../components/i18n';
 import LoginAlert from './LoginAlert';
-import { useLoginContext } from './loginContext';
 
 const FLASH_COOKIE = 'opencti_flash';
 
 export const FLASH_CODE_MESSAGES: Record<string, string> = {
   IP_NOT_ALLOWED: 'Your IP address is not allowed to access this platform',
-  PASSWORD_CHANGE_REQUIRED: 'You must change your password before continuing',
   PROVIDER_NOT_AVAILABLE: 'Authentication provider is not available',
   ENTERPRISE_EDITION_REQUIRED: 'This feature requires an Enterprise Edition license',
   AUTH_ERROR: 'Invalid authentication, please ask your administrator',
@@ -16,18 +13,9 @@ export const FLASH_CODE_MESSAGES: Record<string, string> = {
 
 const AlertFlashError = () => {
   const { t_i18n } = useFormatter();
-  const { setValue } = useLoginContext();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
   const flashError = cookies[FLASH_COOKIE] || '';
-
-  useEffect(() => {
-    if (flashError) {
-      removeCookie(FLASH_COOKIE);
-      if (flashError === 'PASSWORD_CHANGE_REQUIRED') {
-        setValue('forcePasswordChange', true);
-      }
-    }
-  }, [flashError]);
+  removeCookie(FLASH_COOKIE);
 
   if (!flashError) return null;
 
