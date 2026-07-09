@@ -223,6 +223,7 @@ const StixDomainObjectBookmarksList = ({
 
   const {
     isMissingHostEntity,
+    isMissingSavedFilters,
     isPreviewMode,
     queryRef,
   } = useDashboardViz<StixDomainObjectBookmarksListQuery>({

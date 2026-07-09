@@ -35,7 +35,7 @@ vi.mock('../../utils/hooks/useAuth', () => ({
   }),
 }));
 
-vi.mock('./dashboard-viz-utils', () => ({
+vi.mock('./dashboardVizUtils', () => ({
   resolveDataSelection: vi.fn(({
     dataSelection,
     host,

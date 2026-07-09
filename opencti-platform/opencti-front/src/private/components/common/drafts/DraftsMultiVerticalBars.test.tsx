@@ -45,7 +45,7 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   }),
 }));
 
-vi.mock('../../../../components/dashboard/dashboard-viz-utils', () => ({
+vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeStartEndDates: () => ({ startDate: null, endDate: null }),
 }));
 

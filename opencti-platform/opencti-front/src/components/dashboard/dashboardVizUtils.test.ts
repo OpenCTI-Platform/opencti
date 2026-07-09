@@ -117,13 +117,13 @@ describe('resolvedDataSelection', () => {
   });
   const secondary = ['Stix-Core-Object'];
 
-  it('removes id and incorrect keys from FilterGroup entries when a Entities perspective widget', async () => {
+  it('removes id and incorrect keys from FilterGroup entries when a Entities perspective widget', () => {
     const dataSelection: WidgetDataSelection[] = [{
       filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
     }];
-    const { resolvedDataSelection } = await resolveDataSelection({
+    const { resolvedDataSelection } = resolveDataSelection({
       filterKeysSchema,
       dataSelection,
       perspective: 'entities',
@@ -149,13 +149,13 @@ describe('resolvedDataSelection', () => {
     );
   });
 
-  it('removes id and incorrect keys from FilterGroup entries when a Relationships perspective widget', async () => {
+  it('removes id and incorrect keys from FilterGroup entries when a Relationships perspective widget', () => {
     const dataSelection: WidgetDataSelection[] = [{
       filters: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
       dynamicFrom: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
       dynamicTo: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),
     }];
-    const { resolvedDataSelection } = await resolveDataSelection({
+    const { resolvedDataSelection } = resolveDataSelection({
       filterKeysSchema,
       dataSelection,
       perspective: 'relationships',
@@ -181,13 +181,13 @@ describe('resolvedDataSelection', () => {
     );
   });
 
-  it('removes id and incorrect keys from FilterGroup entries when a Audits perspective widget', async () => {
+  it('removes id and incorrect keys from FilterGroup entries when a Audits perspective widget', () => {
     const dataSelection: WidgetDataSelection[] = [{
       filters: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
       dynamicFrom: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
       dynamicTo: makeFilterGroup(historyAvailableFilterKey, randomObjectIdValue),
     }];
-    const { resolvedDataSelection } = await resolveDataSelection({
+    const { resolvedDataSelection } = resolveDataSelection({
       filterKeysSchema,
       dataSelection,
       perspective: 'audits',
@@ -213,13 +213,13 @@ describe('resolvedDataSelection', () => {
     );
   });
 
-  it('does not return isMissingHostEntity if not hosted by a Custom View', async () => {
+  it('does not return isMissingHostEntity if not hosted by a Custom View', () => {
     const dataSelection: WidgetDataSelection[] = [{
       filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
     }];
-    const { isMissingHostEntity } = await resolveDataSelection({
+    const { isMissingHostEntity } = resolveDataSelection({
       filterKeysSchema,
       dataSelection,
       perspective: 'entities',
@@ -229,14 +229,14 @@ describe('resolvedDataSelection', () => {
   });
 
   describe('when hosted by a Custom View', () => {
-    it('resolves SELF_ID filter values', async () => {
+    it('resolves SELF_ID filter values', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
       }];
       const customViewTargetEntityId = 'ebe9a2a0-787d-4417-950e-39bfc8cc2381';
-      const { resolvedDataSelection, isMissingHostEntity } = await resolveDataSelection({
+      const { resolvedDataSelection, isMissingHostEntity } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -268,13 +268,13 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(false);
     });
 
-    it('returns isMissingHostEntity if SELF_ID is used in filters but there is not host entity injected', async () => {
+    it('returns isMissingHostEntity if SELF_ID is used in filters but there is not host entity injected', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
       }];
-      const { isMissingHostEntity } = await resolveDataSelection({
+      const { isMissingHostEntity } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -287,13 +287,13 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(true);
     });
 
-    it('returns isMissingHostEntity when custom view requires host entity even if preview mode is false', async () => {
+    it('returns isMissingHostEntity when custom view requires host entity even if preview mode is false', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
       }];
-      const { isMissingHostEntity } = await resolveDataSelection({
+      const { isMissingHostEntity } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -307,13 +307,13 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(true);
     });
 
-    it('does not return isMissingHostEntity if there is no host entity injected but SELF_ID is not used', async () => {
+    it('does not return isMissingHostEntity if there is no host entity injected but SELF_ID is not used', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { isMissingHostEntity } = await resolveDataSelection({
+      const { isMissingHostEntity } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -326,13 +326,13 @@ describe('resolvedDataSelection', () => {
       expect(isMissingHostEntity).toBe(false);
     });
 
-    it('returns isPreviewMode if SELF_ID is used in filters, there is a host entity injected and input host config indicates previewMode===true', async () => {
+    it('returns isPreviewMode if SELF_ID is used in filters, there is a host entity injected and input host config indicates previewMode===true', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
       }];
-      const { isPreviewMode } = await resolveDataSelection({
+      const { isPreviewMode } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -346,13 +346,13 @@ describe('resolvedDataSelection', () => {
       expect(isPreviewMode).toBe(true);
     });
 
-    it('does not return isPreviewMode if SELF_ID is used in filters and input host config indicates previewMode===true but no injected entity host', async () => {
+    it('does not return isPreviewMode if SELF_ID is used in filters and input host config indicates previewMode===true but no injected entity host', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueSELF_ID),
       }];
-      const { isPreviewMode } = await resolveDataSelection({
+      const { isPreviewMode } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -365,13 +365,13 @@ describe('resolvedDataSelection', () => {
       expect(isPreviewMode).toBe(false);
     });
 
-    it('does not return isPreviewMode if input host config indicates previewMode===true and there is injected entity host but SELF_ID is not used in filters ', async () => {
+    it('does not return isPreviewMode if input host config indicates previewMode===true and there is injected entity host but SELF_ID is not used in filters ', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { isPreviewMode } = await resolveDataSelection({
+      const { isPreviewMode } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -412,14 +412,14 @@ describe('resolvedDataSelection', () => {
       });
     };
 
-    it('resolves filters from a saved filter when filters_id is provided', async () => {
+    it('resolves filters from a saved filter when filters_id is provided', () => {
       mockFetchQuerySuccess();
       const dataSelection: WidgetDataSelection[] = [{
         filters_id: 'saved-filter-id',
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
+      const { resolvedDataSelection, isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -434,14 +434,14 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(false);
     });
 
-    it('resolves dynamicFrom from a saved filter when dynamicFrom_id is provided', async () => {
+    it('resolves dynamicFrom from a saved filter when dynamicFrom_id is provided', () => {
       mockFetchQuerySuccess();
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom_id: 'saved-filter-id',
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
+      const { resolvedDataSelection, isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -455,14 +455,14 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(false);
     });
 
-    it('resolves dynamicTo from a saved filter when dynamicTo_id is provided', async () => {
+    it('resolves dynamicTo from a saved filter when dynamicTo_id is provided', () => {
       mockFetchQuerySuccess();
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo_id: 'saved-filter-id',
       }];
-      const { resolvedDataSelection, isMissingSavedFilters } = await resolveDataSelection({
+      const { resolvedDataSelection, isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -476,14 +476,14 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(false);
     });
 
-    it('sets isMissingSavedFilters to true when saved filter is not found for filters_id', async () => {
+    it('sets isMissingSavedFilters to true when saved filter is not found for filters_id', () => {
       mockFetchQueryNotFound();
       const dataSelection: WidgetDataSelection[] = [{
         filters_id: 'non-existent-filter-id',
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { isMissingSavedFilters } = await resolveDataSelection({
+      const { isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -491,14 +491,14 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(true);
     });
 
-    it('sets isMissingSavedFilters to true when saved filter is not found for dynamicFrom_id', async () => {
+    it('sets isMissingSavedFilters to true when saved filter is not found for dynamicFrom_id', () => {
       mockFetchQueryNotFound();
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom_id: 'non-existent-filter-id',
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { isMissingSavedFilters } = await resolveDataSelection({
+      const { isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
@@ -506,13 +506,13 @@ describe('resolvedDataSelection', () => {
       expect(isMissingSavedFilters).toBe(true);
     });
 
-    it('does not set isMissingSavedFilters when no saved filter ids are provided', async () => {
+    it('does not set isMissingSavedFilters when no saved filter ids are provided', () => {
       const dataSelection: WidgetDataSelection[] = [{
         filters: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicFrom: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
         dynamicTo: makeFilterGroup(stixCoreObjectAvailableFilterKey, regardingOfNestedValueRandom),
       }];
-      const { isMissingSavedFilters } = await resolveDataSelection({
+      const { isMissingSavedFilters } = resolveDataSelection({
         filterKeysSchema,
         dataSelection,
         perspective: 'entities',
