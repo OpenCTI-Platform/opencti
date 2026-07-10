@@ -31,9 +31,7 @@ const StixCyberObservableKnowledgeComponent = (props) => {
       <Route
         path="/relations/:relationId"
         element={(
-          <StixCoreRelationship
-            entityId={stixCyberObservable.id}
-          />
+          <StixCoreRelationship />
         )}
       />
       <Route

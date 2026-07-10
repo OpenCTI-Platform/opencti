@@ -34,10 +34,7 @@ const SectorKnowledgeComponent = ({
         <Route
           path="/relations/:relationId/*"
           element={(
-            <StixCoreRelationship
-              entityId={sector.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route
