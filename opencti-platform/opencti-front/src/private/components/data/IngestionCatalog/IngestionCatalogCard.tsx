@@ -187,12 +187,24 @@ const IngestionCatalogCard = ({
         )}
         action={(
           <Tooltip
-            title={connector.verified ? t_i18n('Supported by Filigran') : t_i18n('Supported by Community')}
+            title={
+              connector.verified
+                ? t_i18n('Supported by Filigran')
+                : t_i18n('Supported by Community')
+            }
             slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >
-            {connector.verified
-              ? <FiligranIcon icon={LogoFiligranIcon} size="small" style={{ color: theme.palette.primary.main }} />
-              : <GroupsOutlined color="disabled" />}
+            {connector.verified ? (
+              <span style={{ display: 'inline-flex' }}>
+                <FiligranIcon
+                  icon={LogoFiligranIcon}
+                  size="small"
+                  style={{ color: theme.palette.primary.main }}
+                />
+              </span>
+            ) : (
+              <GroupsOutlined color="disabled" />
+            )}
           </Tooltip>
         )}
       />
