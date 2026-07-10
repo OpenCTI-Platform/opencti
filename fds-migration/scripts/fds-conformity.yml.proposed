@@ -1,0 +1,36 @@
+# PROPOSED CI workflow — not installed automatically.
+#
+# fds-migration/ never writes into this product's .github/workflows/ (we
+# don't control this repo's CI). This file is a starting point for the
+# product team to adopt if they want the conformity check to run on every
+# PR: copy it into .github/workflows/, adjust the working-directory / Node
+# version to match this repo's own CI, and drop --warn once the team is
+# comfortable making it blocking.
+#
+# --warn keeps it non-blocking by default: the check reports drift as an
+# annotation without failing the build, so adopting it costs nothing.
+#
+# The `paths:` filter below is already rendered for this product's actual
+# front-end workspace (opencti-platform/opencti-front) — do not replace it with a
+# repo-root guess, the generated bridge and theme files never live at repo
+# root.
+
+name: fds-migration conformity (proposed)
+
+on:
+  pull_request:
+    paths:
+      - "fds-migration/**"
+      - "opencti-platform/opencti-front/src/components/fds-tokens.generated.ts"
+      - "opencti-platform/opencti-front/src/components/ThemeDark.ts"
+      - "opencti-platform/opencti-front/src/components/ThemeLight.ts"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node fds-migration/scripts/check-fds-conformity.mjs --warn
