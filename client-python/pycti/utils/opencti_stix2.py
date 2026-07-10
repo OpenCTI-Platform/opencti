@@ -961,6 +961,117 @@ class OpenCTIStix2:
                 "Cannot prefetch external references during bundle import"
             )
 
+    def _get_import_kill_chain_phases(self, stix_object: Dict) -> List[Dict]:
+        if (
+            "kill_chain_phases" in stix_object
+            and stix_object["kill_chain_phases"] is not None
+        ):
+            return stix_object["kill_chain_phases"]
+
+        if "kill_chain_phases" not in stix_object:
+            extension_kill_chain_phases = self.opencti.get_attribute_in_extension(
+                "kill_chain_phases", stix_object
+            )
+            if extension_kill_chain_phases is not None:
+                return extension_kill_chain_phases
+
+        if (
+            "x_opencti_kill_chain_phases" in stix_object
+            and stix_object["x_opencti_kill_chain_phases"] is not None
+        ):
+            return stix_object["x_opencti_kill_chain_phases"]
+        return []
+
+    def _get_import_kill_chain_phase_order(self, kill_chain_phase: Dict):
+        if "x_opencti_order" in kill_chain_phase:
+            return kill_chain_phase["x_opencti_order"]
+
+        extension_order = self.opencti.get_attribute_in_extension(
+            "order", kill_chain_phase
+        )
+        return extension_order if extension_order is not None else 0
+
+    def _prefetch_import_kill_chain_phases(self, stix_objects: Iterable[Dict]) -> None:
+        phase_candidates_by_generated_id = {}
+        seen_phase_cache_keys = set()
+        try:
+            for stix_object in stix_objects:
+                for kill_chain_phase in self._get_import_kill_chain_phases(stix_object):
+                    kill_chain_name = kill_chain_phase["kill_chain_name"]
+                    phase_name = kill_chain_phase["phase_name"]
+                    phase_cache_key = kill_chain_name + phase_name
+                    if phase_cache_key in seen_phase_cache_keys:
+                        continue
+                    seen_phase_cache_keys.add(phase_cache_key)
+                    if self.get_in_cache(phase_cache_key) is not None:
+                        continue
+                    if "id" in kill_chain_phase:
+                        continue
+
+                    generated_phase_id = self.opencti.kill_chain_phase.generate_id(
+                        phase_name, kill_chain_name
+                    )
+                    phase_candidates_by_generated_id[generated_phase_id] = (
+                        phase_cache_key,
+                        self._get_import_kill_chain_phase_order(kill_chain_phase),
+                    )
+
+            if len(phase_candidates_by_generated_id) <= 1:
+                return
+
+            generated_phase_ids = list(phase_candidates_by_generated_id.keys())
+            for start_index in range(
+                0, len(generated_phase_ids), IMPORT_PREFETCH_BATCH_SIZE
+            ):
+                batch_generated_phase_ids = generated_phase_ids[
+                    start_index : start_index + IMPORT_PREFETCH_BATCH_SIZE
+                ]
+                kill_chain_phase_data_list = (
+                    self.opencti.kill_chain_phase.list(
+                        filters={
+                            "mode": "and",
+                            "filters": [
+                                {
+                                    "key": "ids",
+                                    "values": batch_generated_phase_ids,
+                                }
+                            ],
+                            "filterGroups": [],
+                        },
+                        first=len(batch_generated_phase_ids),
+                    )
+                    or []
+                )
+                for kill_chain_phase_data in kill_chain_phase_data_list:
+                    generated_phase_id = kill_chain_phase_data.get("standard_id")
+                    if generated_phase_id is None:
+                        generated_phase_id = self.opencti.kill_chain_phase.generate_id(
+                            kill_chain_phase_data["phase_name"],
+                            kill_chain_phase_data["kill_chain_name"],
+                        )
+                    phase_candidate = phase_candidates_by_generated_id.get(
+                        generated_phase_id
+                    )
+                    if phase_candidate is None:
+                        continue
+                    phase_cache_key, expected_order = phase_candidate
+                    if (
+                        kill_chain_phase_data.get("x_opencti_order", 0)
+                        != expected_order
+                    ):
+                        continue
+                    self.set_in_cache(
+                        phase_cache_key,
+                        {
+                            "id": kill_chain_phase_data["id"],
+                            "type": kill_chain_phase_data["entity_type"],
+                        },
+                    )
+        except Exception:
+            self.opencti.app_logger.warning(
+                "Cannot prefetch kill chain phases during bundle import"
+            )
+
     def extract_embedded_relationships(
         self, stix_object: Dict, types: List = None
     ) -> Dict:
@@ -4701,6 +4812,9 @@ class OpenCTIStix2:
             item for bundle in bundles for item in bundle["objects"]
         )
         self._prefetch_import_external_references(
+            item for bundle in bundles for item in bundle["objects"]
+        )
+        self._prefetch_import_kill_chain_phases(
             item for bundle in bundles for item in bundle["objects"]
         )
         self._prefetch_import_labels(
