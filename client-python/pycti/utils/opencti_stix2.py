@@ -247,9 +247,10 @@ class OpenCTIStix2:
         )
 
     def _get_external_reference_generated_id(self, url, source_name, external_id):
-        if not all(
-            value is None or isinstance(value, str)
-            for value in (url, source_name, external_id)
+        if not (
+            (url is None or isinstance(url, str))
+            and (source_name is None or isinstance(source_name, str))
+            and (external_id is None or isinstance(external_id, str))
         ):
             return self.opencti.external_reference.generate_id(
                 url, source_name, external_id

@@ -462,6 +462,22 @@ def test_import_bundle_reuses_external_reference_generated_ids_across_items():
     assert opencti.external_reference.create_calls == 1
 
 
+def test_external_reference_id_cache_keeps_non_string_inputs_uncached():
+    opencti = _external_reference_opencti()
+    opencti.external_reference = _ExternalReferenceIdRecorder()
+    opencti_stix2 = OpenCTIStix2(opencti)
+
+    first = opencti_stix2._get_external_reference_generated_id(
+        123, "benchmark", "REF-1"
+    )
+    second = opencti_stix2._get_external_reference_generated_id(
+        123, "benchmark", "REF-1"
+    )
+
+    assert first == second
+    assert opencti.external_reference.generate_id_calls == 2
+
+
 def test_prefetch_import_external_references_probes_repeated_cache_key_once():
     class _CacheProbeCountingOpenCTIStix2(OpenCTIStix2):
         def __init__(self, opencti):
