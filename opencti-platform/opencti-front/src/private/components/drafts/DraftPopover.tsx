@@ -55,8 +55,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const { enterDraft } = useSwitchDraft();
   const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
   const isGrantedDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_DraftWorkspace') },
   });
   const [commitDeletion] = useApiMutation<DraftPopoverDeleteMutation>(

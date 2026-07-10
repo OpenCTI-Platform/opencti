@@ -94,8 +94,7 @@ const PlaybookPopover = ({
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Playbook') },
   });
   const [commitDelete] = useApiMutation<PlaybookPopoverDeletionMutation>(
@@ -104,8 +103,7 @@ const PlaybookPopover = ({
     { successMessage: deleteSuccessMessage },
   );
 
-  const duplicatedSuccessMessage = t_i18n('', {
-    id: '... successfully duplicated',
+  const duplicatedSuccessMessage = t_i18n('{entity_type} successfully duplicated', {
     values: { entity_type: t_i18n('entity_Playbook') },
   });
   const [commitDuplicate] = useApiMutation<PlaybookPopoverDuplicateMutation>(
