@@ -325,6 +325,9 @@
     "lock_key": "ingestion_manager_lock",
     "interval": 30000,
     "uri_deny_list": [],
+    "feed": {
+      "request_timeout": 300000
+    },
     "taxii_feed": {
       "limit_per_request": 0
     },
