@@ -10232,7 +10232,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
-    re2: "npm:1.25.0"
+    re2: "npm:1.25.2"
     semver: "npm:7.8.5"
     set-interval-async: "npm:3.0.3"
     slug: "npm:11.0.1"
@@ -10930,14 +10930,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"re2@npm:1.25.0":
-  version: 1.25.0
-  resolution: "re2@npm:1.25.0"
+"re2@npm:1.25.2":
+  version: 1.25.2
+  resolution: "re2@npm:1.25.2"
   dependencies:
     install-artifact-from-github: "npm:^1.6.0"
     nan: "npm:^2.27.0"
     node-gyp: "npm:^13.0.0"
-  checksum: 10c0/a1b89e4d6c594d3fe675fc18f5ee3ce06ea83d66ebc5b3b2d66abf8c93c57757478969d1c934db4379ffba0575154c149d4168a567d192a936fced369d7c3ecf
+  checksum: 10c0/b4a0d472cbe93fb79b88a9d53f5c061e9c7b2d314f68c0db4353c5bb745fa34897faf418bfd794b5787cf1bf22d745195f0dce8c678f6e2ec9ba535fe5f2fde6
   languageName: node
   linkType: hard
 
