@@ -30182,6 +30182,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  results?: Maybe<Array<SecurityCoverageResult>>;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   security_platform_type?: Maybe<Scalars['String']['output']>;
@@ -30532,6 +30533,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  resultOf?: Maybe<SecurityCoverage>;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   spec_version: Scalars['String']['output'];
@@ -51487,6 +51489,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityCoverageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  results?: Resolver<Maybe<Array<ResolversTypes['SecurityCoverageResult']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   security_platform_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -51574,6 +51577,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  resultOf?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

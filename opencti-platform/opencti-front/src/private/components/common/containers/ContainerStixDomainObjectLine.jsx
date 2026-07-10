@@ -15,7 +15,6 @@ import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
-import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -26,6 +25,7 @@ import { DraftChip } from '../draft/DraftChip';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { Checkbox } from '@filigran/design-system';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
+import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -60,10 +60,11 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n, fd, n } = useFormatter();
+  const computeLink = useComputeLink();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-  const link = `${resolveLink(node.entity_type)}/${node.id}`;
+  const link = computeLink(node);
   const linkAnalyses = `${link}/analyses`;
   return (
     <ListItem
@@ -306,6 +307,15 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         }
         ... on Case {
           name
+        }
+        ... on SecurityCoverage {
+          name
+        }
+        ... on SecurityCoverageResult {
+          name
+          resultOf {
+            id
+          }
         }
         ... on Task {
           name
