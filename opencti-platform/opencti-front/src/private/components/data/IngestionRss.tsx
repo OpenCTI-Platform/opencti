@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { QueryRenderer } from '../../../relay/environment';
-import ListLines from '../../../components/list_lines/ListLines';
-import IngestionRssLines, { IngestionRssLinesQuery } from './ingestionRss/IngestionRssLines';
+import { RssBox } from 'mdi-material-ui';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
+import IngestionRssPopover from './ingestionRss/IngestionRssPopover';
+import { ingestionRssLineFragment, ingestionRssLinesFragment, ingestionRssLinesQuery } from './ingestionRss/IngestionRss.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
@@ -17,8 +17,15 @@ import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { isNotEmptyField } from '../../../utils/utils';
 import IngestionRssImport from '@components/data/IngestionRssImport';
-import { PaginationOptions } from '../../../components/list_lines';
-import { IngestionRssLinesPaginationQuery } from '@components/data/ingestionRss/__generated__/IngestionRssLinesPaginationQuery.graphql';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import ItemBoolean from '../../../components/ItemBoolean';
+import { IngestionRssLinesDataTableQuery, IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
+import { IngestionRssLinesDataTable_data$data } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTable_data.graphql';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import DataTable from '../../../components/dataGrid/DataTable';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
 
@@ -41,42 +48,70 @@ const IngestionRss = () => {
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=rss_feed`
     : '';
+  const initialValues = {
+    sortBy: 'name',
+    orderAsc: false,
+    searchTerm: '',
+  };
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
-    sortBy: 'name',
-    orderAsc: false,
-    searchTerm: '',
-  });
-  const dataColumns = {
+  } = usePaginationLocalStorage<IngestionRssLinesDataTableQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext('IngestionRss', viewStorage.filters);
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as IngestionRssLinesDataTableQuery$variables;
+  const queryRef = useQueryLoading<IngestionRssLinesDataTableQuery>(
+    ingestionRssLinesQuery,
+    queryPaginationOptions,
+  );
+  const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       label: 'Name',
-      width: '20%',
+      percentWidth: 20,
       isSortable: true,
     },
     uri: {
       label: 'URL',
-      width: '25%',
+      percentWidth: 25,
       isSortable: true,
+      render: ({ uri }) => defaultRender(uri),
     },
     ingestion_running: {
+      id: 'ingestion_running',
       label: 'Status',
-      width: '15%',
+      percentWidth: 15,
       isSortable: false,
+      render: ({ ingestion_running }) => (
+        <ItemBoolean
+          label={ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
+          status={!!ingestion_running}
+        />
+      ),
     },
     last_execution_date: {
       label: 'Last run',
-      width: '15%',
+      percentWidth: 20,
       isSortable: false,
+      render: ({ last_execution_date }, helpers) => defaultRender(last_execution_date ? helpers.fd(last_execution_date) : null),
     },
     current_state_date: {
       label: 'Current state',
+      percentWidth: 20,
       isSortable: false,
-      width: '15%',
+      render: ({ current_state_date }, helpers) => defaultRender(current_state_date ? helpers.fd(current_state_date) : null),
     },
   };
+  const preloadedPaginationProps = {
+    linesQuery: ingestionRssLinesQuery,
+    linesFragment: ingestionRssLinesFragment,
+    queryRef,
+    nodePath: ['ingestionRsss', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<IngestionRssLinesDataTableQuery>;
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
       <div className={classes.container}>
@@ -91,50 +126,48 @@ const IngestionRss = () => {
     <div className={classes.container} data-testid="rss-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
       <IngestionMenu />
-      <ListLines
-        helpers={storageHelpers}
-        sortBy={viewStorage.sortBy}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        displayImport={false}
-        secondaryAction={true}
-        keyword={viewStorage.searchTerm}
-        createButton={(
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            <>
-              <IngestionRssImport paginationOptions={paginationOptions} />
-              { isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-                <Button
-                  gradient
-                  href={importFromHubUrl}
-                  target="_blank"
-                  title={t_i18n('Import from Hub')}
-                >
-                  {t_i18n('Import from Hub')}
-                </Button>
-              )}
-              <IngestionRssCreation paginationOptions={paginationOptions} />
-            </>
-          </Security>
-        )}
-        iconExtension
-      >
-        <QueryRenderer
-          query={IngestionRssLinesQuery}
-          variables={{ count: 200, ...paginationOptions }}
-          render={({ props }: { props: IngestionRssLinesPaginationQuery['response'] | null }) => (
-            <IngestionRssLines
-              data={props}
-              paginationOptions={paginationOptions}
-              refetchPaginationOptions={{ count: 200, ...paginationOptions }}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
+      {queryRef && (
+        <DataTable
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          preloadedPaginationProps={preloadedPaginationProps}
+          resolvePath={(data: IngestionRssLinesDataTable_data$data) => data.ingestionRsss?.edges?.map((n) => n?.node)}
+          dataColumns={dataColumns}
+          lineFragment={ingestionRssLineFragment}
+          contextFilters={contextFilters}
+          searchContextFinal={{ entityTypes: ['IngestionRss'] }}
+          icon={() => (<RssBox color="primary" />)}
+          disableLineSelection
+          disableNavigation
+          actions={(row) => (
+            <Security needs={[INGESTION_SETINGESTIONS]}>
+              <IngestionRssPopover
+                ingestionRssId={row.id}
+                paginationOptions={queryPaginationOptions}
+                running={row.ingestion_running}
+              />
+            </Security>
+          )}
+          createButton={(
+            <Security needs={[INGESTION_SETINGESTIONS]}>
+              <>
+                <IngestionRssImport paginationOptions={queryPaginationOptions} />
+                { isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+                  <Button
+                    gradient
+                    href={importFromHubUrl}
+                    target="_blank"
+                    title={t_i18n('Import from Hub')}
+                  >
+                    {t_i18n('Import from Hub')}
+                  </Button>
+                )}
+                <IngestionRssCreation paginationOptions={queryPaginationOptions} />
+              </>
+            </Security>
           )}
         />
-      </ListLines>
+      )}
     </div>
   );
 };
