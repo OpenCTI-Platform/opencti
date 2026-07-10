@@ -15,6 +15,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import { MOCK_NOTIFICATIONS } from '../../utils/publisher-mock';
+import { verifyUri } from '../../utils/uriDenyList';
 import type { BasicStoreEntityTrigger } from '../notification/notification-types';
 import {
   BUILTIN_NOTIFIERS_CONNECTORS,
@@ -22,6 +23,7 @@ import {
   DEFAULT_TEAM_MESSAGE,
   NOTIFIER_CONNECTOR_EMAIL,
   NOTIFIER_CONNECTOR_UI,
+  NOTIFIER_CONNECTOR_WEBHOOK,
   STATIC_NOTIFIERS,
 } from './notifier-statics';
 import type { BasicStoreEntityNotifier, StoreEntityNotifier } from './notifier-types';
@@ -44,6 +46,9 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   const isValidConfiguration = validate(parsedConfiguration);
   if (!isValidConfiguration) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
+  }
+  if (notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
+    verifyUri(parsedConfiguration.url);
   }
 };
 
