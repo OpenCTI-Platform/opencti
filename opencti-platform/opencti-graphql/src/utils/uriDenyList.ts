@@ -43,14 +43,17 @@ const matchesDenyPattern = (host: string, pattern: string): boolean => {
  * Verifies that the given URI is not in the application URI deny list.
  * Throws a FunctionalError if the URI matches a denied pattern.
  */
-export const verifyUri = (uri: string): void => {
-  const denyList = uriDenyList();
+export const verifyUriWithDenyList = (uri: string, denyList: string[], errorMessage = 'This URI is not allowed.'): void => {
   if (denyList.length === 0) return;
 
   const host = extractHostFromUri(uri);
   for (const pattern of denyList) {
     if (matchesDenyPattern(host, pattern)) {
-      throw FunctionalError('This URI is not allowed.', { field: 'uri', uri, denied_pattern: pattern });
+      throw FunctionalError(errorMessage, { field: 'uri', uri, denied_pattern: pattern });
     }
   }
+};
+
+export const verifyUri = (uri: string): void => {
+  verifyUriWithDenyList(uri, uriDenyList());
 };
