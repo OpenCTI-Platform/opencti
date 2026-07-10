@@ -110,8 +110,7 @@ const EETooltip = ({
           openDrawer={feedbackCreation}
           handleCloseDrawer={() => setFeedbackCreation(false)}
           initialValue={{
-            description: t_i18n('', {
-              id: 'I would like to use a EE feature ...',
+            description: t_i18n('I would like to use a EE feature ...', {
               values: { feature: title },
             }),
           }}

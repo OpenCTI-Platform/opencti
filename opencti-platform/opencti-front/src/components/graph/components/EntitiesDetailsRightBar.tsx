@@ -123,8 +123,7 @@ const EntitiesDetailsRightsBar = () => {
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
       <Label>
-        {t_i18n('', {
-          id: 'objects selected',
+        {t_i18n('{count} objects selected', {
           values: {
             count: uniqSelectedEntities.length,
           },
