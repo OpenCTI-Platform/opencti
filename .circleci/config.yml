@@ -273,15 +273,6 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  notify:
-    docker:
-      - image: "cimg/base:stable"
-    steps:
-      - run: sudo apt-get update -qq && sudo apt install curl
-      - slack/notify:
-          event: pass
-          template: basic_success_1
-
   docker_build_platform:
     working_directory: ~/opencti_docker
     machine:
@@ -560,6 +551,15 @@ jobs:
       - slack/notify:
           event: fail
           template: basic_fail_1
+
+  notify:
+    docker:
+      - image: "cimg/base:stable"
+    steps:
+      - run: sudo apt-get update -qq && sudo apt install curl
+      - slack/notify:
+          event: pass
+          template: basic_success_1
 
 workflows:
   opencti:
