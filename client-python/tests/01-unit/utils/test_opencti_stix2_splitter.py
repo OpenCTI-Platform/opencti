@@ -229,6 +229,29 @@ def test_split_bundle_reuses_external_reference_ids_across_objects(monkeypatch):
     ]
 
 
+def test_splitter_external_reference_id_cache_keeps_non_string_inputs_uncached(
+    monkeypatch,
+):
+    generate_id_calls = []
+
+    def generate_id(url=None, source_name=None, external_id=None):
+        generate_id_calls.append((url, source_name, external_id))
+        return f"external-reference--{url or source_name}|{external_id}"
+
+    monkeypatch.setattr(
+        "pycti.utils.opencti_stix2_splitter.external_reference_generate_id",
+        generate_id,
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    reference = {"source_name": "benchmark", "url": 123}
+
+    first = stix_splitter._get_external_reference_id(reference)
+    second = stix_splitter._get_external_reference_id(reference)
+
+    assert first == second
+    assert generate_id_calls == [(123, "benchmark", None), (123, "benchmark", None)]
+
+
 def test_create_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     report = Report(

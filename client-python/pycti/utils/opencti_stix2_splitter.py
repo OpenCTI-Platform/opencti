@@ -64,7 +64,11 @@ class OpenCTIStix2Splitter:
         source_name = reference.get("source_name")
         external_id = reference.get("external_id")
         cache_key = (url, source_name, external_id)
-        if not all(value is None or isinstance(value, str) for value in cache_key):
+        if not (
+            (url is None or isinstance(url, str))
+            and (source_name is None or isinstance(source_name, str))
+            and (external_id is None or isinstance(external_id, str))
+        ):
             return external_reference_generate_id(
                 url=url,
                 source_name=source_name,
