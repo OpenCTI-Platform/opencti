@@ -1,16 +1,13 @@
 name: OpenCTI CD Check
-# This workflow builds docker image variants to validate before merge on master.
-# Requires branches that follow convention (issue/*)
+# This workflow builds docker image variants to validate before merge on master or lts.
 
 on:
   pull_request:
-    branches:
-      - issue/*
-      - renovate/*
-  push:
-    branches:
-      - issue/*
-      - renovate/*
+    branches-ignore:
+      - master
+      - lts/*
+      - gh-pages
+
 jobs:
   # -----------------------
   # Build platform images
