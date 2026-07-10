@@ -2092,4 +2092,48 @@ describe('Bookmarks API', () => {
     const edges = queryResult.data?.bookmarks.edges;
     expect(edges.length).toBe(0);
   });
+
+  it('should clean up bookmarks that reference deleted entities', async () => {
+    // Create a temporary malware entity
+    const tempMalware = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware Temp', malware_types: ['backdoor'] } },
+    });
+    const tempMalwareId = tempMalware.data?.malwareAdd.id;
+
+    // Bookmark it
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: tempMalwareId, type: 'Malware' },
+    });
+
+    // Verify it appears in bookmarks
+    const beforeDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsBefore = beforeDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsBefore).toContain(tempMalwareId);
+
+    // Delete the entity directly without removing the bookmark
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: tempMalwareId } });
+
+    // Query bookmarks with first = 1
+    await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], first: 1 },
+    });
+
+    // Query bookmarks again - the stale bookmark should be automatically cleaned up
+    const afterDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsAfter = afterDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsAfter).not.toContain(tempMalwareId);
+
+    // Verify the other bookmarks are still intact
+    expect(idsAfter).toContain(malware1Id);
+    expect(idsAfter).toContain(malware2Id);
+  });
 });

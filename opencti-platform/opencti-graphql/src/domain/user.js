@@ -1133,27 +1133,29 @@ export const bookmarks = async (context, user, args) => {
     };
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
+  let filteredBookmarks = [];
+  // Clean up bookmarks that no longer exist
+  for (const bookmark of bookmarkList) {
+    const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
+    if (isNotEmptyField(loadedBookmark)) {
+      filteredBookmarks.push(loadedBookmark);
+    } else {
+      await deleteBookmark(context, user, bookmark.id);
+    }
+  }
   // No bookmarks to fetch
-  if (bookmarkList.length === 0) {
+  if (filteredBookmarks.length === 0) {
     return buildPagination(0, null, [], 0);
   }
-  const bookmarkIds = bookmarkList.map((b) => b.id);
-  const bookmarkTypes = [...new Set(bookmarkList.map((b) => b.type))];
+  const bookmarkIds = filteredBookmarks.map((b) => b.id);
   // Fetch all bookmarks in a single ES query with ordering and pagination
-  const connection = await pageEntitiesConnection(context, user, bookmarkTypes, {
+  const connection = await pageEntitiesConnection(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
     ids: bookmarkIds,
     first: first ?? bookmarkIds.length,
     after: after || undefined,
     orderBy: orderBy || undefined,
     orderMode: orderBy ? orderMode : undefined,
   });
-  // Clean up bookmarks that no longer exist
-  const foundIds = new Set(connection.edges.map((e) => e.node.id));
-  for (const bookmark of bookmarkList) {
-    if (!foundIds.has(bookmark.id)) {
-      await deleteBookmark(context, user, bookmark.id);
-    }
-  }
   return connection;
 };
 

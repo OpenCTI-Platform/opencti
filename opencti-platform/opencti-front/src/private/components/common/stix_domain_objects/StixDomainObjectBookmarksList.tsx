@@ -199,20 +199,12 @@ const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], confi
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at') as StixDomainObjectsOrdering | null | undefined;
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
   return {
     first: selection.number ?? 10,
     orderBy,
     orderMode,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters: normalizeFilterGroupForBackend(selection.filters),
   };
 };
 
