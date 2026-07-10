@@ -2324,6 +2324,115 @@ class OpenCTIStix2:
                 related_object_access_cache,
             )
 
+    @staticmethod
+    def _get_export_related_object_resolve_type(entity_object: Dict) -> str:
+        resolve_type = entity_object["entity_type"]
+        if "stix-core-relationship" in entity_object["parent_types"]:
+            resolve_type = "stix-core-relationship"
+        if "stix-ref-relationship" in entity_object["parent_types"]:
+            resolve_type = "stix-ref-relationship"
+        return resolve_type
+
+    def _prefetch_export_top_level_related_object_exports(
+        self,
+        entities_list: List[Dict],
+        access_filter: Dict,
+        related_object_access_cache: Dict[str, bool],
+        related_object_export_cache: Dict[Tuple[str, str], Optional[List[Dict]]],
+        stix_core_relationships_by_entity_id: Optional[Dict[str, List[Dict]]] = None,
+        stix_sighting_relationships_by_entity_id: Optional[
+            Dict[str, List[Dict]]
+        ] = None,
+        stix_nested_ref_relationships_by_entity_id: Optional[
+            Dict[str, List[Dict]]
+        ] = None,
+    ) -> Optional[Dict[str, List[Dict]]]:
+        top_level_entity_ids = set(self._get_export_entity_ids(entities_list))
+        if len(top_level_entity_ids) <= 1:
+            return stix_nested_ref_relationships_by_entity_id
+
+        uncached_object_ids_by_type = {}
+        seen_read_object_keys = set()
+        for relationships_by_entity_id in (
+            stix_core_relationships_by_entity_id,
+            stix_sighting_relationships_by_entity_id,
+        ):
+            if relationships_by_entity_id is None:
+                continue
+            for stix_relationships in relationships_by_entity_id.values():
+                for stix_relationship in stix_relationships:
+                    for endpoint in ("from", "to"):
+                        entity_object = stix_relationship[endpoint]
+                        entity_id = entity_object["id"]
+                        if (
+                            entity_id in top_level_entity_ids
+                            or related_object_access_cache.get(entity_id) is not True
+                        ):
+                            continue
+                        resolve_type = self._get_export_related_object_resolve_type(
+                            entity_object
+                        )
+                        read_object_key = (resolve_type, entity_id)
+                        if (
+                            read_object_key in related_object_export_cache
+                            or read_object_key in seen_read_object_keys
+                        ):
+                            continue
+                        seen_read_object_keys.add(read_object_key)
+                        uncached_object_ids_by_type.setdefault(resolve_type, []).append(
+                            entity_id
+                        )
+
+        batchable_object_ids_by_type = {}
+        for resolve_type, entity_ids in uncached_object_ids_by_type.items():
+            if len(entity_ids) <= 1:
+                continue
+            do_list = self.get_lister(resolve_type)
+            if do_list is not None:
+                batchable_object_ids_by_type[resolve_type] = (do_list, entity_ids)
+        if len(batchable_object_ids_by_type) == 0:
+            return stix_nested_ref_relationships_by_entity_id
+
+        stix_nested_ref_relationships_by_entity_id = (
+            self._prefetch_export_nested_ref_relationships_by_entity_ids(
+                [
+                    entity_id
+                    for _, entity_ids in batchable_object_ids_by_type.values()
+                    for entity_id in entity_ids
+                ],
+                access_filter,
+                stix_nested_ref_relationships_by_entity_id,
+            )
+        )
+        for resolve_type, (do_list, entity_ids) in batchable_object_ids_by_type.items():
+            for start_index in range(0, len(entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
+                batch_entity_ids = entity_ids[
+                    start_index : start_index + EXPORT_PREFETCH_BATCH_SIZE
+                ]
+                query_filters = self.prepare_id_filters_export(
+                    batch_entity_ids, access_filter
+                )
+                entity_objects_data = do_list(filters=query_filters, getAll=True) or []
+                entity_objects_by_id = {
+                    entity_object_data["id"]: entity_object_data
+                    for entity_object_data in entity_objects_data
+                }
+                for entity_id in batch_entity_ids:
+                    entity_object_data = entity_objects_by_id.get(entity_id)
+                    related_object_export_cache[(resolve_type, entity_id)] = (
+                        self.prepare_export(
+                            entity=self.generate_export(entity_object_data),
+                            mode="simple",
+                            access_filter=access_filter,
+                            related_object_access_cache=related_object_access_cache,
+                            related_object_export_cache=related_object_export_cache,
+                            stix_nested_ref_relationships_by_entity_id=stix_nested_ref_relationships_by_entity_id,
+                        )
+                        if entity_object_data is not None
+                        else None
+                    )
+        return stix_nested_ref_relationships_by_entity_id
+
     def _prefetch_export_core_relationships(
         self, entities_list: List[Dict], access_filter: Dict
     ) -> Optional[Dict[str, List[Dict]]]:
@@ -3048,11 +3157,9 @@ class OpenCTIStix2:
             seen_read_object_keys = set()
             uncached_object_ids_by_type = {}
             for entity_object in objects_to_get:
-                resolve_type = entity_object["entity_type"]
-                if "stix-core-relationship" in entity_object["parent_types"]:
-                    resolve_type = "stix-core-relationship"
-                if "stix-ref-relationship" in entity_object["parent_types"]:
-                    resolve_type = "stix-ref-relationship"
+                resolve_type = self._get_export_related_object_resolve_type(
+                    entity_object
+                )
                 read_object_key = (resolve_type, entity_object["id"])
                 if read_object_key in seen_read_object_keys:
                     continue
@@ -3422,6 +3529,17 @@ class OpenCTIStix2:
                     stix_core_relationships_by_entity_id,
                     stix_sighting_relationships_by_entity_id,
                 )
+                stix_nested_ref_relationships_by_entity_id = (
+                    self._prefetch_export_top_level_related_object_exports(
+                        entities_list,
+                        access_filter,
+                        related_object_access_cache,
+                        related_object_export_cache,
+                        stix_core_relationships_by_entity_id,
+                        stix_sighting_relationships_by_entity_id,
+                        stix_nested_ref_relationships_by_entity_id,
+                    )
+                )
             for entity in entities_list:
                 export_entity = self.generate_export(entity)
                 if related_object_access_cache is None:
@@ -3509,6 +3627,17 @@ class OpenCTIStix2:
                 related_object_access_cache,
                 stix_core_relationships_by_entity_id,
                 stix_sighting_relationships_by_entity_id,
+            )
+            stix_nested_ref_relationships_by_entity_id = (
+                self._prefetch_export_top_level_related_object_exports(
+                    entities_list,
+                    access_filter,
+                    related_object_access_cache,
+                    related_object_export_cache,
+                    stix_core_relationships_by_entity_id,
+                    stix_sighting_relationships_by_entity_id,
+                    stix_nested_ref_relationships_by_entity_id,
+                )
             )
         for entity in entities_list:
             export_entity = self.generate_export(entity)
