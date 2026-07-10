@@ -175,6 +175,7 @@ class OpenCTIStix2:
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
+        self._external_reference_ids = LRUCache(maxsize=50000)
         self._readers = None
         self._stix_helpers = None
         self._internal_helpers = None
@@ -244,6 +245,25 @@ class OpenCTIStix2:
             external_reference_id,
             description,
         )
+
+    def _get_external_reference_generated_id(self, url, source_name, external_id):
+        if not all(
+            value is None or isinstance(value, str)
+            for value in (url, source_name, external_id)
+        ):
+            return self.opencti.external_reference.generate_id(
+                url, source_name, external_id
+            )
+
+        cache_key = (url, source_name, external_id)
+        try:
+            return self._external_reference_ids[cache_key]
+        except KeyError:
+            generated_ref_id = self.opencti.external_reference.generate_id(
+                url, source_name, external_id
+            )
+            self._external_reference_ids[cache_key] = generated_ref_id
+            return generated_ref_id
 
     def _find_external_reference_dates(self, value):
         cache_key = ("external_reference_dates", value)
@@ -933,7 +953,7 @@ class OpenCTIStix2:
                     source_name = external_reference.get("source_name")
                     external_id = external_reference.get("external_id")
                     description = external_reference.get("description")
-                    generated_ref_id = self.opencti.external_reference.generate_id(
+                    generated_ref_id = self._get_external_reference_generated_id(
                         url, source_name, external_id
                     )
                     if generated_ref_id is None:
@@ -981,7 +1001,7 @@ class OpenCTIStix2:
                 for external_reference_data in external_reference_data_list:
                     generated_ref_id = external_reference_data.get("standard_id")
                     if generated_ref_id is None:
-                        generated_ref_id = self.opencti.external_reference.generate_id(
+                        generated_ref_id = self._get_external_reference_generated_id(
                             external_reference_data.get("url"),
                             external_reference_data.get("source_name"),
                             external_reference_data.get("external_id"),
@@ -1373,7 +1393,7 @@ class OpenCTIStix2:
                         else None
                     )
                     description = external_reference.get("description")
-                    generated_ref_id = self.opencti.external_reference.generate_id(
+                    generated_ref_id = self._get_external_reference_generated_id(
                         url, source_name, external_id
                     )
                     if generated_ref_id is None:
@@ -1541,7 +1561,7 @@ class OpenCTIStix2:
                     else None
                 )
                 description = external_reference.get("description")
-                generated_ref_id = self.opencti.external_reference.generate_id(
+                generated_ref_id = self._get_external_reference_generated_id(
                     url, source_name, external_id
                 )
                 if generated_ref_id is None:

@@ -155,6 +155,20 @@ class _ExternalReferenceRecorder:
         }
 
 
+class _ExternalReferenceIdRecorder(_ExternalReferenceRecorder):
+    def __init__(self):
+        super().__init__()
+        self.generate_id_calls = 0
+
+    def generate_id(self, url, source_name, external_id):
+        self.generate_id_calls += 1
+        return super().generate_id(url, source_name, external_id)
+
+    def create(self, **_kwargs):
+        self.create_calls += 1
+        return {"id": "internal--external-reference"}
+
+
 def _external_reference_opencti():
     return SimpleNamespace(
         external_reference=_ExternalReferenceRecorder(),
@@ -421,6 +435,31 @@ def test_import_bundle_prefetches_existing_external_references_before_item_impor
         ]
     ]
     assert opencti.external_reference.create_calls == []
+
+
+def test_import_bundle_reuses_external_reference_generated_ids_across_items():
+    opencti = _external_reference_opencti()
+    opencti.external_reference = _ExternalReferenceIdRecorder()
+    opencti.logger_class = lambda _name: SimpleNamespace(warning=lambda *args: None)
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "external_references": [
+                {
+                    "source_name": "benchmark",
+                    "url": "https://example.test/reference",
+                }
+            ],
+        }
+        for index in range(3)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.external_reference.generate_id_calls == 1
+    assert opencti.external_reference.create_calls == 1
 
 
 def test_import_bundle_prefetches_existing_external_references_in_bounded_chunks():
