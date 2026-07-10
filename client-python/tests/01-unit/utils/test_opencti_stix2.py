@@ -462,6 +462,35 @@ def test_import_bundle_reuses_external_reference_generated_ids_across_items():
     assert opencti.external_reference.create_calls == 1
 
 
+def test_prefetch_import_external_references_probes_repeated_cache_key_once():
+    class _CacheProbeCountingOpenCTIStix2(OpenCTIStix2):
+        def __init__(self, opencti):
+            super().__init__(opencti)
+            self.get_in_cache_calls = 0
+
+        def get_in_cache(self, data_id):
+            self.get_in_cache_calls += 1
+            return super().get_in_cache(data_id)
+
+    opencti_stix2 = _CacheProbeCountingOpenCTIStix2(_external_reference_opencti())
+    objects = [
+        {
+            "type": "malware",
+            "external_references": [
+                {
+                    "source_name": "benchmark",
+                    "url": "https://example.test/reference",
+                }
+            ],
+        }
+        for _ in range(3)
+    ]
+
+    opencti_stix2._prefetch_import_external_references(objects)
+
+    assert opencti_stix2.get_in_cache_calls == 1
+
+
 def test_import_bundle_prefetches_existing_external_references_in_bounded_chunks():
     opencti = _external_reference_prefetch_opencti()
     opencti_stix2 = OpenCTIStix2(opencti)

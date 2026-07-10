@@ -936,6 +936,7 @@ class OpenCTIStix2:
         self, stix_objects: Iterable[Dict]
     ) -> None:
         cache_keys_by_generated_ref_id = {}
+        seen_cache_keys = set()
         try:
             for stix_object in stix_objects:
                 for external_reference in self._get_import_external_references(
@@ -966,6 +967,9 @@ class OpenCTIStix2:
                         external_id,
                         description,
                     )
+                    if cache_key in seen_cache_keys:
+                        continue
+                    seen_cache_keys.add(cache_key)
                     if self.get_in_cache(cache_key) is not None:
                         continue
                     cache_keys_by_generated_ref_id.setdefault(
