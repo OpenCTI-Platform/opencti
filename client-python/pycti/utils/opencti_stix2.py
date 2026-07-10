@@ -845,6 +845,122 @@ class OpenCTIStix2:
                 "Cannot prefetch vocabularies during bundle import"
             )
 
+    def _get_import_external_references(self, stix_object: Dict) -> List[Dict]:
+        if (
+            "external_references" in stix_object
+            and stix_object["external_references"] is not None
+        ):
+            return stix_object["external_references"]
+
+        if "external_references" not in stix_object:
+            extension_external_references = self.opencti.get_attribute_in_extension(
+                "external_references", stix_object
+            )
+            if extension_external_references is not None:
+                return extension_external_references
+
+        if (
+            "x_opencti_external_references" in stix_object
+            and stix_object["x_opencti_external_references"] is not None
+        ):
+            return stix_object["x_opencti_external_references"]
+        return []
+
+    def _prefetch_import_external_references(
+        self, stix_objects: Iterable[Dict]
+    ) -> None:
+        cache_keys_by_generated_ref_id = {}
+        try:
+            for stix_object in stix_objects:
+                for external_reference in self._get_import_external_references(
+                    stix_object
+                ):
+                    if external_reference.get("x_opencti_files") or (
+                        self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        )
+                        or []
+                    ):
+                        continue
+
+                    url = external_reference.get("url")
+                    source_name = external_reference.get("source_name")
+                    external_id = external_reference.get("external_id")
+                    description = external_reference.get("description")
+                    generated_ref_id = self.opencti.external_reference.generate_id(
+                        url, source_name, external_id
+                    )
+                    if generated_ref_id is None:
+                        continue
+
+                    cache_key = self._external_reference_cache_key(
+                        generated_ref_id,
+                        source_name,
+                        url,
+                        external_id,
+                        description,
+                    )
+                    if self.get_in_cache(cache_key) is not None:
+                        continue
+                    cache_keys_by_generated_ref_id.setdefault(
+                        generated_ref_id, set()
+                    ).add(cache_key)
+
+            if len(cache_keys_by_generated_ref_id) <= 1:
+                return
+
+            generated_ref_ids = list(cache_keys_by_generated_ref_id.keys())
+            for start_index in range(
+                0, len(generated_ref_ids), IMPORT_PREFETCH_BATCH_SIZE
+            ):
+                batch_generated_ref_ids = generated_ref_ids[
+                    start_index : start_index + IMPORT_PREFETCH_BATCH_SIZE
+                ]
+                external_reference_data_list = (
+                    self.opencti.external_reference.list(
+                        filters={
+                            "mode": "and",
+                            "filters": [
+                                {
+                                    "key": "ids",
+                                    "values": batch_generated_ref_ids,
+                                }
+                            ],
+                            "filterGroups": [],
+                        },
+                        getAll=True,
+                    )
+                    or []
+                )
+                for external_reference_data in external_reference_data_list:
+                    generated_ref_id = external_reference_data.get("standard_id")
+                    if generated_ref_id is None:
+                        generated_ref_id = self.opencti.external_reference.generate_id(
+                            external_reference_data.get("url"),
+                            external_reference_data.get("source_name"),
+                            external_reference_data.get("external_id"),
+                        )
+                    candidate_cache_keys = cache_keys_by_generated_ref_id.get(
+                        generated_ref_id
+                    )
+                    if candidate_cache_keys is None:
+                        continue
+                    cache_key = self._external_reference_cache_key(
+                        generated_ref_id,
+                        external_reference_data.get("source_name"),
+                        external_reference_data.get("url"),
+                        external_reference_data.get("external_id"),
+                        external_reference_data.get("description"),
+                    )
+                    if cache_key in candidate_cache_keys:
+                        self.set_in_cache(
+                            cache_key, {"id": external_reference_data["id"]}
+                        )
+        except Exception:
+            self.opencti.app_logger.warning(
+                "Cannot prefetch external references during bundle import"
+            )
+
     def extract_embedded_relationships(
         self, stix_object: Dict, types: List = None
     ) -> Dict:
@@ -4582,6 +4698,9 @@ class OpenCTIStix2:
             )
         )
         self._prefetch_import_vocabularies(
+            item for bundle in bundles for item in bundle["objects"]
+        )
+        self._prefetch_import_external_references(
             item for bundle in bundles for item in bundle["objects"]
         )
         self._prefetch_import_labels(
