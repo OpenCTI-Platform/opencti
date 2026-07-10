@@ -1,0 +1,12 @@
+{
+  "__generated": "Skeleton scaffolded once by pnpm generate:fds-migration --product opencti --write-to-product (filigran-design-system repo) — created only if missing, never overwritten on re-run. Fields below are then maintained by agents during the pilot (wiredFiles/forbiddenPatterns as theme files are wired, migratedZones/lastReconciled during the reconciliation loop).",
+  "product": "opencti",
+  "frontDir": "opencti-platform/opencti-front",
+  "generatedBridgeFiles": [
+    "src/components/fds-tokens.generated.ts"
+  ],
+  "wiredFiles": [],
+  "forbiddenPatterns": [],
+  "migratedZones": [],
+  "lastReconciled": null
+}
