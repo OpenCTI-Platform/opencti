@@ -20,7 +20,6 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import useAuth from '../../../utils/hooks/useAuth';
 
-
 export const usersQuery = graphql`
   query UsersLinesPaginationQuery(
     $search: String

@@ -11,7 +11,6 @@ import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
 import Card from '../../../../components/common/card/Card';
 
-
 interface GroupUsersProps {
   groupId: string;
 }
