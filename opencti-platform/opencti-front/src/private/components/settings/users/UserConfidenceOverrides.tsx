@@ -28,8 +28,7 @@ const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({
 
   let from;
   if (source?.object?.entity_type === 'Group') {
-    from = t_i18n('', {
-      id: 'from group ...',
+    from = t_i18n('from group {link}', {
       values: {
         link: (
           <Link to={`/dashboard/settings/accesses/groups/${source.object.id}`}>

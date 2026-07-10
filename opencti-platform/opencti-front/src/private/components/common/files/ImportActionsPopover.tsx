@@ -42,8 +42,7 @@ const ImportActionsPopover = ({
   const [openWorks, setOpenWorks] = useState(false);
   const isWorkbench = paginationKey === 'Pagination_global_pendingFiles';
   const [commitDeletion] = useApiMutation<ImportActionsPopoverDeleteMutation>(importActionsPopoverDeleteMutation, undefined, {
-    successMessage: t_i18n('', {
-      id: '... successfully deleted',
+    successMessage: t_i18n('{entity_type} successfully deleted', {
       values: { entity_type: isWorkbench ? t_i18n('Workbench') : t_i18n('File') },
     }),
   });

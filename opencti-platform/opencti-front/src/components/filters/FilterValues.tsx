@@ -260,8 +260,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Stack direction="row" sx={{ alignItems: 'center' }}>
         {isWarning && (
           <Tooltip title={
-            t_i18n('', {
-              id: 'All the results may not be displayed for these filter values, read documentation for more information.',
+            t_i18n('All the results may not be displayed for these filter values, read documentation for more information.', {
               values: {
                 link: (
                   <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">

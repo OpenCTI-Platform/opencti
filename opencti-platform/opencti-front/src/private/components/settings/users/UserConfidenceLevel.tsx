@@ -25,8 +25,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
           sx={{ marginLeft: 1 }}
           title={(
             <>
-              {t_i18n('', {
-                id: 'The Max Confidence Level is currently inherited from...',
+              {t_i18n('The Max Confidence Level is currently inherited from...', {
                 values: {
                   link: (
                     <Link to={`/dashboard/settings/accesses/groups/${source.object.id}`}>
