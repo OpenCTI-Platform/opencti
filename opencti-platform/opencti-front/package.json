@@ -13,6 +13,7 @@
     "start": "yarn dev",
     "build": "yarn relay && vite build",
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
+    "lint-staged": "lint-staged --cwd .",
     "control": "yarn npm audit --environment production",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -162,6 +163,7 @@
     "jsdom": "29.1.1",
     "knip": "6.29.0",
     "license-checker-rseidelsohn": "5.0.1",
+    "lint-staged": "17.2.0",
     "monocart-reporter": "2.12.3",
     "relay-compiler": "21.0.1",
     "relay-test-utils": "21.0.1",
@@ -171,6 +173,9 @@
     "vite-plugin-monaco-editor": "1.1.0",
     "vite-plugin-relay": "2.1.0",
     "vitest": "4.1.10"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": "eslint --quiet --cache --config eslint.config.js"
   },
   "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
   "engines": {

@@ -16,6 +16,7 @@
     "backend:stack:analysis": "node ./script/script-stack-analysis back",
     "frontend:stack:analysis": "node ./script/script-stack-analysis front",
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
+    "lint-staged": "lint-staged --cwd .",
     "build": "run install:python && run build:prod",
     "start": "run build:dev && node --enable-source-maps build/back.mjs",
     "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
@@ -213,9 +214,13 @@
     "globals": "17.7.0",
     "graphql-tag": "2.12.7",
     "license-checker-rseidelsohn": "5.0.1",
+    "lint-staged": "17.2.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.65.0",
     "vitest": "4.1.10"
+  },
+  "lint-staged": {
+    "src/**/*.{js,mjs,ts,mts}": "eslint --quiet --cache --config eslint.config.js"
   },
   "resolutions": {
     "axios": "1.18.1",
