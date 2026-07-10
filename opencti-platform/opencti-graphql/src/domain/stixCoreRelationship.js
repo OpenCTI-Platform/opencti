@@ -17,6 +17,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
+import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -97,6 +98,11 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
 export const addStixCoreRelationship = async (context, user, stixCoreRelationship) => {
   if (!isStixCoreRelationship(stixCoreRelationship.relationship_type)) {
     throw FunctionalError('Only stix-core-relationship can be created through this method.');
+  }
+  // To be able to manage OAEV bundles correctly
+  // (sending a fromId to a securityCoverage instead of securityCoverageResult)
+  if (shouldHandleHasCoveredRel(stixCoreRelationship)) {
+    stixCoreRelationship = transformHasCoveredFromId(context, user, stixCoreRelationship);
   }
   const created = await createRelation(context, user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);

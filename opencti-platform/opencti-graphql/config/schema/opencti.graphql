@@ -14483,6 +14483,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  coverage_external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
