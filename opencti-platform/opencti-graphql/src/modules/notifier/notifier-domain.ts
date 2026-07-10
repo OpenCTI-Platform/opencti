@@ -26,6 +26,7 @@ import {
   NOTIFIER_CONNECTOR_WEBHOOK,
   STATIC_NOTIFIERS,
 } from './notifier-statics';
+import type { NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE } from './notifier-statics';
 import type { BasicStoreEntityNotifier, StoreEntityNotifier } from './notifier-types';
 import { ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { authorizedMembers } from '../../schema/attribute-definition';
@@ -42,13 +43,14 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   if (isEmptyField(notifier.notifier_configuration)) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
   }
-  const parsedConfiguration = JSON.parse(notifier.notifier_configuration);
+  const parsedConfiguration = JSON.parse(notifier.notifier_configuration) as unknown;
   const isValidConfiguration = validate(parsedConfiguration);
   if (!isValidConfiguration) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
   if (notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
-    verifyUri(parsedConfiguration.url);
+    const webhookConfiguration = parsedConfiguration as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
+    verifyUri(webhookConfiguration.url);
   }
 };
 
