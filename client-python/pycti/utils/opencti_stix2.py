@@ -4913,8 +4913,11 @@ class OpenCTIStix2:
             bundle_id = bundle["id"]
             for item in bundle["objects"]:
                 # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
-                nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
-                if 0 < objects_max_refs <= nb_refs:
+                if (
+                    0
+                    < objects_max_refs
+                    <= OpenCTIStix2Utils.compute_object_refs_number(item)
+                ):
                     too_large_element_message = "Too large element in bundle"
                     worker_logger.warning(too_large_element_message)
                     item["rejection_info"] = {
