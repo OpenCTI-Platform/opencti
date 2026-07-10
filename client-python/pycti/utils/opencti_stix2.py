@@ -2272,6 +2272,58 @@ class OpenCTIStix2:
         for entity_id in unseen_entity_ids:
             related_object_access_cache[entity_id] = entity_id in exportable_ids
 
+    def _prefetch_export_top_level_related_object_access(
+        self,
+        entities_list: List[Dict],
+        access_filter: Dict,
+        related_object_access_cache: Dict[str, bool],
+        stix_core_relationships_by_entity_id: Optional[Dict[str, List[Dict]]] = None,
+        stix_sighting_relationships_by_entity_id: Optional[
+            Dict[str, List[Dict]]
+        ] = None,
+    ) -> None:
+        entity_ids = self._get_export_entity_ids(entities_list)
+        if len(entity_ids) <= 1:
+            return
+
+        for entity_id in entity_ids:
+            related_object_access_cache[entity_id] = True
+
+        related_object_ids = []
+        seen_related_object_ids = set()
+        seen_relationship_ids = set()
+        for relationships_by_entity_id in (
+            stix_core_relationships_by_entity_id,
+            stix_sighting_relationships_by_entity_id,
+        ):
+            if relationships_by_entity_id is None:
+                continue
+            for stix_relationships in relationships_by_entity_id.values():
+                for stix_relationship in stix_relationships:
+                    relationship_id = stix_relationship["id"]
+                    if relationship_id in seen_relationship_ids:
+                        continue
+                    seen_relationship_ids.add(relationship_id)
+                    for endpoint in ("from", "to"):
+                        endpoint_id = stix_relationship[endpoint]["id"]
+                        if (
+                            endpoint_id not in related_object_access_cache
+                            and endpoint_id not in seen_related_object_ids
+                        ):
+                            seen_related_object_ids.add(endpoint_id)
+                            related_object_ids.append(endpoint_id)
+
+        for start_index in range(
+            0, len(related_object_ids), EXPORT_PREFETCH_BATCH_SIZE
+        ):
+            self._prefetch_exportable_related_objects(
+                related_object_ids[
+                    start_index : start_index + EXPORT_PREFETCH_BATCH_SIZE
+                ],
+                access_filter,
+                related_object_access_cache,
+            )
+
     def _prefetch_export_core_relationships(
         self, entities_list: List[Dict], access_filter: Dict
     ) -> Optional[Dict[str, List[Dict]]]:
@@ -3362,6 +3414,14 @@ class OpenCTIStix2:
                 if stix_nested_ref_relationships_by_entity_id is not None
                 else {}
             )
+            if related_object_access_cache is not None:
+                self._prefetch_export_top_level_related_object_access(
+                    entities_list,
+                    access_filter,
+                    related_object_access_cache,
+                    stix_core_relationships_by_entity_id,
+                    stix_sighting_relationships_by_entity_id,
+                )
             for entity in entities_list:
                 export_entity = self.generate_export(entity)
                 if related_object_access_cache is None:
@@ -3442,6 +3502,14 @@ class OpenCTIStix2:
             if stix_nested_ref_relationships_by_entity_id is not None
             else {}
         )
+        if related_object_access_cache is not None:
+            self._prefetch_export_top_level_related_object_access(
+                entities_list,
+                access_filter,
+                related_object_access_cache,
+                stix_core_relationships_by_entity_id,
+                stix_sighting_relationships_by_entity_id,
+            )
         for entity in entities_list:
             export_entity = self.generate_export(entity)
             if related_object_access_cache is None:

@@ -468,6 +468,122 @@ def test_export_list_reuses_related_endpoint_access_across_roots():
     assert access_collection.list_calls == 1
 
 
+def test_export_selected_batches_unique_related_endpoint_access_across_roots():
+    helper = _helper([])
+    helper.opencti.stix_core_relationship = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "target-1")],
+            "root-2": [_relationship("relationship--2", "target-2")],
+            "root-3": [_relationship("relationship--3", "target-3")],
+        }
+    )
+    for index, relationship in enumerate(
+        helper.opencti.stix_core_relationship.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    access_collection = _CountingAccessCollection()
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert access_collection.list_calls == 1
+    assert access_collection.kwargs == [
+        {
+            "filters": ["target-target-1", "target-target-2", "target-target-3"],
+            "getAll": True,
+            "customAttributes": EXPORT_ACCESS_LISTER_ATTRIBUTES,
+        }
+    ]
+
+
+def test_export_list_batches_unique_related_endpoint_access_across_roots():
+    helper = _helper([])
+    helper.opencti.stix_core_relationship = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "target-1")],
+            "root-2": [_relationship("relationship--2", "target-2")],
+            "root-3": [_relationship("relationship--3", "target-3")],
+        }
+    )
+    for index, relationship in enumerate(
+        helper.opencti.stix_core_relationship.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    access_collection = _CountingAccessCollection()
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.export_entities_list = lambda **kwargs: [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    helper.export_list(entity_type="Indicator", mode="full")
+
+    assert access_collection.list_calls == 1
+    assert access_collection.kwargs == [
+        {
+            "filters": ["target-target-1", "target-target-2", "target-target-3"],
+            "getAll": True,
+            "customAttributes": EXPORT_ACCESS_LISTER_ATTRIBUTES,
+        }
+    ]
+
+
+def test_export_selected_batches_unique_related_endpoint_access_in_bounded_chunks():
+    helper = _helper([])
+    relationship_collection = _RelationshipCollection(
+        {
+            f"root-{index}": [
+                _relationship(f"relationship--{index}", f"target-{index}")
+            ]
+            for index in range(EXPORT_PREFETCH_BATCH_SIZE + 1)
+        }
+    )
+    helper.opencti.stix_core_relationship = relationship_collection
+    for index, relationship in enumerate(
+        relationship_collection.relationships_by_root.values()
+    ):
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    access_collection = _CountingAccessCollection()
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(EXPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert access_collection.list_calls == 2
+    assert access_collection.kwargs[0]["filters"] == [
+        f"target-target-{index}" for index in range(EXPORT_PREFETCH_BATCH_SIZE)
+    ]
+    assert (
+        access_collection.kwargs[1]["filters"]
+        == f"target-target-{EXPORT_PREFETCH_BATCH_SIZE}"
+    )
+
+
 def test_export_selected_reuses_related_object_reads_across_roots():
     helper = _helper([])
     helper.opencti.stix_core_relationship = _RelationshipCollection(
