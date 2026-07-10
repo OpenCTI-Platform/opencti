@@ -8,6 +8,7 @@ import logging
 import statistics
 import time
 
+from pycti.utils import opencti_stix2 as opencti_stix2_module
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
@@ -91,14 +92,22 @@ class _OpenCTI:
 
 def _run_once(
     object_count: int, request_delay_ms: float
-) -> tuple[float, int, int, int]:
+) -> tuple[float, int, int, int, int]:
     opencti = _OpenCTI(request_delay_ms)
     stix2 = OpenCTIStix2(opencti)
     types = ["external-reference-as-report"]
+    datefinder_calls = 0
 
     def import_item_with_retries(item, *_args, **_kwargs):
         stix2.extract_embedded_relationships(item, types)
         return None
+
+    original_find_dates = opencti_stix2_module.datefinder.find_dates
+
+    def count_find_dates(*args, **kwargs):
+        nonlocal datefinder_calls
+        datefinder_calls += 1
+        return original_find_dates(*args, **kwargs)
 
     stix2.import_item_with_retries = import_item_with_retries
     bundle = {
@@ -119,14 +128,19 @@ def _run_once(
         ],
     }
 
-    started_at = time.perf_counter()
-    stix2.import_bundle(bundle, types=types)
-    elapsed_seconds = time.perf_counter() - started_at
+    opencti_stix2_module.datefinder.find_dates = count_find_dates
+    try:
+        started_at = time.perf_counter()
+        stix2.import_bundle(bundle, types=types)
+        elapsed_seconds = time.perf_counter() - started_at
+    finally:
+        opencti_stix2_module.datefinder.find_dates = original_find_dates
     return (
         elapsed_seconds,
         opencti.external_reference.create_calls,
         opencti.marking_definition.read_calls,
         opencti.report.create_calls,
+        datefinder_calls,
     )
 
 
@@ -145,6 +159,7 @@ def main() -> None:
     external_reference_create_samples = [sample[1] for sample in samples]
     marking_read_samples = [sample[2] for sample in samples]
     report_create_samples = [sample[3] for sample in samples]
+    datefinder_call_samples = [sample[4] for sample in samples]
     result = {
         "objects": args.objects,
         "repeat": args.repeat,
@@ -157,6 +172,7 @@ def main() -> None:
         ),
         "median_marking_read_calls": statistics.median(marking_read_samples),
         "median_report_create_calls": statistics.median(report_create_samples),
+        "median_datefinder_calls": statistics.median(datefinder_call_samples),
         "median_total_requests": statistics.median(
             [
                 external_reference_create_calls
@@ -167,6 +183,7 @@ def main() -> None:
                     external_reference_create_calls,
                     marking_read_calls,
                     report_create_calls,
+                    _datefinder_calls,
                 ) in samples
             ]
         ),

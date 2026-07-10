@@ -276,9 +276,21 @@ def _extract_external_reference_report(opencti_stix2, url, description=None):
     )
 
 
-def test_extract_embedded_relationships_reuses_exact_external_reference_report():
+def test_extract_embedded_relationships_reuses_exact_external_reference_report(
+    monkeypatch,
+):
     opencti = _external_reference_report_opencti()
     opencti_stix2 = OpenCTIStix2(opencti)
+    find_dates_calls = []
+
+    def find_dates(*args, **kwargs):
+        find_dates_calls.append((args, kwargs))
+        return iter(())
+
+    monkeypatch.setattr(
+        "pycti.utils.opencti_stix2.datefinder.find_dates",
+        find_dates,
+    )
 
     first = _extract_external_reference_report(
         opencti_stix2, "https://example.test/reference"
@@ -290,6 +302,7 @@ def test_extract_embedded_relationships_reuses_exact_external_reference_report()
     assert first["reports"] == second["reports"]
     assert len(opencti.report.create_calls) == 1
     assert opencti.marking_definition.read_calls == 1
+    assert len(find_dates_calls) == 1
 
 
 def test_extract_embedded_relationships_keeps_changed_external_reference_report_uncached():
