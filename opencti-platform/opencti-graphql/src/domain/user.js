@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -27,8 +26,8 @@ import {
   UnsupportedError,
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery, ES_MAX_CONCURRENCY } from '../database/engine';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
+import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -674,12 +673,28 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
  * Called when the admin disables the password validity policy (sets validity days to 0).
  */
 export const clearAllUsersPasswordValidUntil = async (context) => {
-  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
-  const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
-  await BluePromise.map(usersWithExpiry, (user) => {
-    const inputs = [{ key: 'password_valid_until', value: [null] }];
-    return updateAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, inputs);
-  }, { concurrency: ES_MAX_CONCURRENCY });
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_INTERNAL_OBJECTS],
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: 'ctx._source.password_valid_until = null;' },
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+          ],
+          must_not: [
+            { term: { external: true } },
+          ],
+          filter: [
+            { exists: { field: 'password_valid_until' } },
+          ],
+        },
+      },
+    },
+  });
+  resetCacheForEntity(ENTITY_TYPE_USER);
 };
 
 /**
@@ -694,24 +709,91 @@ export const clearAllUsersPasswordValidUntil = async (context) => {
 export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays) => {
   const diffDays = newDays - oldDays;
   if (diffDays === 0) return;
-  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
-  const internalUsers = allUsers.filter((u) => !u.external);
-  await BluePromise.map(internalUsers, (currentUser) => {
-    if (oldDays <= 0 || currentUser.password_valid_until == null) {
-      // Coming from disabled state OR user has no expiry: set fresh now + newDays
-      const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
-      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-    }
-    // Active policy shift: move existing expiry by the diff
-    const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
-    if (currentExpiry.isValid) {
-      const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
-      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-    }
-    return undefined;
-  }, { concurrency: ES_MAX_CONCURRENCY });
+
+  if (oldDays <= 0) {
+    // Coming from disabled state: set fresh now + newDays for all internal users
+    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: 'ctx._source.password_valid_until = params.expiry;',
+          params: { expiry: newExpiry },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+            ],
+          },
+        },
+      },
+    });
+  } else {
+    // Active policy shift: move existing expiry by the diff (in milliseconds)
+    const diffMs = diffDays * 24 * 60 * 60 * 1000;
+    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    // Shift existing dates
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: `
+            if (ctx._source.password_valid_until != null) {
+              def current = ZonedDateTime.parse(ctx._source.password_valid_until);
+              def newDate = current.plusNanos(params.diffMs * 1000000L);
+              ctx._source.password_valid_until = newDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+            }
+          `,
+          params: { diffMs },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+            ],
+            filter: [
+              { exists: { field: 'password_valid_until' } },
+            ],
+          },
+        },
+      },
+    });
+    // Set fresh expiry for users who don't have one yet
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: 'ctx._source.password_valid_until = params.expiry;',
+          params: { expiry: newExpiry },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+              { exists: { field: 'password_valid_until' } },
+            ],
+          },
+        },
+      },
+    });
+  }
+  resetCacheForEntity(ENTITY_TYPE_USER);
 };
 
 export const sendEmailToUser = async (context, user, input) => {
