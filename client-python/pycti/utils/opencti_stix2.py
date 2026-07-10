@@ -224,6 +224,27 @@ class OpenCTIStix2:
             description,
         )
 
+    @staticmethod
+    def _external_reference_report_cache_key(
+        report_id,
+        title,
+        published,
+        author_id,
+        object_marking_id,
+        external_reference_id,
+        description,
+    ):
+        return (
+            "external_reference_report",
+            report_id,
+            title,
+            published,
+            author_id,
+            object_marking_id,
+            external_reference_id,
+            description,
+        )
+
     def _create_or_get_external_reference(
         self, generated_ref_id, source_name, url, external_id, description, file_objs
     ):
@@ -1447,23 +1468,40 @@ class OpenCTIStix2:
                             )
 
                         author = self.resolve_author(title)
-                        report = self.opencti.report.create(
-                            id=self.opencti.report.generate_fixed_fake_id(
-                                title, published
-                            ),
-                            name=title,
-                            createdBy=author["id"] if author is not None else None,
-                            objectMarking=[object_marking_ref_result["id"]],
-                            externalReferences=[external_reference_id],
-                            description=(
-                                external_reference["description"]
-                                if "description" in external_reference
-                                else ""
-                            ),
-                            report_types="threat-report",
-                            published=published,
-                            update=True,
+                        report_id = self.opencti.report.generate_fixed_fake_id(
+                            title, published
                         )
+                        author_id = author["id"] if author is not None else None
+                        object_marking_id = object_marking_ref_result["id"]
+                        description = (
+                            external_reference["description"]
+                            if "description" in external_reference
+                            else ""
+                        )
+                        report_cache_key = self._external_reference_report_cache_key(
+                            report_id,
+                            title,
+                            published,
+                            author_id,
+                            object_marking_id,
+                            external_reference_id,
+                            description,
+                        )
+                        report = self.get_in_cache(report_cache_key)
+                        if report is None:
+                            report = self.opencti.report.create(
+                                id=report_id,
+                                name=title,
+                                createdBy=author_id,
+                                objectMarking=[object_marking_id],
+                                externalReferences=[external_reference_id],
+                                description=description,
+                                report_types="threat-report",
+                                published=published,
+                                update=True,
+                            )
+                            if report is not None:
+                                self.set_in_cache(report_cache_key, report)
                         reports[external_reference_id] = report
                 except Exception:
                     self.opencti.app_logger.warning(

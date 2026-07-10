@@ -234,6 +234,94 @@ def test_extract_embedded_relationships_keeps_changed_external_reference_uncache
     assert opencti.external_reference.create_calls == 2
 
 
+class _ExternalReferenceReportRecorder:
+    def __init__(self):
+        self.create_calls = []
+
+    @staticmethod
+    def generate_fixed_fake_id(name, published=None):
+        return f"report--{name}|{published}"
+
+    def create(self, **kwargs):
+        self.create_calls.append(kwargs)
+        return {"id": kwargs["id"]}
+
+
+class _MarkingDefinitionRecorder:
+    def __init__(self):
+        self.read_calls = 0
+
+    def read(self, **_kwargs):
+        self.read_calls += 1
+        return {"id": "marking-definition--tlp-clear"}
+
+
+def _external_reference_report_opencti():
+    opencti = _external_reference_opencti()
+    opencti.report = _ExternalReferenceReportRecorder()
+    opencti.marking_definition = _MarkingDefinitionRecorder()
+    return opencti
+
+
+def _extract_external_reference_report(opencti_stix2, url, description=None):
+    external_reference = {"source_name": "benchmark", "url": url}
+    if description is not None:
+        external_reference["description"] = description
+    return opencti_stix2.extract_embedded_relationships(
+        {
+            "type": "malware",
+            "external_references": [external_reference],
+        },
+        ["external-reference-as-report"],
+    )
+
+
+def test_extract_embedded_relationships_reuses_exact_external_reference_report():
+    opencti = _external_reference_report_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+
+    first = _extract_external_reference_report(
+        opencti_stix2, "https://example.test/reference"
+    )
+    second = _extract_external_reference_report(
+        opencti_stix2, "https://example.test/reference"
+    )
+
+    assert first["reports"] == second["reports"]
+    assert len(opencti.report.create_calls) == 1
+    assert opencti.marking_definition.read_calls == 1
+
+
+def test_extract_embedded_relationships_keeps_changed_external_reference_report_uncached():
+    opencti = _external_reference_report_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+
+    _extract_external_reference_report(
+        opencti_stix2, "https://example.test/reference", "first"
+    )
+    _extract_external_reference_report(
+        opencti_stix2, "https://example.test/reference", "second"
+    )
+
+    assert [call["description"] for call in opencti.report.create_calls] == [
+        "first",
+        "second",
+    ]
+
+
+def test_extract_embedded_relationships_keeps_different_external_reference_report_uncached():
+    opencti = _external_reference_report_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+
+    _extract_external_reference_report(opencti_stix2, "https://example.test/one")
+    _extract_external_reference_report(opencti_stix2, "https://example.test/two")
+
+    assert [call["externalReferences"][0] for call in opencti.report.create_calls] == [
+        "external-reference--https://example.test/one",
+        "external-reference--https://example.test/two",
+    ]
+
+
 class _ExternalReferencePrefetchRecorder:
     def __init__(self):
         self.list_filters = []
