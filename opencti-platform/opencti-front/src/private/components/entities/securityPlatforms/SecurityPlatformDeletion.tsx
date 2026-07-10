@@ -19,9 +19,8 @@ const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isO
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: ('entity_SecurityPlatform') },
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
+    values: { entity_type: t_i18n('entity_SecurityPlatform') },
   });
 
   const [commit] = useApiMutation(

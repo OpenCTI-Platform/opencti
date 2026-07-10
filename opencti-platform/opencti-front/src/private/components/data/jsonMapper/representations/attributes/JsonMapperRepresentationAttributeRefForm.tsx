@@ -256,8 +256,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
             return (
               <React.Fragment key={rep.id}>
                 <div>
-                  {t_i18n('', {
-                    id: 'Identifier ({label})',
+                  {t_i18n('Identifier ({label})', {
                     values: { label },
                   })}
                 </div>
