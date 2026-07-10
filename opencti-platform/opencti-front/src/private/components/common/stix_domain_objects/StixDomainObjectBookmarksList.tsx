@@ -1,20 +1,22 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { StixDomainObjectBookmarksListQuery } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
+import { StixDomainObjectBookmarksListQuery, StixDomainObjectsOrdering } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectBookmarksListQuery.graphql';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import React, { Suspense } from 'react';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { OrderingMode } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
+import { computeStartEndDates } from 'src/components/dashboard/dashboard-viz-utils';
 
 const stixDomainObjectBookmarksListQuery = graphql`
-  query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup) {
-    bookmarks(types: $types, first: $first, filters: $filters) {
+  query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
+    bookmarks(types: $types, first: $first, filters: $filters, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
@@ -175,13 +177,9 @@ const StixDomainObjectBookmarksListComponent = ({
 }: StixDomainObjectBookmarksListComponentProps) => {
   const data = usePreloadedQuery(stixDomainObjectBookmarksListQuery, queryRef);
   const edges = data?.bookmarks?.edges ?? [];
-  return edges.length === 0 ? (
-    <WidgetNoData />
-  ) : (
-    <WidgetBookmarks
-      bookmarks={edges}
-    />
-  );
+  return edges.length === 0
+    ? <WidgetNoData />
+    : <WidgetBookmarks bookmarks={edges} />;
 };
 
 interface StixDomainObjectBookmarksListProps {
@@ -196,11 +194,25 @@ interface StixDomainObjectBookmarksListProps {
   refreshRate?: number | null;
 }
 
-const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[]) => {
+const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
   const selection = resolvedDataSelection[0];
+  const orderBy = (selection.sort_by && selection.sort_by.length > 0
+    ? selection.sort_by
+    : 'created_at') as StixDomainObjectsOrdering | null | undefined;
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
+  const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
   return {
-    first: 50,
-    filters: removeEntityTypeAllFromFilterGroup(selection.filters ?? undefined) as StixDomainObjectBookmarksListQuery['variables']['filters'],
+    first: selection.number ?? 10,
+    orderBy,
+    orderMode,
+    filters: normalizeFilterGroupForBackend(filters),
   };
 };
 
