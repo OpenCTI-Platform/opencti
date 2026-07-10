@@ -6,8 +6,6 @@ import type { ConnectorContractConfiguration } from '../../../../src/generated/g
 
 const compileSpy = vi.spyOn(Ajv.prototype, 'compile');
 
-const MAX_VALIDATOR_CACHE_SIZE = 500;
-
 const TEST_CATALOG_PATH = nodePath.join(__dirname, '../../../utils/opencti-manifest.json');
 
 let catalogDomain: typeof import('../../../../src/modules/catalog/catalog-domain');
@@ -120,7 +118,7 @@ describe('catalog-domain - AJV validator compilation cache', () => {
     expect(compileSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('should not force recompilation of already-cached shapes once MAX_VALIDATOR_CACHE_SIZE is reached', () => {
+  it('should not force recompilation of already-cached shapes after many distinct cache entries', () => {
     const knownShapesCount = 20;
     const knownContracts = Array.from({ length: knownShapesCount }, (_, i) => buildContract({
       title: `known-contract-${i}`,
@@ -136,8 +134,8 @@ describe('catalog-domain - AJV validator compilation cache', () => {
     });
     expect(compileSpy).toHaveBeenCalledTimes(knownShapesCount);
 
-    // 2) Push the cache well past MAX_VALIDATOR_CACHE_SIZE with brand new distinct shapes.
-    const overflowCount = MAX_VALIDATOR_CACHE_SIZE + 50;
+    // 2) Push the cache with many brand new distinct shapes.
+    const overflowCount = 550;
     for (let i = 0; i < overflowCount; i += 1) {
       const overflowContract = buildContract({
         title: `overflow-contract-${i}`,

@@ -13,7 +13,6 @@ import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
 
 const validatorCache = new Map<string, ValidateFunction>();
-const MAX_VALIDATOR_CACHE_SIZE = 500;
 
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
@@ -23,10 +22,6 @@ const MAX_VALIDATOR_CACHE_SIZE = 500;
 const getOrCompileValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
   let validate = validatorCache.get(cacheKey);
   if (!validate) {
-    if (validatorCache.size >= MAX_VALIDATOR_CACHE_SIZE) {
-      logApp.warn('Validator cache size limit reached, compiling without caching', { size: validatorCache.size });
-      return ajv.compile(jsonValidation);
-    }
     validate = ajv.compile(jsonValidation);
     validatorCache.set(cacheKey, validate);
   }
