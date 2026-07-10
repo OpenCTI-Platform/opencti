@@ -3,6 +3,7 @@ import { ResetPwdStep } from './ResetPassword';
 
 interface LoginContextData {
   email: string;
+  forcePasswordChange?: boolean;
   resetPwdStep?: ResetPwdStep;
   resendCodeDisabled?: boolean;
   validateOtpInError?: boolean;

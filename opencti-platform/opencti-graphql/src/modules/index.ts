@@ -69,6 +69,7 @@ import './theme/theme';
 import './deleteOperation/deleteOperation';
 import './support/support';
 import './exclusionList/exclusionList';
+import './smtpConfiguration/smtpConfiguration';
 import './draftWorkspace/draftWorkspace';
 import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';
@@ -82,6 +83,7 @@ import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
+import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
 
 // incomplete modules
@@ -144,6 +146,7 @@ import './ai/ai-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
+import './smtpConfiguration/smtpConfiguration-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
@@ -165,5 +168,6 @@ import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
+import './dataSanity/dataSanity-graphql';
 import './workflow/api/workflow-graphql';
 // endregion

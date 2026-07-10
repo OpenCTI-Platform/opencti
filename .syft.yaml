@@ -1,0 +1,67 @@
+log:
+  # suppress all logging output (env: SYFT_LOG_QUIET)
+  quiet: false
+
+  # increase verbosity (-v = info, -vv = debug) (env: SYFT_LOG_VERBOSITY)
+  verbosity: 0
+
+  # explicitly set the logging level (available: [error warn info debug trace]) (env: SYFT_LOG_LEVEL)
+  level: "info"
+
+file:
+  metadata:
+    # Options include:
+    #  - "all": capture all files from the search space
+    #  - "owned-by-package": capture only files owned by packages
+    #  - "none", "": do not capture any files (env: SYFT_FILE_METADATA_SELECTION)
+    selection: none
+
+# exclude files after node_modules/@X/Y/package.json
+exclude:
+  - '**/node_modules/@*/*/*/**/[!node_modules]/**/package.json'
+  - '**/node_modules/[!@]*/*/*/**/[!node_modules]/**/package.json'
+
+output:
+  - "cyclonedx-json=opencti-platform.cdx.json"
+
+# selection of layers to catalog, options=[squashed all-layers deep-squashed] (env: SYFT_SCOPE)
+scope: "squashed"
+
+format:
+  pretty: true
+
+compliance:
+  # action to take when a package is missing a name (env: SYFT_COMPLIANCE_MISSING_NAME)
+  # missing-name: "drop"
+  # action to take when a package is missing a version (env: SYFT_COMPLIANCE_MISSING_VERSION)
+  missing-version: "stub"
+
+#select-catalogers:
+#  - "python"
+#  - "javascript"
+#  - "+binary-classifier-cataloger"
+
+javascript:
+  # enables Syft to use the network to fill in more detailed license information (env: SYFT_JAVASCRIPT_SEARCH_REMOTE_LICENSES)
+  search-remote-licenses: true
+
+  # base NPM url to use (env: SYFT_JAVASCRIPT_NPM_BASE_URL)
+  npm-base-url: "https://registry.npmjs.org"
+
+linux-kernel:
+  # whether to catalog linux kernel modules found within lib/modules/** directories (env: SYFT_LINUX_KERNEL_CATALOG_MODULES)
+  catalog-modules: true
+
+python:
+  # enables Syft to use the network to fill in more detailed license information (env: SYFT_PYTHON_SEARCH_REMOTE_LICENSES)
+  search-remote-licenses: true
+
+unknowns:
+  # remove unknown errors on files with discovered packages (env: SYFT_UNKNOWNS_REMOVE_WHEN_PACKAGES_DEFINED)
+  remove-when-packages-defined: true
+
+  # include executables without any identified packages (env: SYFT_UNKNOWNS_EXECUTABLES_WITHOUT_PACKAGES)
+  executables-without-packages: false
+
+  # include archives which were not expanded and searched (env: SYFT_UNKNOWNS_UNEXPANDED_ARCHIVES)
+  unexpanded-archives: false

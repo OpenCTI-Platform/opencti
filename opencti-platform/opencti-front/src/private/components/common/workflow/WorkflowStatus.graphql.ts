@@ -109,6 +109,9 @@ export const workflowStatusTriggerMutation = graphql`
             }
           }
         }
+        lastHistoryEntry {
+          timestamp
+        }
       }
       entity {
         ... on DraftWorkspace {

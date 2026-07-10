@@ -17,6 +17,7 @@ import type { AuthContext } from '../types/user';
 import { getHttpClient, getResponseError } from '../utils/http-client';
 import { redisGetXtmAgentResponse, redisSetXtmAgentResponse } from '../database/redis';
 import { checkDraftInContext } from './httpServer-draft';
+import { addAiInsightRequestCount, addChatbotMessageCount, addXtmAgentCallCount } from '../manager/telemetryManager';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -326,6 +327,12 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       return;
     }
 
+    // Telemetry: one chatbot message, backend-agnostic (same counter as the
+    // legacy Flowise proxy). Counted before the upstream call (attempts
+    // semantics, consistent with call_nlq). Fire-and-forget: a telemetry
+    // failure must never break the chatbot.
+    addChatbotMessageCount();
+
     const headers = await generateBasicHeaders(req, context);
     const httpClient = getXtmClient('stream', headers);
     const response = await httpClient.post('/api/v1/platform/chat/messages', req.body, {
@@ -592,6 +599,9 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
 
     const isMultipart = (req.headers['content-type'] ?? '').includes('multipart/form-data');
 
+    // Telemetry: direct agent call, split by channel only (json vs multipart).
+    addXtmAgentCallCount(isMultipart ? 'direct_files' : 'direct');
+
     if (isMultipart) {
       // File-based mode: 3-step flow via XTM One chat API
       // 1. Parse incoming multipart
@@ -775,6 +785,8 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       const cached = await redisGetXtmAgentResponse(cacheKey);
       if (cached) {
         logApp.info('Agent response served from cache', { agent_slug });
+        // Telemetry: AI Insight served from cache.
+        addAiInsightRequestCount('hit');
         writeAgentStreamHeaders(res);
         res.write(`data: ${JSON.stringify({
           type: 'done',
@@ -786,6 +798,10 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
         return;
       }
     }
+
+    // Telemetry: AI Insight requiring a live agent run (cache miss, cache
+    // disabled, or explicit force refresh). Counted before the upstream call.
+    addAiInsightRequestCount('miss');
 
     const headers = await generateBasicHeaders(req, context);
     // Force the upstream `opencti-draft-id` header to match the validated
@@ -924,6 +940,10 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
     }
+
+    // Telemetry: one chatbot message, same backend-agnostic counter as the
+    // XTM One proxy - the chatbot is one feature whichever backend serves it.
+    addChatbotMessageCount();
 
     const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const vars = {

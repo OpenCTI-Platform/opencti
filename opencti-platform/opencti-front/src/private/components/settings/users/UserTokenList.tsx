@@ -146,7 +146,6 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
                   <TableCell align="right">
                     <Tooltip title={t_i18n('Revoke')}>
                       <IconButton
-                        aria-label="revoke"
                         color="primary"
                         onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
                         size="small"

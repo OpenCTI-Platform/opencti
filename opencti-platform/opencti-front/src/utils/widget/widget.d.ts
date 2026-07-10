@@ -2,6 +2,7 @@ import type { GqlFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import { ReactNode } from 'react';
+import { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 
 export type WidgetHost = {
   kind: 'workspace';
@@ -20,11 +21,26 @@ export type WidgetHost = {
 
 export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
 
+export type WidgetColumnAttributeType
+  = | 'date'
+    | 'boolean'
+    | 'markdown'
+    | 'tag'
+    | 'tag_list'
+    | 'text_list'
+    | 'score'
+    | 'cvss_score'
+    | 'open_vocab'
+    | 'open_vocab_list'
+    | 'copy'
+    | 'entity_ref';
+
 interface WidgetColumn {
   attribute: string | null;
   displayStyle?: string | null;
   label?: string | null;
   variableName?: string | null;
+  attributeType?: WidgetColumnAttributeType;
 }
 
 export interface WidgetTimeSeriesData {
@@ -55,6 +71,7 @@ export interface WidgetDataSelection {
   sort_mode?: string | null;
   field?: string;
   relationship_type?: string;
+  layout?: WidgetColumnsLayout | null;
   unique?: boolean;
 }
 

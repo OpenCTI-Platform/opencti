@@ -517,16 +517,6 @@ type AiHistory {
   refreshed_at: DateTime
 }
 
-type LogsWorkerConfig {
-  elasticsearch_url: [String]!
-  elasticsearch_proxy: String
-  elasticsearch_index: String!
-  elasticsearch_username: String
-  elasticsearch_password: String
-  elasticsearch_api_key: String
-  elasticsearch_ssl_reject_unauthorized: Boolean
-}
-
 enum LogsOrdering {
   event
   timestamp
@@ -1175,6 +1165,7 @@ interface BasicObject {
 interface InternalObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
 }
 
 type Module {
@@ -1320,6 +1311,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 type MetricAttributes {
@@ -1371,6 +1363,7 @@ input LocalAuthConfigInput {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 input CertAuthConfigInput {
@@ -1397,6 +1390,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   platform_enterprise_edition: PlatformEE!
@@ -1450,6 +1444,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
@@ -1517,6 +1512,7 @@ type Group implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   auto_integration_assignation: [String]!
   parent_types: [String!]!
   metrics: [Metric]
@@ -1733,6 +1729,7 @@ type User implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
@@ -1745,6 +1742,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  password_valid_until: DateTime
   user_service_account: Boolean
   lastname: String
   theme: String
@@ -1782,6 +1780,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   user_email: String!
@@ -1790,6 +1789,7 @@ type MeUser implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_qr: String
+  password_valid_until: DateTime
   lastname: String
   theme: String
   language: String
@@ -1921,6 +1921,7 @@ type Role implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -1955,6 +1956,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2272,6 +2274,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2321,6 +2324,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -2349,6 +2353,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -8964,7 +8969,7 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary
 
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
@@ -9398,7 +9403,6 @@ type Query {
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
   about: AppInfo
-  logsWorkerConfig: LogsWorkerConfig
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
@@ -9753,6 +9757,7 @@ type Query {
   exclusionList(id: String!): ExclusionList
   exclusionLists(first: Int, after: ID, orderBy: ExclusionListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExclusionListConnection
   exclusionListCacheStatus: ExclusionListCacheStatus
+  smtpConfiguration: SmtpConfiguration
   draftWorkspace(id: String!): DraftWorkspace
   draftWorkspaces(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
   draftWorkspacesRestricted(first: Int, after: ID, orderBy: DraftWorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DraftWorkspaceConnection
@@ -9809,6 +9814,9 @@ type Query {
   redisStreamInfo: RedisStreamInfo
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
+  dataSanityOperations: [DataSanityOperation!]!
+  dataSanityExecutions: [DataSanityExecution!]!
+  dataSanityOperationDryRun(operation_name: String!): DataSanityDryRunOutput!
 }
 
 type Subscription {
@@ -10687,6 +10695,10 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
+  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
+  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
   draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
@@ -10764,7 +10776,7 @@ type Mutation {
   customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
   customViewDuplicate(input: CustomViewDuplicateInput!): CustomView
   customViewDelete(id: ID!): ID!
-  customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView!
+  customViewConfigurationImport(targetEntityType: String, file: Upload!): CustomView!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -10775,6 +10787,7 @@ type Mutation {
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
+  dataSanityOperationRequestRun(operation_name: String!): ID
 }
 
 enum WorkflowExecutionStatus {
@@ -10831,6 +10844,7 @@ type EntitySetting implements InternalObject & BasicObject {
   workflow_published_version_id: String
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -10930,6 +10944,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   workflowInstance: WorkflowInstance
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -11072,6 +11087,7 @@ input ChannelAddInput {
 type Catalog implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -11648,6 +11664,7 @@ type Trigger implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -11724,6 +11741,7 @@ type NotificationEvent {
   message: String!
   instance_id: String
   operation: String!
+  entity_type: String
 }
 
 type NotificationContent {
@@ -11735,6 +11753,7 @@ type Notification implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   created: DateTime
   name: String!
   notification_type: String!
@@ -12364,6 +12383,7 @@ type TaskTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -12496,6 +12516,7 @@ type CaseTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -13140,6 +13161,7 @@ type EntitySettingEdge {
 type Workspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13363,6 +13385,7 @@ input MalwareAnalysisAddInput {
 type ManagerConfiguration implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13398,6 +13421,7 @@ type Notifier implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime
@@ -13629,6 +13653,7 @@ type PlayBookExecution {
 type Playbook implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13731,6 +13756,7 @@ input PlaybookAddLinkInput {
 type IngestionRss implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13825,6 +13851,7 @@ enum IngestionAuthType {
 type IngestionTaxii implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13912,6 +13939,7 @@ input IngestionTaxiiAddAutoUserInput {
 type IngestionTaxiiCollection implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -13956,6 +13984,7 @@ input IngestionTaxiiCollectionAddInput {
 type IngestionCsv implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14063,6 +14092,7 @@ type IngestionQueryAttribute {
 type IngestionJson implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   connector_id: String!
   standard_id: String!
   parent_types: [String!]!
@@ -14351,6 +14381,7 @@ type DecayRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -14407,6 +14438,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -14665,6 +14697,7 @@ type CsvMapperAddInputFromImport {
 type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14874,6 +14907,7 @@ type JsonMapperVariable {
 type JsonMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14905,6 +14939,7 @@ input JsonMapperAddInput {
 type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -14967,6 +15002,7 @@ type Theme implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   name: String!
   theme_background: String!
@@ -15061,6 +15097,7 @@ type DeletedElement {
 type DeleteOperation implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -15097,6 +15134,7 @@ type SupportPackage implements InternalObject & BasicObject {
   name: String!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15146,6 +15184,7 @@ type ExclusionList implements InternalObject & BasicObject {
   description: String
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15185,6 +15224,68 @@ input ExclusionListFileAddInput {
   description: String
   exclusion_list_entity_types: [String!]!
   file: Upload!
+}
+
+type SmtpConfiguration {
+  id: ID!
+  smtp_enabled: Boolean!
+  use_db_config: Boolean!
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_issuer: String
+  oauth_refresh_token_expires_at: DateTime
+}
+
+enum SmtpAuthType {
+  basic
+  oauth2
+}
+
+input SmtpConfigurationAddInput {
+  smtp_enabled: Boolean
+  use_db_config: Boolean
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  password: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_client_secret: String
+  oauth_issuer: String
+  oauth_access_token: String
+  oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
+}
+
+input SmtpConfigurationEditInput {
+  smtp_enabled: Boolean
+  use_db_config: Boolean
+  sender_email_address: String
+  hostname: String
+  port: Int
+  use_ssl: Boolean
+  reject_unauthorized: Boolean
+  auth_type: SmtpAuthType
+  username: String
+  password: String
+  oauth_user: String
+  oauth_client_id: String
+  oauth_client_secret: String
+  oauth_issuer: String
+  oauth_access_token: String
+  oauth_refresh_token: String
+  oauth_refresh_token_expires_at: DateTime
 }
 
 enum DraftStatus {
@@ -15291,6 +15392,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15339,6 +15441,7 @@ type DisseminationList implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -15384,6 +15487,7 @@ type SavedFilter implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15492,6 +15596,7 @@ type PirInformation {
 type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -15623,6 +15728,7 @@ type FintelDesign implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15945,6 +16051,7 @@ type EmailTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   name: String!
@@ -15984,6 +16091,7 @@ type Form implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   spec_version: String!
@@ -16061,6 +16169,7 @@ type NewsFeedItem implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   title: String!
@@ -16361,6 +16470,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created_at: DateTime!
@@ -16438,6 +16548,7 @@ type AvailableSecretInfo {
 type CustomView implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
+  representative: Representative!
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
@@ -16768,4 +16879,39 @@ type RetentionRuleEdge {
 type RetentionRuleEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): RetentionRule
+}
+
+type DataSanityOperation {
+  identifier: String!
+  display_name: String!
+  execution_type: String!
+  description: String!
+  eligible_entity_types: [String!]!
+  is_running: Boolean!
+  force_run: Boolean!
+  last_run_date: DateTime
+  last_execution_time: Int
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
+}
+
+type DataSanityExecution {
+  id: ID!
+  operation_name: String!
+  last_run_date: DateTime!
+  last_execution_time: Int!
+  last_run_success: Boolean
+  last_run_message: String
+  last_run_output: String
+  force_run: Boolean!
+}
+
+type DataSanityImpactedElement {
+  key: String!
+  count: Int!
+}
+
+type DataSanityDryRunOutput {
+  estimated_impact: [DataSanityImpactedElement!]!
 }

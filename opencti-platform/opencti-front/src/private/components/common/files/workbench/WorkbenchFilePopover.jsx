@@ -97,6 +97,7 @@ class WorkbenchFilePopover extends Component {
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
+          aria-label={t('Open menu')}
           aria-haspopup="true"
           size="default"
           variant="secondary"

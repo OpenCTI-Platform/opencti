@@ -43,7 +43,16 @@ const LoginForm = () => {
       variables: { input },
       onCompleted: () => window.location.reload(),
       onError: (error: RelayResponseError) => {
-        const errorMsg = error.res?.errors?.at?.(0)?.message;
+        const firstError = error.res?.errors?.at?.(0);
+        const errorCode = (firstError as { extensions?: { code?: string } } | undefined)?.extensions?.code;
+        if (errorCode === 'PASSWORD_CHANGE_REQUIRED') {
+          setValue('email', input.email);
+          setValue('forcePasswordChange', true);
+          setValue('resetPwdStep', undefined);
+          setSubmitting(false);
+          return;
+        }
+        const errorMsg = firstError?.message;
         const errorMessage = t_i18n(errorMsg ?? 'Unknown');
         setErrors({ email: errorMessage });
         setSubmitting(false);
@@ -52,6 +61,7 @@ const LoginForm = () => {
   };
 
   const goToResetPwd = () => {
+    setValue('forcePasswordChange', false);
     setValue('resetPwdStep', ResetPwdStep.ASK_RESET);
   };
 

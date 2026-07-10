@@ -1,6 +1,7 @@
 type CustomView implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     standard_id: String!
     parent_types: [String!]!
     metrics: [Metric]
@@ -83,6 +84,5 @@ type Mutation {
     customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    customViewConfigurationImport(targetEntityType: String!, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewConfigurationImport(targetEntityType: String, file: Upload!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
-

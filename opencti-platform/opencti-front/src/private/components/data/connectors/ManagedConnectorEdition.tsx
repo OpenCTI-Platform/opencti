@@ -13,13 +13,14 @@ import { JsonForms } from '@jsonforms/react';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { Validator } from '@cfworker/json-schema';
 import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
-import { JsonSchema } from '@jsonforms/core';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
-import reconcileManagedConnectorContractDataWithSchema from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
+import reconcileManagedConnectorContractDataWithSchema, { ManagerContractProperty } from '@components/data/connectors/utils/reconcileManagedConnectorContractDataWithSchema';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
+import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
+import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/data/IngestionCatalog/utils/JsonFormDeprecatedRenderer';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
 import TextField from '../../../../components/TextField';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -29,8 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '../IngestionCatalog/utils/JsonFormVerticalLayout';
-
-type ManagerContractProperty = [string, IngestionTypedProperty];
+import { buildOptionalPropertiesWithDeprecated, computeDeprecatedEditionVisibility, filterValuesForEditionPayload } from '../IngestionCatalog/utils/deprecatedFields';
 
 const updateManagedConnector = graphql`
   mutation ManagedConnectorEditionMutation($input: EditManagedConnectorInput) {
@@ -55,6 +55,7 @@ interface ManagedConnectorValues {
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
+  { tester: jsonFormDeprecatedTester, renderer: JsonFormDeprecatedRenderer },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -97,12 +98,17 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+    const filteredValues = filterValuesForEditionPayload(
+      values as unknown as Record<string, unknown>,
+      contract.config_schema.properties,
+    ) as unknown as ManagedConnectorValues;
+
     const input = {
       id: connector.id,
-      name: values.name,
-      title: values.display_name,
-      connector_user_id: values.creator?.value,
-      manager_contract_configuration: buildContractConfiguration(values),
+      name: filteredValues.name,
+      title: filteredValues.display_name,
+      connector_user_id: filteredValues.creator?.value,
+      manager_contract_configuration: buildContractConfiguration(filteredValues),
     };
 
     commitUpdate({
@@ -127,49 +133,22 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
   const {
     requiredProperties,
     optionalProperties,
+    deprecatedProperties,
     reconciledData,
   } = useMemo(() => {
     const managerContractProperties = Object.entries(contract.config_schema.properties) as ManagerContractProperty[];
-
-    const propertiesWithPasswordDescription: ManagerContractProperty[] = managerContractProperties.map(([key, value]) => {
-      const isPasswordField = value.format === 'password';
-      if (!isPasswordField) {
-        return [key, value] as ManagerContractProperty;
-      }
-      const passwordDescription = `${value.description} Current value is hidden, but can still be replaced.`;
-      return [key, { ...value, description: passwordDescription }] as ManagerContractProperty;
-    });
-
-    const requiredPropertiesArray: ManagerContractProperty[] = [];
-    const optionalPropertiesArray: ManagerContractProperty[] = [];
-
-    propertiesWithPasswordDescription.forEach((property) => {
-      const [key] = property;
-      const isRequired = contract.config_schema.required.includes(key);
-      if (isRequired) {
-        requiredPropertiesArray.push(property);
-      } else {
-        optionalPropertiesArray.push(property);
-      }
-    });
-
-    const requiredProps: JsonSchema = {
-      properties: Object.fromEntries(requiredPropertiesArray),
-      required: contract.config_schema.required,
-    };
-
-    const optionalProps: JsonSchema = {
-      properties: Object.fromEntries(optionalPropertiesArray),
-    };
-
-    const reconciled = reconcileManagedConnectorContractDataWithSchema(
-      contractValues,
-      managerContractProperties,
-    );
+    const augmented = augmentPasswordDescriptions(managerContractProperties);
+    const {
+      requiredProperties: requiredProps,
+      optionalProperties: optionalProps,
+      deprecatedProperties: deprecatedProps,
+    } = buildContractPropertyGroups(augmented, contract.config_schema.required);
+    const reconciled = reconcileManagedConnectorContractDataWithSchema(contractValues, managerContractProperties);
 
     return {
       requiredProperties: requiredProps,
       optionalProperties: optionalProps,
+      deprecatedProperties: deprecatedProps,
       reconciledData: reconciled,
     };
   }, [contract.config_schema.properties, contract.config_schema.required, contractValues]);
@@ -197,11 +176,50 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
         }}
         onSubmit={() => {}}
       >
-        {({ values, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+        {({ values, initialValues, setFieldValue, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
           const errors = compiledValidator?.validate(values)?.errors;
+
+          // Determine which deprecated fields are still relevant and whether to show the warning banner.
+          // A deprecated field is visible when its current value differs from the schema default,
+          // or when it was non-default on open and the user just cleared it in this session.
+          const {
+            showDeprecatedAlert,
+            visibleDeprecatedProperties,
+          } = computeDeprecatedEditionVisibility(
+            deprecatedProperties,
+            initialValues as unknown as Record<string, unknown>,
+            values as unknown as Record<string, unknown>,
+          );
+
+          // Merge optional fields with any visible deprecated fields, preserving manifest order.
+          const advancedProperties = buildOptionalPropertiesWithDeprecated(
+            contract.config_schema.properties,
+            optionalProperties.properties as Record<string, IngestionTypedProperty> | undefined,
+            visibleDeprecatedProperties,
+          );
+
+          const hasAdvancedProperties = Object.keys(advancedProperties).length > 0;
+          const visibleDeprecatedFieldNames = Object.keys(contract.config_schema.properties)
+            .filter((key) => Boolean(visibleDeprecatedProperties[key]))
+            .map((key) => key.replace(/_/g, ' '));
 
           return (
             <Form>
+              {showDeprecatedAlert && (
+                <Alert
+                  severity="warning"
+                  variant="outlined"
+                  style={{ marginBottom: 8 }}
+                >
+                  <div>{t_i18n('This connector has deprecated configuration fields:')}</div>
+                  <ul style={{ margin: '6px 0 0 18px', padding: 0 }}>
+                    {visibleDeprecatedFieldNames.map((fieldName) => (
+                      <li key={fieldName}>{fieldName}</li>
+                    ))}
+                  </ul>
+                </Alert>
+              )}
+
               <Field
                 component={TextField}
                 style={fieldSpacingContainerStyle}
@@ -265,7 +283,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                     </Alert>
                   )}
 
-                  {hasOptionalProperties && (
+                  {hasAdvancedProperties && (
                     <div style={fieldSpacingContainerStyle}>
                       <Accordion slotProps={{ transition: { unmountOnExit: false } }}>
                         <AccordionSummary id="accordion-panel">
@@ -274,7 +292,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                         <AccordionDetails sx={{ paddingTop: 2 }}>
                           <JsonForms
                             data={values}
-                            schema={optionalProperties}
+                            schema={{ properties: advancedProperties }}
                             renderers={customRenderers}
                             validationMode="NoValidation"
                             onChange={async ({ data }) => {

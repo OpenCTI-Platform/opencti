@@ -21,7 +21,6 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
 } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -48,7 +47,6 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
-  ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
 /**
@@ -363,7 +361,7 @@ export async function duplicateCustomView(
     );
   }
   return duplicate;
-};
+}
 
 export const deleteCustomView = async (
   context: AuthContext,
@@ -397,6 +395,7 @@ export const exportCustomView = async (
     configuration: {
       name: customView.name,
       manifest: generatedManifest,
+      target_entity_type: customView.target_entity_type,
     },
   };
   return JSON.stringify(exportConfigration);
@@ -405,23 +404,28 @@ export const exportCustomView = async (
 export const importCustomViewConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  targetEntityType: string,
+  targetEntityType: string | undefined | null,
   file: Promise<FileHandle>,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: targetEntityType,
-      });
-  }
   const parsedData: CustomViewExport = await extractContentFrom(file);
   const { manifest } = parsedData.configuration;
+  const inputTargetEntityType = typeof targetEntityType === 'string' ? targetEntityType.trim() : undefined;
+  const resolvedTargetEntityType = inputTargetEntityType || parsedData.configuration.target_entity_type;
+  if (!resolvedTargetEntityType) {
+    throw FunctionalError('Missing target entity type for custom view import');
+  }
+  if (!isCustomViewsAvailableForEntityType(resolvedTargetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: resolvedTargetEntityType,
+      });
+  }
   // Manifest ids must be rewritten for filters
   const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
     manifest: generatedManifest,
-    target_entity_type: targetEntityType,
+    target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,
     enabled: false,

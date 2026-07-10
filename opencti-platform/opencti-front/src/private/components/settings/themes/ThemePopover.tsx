@@ -169,6 +169,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         ]}
       >
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={handleOpen}
           aria-haspopup="true"
           data-testid={`${theme.name}-popover`}

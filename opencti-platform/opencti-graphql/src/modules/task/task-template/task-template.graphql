@@ -2,6 +2,7 @@ type TaskTemplate implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   created: DateTime

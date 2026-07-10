@@ -691,6 +691,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <div key={index} className={classes.fieldGroup}>
                                   {index > 0 && (
                                     <IconButton
+                                      aria-label={t_i18n('Delete')}
                                       className={classes.deleteButton}
                                       onClick={() => remove(index)}
                                       size="small"
@@ -857,6 +858,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         <div key={index} className={classes.fieldGroup}>
                                           {index >= minAmount && (
                                             <IconButton
+                                              aria-label={t_i18n('Delete')}
                                               className={classes.deleteButton}
                                               onClick={() => remove(index)}
                                               size="small"

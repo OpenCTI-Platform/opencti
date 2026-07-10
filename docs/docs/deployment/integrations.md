@@ -8,6 +8,10 @@ OpenCTI supports multiple ways to integrate with other systems which do not have
     
     If you are looking for the list of OpenCTI connectors or native integration, please check the [XTM Hub Integrations Library](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations).
 
+!!! note "AI clients (MCP)"
+
+    If you want to connect AI clients and agents (Cursor, Claude Desktop, etc.) to OpenCTI using the Model Context Protocol, please check the [MCP server](mcp-server.md) page.
+
 ## Native feeds and streams
 
 To ease integrations with other products, OpenCTI has built-in capabilities to deliver the data to third-parties.

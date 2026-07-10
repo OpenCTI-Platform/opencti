@@ -1,7 +1,6 @@
 import Typography from '@mui/material/Typography';
-import { VerifiedOutlined } from '@mui/icons-material';
+import { GroupsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import React from 'react';
 import { useTheme } from '@mui/styles';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
@@ -12,7 +11,9 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import ItemBoolean from '../../../../components/ItemBoolean';
+import Tag from '@common/tag/Tag';
+import FiligranIcon from '@components/common/FiligranIcon';
+import { LogoFiligranIcon } from 'filigran-icon';
 
 type IngestionCatalogConnectorHeaderProps = {
   connector: IngestionConnector;
@@ -57,19 +58,30 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             >
               {connector.title}
             </Typography>
-            <ItemBoolean
-              status
-              reverse={!connector.verified}
-              label={(
-                <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                  <VerifiedOutlined
-                    color={connector.verified ? 'success' : 'disabled'}
-                    fontSize="small"
+            {connector.verified
+              ? (
+                  <Tag
+                    label={(
+                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                        <FiligranIcon icon={LogoFiligranIcon} size="small" />
+                        {t_i18n('Supported by Filigran')}
+                      </Stack>
+                    )}
+                    color={theme.palette.primary.main}
                   />
-                  {connector.verified ? t_i18n('Verified') : t_i18n('Not verified')}
-                </Stack>
-              )}
-            />
+                )
+              : (
+                  <Tag
+                    label={(
+                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                        <GroupsOutlined fontSize="small" />
+                        {t_i18n('Supported by Community')}
+                      </Stack>
+                    )}
+                    color={theme.palette.action?.disabled}
+                  />
+                )
+            }
           </Stack>
 
           <Stack direction="row">

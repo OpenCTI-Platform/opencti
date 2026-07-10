@@ -280,7 +280,7 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
   return !UNIMPACTED_ENTITIES_ROLE.includes(role);
 };
 
-let engine: ElkClient | OpenClient;
+export let engine: ElkClient | OpenClient;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
 
@@ -291,7 +291,7 @@ export const isAttachmentProcessorEnabled = () => {
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
-const oebp = (queryResult: any): any => {
+export const oebp = (queryResult: any): any => {
   if (engine instanceof ElkClient) {
     return queryResult;
   }
@@ -529,21 +529,55 @@ const elExecuteWithAbortSignal = async (
 const BULK_MAX_RETRIES = 5;
 const BULK_INITIAL_DELAY_MS = 500;
 
-const isTransitoryError = (error: any): boolean => {
-  const statusCode = error?.statusCode ?? error?.meta?.statusCode ?? error?.status;
+const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
+  const values = [
+    error?.[fieldName],
+    error?.cause?.[fieldName],
+    error?.cause?.meta?.body?.error?.[fieldName],
+    error?.originalError?.[fieldName],
+    error?.meta?.body?.error?.[fieldName],
+    error?.extensions?.data?.cause?.[fieldName],
+    error?.extensions?.data?.cause?.meta?.body?.error?.[fieldName],
+    error?.extensions?.exception?.[fieldName],
+  ];
+
+  return values
+    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+};
+
+export const isTransitoryError = (error: any): boolean => {
+  const statusCode = error?.statusCode
+    ?? error?.meta?.statusCode
+    ?? error?.status
+    ?? error?.cause?.statusCode
+    ?? error?.cause?.meta?.statusCode
+    ?? error?.extensions?.data?.cause?.statusCode
+    ?? error?.extensions?.data?.cause?.meta?.statusCode;
   // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
   if (statusCode === 429 || statusCode === 503) {
     return true;
   }
-  const errorCode = error?.code ?? error?.cause?.code;
+
+  const errorCode = error?.code
+    ?? error?.cause?.code
+    ?? error?.originalError?.code
+    ?? error?.extensions?.data?.cause?.code;
   // All these error codes are commonly associated with transient issues that can occur in network communication
   // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
   if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
     return true;
   }
-  const errorMessage = error?.message ?? '';
+
+  const errorText = [
+    ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
+    ...collectErrorFieldValues(error, 'type'),
+    ...collectErrorFieldValues(error, 'name'),
+    ...collectErrorFieldValues(error, 'stack'),
+  ].join(' ');
+
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
     return true;
   }
   return false;
@@ -2056,11 +2090,11 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_scope',
   'context_data.message',
   'context_data.search',
-  'context_data.input.search',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
   'persona_name',
+  'source_name',
   'roles',
   'objective',
   'content',
@@ -4234,7 +4268,7 @@ export const elRemoveRelationConnection = async (
                   ctx._source[params.rel_key].remove(cleanupIndex);
                 }
             }
-          }  
+          }
           `;
           // Only impact the updated at on the from side of the ref relationship
           const fromSide = side === 'from';
@@ -4383,13 +4417,13 @@ export const elRemoveDraftIdFromElements = async (
   elementsIds: string[],
 ) => {
   const revertDraftIdSource = `
-    if (ctx._source.containsKey('draft_ids')) { 
+    if (ctx._source.containsKey('draft_ids')) {
       for (int i = 0; i < ctx._source.draft_ids.length; ++i){
         if(ctx._source.draft_ids[i] == params.draftId){
           ctx._source.draft_ids.remove(i);
         }
       }
-    }  
+    }
   `;
 
   if (elementsIds.length > 0) {
@@ -4439,15 +4473,15 @@ export const copyLiveElementToDraft = async (
   const addDraftIdScript = {
     script: {
       source: `
-        if (ctx._source.containsKey('draft_ids')) { 
+        if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
             if (!params.allDraftIds.contains(ctx._source['draft_ids'][i])) {
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}'); 
-        } 
-        else 
+          ctx._source['draft_ids'].add('${draftContext}');
+        }
+        else
           {ctx._source.draft_ids = ['${draftContext}']}
       `,
       params: { allDraftIds },
@@ -4794,7 +4828,7 @@ export const elIndexElements = async (
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         if (isStixRefUnidirectionalRelationship(t.relation)) {
           // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) { 
+          script += `for(refId in params['${field}']) {
           if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;

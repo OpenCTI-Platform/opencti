@@ -1,6 +1,7 @@
 type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!  @auth(for: [KNOWLEDGE, EXPLORE])
+  representative: Representative!
   standard_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
   parent_types: [String!]!
   metrics:[Metric] @auth(for: [KNOWLEDGE, EXPLORE])
@@ -133,4 +134,3 @@ type Mutation {
   publicDashboardDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_PUBLISH])
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard @auth(for: [EXPLORE_EXUPDATE_PUBLISH])
 }
-

@@ -265,7 +265,7 @@ input CaseRfiAddInput {
 }
 
 type Mutation {
-  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
+  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
   caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   caseRfiApprove(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   caseRfiDecline(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

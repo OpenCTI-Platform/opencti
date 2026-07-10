@@ -489,15 +489,6 @@ type AiHistory {
 ###### INTERNAL
 
 ############## Logs
-type LogsWorkerConfig {
-  elasticsearch_url: [String]!
-  elasticsearch_proxy: String
-  elasticsearch_index: String!
-  elasticsearch_username: String
-  elasticsearch_password: String
-  elasticsearch_api_key: String
-  elasticsearch_ssl_reject_unauthorized: Boolean
-}
 enum LogsOrdering {
   event
   timestamp
@@ -1109,6 +1100,7 @@ interface InternalObject {
   # BasicObject
   id: ID! # internal_id!
   entity_type: String!
+  representative: Representative!
 }
 
 ############## Settings
@@ -1246,6 +1238,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
     password_policy_min_words: Int
     password_policy_min_lowercase: Int
     password_policy_min_uppercase: Int
+    password_policy_validity_days: Int
 }
 
 type MetricAttributes {
@@ -1297,6 +1290,7 @@ input LocalAuthConfigInput {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 input CertAuthConfigInput {
@@ -1323,6 +1317,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Settings
@@ -1377,6 +1372,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
   # Built-in authentication strategies
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig
@@ -1447,6 +1443,7 @@ type Group implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   auto_integration_assignation: [String]!
   parent_types: [String!]!
   metrics:[Metric]
@@ -1651,6 +1648,7 @@ type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # User
@@ -1664,6 +1662,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  password_valid_until: DateTime
   user_service_account: Boolean
   lastname: String
   theme: String
@@ -1716,6 +1715,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   user_email: String!
@@ -1724,6 +1724,7 @@ type MeUser implements BasicObject & InternalObject {
   firstname: String
   otp_activated: Boolean
   otp_qr: String
+  password_valid_until: DateTime
   lastname: String
   theme: String
   language: String
@@ -1848,6 +1849,7 @@ type Role implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Role
@@ -1880,6 +1882,7 @@ type Capability implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Capability
@@ -2193,6 +2196,7 @@ type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2243,6 +2247,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Connector
@@ -2273,6 +2278,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   # Manager
@@ -14081,6 +14087,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | ICCID
   | IMSI
   | SavedFilter
+  | Vocabulary
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -14724,7 +14731,6 @@ type Query {
   ###### INTERNAL
 
   about: AppInfo @auth
-  logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(

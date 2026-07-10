@@ -168,38 +168,32 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           <>
             {!isReady && (
               <Tooltip title={t_i18n('Force download on this support package')}>
-                <span>
-                  <IconButton disabled={!isTooLong} onClick={handleForceZip}>
-                    <DownloadingOutlined fontSize="small" />
-                  </IconButton>
-                </span>
+                <IconButton disabled={!isTooLong} onClick={handleForceZip}>
+                  <DownloadingOutlined fontSize="small" />
+                </IconButton>
               </Tooltip>
             )}
             {isReady && (
               <Tooltip title={t_i18n('Download this support package')}>
-                <span>
-                  <IconButton
-                    disabled={!data.package_url}
-                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                      data.package_url || '',
-                    )}`}
-                  >
-                    <GetAppOutlined fontSize="small" />
-                  </IconButton>
-                </span>
+                <IconButton
+                  disabled={!data.package_url}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    data.package_url || '',
+                  )}`}
+                >
+                  <GetAppOutlined fontSize="small" />
+                </IconButton>
               </Tooltip>
             )}
             <Tooltip title={t_i18n('Delete this support package')}>
-              <span>
-                <IconButton
-                  disabled={!isReady && !isTooLong}
-                  // color='inherit'
-                  onClick={handleOpenDelete}
-                  size="small"
-                >
-                  <DeleteOutlined fontSize="small" />
-                </IconButton>
-              </span>
+              <IconButton
+                disabled={!isReady && !isTooLong}
+                // color='inherit'
+                onClick={handleOpenDelete}
+                size="small"
+              >
+                <DeleteOutlined fontSize="small" />
+              </IconButton>
             </Tooltip>
           </>
         )}

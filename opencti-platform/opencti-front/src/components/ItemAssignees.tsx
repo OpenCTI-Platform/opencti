@@ -18,9 +18,10 @@ type Props = {
   assignees: ReadonlyArray<Node>;
   stixDomainObjectId: string;
   removeMutation?: GraphQLTaggedNode;
+  readOnly?: boolean;
 };
 
-const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId, removeMutation = stixDomainObjectMutation }) => {
+const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId, removeMutation = stixDomainObjectMutation, readOnly }) => {
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveAssignee = (removedId: string) => {
     const values = assignees.filter((assignee) => assignee.id !== removedId);
@@ -44,7 +45,7 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
           <Tag
             key={assignee.id}
             label={truncate(assignee.name, 25)}
-            onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
+            onDelete={!readOnly && canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
           />
         </Tooltip>
       ))}

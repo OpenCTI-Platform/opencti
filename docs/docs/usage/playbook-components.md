@@ -342,7 +342,7 @@ For more details, see [Organization segregation](https://docs.opencti.io/latest/
 
 This component sends the bundle to the configured AI agent. By default, it uses the "CTI STIX transformer" agent, which is configured to only use the STIX 2.1 data schema and returns a STIX bundle that can then be further processed by the playbook.
 
-Use **Additional user instructions** to provide the agent with a prompt to follow, and choose the user the agent should run as so that it only has access to the data it needs.
+Use **Additional user instructions** to provide the agent with a prompt to follow, and choose the user the agent should run as so that it only has access to the data it needs. For security reasons, the **Run as** selection is limited to yourself (the user editing the playbook) and service accounts.
 
 !!! warning "This component requires access to the XTM One platform and will consume usage of your XTM One quota."
 
@@ -401,7 +401,7 @@ This component passes the STIX 2.1 bundle to the data stream for writing. It has
 
 ### Send to AI
 
-This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer. Configure this component with the additional user provided instructions that will act as the user prompt and set the user account that the agent will run as to ensure it has the correct access permissions. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create the new grouping in the Draft space within OpenCTI where an analyst can review the AI agent's output.
+This component passes the STIX 2.1 bundle to the AI agent, by default this will be set to the CTI STIX Consumer. Configure this component with the additional user provided instructions that will act as the user prompt and set the user account that the agent will run as to ensure it has the correct access permissions. For security reasons, the **Run as** selection is limited to yourself (the user editing the playbook) and service accounts. Once the data is processed the playbook will complete and the bundle will continue to be processed by the AI agent depending on instructions. For example the instructions may specify the creation of a new weekly grouping of data to be created in OpenCTI, the AI agent would then create the new grouping in the Draft space within OpenCTI where an analyst can review the AI agent's output.
 
 ### Send to notifier
 

@@ -10,6 +10,7 @@ import { UnsupportedError } from '../../config/errors';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { StreamDataEvent } from '../../types/event';
 import { isDebugPlaybook } from './playbookManagerUtils';
+import { addPlaybookExecutionCount } from '../telemetryManager';
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -86,6 +87,13 @@ export const playbookExecutor = async ({
 }: ExecutorFn) => {
   const currentPlaybookInDebug = isDebugPlaybook(playbookId);
   const isExternalCallback = externalCallback !== undefined;
+  // Telemetry: a call with no previous step and no external callback is the
+  // first step of a fresh playbook execution (every trigger path - stream,
+  // cron, manual - starts this way), so count one execution here rather than
+  // at each of the trigger call sites.
+  if (previousStep === null && !isExternalCallback) {
+    addPlaybookExecutionCount();
+  }
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
   if (nextStep.component.is_internal || isExternalCallback) {

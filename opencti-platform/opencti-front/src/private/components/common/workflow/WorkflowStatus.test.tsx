@@ -108,6 +108,41 @@ describe('WorkflowStatus', () => {
     testRender(<WorkflowStatus data={draft} />);
     expect(document.querySelector('[data-testid="CommentOutlinedIcon"]')).not.toBeNull();
   });
+
+  it('opens a popover with the comment text when the comment icon is clicked', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { comment: 'Looks good' },
+        allowedTransitions: [],
+      },
+    });
+    const { user } = testRender(<WorkflowStatus data={draft} />);
+    const iconButton = document.querySelector('[aria-label="View last comment"]') as HTMLElement;
+    await user.click(iconButton);
+    expect(await screen.findByText('Looks good')).toBeDefined();
+  });
+
+  it('closes the popover when clicking outside', async () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: { comment: 'Looks good' },
+        allowedTransitions: [],
+      },
+    });
+    const { user } = testRender(<WorkflowStatus data={draft} />);
+    const iconButton = document.querySelector('[aria-label="View last comment"]') as HTMLElement;
+    await user.click(iconButton);
+    await screen.findByText('Looks good');
+    // Press Escape to close (clicking document.body doesn't trigger MUI backdrop in jsdom)
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByText('Looks good')).toBeNull());
+  });
 });
 
 // ---------------------------------------------------------------------------

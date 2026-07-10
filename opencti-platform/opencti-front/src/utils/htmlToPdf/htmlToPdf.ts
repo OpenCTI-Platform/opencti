@@ -66,10 +66,19 @@ export const htmlToPdf = (
     htmlData = renderToString(compiler(htmlData, { wrapper: null }));
   }
 
+  // Detect CJK characters and pick a font that has CJK glyphs.
+  // Roboto (the pdfmake default) has no CJK glyphs, so Japanese/Korean text
+  // would otherwise be garbled in the exported PDF. See issue #15624.
+  const selectedFont = detectLanguage(htmlData);
+
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {
     imagesByReference: true,
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
+    defaultStyles: {
+      th: { bold: true, fillColor: '', font: selectedFont },
+      td: { font: selectedFont },
+    },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
   pdfMakeObject.images = normalizePdfMakeImageReferences(
@@ -77,9 +86,13 @@ export const htmlToPdf = (
     resolvedEntityBaseUrl,
   );
 
+  pdfMakeObject.defaultStyle = {
+    ...(pdfMakeObject.defaultStyle ?? {}),
+    font: selectedFont,
+  };
+
   return generatePdf(pdfMakeObject, false, isTiptapEnabled);
 };
-
 /**
  * Part to handle the embedded images of a file
  */

@@ -76,11 +76,12 @@ const FintelTemplatePopover = ({
   return (
     <>
       {inline ? (
-        <IconButton onClick={onOpenMenu} aria-haspopup="true" color="primary">
+        <IconButton aria-label={t_i18n('Open menu')} onClick={onOpenMenu} aria-haspopup="true" color="primary">
           <MoreVert fontSize="small" />
         </IconButton>
       ) : (
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={onOpenMenu}
           aria-haspopup="true"
           className="icon-outlined"

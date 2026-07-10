@@ -37,7 +37,6 @@ import {
   type EditManagedConnectorInput,
   type HealthConnectorStatusInput,
   type LogsConnectorStatusInput,
-  type MutationSynchronizerTestArgs,
   type RegisterConnectorInput,
   type RegisterConnectorsManagerInput,
   type RequestConnectorStatusInput,
@@ -67,6 +66,7 @@ import { URL } from 'node:url';
 import { extractContentFrom } from '../utils/fileToContent';
 import type { FileHandle } from 'fs/promises';
 import { encryptSynchronizerCredential } from './connector-sync-crypto';
+import { verifyIngestionUri } from '../modules/ingestion/ingestion-common';
 
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
@@ -536,7 +536,8 @@ export const findSyncPaginated = async (context: AuthContext, user: AuthUser, op
   return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 
-export const testSync = async (context: AuthContext, user: AuthUser, sync: MutationSynchronizerTestArgs) => {
+export const testSync = async (context: AuthContext, user: AuthUser, sync: SynchronizerAddInput) => {
+  verifyIngestionUri(sync.uri);
   return testSyncUtils(context, user, sync);
 };
 
@@ -551,6 +552,7 @@ export const computeStreamRemoteUrl = (inputUri: string) => {
 
 export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, input: SynchronizerFetchInput) => {
   const { token, uri, ssl_verify } = input;
+  verifyIngestionUri(uri);
   try {
     const query = `
     query SyncCreationStreamCollectionQuery {
@@ -587,6 +589,8 @@ export const registerSync = async (
   user: AuthUser,
   syncData: SynchronizerAddInput,
 ) => {
+  verifyIngestionUri(syncData.uri);
+
   let finalSyncData = { ...syncData, running: false };
 
   if (finalSyncData.automatic_user) {
@@ -675,6 +679,11 @@ export const synchronizerAddAutoUser = async (context: AuthContext, user: AuthUs
 };
 
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
+  const uriInput = input.find((i) => i.key === 'uri');
+  if (uriInput && uriInput.value[0]) {
+    verifyIngestionUri(uriInput.value[0]);
+  }
+
   const tokenInput = input.find((i) => i.key === 'token');
   if (tokenInput && tokenInput.value[0]) {
     tokenInput.value[0] = await encryptSynchronizerCredential(tokenInput.value[0]);

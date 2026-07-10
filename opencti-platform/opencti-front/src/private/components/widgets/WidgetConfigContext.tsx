@@ -70,7 +70,7 @@ const buildConfig = (
         filters: emptyFilterGroup,
         dynamicFrom: emptyFilterGroup,
         dynamicTo: emptyFilterGroup,
-        instance_id: w?.type === 'attribute' ? SELF_ID : undefined,
+        instance_id: (w?.type === 'attribute' || w?.type === 'custom-attributes') ? SELF_ID : undefined,
       }],
     },
   };
@@ -96,7 +96,7 @@ export const WidgetConfigProvider = ({
     setConfig(buildConfig(host, initialWidget, initialVariableName));
     let initialStep = 0;
     if (initialWidget) {
-      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute') {
+      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute' || initialWidget?.type === 'custom-attributes') {
         initialStep = 3;
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;

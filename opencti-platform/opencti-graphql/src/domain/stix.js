@@ -28,6 +28,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgr
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { elFindByIds } from '../database/engine';
+import { addExportGeneratedCount } from '../manager/telemetryManager';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -93,6 +94,9 @@ export const askListExport = async (context, user, exportContext, format, select
   if (!exportContext || !exportContext?.entity_type) {
     throw FunctionalError('entity_type is missing from askListExport');
   }
+
+  // Telemetry: one export generation requested (attempts semantics).
+  addExportGeneratedCount();
 
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
@@ -174,6 +178,9 @@ export const askListExport = async (context, user, exportContext, format, select
 };
 
 export const askEntityExport = async (context, user, format, entity, type, contentMaxMarkings, fileMarkings) => {
+  // Telemetry: one export generation requested (attempts semantics).
+  addExportGeneratedCount();
+
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);

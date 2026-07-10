@@ -65,6 +65,7 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
       <div className="clearfix" />
       <div style={{ position: 'absolute', top: 0, right: 0 }}>
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={(event) => setAnchorEl(event.currentTarget)}
           aria-haspopup="true"
           size="small"

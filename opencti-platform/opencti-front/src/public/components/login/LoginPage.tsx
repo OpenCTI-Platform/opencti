@@ -16,6 +16,7 @@ import AlertChangePwd from './AlertChangePwd';
 import { useLoginContext } from './loginContext';
 import AlertMfa from './AlertMfa';
 import { useFormatter } from '../../../components/i18n';
+import ForcePasswordChange from './ForcePasswordChange';
 
 interface LoginPageProps {
   settings: LoginRootPublicQuery$data['publicSettings'];
@@ -23,7 +24,7 @@ interface LoginPageProps {
 
 const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   const { t_i18n } = useFormatter();
-  const { resetPwdStep } = useLoginContext();
+  const { resetPwdStep, forcePasswordChange } = useLoginContext();
   const [checked, setChecked] = useState(false);
 
   const loginMessageRef = useRef<HTMLElement>(null);
@@ -52,7 +53,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   };
 
   const consentOk = !hasConsentMessage || (hasConsentMessage && checked);
-  const showLoginForm = consentOk && hasAuthForm && !resetPwdStep;
+  const showLoginForm = consentOk && hasAuthForm && !resetPwdStep && !forcePasswordChange;
 
   return (
     <LoginLayout settings={settings}>
@@ -95,7 +96,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
         {consentOk
           && providers.filter((p) => p.type === 'FORM').length > 0
-          && (showLoginForm || !!resetPwdStep)
+          && (showLoginForm || !!resetPwdStep || !!forcePasswordChange)
           && (
             <Card
               sx={{
@@ -106,6 +107,19 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               <div style={{ minHeight: 170 }}>
                 {!!resetPwdStep && (
                   <ResetPassword
+                    policies={{
+                      minLength: settings.password_policy_min_length,
+                      maxLength: settings.password_policy_max_length,
+                      minSymbols: settings.password_policy_min_symbols,
+                      minNumbers: settings.password_policy_min_numbers,
+                      minWords: settings.password_policy_min_words,
+                      minLowercase: settings.password_policy_min_lowercase,
+                      minUppercase: settings.password_policy_min_uppercase,
+                    }}
+                  />
+                )}
+                {!!forcePasswordChange && (
+                  <ForcePasswordChange
                     policies={{
                       minLength: settings.password_policy_min_length,
                       maxLength: settings.password_policy_max_length,
