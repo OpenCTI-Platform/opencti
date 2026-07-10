@@ -39,9 +39,6 @@ export const loadCustomFieldDefinitions = async (context: AuthContext): Promise<
   logApp.info(`[CUSTOM_FIELDS] Loaded ${definitions.length} custom field definitions`);
 };
 
-/**
- * Get all cached custom field definitions.
- */
 export const getCustomFieldDefinitions = (): BasicStoreEntityCustomFieldDefinition[] => {
   return customFieldDefinitionsCache;
 };
@@ -73,9 +70,6 @@ export const getCustomFieldDefinitionByName = (name: string): BasicStoreEntityCu
   return customFieldDefinitionsCache.find((def) => def.name === name);
 };
 
-/**
- * Get a cached custom field definition by its label.
- */
 export const getCustomFieldDefinitionByLabel = (label: string): BasicStoreEntityCustomFieldDefinition | undefined => {
   return customFieldDefinitionsCache.find((def) => def.label === label);
 };
@@ -201,21 +195,20 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
 };
 
 /**
- * Cascade deletion: schedule a background task that removes all stored values of a
- * deleted custom field definition from every entity referencing it. The task is
- * processed asynchronously by the task manager (so it does not block the delete
- * mutation) and is tracked, retried and monitorable like any other background task.
- * Only entities actually holding a value for the field are targeted (nested filter).
+ * Cascade deletion: schedules a background task that removes all stored values of a deleted
+ * custom field definition from every entity referencing it (async, tracked like any other task).
  */
 const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, entityTypes: string[]): Promise<void> => {
   const systemContext = executionContext('custom_field_cascade_delete', SYSTEM_USER);
+  // Nested sub-conditions go through `values` (completeSpecialFilterKeys moves them to `nested`);
+  // this also avoids depending on the definition cache, already cleared by this point.
   const taskFilters = {
     mode: FilterMode.And,
     filters: [
       ...(entityTypes.length > 0
         ? [{ key: ['entity_type'], values: entityTypes, operator: FilterOperator.Eq, mode: FilterMode.Or }]
         : []),
-      { key: ['custom_field_values'], values: [], nested: [{ key: 'field_name', values: [fieldName], operator: FilterOperator.Eq }] },
+      { key: ['custom_field_values'], values: [{ key: 'field_name', values: [fieldName], operator: FilterOperator.Eq }] },
     ],
     filterGroups: [],
   };
@@ -284,15 +277,14 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
         removedOptions = previousOptions.filter((option) => !editValues.includes(option));
       } // EditOperation.Add only adds options, nothing is removed
       if (removedOptions.length > 0) {
-        // Count entities holding a value for this field set to one of the removed options.
-        // Runs as SYSTEM_USER to cover all entities regardless of the requester's visibility.
+        // Count entities holding one of the removed options (SYSTEM_USER: check across all entities).
         const valueKey = getCustomFieldValueField(definition.field_type);
+        // See scheduleCustomFieldValuesCleanupTask: nested sub-conditions go through `values`, not `nested`.
         const usageFilters: FilterGroupWithNested = {
           mode: FilterMode.And,
           filters: [{
             key: ['custom_field_values'],
-            values: [],
-            nested: [
+            values: [
               { key: 'field_name', values: [definition.name], operator: FilterOperator.Eq },
               { key: valueKey, values: removedOptions, operator: FilterOperator.Eq },
             ],
@@ -316,42 +308,56 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   if (minEdit || maxEdit) {
     const definition = await findById(context, user, customFieldDefinitionId);
     if (definition && definition.field_type === 'integer') {
-      const readBound = (edit: EditInput | undefined, fallback: number | undefined): number | undefined => {
-        if (!edit) return fallback;
+      // undefined = bound not part of this edit, null = bound explicitly cleared, number = new bound value
+      const readEditedBound = (edit: EditInput | undefined): number | null | undefined => {
+        if (!edit) return undefined;
         const raw = Array.isArray(edit.value) ? edit.value[0] : edit.value;
-        return raw === null || raw === undefined || raw === '' ? undefined : Number(raw);
+        return raw === null || raw === undefined || raw === '' ? null : Number(raw);
       };
-      const newMin = readBound(minEdit, definition.min_value);
-      const newMax = readBound(maxEdit, definition.max_value);
-      // Bounds coherence (mirrors the creation-time check)
-      if (newMin != null && newMax != null && newMin > newMax) {
-        throw FunctionalError('min_value cannot be greater than max_value', { min_value: newMin, max_value: newMax });
+      const editedMin = readEditedBound(minEdit);
+      const editedMax = readEditedBound(maxEdit);
+      // Bounds coherence (mirrors the creation-time check), computed against the resulting effective bounds
+      const effectiveMin = editedMin === undefined ? definition.min_value : editedMin;
+      const effectiveMax = editedMax === undefined ? definition.max_value : editedMax;
+      if (effectiveMin != null && effectiveMax != null && effectiveMin > effectiveMax) {
+        throw FunctionalError('min_value cannot be greater than max_value', { min_value: effectiveMin, max_value: effectiveMax });
       }
       const buildOutOfBoundFilter = (operator: FilterOperator, bound: number): FilterGroupWithNested => ({
         mode: FilterMode.And,
-        filters: [{
-          key: ['custom_field_values'],
-          values: [],
-          nested: [
-            { key: 'field_name', values: [definition.name], operator: FilterOperator.Eq },
-            { key: 'int_value', values: [String(bound)], operator },
-          ],
-        }],
+        // The technical name is a recognized special filter key (isCustomFieldFilterKey), adapted
+        // by completeSpecialFilterKeys into the proper nested filter on custom_field_values.
+        filters: [{ key: [definition.name], values: [String(bound)], operator }],
         filterGroups: [],
       });
-      // Count as SYSTEM_USER to cover all entities regardless of the requester's visibility.
+      // Only re-scan the bound(s) actually being edited: re-validating an untouched bound against
+      // existing data would let unrelated legacy values block edits to the other bound.
       let outOfBoundCount = 0;
-      if (newMin != null) {
-        outOfBoundCount += await countAllThings(context, SYSTEM_USER, { filters: buildOutOfBoundFilter(FilterOperator.Lt, newMin) });
+      let outOfBoundField: 'min_value' | 'max_value' | undefined;
+      if (editedMin != null) {
+        const filter = buildOutOfBoundFilter(FilterOperator.Lt, editedMin);
+        const count = await countAllThings(context, SYSTEM_USER, { filters: filter });
+        if (count > 0) {
+          outOfBoundCount += count;
+          outOfBoundField = 'min_value';
+        }
       }
-      if (outOfBoundCount === 0 && newMax != null) {
-        outOfBoundCount += await countAllThings(context, SYSTEM_USER, { filters: buildOutOfBoundFilter(FilterOperator.Gt, newMax) });
+      if (outOfBoundCount === 0 && editedMax != null) {
+        const filter = buildOutOfBoundFilter(FilterOperator.Gt, editedMax);
+        const count = await countAllThings(context, SYSTEM_USER, { filters: filter });
+        if (count > 0) {
+          outOfBoundCount += count;
+          outOfBoundField = 'max_value';
+        }
       }
-      if (outOfBoundCount > 0) {
+      if (outOfBoundCount > 0 && outOfBoundField) {
         throw ValidationError(
           'Cannot restrict the value range: existing entities hold a value outside the new bounds',
-          minEdit ? 'min_value' : 'max_value',
-          { min_value: newMin, max_value: newMax },
+          outOfBoundField,
+          {
+            min_value: effectiveMin,
+            max_value: effectiveMax,
+            usageCount: outOfBoundCount,
+          },
         );
       }
     }
