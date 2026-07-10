@@ -16113,6 +16113,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   objectCovered: StixDomainObject
   toStixBundle: String
   security_platform_type: String
+  results: [SecurityCoverageResult!]
 }
 
 enum SecurityCoverageOrdering {
@@ -16248,6 +16249,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   external_uri: String
+  resultOf: SecurityCoverage
 }
 
 enum SecurityCoverageResultOrdering {

@@ -8,6 +8,7 @@ import {
   getSecurityCoverageResultProperty,
   averageCoverageInformation,
   mostRecentLastCoverageResult,
+  getSecurityCoverageResults,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
@@ -32,6 +33,7 @@ const SecurityCoverageResolvers: Resolvers = {
   SecurityCoverage: {
     objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
     toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
+    results: (securityCoverage, _, context) => getSecurityCoverageResults(context, context.user, securityCoverage),
     // security coverage result info
     coverage_last_result: (securityCoverage, _, context) => mostRecentLastCoverageResult(context, context.user, securityCoverage),
     coverage_valid_from: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
