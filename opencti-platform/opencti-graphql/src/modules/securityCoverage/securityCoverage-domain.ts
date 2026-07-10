@@ -101,7 +101,7 @@ export const addSecurityCoverage = async (
       x_opencti_modified_at,
     } = onlySecurityCoverageInput;
     const securityCoverageResultInput = {
-      name: `Result of ${createdSecurityCoverage.name}`,
+      name: external_uri || `Result of ${createdSecurityCoverage.name}`,
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       coverage_information,
       coverage_last_result,

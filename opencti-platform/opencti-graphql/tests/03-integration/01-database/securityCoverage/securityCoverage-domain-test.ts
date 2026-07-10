@@ -28,17 +28,20 @@ describe('SecurityCoverage domain', () => {
 
   describe('Function addSecurityCoverage()', () => {
     it('should create coverage result if contains coverage information', async () => {
+      const externalUri = 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131';
       const input = {
         ...BASE_INPUT(),
         coverage_information: [{
           coverage_name: 'prevention',
           coverage_score: 10,
         }],
-        external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131',
+        external_uri: externalUri,
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
       expect(results.length).toEqual(1);
+      // Name should be the external_uri when it is defined
+      expect(results[0].name).toEqual(externalUri);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
@@ -77,6 +80,8 @@ describe('SecurityCoverage domain', () => {
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       let results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
       expect(results.length).toEqual(1);
+      // Name falls back to "Result of <name>" when no external_uri is provided
+      expect(results[0].name).toEqual(`Result of ${securityCoverage.name}`);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
       results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
       expect(results.length).toEqual(0);
