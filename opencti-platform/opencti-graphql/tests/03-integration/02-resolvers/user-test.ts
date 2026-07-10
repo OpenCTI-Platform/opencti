@@ -1937,20 +1937,20 @@ describe('Bookmarks API', () => {
     // Create test malware entities
     const malware1 = await queryAsAdminWithSuccess({
       query: MALWARE_ADD_MUTATION,
-      variables: { input: { name: 'Bookmark Malware Alpha', malware_types: ['ransomware'] } },
+      variables: { input: { name: 'Bookmark Malware 1', malware_types: ['ransomware'] } },
     });
     malware1Id = malware1.data?.malwareAdd.id;
 
     const malware2 = await queryAsAdminWithSuccess({
       query: MALWARE_ADD_MUTATION,
-      variables: { input: { name: 'Bookmark Malware Beta', malware_types: ['trojan'] } },
+      variables: { input: { name: 'Bookmark Malware 2', malware_types: ['trojan'] } },
     });
     malware2Id = malware2.data?.malwareAdd.id;
 
     // Create a test report
     const report = await queryAsAdminWithSuccess({
       query: REPORT_ADD_MUTATION,
-      variables: { input: { name: 'Bookmark Report Alpha', published: '2024-01-01T00:00:00.000Z' } },
+      variables: { input: { name: 'Bookmark Report', published: '2024-01-01T00:00:00.000Z' } },
     });
     reportId = report.data?.reportAdd.id;
 
@@ -1986,7 +1986,7 @@ describe('Bookmarks API', () => {
       variables: {},
     });
     const edges = queryResult.data?.bookmarks.edges;
-    expect(edges.length).toBeGreaterThanOrEqual(3);
+    expect(edges.length).toEqual(3);
     const ids = edges.map((e: any) => e.node.id);
     expect(ids).toContain(malware1Id);
     expect(ids).toContain(malware2Id);
@@ -2038,22 +2038,6 @@ describe('Bookmarks API', () => {
     });
   });
 
-  it('should filter bookmarks by Report entity type using filters parameter', async () => {
-    const queryResult = await queryAsAdminWithSuccess({
-      query: BOOKMARKS_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq' }],
-          filterGroups: [],
-        },
-      },
-    });
-    const edges = queryResult.data?.bookmarks.edges;
-    expect(edges.length).toEqual(1);
-    expect(edges[0].node.entity_type).toBe('Report');
-  });
-
   it('should order bookmarks by name ascending', async () => {
     const queryResult = await queryAsAdminWithSuccess({
       query: BOOKMARKS_QUERY,
@@ -2061,8 +2045,8 @@ describe('Bookmarks API', () => {
     });
     const edges = queryResult.data?.bookmarks.edges;
     const names = edges.map((e: any) => e.node.name);
-    expect(names[0]).toBe('Bookmark Malware Alpha');
-    expect(names[1]).toBe('Bookmark Malware Beta');
+    expect(names[0]).toBe('Bookmark Malware 1');
+    expect(names[1]).toBe('Bookmark Malware 2');
   });
 
   it('should order bookmarks by name descending', async () => {
@@ -2072,8 +2056,8 @@ describe('Bookmarks API', () => {
     });
     const edges = queryResult.data?.bookmarks.edges;
     const names = edges.map((e: any) => e.node.name);
-    expect(names[0]).toBe('Bookmark Malware Beta');
-    expect(names[1]).toBe('Bookmark Malware Alpha');
+    expect(names[0]).toBe('Bookmark Malware 2');
+    expect(names[1]).toBe('Bookmark Malware 1');
   });
 
   it('should paginate bookmarks with first parameter', async () => {
@@ -2087,6 +2071,18 @@ describe('Bookmarks API', () => {
     expect(pageInfo.hasNextPage).toBe(true);
   });
 
+  it('should reject filters with unsupported keys', async () => {
+    await queryAsAdminWithError({
+      query: BOOKMARKS_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['objectLabel'], values: ['some-label-id'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      },
+    }, 'Bookmarks widgets only support filter with key=entity_type');
+  });
 
   it('should return empty connection when no bookmarks match type', async () => {
     const queryResult = await queryAsAdminWithSuccess({
