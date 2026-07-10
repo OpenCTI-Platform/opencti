@@ -2081,7 +2081,7 @@ describe('Bookmarks API', () => {
           filterGroups: [],
         },
       },
-    }, 'Bookmarks widgets only support filter with key=entity_type');
+    }, 'Bookmarks widgets only support filter with key=entity_type.');
   });
 
   it('should return empty connection when no bookmarks match type', async () => {

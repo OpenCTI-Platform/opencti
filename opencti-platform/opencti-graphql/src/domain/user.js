@@ -1154,7 +1154,7 @@ export const bookmarks = async (context, user, args) => {
     first: first ?? bookmarkIds.length,
     after: after || undefined,
     orderBy: orderBy || undefined,
-    orderMode: orderBy ? orderMode : undefined,
+    orderMode: orderBy ? (orderMode ?? 'asc') : undefined,
   });
   return connection;
 };

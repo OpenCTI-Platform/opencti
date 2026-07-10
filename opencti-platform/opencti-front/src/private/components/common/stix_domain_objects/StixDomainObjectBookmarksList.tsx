@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetBookmarks from '../../../../components/dashboard/WidgetBookmarks';
@@ -12,7 +12,6 @@ import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/
 import React, { Suspense } from 'react';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { OrderingMode } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
-import { computeStartEndDates } from 'src/components/dashboard/dashboard-viz-utils';
 
 const stixDomainObjectBookmarksListQuery = graphql`
   query StixDomainObjectBookmarksListQuery($types: [String], $first: Int, $filters: FilterGroup, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
@@ -194,7 +193,7 @@ interface StixDomainObjectBookmarksListProps {
   refreshRate?: number | null;
 }
 
-const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig) => {
+const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[]) => {
   const selection = resolvedDataSelection[0];
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
