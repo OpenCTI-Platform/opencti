@@ -163,7 +163,7 @@
     "python-shell": "5.0.0",
     "ramda": "0.32.0",
     "rate-limiter-flexible": "11.2.0",
-    "re2": "1.25.0",
+    "re2": "1.25.2",
     "semver": "7.8.5",
     "set-interval-async": "3.0.3",
     "slug": "11.0.1",
