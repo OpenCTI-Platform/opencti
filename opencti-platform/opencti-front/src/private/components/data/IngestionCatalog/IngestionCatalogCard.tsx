@@ -1,7 +1,7 @@
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { CardActions, Stack, Typography } from '@mui/material';
-import { VerifiedOutlined } from '@mui/icons-material';
+import { GroupsOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
@@ -16,6 +16,8 @@ import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
+import FiligranIcon from '@components/common/FiligranIcon';
+import { LogoFiligranIcon } from 'filigran-icon';
 
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
@@ -185,10 +187,12 @@ const IngestionCatalogCard = ({
         )}
         action={(
           <Tooltip
-            title={connector.verified ? t_i18n('Verified by Filigran') : t_i18n('Not verified by Filigran')}
+            title={connector.verified ? t_i18n('Supported by Filigran') : t_i18n('Supported by Community')}
             slotProps={{ popper: { sx: { textTransform: 'none' } } }}
           >
-            <VerifiedOutlined color={connector.verified ? 'success' : 'disabled'} />
+            {connector.verified
+              ? <FiligranIcon icon={LogoFiligranIcon} size="small" style={{ color: theme.palette.primary.main }} />
+              : <GroupsOutlined color="disabled" />}
           </Tooltip>
         )}
       />
