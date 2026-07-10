@@ -672,7 +672,7 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
  * Clears `password_valid_until` on all internal users.
  * Called when the admin disables the password validity policy (sets validity days to 0).
  */
-export const clearAllUsersPasswordValidUntil = async (context) => {
+export const clearAllUsersPasswordValidUntil = async (_context) => {
   await elRawUpdateByQuery({
     index: [READ_INDEX_INTERNAL_OBJECTS],
     refresh: true,
@@ -706,7 +706,7 @@ export const clearAllUsersPasswordValidUntil = async (context) => {
  * @param {number} oldDays - Previous validity duration in days
  * @param {number} newDays - New validity duration in days
  */
-export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays) => {
+export const adjustAllUsersPasswordValidUntil = async (_context, oldDays, newDays) => {
   const diffDays = newDays - oldDays;
   if (diffDays === 0) return;
 
