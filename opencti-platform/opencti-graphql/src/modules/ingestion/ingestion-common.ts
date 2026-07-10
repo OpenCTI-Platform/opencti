@@ -9,7 +9,6 @@ export const verifyIngestionUri = (uri: string): void => {
   verifyUriWithDenyList(uri, ingestionUriDenyList(), 'This URI is not allowed for ingestion.');
 };
 
-
 export const getIngestionKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();
   return factory.deriveAesKey(['ingestion', 'credentials'], 1);
