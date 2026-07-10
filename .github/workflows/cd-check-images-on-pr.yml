@@ -1,0 +1,58 @@
+name: OpenCTI CD Check
+# This workflow build docker images variant to validate before merge on master.
+# requires branches that follow convention (issue/*)
+
+on:
+  push:
+    branches:
+      - issue/*
+      - renovate/*
+
+jobs:
+  # -----------------------
+  # Build platform images
+  # -----------------------
+  build-platform:
+    name: Build platform (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-platform
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}
+
+  # -----------------------
+  # Build worker images
+  # -----------------------
+  build-worker:
+    name: Build worker (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-worker
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+          docker_image_suffix: ${{ matrix.suffix }}

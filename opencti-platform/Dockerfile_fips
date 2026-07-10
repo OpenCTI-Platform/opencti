@@ -97,6 +97,7 @@ RUN --mount=type=bind,source=opencti-graphql/src/python/requirements.txt,target=
   pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
   apk del .pip_deps
   rm /var/log/apk.log
+  rm /opt/opencti/src/python/requirements.txt
 EOT
 
 WORKDIR /opt/opencti

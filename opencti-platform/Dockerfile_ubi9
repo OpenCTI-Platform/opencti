@@ -92,6 +92,7 @@ RUN --mount=type=bind,source=opencti-graphql/src/python/requirements.txt,target=
   pip${PYTHON_VERSION} install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
   dnf -y remove python${PYTHON_VERSION}-pip git-core
   dnf clean all
+  rm /opt/opencti/src/python/requirements.txt
 EOT
 
 WORKDIR /opt/opencti
