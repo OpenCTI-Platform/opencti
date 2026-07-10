@@ -20,7 +20,7 @@
       "continuous": true,
       "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev" }],
       "options": {
-        "cwd": "opencti-worker/src",
+        "cwd": "opencti-worker",
         "command": "python worker.py"
       },
       "metadata": {
