@@ -7,7 +7,6 @@ on:
     branches:
       - master
       - lts/*
-      - issue/16821-docker-wf-lts # FIXME remove this
 
 jobs:
   # -----------------------
