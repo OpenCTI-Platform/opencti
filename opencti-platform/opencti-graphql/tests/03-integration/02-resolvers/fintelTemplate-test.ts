@@ -365,6 +365,47 @@ describe('Fintel template resolver standard behavior', () => {
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
   });
+  it('should be automatically set as default when created with default: true', async () => {
+    // First set template 1 as current default
+    await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: { id: fintelTemplateInternalId, settingsType: 'Report' },
+    });
+    const beforeRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(beforeRead.data?.fintelTemplate.default).toBe(true);
+
+    // Create a new template with default: true
+    const newDefault = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Fintel template created as default',
+          description: 'Created with default=true',
+          start_date: '2025-01-01T19:00:05.000Z',
+          settings_types: ['Report'],
+          default: true,
+        },
+      },
+    });
+    const newDefaultId = newDefault.data?.fintelTemplateAdd.id;
+    expect(newDefaultId).toBeDefined();
+
+    // New template should be default
+    const newRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: newDefaultId } });
+    expect(newRead.data?.fintelTemplate.default).toBe(true);
+
+    // Previous default should have been de-defaulted
+    const prevRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(prevRead.data?.fintelTemplate.default).toBe(false);
+
+    // Cleanup
+    const DELETE_QUERY = gql`
+      mutation fintelTemplateDelete($id: ID!) {
+        fintelTemplateDelete(id: $id)
+      }
+    `;
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: newDefaultId } });
+  });
   it('should set fintel template as default', async () => {
     const queryResult = await queryAsAdmin({
       query: SET_DEFAULT_QUERY,
