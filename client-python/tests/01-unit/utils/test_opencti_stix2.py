@@ -118,6 +118,24 @@ def test_filter_objects(opencti_stix2: OpenCTIStix2):
     assert "126" not in result
 
 
+def test_resolve_author_lowercases_unmatched_title_once():
+    class _LowerCountingTitle(str):
+        def __new__(cls, value):
+            instance = super().__new__(cls, value)
+            instance.lower_calls = 0
+            return instance
+
+        def lower(self):
+            self.lower_calls += 1
+            return super().lower()
+
+    title = _LowerCountingTitle("benchmark external reference")
+    opencti_stix2 = OpenCTIStix2(SimpleNamespace())
+
+    assert opencti_stix2.resolve_author(title) is None
+    assert title.lower_calls == 1
+
+
 class _ExternalReferenceRecorder:
     def __init__(self):
         self.create_calls = 0

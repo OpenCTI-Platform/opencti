@@ -607,43 +607,44 @@ class OpenCTIStix2:
         :return: Identity object if author found, None otherwise
         :rtype: Identity or None
         """
-        if "fireeye" in title.lower() or "mandiant" in title.lower():
+        lower_title = title.lower()
+        if "fireeye" in lower_title or "mandiant" in lower_title:
             return self.get_author("FireEye")
-        if "eset" in title.lower():
+        if "eset" in lower_title:
             return self.get_author("ESET")
-        if "dragos" in title.lower():
+        if "dragos" in lower_title:
             return self.get_author("Dragos")
-        if "us-cert" in title.lower():
+        if "us-cert" in lower_title:
             return self.get_author("US-CERT")
         if (
-            "unit 42" in title.lower()
-            or "unit42" in title.lower()
-            or "palo alto" in title.lower()
+            "unit 42" in lower_title
+            or "unit42" in lower_title
+            or "palo alto" in lower_title
         ):
             return self.get_author("Palo Alto Networks")
-        if "accenture" in title.lower():
+        if "accenture" in lower_title:
             return self.get_author("Accenture")
-        if "symantec" in title.lower():
+        if "symantec" in lower_title:
             return self.get_author("Symantec")
-        if "trendmicro" in title.lower() or "trend micro" in title.lower():
+        if "trendmicro" in lower_title or "trend micro" in lower_title:
             return self.get_author("Trend Micro")
-        if "mcafee" in title.lower():
+        if "mcafee" in lower_title:
             return self.get_author("McAfee")
-        if "crowdstrike" in title.lower():
+        if "crowdstrike" in lower_title:
             return self.get_author("CrowdStrike")
-        if "securelist" in title.lower() or "kaspersky" in title.lower():
+        if "securelist" in lower_title or "kaspersky" in lower_title:
             return self.get_author("Kaspersky")
-        if "f-secure" in title.lower():
+        if "f-secure" in lower_title:
             return self.get_author("F-Secure")
-        if "checkpoint" in title.lower():
+        if "checkpoint" in lower_title:
             return self.get_author("CheckPoint")
-        if "talos" in title.lower():
+        if "talos" in lower_title:
             return self.get_author("Cisco Talos")
-        if "secureworks" in title.lower():
+        if "secureworks" in lower_title:
             return self.get_author("Dell SecureWorks")
-        if "microsoft" in title.lower():
+        if "microsoft" in lower_title:
             return self.get_author("Microsoft")
-        if "mitre att&ck" in title.lower():
+        if "mitre att&ck" in lower_title:
             return self.get_author("The MITRE Corporation")
         return None
 
