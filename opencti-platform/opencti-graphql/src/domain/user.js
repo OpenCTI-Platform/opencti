@@ -747,9 +747,13 @@ export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays
         script: {
           source: `
             if (ctx._source.password_valid_until != null) {
-              def current = ZonedDateTime.parse(ctx._source.password_valid_until);
-              def newDate = current.plusNanos(params.diffMs * 1000000L);
-              ctx._source.password_valid_until = newDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+              try {
+                def current = ZonedDateTime.parse(ctx._source.password_valid_until);
+                def newDate = current.plusNanos(params.diffMs * 1000000L);
+                ctx._source.password_valid_until = newDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+              } catch (Exception e) {
+                // Skip documents with unparseable dates rather than failing the whole batch
+              }
             }
           `,
           params: { diffMs },
