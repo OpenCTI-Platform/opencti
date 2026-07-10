@@ -55,8 +55,28 @@ class OpenCTIStix2Splitter:
         """
         self.cache_index = {}
         self.cache_refs = {}
+        self.external_reference_ids = {}
         self.elements = []
         self.incompatible_items = []
+
+    def _get_external_reference_id(self, reference):
+        url = reference.get("url")
+        source_name = reference.get("source_name")
+        external_id = reference.get("external_id")
+        cache_key = (url, source_name, external_id)
+        if not all(value is None or isinstance(value, str) for value in cache_key):
+            return external_reference_generate_id(
+                url=url,
+                source_name=source_name,
+                external_id=external_id,
+            )
+        if cache_key not in self.external_reference_ids:
+            self.external_reference_ids[cache_key] = external_reference_generate_id(
+                url=url,
+                source_name=source_name,
+                external_id=external_id,
+            )
+        return self.external_reference_ids[cache_key]
 
     def get_internal_ids_in_extension(self, item):
         """Get internal IDs from OpenCTI extensions in a STIX object.
@@ -170,11 +190,7 @@ class OpenCTIStix2Splitter:
                 deduplicated_references_cache = {}
                 references = value
                 for reference in references:
-                    reference_id = external_reference_generate_id(
-                        url=reference.get("url"),
-                        source_name=reference.get("source_name"),
-                        external_id=reference.get("external_id"),
-                    )
+                    reference_id = self._get_external_reference_id(reference)
                     if (
                         reference_id is not None
                         and deduplicated_references_cache.get(reference_id) is None

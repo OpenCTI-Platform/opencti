@@ -166,6 +166,69 @@ def test_split_bundle_deduplicates_refs_preserving_order():
     assert root["object_refs"] == ["indicator--2", "indicator--1"]
 
 
+def test_split_bundle_reuses_external_reference_ids_across_objects(monkeypatch):
+    generate_id_calls = []
+
+    def generate_id(url=None, source_name=None, external_id=None):
+        generate_id_calls.append((url, source_name, external_id))
+        return f"external-reference--{url or source_name}|{external_id}"
+
+    monkeypatch.setattr(
+        "pycti.utils.opencti_stix2_splitter.external_reference_generate_id",
+        generate_id,
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    shared_reference = {
+        "source_name": "benchmark",
+        "url": "https://example.test/shared",
+    }
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--external-reference-cache",
+        "objects": [
+            {
+                "id": "malware--1",
+                "type": "malware",
+                "external_references": [shared_reference, dict(shared_reference)],
+            },
+            {
+                "id": "malware--2",
+                "type": "malware",
+                "external_references": [dict(shared_reference)],
+            },
+            {
+                "id": "malware--3",
+                "type": "malware",
+                "external_references": [
+                    {
+                        "source_name": "benchmark",
+                        "url": "https://example.test/other",
+                    }
+                ],
+            },
+        ],
+    }
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, use_json=False
+    )
+    references_by_id = {
+        split_bundle["objects"][0]["id"]: split_bundle["objects"][0][
+            "external_references"
+        ]
+        for split_bundle in bundles
+    }
+
+    assert expectations == 3
+    assert len(references_by_id["malware--1"]) == 1
+    assert len(references_by_id["malware--2"]) == 1
+    assert len(references_by_id["malware--3"]) == 1
+    assert generate_id_calls == [
+        ("https://example.test/shared", "benchmark", None),
+        ("https://example.test/other", "benchmark", None),
+    ]
+
+
 def test_create_bundle():
     stix_splitter = OpenCTIStix2Splitter()
     report = Report(
