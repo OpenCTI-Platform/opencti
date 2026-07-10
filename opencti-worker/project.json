@@ -8,7 +8,7 @@
       "executor": "nx:run-commands",
       "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
       "options": {
-        "cwd": "opencti-worker/src",
+        "cwd": "opencti-worker",
         "command": "pip install -r requirements.txt"
       },
       "metadata": {
@@ -20,7 +20,7 @@
       "continuous": true,
       "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev" }],
       "options": {
-        "cwd": "opencti-worker/src",
+        "cwd": "opencti-worker",
         "command": "python worker.py"
       },
       "metadata": {
