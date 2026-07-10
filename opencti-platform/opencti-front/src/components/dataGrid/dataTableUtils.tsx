@@ -274,6 +274,25 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
   },
+  coverage: {
+    id: 'coverage',
+    label: 'Coverage Score',
+    percentWidth: 11,
+    isSortable: false,
+    render: ({ coverage_information }, { t_i18n }) => (
+      coverage_information?.length
+        ? (
+            <SecurityCoverageScores
+              coverage_information={coverage_information}
+              variant="header"
+            />
+          ) : (
+            <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
+              <span style={{ width: '100%' }}>-</span>
+            </Tooltip>
+          )
+    ),
+  },
   created: {
     id: 'created',
     label: 'Original creation date',

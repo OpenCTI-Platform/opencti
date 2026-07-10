@@ -13,12 +13,12 @@ import { SecurityCoverageResultLines_data$data } from '@components/analyses/secu
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
+import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
 interface SecurityCoverageResultProps {
   id: string;
@@ -254,6 +254,7 @@ export const securityCoverageResultLinesQuery = graphql`
 const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const computeLink = useComputeLink();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
   const initialValues = {
@@ -321,29 +322,9 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
       label: 'Tested Entity Marking',
       percentWidth: 12,
     },
-    coverage: {
-      label: 'Coverage Score',
-      percentWidth: 11,
-      isSortable: false,
-      render: ({ coverage_information }) =>
-        coverage_information?.length
-          ? (
-              <SecurityCoverageScores
-                coverage_information={coverage_information}
-                variant="header"
-              />
-            ) : (
-              <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
-                <span style={{ width: '100%' }}>-</span>
-              </Tooltip>
-            ),
-    },
-    coverage_last_modified_date: {
-      percentWidth: 16,
-    },
-    security_coverage_result_name: {
-      percentWidth: 12,
-    },
+    coverage: {},
+    coverage_last_modified_date: {},
+    security_coverage_result_name: {},
   };
 
   return (
@@ -364,6 +345,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
           availableFilterKeys={['toTypes']}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationshipsFromResults?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
+          getComputeLink={(node) => computeLink({ ...node, from: undefined })}
           exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
           rootRef={tableRootRef ?? undefined}
