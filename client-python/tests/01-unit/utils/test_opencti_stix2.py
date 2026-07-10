@@ -257,7 +257,7 @@ def _label_prefetch_opencti():
     return opencti
 
 
-def _import_bundle_extracting_labels(opencti_stix2, objects):
+def _import_bundle_extracting_relationships(opencti_stix2, objects):
     def import_item_with_retries(item, *_args, **_kwargs):
         opencti_stix2.extract_embedded_relationships(item)
         return None
@@ -284,7 +284,7 @@ def test_import_bundle_prefetches_existing_labels_before_item_import():
         for index in range(3)
     ]
 
-    _import_bundle_extracting_labels(opencti_stix2, objects)
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
 
     assert opencti.label.list_filters == [["label-0", "label-1", "label-2"]]
     assert opencti.label.read_or_create_calls == []
@@ -302,7 +302,7 @@ def test_import_bundle_prefetches_existing_labels_in_bounded_chunks():
         for index in range(IMPORT_PREFETCH_BATCH_SIZE + 1)
     ]
 
-    _import_bundle_extracting_labels(opencti_stix2, objects)
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
 
     assert opencti.label.list_filters[0] == [
         f"label-{index}" for index in range(IMPORT_PREFETCH_BATCH_SIZE)
@@ -326,9 +326,108 @@ def test_import_bundle_falls_back_to_per_item_label_resolution_when_prefetch_fai
         for index in range(2)
     ]
 
-    _import_bundle_extracting_labels(opencti_stix2, objects)
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
 
     assert opencti.label.read_or_create_calls == ["label-0", "label-1"]
+
+
+class _VocabularyPrefetchRecorder:
+    def __init__(self):
+        self.list_filters = []
+        self.read_or_create_calls = []
+
+    def list(self, **kwargs):
+        values = kwargs["filters"]["filters"][0]["values"]
+        self.list_filters.append(values)
+        return [{"id": f"vocabulary--{value}", "name": value} for value in values]
+
+    def read_or_create_unchecked_with_cache(self, vocab, cache, field):
+        vocab_key = "vocab_" + vocab
+        if vocab_key not in cache:
+            self.read_or_create_calls.append(
+                (vocab, field["required"], cache["category_" + field["key"]])
+            )
+            cache[vocab_key] = {"id": f"vocabulary--{vocab}", "name": vocab}
+        return cache[vocab_key]
+
+
+def _vocabulary_prefetch_opencti():
+    opencti = _external_reference_opencti()
+    opencti.vocabulary = _VocabularyPrefetchRecorder()
+    opencti.query = lambda _query: {
+        "data": {
+            "vocabularyCategories": [
+                {
+                    "key": "malware_type_ov",
+                    "fields": [{"key": "malware_types", "required": False}],
+                }
+            ]
+        }
+    }
+    opencti.logger_class = lambda _name: SimpleNamespace(warning=lambda *args: None)
+    return opencti
+
+
+def test_import_bundle_prefetches_existing_vocabularies_before_item_import():
+    opencti = _vocabulary_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "malware_types": [f"vocab-{index}"],
+        }
+        for index in range(3)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.vocabulary.list_filters == [["vocab-0", "vocab-1", "vocab-2"]]
+    assert opencti.vocabulary.read_or_create_calls == []
+
+
+def test_import_bundle_prefetches_existing_vocabularies_in_bounded_chunks():
+    opencti = _vocabulary_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "malware_types": [f"vocab-{index}"],
+        }
+        for index in range(IMPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.vocabulary.list_filters[0] == [
+        f"vocab-{index}" for index in range(IMPORT_PREFETCH_BATCH_SIZE)
+    ]
+    assert opencti.vocabulary.list_filters[1] == [f"vocab-{IMPORT_PREFETCH_BATCH_SIZE}"]
+    assert opencti.vocabulary.read_or_create_calls == []
+
+
+def test_import_bundle_falls_back_to_per_item_vocabulary_resolution_when_prefetch_fails():
+    opencti = _vocabulary_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    opencti.vocabulary.list = lambda **_kwargs: (_ for _ in ()).throw(
+        RuntimeError("prefetch failed")
+    )
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "malware_types": [f"vocab-{index}"],
+        }
+        for index in range(2)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.vocabulary.read_or_create_calls == [
+        ("vocab-0", False, "malware_type_ov"),
+        ("vocab-1", False, "malware_type_ov"),
+    ]
 
 
 def test_pick_aliases(opencti_stix2: OpenCTIStix2) -> None:

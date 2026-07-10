@@ -684,6 +684,167 @@ class OpenCTIStix2:
                 "Cannot prefetch labels during bundle import"
             )
 
+    def _ensure_vocabulary_definition_fields(self) -> List[Dict]:
+        vocabulary_definition_fields = self.mapping_cache_permanent.get(
+            "vocabularies_definition_fields"
+        )
+        if vocabulary_definition_fields is not None:
+            return vocabulary_definition_fields
+
+        query = """
+                query getVocabCategories {
+                  vocabularyCategories {
+                    key
+                    entity_types
+                    fields{
+                      key
+                      required
+                      multiple
+                    }
+                  }
+                }
+            """
+        result = self.opencti.query(query)
+        vocabulary_definition_fields = []
+        vocabulary_categories = {}
+        for category in result["data"]["vocabularyCategories"]:
+            for field in category["fields"]:
+                vocabulary_definition_fields.append(
+                    {
+                        "key": field["key"],
+                        "required": field["required"],
+                        "multiple": field.get("multiple"),
+                        "category": category["key"],
+                        "entity_types": category.get("entity_types") or [],
+                    }
+                )
+                vocabulary_categories.setdefault(
+                    "category_" + field["key"], category["key"]
+                )
+        self.mapping_cache_permanent["vocabularies_definition_fields"] = (
+            vocabulary_definition_fields
+        )
+        self.mapping_cache_permanent.update(vocabulary_categories)
+        return vocabulary_definition_fields
+
+    def _get_import_vocabulary_fields(
+        self,
+        stix_object: Dict,
+        vocabulary_definition_fields: Optional[List[Dict]] = None,
+    ) -> List[Dict]:
+        if vocabulary_definition_fields is None:
+            vocabulary_definition_fields = self._ensure_vocabulary_definition_fields()
+
+        stix_object_entity_type = (
+            stix_object.get("x_opencti_type")
+            or self.opencti.get_attribute_in_extension("type", stix_object)
+            or stix_object.get("type")
+        )
+        normalized_stix_object_entity_type = (
+            stix_object_entity_type.lower()
+            if isinstance(stix_object_entity_type, str)
+            else None
+        )
+        return [
+            field
+            for field in vocabulary_definition_fields
+            if field["key"] in stix_object
+            and (
+                not field.get("entity_types")
+                or normalized_stix_object_entity_type
+                in [entity_type.lower() for entity_type in field["entity_types"]]
+            )
+        ]
+
+    def _prefetch_import_vocabularies(self, stix_objects: Iterable[Dict]) -> None:
+        vocabulary_definition_fields = None
+        uncached_vocabulary_values = []
+        seen_vocabulary_values = set()
+        uncached_categories_by_value = {}
+        try:
+            for stix_object in stix_objects:
+                if vocabulary_definition_fields is None:
+                    vocabulary_definition_fields = (
+                        self._ensure_vocabulary_definition_fields()
+                    )
+                for field in self._get_import_vocabulary_fields(
+                    stix_object, vocabulary_definition_fields
+                ):
+                    vocabulary_value = stix_object.get(field["key"])
+                    if vocabulary_value is None or len(vocabulary_value) == 0:
+                        continue
+                    values = (
+                        vocabulary_value
+                        if isinstance(vocabulary_value, list)
+                        else [vocabulary_value]
+                    )
+                    for value in values:
+                        category = field.get("category")
+                        cache_key = (
+                            f"vocab_{category}_{value}"
+                            if category is not None
+                            else "vocab_" + value
+                        )
+                        if cache_key in self.mapping_cache_permanent:
+                            continue
+                        uncached_categories_by_value.setdefault(value, set()).add(
+                            category
+                        )
+                        if value not in seen_vocabulary_values:
+                            seen_vocabulary_values.add(value)
+                            uncached_vocabulary_values.append(value)
+
+            if len(uncached_vocabulary_values) <= 1:
+                return
+
+            for start_index in range(
+                0, len(uncached_vocabulary_values), IMPORT_PREFETCH_BATCH_SIZE
+            ):
+                batch_vocabulary_values = uncached_vocabulary_values[
+                    start_index : start_index + IMPORT_PREFETCH_BATCH_SIZE
+                ]
+                vocabulary_data_list = (
+                    self.opencti.vocabulary.list(
+                        filters={
+                            "mode": "and",
+                            "filters": [
+                                {
+                                    "key": "name",
+                                    "values": batch_vocabulary_values,
+                                }
+                            ],
+                            "filterGroups": [],
+                        }
+                    )
+                    or []
+                )
+                for vocabulary_data in vocabulary_data_list:
+                    vocabulary_name = vocabulary_data["name"]
+                    vocabulary_category = (
+                        (vocabulary_data.get("category") or {}).get("key")
+                        if isinstance(vocabulary_data, dict)
+                        else None
+                    )
+                    if vocabulary_category is None:
+                        requested_categories = uncached_categories_by_value.get(
+                            vocabulary_name, set()
+                        )
+                        if len(requested_categories) == 1:
+                            vocabulary_category = next(iter(requested_categories))
+                        # Test doubles and older custom Vocabulary wrappers may not return
+                        # category metadata. Keep their legacy cache alias available.
+                        self.mapping_cache_permanent[
+                            "vocab_" + vocabulary_name
+                        ] = vocabulary_data
+                    if vocabulary_category is not None:
+                        self.mapping_cache_permanent[
+                            f"vocab_{vocabulary_category}_{vocabulary_name}"
+                        ] = vocabulary_data
+        except Exception:
+            self.opencti.app_logger.warning(
+                "Cannot prefetch vocabularies during bundle import"
+            )
+
     def extract_embedded_relationships(
         self, stix_object: Dict, types: List = None
     ) -> Dict:
@@ -719,61 +880,7 @@ class OpenCTIStix2:
 
         # Open vocabularies
         object_open_vocabularies = {}
-        if self.mapping_cache_permanent.get("vocabularies_definition_fields") is None:
-            self.mapping_cache_permanent["vocabularies_definition_fields"] = []
-            query = """
-                    query getVocabCategories {
-                      vocabularyCategories {
-                        key
-                        entity_types
-                        fields{
-                          key
-                          required
-                          multiple
-                        }
-                      }
-                    }
-                """
-            result = self.opencti.query(query)
-            for category in result["data"]["vocabularyCategories"]:
-                for field in category["fields"]:
-                    self.mapping_cache_permanent[
-                        "vocabularies_definition_fields"
-                    ].append(
-                        {
-                            "key": field["key"],
-                            "required": field["required"],
-                            "multiple": field["multiple"],
-                            "category": category["key"],
-                            "entity_types": category["entity_types"],
-                        }
-                    )
-
-        # Open vocabulary field keys can exist on multiple entity types (for example: `roles`).
-        # We only resolve vocabularies for the current object entity type to avoid overriding
-        # values with unrelated categories.
-        stix_object_entity_type = (
-            stix_object.get("x_opencti_type")
-            or self.opencti.get_attribute_in_extension("type", stix_object)
-            or stix_object.get("type")
-        )
-        normalized_stix_object_entity_type = (
-            stix_object_entity_type.lower()
-            if isinstance(stix_object_entity_type, str)
-            else None
-        )
-
-        vocabulary_fields = [
-            field
-            for field in self.mapping_cache_permanent["vocabularies_definition_fields"]
-            if field["key"] in stix_object
-            and (
-                normalized_stix_object_entity_type
-                in [entity_type.lower() for entity_type in field["entity_types"]]
-                or not field["entity_types"]
-            )
-        ]
-
+        vocabulary_fields = self._get_import_vocabulary_fields(stix_object)
         if vocabulary_fields:
             for f in vocabulary_fields:
                 value = stix_object.get(f["key"])
@@ -4473,6 +4580,9 @@ class OpenCTIStix2:
             stix2_splitter.split_bundle_with_expectations(
                 stix_bundle, False, event_version
             )
+        )
+        self._prefetch_import_vocabularies(
+            item for bundle in bundles for item in bundle["objects"]
         )
         self._prefetch_import_labels(
             item for bundle in bundles for item in bundle["objects"]
