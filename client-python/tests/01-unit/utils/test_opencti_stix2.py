@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from pycti.utils.opencti_stix2 import OpenCTIStix2
+from pycti.utils.opencti_stix2 import IMPORT_PREFETCH_BATCH_SIZE, OpenCTIStix2
 
 
 @pytest.fixture
@@ -232,6 +232,103 @@ def test_extract_embedded_relationships_keeps_changed_external_reference_uncache
     opencti_stix2.extract_embedded_relationships(second)
 
     assert opencti.external_reference.create_calls == 2
+
+
+class _LabelPrefetchRecorder:
+    def __init__(self):
+        self.list_filters = []
+        self.read_or_create_calls = []
+
+    def list(self, **kwargs):
+        values = kwargs["filters"]["filters"][0]["values"]
+        self.list_filters.append(values)
+        return [{"id": f"label--{value}", "value": value} for value in values]
+
+    def read_or_create_unchecked(self, **kwargs):
+        value = kwargs["value"]
+        self.read_or_create_calls.append(value)
+        return {"id": f"label--{value}", "value": value}
+
+
+def _label_prefetch_opencti():
+    opencti = _external_reference_opencti()
+    opencti.label = _LabelPrefetchRecorder()
+    opencti.logger_class = lambda _name: SimpleNamespace(warning=lambda *args: None)
+    return opencti
+
+
+def _import_bundle_extracting_labels(opencti_stix2, objects):
+    def import_item_with_retries(item, *_args, **_kwargs):
+        opencti_stix2.extract_embedded_relationships(item)
+        return None
+
+    opencti_stix2.import_item_with_retries = import_item_with_retries
+    opencti_stix2.import_bundle(
+        {
+            "type": "bundle",
+            "id": "bundle--labels",
+            "objects": objects,
+        }
+    )
+
+
+def test_import_bundle_prefetches_existing_labels_before_item_import():
+    opencti = _label_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "labels": [f"label-{index}"],
+        }
+        for index in range(3)
+    ]
+
+    _import_bundle_extracting_labels(opencti_stix2, objects)
+
+    assert opencti.label.list_filters == [["label-0", "label-1", "label-2"]]
+    assert opencti.label.read_or_create_calls == []
+
+
+def test_import_bundle_prefetches_existing_labels_in_bounded_chunks():
+    opencti = _label_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "labels": [f"label-{index}"],
+        }
+        for index in range(IMPORT_PREFETCH_BATCH_SIZE + 1)
+    ]
+
+    _import_bundle_extracting_labels(opencti_stix2, objects)
+
+    assert opencti.label.list_filters[0] == [
+        f"label-{index}" for index in range(IMPORT_PREFETCH_BATCH_SIZE)
+    ]
+    assert opencti.label.list_filters[1] == [f"label-{IMPORT_PREFETCH_BATCH_SIZE}"]
+    assert opencti.label.read_or_create_calls == []
+
+
+def test_import_bundle_falls_back_to_per_item_label_resolution_when_prefetch_fails():
+    opencti = _label_prefetch_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    opencti.label.list = lambda **_kwargs: (_ for _ in ()).throw(
+        RuntimeError("prefetch failed")
+    )
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "labels": [f"label-{index}"],
+        }
+        for index in range(2)
+    ]
+
+    _import_bundle_extracting_labels(opencti_stix2, objects)
+
+    assert opencti.label.read_or_create_calls == ["label-0", "label-1"]
 
 
 def test_pick_aliases(opencti_stix2: OpenCTIStix2) -> None:
