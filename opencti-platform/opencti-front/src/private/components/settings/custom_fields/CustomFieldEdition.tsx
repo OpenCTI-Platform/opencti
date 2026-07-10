@@ -42,6 +42,7 @@ const customFieldValidation = (t: (name: string) => string) => Yup.object().shap
   description: Yup.string().nullable(),
   min_value: Yup.number().nullable(),
   max_value: Yup.number().nullable(),
+  select_options: Yup.array().of(Yup.string()).nullable(),
 });
 
 interface CustomFieldEditionProps {
@@ -136,7 +137,7 @@ const CustomFieldEdition: FunctionComponent<CustomFieldEditionProps> = ({
               />
             </>
           )}
-          {data.field_type === 'select' && (
+          {(data.field_type === 'select' || data.field_type === 'multi_select') && (
             <MuiAutocomplete
               multiple
               freeSolo
