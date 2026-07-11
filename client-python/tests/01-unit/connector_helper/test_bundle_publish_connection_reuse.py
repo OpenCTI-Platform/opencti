@@ -1,3 +1,4 @@
+import base64
 import json
 import threading
 from types import SimpleNamespace
@@ -22,6 +23,14 @@ class _NoopLogger:
 class _NoopMetric:
     def inc(self, *args, **kwargs):
         pass
+
+
+class _FakeWork:
+    def __init__(self):
+        self.add_expectations_calls = []
+
+    def add_expectations(self, work_id, expectations):
+        self.add_expectations_calls.append((work_id, expectations))
 
 
 class _FakeChannel:
@@ -196,3 +205,44 @@ def test_send_stix2_bundle_reopens_failed_publisher_connection(monkeypatch):
     assert connections[0].channel_instance.is_closed is True
     assert connections[0].is_closed is True
     assert len(connections[1].channel_instance.published) == 1
+
+
+def test_send_stix2_bundle_publishes_bounded_chunks_with_item_expectations(monkeypatch):
+    connections = []
+
+    def create_connection(_parameters):
+        connection = _FakeConnection()
+        connections.append(connection)
+        return connection
+
+    monkeypatch.setattr(pika, "BlockingConnection", create_connection)
+    helper = _helper()
+    helper.bundle_split_max_objects = 2
+    helper.api = SimpleNamespace(work=_FakeWork())
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--chunked",
+            "objects": [
+                {"id": "indicator--1", "type": "indicator"},
+                {"id": "indicator--2", "type": "indicator"},
+                {"id": "indicator--3", "type": "indicator"},
+            ],
+        }
+    )
+
+    bundles = helper.send_stix2_bundle(bundle, work_id="work--1")
+
+    messages = [
+        json.loads(published["body"])
+        for published in connections[0].channel_instance.published
+    ]
+    published_object_counts = [
+        len(json.loads(base64.b64decode(message["content"]).decode("utf-8"))["objects"])
+        for message in messages
+    ]
+
+    assert len(bundles) == 2
+    assert helper.api.work.add_expectations_calls == [("work--1", 3)]
+    assert published_object_counts == [2, 1]
+    assert [message["no_split"] for message in messages] == [True, True]

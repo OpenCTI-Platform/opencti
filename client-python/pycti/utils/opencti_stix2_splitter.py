@@ -268,6 +268,7 @@ class OpenCTIStix2Splitter:
         use_json=True,
         event_version=None,
         cleanup_inconsistent_bundle=False,
+        max_bundle_objects=1,
     ) -> Tuple[int, list, list]:
         """Split a valid STIX2 bundle into a list of bundles.
 
@@ -279,9 +280,18 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
+        :param max_bundle_objects: maximum same-dependency-level objects per bundle
+        :type max_bundle_objects: int
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
+        if (
+            isinstance(max_bundle_objects, bool)
+            or not isinstance(max_bundle_objects, int)
+            or max_bundle_objects <= 0
+        ):
+            raise ValueError("max_bundle_objects must be a positive integer")
+
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
@@ -323,13 +333,34 @@ class OpenCTIStix2Splitter:
         self.elements.sort(key=by_dep_size)
 
         number_expectations = 0
+        chunk_items = []
+        chunk_dep_size = None
         for element in self.elements:
             number_expectations += 1
+            if chunk_items and (
+                element["nb_deps"] != chunk_dep_size
+                or len(chunk_items) >= max_bundle_objects
+            ):
+                bundles.append(
+                    self.stix2_create_bundle(
+                        bundle_data["id"],
+                        chunk_dep_size,
+                        chunk_items,
+                        use_json,
+                        event_version,
+                    )
+                )
+                chunk_items = []
+            if not chunk_items:
+                chunk_dep_size = element["nb_deps"]
+            chunk_items.append(element)
+
+        if chunk_items:
             bundles.append(
                 self.stix2_create_bundle(
                     bundle_data["id"],
-                    element["nb_deps"],
-                    [element],
+                    chunk_dep_size,
+                    chunk_items,
                     use_json,
                     event_version,
                 )

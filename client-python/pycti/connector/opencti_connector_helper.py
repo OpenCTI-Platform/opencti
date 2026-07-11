@@ -64,6 +64,9 @@ FALSY: List[str] = ["no", "false", "False"]
 BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
 """Minimum interval between full bundle retention scans."""
 
+DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS = 100
+"""Maximum same-dependency-level objects to publish in one queue message."""
+
 S3_DELETE_BATCH_SIZE = 1000
 """Maximum number of object keys accepted by one S3 bulk delete request."""
 
@@ -2156,6 +2159,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=True,
         )
+        self.bundle_split_max_objects = get_config_variable(
+            "CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS",
+            ["connector", "bundle_split_max_objects"],
+            config,
+            isNumber=True,
+            default=DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS,
+        )
+        if self.bundle_split_max_objects <= 0:
+            raise ValueError("CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS must be > 0")
         self.bundle_send_to_directory = get_config_variable(
             "CONNECTOR_SEND_TO_DIRECTORY",
             ["connector", "send_to_directory"],
@@ -3719,6 +3731,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type send_to_s3: bool, optional
         :param no_split: Whether to send without splitting (default: False)
         :type no_split: bool, optional
+        :param bundle_split_max_objects: Maximum same-dependency-level objects
+            per queued chunk (default: self.bundle_split_max_objects for AMQP
+            queue sends, 1 otherwise)
+        :type bundle_split_max_objects: int, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -3749,6 +3765,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         bundle_send_to_s3 = kwargs.get("send_to_s3", self.bundle_send_to_s3)
         no_split = kwargs.get("no_split", False)
+        bundle_split_max_objects = kwargs.get("bundle_split_max_objects")
+        if bundle_split_max_objects is None:
+            bundle_split_max_objects = (
+                getattr(
+                    self,
+                    "bundle_split_max_objects",
+                    DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS,
+                )
+                if bundle_send_to_queue and self.queue_protocol == "amqp"
+                else 1
+            )
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -3877,6 +3904,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundles = [bundle]
             expectations_number = 1
         else:
+            if (
+                isinstance(bundle_split_max_objects, bool)
+                or not isinstance(bundle_split_max_objects, int)
+                or bundle_split_max_objects <= 0
+            ):
+                raise ValueError("bundle_split_max_objects must be a positive integer")
             stix2_splitter = OpenCTIStix2Splitter()
             expectations_number, _, bundles = (
                 stix2_splitter.split_bundle_with_expectations(
@@ -3884,6 +3917,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     use_json=True,
                     event_version=event_version,
                     cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+                    max_bundle_objects=bundle_split_max_objects,
                 )
             )
 
@@ -3897,6 +3931,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if self.queue_protocol == "amqp":
                 if work_id:
                     self.api.work.add_expectations(work_id, expectations_number)
+                # The chunk is already dependency ordered; avoid worker requeue fanout.
+                queue_no_split = no_split or bundle_split_max_objects > 1
                 with self._publisher_lock:
                     try:
                         channel = self._get_publisher_channel()
@@ -3912,7 +3948,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                                 sequence=sequence,
                                 update=update,
                                 draft_id=draft_id,
-                                no_split=no_split,
+                                no_split=queue_no_split,
                             )
                         self._publisher_last_used_at = time.monotonic()
                     except AMQPError:
