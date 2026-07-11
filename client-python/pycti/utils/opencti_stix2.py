@@ -8,6 +8,7 @@ import re
 import time
 import traceback
 import uuid
+from contextlib import contextmanager
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
@@ -176,6 +177,8 @@ class OpenCTIStix2:
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
         self._external_reference_ids = LRUCache(maxsize=50000)
+        self._report_object_refs = LRUCache(maxsize=50000)
+        self._report_object_ref_dedupe_active = False
         self._readers = None
         self._stix_helpers = None
         self._internal_helpers = None
@@ -246,6 +249,14 @@ class OpenCTIStix2:
             description,
         )
 
+    @staticmethod
+    def _report_object_ref_cache_key(report_id, stix_object_or_relationship_id):
+        return (
+            "report_object_ref",
+            report_id,
+            stix_object_or_relationship_id,
+        )
+
     def _get_external_reference_generated_id(self, url, source_name, external_id):
         if not (
             (url is None or isinstance(url, str))
@@ -289,6 +300,42 @@ class OpenCTIStix2:
         if cache_key is not None:
             self.set_in_cache(cache_key, matches)
         return matches
+
+    def _add_report_object_ref_once(
+        self, report_id: str, stix_object_or_relationship_id: str
+    ) -> bool:
+        if not self._report_object_ref_dedupe_active:
+            return self.opencti.report.add_stix_object_or_stix_relationship(
+                id=report_id,
+                stixObjectOrStixRelationshipId=stix_object_or_relationship_id,
+            )
+
+        cache_key = (
+            self.opencti.get_draft_id(),
+            self._report_object_ref_cache_key(
+                report_id, stix_object_or_relationship_id
+            ),
+        )
+        if self._report_object_refs.get(cache_key) is not None:
+            return False
+
+        added = self.opencti.report.add_stix_object_or_stix_relationship(
+            id=report_id,
+            stixObjectOrStixRelationshipId=stix_object_or_relationship_id,
+        )
+        if added:
+            self._report_object_refs[cache_key] = True
+        return added
+
+    @contextmanager
+    def _report_object_ref_dedupe_scope(self):
+        self._report_object_refs.clear()
+        self._report_object_ref_dedupe_active = True
+        try:
+            yield
+        finally:
+            self._report_object_ref_dedupe_active = False
+            self._report_object_refs.clear()
 
     def _create_or_get_external_reference(
         self, generated_ref_id, source_name, url, external_id, description, file_objs
@@ -1954,9 +2001,9 @@ class OpenCTIStix2:
             # Add reports from external references
             for external_reference_id in external_references_ids:
                 if external_reference_id in reports:
-                    self.opencti.report.add_stix_object_or_stix_relationship(
-                        id=reports[external_reference_id]["id"],
-                        stixObjectOrStixRelationshipId=stix_object_result["id"],
+                    self._add_report_object_ref_once(
+                        reports[external_reference_id]["id"],
+                        stix_object_result["id"],
                     )
         return stix_object_results
 
@@ -2255,17 +2302,18 @@ class OpenCTIStix2:
         # Add external references
         for external_reference_id in external_references_ids:
             if external_reference_id in reports:
-                self.opencti.report.add_stix_object_or_stix_relationship(
-                    id=reports[external_reference_id]["id"],
-                    stixObjectOrStixRelationshipId=stix_relation_result["id"],
+                report_id = reports[external_reference_id]["id"]
+                self._add_report_object_ref_once(
+                    report_id,
+                    stix_relation_result["id"],
                 )
-                self.opencti.report.add_stix_object_or_stix_relationship(
-                    id=reports[external_reference_id]["id"],
-                    stixObjectOrStixRelationshipId=stix_relation["source_ref"],
+                self._add_report_object_ref_once(
+                    report_id,
+                    stix_relation["source_ref"],
                 )
-                self.opencti.report.add_stix_object_or_stix_relationship(
-                    id=reports[external_reference_id]["id"],
-                    stixObjectOrStixRelationshipId=stix_relation["target_ref"],
+                self._add_report_object_ref_once(
+                    report_id,
+                    stix_relation["target_ref"],
                 )
 
     def import_sighting(
@@ -4909,41 +4957,43 @@ class OpenCTIStix2:
         # Import every element in a specific order
         imported_elements = []
         too_large_elements_bundles = []
-        for bundle in bundles:
-            bundle_id = bundle["id"]
-            for item in bundle["objects"]:
-                # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
-                if (
-                    0
-                    < objects_max_refs
-                    <= OpenCTIStix2Utils.compute_object_refs_number(item)
-                ):
-                    too_large_element_message = "Too large element in bundle"
-                    worker_logger.warning(too_large_element_message)
-                    item["rejection_info"] = {
-                        "reject_reason": "ELEMENT_TOO_LARGE",
-                        "objects_max_refs": objects_max_refs,
-                    }
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": too_large_element_message,
-                            "source": "Element "
-                            + item["id"]
-                            + " is too large and couldn't be processed",
-                        },
-                    )
-                    too_large_elements_bundles.append(item)
-                else:
-                    failed_item = self.import_item_with_retries(
-                        item, update, types, work_id, bundle_id
-                    )
-                    if failed_item is not None:
-                        too_large_elements_bundles.append(failed_item)
-                    else:
-                        imported_elements.append(
-                            {"id": item["id"], "type": item["type"]}
+        # Report relation mutations can repeat heavily within one imported bundle.
+        with self._report_object_ref_dedupe_scope():
+            for bundle in bundles:
+                bundle_id = bundle["id"]
+                for item in bundle["objects"]:
+                    # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
+                    if (
+                        0
+                        < objects_max_refs
+                        <= OpenCTIStix2Utils.compute_object_refs_number(item)
+                    ):
+                        too_large_element_message = "Too large element in bundle"
+                        worker_logger.warning(too_large_element_message)
+                        item["rejection_info"] = {
+                            "reject_reason": "ELEMENT_TOO_LARGE",
+                            "objects_max_refs": objects_max_refs,
+                        }
+                        self.opencti.work.report_expectation(
+                            work_id,
+                            {
+                                "error": too_large_element_message,
+                                "source": "Element "
+                                + item["id"]
+                                + " is too large and couldn't be processed",
+                            },
                         )
+                        too_large_elements_bundles.append(item)
+                    else:
+                        failed_item = self.import_item_with_retries(
+                            item, update, types, work_id, bundle_id
+                        )
+                        if failed_item is not None:
+                            too_large_elements_bundles.append(failed_item)
+                        else:
+                            imported_elements.append(
+                                {"id": item["id"], "type": item["type"]}
+                            )
 
         return imported_elements, too_large_elements_bundles
 

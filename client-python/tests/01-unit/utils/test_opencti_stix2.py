@@ -368,6 +368,92 @@ def test_extract_embedded_relationships_keeps_different_external_reference_repor
     ]
 
 
+class _ReportRelationRecorder:
+    def __init__(self):
+        self.add_calls = []
+
+    def add_stix_object_or_stix_relationship(self, **kwargs):
+        self.add_calls.append((kwargs["id"], kwargs["stixObjectOrStixRelationshipId"]))
+        return True
+
+
+class _StixCoreRelationshipImportRecorder:
+    @staticmethod
+    def import_from_stix2(**kwargs):
+        stix_relation = kwargs["stixRelation"]
+        return {
+            "id": stix_relation["id"],
+            "entity_type": "stix-core-relationship",
+        }
+
+
+def _build_report_relation_importer():
+    opencti = SimpleNamespace(
+        report=_ReportRelationRecorder(),
+        stix_core_relationship=_StixCoreRelationshipImportRecorder(),
+        get_draft_id=lambda: "",
+    )
+    opencti_stix2 = OpenCTIStix2(opencti)
+    opencti_stix2.extract_embedded_relationships = lambda *_args, **_kwargs: {
+        "created_by": None,
+        "object_marking": None,
+        "object_label": [],
+        "open_vocabs": {},
+        "granted_refs": [],
+        "kill_chain_phases": [],
+        "object_refs": [],
+        "external_references": ["external-reference--shared"],
+        "reports": {"external-reference--shared": {"id": "report--shared"}},
+        "sample_refs": [],
+    }
+    return opencti, opencti_stix2
+
+
+def test_import_relationship_reuses_report_relation_adds_for_shared_endpoints():
+    opencti, opencti_stix2 = _build_report_relation_importer()
+
+    with opencti_stix2._report_object_ref_dedupe_scope():
+        for index in range(2):
+            opencti_stix2.import_relationship(
+                {
+                    "id": f"relationship--{index}",
+                    "type": "relationship",
+                    "source_ref": "malware--shared-source",
+                    "target_ref": "indicator--shared-target",
+                }
+            )
+
+    assert opencti.report.add_calls == [
+        ("report--shared", "relationship--0"),
+        ("report--shared", "malware--shared-source"),
+        ("report--shared", "indicator--shared-target"),
+        ("report--shared", "relationship--1"),
+    ]
+
+
+def test_import_relationship_report_relation_dedupe_scope_does_not_leak():
+    opencti, opencti_stix2 = _build_report_relation_importer()
+    relation = {
+        "id": "relationship--shared",
+        "type": "relationship",
+        "source_ref": "malware--shared-source",
+        "target_ref": "indicator--shared-target",
+    }
+
+    with opencti_stix2._report_object_ref_dedupe_scope():
+        opencti_stix2.import_relationship(relation)
+    opencti_stix2.import_relationship(relation)
+
+    assert opencti.report.add_calls == [
+        ("report--shared", "relationship--shared"),
+        ("report--shared", "malware--shared-source"),
+        ("report--shared", "indicator--shared-target"),
+        ("report--shared", "relationship--shared"),
+        ("report--shared", "malware--shared-source"),
+        ("report--shared", "indicator--shared-target"),
+    ]
+
+
 class _ExternalReferencePrefetchRecorder:
     def __init__(self):
         self.list_filters = []
