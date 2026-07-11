@@ -184,6 +184,26 @@ def _nested_ref_root(identifier):
     }
 
 
+def _relationship_root(identifier):
+    return {
+        "id": f"relationship--root-{identifier}",
+        "type": "uses",
+        "x_opencti_id": f"relationship-root-{identifier}",
+        "from": {
+            "id": f"source-{identifier}",
+            "standard_id": f"malware--source-{identifier}",
+            "entity_type": "Malware",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+        "to": {
+            "id": f"target-{identifier}",
+            "standard_id": f"malware--target-{identifier}",
+            "entity_type": "Malware",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+    }
+
+
 def _helper(relationships):
     helper = OpenCTIStix2.__new__(OpenCTIStix2)
     helper.opencti = SimpleNamespace(
@@ -1038,6 +1058,146 @@ def test_export_list_batches_nested_ref_target_reads_across_roots():
         "malware--2",
         "indicator--root-3",
         "malware--3",
+    ]
+
+
+def test_export_selected_batches_relationship_root_endpoint_work_across_roots():
+    helper = _helper([])
+    nested_ref_collection = _NestedRefRelationshipCollection({})
+    access_collection = _CountingAccessCollection()
+    lister = _CountingRelatedObjectLister(
+        {
+            f"{side}-{index}": {
+                "id": f"{side}-{index}",
+                "standard_id": f"malware--{side}-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+            for side in ("source", "target")
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError(
+            "batchable relationship-root endpoints should not use the reader"
+        )
+    )
+    entities = [_relationship_root(index) for index in range(1, 4)]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert access_collection.list_calls == 1
+    assert access_collection.kwargs[0]["filters"] == [
+        "source-1",
+        "target-1",
+        "source-2",
+        "target-2",
+        "source-3",
+        "target-3",
+    ]
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["relationship-root-1", "relationship-root-2", "relationship-root-3"],
+        ["source-1", "target-1", "source-2", "target-2", "source-3", "target-3"],
+    ]
+    assert lister.list_calls == 1
+    assert lister.filters == [
+        ["source-1", "target-1", "source-2", "target-2", "source-3", "target-3"]
+    ]
+    assert [item["id"] for item in result["objects"]] == [
+        "relationship--root-1",
+        "malware--source-1",
+        "malware--target-1",
+        "relationship--root-2",
+        "malware--source-2",
+        "malware--target-2",
+        "relationship--root-3",
+        "malware--source-3",
+        "malware--target-3",
+    ]
+
+
+def test_export_list_batches_relationship_root_endpoint_work_across_roots():
+    helper = _helper([])
+    nested_ref_collection = _NestedRefRelationshipCollection({})
+    access_collection = _CountingAccessCollection()
+    lister = _CountingRelatedObjectLister(
+        {
+            f"{side}-{index}": {
+                "id": f"{side}-{index}",
+                "standard_id": f"malware--{side}-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+            for side in ("source", "target")
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    helper.opencti.opencti_stix_object_or_stix_relationship = access_collection
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError(
+            "batchable relationship-root endpoints should not use the reader"
+        )
+    )
+    helper.export_entities_list = lambda **kwargs: [
+        _relationship_root(index) for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="stix-core-relationship", mode="full")
+
+    assert access_collection.list_calls == 1
+    assert access_collection.kwargs[0]["filters"] == [
+        "source-1",
+        "target-1",
+        "source-2",
+        "target-2",
+        "source-3",
+        "target-3",
+    ]
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["relationship-root-1", "relationship-root-2", "relationship-root-3"],
+        ["source-1", "target-1", "source-2", "target-2", "source-3", "target-3"],
+    ]
+    assert lister.list_calls == 1
+    assert lister.filters == [
+        ["source-1", "target-1", "source-2", "target-2", "source-3", "target-3"]
+    ]
+    assert [item["id"] for item in result["objects"]] == [
+        "relationship--root-1",
+        "malware--source-1",
+        "malware--target-1",
+        "relationship--root-2",
+        "malware--source-2",
+        "malware--target-2",
+        "relationship--root-3",
+        "malware--source-3",
+        "malware--target-3",
     ]
 
 

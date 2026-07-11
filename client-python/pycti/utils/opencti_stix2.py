@@ -2921,6 +2921,21 @@ class OpenCTIStix2:
 
         related_object_ids = []
         seen_related_object_ids = set()
+
+        def add_unseen_related_object_id(entity_id):
+            if (
+                entity_id not in related_object_access_cache
+                and entity_id not in seen_related_object_ids
+            ):
+                seen_related_object_ids.add(entity_id)
+                related_object_ids.append(entity_id)
+
+        for entity in entities_list:
+            for endpoint in ("from", "to"):
+                entity_object = entity.get(endpoint)
+                if entity_object is not None:
+                    add_unseen_related_object_id(entity_object["id"])
+
         seen_relationship_ids = set()
         for relationships_by_entity_id in (
             stix_core_relationships_by_entity_id,
@@ -2936,12 +2951,7 @@ class OpenCTIStix2:
                     seen_relationship_ids.add(relationship_id)
                     for endpoint in ("from", "to"):
                         endpoint_id = stix_relationship[endpoint]["id"]
-                        if (
-                            endpoint_id not in related_object_access_cache
-                            and endpoint_id not in seen_related_object_ids
-                        ):
-                            seen_related_object_ids.add(endpoint_id)
-                            related_object_ids.append(endpoint_id)
+                        add_unseen_related_object_id(endpoint_id)
 
         for start_index in range(
             0, len(related_object_ids), EXPORT_PREFETCH_BATCH_SIZE
@@ -3001,6 +3011,13 @@ class OpenCTIStix2:
         for entity in entities_list:
             for entity_object in entity.get("objects") or []:
                 add_uncached_entity_object(entity_object)
+            for endpoint in ("from", "to"):
+                entity_object = entity.get(endpoint)
+                if (
+                    entity_object is not None
+                    and related_object_access_cache.get(entity_object["id"]) is True
+                ):
+                    add_uncached_entity_object(entity_object)
 
         if stix_nested_ref_relationships_by_entity_id is not None:
             nested_ref_groups = stix_nested_ref_relationships_by_entity_id.values()
@@ -3302,6 +3319,12 @@ class OpenCTIStix2:
         result = []
         objects_to_get = []
         already_queued_reference_values = set()
+
+        def queue_known_related_object(entity_object):
+            objects_to_get.append(entity_object)
+            if "standard_id" in entity_object:
+                already_queued_reference_values.add(entity_object["standard_id"])
+
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # CreatedByRef
@@ -3493,7 +3516,7 @@ class OpenCTIStix2:
             ):
                 entity["sighting_of_ref"] = entity["from"]["standard_id"]
                 # handle from and to separately like Stix Core Relationship and call 2 requests
-                objects_to_get.append(
+                queue_known_related_object(
                     entity["from"]
                 )  # what happen with unauthorized objects ?
 
@@ -3501,7 +3524,7 @@ class OpenCTIStix2:
                 entity["to"]["id"], access_filter, related_object_access_cache
             ):
                 entity["where_sighted_refs"] = [entity["to"]["standard_id"]]
-                objects_to_get.append(entity["to"])
+                queue_known_related_object(entity["to"])
 
             del entity["from"]
             del entity["to"]
@@ -3514,7 +3537,7 @@ class OpenCTIStix2:
             ):
                 entity["source_ref"] = entity["from"]["standard_id"]
                 # handle from and to separately like Stix Core Relationship and call 2 requests
-                objects_to_get.append(
+                queue_known_related_object(
                     entity["from"]
                 )  # what happen with unauthorized objects ?
             del entity["from"]
@@ -3523,7 +3546,7 @@ class OpenCTIStix2:
                 entity["to"]["id"], access_filter, related_object_access_cache
             ):
                 entity["target_ref"] = entity["to"]["standard_id"]
-                objects_to_get.append(entity["to"])
+                queue_known_related_object(entity["to"])
             del entity["to"]
         # Stix Domain Object
         if "attribute_abstract" in entity:
@@ -3608,10 +3631,7 @@ class OpenCTIStix2:
             )
         for stix_nested_ref_relationship in stix_nested_ref_relationships:
             if "standard_id" in stix_nested_ref_relationship["to"]:
-                objects_to_get.append(stix_nested_ref_relationship["to"])
-                already_queued_reference_values.add(
-                    stix_nested_ref_relationship["to"]["standard_id"]
-                )
+                queue_known_related_object(stix_nested_ref_relationship["to"])
                 # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
                 # will be replaced by a proper toStix converter in the back
                 if not MultipleRefRelationship.has_value(
