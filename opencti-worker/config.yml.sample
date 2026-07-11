@@ -9,3 +9,4 @@ worker:
   telemetry_enabled: false
   objects_max_refs: 0
   bundle_split_max_objects: 100
+  bundle_split_max_bytes: 1000000

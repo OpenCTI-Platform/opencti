@@ -29,6 +29,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     bundles_processing_time_gauge: Any
     objects_max_refs: int
     bundle_split_max_objects: int
+    bundle_split_max_bytes: int
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -179,6 +180,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                     False,
                                     event_version,
                                     max_bundle_objects=self.bundle_split_max_objects,
+                                    max_bundle_bytes=self.bundle_split_max_bytes,
                                 )
                             )
                             # Add expectations to the work

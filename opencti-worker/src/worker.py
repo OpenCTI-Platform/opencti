@@ -177,6 +177,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             or self.bundle_split_max_objects <= 0
         ):
             raise ValueError("bundle_split_max_objects must be a positive integer")
+        self.bundle_split_max_bytes = get_config_variable(
+            "WORKER_BUNDLE_SPLIT_MAX_BYTES",
+            ["worker", "bundle_split_max_bytes"],
+            config,
+            True,
+            1000000,
+        )
+        if (
+            isinstance(self.bundle_split_max_bytes, bool)
+            or self.bundle_split_max_bytes <= 0
+        ):
+            raise ValueError("bundle_split_max_bytes must be a positive integer")
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -300,6 +312,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                             self.bundle_split_max_objects,
+                            self.bundle_split_max_bytes,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]

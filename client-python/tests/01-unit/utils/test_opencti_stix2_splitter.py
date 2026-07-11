@@ -199,6 +199,89 @@ def test_split_bundle_groups_only_same_dependency_levels():
     assert [split_bundle["x_opencti_seq"] for split_bundle in bundles] == [1, 2]
 
 
+def test_split_bundle_respects_max_serialized_bytes_for_grouped_objects():
+    stix_splitter = OpenCTIStix2Splitter()
+    objects = [
+        {
+            "id": f"indicator--{index}",
+            "type": "indicator",
+            "description": "x" * 128,
+        }
+        for index in range(3)
+    ]
+    sized_objects = [{**item, "nb_deps": 1} for item in objects]
+    max_bundle_bytes = (
+        len(
+            OpenCTIStix2Splitter.stix2_create_bundle(
+                "bundle--byte-chunked",
+                1,
+                sized_objects,
+                True,
+            ).encode("utf-8")
+        )
+        - 1
+    )
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--byte-chunked",
+        "objects": objects,
+    }
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        json.dumps(bundle),
+        use_json=True,
+        max_bundle_objects=3,
+        max_bundle_bytes=max_bundle_bytes,
+    )
+
+    assert expectations == 3
+    assert [
+        [item["id"] for item in json.loads(split_bundle)["objects"]]
+        for split_bundle in bundles
+    ] == [["indicator--0", "indicator--1"], ["indicator--2"]]
+    assert all(
+        len(split_bundle.encode("utf-8")) <= max_bundle_bytes
+        for split_bundle in bundles
+    )
+
+
+def test_split_bundle_emits_single_oversized_object_as_is():
+    stix_splitter = OpenCTIStix2Splitter()
+    obj = {
+        "id": "indicator--oversized",
+        "type": "indicator",
+        "description": "x" * 128,
+    }
+    max_bundle_bytes = (
+        len(
+            OpenCTIStix2Splitter.stix2_create_bundle(
+                "bundle--oversized",
+                1,
+                [{**obj, "nb_deps": 1}],
+                True,
+            ).encode("utf-8")
+        )
+        - 1
+    )
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        json.dumps(
+            {
+                "type": "bundle",
+                "id": "bundle--oversized",
+                "objects": [obj],
+            }
+        ),
+        use_json=True,
+        max_bundle_objects=3,
+        max_bundle_bytes=max_bundle_bytes,
+    )
+
+    assert expectations == 1
+    assert len(bundles) == 1
+    assert len(bundles[0].encode("utf-8")) > max_bundle_bytes
+
+
 def test_split_bundle_reuses_external_reference_ids_across_objects(monkeypatch):
     generate_id_calls = []
 

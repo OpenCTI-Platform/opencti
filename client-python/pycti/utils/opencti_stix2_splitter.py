@@ -269,6 +269,7 @@ class OpenCTIStix2Splitter:
         event_version=None,
         cleanup_inconsistent_bundle=False,
         max_bundle_objects=1,
+        max_bundle_bytes=None,
     ) -> Tuple[int, list, list]:
         """Split a valid STIX2 bundle into a list of bundles.
 
@@ -282,6 +283,9 @@ class OpenCTIStix2Splitter:
         :type cleanup_inconsistent_bundle: bool
         :param max_bundle_objects: maximum same-dependency-level objects per bundle
         :type max_bundle_objects: int
+        :param max_bundle_bytes: maximum serialized bytes per bundle when more than
+            one object can be grouped; a single oversized object is emitted as-is
+        :type max_bundle_bytes: int or None
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
@@ -291,6 +295,12 @@ class OpenCTIStix2Splitter:
             or max_bundle_objects <= 0
         ):
             raise ValueError("max_bundle_objects must be a positive integer")
+        if max_bundle_bytes is not None and (
+            isinstance(max_bundle_bytes, bool)
+            or not isinstance(max_bundle_bytes, int)
+            or max_bundle_bytes <= 0
+        ):
+            raise ValueError("max_bundle_bytes must be a positive integer")
 
         if use_json:
             try:
@@ -335,36 +345,85 @@ class OpenCTIStix2Splitter:
         number_expectations = 0
         chunk_items = []
         chunk_dep_size = None
+
+        def append_chunk(bundle_seq, items):
+            serialized_bundle = self.stix2_create_bundle(
+                bundle_data["id"], bundle_seq, items, True, event_version
+            )
+            # json.dumps() keeps ensure_ascii=True, so string length is byte length.
+            if (
+                max_bundle_bytes is None
+                or len(items) == 1
+                or len(serialized_bundle) <= max_bundle_bytes
+            ):
+                bundles.append(
+                    serialized_bundle
+                    if use_json
+                    else self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        items,
+                        False,
+                        event_version,
+                    )
+                )
+                return
+
+            empty_bundle_size = len(
+                self.stix2_create_bundle(
+                    bundle_data["id"], bundle_seq, [], True, event_version
+                )
+            )
+            bounded_items = []
+            bounded_serialized_bytes = empty_bundle_size
+            for item in items:
+                item_serialized_bytes = len(json.dumps(item))
+                projected_size = (
+                    bounded_serialized_bytes
+                    + (2 if bounded_items else 0)
+                    + item_serialized_bytes
+                )
+                if bounded_items and projected_size > max_bundle_bytes:
+                    bundles.append(
+                        self.stix2_create_bundle(
+                            bundle_data["id"],
+                            bundle_seq,
+                            bounded_items,
+                            use_json,
+                            event_version,
+                        )
+                    )
+                    bounded_items = []
+                    bounded_serialized_bytes = empty_bundle_size
+                bounded_items.append(item)
+                if len(bounded_items) > 1:
+                    bounded_serialized_bytes += 2
+                bounded_serialized_bytes += item_serialized_bytes
+            if bounded_items:
+                bundles.append(
+                    self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        bounded_items,
+                        use_json,
+                        event_version,
+                    )
+                )
+
         for element in self.elements:
             number_expectations += 1
             if chunk_items and (
                 element["nb_deps"] != chunk_dep_size
                 or len(chunk_items) >= max_bundle_objects
             ):
-                bundles.append(
-                    self.stix2_create_bundle(
-                        bundle_data["id"],
-                        chunk_dep_size,
-                        chunk_items,
-                        use_json,
-                        event_version,
-                    )
-                )
+                append_chunk(chunk_dep_size, chunk_items)
                 chunk_items = []
             if not chunk_items:
                 chunk_dep_size = element["nb_deps"]
             chunk_items.append(element)
 
         if chunk_items:
-            bundles.append(
-                self.stix2_create_bundle(
-                    bundle_data["id"],
-                    chunk_dep_size,
-                    chunk_items,
-                    use_json,
-                    event_version,
-                )
-            )
+            append_chunk(chunk_dep_size, chunk_items)
 
         return (
             number_expectations,

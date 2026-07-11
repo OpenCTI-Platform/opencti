@@ -121,18 +121,22 @@ class _FakeConnection:
         return self.channel_instance
 
 
-def _build_body(object_count: int) -> str:
+def _build_body(object_count: int, payload_bytes: int) -> str:
+    payload = "x" * payload_bytes
+    objects = []
+    for index in range(object_count):
+        item = {
+            "id": f"indicator--{index}",
+            "type": "indicator",
+            "name": f"benchmark-{index}",
+        }
+        if payload_bytes > 0:
+            item["description"] = payload
+        objects.append(item)
     bundle = {
         "type": "bundle",
         "id": "bundle--worker-requeue-benchmark",
-        "objects": [
-            {
-                "id": f"indicator--{index}",
-                "type": "indicator",
-                "name": f"benchmark-{index}",
-            }
-            for index in range(object_count)
-        ],
+        "objects": objects,
     }
     return json.dumps(
         {
@@ -146,7 +150,7 @@ def _build_body(object_count: int) -> str:
     )
 
 
-def _build_handler(max_bundle_objects: int):
+def _build_handler(max_bundle_objects: int, max_bundle_bytes: int):
     handler = object.__new__(push_handler.PushHandler)
     handler.logger = _NoopLogger()
     handler.push_exchange = "exchange"
@@ -158,16 +162,20 @@ def _build_handler(max_bundle_objects: int):
     handler.bundles_processing_time_gauge = _NoopMetric()
     handler.objects_max_refs = 0
     handler.bundle_split_max_objects = max_bundle_objects
+    handler.bundle_split_max_bytes = max_bundle_bytes
     handler.api = _FakeApi()
     return handler
 
 
 def _run_once(
-    object_count: int, max_bundle_objects: int
-) -> tuple[float, int, int, int, int, int]:
+    object_count: int,
+    payload_bytes: int,
+    max_bundle_objects: int,
+    max_bundle_bytes: int,
+) -> tuple[float, int, int, int, int, int, int, int]:
     published = []
-    handler = _build_handler(max_bundle_objects)
-    body = _build_body(object_count)
+    handler = _build_handler(max_bundle_objects, max_bundle_bytes)
+    body = _build_body(object_count, payload_bytes)
     original_blocking_connection = push_handler.pika.BlockingConnection
     push_handler.pika.BlockingConnection = lambda _parameters: _FakeConnection(
         published
@@ -190,11 +198,12 @@ def _run_once(
 
     requeued_object_count = 0
     no_split_count = 0
+    raw_bundle_sizes = []
     for message_body in published:
         message = json.loads(message_body)
-        requeued_bundle = json.loads(
-            base64.b64decode(message["content"]).decode("utf-8")
-        )
+        raw_bundle = base64.b64decode(message["content"]).decode("utf-8")
+        raw_bundle_sizes.append(len(raw_bundle.encode("utf-8")))
+        requeued_bundle = json.loads(raw_bundle)
         requeued_object_count += len(requeued_bundle["objects"])
         no_split_count += int(bool(message.get("no_split", False)))
 
@@ -208,19 +217,34 @@ def _run_once(
         sum(len(message.encode("utf-8")) for message in published),
         requeued_object_count,
         no_split_count,
+        max(raw_bundle_sizes),
+        max(len(message.encode("utf-8")) for message in published),
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--objects", type=int, default=10000)
+    parser.add_argument("--payload-bytes", type=int, default=0)
     parser.add_argument("--max-bundle-objects", type=int, default=100)
+    parser.add_argument("--max-bundle-bytes", type=int, default=1000000)
     parser.add_argument("--repeat", type=int, default=5)
     args = parser.parse_args()
 
-    _run_once(min(args.objects, 100), args.max_bundle_objects)
+    _run_once(
+        min(args.objects, 100),
+        args.payload_bytes,
+        args.max_bundle_objects,
+        args.max_bundle_bytes,
+    )
     samples = [
-        _run_once(args.objects, args.max_bundle_objects) for _ in range(args.repeat)
+        _run_once(
+            args.objects,
+            args.payload_bytes,
+            args.max_bundle_objects,
+            args.max_bundle_bytes,
+        )
+        for _ in range(args.repeat)
     ]
     elapsed_samples = [sample[0] for sample in samples]
     peak_samples = [sample[1] for sample in samples]
@@ -228,10 +252,14 @@ def main() -> None:
     body_byte_samples = [sample[3] for sample in samples]
     object_samples = [sample[4] for sample in samples]
     no_split_samples = [sample[5] for sample in samples]
+    max_raw_bundle_samples = [sample[6] for sample in samples]
+    max_body_samples = [sample[7] for sample in samples]
 
     result = {
         "objects": args.objects,
+        "payload_bytes": args.payload_bytes,
         "max_bundle_objects": args.max_bundle_objects,
+        "max_bundle_bytes": args.max_bundle_bytes,
         "repeat": args.repeat,
         "median_runtime_ms": round(statistics.median(elapsed_samples) * 1000, 3),
         "min_runtime_ms": round(min(elapsed_samples) * 1000, 3),
@@ -241,6 +269,8 @@ def main() -> None:
         "median_body_bytes": int(statistics.median(body_byte_samples)),
         "median_requeued_object_count": int(statistics.median(object_samples)),
         "median_no_split_count": int(statistics.median(no_split_samples)),
+        "median_max_raw_bundle_bytes": int(statistics.median(max_raw_bundle_samples)),
+        "median_max_body_bytes": int(statistics.median(max_body_samples)),
     }
     print(json.dumps(result, sort_keys=True))
 

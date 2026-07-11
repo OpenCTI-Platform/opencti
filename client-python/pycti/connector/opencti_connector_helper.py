@@ -67,6 +67,9 @@ BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
 DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS = 100
 """Maximum same-dependency-level objects to publish in one queue message."""
 
+DEFAULT_BUNDLE_SPLIT_MAX_BYTES = 1000000
+"""Maximum serialized STIX bundle bytes to publish in one queue message."""
+
 S3_DELETE_BATCH_SIZE = 1000
 """Maximum number of object keys accepted by one S3 bulk delete request."""
 
@@ -2168,6 +2171,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         if self.bundle_split_max_objects <= 0:
             raise ValueError("CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS must be > 0")
+        self.bundle_split_max_bytes = get_config_variable(
+            "CONNECTOR_BUNDLE_SPLIT_MAX_BYTES",
+            ["connector", "bundle_split_max_bytes"],
+            config,
+            isNumber=True,
+            default=DEFAULT_BUNDLE_SPLIT_MAX_BYTES,
+        )
+        if (
+            isinstance(self.bundle_split_max_bytes, bool)
+            or self.bundle_split_max_bytes <= 0
+        ):
+            raise ValueError("CONNECTOR_BUNDLE_SPLIT_MAX_BYTES must be > 0")
         self.bundle_send_to_directory = get_config_variable(
             "CONNECTOR_SEND_TO_DIRECTORY",
             ["connector", "send_to_directory"],
@@ -3735,6 +3750,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             per queued chunk (default: self.bundle_split_max_objects for AMQP
             queue sends, 1 otherwise)
         :type bundle_split_max_objects: int, optional
+        :param bundle_split_max_bytes: Maximum serialized STIX bundle bytes per
+            queued chunk (default: self.bundle_split_max_bytes for AMQP queue
+            sends, no byte bound otherwise)
+        :type bundle_split_max_bytes: int, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -3775,6 +3794,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 )
                 if bundle_send_to_queue and self.queue_protocol == "amqp"
                 else 1
+            )
+        bundle_split_max_bytes = kwargs.get("bundle_split_max_bytes")
+        if bundle_split_max_bytes is None:
+            bundle_split_max_bytes = (
+                getattr(
+                    self,
+                    "bundle_split_max_bytes",
+                    DEFAULT_BUNDLE_SPLIT_MAX_BYTES,
+                )
+                if bundle_send_to_queue and self.queue_protocol == "amqp"
+                else None
             )
 
         # In case of enrichment ingestion, ensure the sharing if needed
@@ -3910,6 +3940,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 or bundle_split_max_objects <= 0
             ):
                 raise ValueError("bundle_split_max_objects must be a positive integer")
+            if bundle_split_max_bytes is not None and (
+                isinstance(bundle_split_max_bytes, bool)
+                or not isinstance(bundle_split_max_bytes, int)
+                or bundle_split_max_bytes <= 0
+            ):
+                raise ValueError("bundle_split_max_bytes must be a positive integer")
             stix2_splitter = OpenCTIStix2Splitter()
             expectations_number, _, bundles = (
                 stix2_splitter.split_bundle_with_expectations(
@@ -3918,6 +3954,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     event_version=event_version,
                     cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
                     max_bundle_objects=bundle_split_max_objects,
+                    max_bundle_bytes=bundle_split_max_bytes,
                 )
             )
 

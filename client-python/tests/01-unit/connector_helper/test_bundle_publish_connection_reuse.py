@@ -7,6 +7,7 @@ import pika
 from pika.exceptions import StreamLostError
 
 from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
+from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
 class _NoopLogger:
@@ -109,6 +110,7 @@ def _helper():
     helper._publisher_channel = None
     helper._publisher_heartbeat = 10
     helper._publisher_last_used_at = None
+    helper.bundle_split_max_bytes = 1000000
     return helper
 
 
@@ -245,4 +247,57 @@ def test_send_stix2_bundle_publishes_bounded_chunks_with_item_expectations(monke
     assert len(bundles) == 2
     assert helper.api.work.add_expectations_calls == [("work--1", 3)]
     assert published_object_counts == [2, 1]
+    assert [message["no_split"] for message in messages] == [True, True]
+
+
+def test_send_stix2_bundle_publishes_byte_bounded_chunks(monkeypatch):
+    connections = []
+
+    def create_connection(_parameters):
+        connection = _FakeConnection()
+        connections.append(connection)
+        return connection
+
+    monkeypatch.setattr(pika, "BlockingConnection", create_connection)
+    helper = _helper()
+    helper.bundle_split_max_objects = 3
+    objects = [
+        {
+            "id": f"indicator--{index}",
+            "type": "indicator",
+            "description": "x" * 128,
+        }
+        for index in range(3)
+    ]
+    sized_objects = [{**item, "nb_deps": 1} for item in objects]
+    helper.bundle_split_max_bytes = (
+        len(
+            OpenCTIStix2Splitter.stix2_create_bundle(
+                "bundle--byte-chunked",
+                1,
+                sized_objects,
+                True,
+            ).encode("utf-8")
+        )
+        - 1
+    )
+    bundle = json.dumps(
+        {
+            "type": "bundle",
+            "id": "bundle--byte-chunked",
+            "objects": objects,
+        }
+    )
+
+    bundles = helper.send_stix2_bundle(bundle)
+
+    messages = [
+        json.loads(published["body"])
+        for published in connections[0].channel_instance.published
+    ]
+    assert len(bundles) == 2
+    assert all(
+        len(split_bundle.encode("utf-8")) <= helper.bundle_split_max_bytes
+        for split_bundle in bundles
+    )
     assert [message["no_split"] for message in messages] == [True, True]

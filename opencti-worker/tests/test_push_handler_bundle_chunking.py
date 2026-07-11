@@ -100,7 +100,7 @@ class _FakeConnection:
         return self.channel_instance
 
 
-def _build_handler(max_bundle_objects=2):
+def _build_handler(max_bundle_objects=2, max_bundle_bytes=1000000):
     handler = object.__new__(push_handler.PushHandler)
     handler.logger = _NoopLogger()
     handler.push_exchange = "exchange"
@@ -112,19 +112,22 @@ def _build_handler(max_bundle_objects=2):
     handler.bundles_processing_time_gauge = _NoopMetric()
     handler.objects_max_refs = 0
     handler.bundle_split_max_objects = max_bundle_objects
+    handler.bundle_split_max_bytes = max_bundle_bytes
     handler.api = _FakeApi()
     return handler
 
 
-def _build_body():
-    bundle = {
-        "type": "bundle",
-        "id": "bundle--worker-chunking",
-        "objects": [
+def _build_body(objects=None):
+    if objects is None:
+        objects = [
             {"id": "indicator--1", "type": "indicator"},
             {"id": "indicator--2", "type": "indicator"},
             {"id": "indicator--3", "type": "indicator"},
-        ],
+        ]
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--worker-chunking",
+        "objects": objects,
     }
     return json.dumps(
         {
@@ -138,16 +141,18 @@ def _build_body():
     )
 
 
-def _run_handler(monkeypatch, max_bundle_objects=2):
+def _run_handler(
+    monkeypatch, max_bundle_objects=2, max_bundle_bytes=1000000, objects=None
+):
     published = []
     monkeypatch.setattr(
         push_handler.pika,
         "BlockingConnection",
         lambda _parameters: _FakeConnection(published),
     )
-    handler = _build_handler(max_bundle_objects)
+    handler = _build_handler(max_bundle_objects, max_bundle_bytes)
 
-    result = handler.handle_message(_build_body())
+    result = handler.handle_message(_build_body(objects))
 
     messages = [json.loads(body) for body in published]
     object_counts = [
@@ -176,3 +181,43 @@ def test_handle_message_preserves_one_object_handoff_when_chunking_is_disabled(
     assert handler.api.work.add_expectations_calls == [("work--1", 3)]
     assert object_counts == [1, 1, 1]
     assert all("no_split" not in message for message in messages)
+
+
+def test_handle_message_requeues_byte_bounded_chunks(monkeypatch):
+    objects = [
+        {
+            "id": f"indicator--{index}",
+            "type": "indicator",
+            "description": "x" * 128,
+        }
+        for index in range(3)
+    ]
+    sized_objects = [{**item, "nb_deps": 1} for item in objects]
+    max_bundle_bytes = (
+        len(
+            push_handler.OpenCTIStix2Splitter.stix2_create_bundle(
+                "bundle--worker-chunking",
+                1,
+                sized_objects,
+                True,
+            ).encode("utf-8")
+        )
+        - 1
+    )
+
+    _, result, messages, object_counts = _run_handler(
+        monkeypatch,
+        max_bundle_objects=3,
+        max_bundle_bytes=max_bundle_bytes,
+        objects=objects,
+    )
+    raw_bundles = [
+        base64.b64decode(message["content"]).decode("utf-8") for message in messages
+    ]
+
+    assert result == "ack"
+    assert object_counts == [2, 1]
+    assert all(
+        len(bundle.encode("utf-8")) <= max_bundle_bytes for bundle in raw_bundles
+    )
+    assert [message["no_split"] for message in messages] == [True, True]
