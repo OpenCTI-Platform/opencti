@@ -16,7 +16,7 @@ from pycti.utils.opencti_stix2_utils import (
 
 OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
-supported_types = (
+supported_types = frozenset(
     SUPPORTED_STIX_ENTITY_OBJECTS  # entities
     + SUPPORTED_INTERNAL_OBJECTS  # internals
     + list(STIX_CYBER_OBSERVABLE_MAPPING.keys())  # observables
@@ -33,8 +33,8 @@ def is_id_supported(key):
     :return: True if the ID type is supported, False otherwise
     :rtype: bool
     """
-    if "--" in key:
-        id_type = key.split("--")[0]
+    id_type, separator, _ = key.partition("--")
+    if separator:
         return id_type in supported_types
     # If not a stix id, don't try to filter
     return True

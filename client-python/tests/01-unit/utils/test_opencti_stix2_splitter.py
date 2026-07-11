@@ -3,7 +3,7 @@ import uuid
 
 from stix2 import Report
 
-from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter, is_id_supported
 
 
 def test_split_bundle():
@@ -12,6 +12,12 @@ def test_split_bundle():
         content = file.read()
     expectations, _, bundles = stix_splitter.split_bundle_with_expectations(content)
     assert expectations == 7016
+
+
+def test_is_id_supported_preserves_stix_and_non_stix_behavior():
+    assert is_id_supported("malware--known") is True
+    assert is_id_supported("unsupported--unknown") is False
+    assert is_id_supported("not-a-stix-id") is True
 
 
 def test_split_test_bundle():
