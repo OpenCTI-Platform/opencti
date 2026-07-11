@@ -5,17 +5,18 @@ import LogoText from '../static/images/logo_text_light.svg';
 import LogoCollapsed from '../static/images/logo_light.svg';
 import { hexToRGB } from '../utils/Colors';
 import { alpha, darken, lighten } from '@mui/material';
+import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
+export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--color-elevation-background-layer-0'];
 export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
-export const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
-const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
-const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';
-const THEME_LIGHT_DEFAULT_TEXT = '#18191B';
-export const THEME_LIGHT_DEFAULT_PAPER = '#ffffff';
-const THEME_LIGHT_DEFAULT_NAV = '#ffffff';
+export const THEME_LIGHT_DEFAULT_PRIMARY = FDS.colors.light['--color-filigran-brand-primary'];
+const THEME_LIGHT_DEFAULT_SECONDARY = FDS.colors.light['--color-filigran-tonic-primary'];
+const THEME_LIGHT_DEFAULT_ACCENT = FDS.colors.light['--color-elevation-background-layer-3'];
+const THEME_LIGHT_DEFAULT_TEXT = FDS.colors.light['--color-text-default-primary'];
+export const THEME_LIGHT_DEFAULT_PAPER = FDS.colors.light['--color-elevation-background-layer-1'];
+const THEME_LIGHT_DEFAULT_NAV = FDS.colors.light['--color-elevation-surface-heading-layer-0'];
 export const THEME_LIGHT_DIALOG_BACKGROUND = '#FFFFFF';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
@@ -34,7 +35,7 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
-  text_color = THEME_LIGHT_DEFAULT_TEXT,
+  text_color: string = THEME_LIGHT_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -43,20 +44,20 @@ const ThemeLight = (
     mode: 'light',
     common: { white: '#ffffff', grey: '#494A50', lightGrey: '#AFB0B6' },
     error: {
-      main: '#F14337',
-      dark: '#881106',
+      main: FDS.colors.light['--color-feedback-error-primary'],
+      dark: FDS.colors.light['--color-feedback-error-tertiary'],
     },
     warn: {
-      main: '#E6700F',
+      main: FDS.colors.light['--color-feedback-warning-primary'],
     },
     dangerZone: {
-      main: '#E51E10',
-      light: '#F8958C',
-      dark: '#881106',
+      main: FDS.colors.light['--color-feedback-error-primary'],
+      light: FDS.colors.light['--color-feedback-error-secondary'],
+      dark: FDS.colors.light['--color-feedback-error-tertiary'],
       contrastText: '#000000',
-      text: { primary: '#881106' },
+      text: { primary: FDS.colors.light['--color-feedback-error-tertiary'] },
     },
-    success: { main: '#1CA55E', dark: '#0D7E39' },
+    success: { main: FDS.colors.light['--color-feedback-success-primary'], dark: FDS.colors.light['--color-feedback-success-tertiary'] },
     primary: { main: primary || THEME_LIGHT_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#7587FF' },
     secondary: { main: secondary || THEME_LIGHT_DEFAULT_SECONDARY },
     gradient: { main: '#00BD94' },
@@ -73,9 +74,9 @@ const ThemeLight = (
     },
     chip: { main: '#000000' },
     ai: {
-      main: '#5E1AD5',
-      light: '#D6C2FA',
-      dark: '#3C108C',
+      main: FDS.colors.light['--color-filigran-ia-main'],
+      light: FDS.colors.light['--color-filigran-ia-tertiary'],
+      dark: FDS.colors.light['--color-filigran-ia-secondary'],
       contrastText: '#000000',
       background: 'rgba(221, 225, 254, 0.94)',
     },
@@ -119,113 +120,123 @@ const ThemeLight = (
       text: '#18191B',
     },
     severity: {
-      critical: '#EE3838',
-      high: '#E6700F',
-      medium: '#E1B823',
-      low: '#16AD34',
-      info: '#1565c0',
+      critical: FDS.colors.light['--color-feedback-error-primary'],
+      high: FDS.colors.light['--color-feedback-warning-primary'],
+      medium: FDS.colors.light['--color-feedback-alert-primary'],
+      low: FDS.colors.light['--color-feedback-success-primary'],
+      info: FDS.colors.light['--color-feedback-info-primary'],
       none: '#424242',
       default: '#DDE1FE',
     },
+    // This block used to be hand-copied from Figma exports — every value
+    // below is now sourced from the generated FDS bridge (fds-tokens.generated.ts).
+    // Where no confident FDS equivalent exists, the original hardcoded value
+    // is kept as-is; see fds-migration/TOKEN-MAPPING.md for the full rationale.
     designSystem: {
       primary: {
-        main: '#0015A8',
-        light: '#7587FF',
-        dark: '#000842',
+        main: FDS.colors.light['--color-filigran-brand-primary'],
+        light: FDS.colors.light['--color-filigran-brand-secondary'],
+        dark: FDS.colors.light['--color-filigran-brand-tertiary'],
       },
+      // No confident FDS match for light/dark shades (tonic doesn't vary by
+      // mode and its secondary/tertiary tiers don't match these old values) -
+      // only `main` is wired, left as-is otherwise.
       secondary: {
-        main: '#00BD94',
+        main: FDS.colors.light['--color-filigran-tonic-primary'],
         light: '#74E9CA',
         dark: '#0A8268',
       },
       destructive: {
-        main: '#E51E10',
-        light: '#F8958C',
-        dark: '#881106',
+        main: FDS.colors.light['--color-feedback-error-primary'],
+        light: FDS.colors.light['--color-feedback-error-secondary'],
+        dark: FDS.colors.light['--color-feedback-error-tertiary'],
       },
       ia: {
-        main: '#5E1AD5',
-        light: '#D6C2FA',
-        dark: '#3C108C',
+        main: FDS.colors.light['--color-filigran-ia-main'],
+        light: FDS.colors.light['--color-filigran-ia-tertiary'],
+        dark: FDS.colors.light['--color-filigran-ia-secondary'],
       },
       background: {
-        main: '#ECECF2',
+        main: THEME_LIGHT_DEFAULT_BACKGROUND,
+        // bg1-bg4/disabled: no confident 1:1 FDS token found, left as-is.
         bg1: '#F7F7F7',
         bg2: '#FFFFFF',
         bg3: '#E4E4E4',
         bg4: '#DDE1FE',
         disabled: '#DFDFDF',
       },
+      // No confident FDS token found for any of these three, left as-is.
       border: {
         main: '#D2D2D2',
         border1: '#C2C2C2',
         border2: '#999797',
       },
       gradient: {
-        background: 'linear-gradient(100.35deg, #ECECF2 0%, #F7F7F7 100%)',
-        ia: 'linear-gradient(90deg, #3C108C 0.67%, #5E1AD5 100.67%)',
-        focus: 'linear-gradient(90deg, #0015A8 -3.68%, #00BD94 106.62%)',
+        background: FDS.gradients.light['--gradient-background'],
+        ia: FDS.gradients.light['--gradient-ia'],
+        focus: FDS.gradients.light['--gradient-focus'],
       },
       alert: {
         info: {
-          primary: '#00719E',
-          secondary: '#2AB3E0',
+          primary: FDS.colors.light['--color-feedback-info-primary'],
+          secondary: FDS.colors.light['--color-feedback-info-secondary'],
         },
         success: {
-          primary: '#1CA55E',
-          secondary: '#4CD990',
-          tertiary: '#0D7E39',
+          primary: FDS.colors.light['--color-feedback-success-primary'],
+          secondary: FDS.colors.light['--color-feedback-success-secondary'],
+          tertiary: FDS.colors.light['--color-feedback-success-tertiary'],
         },
         alert: {
-          primary: '#F2BE3A',
-          secondary: '#F6CE6A',
+          primary: FDS.colors.light['--color-feedback-alert-primary'],
+          secondary: FDS.colors.light['--color-feedback-alert-secondary'],
         },
         warning: {
-          primary: '#E6700F',
-          secondary: '#F8C08C',
+          primary: FDS.colors.light['--color-feedback-warning-primary'],
+          secondary: FDS.colors.light['--color-feedback-warning-secondary'],
         },
         error: {
-          primary: '#F14337',
-          secondary: '#F8958C',
+          primary: FDS.colors.light['--color-feedback-error-primary'],
+          secondary: FDS.colors.light['--color-feedback-error-secondary'],
         },
       },
       tertiary: {
         grey: {
-          400: '#95969D',
-          700: '#494A50',
-          800: '#313235',
+          400: FDS.colors.light['--color-gray-400'],
+          700: FDS.colors.light['--color-gray-700'],
+          800: FDS.colors.light['--color-gray-800'],
         },
+        // No FDS scale matches these two values, left as-is.
         blue: {
           500: '#0099CC',
           900: '#003242',
         },
         darkBlue: {
-          300: '#7587FF',
-          500: '#0F2DFF',
+          300: FDS.colors.light['--color-darkblue-300'],
+          500: FDS.colors.light['--color-darkblue-500'],
         },
         turquoise: {
-          600: '#00BD94',
-          800: '#005744',
+          600: FDS.colors.light['--color-turquoise-600'],
+          800: FDS.colors.light['--color-turquoise-800'],
         },
         green: {
-          400: '#41E149',
-          600: '#17AB1F',
-          800: '#094E0B',
+          400: FDS.colors.light['--color-green-400'],
+          600: FDS.colors.light['--color-green-600'],
+          800: FDS.colors.light['--color-green-800'],
         },
         red: {
-          100: '#FBCBC5',
-          200: '#F8958C',
-          400: '#F14337',
-          500: '#E51E10',
-          600: '#B8180A',
-          700: '#881106',
+          100: FDS.colors.light['--color-red-100'],
+          200: FDS.colors.light['--color-red-200'],
+          400: FDS.colors.light['--color-red-400'],
+          500: FDS.colors.light['--color-red-500'],
+          600: FDS.colors.light['--color-red-600'],
+          700: FDS.colors.light['--color-red-700'],
         },
         orange: {
-          400: '#F2933A',
-          500: '#E6700F',
+          400: FDS.colors.light['--color-orange-400'],
+          500: FDS.colors.light['--color-orange-500'],
         },
         yellow: {
-          400: '#F2BE3A',
+          400: FDS.colors.light['--color-yellow-400'],
         },
       },
     },
