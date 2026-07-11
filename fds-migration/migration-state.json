@@ -5,8 +5,38 @@
   "generatedBridgeFiles": [
     "src/components/fds-tokens.generated.ts"
   ],
-  "wiredFiles": [],
-  "forbiddenPatterns": [],
+  "wiredFiles": [
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "mustImport": "fds-tokens.generated"
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "mustImport": "fds-tokens.generated"
+    }
+  ],
+  "forbiddenPatterns": [
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "007399",
+      "reason": "Old hand-copied designSystem.primary.dark value (pre-FDS). Its presence means the designSystem block wiring — the main point of this pilot — was reverted."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "1565c0",
+      "reason": "Old hand-copied severity.info value (pre-FDS mapping to --color-feedback-info-primary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "1CA55E",
+      "reason": "Old hand-copied success.main value (pre-FDS mapping to --color-feedback-success-primary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "00719E",
+      "reason": "Old hand-copied designSystem.alert.info.primary value (pre-FDS). Its presence means the designSystem block wiring was reverted."
+    }
+  ],
   "migratedZones": [],
   "lastReconciled": null
 }
