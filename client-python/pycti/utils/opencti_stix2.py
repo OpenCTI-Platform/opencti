@@ -483,6 +483,7 @@ class OpenCTIStix2:
         markdown: str,
         entity_type: Optional[str] = None,
         entity_id: Optional[str] = None,
+        serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
     ) -> str:
         if not isinstance(markdown, str):
             return markdown
@@ -502,43 +503,14 @@ class OpenCTIStix2:
             if embedded_storage_path is None:
                 return full_match
 
-            guessed_mime_type = mimetypes.guess_type(embedded_storage_path)[0]
-
             if embedded_storage_path not in embedded_data_uri_by_path:
-                storage_url = urljoin(
-                    self.opencti.api_url.replace("graphql", ""),
-                    f"storage/get/{embedded_storage_path}",
+                embedded_data_uri = self._fetch_embedded_image_data_uri(
+                    embedded_storage_path,
+                    serialized_export_file_cache,
                 )
-                encoded_data = self.opencti.fetch_opencti_file(
-                    storage_url,
-                    binary=True,
-                    serialize=True,
-                )
-                if not encoded_data:
-                    # Some HTTP stacks reject raw spaces/special chars in path; retry with encoded path.
-                    encoded_storage_path = quote(embedded_storage_path, safe="/")
-                    encoded_storage_url = urljoin(
-                        self.opencti.api_url.replace("graphql", ""),
-                        f"storage/get/{encoded_storage_path}",
-                    )
-                    if encoded_storage_url != storage_url:
-                        encoded_data = self.opencti.fetch_opencti_file(
-                            encoded_storage_url,
-                            binary=True,
-                            serialize=True,
-                        )
-                if not encoded_data:
+                if embedded_data_uri is None:
                     return full_match
-                mime_type = (
-                    guessed_mime_type
-                    or mimetypes.guess_type(embedded_storage_path)[0]
-                    or "application/octet-stream"
-                )
-                if not mime_type.startswith("image/"):
-                    return full_match
-                embedded_data_uri_by_path[embedded_storage_path] = (
-                    f"data:{mime_type};base64,{encoded_data}"
-                )
+                embedded_data_uri_by_path[embedded_storage_path] = embedded_data_uri
 
             return f"![{alt_text}]({embedded_data_uri_by_path[embedded_storage_path]})"
 
@@ -550,6 +522,7 @@ class OpenCTIStix2:
 
         entity_type = entity.get("x_opencti_type") or entity.get("entity_type")
         entity_id = entity.get("x_opencti_id") or entity.get("id")
+        serialized_embedded_image_cache = {}
 
         for key in MARKDOWN_EXPORT_FIELDS:
             value = entity.get(key)
@@ -558,6 +531,7 @@ class OpenCTIStix2:
                     value,
                     entity_type=entity_type,
                     entity_id=entity_id,
+                    serialized_export_file_cache=serialized_embedded_image_cache,
                 )
 
     def _rewrite_embedded_image_uris_in_bundle_for_export(self, bundle: Dict) -> None:
@@ -566,6 +540,19 @@ class OpenCTIStix2:
 
         objects = bundle.get("objects")
         if not isinstance(objects, list):
+            return
+
+        if not any(
+            isinstance(item, dict)
+            and any(
+                isinstance(item.get(key), str) and "embedded/" in unquote(item[key])
+                for key in MARKDOWN_EXPORT_FIELDS
+            )
+            for item in objects
+        ):
+            active_cache = _SERIALIZED_EXPORT_FILE_CACHE.get()
+            if active_cache is not None:
+                active_cache.clear()
             return
 
         for item in objects:
@@ -584,26 +571,99 @@ class OpenCTIStix2:
         finally:
             _SERIALIZED_EXPORT_FILE_CACHE.reset(token)
 
-    def _fetch_serialized_export_file(
+    def _fetch_serialized_export_resource(
         self,
-        file_id: str,
+        resource_cache_id: str,
+        url: str,
         serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
     ) -> Optional[str]:
-        active_cache = _SERIALIZED_EXPORT_FILE_CACHE.get()
-        if active_cache is not None:
-            serialized_export_file_cache = active_cache
-        cache_key = (id(self.opencti), file_id)
+        serialized_export_file_cache = self._get_serialized_export_file_cache(
+            serialized_export_file_cache
+        )
+        cache_key = (id(self.opencti), resource_cache_id)
         if (
             serialized_export_file_cache is not None
             and cache_key in serialized_export_file_cache
         ):
             return serialized_export_file_cache[cache_key]
 
-        url = self.opencti.api_url.replace("graphql", "storage/get/") + file_id
         data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
         if serialized_export_file_cache is not None and data is not None:
             serialized_export_file_cache[cache_key] = data
         return data
+
+    @staticmethod
+    def _get_serialized_export_file_cache(
+        serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
+    ) -> Optional[Dict[Tuple[int, str], str]]:
+        active_cache = _SERIALIZED_EXPORT_FILE_CACHE.get()
+        return (
+            active_cache if active_cache is not None else serialized_export_file_cache
+        )
+
+    def _fetch_embedded_image_data_uri(
+        self,
+        embedded_storage_path: str,
+        serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
+    ) -> Optional[str]:
+        serialized_export_file_cache = self._get_serialized_export_file_cache(
+            serialized_export_file_cache
+        )
+        cache_key = (
+            id(self.opencti),
+            f"embedded-image-data-uri:{embedded_storage_path}",
+        )
+        if (
+            serialized_export_file_cache is not None
+            and cache_key in serialized_export_file_cache
+        ):
+            return serialized_export_file_cache[cache_key]
+
+        storage_url = urljoin(
+            self.opencti.api_url.replace("graphql", ""),
+            f"storage/get/{embedded_storage_path}",
+        )
+        encoded_data = self.opencti.fetch_opencti_file(
+            storage_url,
+            binary=True,
+            serialize=True,
+        )
+        if not encoded_data:
+            # Some HTTP stacks reject raw spaces/special chars in path; retry with encoded path.
+            encoded_storage_path = quote(embedded_storage_path, safe="/")
+            encoded_storage_url = urljoin(
+                self.opencti.api_url.replace("graphql", ""),
+                f"storage/get/{encoded_storage_path}",
+            )
+            if encoded_storage_url != storage_url:
+                encoded_data = self.opencti.fetch_opencti_file(
+                    encoded_storage_url,
+                    binary=True,
+                    serialize=True,
+                )
+        if not encoded_data:
+            return None
+
+        mime_type = (
+            mimetypes.guess_type(embedded_storage_path)[0] or "application/octet-stream"
+        )
+        if not mime_type.startswith("image/"):
+            return None
+
+        embedded_data_uri = f"data:{mime_type};base64,{encoded_data}"
+        if serialized_export_file_cache is not None:
+            serialized_export_file_cache[cache_key] = embedded_data_uri
+        return embedded_data_uri
+
+    def _fetch_serialized_export_file(
+        self,
+        file_id: str,
+        serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
+    ) -> Optional[str]:
+        url = self.opencti.api_url.replace("graphql", "storage/get/") + file_id
+        return self._fetch_serialized_export_resource(
+            file_id, url, serialized_export_file_cache
+        )
 
     def format_date(self, date: Any = None) -> str:
         """Convert multiple input date formats to OpenCTI style dates.

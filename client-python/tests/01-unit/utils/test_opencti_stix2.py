@@ -1342,6 +1342,55 @@ def test_prepare_export_rewrites_relative_embedded_markdown_image_uri(
     assert fetch_calls[0][2] is True
 
 
+def _embedded_markdown_export_entity(index, include_all_fields=True):
+    markdown = "![img](embedded/Report/shared/payload.png)"
+    entity = {
+        "id": f"report--{index}",
+        "type": "report",
+        "entity_type": "Report",
+        "x_opencti_id": f"internal-report-{index}",
+        "description": markdown,
+    }
+    if include_all_fields:
+        entity["x_opencti_description"] = markdown
+        entity["content"] = markdown
+    return entity
+
+
+def test_prepare_export_reuses_embedded_markdown_image_download_across_fields():
+    opencti_stix2 = _artifact_export_helper(["Zm9v"])
+
+    result = opencti_stix2.prepare_export(
+        _embedded_markdown_export_entity(1), mode="simple"
+    )
+
+    assert all(
+        "data:image/png;base64,Zm9v" in result[0][field]
+        for field in ("description", "x_opencti_description", "content")
+    )
+    assert len(opencti_stix2.opencti.fetch_calls) == 1
+
+
+def test_export_selected_retries_then_reuses_embedded_markdown_image_download():
+    opencti_stix2 = _artifact_export_helper([None, "Zm9v"])
+    opencti_stix2.generate_export = lambda entity: entity.copy()
+
+    result = opencti_stix2.export_selected(
+        [
+            _embedded_markdown_export_entity(1, include_all_fields=False),
+            _embedded_markdown_export_entity(2, include_all_fields=False),
+            _embedded_markdown_export_entity(3, include_all_fields=False),
+        ],
+        mode="simple",
+    )
+
+    assert all(
+        "data:image/png;base64,Zm9v" in entity["description"]
+        for entity in result["objects"]
+    )
+    assert len(opencti_stix2.opencti.fetch_calls) == 2
+
+
 def test_bundle_level_rewrite_rewrites_relative_embedded_markdown_image_uri(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
