@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T18:49:31.504Z",
+  "generatedAt": "2026-07-11T18:58:40.193Z",
   "results": [
     {
       "check": "bridge-integrity",
@@ -9,7 +9,8 @@
     {
       "check": "bridge-freshness",
       "file": "src/components/fds-tokens.generated.ts",
-      "status": "OK"
+      "status": "STALE",
+      "detail": "theme.css changed since this bridge was generated — run pnpm generate:mui-bridge --product opencti --write-to-product again"
     },
     {
       "check": "wiring",
