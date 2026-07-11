@@ -2435,6 +2435,7 @@ class OpenCTIStix2:
         to_id: str,
         update: bool = False,
         types: List = None,
+        embedded_relationships: Optional[Dict] = None,
     ) -> None:
         """Import a STIX sighting relationship into OpenCTI.
 
@@ -2448,11 +2449,14 @@ class OpenCTIStix2:
         :type update: bool, optional
         :param types: List of STIX2 types to filter, defaults to None
         :type types: list, optional
+        :param embedded_relationships: Precomputed embedded relationships for repeated expansions of one sighting item
+        :type embedded_relationships: dict, optional
         """
         # Extract
-        embedded_relationships = self.extract_embedded_relationships(
-            stix_sighting, types
-        )
+        if embedded_relationships is None:
+            embedded_relationships = self.extract_embedded_relationships(
+                stix_sighting, types
+            )
         created_by_id = embedded_relationships["created_by"]
         object_marking_ids = embedded_relationships["object_marking"]
         object_label_ids = embedded_relationships["object_label"]
@@ -4772,14 +4776,22 @@ class OpenCTIStix2:
             # endregion
             # region create the sightings
             if len(to_ids) > 0:
+                from_ids = []
                 if from_id:
-                    for to_id in to_ids:
-                        self.import_sighting(item, from_id, to_id, update)
-                # Import observed_data_refs
+                    from_ids.append(from_id)
                 if "observed_data_refs" in item:
-                    for observed_data_ref in item["observed_data_refs"]:
+                    from_ids.extend(item["observed_data_refs"])
+                if from_ids:
+                    embedded_relationships = self.extract_embedded_relationships(item)
+                    for sighting_from_id in from_ids:
                         for to_id in to_ids:
-                            self.import_sighting(item, observed_data_ref, to_id, update)
+                            self.import_sighting(
+                                item,
+                                sighting_from_id,
+                                to_id,
+                                update,
+                                embedded_relationships=embedded_relationships,
+                            )
             # endregion
         elif item["type"] == "label":
             stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)

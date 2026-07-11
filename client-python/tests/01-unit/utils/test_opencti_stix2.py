@@ -363,6 +363,58 @@ def test_extract_embedded_relationships_keeps_file_upload_external_reference_unc
     assert opencti.external_reference.create_calls == 2
 
 
+class _SightingImportRecorder:
+    def __init__(self):
+        self.create_calls = []
+
+    def create(self, **kwargs):
+        self.create_calls.append(kwargs)
+        return {
+            "id": f"sighting--{len(self.create_calls)}",
+            "entity_type": "stix-sighting-relationship",
+        }
+
+
+def test_import_item_reuses_sighting_embedded_relationships_across_targets():
+    opencti = _external_reference_opencti()
+    opencti.stix_sighting_relationship = _SightingImportRecorder()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    opencti_stix2.mapping_cache_permanent["vocabularies_definition_fields"] = []
+
+    opencti_stix2.import_item(
+        {
+            "id": "sighting--shared",
+            "type": "sighting",
+            "sighting_of_ref": "indicator--source",
+            "where_sighted_refs": ["identity--one", "identity--two"],
+            "observed_data_refs": ["observed-data--one"],
+            "external_references": [
+                {
+                    "source_name": "benchmark",
+                    "url": "https://example.test/reference",
+                    "x_opencti_files": [
+                        {
+                            "name": "payload.txt",
+                            "data": base64.b64encode(b"payload").decode("ascii"),
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert [
+        (call["fromId"], call["toId"])
+        for call in opencti.stix_sighting_relationship.create_calls
+    ] == [
+        ("indicator--source", "identity--one"),
+        ("indicator--source", "identity--two"),
+        ("observed-data--one", "identity--one"),
+        ("observed-data--one", "identity--two"),
+    ]
+    assert opencti.external_reference.create_calls == 1
+
+
 def test_extract_embedded_relationships_keeps_changed_external_reference_uncached():
     opencti = _external_reference_opencti()
     opencti_stix2 = OpenCTIStix2(opencti)
