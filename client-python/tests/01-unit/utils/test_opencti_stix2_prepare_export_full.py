@@ -176,6 +176,14 @@ def _container_root(identifier):
     }
 
 
+def _nested_ref_root(identifier):
+    return {
+        "id": f"indicator--root-{identifier}",
+        "type": "indicator",
+        "x_opencti_id": f"root-{identifier}",
+    }
+
+
 def _helper(relationships):
     helper = OpenCTIStix2.__new__(OpenCTIStix2)
     helper.opencti = SimpleNamespace(
@@ -916,6 +924,120 @@ def test_export_list_batches_container_object_reads_across_roots():
         "malware--target-2",
         "report--root-3",
         "malware--target-3",
+    ]
+
+
+def test_export_selected_batches_nested_ref_target_reads_across_roots():
+    helper = _helper([])
+    nested_ref_collection = _NestedRefRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "3")],
+        }
+    )
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-{index}": {
+                "id": f"target-{index}",
+                "standard_id": f"malware--{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable nested-ref targets should not use the reader")
+    )
+    entities = [_nested_ref_root(index) for index in range(1, 4)]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["root-1", "root-2", "root-3"],
+        ["target-1", "target-2", "target-3"],
+    ]
+    assert lister.list_calls == 1
+    assert lister.filters == [["target-1", "target-2", "target-3"]]
+    assert [item["id"] for item in result["objects"]] == [
+        "indicator--root-1",
+        "malware--1",
+        "indicator--root-2",
+        "malware--2",
+        "indicator--root-3",
+        "malware--3",
+    ]
+
+
+def test_export_list_batches_nested_ref_target_reads_across_roots():
+    helper = _helper([])
+    nested_ref_collection = _NestedRefRelationshipCollection(
+        {
+            "root-1": [_nested_ref_relationship("nested-ref--1", "root-1", "1")],
+            "root-2": [_nested_ref_relationship("nested-ref--2", "root-2", "2")],
+            "root-3": [_nested_ref_relationship("nested-ref--3", "root-3", "3")],
+        }
+    )
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-{index}": {
+                "id": f"target-{index}",
+                "standard_id": f"malware--{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable nested-ref targets should not use the reader")
+    )
+    helper.export_entities_list = lambda **kwargs: [
+        _nested_ref_root(index) for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Indicator", mode="full")
+
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["root-1", "root-2", "root-3"],
+        ["target-1", "target-2", "target-3"],
+    ]
+    assert lister.list_calls == 1
+    assert lister.filters == [["target-1", "target-2", "target-3"]]
+    assert [item["id"] for item in result["objects"]] == [
+        "indicator--root-1",
+        "malware--1",
+        "indicator--root-2",
+        "malware--2",
+        "indicator--root-3",
+        "malware--3",
     ]
 
 

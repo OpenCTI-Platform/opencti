@@ -3002,6 +3002,14 @@ class OpenCTIStix2:
             for entity_object in entity.get("objects") or []:
                 add_uncached_entity_object(entity_object)
 
+        if stix_nested_ref_relationships_by_entity_id is not None:
+            nested_ref_groups = stix_nested_ref_relationships_by_entity_id.values()
+            for nested_ref_relationships in nested_ref_groups:
+                for stix_nested_ref_relationship in nested_ref_relationships:
+                    entity_object = stix_nested_ref_relationship["to"]
+                    if "standard_id" in entity_object:
+                        add_uncached_entity_object(entity_object)
+
         for relationships_by_entity_id in (
             stix_core_relationships_by_entity_id,
             stix_sighting_relationships_by_entity_id,
@@ -3293,7 +3301,7 @@ class OpenCTIStix2:
             related_object_access_cache[entity["x_opencti_id"]] = True
         result = []
         objects_to_get = []
-        contained_objects_are_already_queued = False
+        already_queued_reference_values = set()
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # CreatedByRef
@@ -3408,7 +3416,6 @@ class OpenCTIStix2:
         ):
             entity["object_refs"] = []
             objects_to_get.extend(entity["objects"])
-            contained_objects_are_already_queued = True
             for entity_object in entity["objects"]:
                 if (
                     entity["type"] == "report"
@@ -3472,6 +3479,7 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
+            already_queued_reference_values.update(entity["object_refs"])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -3600,6 +3608,10 @@ class OpenCTIStix2:
             )
         for stix_nested_ref_relationship in stix_nested_ref_relationships:
             if "standard_id" in stix_nested_ref_relationship["to"]:
+                objects_to_get.append(stix_nested_ref_relationship["to"])
+                already_queued_reference_values.add(
+                    stix_nested_ref_relationship["to"]["standard_id"]
+                )
                 # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
                 # will be replaced by a proper toStix converter in the back
                 if not MultipleRefRelationship.has_value(
@@ -3643,9 +3655,9 @@ class OpenCTIStix2:
             uuids.update(y["id"] for y in result)
             # Get extra refs
             for key in entity.keys():
-                if key == "object_refs" and contained_objects_are_already_queued:
-                    continue
                 if key.endswith("_ref"):
+                    if entity[key] in already_queued_reference_values:
+                        continue
                     stix_type = entity[key].split("--")[0]
                     if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                         objects_to_get.append(
@@ -3665,6 +3677,8 @@ class OpenCTIStix2:
                         )
                 elif key.endswith("_refs"):
                     for value in entity[key]:
+                        if value in already_queued_reference_values:
+                            continue
                         stix_type = value.split("--")[0]
                         if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
                             objects_to_get.append(
