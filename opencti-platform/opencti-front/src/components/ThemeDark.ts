@@ -10,7 +10,7 @@ import { FDS } from './fds-tokens.generated';
 const EE_COLOR = '#00f18d';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = FDS.colors.dark['--color-elevation-background-layer-0'];
-const THEME_DARK_DEFAULT_BODY_END_GRADIENT = '#08101D';
+const THEME_DARK_DEFAULT_BODY_END_GRADIENT = FDS.colors.dark['--color-elevation-background-layer-0-gradient'];
 export const THEME_DARK_DEFAULT_PRIMARY = FDS.colors.dark['--color-filigran-brand-primary'];
 export const THEME_DARK_DEFAULT_SECONDARY = FDS.colors.dark['--color-filigran-tonic-primary'];
 export const THEME_DARK_DEFAULT_ACCENT = FDS.colors.dark['--color-elevation-background-layer-3'];
