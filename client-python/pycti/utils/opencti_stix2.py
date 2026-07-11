@@ -3408,21 +3408,31 @@ class OpenCTIStix2:
         if "attribute_date" in entity:
             entity["date"] = entity["attribute_date"]
             del entity["attribute_date"]
+        serialized_import_file_data = {}
         # Artifact
         if entity["type"] == "artifact" and "importFiles" in entity:
             first_file = entity["importFiles"][0]["id"]
             url = self.opencti.api_url.replace("graphql", "storage/get/") + first_file
             file = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+            if file is not None:
+                serialized_import_file_data[first_file] = file
             if file:
                 entity["payload_bin"] = file
         # Files
         if "importFiles" in entity and len(entity["importFiles"]) > 0:
             entity["x_opencti_files"] = []
             for file in entity["importFiles"]:
-                url = (
-                    self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
-                )
-                data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+                data = serialized_import_file_data.get(file["id"])
+                if data is None:
+                    url = (
+                        self.opencti.api_url.replace("graphql", "storage/get/")
+                        + file["id"]
+                    )
+                    data = self.opencti.fetch_opencti_file(
+                        url, binary=True, serialize=True
+                    )
+                    if data is not None:
+                        serialized_import_file_data[file["id"]] = data
                 x_opencti_file = {
                     "name": file["name"],
                     "data": data,

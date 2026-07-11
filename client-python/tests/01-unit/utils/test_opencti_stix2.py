@@ -119,6 +119,69 @@ def test_filter_objects(opencti_stix2: OpenCTIStix2):
     assert "126" not in result
 
 
+class _EmptyNestedRefCollection:
+    @staticmethod
+    def list(**_kwargs):
+        return []
+
+
+class _ArtifactFileFetchRecorder:
+    def __init__(self, responses):
+        self.api_url = "http://localhost/graphql"
+        self.stix_nested_ref_relationship = _EmptyNestedRefCollection()
+        self.responses = list(responses)
+        self.fetch_calls = []
+
+    def fetch_opencti_file(self, url, binary=False, serialize=False):
+        self.fetch_calls.append((url, binary, serialize))
+        return self.responses.pop(0)
+
+
+def _artifact_export_helper(responses):
+    helper = OpenCTIStix2.__new__(OpenCTIStix2)
+    helper.opencti = _ArtifactFileFetchRecorder(responses)
+    return helper
+
+
+def _artifact_export_entity():
+    return {
+        "id": "artifact--benchmark",
+        "type": "artifact",
+        "x_opencti_id": "artifact-internal--benchmark",
+        "importFiles": [
+            {
+                "id": "file--benchmark",
+                "name": "payload.bin",
+                "metaData": {"mimetype": "application/octet-stream"},
+                "objectMarking": [],
+            }
+        ],
+        "importFilesIds": ["file--benchmark"],
+    }
+
+
+def test_prepare_export_reuses_artifact_payload_file_download():
+    opencti_stix2 = _artifact_export_helper(["cGF5bG9hZA=="])
+
+    result = opencti_stix2.prepare_export(_artifact_export_entity(), mode="simple")
+
+    artifact = result[-1]
+    assert artifact["payload_bin"] == "cGF5bG9hZA=="
+    assert artifact["x_opencti_files"][0]["data"] == "cGF5bG9hZA=="
+    assert len(opencti_stix2.opencti.fetch_calls) == 1
+
+
+def test_prepare_export_retries_artifact_file_download_after_failed_payload_read():
+    opencti_stix2 = _artifact_export_helper([None, "cGF5bG9hZA=="])
+
+    result = opencti_stix2.prepare_export(_artifact_export_entity(), mode="simple")
+
+    artifact = result[-1]
+    assert "payload_bin" not in artifact
+    assert artifact["x_opencti_files"][0]["data"] == "cGF5bG9hZA=="
+    assert len(opencti_stix2.opencti.fetch_calls) == 2
+
+
 def test_resolve_author_lowercases_unmatched_title_once():
     class _LowerCountingTitle(str):
         def __new__(cls, value):
