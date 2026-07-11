@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-07-11T18:49:31.504Z",
+  "results": [
+    {
+      "check": "bridge-integrity",
+      "file": "src/components/fds-tokens.generated.ts",
+      "status": "OK"
+    },
+    {
+      "check": "bridge-freshness",
+      "file": "src/components/fds-tokens.generated.ts",
+      "status": "OK"
+    },
+    {
+      "check": "wiring",
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "status": "OK"
+    },
+    {
+      "check": "wiring",
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "status": "OK"
+    },
+    {
+      "check": "forbidden-pattern",
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "status": "OK"
+    },
+    {
+      "check": "forbidden-pattern",
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "status": "OK"
+    },
+    {
+      "check": "forbidden-pattern",
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "status": "OK"
+    },
+    {
+      "check": "forbidden-pattern",
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "status": "OK"
+    }
+  ]
+}
