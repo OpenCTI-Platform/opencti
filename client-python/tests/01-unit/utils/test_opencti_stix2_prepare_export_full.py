@@ -159,6 +159,23 @@ def _nested_ref_relationship(identifier, from_identifier, target_identifier):
     }
 
 
+def _container_root(identifier):
+    return {
+        "id": f"report--root-{identifier}",
+        "type": "report",
+        "x_opencti_id": f"root-{identifier}",
+        "objects": [
+            {
+                "id": f"target-{identifier}",
+                "standard_id": f"malware--target-{identifier}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+        ],
+        "objectsIds": [f"target-{identifier}"],
+    }
+
+
 def _helper(relationships):
     helper = OpenCTIStix2.__new__(OpenCTIStix2)
     helper.opencti = SimpleNamespace(
@@ -776,6 +793,130 @@ def test_export_list_batches_unique_related_object_reads_across_roots():
 
     assert lister.list_calls == 1
     assert lister.filters == [["target-target-1", "target-target-2", "target-target-3"]]
+
+
+def test_export_selected_batches_container_object_reads_across_roots():
+    helper = _helper([])
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-{index}": {
+                "id": f"target-{index}",
+                "standard_id": f"malware--target-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable container objects should not use the reader")
+    )
+    entities = [_container_root(index) for index in range(1, 4)]
+
+    result = helper.export_selected(entities_list=entities, mode="full")
+
+    assert lister.list_calls == 1
+    assert lister.filters == [["target-1", "target-2", "target-3"]]
+    assert [item["id"] for item in result["objects"]] == [
+        "report--root-1",
+        "malware--target-1",
+        "report--root-2",
+        "malware--target-2",
+        "report--root-3",
+        "malware--target-3",
+    ]
+
+
+def test_prepare_export_full_does_not_reread_contained_objects_from_object_refs():
+    helper = _helper([])
+    read_calls = []
+    targets_by_id = {
+        "target-1": {
+            "id": "target-1",
+            "standard_id": "malware--target-1",
+            "entity_type": "Malware",
+            "parent_types": ["Stix-Domain-Object"],
+        }
+    }
+    targets_by_id["malware--target-1"] = targets_by_id["target-1"]
+
+    def read(filters):
+        read_calls.append(filters)
+        return targets_by_id[filters]
+
+    helper.get_reader = lambda resolve_type: read
+    helper.get_lister = lambda resolve_type: None
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+
+    result = helper.prepare_export(entity=_container_root(1), mode="full")
+
+    assert read_calls == ["target-1"]
+    assert [item["id"] for item in result] == ["report--root-1", "malware--target-1"]
+
+
+def test_export_list_batches_container_object_reads_across_roots():
+    helper = _helper([])
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-{index}": {
+                "id": f"target-{index}",
+                "standard_id": f"malware--target-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable container objects should not use the reader")
+    )
+    helper.export_entities_list = lambda **kwargs: [
+        _container_root(index) for index in range(1, 4)
+    ]
+
+    result = helper.export_list(entity_type="Report", mode="full")
+
+    assert lister.list_calls == 1
+    assert lister.filters == [["target-1", "target-2", "target-3"]]
+    assert [item["id"] for item in result["objects"]] == [
+        "report--root-1",
+        "malware--target-1",
+        "report--root-2",
+        "malware--target-2",
+        "report--root-3",
+        "malware--target-3",
+    ]
 
 
 def test_export_selected_batches_unique_related_object_reads_in_bounded_chunks():

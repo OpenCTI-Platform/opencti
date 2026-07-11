@@ -2983,6 +2983,25 @@ class OpenCTIStix2:
 
         uncached_object_ids_by_type = {}
         seen_read_object_keys = set()
+
+        def add_uncached_entity_object(entity_object):
+            entity_id = entity_object["id"]
+            if entity_id in top_level_entity_ids:
+                return
+            resolve_type = self._get_export_related_object_resolve_type(entity_object)
+            read_object_key = (resolve_type, entity_id)
+            if (
+                read_object_key in related_object_export_cache
+                or read_object_key in seen_read_object_keys
+            ):
+                return
+            seen_read_object_keys.add(read_object_key)
+            uncached_object_ids_by_type.setdefault(resolve_type, []).append(entity_id)
+
+        for entity in entities_list:
+            for entity_object in entity.get("objects") or []:
+                add_uncached_entity_object(entity_object)
+
         for relationships_by_entity_id in (
             stix_core_relationships_by_entity_id,
             stix_sighting_relationships_by_entity_id,
@@ -2999,19 +3018,7 @@ class OpenCTIStix2:
                             or related_object_access_cache.get(entity_id) is not True
                         ):
                             continue
-                        resolve_type = self._get_export_related_object_resolve_type(
-                            entity_object
-                        )
-                        read_object_key = (resolve_type, entity_id)
-                        if (
-                            read_object_key in related_object_export_cache
-                            or read_object_key in seen_read_object_keys
-                        ):
-                            continue
-                        seen_read_object_keys.add(read_object_key)
-                        uncached_object_ids_by_type.setdefault(resolve_type, []).append(
-                            entity_id
-                        )
+                        add_uncached_entity_object(entity_object)
 
         batchable_object_ids_by_type = {}
         for resolve_type, entity_ids in uncached_object_ids_by_type.items():
@@ -3286,6 +3293,7 @@ class OpenCTIStix2:
             related_object_access_cache[entity["x_opencti_id"]] = True
         result = []
         objects_to_get = []
+        contained_objects_are_already_queued = False
         self._rewrite_embedded_image_uris_for_export(entity)
 
         # CreatedByRef
@@ -3399,7 +3407,8 @@ class OpenCTIStix2:
             and len(entity["objects"]) > 0
         ):
             entity["object_refs"] = []
-            objects_to_get = entity["objects"]  # To do differently
+            objects_to_get.extend(entity["objects"])
+            contained_objects_are_already_queued = True
             for entity_object in entity["objects"]:
                 if (
                     entity["type"] == "report"
@@ -3634,6 +3643,8 @@ class OpenCTIStix2:
             uuids.update(y["id"] for y in result)
             # Get extra refs
             for key in entity.keys():
+                if key == "object_refs" and contained_objects_are_already_queued:
+                    continue
                 if key.endswith("_ref"):
                     stix_type = entity[key].split("--")[0]
                     if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
