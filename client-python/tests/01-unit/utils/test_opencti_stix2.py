@@ -132,6 +132,10 @@ class _ArtifactFileFetchRecorder:
         self.responses = list(responses)
         self.fetch_calls = []
 
+    @staticmethod
+    def not_empty(value):
+        return value not in (None, "", [], {})
+
     def fetch_opencti_file(self, url, binary=False, serialize=False):
         self.fetch_calls.append((url, binary, serialize))
         return self.responses.pop(0)
@@ -179,6 +183,67 @@ def test_prepare_export_retries_artifact_file_download_after_failed_payload_read
     artifact = result[-1]
     assert "payload_bin" not in artifact
     assert artifact["x_opencti_files"][0]["data"] == "cGF5bG9hZA=="
+    assert len(opencti_stix2.opencti.fetch_calls) == 2
+
+
+def _external_reference_export_entity(index):
+    return {
+        "id": f"indicator-internal--{index}",
+        "standard_id": f"indicator--{index}",
+        "entity_type": "Indicator",
+        "parent_types": ["Stix-Domain-Object"],
+        "externalReferences": [
+            {
+                "source_name": "benchmark",
+                "description": "",
+                "url": "https://example.test/reference",
+                "hash": "",
+                "external_id": "REF-1",
+                "importFiles": [
+                    {
+                        "id": "file--benchmark",
+                        "name": "payload.bin",
+                        "metaData": {"mimetype": "application/octet-stream"},
+                    }
+                ],
+            }
+        ],
+        "externalReferencesIds": ["external-reference--benchmark"],
+    }
+
+
+def test_export_selected_reuses_external_reference_file_download_across_roots():
+    opencti_stix2 = _artifact_export_helper(["cGF5bG9hZA=="])
+
+    result = opencti_stix2.export_selected(
+        [_external_reference_export_entity(1), _external_reference_export_entity(2)],
+        mode="simple",
+    )
+
+    assert len(result["objects"]) == 2
+    assert all(
+        entity["external_references"][0]["x_opencti_files"][0]["data"] == "cGF5bG9hZA=="
+        for entity in result["objects"]
+    )
+    assert len(opencti_stix2.opencti.fetch_calls) == 1
+
+
+def test_export_selected_retries_external_reference_file_after_failed_read():
+    opencti_stix2 = _artifact_export_helper([None, "cGF5bG9hZA=="])
+
+    result = opencti_stix2.export_selected(
+        [_external_reference_export_entity(1), _external_reference_export_entity(2)],
+        mode="simple",
+    )
+
+    assert (
+        result["objects"][0]["external_references"][0]["x_opencti_files"][0]["data"]
+        is None
+    )
+    assert (
+        result["objects"][1]["external_references"][0]["x_opencti_files"][0]["data"]
+        == "cGF5bG9hZA=="
+    )
     assert len(opencti_stix2.opencti.fetch_calls) == 2
 
 

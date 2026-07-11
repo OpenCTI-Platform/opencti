@@ -9,6 +9,8 @@ import time
 import traceback
 import uuid
 from contextlib import contextmanager
+from contextvars import ContextVar
+from functools import wraps
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
@@ -74,6 +76,22 @@ MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "x_opencti_description",
     "content",
 )
+_SERIALIZED_EXPORT_FILE_CACHE: ContextVar[Optional[Dict[Tuple[int, str], str]]] = (
+    ContextVar("_serialized_export_file_cache", default=None)
+)
+
+
+def _reuse_serialized_export_file_cache(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        if _SERIALIZED_EXPORT_FILE_CACHE.get() is not None:
+            return method(self, *args, **kwargs)
+        with self._serialized_export_file_cache_scope():
+            return method(self, *args, **kwargs)
+
+    return wrapped
+
+
 EXPORT_ENTITY_LISTER_ATTRIBUTES = {
     "Stix-Core-Object": "stix_core_object",
     "Stix-Domain-Object": "stix_domain_object",
@@ -552,6 +570,40 @@ class OpenCTIStix2:
 
         for item in objects:
             self._rewrite_embedded_image_uris_for_export(item)
+
+    @contextmanager
+    def _serialized_export_file_cache_scope(self):
+        serialized_export_file_cache = _SERIALIZED_EXPORT_FILE_CACHE.get()
+        if serialized_export_file_cache is not None:
+            yield serialized_export_file_cache
+            return
+
+        token = _SERIALIZED_EXPORT_FILE_CACHE.set({})
+        try:
+            yield _SERIALIZED_EXPORT_FILE_CACHE.get()
+        finally:
+            _SERIALIZED_EXPORT_FILE_CACHE.reset(token)
+
+    def _fetch_serialized_export_file(
+        self,
+        file_id: str,
+        serialized_export_file_cache: Optional[Dict[Tuple[int, str], str]] = None,
+    ) -> Optional[str]:
+        active_cache = _SERIALIZED_EXPORT_FILE_CACHE.get()
+        if active_cache is not None:
+            serialized_export_file_cache = active_cache
+        cache_key = (id(self.opencti), file_id)
+        if (
+            serialized_export_file_cache is not None
+            and cache_key in serialized_export_file_cache
+        ):
+            return serialized_export_file_cache[cache_key]
+
+        url = self.opencti.api_url.replace("graphql", "storage/get/") + file_id
+        data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+        if serialized_export_file_cache is not None and data is not None:
+            serialized_export_file_cache[cache_key] = data
+        return data
 
     def format_date(self, date: Any = None) -> str:
         """Convert multiple input date formats to OpenCTI style dates.
@@ -2606,6 +2658,7 @@ class OpenCTIStix2:
             and "externalReferences" in entity
             and len(entity["externalReferences"]) > 0
         ):
+            serialized_external_reference_file_cache = {}
             entity["external_references"] = []
             for entity_external_reference in entity["externalReferences"]:
                 external_reference = dict()
@@ -2631,12 +2684,8 @@ class OpenCTIStix2:
                 ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
-                        url = (
-                            self.opencti.api_url.replace("graphql", "storage/get/")
-                            + file["id"]
-                        )
-                        data = self.opencti.fetch_opencti_file(
-                            url, binary=True, serialize=True
+                        data = self._fetch_serialized_export_file(
+                            file["id"], serialized_external_reference_file_cache
                         )
                         external_reference["x_opencti_files"].append(
                             {
@@ -3412,27 +3461,18 @@ class OpenCTIStix2:
         # Artifact
         if entity["type"] == "artifact" and "importFiles" in entity:
             first_file = entity["importFiles"][0]["id"]
-            url = self.opencti.api_url.replace("graphql", "storage/get/") + first_file
-            file = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
-            if file is not None:
-                serialized_import_file_data[first_file] = file
+            file = self._fetch_serialized_export_file(
+                first_file, serialized_import_file_data
+            )
             if file:
                 entity["payload_bin"] = file
         # Files
         if "importFiles" in entity and len(entity["importFiles"]) > 0:
             entity["x_opencti_files"] = []
             for file in entity["importFiles"]:
-                data = serialized_import_file_data.get(file["id"])
-                if data is None:
-                    url = (
-                        self.opencti.api_url.replace("graphql", "storage/get/")
-                        + file["id"]
-                    )
-                    data = self.opencti.fetch_opencti_file(
-                        url, binary=True, serialize=True
-                    )
-                    if data is not None:
-                        serialized_import_file_data[file["id"]] = data
+                data = self._fetch_serialized_export_file(
+                    file["id"], serialized_import_file_data
+                )
                 x_opencti_file = {
                     "name": file["name"],
                     "data": data,
@@ -3818,6 +3858,7 @@ class OpenCTIStix2:
         else:
             return []
 
+    @_reuse_serialized_export_file_cache
     def get_stix_bundle_or_object_from_entity_id(
         self,
         entity_type: str,
@@ -3960,6 +4001,7 @@ class OpenCTIStix2:
             withFiles=withFiles,
         )
 
+    @_reuse_serialized_export_file_cache
     def export_list(
         self,
         entity_type: str,
@@ -4094,6 +4136,7 @@ class OpenCTIStix2:
         self._rewrite_embedded_image_uris_in_bundle_for_export(bundle)
         return bundle
 
+    @_reuse_serialized_export_file_cache
     def export_selected(
         self,
         entities_list: List[dict],
