@@ -37,6 +37,23 @@
       "reason": "Old hand-copied designSystem.alert.info.primary value (pre-FDS). Its presence means the designSystem block wiring was reverted."
     }
   ],
-  "migratedZones": [],
-  "lastReconciled": null
+  "migratedZones": [
+    "palette.error",
+    "palette.warn",
+    "palette.dangerZone",
+    "palette.success",
+    "palette.primary",
+    "palette.secondary",
+    "palette.severity",
+    "palette.designSystem",
+    "palette.background/paper/nav/accent/text (DB-overridable defaults — see caveat below)"
+  ],
+  "notMigrated": [
+    "typography (h1-h6, subtitle1/2, body1/2, caption, button, overline) — see fds-migration/TYPO-MAPPING-TODO.md, arbitration pending with Thibault",
+    "spacing/borderRadius — still hardcoded MUI defaults (borderRadius: 4, theme.spacing(N)), no FDS spacing tokens consumed anywhere in ThemeDark.ts/ThemeLight.ts"
+  ],
+  "knownCaveats": [
+    "background/paper/nav/primary/secondary/accent/text_color are passed into ThemeDark()/ThemeLight() as function params sourced from the DB's Theme.theme_* fields (AppThemeProvider.tsx), falling back to the FDS-backed constants only when the DB field is null. The built-in Dark/Light Theme rows in every real deployment have these fields explicitly populated with the pre-FDS hex values, so the new FDS values for these 7 properties are invisible until those DB rows are updated separately (proven via GraphQL query + pixel-exact screenshot comparison, see fds-migration/reports/targeted-captures/README.md). error/warn/success/dangerZone/severity are plain FDS constants with no DB override and ARE visually live today."
+  ],
+  "lastReconciled": "2025 pilot — colors wired + visually checkpointed (Phase 5) + targeted-capture deep dive; typography intentionally deferred (TYPO-MAPPING-TODO.md); DB theme-row update deferred, coordinated separately by product owner."
 }

@@ -9,8 +9,7 @@
     {
       "check": "bridge-freshness",
       "file": "src/components/fds-tokens.generated.ts",
-      "status": "SKIPPED",
-      "detail": "no theme.css to compare against — the library is neither installed under this product nor checked out as a sibling repo. Install the dependency (the pinned package carries dist/tokens/theme.css) to make this check meaningful."
+      "status": "OK"
     },
     {
       "check": "wiring",
