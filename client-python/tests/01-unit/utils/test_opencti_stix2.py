@@ -1272,11 +1272,21 @@ class _VocabularyPrefetchRecorder:
     def __init__(self):
         self.list_filters = []
         self.read_or_create_calls = []
+        self.create_calls = []
+        self.existing_values = None
+        self.list_result_values = None
 
     def list(self, **kwargs):
         values = kwargs["filters"]["filters"][0]["values"]
         self.list_filters.append(values)
-        return [{"id": f"vocabulary--{value}", "name": value} for value in values]
+        result_values = (
+            self.list_result_values if self.list_result_values is not None else values
+        )
+        return [
+            {"id": f"vocabulary--{value}", "name": value}
+            for value in result_values
+            if self.existing_values is None or value in self.existing_values
+        ]
 
     def read_or_create_unchecked_with_cache(self, vocab, cache, field):
         vocab_key = "vocab_" + vocab
@@ -1286,6 +1296,16 @@ class _VocabularyPrefetchRecorder:
             )
             cache[vocab_key] = {"id": f"vocabulary--{vocab}", "name": vocab}
         return cache[vocab_key]
+
+    def create(self, **kwargs):
+        self.create_calls.append(
+            (
+                kwargs["name"],
+                kwargs["required"],
+                kwargs["category"],
+            )
+        )
+        return {"id": f"vocabulary--{kwargs['name']}", "name": kwargs["name"]}
 
 
 def _vocabulary_prefetch_opencti():
@@ -1365,6 +1385,63 @@ def test_import_bundle_falls_back_to_per_item_vocabulary_resolution_when_prefetc
         ("vocab-0", False, "malware_type_ov"),
         ("vocab-1", False, "malware_type_ov"),
     ]
+    assert opencti.vocabulary.create_calls == []
+
+
+def test_import_bundle_skips_redundant_reads_for_vocabularies_prefetched_as_missing():
+    opencti = _vocabulary_prefetch_opencti()
+    opencti.vocabulary.existing_values = set()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "malware_types": [f"vocab-{index}"],
+        }
+        for index in range(3)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.vocabulary.list_filters == [["vocab-0", "vocab-1", "vocab-2"]]
+    assert opencti.vocabulary.read_or_create_calls == []
+    assert opencti.vocabulary.create_calls == [
+        ("vocab-0", False, "malware_type_ov"),
+        ("vocab-1", False, "malware_type_ov"),
+        ("vocab-2", False, "malware_type_ov"),
+    ]
+
+
+def test_import_bundle_reuses_normalized_vocabulary_prefetch_matches():
+    opencti = _vocabulary_prefetch_opencti()
+    opencti.vocabulary.list_result_values = ["csirt", "malware"]
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": "malware--0",
+            "type": "malware",
+            "malware_types": ["CSIRT"],
+        },
+        {
+            "id": "malware--1",
+            "type": "malware",
+            "malware_types": [" malware "],
+        },
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.vocabulary.list_filters == [["CSIRT", " malware "]]
+    assert opencti.vocabulary.read_or_create_calls == []
+    assert opencti.vocabulary.create_calls == []
+    assert (
+        opencti_stix2.mapping_cache_permanent["vocab_CSIRT"]["id"]
+        == "vocabulary--csirt"
+    )
+    assert (
+        opencti_stix2.mapping_cache_permanent["vocab_ malware "]["id"]
+        == "vocabulary--malware"
+    )
 
 
 def test_pick_aliases(opencti_stix2: OpenCTIStix2) -> None:
