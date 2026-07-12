@@ -151,12 +151,14 @@ class OpenCTIStix2Splitter:
                         and not_dependency_ref
                     ):
                         self.cache_refs[item_id].add(element_ref)
+                        parent_acc.add(element_ref)
                         nb_deps += self.enlist_element(
                             element_ref,
                             raw_data,
                             cleanup_inconsistent_bundle,
-                            parent_acc | {element_ref},
+                            parent_acc,
                         )
+                        parent_acc.remove(element_ref)
                         if element_ref not in to_keep_ids:
                             to_keep_ids.add(element_ref)
                             to_keep.append(element_ref)
@@ -178,12 +180,14 @@ class OpenCTIStix2Splitter:
                     and not_dependency_ref
                 ):
                     self.cache_refs[item_id].add(value)
+                    parent_acc.add(value)
                     nb_deps += self.enlist_element(
                         value,
                         raw_data,
                         cleanup_inconsistent_bundle,
-                        parent_acc | {value},
+                        parent_acc,
                     )
+                    parent_acc.remove(value)
                 else:
                     item[key] = None
             # Case for embedded elements (deduplicating and cleanup)
