@@ -10,7 +10,7 @@ import { FDS } from './fds-tokens.generated';
 const EE_COLOR = '#00BD94';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--color-elevation-background-layer-0'];
-export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
+export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = FDS.colors.light['--color-elevation-background-layer-0-gradient'];
 export const THEME_LIGHT_DEFAULT_PRIMARY = FDS.colors.light['--color-filigran-brand-primary'];
 const THEME_LIGHT_DEFAULT_SECONDARY = FDS.colors.light['--color-filigran-tonic-primary'];
 const THEME_LIGHT_DEFAULT_ACCENT = FDS.colors.light['--color-elevation-background-layer-3'];
@@ -115,7 +115,7 @@ const ThemeLight = (
       header: {
         itemBackground: '#ECECF2',
       },
-      popoverItem: '#ECECF2',
+      popoverItem: THEME_LIGHT_DEFAULT_BACKGROUND,
       hover: '#0015A81A',
       text: '#18191B',
     },

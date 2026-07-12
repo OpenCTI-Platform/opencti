@@ -31,9 +31,9 @@ are also exactly the 7 tokens cross-checked against Sandy's reference file
 | `..._PAPER` | `--color-elevation-background-layer-1` | dark `#09101e` / light `#ffffff` | `#0d172b` | minor | `#ffffff` | none |
 | `..._TEXT` | `--color-text-default-primary` | dark `#f2f2f3` / light `#18191b` | `#f2f2f3` | none | `#18191b` | none |
 | `..._NAV` (local) | `--color-elevation-surface-heading-layer-0` | dark `#070d19` / light `#ffffff` | `#070d18` | none | `#f2f2f3` | **notable** (was pure white) |
+| `..._BODY_END_GRADIENT` (local) | `--color-elevation-background-layer-0-gradient` | dark `#08101D` (hardcoded, unwired) / light `#F7F7F7` (hardcoded, unwired) | `#0c1527` | **notable** (see §6 sign-off) | `#ffffff` | **notable** (see §6 sign-off) |
 
-Left untouched (no confident FDS match): `THEME_DARK_DEFAULT_BODY_END_GRADIENT`,
-`THEME_DARK_DIALOG_BACKGROUND`, `THEME_LIGHT_DEFAULT_BODY_END_GRADIENT`,
+Left untouched (no confident FDS match): `THEME_DARK_DIALOG_BACKGROUND`,
 `THEME_LIGHT_DIALOG_BACKGROUND`.
 
 Added `text_color: string` explicit type annotation on both `ThemeDark`/
@@ -126,14 +126,33 @@ Figma token added for this specific light-mode tonic sub-shade pairing.
 | `gradient.ia` | `--gradient-ia` | `linear-gradient(90deg, #D6C2FA 0.67%, #B286FF 100.67%)` | `linear-gradient(90deg, #e3d6fa 0.0%, #a47af0 100.0%)` | `linear-gradient(90deg, #3C108C 0.67%, #5E1AD5 100.67%)` | `linear-gradient(90deg, #3c108c 0.0%, #651fe5 100.0%)` | minor |
 | `gradient.focus` | `--gradient-focus` | `linear-gradient(90deg, #0FBCFF -3.68%, #00F1BD 106.62%)` | `linear-gradient(90deg, #0fbcff 0.0%, #00f0bc 100.0%)` | `linear-gradient(90deg, #0015A8 -3.68%, #00BD94 106.62%)` | `linear-gradient(90deg, #0015a8 0.0%, #00f0bc 100.0%)` | minor |
 
-**⚠️ Flag for Phase 5 review**: `gradient.background`'s FDS token resolves to
-the *same color at both stops* (`--gradient-background` is defined as a
-135° gradient from a color to itself in the current `theme.css`), so this
-is no longer a visible gradient — it will render as a flat fill. The old
-value was a genuine (if subtle) 2-stop diagonal gradient. The end colors are
-close enough that the practical visual delta is likely small, but this is a
-structural change (gradient → flat), not just a color shift, so it needs
-explicit sign-off rather than being bucketed as "minor".
+**✅ Signed off (see `fds-migration/reports/custom-theme-investigation/RAPPORT.md`
+for the full investigation).** `gradient.background` (`palette.gradient.*`,
+this row) is **dead code** — `MuiCssBaseline`'s actual rendered body/html
+background never reads `palette.gradient`, it builds its own
+`linear-gradient(100deg, background 0%, getAppBodyGradientEndColor(background)
+100%)` inline in `ThemeDark.ts`/`ThemeLight.ts`, driven by the
+`..._BODY_END_GRADIENT` constants (see §1 table above). So the flat-fill risk
+this row flagged never actually reached the screen through this field; the
+*real* bug was that `..._BODY_END_GRADIENT` was hardcoded to an
+approximate, unwired value (`#08101D`/`#F7F7F7`) instead of the FDS
+`layer-0-gradient` token (`#0c1527`/`#ffffff`), which was already exposed in
+the generated bridge (`fds-tokens.generated.ts`) — no lib change needed.
+
+Decision: **real two-stop gradient**, delivered by wiring `..._BODY_END_GRADIENT`
+to `FDS.colors.<mode>['--color-elevation-background-layer-0-gradient']` (same
+pattern as every other `THEME_*_DEFAULT_*` constant). `getAppBodyGradientEndColor`'s
+`lighten(background, 0.05)` branch — the only mechanism that renders a body
+gradient for a user's **custom** theme, since no form field lets a user author
+that end-stop directly — is left **strictly untouched**; only the
+default/fallback constant changes. A DB-column-based approach (adding a
+persisted gradient-end field to the `Theme` entity) was considered and
+**rejected**: the existing `lighten()` derivation already covers custom themes
+correctly (verified live via `getComputedStyle`), so the only real gap was
+the unwired fallback constant — no schema change warranted.
+
+This row's `--gradient-background` / `palette.gradient.background` wiring
+itself is left as-is (dead code, harmless, out of scope for this sign-off).
 
 `background.bg1`–`bg4`/`disabled` and all of `designSystem.border.*` (both
 modes): no confident 1:1 FDS token found — left untouched. Candidates for
@@ -181,6 +200,17 @@ dans Figma".
 
 ---
 
+## Balayage de complétude (câblé / en dur / dérivé)
+
+Audit exhaustif, propriété par propriété, des 3 fichiers non-générés
+touchés (`ThemeDark.ts`, `ThemeLight.ts`, `theme-constants.ts`) :
+[`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`](reports/constants-completeness-sweep/RAPPORT.md).
+Couvre aussi les zones hors du périmètre §1-8 (palette décorative diverse,
+`components.*`, `tag`, `typography`, `button`). Un constat en a émergé et a
+été arbitré et fixé : `leftBar.popoverItem` (valeur fantôme du même piège
+1-caractère que le fix background) est désormais câblé sur
+`THEME_*_DEFAULT_BACKGROUND`.
+
 ## Tokens à créer dans Figma
 
 Confirmed gaps — no FDS token found after an exhaustive grep of the
@@ -215,6 +245,27 @@ class is ever applied (the existing `useDocumentThemeModifier` only sets a
 `data-theme` attribute on `<body>`, for CKEditor, unrelated to FDS). Sandy
 confirmed this pilot should be limited to the static JS wiring done above;
 the CSS-variable runtime sync is real follow-up work, not an oversight.
+
+### Generator output isn't lint-conformant (lib-side follow-up)
+
+`fds-tokens.generated.ts` fails `opencti-front`'s ESLint config as-is: 1216
+problems, 1211 of them `@stylistic/quotes` (the generator emits
+double-quoted string literals; this codebase's style requires single
+quotes), plus a handful of `comma-dangle`/`indent`/naming-convention/import
+findings. Worked around on the consuming side for now — added
+`fds-tokens.generated.ts` + `fds-tokens.generated.meta.json` to
+`opencti-front/eslint.config.js`'s `ignores` (same treatment as
+`__generated__/**`, the Relay-generated files), since hand-fixing or
+`--fix`-ing a generated file is pointless: the next regeneration would
+reintroduce every violation.
+
+**Real fix belongs in the `mui-bridge` generator** (separate lib micro-PR,
+not urgent, not blocking this PR): either emit single-quoted strings (and
+match this repo's other stylistic conventions — trailing commas, indent)
+directly, or emit a `/* eslint-disable */` header so consuming repos don't
+need their own ignore-list entry. Either approach removes the need for
+every downstream consumer to special-case this file in their own lint
+config.
 
 ---
 
