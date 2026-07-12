@@ -206,9 +206,10 @@ Audit exhaustif, propriété par propriété, des 3 fichiers non-générés
 touchés (`ThemeDark.ts`, `ThemeLight.ts`, `theme-constants.ts`) :
 [`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`](reports/constants-completeness-sweep/RAPPORT.md).
 Couvre aussi les zones hors du périmètre §1-8 (palette décorative diverse,
-`components.*`, `tag`, `typography`, `button`) et relève un constat
-nécessitant arbitrage (`leftBar.popoverItem`, valeur fantôme du même piège
-1-caractère que le fix background).
+`components.*`, `tag`, `typography`, `button`). Un constat en a émergé et a
+été arbitré et fixé : `leftBar.popoverItem` (valeur fantôme du même piège
+1-caractère que le fix background) est désormais câblé sur
+`THEME_*_DEFAULT_BACKGROUND`.
 
 ## Tokens à créer dans Figma
 

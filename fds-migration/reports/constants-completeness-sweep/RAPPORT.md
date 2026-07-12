@@ -124,7 +124,7 @@ balayage exhaustif ci-dessous, groupé par nature.
 | `background.gradient.end` | `getAppBodyGradientEndColor()` | idem | 🟢 CÂBLÉ (défaut, fixé cette itération) / 🟡 DÉRIVÉ (`lighten()`, thème custom) |
 | `text.tertiary/.light/.disabled` | `#848592`/`#AFB0B6`/`#75829A` | `#717172`/`#494A50`/`#6E7788` | 🔴 EN DUR ×3 |
 | `leftBar.header.itemBackground`/`.hover` | `#253348` (×2, dupliqués) | `#ECECF2`/`#0015A81A` | 🔴 EN DUR |
-| `leftBar.popoverItem` | `#070D19` | `#ECECF2` | 🔴 EN DUR — **voir constat 8.1 ci-dessous, arbitrage recommandé** |
+| `leftBar.popoverItem` | `THEME_DARK_DEFAULT_BACKGROUND` | `THEME_LIGHT_DEFAULT_BACKGROUND` | 🟢 CÂBLÉ — **fixé, voir constat 1 ci-dessous** (était 🔴 en dur, valeur fantôme du piège 1-caractère) |
 | `leftBar.text` | `#F2F2F3` | `#18191B` | 🔴 EN DUR — **duplique exactement `--color-text-default-primary` câblé** (`THEME_*_DEFAULT_TEXT`), sans le référencer |
 
 ### 9.2 `tag` / `typography` / `button`
@@ -185,22 +185,23 @@ décoratifs, pas des tokens de palette) :
 
 ---
 
-## Constats relevés pour arbitrage (aucun fix appliqué)
+## Constats relevés — arbitrage rendu
 
-**1. `leftBar.popoverItem` — valeur fantôme du piège 1-caractère.**
-Dark `#070D19` et light `#ECECF2` correspondent **exactement** aux
+**1. `leftBar.popoverItem` — valeur fantôme du piège 1-caractère. ✅ FIXÉ.**
+Dark `#070D19` et light `#ECECF2` correspondaient **exactement** aux
 anciennes valeurs (pré-fix) de `THEME_*_DEFAULT_BACKGROUND` documentées en
 §1 de `TOKEN-MAPPING.md` (`#070d19` / `#ececf2`, avant leur passage à
-`#070d18` / `#f2f2f3`). Tout indique un recopiage manuel depuis le même
+`#070d18` / `#f2f2f3`). Tout indiquait un recopiage manuel depuis le même
 swatch Figma que le fond, à une époque où ce swatch avait ces valeurs
-(désormais obsolètes). Recommandation : câbler
-`leftBar.popoverItem: THEME_*_DEFAULT_BACKGROUND` (ou le token FDS
-correspondant) pour éliminer la valeur fantôme — même schéma que le fix
-gradient. Risque faible (élément décoratif, popover du menu latéral),
-mais je n'ai pas appliqué le changement : à votre arbitrage.
+(désormais obsolètes).
+
+Arbitrage : câblé sur `THEME_*_DEFAULT_BACKGROUND`, même schéma que le fix
+gradient — `leftBar.popoverItem` suit désormais le fond câblé au lieu d'un
+littéral figé. `palette.leftBar.popoverItem` passe donc de 🔴 EN DUR à
+🟢 CÂBLÉ dans les deux fichiers.
 
 **2. Doublons de littéraux (purement cosmétique / maintenabilité, zéro
-risque fonctionnel) :**
+risque fonctionnel) — ✅ arbitrage rendu : pas de fix, notés pour mémoire.**
 - `palette.gradient.main` (top-level) recopie `EE_COLOR` en dur au lieu de
   référencer la constante.
 - `MuiDialog.paper.backgroundColor` (fallback) recopie
@@ -213,9 +214,9 @@ risque fonctionnel) :**
   `palette.text.light` en dur.
 
 Aucun de ces 5 points ne change le rendu (les valeurs sont identiques
-aujourd'hui) — pur nettoyage optionnel si vous voulez le faire, sinon sans
-impact. Contrairement au point 1, il n'y a pas de valeur fantôme/obsolète
-ici.
+aujourd'hui). Contrairement au point 1, il n'y avait pas de valeur
+fantôme/obsolète ici — juste une duplication de littéral au lieu d'une
+référence. Décision : laissés tels quels, pas de fix dans cette PR.
 
 ## Conclusion
 
@@ -227,5 +228,7 @@ en light, `tertiary.blue.500/900`, `designSystem.background.bg1-4`,
 palette décorative diverse, `components.*` styling, `tag`) est
 majoritairement 🔴 en dur et **n'a jamais été annoncé comme dans le
 périmètre** : c'est la même dette typo/spacing déjà actée, étendue à
-quelques littéraux de couleur décoratifs. Rien de nouveau cassé ; un seul
-constat mérite votre arbitrage (leftBar.popoverItem, point 1 ci-dessus).
+quelques littéraux de couleur décoratifs. Rien de nouveau cassé ; le seul
+constat qui le méritait (`leftBar.popoverItem`) a été arbitré et fixé — les
+5 doublons cosmétiques restants sont un choix assumé de ne pas toucher (zéro
+impact rendu).

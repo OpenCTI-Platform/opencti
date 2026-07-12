@@ -114,7 +114,7 @@ const ThemeDark = (
       header: {
         itemBackground: '#253348',
       },
-      popoverItem: '#070D19',
+      popoverItem: THEME_DARK_DEFAULT_BACKGROUND,
       hover: '#253348',
       text: '#F2F2F3',
     },

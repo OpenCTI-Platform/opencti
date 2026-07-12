@@ -115,7 +115,7 @@ const ThemeLight = (
       header: {
         itemBackground: '#ECECF2',
       },
-      popoverItem: '#ECECF2',
+      popoverItem: THEME_LIGHT_DEFAULT_BACKGROUND,
       hover: '#0015A81A',
       text: '#18191B',
     },
