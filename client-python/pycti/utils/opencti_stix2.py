@@ -82,6 +82,9 @@ _SERIALIZED_EXPORT_FILE_CACHE: ContextVar[Optional[Dict[Tuple[int, str], str]]] 
 _EXPORT_MARKING_DEFINITION_CACHE: ContextVar[Optional[Dict[str, Dict]]] = ContextVar(
     "_export_marking_definition_cache", default=None
 )
+_EXPORT_CREATED_BY_CACHE: ContextVar[Optional[Dict[str, Dict]]] = ContextVar(
+    "_export_created_by_cache", default=None
+)
 _MISSING_IMPORT_LABEL_VALUES: ContextVar[Optional[set[str]]] = ContextVar(
     "_missing_import_label_values", default=None
 )
@@ -114,6 +117,20 @@ def _reuse_export_marking_definition_cache(method):
             return method(self, *args, **kwargs)
         finally:
             _EXPORT_MARKING_DEFINITION_CACHE.reset(token)
+
+    return wrapped
+
+
+def _reuse_export_created_by_cache(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        if _EXPORT_CREATED_BY_CACHE.get() is not None:
+            return method(self, *args, **kwargs)
+        token = _EXPORT_CREATED_BY_CACHE.set({})
+        try:
+            return method(self, *args, **kwargs)
+        finally:
+            _EXPORT_CREATED_BY_CACHE.reset(token)
 
     return wrapped
 
@@ -3601,6 +3618,20 @@ class OpenCTIStix2:
             marking_definition_cache[marking_definition_id] = marking_definition
         return marking_definition
 
+    def _build_export_created_by(self, entity_created_by: Dict) -> Dict:
+        return self.generate_export(entity=entity_created_by)
+
+    def _get_export_created_by(self, entity_created_by: Dict) -> Dict:
+        created_by_cache = _EXPORT_CREATED_BY_CACHE.get()
+        created_by_id = entity_created_by["standard_id"]
+        if created_by_cache is not None and created_by_id in created_by_cache:
+            return created_by_cache[created_by_id]
+
+        created_by = self._build_export_created_by(entity_created_by)
+        if created_by_cache is not None:
+            created_by_cache[created_by_id] = created_by
+        return created_by
+
     def prepare_export(
         self,
         entity: Dict,
@@ -3665,7 +3696,7 @@ class OpenCTIStix2:
             and "createdBy" in entity
             and entity["createdBy"] is not None
         ):
-            created_by = self.generate_export(entity=entity["createdBy"])
+            created_by = self._get_export_created_by(entity["createdBy"])
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
                 entity["x_opencti_created_by_ref"] = created_by["id"]
             else:
@@ -4285,6 +4316,7 @@ class OpenCTIStix2:
 
     @_reuse_serialized_export_file_cache
     @_reuse_export_marking_definition_cache
+    @_reuse_export_created_by_cache
     def get_stix_bundle_or_object_from_entity_id(
         self,
         entity_type: str,
@@ -4429,6 +4461,7 @@ class OpenCTIStix2:
 
     @_reuse_serialized_export_file_cache
     @_reuse_export_marking_definition_cache
+    @_reuse_export_created_by_cache
     def export_list(
         self,
         entity_type: str,
@@ -4565,6 +4598,7 @@ class OpenCTIStix2:
 
     @_reuse_serialized_export_file_cache
     @_reuse_export_marking_definition_cache
+    @_reuse_export_created_by_cache
     def export_selected(
         self,
         entities_list: List[dict],

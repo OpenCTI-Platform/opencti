@@ -288,6 +288,44 @@ def test_export_selected_reuses_shared_marking_definition_conversion(monkeypatch
     assert build_calls == ["marking-definition--shared"]
 
 
+def _shared_creator_export_entity(index):
+    return {
+        "id": f"indicator-internal--{index}",
+        "standard_id": f"indicator--{index}",
+        "entity_type": "Indicator",
+        "parent_types": ["Stix-Domain-Object"],
+        "createdBy": {
+            "id": "identity-internal--shared",
+            "standard_id": "identity--shared",
+            "entity_type": "Organization",
+            "parent_types": ["Stix-Domain-Object"],
+            "name": "Shared Creator",
+            "identity_class": "organization",
+        },
+        "createdById": "identity-internal--shared",
+    }
+
+
+def test_export_selected_reuses_shared_creator_conversion(monkeypatch):
+    opencti_stix2 = _artifact_export_helper([])
+    original_build = opencti_stix2._build_export_created_by
+    build_calls = []
+
+    def counting_build(entity_created_by):
+        build_calls.append(entity_created_by["standard_id"])
+        return original_build(entity_created_by)
+
+    monkeypatch.setattr(opencti_stix2, "_build_export_created_by", counting_build)
+
+    result = opencti_stix2.export_selected(
+        [_shared_creator_export_entity(1), _shared_creator_export_entity(2)],
+        mode="simple",
+    )
+
+    assert len(result["objects"]) == 3
+    assert build_calls == ["identity--shared"]
+
+
 def test_resolve_author_lowercases_unmatched_title_once():
     class _LowerCountingTitle(str):
         def __new__(cls, value):
