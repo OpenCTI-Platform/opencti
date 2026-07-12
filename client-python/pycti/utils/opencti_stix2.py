@@ -2263,6 +2263,33 @@ class OpenCTIStix2:
                     )
         return stix_object_results
 
+    @staticmethod
+    def _artifact_payload_is_already_in_files(
+        stix_object: Dict, x_opencti_files: List[Dict]
+    ) -> bool:
+        if stix_object.get("type") != "artifact" or "payload_bin" not in stix_object:
+            return False
+        payload_bin = stix_object["payload_bin"]
+        mime_type = stix_object.get("mime_type")
+        if not isinstance(payload_bin, str) or not isinstance(mime_type, str):
+            return False
+        additional_names = stix_object.get("x_opencti_additional_names")
+        if additional_names and len(additional_names) > 0:
+            payload_file_name = os.path.basename(additional_names[0])
+        else:
+            payload_file_name = "artifact.bin"
+        for file_obj in x_opencti_files:
+            if (
+                isinstance(file_obj, dict)
+                and file_obj.get("name") == payload_file_name
+                and file_obj.get("mime_type", "application/octet-stream") == mime_type
+                and file_obj.get("data") == payload_bin
+                and not file_obj.get("no_trigger_import", False)
+                and not file_obj.get("embedded", False)
+            ):
+                return True
+        return False
+
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
     ) -> None:
@@ -2296,6 +2323,10 @@ class OpenCTIStix2:
             x_opencti_files.extend(
                 self.opencti.get_attribute_in_extension("files", stix_object)
             )
+        observable_data = stix_object
+        if self._artifact_payload_is_already_in_files(stix_object, x_opencti_files):
+            observable_data = dict(stix_object)
+            del observable_data["payload_bin"]
 
         # Prepare all files for direct upload during creation
         files_to_upload = []
@@ -2388,7 +2419,7 @@ class OpenCTIStix2:
             )
         else:
             stix_observable_result = self.opencti.stix_cyber_observable.create(
-                observableData=stix_object,
+                observableData=observable_data,
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
                 ),
