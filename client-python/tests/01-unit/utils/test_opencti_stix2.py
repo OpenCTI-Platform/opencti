@@ -1674,6 +1674,18 @@ def test_export_selected_retries_then_reuses_embedded_markdown_image_download():
     assert len(opencti_stix2.opencti.fetch_calls) == 2
 
 
+def test_export_selected_skips_non_image_embedded_markdown_fetches():
+    opencti_stix2 = _artifact_export_helper(["Zm9v", "Zm9v"])
+    opencti_stix2.generate_export = lambda entity: entity.copy()
+    entity = _embedded_markdown_export_entity(1, include_all_fields=False)
+    entity["description"] = "![doc](embedded/Report/shared/payload.pdf)"
+
+    result = opencti_stix2.export_selected([entity], mode="simple")
+
+    assert result["objects"][0]["description"] == entity["description"]
+    assert opencti_stix2.opencti.fetch_calls == []
+
+
 def test_bundle_level_rewrite_rewrites_relative_embedded_markdown_image_uri(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):

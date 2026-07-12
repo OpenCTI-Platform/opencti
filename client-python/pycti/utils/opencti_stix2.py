@@ -740,6 +740,12 @@ class OpenCTIStix2:
         ):
             return serialized_export_file_cache[cache_key]
 
+        mime_type = (
+            mimetypes.guess_type(embedded_storage_path)[0] or "application/octet-stream"
+        )
+        if not mime_type.startswith("image/"):
+            return None
+
         storage_url = urljoin(
             self.opencti.api_url.replace("graphql", ""),
             f"storage/get/{embedded_storage_path}",
@@ -763,12 +769,6 @@ class OpenCTIStix2:
                     serialize=True,
                 )
         if not encoded_data:
-            return None
-
-        mime_type = (
-            mimetypes.guess_type(embedded_storage_path)[0] or "application/octet-stream"
-        )
-        if not mime_type.startswith("image/"):
             return None
 
         embedded_data_uri = f"data:{mime_type};base64,{encoded_data}"
