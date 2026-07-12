@@ -9570,23 +9570,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-calls-python@npm:1.11.1":
-  version: 1.11.1
-  resolution: "node-calls-python@npm:1.11.1"
+"node-calls-python@npm:1.12.0":
+  version: 1.12.0
+  resolution: "node-calls-python@npm:1.12.0"
   dependencies:
     chokidar: "npm:^3.6.0"
     node-gyp: "npm:latest"
-  checksum: 10c0/e7a1d577b30e928d900fb1a6d19ea8fb36b41066dc34127223e1aa303f3d6a9838bb8188e0ad8fa2c54c26ca8c327d4ec54c8ec99706f64c6d77e6646297dc23
+  checksum: 10c0/29146be8628b74631584a073be467fcdf5457ef0b2060861d2426a9fb8eb382844ee78c82bdb450e4ca96cc17d75ea1d17070e1196c753d36790467cd952f6c6
   languageName: node
   linkType: hard
 
-"node-calls-python@patch:node-calls-python@1.11.1#./patch/node-calls-python.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 1.11.1
-  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.11.1#./patch/node-calls-python.patch::version=1.11.1&hash=13bcc5&locator=opencti-graphql%40workspace%3A."
+"node-calls-python@patch:node-calls-python@1.12.0#./patch/node-calls-python.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 1.12.0
+  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.12.0#./patch/node-calls-python.patch::version=1.12.0&hash=13bcc5&locator=opencti-graphql%40workspace%3A."
   dependencies:
     chokidar: "npm:^3.6.0"
     node-gyp: "npm:latest"
-  checksum: 10c0/9bafb0043d7a4e3c33b3842caf3a0e7b28955b66e52d5dbe8b5b12930b92b59d6189516934f5a20657229c7fce1aa90405e69c833a2761a7633301cf34b83297
+  checksum: 10c0/7d522bdaf459d7d2b32279929cc986ac8c7a3956f17904151ec941209946508f3c0140abeb0203fe6d260ac73b90c219cbf4276a28262628b7981d6501dd6541
   languageName: node
   linkType: hard
 
@@ -10160,7 +10160,7 @@ __metadata:
     moment: "npm:2.30.1"
     moment-range: "npm:4.0.2"
     nconf: "npm:0.13.0"
-    node-calls-python: "npm:1.11.1"
+    node-calls-python: "npm:1.12.0"
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.0"
     nodemailer: "npm:9.0.3"
