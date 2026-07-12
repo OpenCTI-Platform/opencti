@@ -248,6 +248,46 @@ def test_export_selected_retries_external_reference_file_after_failed_read():
     assert len(opencti_stix2.opencti.fetch_calls) == 2
 
 
+def _shared_marking_export_entity(index):
+    return {
+        "id": f"indicator-internal--{index}",
+        "standard_id": f"indicator--{index}",
+        "entity_type": "Indicator",
+        "parent_types": ["Stix-Domain-Object"],
+        "objectMarking": [
+            {
+                "standard_id": "marking-definition--shared",
+                "definition_type": "TLP",
+                "definition": "TLP:AMBER",
+                "created": "2026-01-01T00:00:00.000Z",
+            }
+        ],
+        "objectMarkingIds": ["marking-definition--shared"],
+    }
+
+
+def test_export_selected_reuses_shared_marking_definition_conversion(monkeypatch):
+    opencti_stix2 = _artifact_export_helper([])
+    original_build = opencti_stix2._build_export_marking_definition
+    build_calls = []
+
+    def counting_build(entity_marking_definition):
+        build_calls.append(entity_marking_definition["standard_id"])
+        return original_build(entity_marking_definition)
+
+    monkeypatch.setattr(
+        opencti_stix2, "_build_export_marking_definition", counting_build
+    )
+
+    result = opencti_stix2.export_selected(
+        [_shared_marking_export_entity(1), _shared_marking_export_entity(2)],
+        mode="simple",
+    )
+
+    assert len(result["objects"]) == 3
+    assert build_calls == ["marking-definition--shared"]
+
+
 def test_resolve_author_lowercases_unmatched_title_once():
     class _LowerCountingTitle(str):
         def __new__(cls, value):
