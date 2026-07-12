@@ -865,6 +865,10 @@ class OpenCTIStix2:
             self.set_in_cache(name, author)
             return author
 
+    @staticmethod
+    def _normalize_import_prefetch_value(value):
+        return value.lower().strip() if isinstance(value, str) else value
+
     def _get_import_label_values(self, stix_object: Dict) -> List[str]:
         if "labels" in stix_object:
             return stix_object["labels"] or []
@@ -921,10 +925,27 @@ class OpenCTIStix2:
                     )
                     or []
                 )
+                batch_label_values_by_normalized_value = {}
+                for label_value in batch_label_values:
+                    normalized_label_value = self._normalize_import_prefetch_value(
+                        label_value
+                    )
+                    batch_label_values_by_normalized_value.setdefault(
+                        normalized_label_value, []
+                    ).append(label_value)
                 existing_label_values = set()
                 for label_data in label_data_list:
-                    existing_label_values.add(label_data["value"])
                     self.set_in_cache("label_" + label_data["value"], label_data)
+                    normalized_label_value = self._normalize_import_prefetch_value(
+                        label_data["value"]
+                    )
+                    for (
+                        matching_label_value
+                    ) in batch_label_values_by_normalized_value.get(
+                        normalized_label_value, []
+                    ):
+                        existing_label_values.add(matching_label_value)
+                        self.set_in_cache("label_" + matching_label_value, label_data)
                 if missing_label_values is not None:
                     missing_label_values.update(
                         label_value
