@@ -200,6 +200,16 @@ dans Figma".
 
 ---
 
+## Balayage de complétude (câblé / en dur / dérivé)
+
+Audit exhaustif, propriété par propriété, des 3 fichiers non-générés
+touchés (`ThemeDark.ts`, `ThemeLight.ts`, `theme-constants.ts`) :
+[`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`](reports/constants-completeness-sweep/RAPPORT.md).
+Couvre aussi les zones hors du périmètre §1-8 (palette décorative diverse,
+`components.*`, `tag`, `typography`, `button`) et relève un constat
+nécessitant arbitrage (`leftBar.popoverItem`, valeur fantôme du même piège
+1-caractère que le fix background).
+
 ## Tokens à créer dans Figma
 
 Confirmed gaps — no FDS token found after an exhaustive grep of the
