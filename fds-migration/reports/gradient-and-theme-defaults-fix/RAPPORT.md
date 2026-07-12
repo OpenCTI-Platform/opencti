@@ -1,13 +1,19 @@
 # Fix — gradient de fond + defaults thèmes système (dark/light)
 
+> **Captures et dumps JSON non committés** (hygiène repo : zéro binaire en
+> historique git). Screenshots + `before.json`/`after.json` vivent localement
+> dans `.fds-validation-artifacts/gradient-and-theme-defaults-fix/`
+> (gitignored). Ce document reste la trace durable des valeurs et du verdict.
+
 **Suite de** `fds-migration/reports/custom-theme-investigation/RAPPORT.md`
 (anatomie de la feature thèmes + verdict non-cassé). Ce rapport couvre
 l'implémentation arbitrée : câblage du gradient, seed backend, mutation DB
 locale, validation.
 
-**Commits sur `fds/tokens-colors`** (PR #17115, non mergée) :
-1. `475e1b83ee` — `fix(fds): wire body gradient end-color to FDS layer-0-gradient token`
-2. `9de6ea45f8` — `fix(fds): align built-in theme seed defaults with FDS-wired frontend constants`
+**Commits sur `fds/tokens-colors`** (PR #17115, non mergée — hash rewrités
+suite à la purge d'artefacts du 2026-07-12, contenu identique) :
+1. `842337c570` — `fix(fds): wire body gradient end-color to FDS layer-0-gradient token`
+2. `82f8468c66` — `fix(fds): align built-in theme seed defaults with FDS-wired frontend constants`
 
 ---
 
@@ -66,7 +72,7 @@ utilisateur.
 
 Sur cet environnement : `Dark` = `c3aa48e2-85ea-445f-bd5e-f11a519000cb`,
 `Light` = `b62de4de-a574-4509-9992-af85fbde819e` (dump complet avant/après :
-`db-mutation-dump/before.json` / `after.json`).
+`.fds-validation-artifacts/gradient-and-theme-defaults-fix/db-mutation-dump/before.json` / `after.json`, local-only).
 
 ### 3.2 Mutation (une par thème, seulement les champs qui changent)
 
@@ -138,7 +144,7 @@ déjà été supprimé en fin d'investigation).
 
 ## 4. Validation visuelle post-fix (1+2+3 appliqués)
 
-Captures dans `validation-screenshots/`.
+Captures dans `.fds-validation-artifacts/gradient-and-theme-defaults-fix/validation-screenshots/` (local-only).
 
 | Test | Résultat mesuré (`getComputedStyle`) | Capture |
 |---|---|---|

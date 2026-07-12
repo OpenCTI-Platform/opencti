@@ -1,5 +1,10 @@
 # Investigation — Feature « Thèmes custom » vs câblage FDS
 
+> **Captures non committées** (hygiène repo : zéro image en historique git).
+> Les 10 screenshots référencés ci-dessous vivent localement dans
+> `.fds-validation-artifacts/custom-theme-investigation/` (gitignored). Ce
+> document reste la trace durable du parcours et de son verdict.
+
 **Type :** investigation en lecture seule, aucun fix appliqué (code, DB, ou schéma
 intouchés). Captures d'écran et requêtes GraphQL uniquement.
 **Testé sur :** environnement de dev local (front `:3000`, graphql `:4000`), code
