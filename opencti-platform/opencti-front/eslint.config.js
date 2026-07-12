@@ -17,6 +17,8 @@ export default defineConfig([
       '**/packages/**',
       '**/src/generated/**',
       '**/__generated__/**',
+      '**/fds-tokens.generated.ts',
+      '**/fds-tokens.generated.meta.json',
       'extract-i18n-keyword.js',
       'playwright.config.ts',
       'vite.config.ts',

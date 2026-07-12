@@ -235,6 +235,27 @@ class is ever applied (the existing `useDocumentThemeModifier` only sets a
 confirmed this pilot should be limited to the static JS wiring done above;
 the CSS-variable runtime sync is real follow-up work, not an oversight.
 
+### Generator output isn't lint-conformant (lib-side follow-up)
+
+`fds-tokens.generated.ts` fails `opencti-front`'s ESLint config as-is: 1216
+problems, 1211 of them `@stylistic/quotes` (the generator emits
+double-quoted string literals; this codebase's style requires single
+quotes), plus a handful of `comma-dangle`/`indent`/naming-convention/import
+findings. Worked around on the consuming side for now — added
+`fds-tokens.generated.ts` + `fds-tokens.generated.meta.json` to
+`opencti-front/eslint.config.js`'s `ignores` (same treatment as
+`__generated__/**`, the Relay-generated files), since hand-fixing or
+`--fix`-ing a generated file is pointless: the next regeneration would
+reintroduce every violation.
+
+**Real fix belongs in the `mui-bridge` generator** (separate lib micro-PR,
+not urgent, not blocking this PR): either emit single-quoted strings (and
+match this repo's other stylistic conventions — trailing commas, indent)
+directly, or emit a `/* eslint-disable */` header so consuming repos don't
+need their own ignore-list entry. Either approach removes the need for
+every downstream consumer to special-case this file in their own lint
+config.
+
 ---
 
 *All FDS values above are taken from `fds-tokens.generated.ts`
