@@ -204,6 +204,38 @@ def _relationship_root(identifier):
     }
 
 
+def _emitted_ref_root(identifier):
+    return {
+        "id": f"indicator--root-{identifier}",
+        "type": "indicator",
+        "x_opencti_id": f"root-{identifier}",
+        "createdBy": {
+            "id": f"creator-{identifier}",
+            "standard_id": f"identity--creator-{identifier}",
+            "entity_type": "Identity",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+        "createdById": f"creator-{identifier}",
+        "dataSource": {
+            "id": f"data-source-{identifier}",
+            "standard_id": f"data-source--{identifier}",
+            "entity_type": "Data-Source",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+        "dataSourceId": f"data-source-{identifier}",
+        "objectMarking": [
+            {
+                "id": f"marking-{identifier}",
+                "standard_id": f"marking-definition--{identifier}",
+                "definition_type": "TLP",
+                "definition": "TLP:CLEAR",
+                "created": "2017-01-20T00:00:00.000Z",
+            }
+        ],
+        "objectMarkingIds": [f"marking-{identifier}"],
+    }
+
+
 def _helper(relationships):
     helper = OpenCTIStix2.__new__(OpenCTIStix2)
     helper.opencti = SimpleNamespace(
@@ -900,6 +932,31 @@ def test_prepare_export_full_does_not_reread_contained_objects_from_object_refs(
 
     assert read_calls == ["target-1"]
     assert [item["id"] for item in result] == ["report--root-1", "malware--target-1"]
+
+
+def test_prepare_export_full_does_not_reread_already_emitted_reference_objects():
+    helper = _helper([])
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("already-emitted reference objects should not be reread")
+    )
+
+    result = helper.prepare_export(entity=_emitted_ref_root(1), mode="full")
+
+    assert [item["id"] for item in result] == [
+        "identity--creator-1",
+        "data-source--1",
+        "marking-definition--1",
+        "indicator--root-1",
+    ]
 
 
 def test_export_list_batches_container_object_reads_across_roots():

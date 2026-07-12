@@ -3673,6 +3673,7 @@ class OpenCTIStix2:
         elif mode == "full":
             uuids = {entity["id"]}
             uuids.update(y["id"] for y in result)
+            already_queued_reference_values.update(uuids)
             # Get extra refs
             for key in entity.keys():
                 if key.endswith("_ref"):
