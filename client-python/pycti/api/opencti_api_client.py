@@ -166,29 +166,38 @@ class _MultipartStream:
         self.boundary = uuid.uuid4().hex
         self.content_type = f"multipart/form-data; boundary={self.boundary}"
         self._parts = []
+        self._owned_data = []
         self._length = 0
 
-        for name, value in fields:
-            if isinstance(value, tuple):
-                filename, data, mime = value
-                data, data_length = self._normalize_data(data)
-                field = RequestField(name=name, data=None, filename=filename)
-                field.make_multipart(content_type=mime)
-            else:
-                data, data_length = self._normalize_data(value)
-                field = RequestField(name=name, data=None)
-                field.make_multipart()
+        try:
+            for name, value in fields:
+                if isinstance(value, tuple):
+                    filename, data, mime = value
+                    data, data_length, owns_data = self._normalize_data(data)
+                    field = RequestField(name=name, data=None, filename=filename)
+                    field.make_multipart(content_type=mime)
+                else:
+                    data, data_length, owns_data = self._normalize_data(value)
+                    field = RequestField(name=name, data=None)
+                    field.make_multipart()
 
-            prefix = (f"--{self.boundary}\r\n" + field.render_headers()).encode("utf-8")
-            suffix = b"\r\n"
-            self._parts.append((prefix, data, suffix))
-            self._length += len(prefix) + data_length + len(suffix)
+                if owns_data:
+                    self._owned_data.append(data)
+                prefix = (f"--{self.boundary}\r\n" + field.render_headers()).encode(
+                    "utf-8"
+                )
+                suffix = b"\r\n"
+                self._parts.append((prefix, data, suffix))
+                self._length += len(prefix) + data_length + len(suffix)
 
-        self._closing_boundary = f"--{self.boundary}--\r\n".encode("ascii")
-        self._length += len(self._closing_boundary)
+            self._closing_boundary = f"--{self.boundary}--\r\n".encode("ascii")
+            self._length += len(self._closing_boundary)
+        except Exception:
+            self.close()
+            raise
 
-    @staticmethod
-    def _normalize_data(data):
+    @classmethod
+    def _normalize_data(cls, data):
         if isinstance(data, str):
             data = data.encode("utf-8", "replace")
         if isinstance(data, memoryview):
@@ -196,20 +205,38 @@ class _MultipartStream:
         if data is None:
             data = b""
         if isinstance(data, (bytes, bytearray)):
-            return data, len(data)
+            return data, len(data), False
         if hasattr(data, "read"):
             try:
                 position = data.tell()
                 data.seek(0, os.SEEK_END)
                 data_length = data.tell() - position
                 data.seek(position)
-                return data, data_length
+                return data, data_length, False
             except (AttributeError, OSError, io.UnsupportedOperation):
-                buffered = data.read()
-                if isinstance(buffered, str):
-                    buffered = buffered.encode("utf-8", "replace")
-                return buffered, len(buffered)
+                buffered = tempfile.SpooledTemporaryFile(
+                    max_size=cls._CHUNK_SIZE, mode="w+b"
+                )
+                try:
+                    while True:
+                        chunk = data.read(cls._CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        if isinstance(chunk, str):
+                            chunk = chunk.encode("utf-8", "replace")
+                        buffered.write(chunk)
+                    data_length = buffered.tell()
+                    buffered.seek(0)
+                    return buffered, data_length, True
+                except Exception:
+                    buffered.close()
+                    raise
         raise TypeError(f"Unsupported multipart data type: {type(data)!r}")
+
+    def close(self):
+        for data in self._owned_data:
+            data.close()
+        self._owned_data.clear()
 
     def __len__(self):
         return self._length
@@ -796,16 +823,19 @@ class OpenCTIApiClient:
                     file_index += 1
             multipart_stream = _MultipartStream(fields=multipart_fields)
             query_headers["Content-Type"] = multipart_stream.content_type
-            # Send the multipart request
-            r = self.session.post(
-                self.api_url,
-                data=multipart_stream,
-                headers=query_headers,
-                verify=self.ssl_verify,
-                cert=self.cert,
-                proxies=self.proxies,
-                timeout=self.session_requests_timeout,
-            )
+            try:
+                # Send the multipart request
+                r = self.session.post(
+                    self.api_url,
+                    data=multipart_stream,
+                    headers=query_headers,
+                    verify=self.ssl_verify,
+                    cert=self.cert,
+                    proxies=self.proxies,
+                    timeout=self.session_requests_timeout,
+                )
+            finally:
+                multipart_stream.close()
         # If no
         else:
             r = self.session.post(

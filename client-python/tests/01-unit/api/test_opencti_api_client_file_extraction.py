@@ -89,18 +89,31 @@ class _TrackingFile(io.BytesIO):
         return super().read(*args, **kwargs)
 
 
+class _NonSeekableTrackingFile(_TrackingFile):
+    def tell(self):
+        raise io.UnsupportedOperation("stream is not seekable")
+
+    def seek(self, *args, **kwargs):
+        del args, kwargs
+        raise io.UnsupportedOperation("stream is not seekable")
+
+
 class _UploadSession:
     def __init__(self, upload):
         self.upload = upload
         self.body = None
         self.content_type = None
         self.read_calls_before_post = None
+        self.multipart_stream = None
+        self.owned_data = []
 
     def post(self, *args, **kwargs):
         del args
         self.read_calls_before_post = self.upload.read_calls
         assert "files" not in kwargs
         multipart_stream = kwargs["data"]
+        self.multipart_stream = multipart_stream
+        self.owned_data = list(multipart_stream._owned_data)
         self.content_type = kwargs["headers"]["Content-Type"]
         self.body = b"".join(multipart_stream)
         return _UploadResponse()
@@ -125,6 +138,32 @@ def test_query_streams_multipart_file_body():
     assert result == {"data": {"ok": True}}
     assert client.session.read_calls_before_post == 0
     assert client.session.content_type.startswith("multipart/form-data; boundary=")
+    assert b'filename="artifact.txt"' in client.session.body
+    assert b"payload" in client.session.body
+
+
+def test_query_spools_non_seekable_multipart_file_body_and_closes_spool():
+    upload = _NonSeekableTrackingFile(b"payload")
+    client = _client()
+    client.api_url = "http://benchmark.invalid/graphql"
+    client.request_headers = {}
+    client.ssl_verify = False
+    client.cert = None
+    client.proxies = None
+    client.session_requests_timeout = 300
+    client.session = _UploadSession(upload)
+
+    result = client.query(
+        "mutation Upload($file: Upload!) { uploadImport(file: $file) { id } }",
+        {"file": File("artifact.txt", upload, "text/plain")},
+    )
+
+    assert result == {"data": {"ok": True}}
+    assert client.session.read_calls_before_post > 0
+    assert len(client.session.owned_data) == 1
+    assert client.session.owned_data[0].closed
+    assert client.session.multipart_stream._owned_data == []
+    assert not upload.closed
     assert b'filename="artifact.txt"' in client.session.body
     assert b"payload" in client.session.body
 
