@@ -1065,15 +1065,26 @@ class _LabelPrefetchRecorder:
     def __init__(self):
         self.list_filters = []
         self.read_or_create_calls = []
+        self.create_calls = []
+        self.existing_values = None
 
     def list(self, **kwargs):
         values = kwargs["filters"]["filters"][0]["values"]
         self.list_filters.append(values)
-        return [{"id": f"label--{value}", "value": value} for value in values]
+        return [
+            {"id": f"label--{value}", "value": value}
+            for value in values
+            if self.existing_values is None or value in self.existing_values
+        ]
 
     def read_or_create_unchecked(self, **kwargs):
         value = kwargs["value"]
         self.read_or_create_calls.append(value)
+        return {"id": f"label--{value}", "value": value}
+
+    def create(self, **kwargs):
+        value = kwargs["value"]
+        self.create_calls.append(value)
         return {"id": f"label--{value}", "value": value}
 
 
@@ -1186,6 +1197,26 @@ def test_import_bundle_prefetches_existing_labels_in_bounded_chunks():
     assert opencti.label.read_or_create_calls == []
 
 
+def test_import_bundle_skips_redundant_reads_for_labels_prefetched_as_missing():
+    opencti = _label_prefetch_opencti()
+    opencti.label.existing_values = set()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    objects = [
+        {
+            "id": f"malware--{index}",
+            "type": "malware",
+            "labels": [f"label-{index}"],
+        }
+        for index in range(3)
+    ]
+
+    _import_bundle_extracting_relationships(opencti_stix2, objects)
+
+    assert opencti.label.list_filters == [["label-0", "label-1", "label-2"]]
+    assert opencti.label.read_or_create_calls == []
+    assert opencti.label.create_calls == ["label-0", "label-1", "label-2"]
+
+
 def test_import_bundle_falls_back_to_per_item_label_resolution_when_prefetch_fails():
     opencti = _label_prefetch_opencti()
     opencti_stix2 = OpenCTIStix2(opencti)
@@ -1204,6 +1235,7 @@ def test_import_bundle_falls_back_to_per_item_label_resolution_when_prefetch_fai
     _import_bundle_extracting_relationships(opencti_stix2, objects)
 
     assert opencti.label.read_or_create_calls == ["label-0", "label-1"]
+    assert opencti.label.create_calls == []
 
 
 class _VocabularyPrefetchRecorder:
