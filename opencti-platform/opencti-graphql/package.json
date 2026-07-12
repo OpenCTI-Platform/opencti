@@ -145,7 +145,7 @@
     "moment": "2.30.1",
     "moment-range": "4.0.2",
     "nconf": "0.13.0",
-    "node-calls-python": "1.11.1",
+    "node-calls-python": "1.12.0",
     "node-fetch": "3.3.2",
     "node-forge": "1.4.0",
     "nodemailer": "9.0.3",
@@ -228,7 +228,7 @@
     "json5": "2.2.3",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
-    "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python.patch",
+    "node-calls-python": "patch:node-calls-python@1.12.0#./patch/node-calls-python.patch",
     "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
   },
   "dependenciesMeta": {
