@@ -1,11 +1,5 @@
 # Targeted captures — deltas not covered by the 9 Phase 5 screens
 
-> **Screenshot files are not committed** (repo hygiene: zero binary images in
-> git history). All PNGs referenced below live locally in
-> `.fds-validation-artifacts/targeted-captures/` (gitignored). This document
-> is the durable record of what was captured and what it proved; re-run the
-> capture script if you need to regenerate the images themselves.
-
 Purpose: give concrete before/after evidence for tokens whose deltas are
 real (per `TOKEN-MAPPING.md`) but weren't exercised by any of the 9 standard
 Phase 5 screens: the tonic/`secondary.main` color, `background.accent` (dark),
