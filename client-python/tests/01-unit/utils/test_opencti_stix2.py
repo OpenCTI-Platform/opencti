@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from pycti.utils.opencti_file_utils import BASE64_FILE_MEMORY_THRESHOLD
 from pycti.utils.opencti_stix2 import IMPORT_PREFETCH_BATCH_SIZE, OpenCTIStix2
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
 
@@ -1768,6 +1769,66 @@ def test_import_observable_passes_embedded_flags_to_create(
     opencti_stix2.import_observable(stix_object, update=False)
 
     assert captured_kwargs.get("embedded") == [True]
+
+
+def test_import_observable_closes_large_base64_upload_stream_after_create(monkeypatch):
+    captured_data = None
+    payload = b"x" * (BASE64_FILE_MEMORY_THRESHOLD + 1)
+    encoded_data = base64.b64encode(payload).decode("ascii")
+
+    def fake_create(**kwargs):
+        nonlocal captured_data
+        captured_data = kwargs["files"][0]["data"]
+        assert not captured_data.closed
+        assert captured_data.read() == payload
+        captured_data.seek(0)
+        return {"id": "observable--1", "entity_type": "Stix-Cyber-Observable"}
+
+    fake_opencti = SimpleNamespace(
+        file=lambda name, data, mime_type: {
+            "name": name,
+            "data": data,
+            "mime_type": mime_type,
+        },
+        get_attribute_in_extension=lambda attribute, entity: None,
+        get_draft_id=lambda: "",
+        stix_cyber_observable=SimpleNamespace(create=fake_create),
+    )
+    opencti_stix2 = OpenCTIStix2(fake_opencti)
+    monkeypatch.setattr(
+        opencti_stix2,
+        "extract_embedded_relationships",
+        lambda stix_object, types=None: {
+            "created_by": None,
+            "object_marking": None,
+            "object_label": None,
+            "open_vocabs": {},
+            "granted_refs": [],
+            "kill_chain_phases": [],
+            "object_refs": [],
+            "external_references": [],
+            "reports": {},
+            "sample_refs": [],
+        },
+    )
+
+    opencti_stix2.import_observable(
+        {
+            "id": "ipv4-addr--11111111-1111-4111-8111-111111111111",
+            "type": "ipv4-addr",
+            "value": "1.2.3.4",
+            "x_opencti_files": [
+                {
+                    "name": "payload.bin",
+                    "data": encoded_data,
+                    "mime_type": "application/octet-stream",
+                }
+            ],
+        },
+        update=False,
+    )
+
+    assert captured_data.closed
 
 
 @pytest.mark.parametrize(

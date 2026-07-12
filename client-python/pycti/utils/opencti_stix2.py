@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import mimetypes
@@ -8,7 +7,7 @@ import re
 import time
 import traceback
 import uuid
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from contextvars import ContextVar
 from functools import wraps
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -30,6 +29,7 @@ from pycti.utils.constants import (
     StixCyberObservableTypes,
     ThreatActorTypes,
 )
+from pycti.utils.opencti_file_utils import decode_base64_file_data
 from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
     rewrite_markdown_images,
 )
@@ -487,43 +487,46 @@ class OpenCTIStix2:
         ):
             return file_reuse_cache[file_reuse_cache_key]
 
-        files_to_upload = []
-        files_markings = []
-        no_trigger_import = []
-        embedded_flags = []
-        for file_obj in file_objs:
-            data = None
-            if "data" in file_obj:
-                data = base64.b64decode(file_obj["data"])
-            if data is not None:
-                files_to_upload.append(
-                    self.opencti.file(
-                        file_obj["name"],
-                        data,
-                        file_obj.get("mime_type", "application/octet-stream"),
+        with ExitStack() as upload_stack:
+            files_to_upload = []
+            files_markings = []
+            no_trigger_import = []
+            embedded_flags = []
+            for file_obj in file_objs:
+                data = None
+                if "data" in file_obj:
+                    data = upload_stack.enter_context(
+                        decode_base64_file_data(file_obj["data"])
                     )
+                if data is not None:
+                    files_to_upload.append(
+                        self.opencti.file(
+                            file_obj["name"],
+                            data,
+                            file_obj.get("mime_type", "application/octet-stream"),
+                        )
+                    )
+                    files_markings.append(file_obj.get("object_marking_refs", None))
+                    no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                    embedded_flags.append(file_obj.get("embedded", False))
+
+            if file_objs and not files_to_upload:
+                external_reference_cache_data = self.get_in_cache(
+                    external_reference_cache_key
                 )
-                files_markings.append(file_obj.get("object_marking_refs", None))
-                no_trigger_import.append(file_obj.get("no_trigger_import", False))
-                embedded_flags.append(file_obj.get("embedded", False))
+                if external_reference_cache_data is not None:
+                    return external_reference_cache_data["id"]
 
-        if file_objs and not files_to_upload:
-            external_reference_cache_data = self.get_in_cache(
-                external_reference_cache_key
-            )
-            if external_reference_cache_data is not None:
-                return external_reference_cache_data["id"]
-
-        external_reference_id = self.opencti.external_reference.create(
-            source_name=source_name,
-            url=url,
-            external_id=external_id,
-            description=description,
-            files=files_to_upload if files_to_upload else None,
-            filesMarkings=files_markings if files_markings else None,
-            noTriggerImport=no_trigger_import if no_trigger_import else None,
-            embedded=embedded_flags if embedded_flags else None,
-        )["id"]
+            external_reference_id = self.opencti.external_reference.create(
+                source_name=source_name,
+                url=url,
+                external_id=external_id,
+                description=description,
+                files=files_to_upload if files_to_upload else None,
+                filesMarkings=files_markings if files_markings else None,
+                noTriggerImport=no_trigger_import if no_trigger_import else None,
+                embedded=embedded_flags if embedded_flags else None,
+            )["id"]
         self.set_in_cache(
             external_reference_cache_key,
             {"id": external_reference_id},
@@ -2257,54 +2260,58 @@ class OpenCTIStix2:
                 self.opencti.get_attribute_in_extension("files", stix_object)
             )
 
-        # Prepare all files for direct upload during creation
-        files_to_upload = []
-        files_markings = []
-        no_trigger_import = []
-        embedded_flags = []
-        for file_obj in x_opencti_files:
-            data = None
-            if "data" in file_obj:
-                data = base64.b64decode(file_obj["data"])
-            if data is not None:
-                files_to_upload.append(
-                    self.opencti.file(
-                        file_obj["name"],
-                        data,
-                        file_obj.get("mime_type", "application/octet-stream"),
+        with ExitStack() as upload_stack:
+            # Prepare all files for direct upload during creation
+            files_to_upload = []
+            files_markings = []
+            no_trigger_import = []
+            embedded_flags = []
+            for file_obj in x_opencti_files:
+                data = None
+                if "data" in file_obj:
+                    data = upload_stack.enter_context(
+                        decode_base64_file_data(file_obj["data"])
                     )
+                if data is not None:
+                    files_to_upload.append(
+                        self.opencti.file(
+                            file_obj["name"],
+                            data,
+                            file_obj.get("mime_type", "application/octet-stream"),
+                        )
+                    )
+                    files_markings.append(file_obj.get("object_marking_refs", None))
+                    no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                    embedded_flags.append(file_obj.get("embedded", False))
+
+            # Extra
+            extras = {
+                "created_by_id": created_by_id,
+                "object_marking_ids": object_marking_ids,
+                "object_label_ids": object_label_ids,
+                "open_vocabs": open_vocabs,
+                "kill_chain_phases_ids": kill_chain_phases_ids,
+                "object_ids": object_refs_ids,
+                "external_references_ids": external_references_ids,
+                "reports": reports,
+                "sample_ids": sample_refs_ids,
+                "files": files_to_upload if files_to_upload else None,
+                "filesMarkings": files_markings if files_markings else None,
+                "noTriggerImport": no_trigger_import if no_trigger_import else None,
+                "embedded": embedded_flags if embedded_flags else None,
+            }
+
+            stix_helper = self.get_stix_helper().get(stix_object["type"])
+            if stix_helper:
+                stix_object_results = stix_helper.import_from_stix2(
+                    stixObject=stix_object, extras=extras, update=update
                 )
-                files_markings.append(file_obj.get("object_marking_refs", None))
-                no_trigger_import.append(file_obj.get("no_trigger_import", False))
-                embedded_flags.append(file_obj.get("embedded", False))
-
-        # Extra
-        extras = {
-            "created_by_id": created_by_id,
-            "object_marking_ids": object_marking_ids,
-            "object_label_ids": object_label_ids,
-            "open_vocabs": open_vocabs,
-            "kill_chain_phases_ids": kill_chain_phases_ids,
-            "object_ids": object_refs_ids,
-            "external_references_ids": external_references_ids,
-            "reports": reports,
-            "sample_ids": sample_refs_ids,
-            "files": files_to_upload if files_to_upload else None,
-            "filesMarkings": files_markings if files_markings else None,
-            "noTriggerImport": no_trigger_import if no_trigger_import else None,
-            "embedded": embedded_flags if embedded_flags else None,
-        }
-
-        stix_helper = self.get_stix_helper().get(stix_object["type"])
-        if stix_helper:
-            stix_object_results = stix_helper.import_from_stix2(
-                stixObject=stix_object, extras=extras, update=update
-            )
-        else:
-            stix_object_results = None
-            self.opencti.app_logger.error(
-                "Unknown object type, doing nothing...", {"type": stix_object["type"]}
-            )
+            else:
+                stix_object_results = None
+                self.opencti.app_logger.error(
+                    "Unknown object type, doing nothing...",
+                    {"type": stix_object["type"]},
+                )
 
         if stix_object_results is None:
             return None
@@ -2411,124 +2418,137 @@ class OpenCTIStix2:
             observable_data = dict(stix_object)
             del observable_data["payload_bin"]
 
-        # Prepare all files for direct upload during creation
-        files_to_upload = []
-        files_markings = []
-        no_trigger_import = []
-        embedded_flags = []
-        for file_obj in x_opencti_files:
-            data = None
-            if "data" in file_obj:
-                data = base64.b64decode(file_obj["data"])
-            if data is not None:
-                files_to_upload.append(
-                    self.opencti.file(
-                        file_obj["name"],
-                        data,
-                        file_obj.get("mime_type", "application/octet-stream"),
+        with ExitStack() as upload_stack:
+            # Prepare all files for direct upload during creation
+            files_to_upload = []
+            files_markings = []
+            no_trigger_import = []
+            embedded_flags = []
+            for file_obj in x_opencti_files:
+                data = None
+                if "data" in file_obj:
+                    data = upload_stack.enter_context(
+                        decode_base64_file_data(file_obj["data"])
                     )
-                )
-                files_markings.append(file_obj.get("object_marking_refs", None))
-                no_trigger_import.append(file_obj.get("no_trigger_import", False))
-                embedded_flags.append(file_obj.get("embedded", False))
+                if data is not None:
+                    files_to_upload.append(
+                        self.opencti.file(
+                            file_obj["name"],
+                            data,
+                            file_obj.get("mime_type", "application/octet-stream"),
+                        )
+                    )
+                    files_markings.append(file_obj.get("object_marking_refs", None))
+                    no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                    embedded_flags.append(file_obj.get("embedded", False))
 
-        # Extra
-        extras = {
-            "created_by_id": created_by_id,
-            "object_marking_ids": object_marking_ids,
-            "object_label_ids": object_label_ids,
-            "open_vocabs": open_vocabs,
-            "granted_refs_ids": granted_refs_ids,
-            "kill_chain_phases_ids": kill_chain_phases_ids,
-            "object_ids": object_refs_ids,
-            "external_references_ids": external_references_ids,
-            "reports": reports,
-            "sample_ids": sample_refs_ids,
-            "files": files_to_upload if files_to_upload else None,
-            "filesMarkings": files_markings if files_markings else None,
-            "noTriggerImport": no_trigger_import if no_trigger_import else None,
-            "embedded": embedded_flags if embedded_flags else None,
-        }
-        upsert_operations = self.opencti.get_attribute_in_extension(
-            "opencti_upsert_operations", stix_object
-        )
-        if stix_object["type"] == "simple-observable":
-            stix_observable_result = self.opencti.stix_cyber_observable.create(
-                simple_observable_id=stix_object["id"],
-                simple_observable_key=stix_object["key"],
-                simple_observable_value=(
-                    stix_object["value"]
-                    if stix_object["key"] not in OBSERVABLES_VALUE_INT
-                    else int(stix_object["value"])
-                ),
-                simple_observable_description=(
-                    stix_object["description"] if "description" in stix_object else None
-                ),
-                x_opencti_score=(
-                    stix_object["x_opencti_score"]
-                    if "x_opencti_score" in stix_object
-                    else None
-                ),
-                createdBy=(
-                    extras["created_by_id"] if "created_by_id" in extras else None
-                ),
-                objectMarking=(
-                    extras["object_marking_ids"]
-                    if "object_marking_ids" in extras
-                    else []
-                ),
-                objectLabel=(
-                    extras["object_label_ids"] if "object_label_ids" in extras else None
-                ),
-                externalReferences=(
-                    extras["external_references_ids"]
-                    if "external_references_ids" in extras
-                    else None
-                ),
-                createIndicator=(
-                    stix_object["x_opencti_create_indicator"]
-                    if "x_opencti_create_indicator" in stix_object
-                    else None
-                ),
-                objectOrganization=(
-                    extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
-                ),
-                update=update,
-                files=extras.get("files"),
-                filesMarkings=extras.get("filesMarkings"),
-                noTriggerImport=extras.get("noTriggerImport", False),
-                embedded=extras.get("embedded", None),
-                upsert_operations=upsert_operations,
+            # Extra
+            extras = {
+                "created_by_id": created_by_id,
+                "object_marking_ids": object_marking_ids,
+                "object_label_ids": object_label_ids,
+                "open_vocabs": open_vocabs,
+                "granted_refs_ids": granted_refs_ids,
+                "kill_chain_phases_ids": kill_chain_phases_ids,
+                "object_ids": object_refs_ids,
+                "external_references_ids": external_references_ids,
+                "reports": reports,
+                "sample_ids": sample_refs_ids,
+                "files": files_to_upload if files_to_upload else None,
+                "filesMarkings": files_markings if files_markings else None,
+                "noTriggerImport": no_trigger_import if no_trigger_import else None,
+                "embedded": embedded_flags if embedded_flags else None,
+            }
+            upsert_operations = self.opencti.get_attribute_in_extension(
+                "opencti_upsert_operations", stix_object
             )
-        else:
-            stix_observable_result = self.opencti.stix_cyber_observable.create(
-                observableData=observable_data,
-                createdBy=(
-                    extras["created_by_id"] if "created_by_id" in extras else None
-                ),
-                objectMarking=(
-                    extras["object_marking_ids"]
-                    if "object_marking_ids" in extras
-                    else []
-                ),
-                objectLabel=(
-                    extras["object_label_ids"] if "object_label_ids" in extras else None
-                ),
-                externalReferences=(
-                    extras["external_references_ids"]
-                    if "external_references_ids" in extras
-                    else None
-                ),
-                objectOrganization=(
-                    extras["granted_refs_ids"] if "granted_refs_ids" in extras else []
-                ),
-                update=update,
-                files=extras.get("files"),
-                filesMarkings=extras.get("filesMarkings"),
-                noTriggerImport=extras.get("noTriggerImport", False),
-                embedded=extras.get("embedded", None),
-                upsert_operations=upsert_operations,
-            )
+            if stix_object["type"] == "simple-observable":
+                stix_observable_result = self.opencti.stix_cyber_observable.create(
+                    simple_observable_id=stix_object["id"],
+                    simple_observable_key=stix_object["key"],
+                    simple_observable_value=(
+                        stix_object["value"]
+                        if stix_object["key"] not in OBSERVABLES_VALUE_INT
+                        else int(stix_object["value"])
+                    ),
+                    simple_observable_description=(
+                        stix_object["description"]
+                        if "description" in stix_object
+                        else None
+                    ),
+                    x_opencti_score=(
+                        stix_object["x_opencti_score"]
+                        if "x_opencti_score" in stix_object
+                        else None
+                    ),
+                    createdBy=(
+                        extras["created_by_id"] if "created_by_id" in extras else None
+                    ),
+                    objectMarking=(
+                        extras["object_marking_ids"]
+                        if "object_marking_ids" in extras
+                        else []
+                    ),
+                    objectLabel=(
+                        extras["object_label_ids"]
+                        if "object_label_ids" in extras
+                        else None
+                    ),
+                    externalReferences=(
+                        extras["external_references_ids"]
+                        if "external_references_ids" in extras
+                        else None
+                    ),
+                    createIndicator=(
+                        stix_object["x_opencti_create_indicator"]
+                        if "x_opencti_create_indicator" in stix_object
+                        else None
+                    ),
+                    objectOrganization=(
+                        extras["granted_refs_ids"]
+                        if "granted_refs_ids" in extras
+                        else []
+                    ),
+                    update=update,
+                    files=extras.get("files"),
+                    filesMarkings=extras.get("filesMarkings"),
+                    noTriggerImport=extras.get("noTriggerImport", False),
+                    embedded=extras.get("embedded", None),
+                    upsert_operations=upsert_operations,
+                )
+            else:
+                stix_observable_result = self.opencti.stix_cyber_observable.create(
+                    observableData=observable_data,
+                    createdBy=(
+                        extras["created_by_id"] if "created_by_id" in extras else None
+                    ),
+                    objectMarking=(
+                        extras["object_marking_ids"]
+                        if "object_marking_ids" in extras
+                        else []
+                    ),
+                    objectLabel=(
+                        extras["object_label_ids"]
+                        if "object_label_ids" in extras
+                        else None
+                    ),
+                    externalReferences=(
+                        extras["external_references_ids"]
+                        if "external_references_ids" in extras
+                        else None
+                    ),
+                    objectOrganization=(
+                        extras["granted_refs_ids"]
+                        if "granted_refs_ids" in extras
+                        else []
+                    ),
+                    update=update,
+                    files=extras.get("files"),
+                    filesMarkings=extras.get("filesMarkings"),
+                    noTriggerImport=extras.get("noTriggerImport", False),
+                    embedded=extras.get("embedded", None),
+                    upsert_operations=upsert_operations,
+                )
         if stix_observable_result is not None:
             if "id" in stix_object:
                 self.set_in_cache(
@@ -4630,16 +4650,17 @@ class OpenCTIStix2:
         if field_patch_files is not None:
             for file in field_patch_files["value"]:
                 if "data" in file:
-                    do_add_file(
-                        id=item_id,
-                        file_name=file["name"],
-                        version=file.get("version", None),
-                        data=base64.b64decode(file["data"]),
-                        fileMarkings=file.get("object_marking_refs", None),
-                        mime_type=file.get("mime_type", None),
-                        no_trigger_import=file.get("no_trigger_import", False),
-                        embedded=file.get("embedded", False),
-                    )
+                    with decode_base64_file_data(file["data"]) as data:
+                        do_add_file(
+                            id=item_id,
+                            file_name=file["name"],
+                            version=file.get("version", None),
+                            data=data,
+                            fileMarkings=file.get("object_marking_refs", None),
+                            mime_type=file.get("mime_type", None),
+                            no_trigger_import=file.get("no_trigger_import", False),
+                            embedded=file.get("embedded", False),
+                        )
 
     def apply_patch(self, item):
         """Apply field patches to an item.

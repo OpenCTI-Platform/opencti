@@ -1,11 +1,12 @@
 # coding: utf-8
 
-import base64
 import json
 import os
 from contextlib import nullcontext
 
 import magic
+
+from pycti.utils.opencti_file_utils import decode_base64_file_data
 
 from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
@@ -1507,17 +1508,18 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 }
             result = self.opencti.query(query, input_variables)
             if "payload_bin" in observable_data and "mime_type" in observable_data:
-                self.add_file(
-                    id=result["data"]["stixCyberObservableAdd"]["id"],
-                    file_name=(
-                        observable_data["x_opencti_additional_names"][0]
-                        if "x_opencti_additional_names" in observable_data
-                        and len(observable_data["x_opencti_additional_names"]) > 0
-                        else "artifact.bin"
-                    ),
-                    data=base64.b64decode(observable_data["payload_bin"]),
-                    mime_type=observable_data["mime_type"],
-                )
+                with decode_base64_file_data(observable_data["payload_bin"]) as data:
+                    self.add_file(
+                        id=result["data"]["stixCyberObservableAdd"]["id"],
+                        file_name=(
+                            observable_data["x_opencti_additional_names"][0]
+                            if "x_opencti_additional_names" in observable_data
+                            and len(observable_data["x_opencti_additional_names"]) > 0
+                            else "artifact.bin"
+                        ),
+                        data=data,
+                        mime_type=observable_data["mime_type"],
+                    )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
             )
