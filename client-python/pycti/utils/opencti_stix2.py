@@ -161,6 +161,7 @@ EXPORT_ENTITY_LISTER_ATTRIBUTES = {
     "Narrative": "narrative",
     "Vulnerability": "vulnerability",
     "Incident": "incident",
+    "Security-Coverage": "security_coverage",
     "Stix-Cyber-Observable": "stix_cyber_observable",
     "stix-sighting-relationship": "stix_sighting_relationship",
     "stix-core-relationship": "stix_core_relationship",

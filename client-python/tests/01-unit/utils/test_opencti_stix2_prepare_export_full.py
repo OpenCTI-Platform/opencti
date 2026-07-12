@@ -416,6 +416,67 @@ def test_prepare_export_full_batches_unique_related_object_reads_by_type():
     ]
 
 
+def test_prepare_export_full_batches_security_coverage_related_object_reads():
+    relationships = [
+        _relationship("relationship--1", "target-1"),
+        _relationship("relationship--2", "target-2"),
+        _relationship("relationship--3", "target-3"),
+    ]
+    for index, relationship in enumerate(relationships, start=1):
+        relationship["to"].update(
+            {
+                "standard_id": f"security-coverage--target-{index}",
+                "entity_type": "Security-Coverage",
+            }
+        )
+    helper = _helper(relationships)
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-target-{index}": {
+                "id": f"target-target-{index}",
+                "standard_id": f"security-coverage--target-{index}",
+                "entity_type": "Security-Coverage",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.opencti.security_coverage = lister
+    helper.get_lister = OpenCTIStix2.get_lister.__get__(helper, OpenCTIStix2)
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable security coverage objects should not use the reader")
+    )
+    entity = {
+        "id": "indicator--root",
+        "type": "indicator",
+        "x_opencti_id": "root",
+    }
+
+    result = helper.prepare_export(entity=entity, mode="full")
+
+    assert lister.list_calls == 1
+    assert lister.filters == [["target-target-1", "target-target-2", "target-target-3"]]
+    assert [item["id"] for item in result] == [
+        "indicator--root",
+        "relationship--1",
+        "relationship--2",
+        "relationship--3",
+        "security-coverage--target-1",
+        "security-coverage--target-2",
+        "security-coverage--target-3",
+    ]
+
+
 def test_prepare_export_full_batches_nested_refs_for_relationships_and_related_objects():
     helper = _helper(
         [
