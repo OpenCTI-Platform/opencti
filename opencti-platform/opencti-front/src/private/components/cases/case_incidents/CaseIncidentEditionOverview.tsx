@@ -1,7 +1,7 @@
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
+import React, { FunctionComponent, Suspense, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import Divider from '@mui/material/Divider';
@@ -14,6 +14,7 @@ import { convertAssignees, convertCreatedBy, convertMarkings, convertParticipant
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -26,11 +27,11 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
 import {
   buildCustomFieldValueEntry,
   CaseIncidentCustomFieldInput,
-  customFieldDefinitionsForEntityTypeQuery,
+  CaseIncidentCustomFieldsLoader,
+  CustomFieldDef,
   CustomFieldStoredValue,
   getCustomFieldCurrentValue,
   getCustomFieldSetting,
@@ -229,11 +230,9 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     editionFocus: caseIncidentEditionOverviewFocus,
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
-  const customFieldData = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
-    customFieldDefinitionsForEntityTypeQuery,
-    { entityType: CASE_INCIDENT_TYPE },
-  );
-  const customFieldDefs = (customFieldData.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+  const { isFeatureEnable } = useHelper();
+  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
   const currentCustomFieldValues: CustomFieldStoredValue[] = (caseData.customFieldValues ?? []).map((v) => ({ ...v }));
   const handleSubmitCustomField = (definitionId: string, rawValue: string | boolean | string[]) => {
     const definition = customFieldDefs.find((def) => def.id === definitionId);
@@ -471,6 +470,11 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {isCustomFieldsEnabled && (
+            <Suspense fallback={null}>
+              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+            </Suspense>
+          )}
           {customFieldDefs.length > 0 && (
             <>
               <Divider style={{ marginTop: 20 }} />

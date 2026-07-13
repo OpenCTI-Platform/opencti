@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
+import React, { FunctionComponent, Suspense, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
 import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -12,8 +12,8 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
-import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
-import { customFieldDefinitionsForEntityTypeQuery } from './CaseIncidentCustomFields';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { CaseIncidentCustomFieldsLoader, CustomFieldDef } from './CaseIncidentCustomFields';
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
@@ -84,13 +84,10 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
   const customFieldValues = data.customFieldValues ?? [];
-  const customFieldData = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
-    customFieldDefinitionsForEntityTypeQuery,
-    { entityType: CASE_INCIDENT_TYPE },
-  );
-  const customFieldLabelById = new Map(
-    (customFieldData.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => [edge.node.id, edge.node.label]),
-  );
+  const { isFeatureEnable } = useHelper();
+  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
+  const customFieldLabelById = new Map(customFieldDefs.map((def) => [def.id, def.label]));
 
   const getCustomFieldDisplayValue = (cfv: NonNullable<typeof customFieldValues>[number]) => {
     if (cfv.boolean_value !== null && cfv.boolean_value !== undefined) {
@@ -162,6 +159,11 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          {isCustomFieldsEnabled && customFieldValues.length > 0 && (
+            <Suspense fallback={null}>
+              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+            </Suspense>
+          )}
           {customFieldValues.map((cfv) => (
             <Grid item xs={6} key={cfv.field_id}>
               <Label>
