@@ -355,48 +355,56 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         if type is None:
             return
-        if type.lower() == "file":
+        normalized_type = type.lower()
+        if normalized_type == "file":
             type = "StixFile"
-        elif type.lower() == "ipv4-addr":
+        elif normalized_type == "ipv4-addr":
             type = "IPv4-Addr"
-        elif type.lower() == "ipv6-addr":
+        elif normalized_type == "ipv6-addr":
             type = "IPv6-Addr"
-        elif type.lower() == "persona":
+        elif normalized_type == "persona":
             type = "Persona"
-        elif type.lower() == "ssh-key":
+        elif normalized_type == "ssh-key":
             type = "SSH-Key"
-        elif type.lower() == "ai-prompt":
+        elif normalized_type == "ai-prompt":
             type = "AI-Prompt"
-        elif type.lower() == "hostname" or type.lower() == "x-opencti-hostname":
+        elif normalized_type == "hostname" or normalized_type == "x-opencti-hostname":
             type = "Hostname"
-        elif type.lower() == "payment-card" or type.lower() == "x-opencti-payment-card":
+        elif (
+            normalized_type == "payment-card"
+            or normalized_type == "x-opencti-payment-card"
+        ):
             type = "Payment-Card"
-        elif type.lower() == "credential" or type.lower() == "x-opencti-credential":
+        elif (
+            normalized_type == "credential" or normalized_type == "x-opencti-credential"
+        ):
             type = "Credential"
         elif (
-            type.lower() == "tracking-number"
-            or type.lower() == "x-opencti-tracking-number"
+            normalized_type == "tracking-number"
+            or normalized_type == "x-opencti-tracking-number"
         ):
             type = "Tracking-Number"
         elif (
-            type.lower() == "cryptocurrency-wallet"
-            or type.lower() == "x-opencti-cryptocurrency-wallet"
+            normalized_type == "cryptocurrency-wallet"
+            or normalized_type == "x-opencti-cryptocurrency-wallet"
         ):
             type = "Cryptocurrency-Wallet"
-        elif type.lower() == "user-agent" or type.lower() == "x-opencti-user-agent":
+        elif (
+            normalized_type == "user-agent" or normalized_type == "x-opencti-user-agent"
+        ):
             type = "User-Agent"
         elif (
-            type.lower() == "cryptographic-key"
-            or type.lower() == "x-opencti-cryptographic-key"
+            normalized_type == "cryptographic-key"
+            or normalized_type == "x-opencti-cryptographic-key"
         ):
             type = "Cryptographic-Key"
-        elif type.lower() == "imei" or type.lower() == "x-opencti-imei":
+        elif normalized_type == "imei" or normalized_type == "x-opencti-imei":
             type = "IMEI"
-        elif type.lower() == "iccid" or type.lower() == "x-opencti-iccid":
+        elif normalized_type == "iccid" or normalized_type == "x-opencti-iccid":
             type = "ICCID"
-        elif type.lower() == "imsi" or type.lower() == "x-opencti-imsi":
+        elif normalized_type == "imsi" or normalized_type == "x-opencti-imsi":
             type = "IMSI"
-        elif type.lower() == "text" or type.lower() == "x-opencti-text":
+        elif normalized_type == "text" or normalized_type == "x-opencti-text":
             type = "Text"
 
         if "x_opencti_description" in observable_data:
@@ -941,7 +949,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "SSH-Key" or type.lower() == "ssh-key":
+            elif type == "SSH-Key" or normalized_type == "ssh-key":
                 input_variables["SSHKey"] = {
                     "key_type": (
                         observable_data["key_type"]
@@ -1430,7 +1438,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "Payment-Card" or type.lower() == "x-opencti-payment-card":
+            elif type == "Payment-Card" or normalized_type == "x-opencti-payment-card":
                 input_variables["PaymentCard"] = {
                     "card_number": (
                         observable_data["card_number"]
@@ -1455,7 +1463,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 }
             elif (
                 type == "Cryptocurrency-Wallet"
-                or type.lower() == "x-opencti-cryptocurrency-wallet"
+                or normalized_type == "x-opencti-cryptocurrency-wallet"
             ):
                 input_variables["CryptocurrencyWallet"] = {
                     "value": (
@@ -1466,7 +1474,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "Credential" or type.lower() == "x-opencti-credential":
+            elif type == "Credential" or normalized_type == "x-opencti-credential":
                 input_variables["Credential"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
@@ -1477,7 +1485,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif (
-                type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
+                type == "Tracking-Number"
+                or normalized_type == "x-opencti-tracking-number"
             ):
                 input_variables["TrackingNumber"] = {
                     "value": (
@@ -1488,19 +1497,19 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "IMEI" or type.lower() == "x-opencti-imei":
+            elif type == "IMEI" or normalized_type == "x-opencti-imei":
                 input_variables["IMEI"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
                 }
-            elif type == "ICCID" or type.lower() == "x-opencti-iccid":
+            elif type == "ICCID" or normalized_type == "x-opencti-iccid":
                 input_variables["ICCID"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
                 }
-            elif type == "IMSI" or type.lower() == "x-opencti-imsi":
+            elif type == "IMSI" or normalized_type == "x-opencti-imsi":
                 input_variables["IMSI"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
