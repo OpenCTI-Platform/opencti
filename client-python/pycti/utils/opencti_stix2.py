@@ -3962,26 +3962,9 @@ class OpenCTIStix2:
                     "object_marking_refs": [],
                 }
                 for file_marking_definition in file.get("objectMarking", []):
-                    if file_marking_definition["definition_type"] == "TLP":
-                        created = "2017-01-20T00:00:00.000Z"
-                    else:
-                        created = file_marking_definition["created"]
-                    marking_definition = {
-                        "type": "marking-definition",
-                        "spec_version": SPEC_VERSION,
-                        "id": file_marking_definition["standard_id"],
-                        "created": created,
-                        "definition_type": file_marking_definition[
-                            "definition_type"
-                        ].lower(),
-                        "name": file_marking_definition["definition"],
-                        "definition": {
-                            file_marking_definition["definition_type"]
-                            .lower(): file_marking_definition["definition"]
-                            .lower()
-                            .replace("tlp:", "")
-                        },
-                    }
+                    marking_definition = self._get_export_marking_definition(
+                        file_marking_definition
+                    )
                     result.append(marking_definition)
                     x_opencti_file["object_marking_refs"].append(
                         marking_definition["id"]

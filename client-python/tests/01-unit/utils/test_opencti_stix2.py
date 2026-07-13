@@ -288,6 +288,56 @@ def test_export_selected_reuses_shared_marking_definition_conversion(monkeypatch
     assert build_calls == ["marking-definition--shared"]
 
 
+def _shared_file_marking_export_entity(index):
+    return {
+        "id": f"indicator-internal--{index}",
+        "standard_id": f"indicator--{index}",
+        "entity_type": "Indicator",
+        "parent_types": ["Stix-Domain-Object"],
+        "importFiles": [
+            {
+                "id": "file--shared",
+                "name": "shared.bin",
+                "metaData": {"mimetype": "application/octet-stream"},
+                "objectMarking": [
+                    {
+                        "standard_id": "marking-definition--shared",
+                        "definition_type": "TLP",
+                        "definition": "TLP:AMBER",
+                        "created": "2026-01-01T00:00:00.000Z",
+                    }
+                ],
+            }
+        ],
+        "importFilesIds": ["file--shared"],
+    }
+
+
+def test_export_selected_reuses_shared_file_marking_definition_conversion(monkeypatch):
+    opencti_stix2 = _artifact_export_helper(["cGF5bG9hZA=="])
+    original_build = opencti_stix2._build_export_marking_definition
+    build_calls = []
+
+    def counting_build(entity_marking_definition):
+        build_calls.append(entity_marking_definition["standard_id"])
+        return original_build(entity_marking_definition)
+
+    monkeypatch.setattr(
+        opencti_stix2, "_build_export_marking_definition", counting_build
+    )
+
+    result = opencti_stix2.export_selected(
+        [
+            _shared_file_marking_export_entity(1),
+            _shared_file_marking_export_entity(2),
+        ],
+        mode="simple",
+    )
+
+    assert len(result["objects"]) == 3
+    assert build_calls == ["marking-definition--shared"]
+
+
 def _shared_creator_export_entity(index):
     return {
         "id": f"indicator-internal--{index}",
