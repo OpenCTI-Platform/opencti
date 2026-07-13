@@ -71,6 +71,18 @@ PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
 EXPORT_PREFETCH_BATCH_SIZE: int = 1000
 IMPORT_PREFETCH_BATCH_SIZE: int = 1000
+_EXPORT_OBJECT_REF_EXCLUDED_ENTITY_TYPES: Dict[str, frozenset[str]] = {
+    "report": frozenset({"Note", "Report", "Opinion"}),
+    "note": frozenset({"Note", "Opinion"}),
+    "opinion": frozenset({"Opinion"}),
+    "observed-data": frozenset(),
+    "grouping": frozenset(),
+    "x-opencti-case-incident": frozenset(),
+    "x-opencti-feedback": frozenset(),
+    "x-opencti-case-rfi": frozenset(),
+    "x-opencti-case-rft": frozenset(),
+    "x-opencti-task": frozenset(),
+}
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -3799,71 +3811,20 @@ class OpenCTIStix2:
             and "objects" in entity
             and len(entity["objects"]) > 0
         ):
-            entity["object_refs"] = []
             objects_to_get.extend(entity["objects"])
-            for entity_object in entity["objects"]:
-                if (
-                    entity["type"] == "report"
-                    and entity_object["entity_type"]
-                    not in [
-                        "Note",
-                        "Report",
-                        "Opinion",
-                    ]
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "note"
-                    and entity_object["entity_type"]
-                    not in [
-                        "Note",
-                        "Opinion",
-                    ]
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "opinion"
-                    and entity_object["entity_type"] not in ["Opinion"]
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "observed-data"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "grouping"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "x-opencti-case-incident"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "x-opencti-feedback"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "x-opencti-case-rfi"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "x-opencti-case-rft"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
-                elif (
-                    entity["type"] == "x-opencti-task"
-                    and "stix-ref-relationship" not in entity_object["parent_types"]
-                ):
-                    entity["object_refs"].append(entity_object["standard_id"])
+            excluded_entity_types = _EXPORT_OBJECT_REF_EXCLUDED_ENTITY_TYPES.get(
+                entity["type"]
+            )
+            entity["object_refs"] = (
+                [
+                    entity_object["standard_id"]
+                    for entity_object in entity["objects"]
+                    if "stix-ref-relationship" not in entity_object["parent_types"]
+                    and entity_object["entity_type"] not in excluded_entity_types
+                ]
+                if excluded_entity_types is not None
+                else []
+            )
             already_queued_reference_values.update(entity["object_refs"])
         if "objects" in entity:
             del entity["objects"]
