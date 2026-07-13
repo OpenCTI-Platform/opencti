@@ -1635,13 +1635,12 @@ class OpenCTIStix2:
             created_by_id = stix_object["created_by_ref"]
         elif "x_opencti_created_by_ref" in stix_object:
             created_by_id = stix_object["x_opencti_created_by_ref"]
-        elif (
-            self.opencti.get_attribute_in_extension("created_by_ref", stix_object)
-            is not None
-        ):
-            created_by_id = self.opencti.get_attribute_in_extension(
+        else:
+            extension_created_by_id = self.opencti.get_attribute_in_extension(
                 "created_by_ref", stix_object
             )
+            if extension_created_by_id is not None:
+                created_by_id = extension_created_by_id
         # Object Marking Refs
         object_marking_ids = (
             stix_object["object_marking_refs"]
@@ -1676,14 +1675,12 @@ class OpenCTIStix2:
 
         # Object Labels
         object_label_ids = []
-        if (
-            "labels" not in stix_object
-            and self.opencti.get_attribute_in_extension("labels", stix_object)
-            is not None
-        ):
-            stix_object["labels"] = self.opencti.get_attribute_in_extension(
+        if "labels" not in stix_object:
+            extension_labels = self.opencti.get_attribute_in_extension(
                 "labels", stix_object
             )
+            if extension_labels is not None:
+                stix_object["labels"] = extension_labels
         if "labels" in stix_object:
             for label in stix_object["labels"]:
                 label_data = self._resolve_import_label(label)
@@ -1703,16 +1700,12 @@ class OpenCTIStix2:
                     object_label_ids.append(label_data["id"])
         # Kill Chain Phases
         kill_chain_phases_ids = []
-        if (
-            "kill_chain_phases" not in stix_object
-            and self.opencti.get_attribute_in_extension(
+        if "kill_chain_phases" not in stix_object:
+            extension_kill_chain_phases = self.opencti.get_attribute_in_extension(
                 "kill_chain_phases", stix_object
             )
-            is not None
-        ):
-            stix_object["kill_chain_phases"] = self.opencti.get_attribute_in_extension(
-                "kill_chain_phases", stix_object
-            )
+            if extension_kill_chain_phases is not None:
+                stix_object["kill_chain_phases"] = extension_kill_chain_phases
         if (
             "kill_chain_phases" in stix_object
             and stix_object["kill_chain_phases"] is not None
@@ -1804,18 +1797,12 @@ class OpenCTIStix2:
         # External References
         reports = {}
         external_references_ids = []
-        if (
-            "external_references" not in stix_object
-            and self.opencti.get_attribute_in_extension(
+        if "external_references" not in stix_object:
+            extension_external_references = self.opencti.get_attribute_in_extension(
                 "external_references", stix_object
             )
-            is not None
-        ):
-            stix_object["external_references"] = (
-                self.opencti.get_attribute_in_extension(
-                    "external_references", stix_object
-                )
-            )
+            if extension_external_references is not None:
+                stix_object["external_references"] = extension_external_references
         if (
             "external_references" in stix_object
             and stix_object["external_references"] is not None
@@ -2040,14 +2027,12 @@ class OpenCTIStix2:
                 external_references_ids.append(external_reference_id)
         # Granted refs
         granted_refs_ids = []
-        if (
-            "x_opencti_granted_refs" not in stix_object
-            and self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-            is not None
-        ):
-            granted_refs_ids = self.opencti.get_attribute_in_extension(
+        if "x_opencti_granted_refs" not in stix_object:
+            extension_granted_refs = self.opencti.get_attribute_in_extension(
                 "granted_refs", stix_object
             )
+            if extension_granted_refs is not None:
+                granted_refs_ids = extension_granted_refs
         elif (
             "x_opencti_granted_refs" in stix_object
             and stix_object["x_opencti_granted_refs"] is not None
