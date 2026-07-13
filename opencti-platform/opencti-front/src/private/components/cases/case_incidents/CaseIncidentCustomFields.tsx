@@ -44,6 +44,74 @@ export const getCustomFieldSetting = (definition: CustomFieldDef, entityType: st
   (definition.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType)
 );
 
+// Shape of a stored custom field value on an entity (matches the CustomFieldValue GraphQL type).
+export interface CustomFieldStoredValue {
+  field_id: string;
+  field_name: string;
+  int_value?: number | null;
+  string_value?: string | null;
+  boolean_value?: boolean | null;
+  date_value?: string | null;
+  select_value?: string | null;
+  select_values?: readonly string[] | null;
+}
+
+// Reads the current UI value of a definition from the entity's stored custom_field_values array.
+export const getCustomFieldCurrentValue = (
+  definition: CustomFieldDef,
+  storedValues: readonly CustomFieldStoredValue[],
+): string | boolean | string[] => {
+  const entry = storedValues.find((v) => v.field_id === definition.id);
+  if (!entry) {
+    if (definition.field_type === 'boolean') return false;
+    if (definition.field_type === 'multi_select') return [];
+    return '';
+  }
+  switch (definition.field_type) {
+    case 'integer':
+      return entry.int_value != null ? String(entry.int_value) : '';
+    case 'boolean':
+      return entry.boolean_value ?? false;
+    case 'date':
+      return entry.date_value ?? '';
+    case 'select':
+      return entry.select_value ?? '';
+    case 'multi_select':
+      return entry.select_values ? [...entry.select_values] : [];
+    default:
+      return entry.string_value ?? '';
+  }
+};
+
+// Builds the stored-value entry for a definition from a raw UI value (string/boolean/string[]).
+export const buildCustomFieldValueEntry = (
+  definition: CustomFieldDef,
+  rawValue: string | boolean | string[],
+): CustomFieldStoredValue => {
+  const base = { field_id: definition.id, field_name: definition.name };
+  switch (definition.field_type) {
+    case 'integer':
+      return { ...base, int_value: parseInt(String(rawValue), 10) };
+    case 'boolean':
+      return { ...base, boolean_value: rawValue === true };
+    case 'date':
+      return { ...base, date_value: String(rawValue) };
+    case 'select':
+      return { ...base, select_value: String(rawValue) };
+    case 'multi_select':
+      return { ...base, select_values: Array.isArray(rawValue) ? rawValue : [] };
+    default:
+      return { ...base, string_value: String(rawValue) };
+  }
+};
+
+// Whether a raw UI value should be kept in the stored array (empty non-boolean values are dropped).
+export const isCustomFieldValueSet = (rawValue: string | boolean | string[]): boolean => {
+  if (Array.isArray(rawValue)) return rawValue.length > 0;
+  if (typeof rawValue === 'boolean') return true;
+  return (rawValue ?? '') !== '';
+};
+
 // Fully controlled (Formik-less) input for a custom field definition; value/onChange are wired
 // to whichever form state manages the caller (Formik initial-submit for creation, per-field
 // blur-submit for edition).
