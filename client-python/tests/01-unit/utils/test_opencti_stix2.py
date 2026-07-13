@@ -124,6 +124,22 @@ def test_filter_objects(opencti_stix2: OpenCTIStix2):
     assert "126" not in result
 
 
+def test_element_operation_delete_routes_observable_to_observable_api():
+    delete_calls = []
+    fake_opencti = SimpleNamespace(
+        stix_cyber_observable=SimpleNamespace(
+            delete=lambda **kwargs: delete_calls.append(kwargs)
+        ),
+    )
+    opencti_stix2 = OpenCTIStix2(fake_opencti)
+
+    opencti_stix2.element_operation_delete(
+        {"id": "domain-name--1", "type": "domain-name"}, "delete"
+    )
+
+    assert delete_calls == [{"id": "domain-name--1"}]
+
+
 class _EmptyNestedRefCollection:
     @staticmethod
     def list(**_kwargs):

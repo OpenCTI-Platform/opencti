@@ -5028,7 +5028,7 @@ class OpenCTIStix2:
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
-        elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):
+        elif item["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
             self.opencti.stix_cyber_observable.delete(id=item["id"])
         elif item["type"] in STIX_CORE_OBJECTS:
             self.opencti.stix_core_object.delete(id=item["id"])
