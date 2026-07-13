@@ -465,6 +465,19 @@ class _ExternalReferenceIdRecorder(_ExternalReferenceRecorder):
         return {"id": "internal--external-reference"}
 
 
+class _ExternalReferenceTypeProbe(str):
+    def __new__(cls, value):
+        instance = super().__new__(cls, value)
+        instance.eq_calls = 0
+        return instance
+
+    def __eq__(self, other):
+        self.eq_calls += 1
+        return super().__eq__(other)
+
+    __hash__ = str.__hash__
+
+
 def _external_reference_opencti():
     return SimpleNamespace(
         external_reference=_ExternalReferenceRecorder(),
@@ -503,6 +516,29 @@ def test_extract_embedded_relationships_reuses_external_reference_without_files(
 
     assert first["external_references"] == second["external_references"]
     assert opencti.external_reference.create_calls == 1
+
+
+def test_extract_embedded_relationships_skips_report_type_check_without_report_mode():
+    opencti = _external_reference_opencti()
+    opencti_stix2 = OpenCTIStix2(opencti)
+    object_type = _ExternalReferenceTypeProbe("indicator")
+
+    result = opencti_stix2.extract_embedded_relationships(
+        {
+            "type": object_type,
+            "external_references": [
+                {
+                    "source_name": "benchmark",
+                    "url": "https://example.test/reference",
+                }
+            ],
+        }
+    )
+
+    assert result["external_references"] == [
+        "external-reference--https://example.test/reference"
+    ]
+    assert object_type.eq_calls == 0
 
 
 def test_extract_embedded_relationships_keeps_file_upload_external_reference_uncached():

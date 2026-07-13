@@ -83,6 +83,16 @@ _EXPORT_OBJECT_REF_EXCLUDED_ENTITY_TYPES: Dict[str, frozenset[str]] = {
     "x-opencti-case-rft": frozenset(),
     "x-opencti-task": frozenset(),
 }
+_EXTERNAL_REFERENCE_REPORT_TYPES: frozenset[str] = frozenset(
+    {
+        "threat-actor",
+        "intrusion-set",
+        "campaign",
+        "incident",
+        "malware",
+        "relationship",
+    }
+)
 MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
@@ -1809,6 +1819,9 @@ class OpenCTIStix2:
         # External References
         reports = {}
         external_references_ids = []
+        external_references_as_reports = (
+            types is not None and "external-reference-as-report" in types
+        )
         if "external_references" not in stix_object:
             extension_external_references = self.opencti.get_attribute_in_extension(
                 "external_references", stix_object
@@ -1869,15 +1882,9 @@ class OpenCTIStix2:
                         )
 
                     external_references_ids.append(external_reference_id)
-                    if stix_object["type"] in [
-                        "threat-actor",
-                        "intrusion-set",
-                        "campaign",
-                        "incident",
-                        "malware",
-                        "relationship",
-                    ] and (
-                        types is not None and "external-reference-as-report" in types
+                    if (
+                        external_references_as_reports
+                        and stix_object["type"] in _EXTERNAL_REFERENCE_REPORT_TYPES
                     ):
                         # Add a corresponding report
                         # Extract date
