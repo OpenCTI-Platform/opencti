@@ -4,10 +4,17 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import MuiAutocomplete from '@mui/material/Autocomplete';
+import Chip from '@mui/material/Chip';
+import MuiTextField from '@mui/material/TextField';
+import Switch from '@mui/material/Switch';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
@@ -16,6 +23,7 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import DatePicker from '../../../../components/common/input/DatePicker';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -40,6 +48,143 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import {
+  CaseIncidentCreationCustomFieldDefinitionsQuery,
+  CaseIncidentCreationCustomFieldDefinitionsQuery$data,
+} from './__generated__/CaseIncidentCreationCustomFieldDefinitionsQuery.graphql';
+
+const customFieldDefinitionsForEntityTypeQuery = graphql`
+  query CaseIncidentCreationCustomFieldDefinitionsQuery($entityType: String!) {
+    customFieldDefinitionsForEntityType(entityType: $entityType) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          min_value
+          max_value
+          select_options
+          entity_type_settings {
+            entity_type
+            mandatory
+            default_value
+          }
+        }
+      }
+    }
+  }
+`;
+
+type CustomFieldDef = NonNullable<NonNullable<CaseIncidentCreationCustomFieldDefinitionsQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
+
+const getCustomFieldSetting = (definition: CustomFieldDef, entityType: string) => (definition.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType);
+
+// Renders the appropriate Formik-less input for a custom field definition; value/onChange are wired to Formik state by the caller.
+const CaseIncidentCustomFieldInput: FunctionComponent<{
+  definition: CustomFieldDef;
+  mandatory: boolean;
+  value: string | boolean | string[];
+  onChange: (val: string | boolean | string[]) => void;
+}> = ({ definition, mandatory, value, onChange }) => {
+  const { t_i18n } = useFormatter();
+  const label = `${definition.label}${mandatory ? ' *' : ''}`;
+
+  if (definition.field_type === 'boolean') {
+    return (
+      <FormControlLabel
+        style={fieldSpacingContainerStyle}
+        control={(
+          <Switch
+            checked={value === true}
+            onChange={(_, checked) => onChange(checked)}
+          />
+        )}
+        label={label}
+      />
+    );
+  }
+  if (definition.field_type === 'date') {
+    return (
+      <DatePicker
+        value={value ? new Date(String(value)) : null}
+        onChange={(date) => onChange(date ? date.toISOString() : '')}
+        label={label}
+        slotProps={{ textField: { variant: 'standard', fullWidth: true, style: fieldSpacingContainerStyle } }}
+      />
+    );
+  }
+  if (definition.field_type === 'select' && definition.select_options) {
+    return (
+      <MuiTextField
+        select
+        fullWidth
+        variant="standard"
+        label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={fieldSpacingContainerStyle}
+      >
+        <MenuItem value=""><em>{t_i18n('None')}</em></MenuItem>
+        {definition.select_options.map((opt) => (
+          <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+        ))}
+      </MuiTextField>
+    );
+  }
+  if (definition.field_type === 'multi_select' && definition.select_options) {
+    const selected = Array.isArray(value) ? value : [];
+    return (
+      <MuiAutocomplete
+        multiple
+        options={definition.select_options}
+        value={selected}
+        onChange={(_, newValue) => onChange(newValue)}
+        renderTags={(tagValue, getTagProps) => tagValue.map((option: string, index: number) => (
+          <Chip label={option} {...getTagProps({ index })} key={option} />
+        ))}
+        renderInput={(params) => (
+          <MuiTextField
+            {...params}
+            variant="standard"
+            label={label}
+            style={fieldSpacingContainerStyle}
+          />
+        )}
+      />
+    );
+  }
+  if (definition.field_type === 'markdown') {
+    return (
+      <Field
+        component={MarkdownField}
+        name={`customFields.${definition.id}`}
+        label={label}
+        required={mandatory}
+        fullWidth
+        multiline
+        rows="4"
+        style={fieldSpacingContainerStyle}
+      />
+    );
+  }
+  return (
+    <MuiTextField
+      fullWidth
+      variant="standard"
+      label={label}
+      value={value}
+      type={definition.field_type === 'integer' ? 'number' : 'text'}
+      inputProps={
+        definition.field_type === 'integer'
+          ? { min: definition.min_value ?? undefined, max: definition.max_value ?? undefined }
+          : undefined
+      }
+      onChange={(e) => onChange(e.target.value)}
+      style={fieldSpacingContainerStyle}
+    />
+  );
+};
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -84,6 +229,8 @@ interface FormikCaseIncidentAddInput {
       value: string;
       type: string;
     }[]; }[] | undefined;
+  // custom field values, keyed by definition id
+  customFields: Record<string, string | boolean | string[]>;
 }
 
 interface IncidentFormProps {
@@ -117,6 +264,12 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CASE_INCIDENT_TYPE,
   );
+  const customFieldData = useLazyLoadQuery<CaseIncidentCreationCustomFieldDefinitionsQuery>(
+    customFieldDefinitionsForEntityTypeQuery,
+    { entityType: CASE_INCIDENT_TYPE },
+  );
+  const customFieldDefs: CustomFieldDef[] = (customFieldData.customFieldDefinitionsForEntityType?.edges ?? [])
+    .map((edge) => edge.node);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
@@ -137,6 +290,31 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const customFieldValues = customFieldDefs
+      .filter((def) => {
+        const v = values.customFields[def.id];
+        if (def.field_type === 'boolean') return true;
+        if (Array.isArray(v)) return v.length > 0;
+        return (v ?? '') !== '';
+      })
+      .map((def) => {
+        const raw = values.customFields[def.id];
+        const base = { field_id: def.id, field_name: def.name };
+        switch (def.field_type) {
+          case 'integer':
+            return { ...base, int_value: parseInt(String(raw), 10) };
+          case 'boolean':
+            return { ...base, boolean_value: raw === true };
+          case 'date':
+            return { ...base, date_value: String(raw) };
+          case 'select':
+            return { ...base, select_value: String(raw) };
+          case 'multi_select':
+            return { ...base, select_values: Array.isArray(raw) ? raw : [] };
+          default:
+            return { ...base, string_value: String(raw) };
+        }
+      });
     const input: CaseIncidentAddInput = {
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
@@ -154,6 +332,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      customFieldValues: customFieldValues.length > 0 ? customFieldValues : undefined,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -210,6 +389,18 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       externalReferences: [],
       file: undefined,
       authorized_members: undefined,
+      customFields: Object.fromEntries(
+        customFieldDefs.map((def) => {
+          const defaultValue = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.default_value ?? null;
+          if (def.field_type === 'boolean') {
+            return [def.id, defaultValue === 'true'];
+          }
+          if (def.field_type === 'multi_select') {
+            return [def.id, defaultValue ? [defaultValue] : []];
+          }
+          return [def.id, defaultValue ?? ''];
+        }),
+      ),
     },
   );
   if (!canEditAuthorizedMembers) {
@@ -345,6 +536,20 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider style={{ marginTop: 20 }} />
+              {customFieldDefs.map((def) => (
+                <CaseIncidentCustomFieldInput
+                  key={def.id}
+                  definition={def}
+                  mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
+                  value={values.customFields[def.id]}
+                  onChange={(val) => setFieldValue(`customFields.${def.id}`, val)}
+                />
+              ))}
+            </>
+          )}
           {isEnterpriseEdition && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}

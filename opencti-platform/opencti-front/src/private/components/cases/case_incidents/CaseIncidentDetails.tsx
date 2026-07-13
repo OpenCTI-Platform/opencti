@@ -41,6 +41,15 @@ const CaseIncidentDetailsFragment = graphql`
       }
     }
     workflowEnabled
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      boolean_value
+      date_value
+      select_value
+    }
     relatedContainers(
       first: 10
       orderBy: modified
@@ -53,6 +62,12 @@ const CaseIncidentDetailsFragment = graphql`
   }
 `;
 
+// Formats a raw custom field name (e.g. "risk_score") into a human-readable label ("Risk score").
+const formatCustomFieldLabel = (fieldName: string) => {
+  const spaced = fieldName.replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+};
+
 interface CaseIncidentDetailsProps {
   caseIncidentData: CaseIncidentDetails_case$key;
 }
@@ -60,9 +75,26 @@ interface CaseIncidentDetailsProps {
 const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   caseIncidentData,
 }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fsd } = useFormatter();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
+  const customFieldValues = data.customFieldValues ?? [];
+
+  const getCustomFieldDisplayValue = (cfv: NonNullable<typeof customFieldValues>[number]) => {
+    if (cfv.boolean_value !== null && cfv.boolean_value !== undefined) {
+      return cfv.boolean_value ? t_i18n('True') : t_i18n('False');
+    }
+    if (cfv.date_value) {
+      return fsd(cfv.date_value);
+    }
+    if (cfv.int_value !== null && cfv.int_value !== undefined) {
+      return String(cfv.int_value);
+    }
+    if (cfv.select_value) {
+      return cfv.select_value;
+    }
+    return cfv.string_value ?? '';
+  };
 
   return (
     <div style={{ height: '100%' }}>
@@ -115,6 +147,16 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          {customFieldValues.map((cfv) => (
+            <Grid item xs={6} key={cfv.field_id}>
+              <Label>
+                {formatCustomFieldLabel(cfv.field_name)}
+              </Label>
+              <FieldOrEmpty source={getCustomFieldDisplayValue(cfv)}>
+                <Tag label={getCustomFieldDisplayValue(cfv)} />
+              </FieldOrEmpty>
+            </Grid>
+          ))}
         </Grid>
         <Divider />
         <RelatedContainers
