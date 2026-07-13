@@ -419,10 +419,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
         if "x_opencti_score" in observable_data:
             x_opencti_score = observable_data["x_opencti_score"]
-        elif (
-            self.opencti.get_attribute_in_extension("score", observable_data)
-            is not None
-        ):
+        else:
             x_opencti_score = self.opencti.get_attribute_in_extension(
                 "score", observable_data
             )
@@ -711,18 +708,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "Artifact":
-                if (
-                    "x_opencti_additional_names" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
-                        "additional_names", observable_data
-                    )
-                    is not None
-                ):
-                    observable_data["x_opencti_additional_names"] = (
+                if "x_opencti_additional_names" not in observable_data:
+                    extension_additional_names = (
                         self.opencti.get_attribute_in_extension(
                             "additional_names", observable_data
                         )
                     )
+                    if extension_additional_names is not None:
+                        observable_data["x_opencti_additional_names"] = (
+                            extension_additional_names
+                        )
                 input_variables["Artifact"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
                     "mime_type": (
@@ -752,18 +747,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "StixFile":
-                if (
-                    "x_opencti_additional_names" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
-                        "additional_names", observable_data
-                    )
-                    is not None
-                ):
-                    observable_data["x_opencti_additional_names"] = (
+                if "x_opencti_additional_names" not in observable_data:
+                    extension_additional_names = (
                         self.opencti.get_attribute_in_extension(
                             "additional_names", observable_data
                         )
                     )
+                    if extension_additional_names is not None:
+                        observable_data["x_opencti_additional_names"] = (
+                            extension_additional_names
+                        )
                 input_variables["StixFile"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
                     "size": (
@@ -1127,18 +1120,12 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "Software":
-                if (
-                    "x_opencti_product" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
+                if "x_opencti_product" not in observable_data:
+                    extension_product = self.opencti.get_attribute_in_extension(
                         "x_opencti_product", observable_data
                     )
-                    is not None
-                ):
-                    observable_data["x_opencti_product"] = (
-                        self.opencti.get_attribute_in_extension(
-                            "x_opencti_product", observable_data
-                        )
-                    )
+                    if extension_product is not None:
+                        observable_data["x_opencti_product"] = extension_product
                 input_variables["Software"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
