@@ -3,7 +3,7 @@ import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptio
 import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { mergeDeepRightAll, now } from '../utils/format';
@@ -16,7 +16,7 @@ import type { ExecutionEnvelop } from '../types/playbookExecution';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
-import { refreshLocalCacheForEntity } from './cache';
+import { refreshLocalCacheForEntity, resetCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -324,6 +324,13 @@ export const getRedisVersion = async () => {
   const serverInfo = await getClientBase().call('INFO') as string;
   const versionString = serverInfo.split('\r\n')[1];
   return versionString.split(':')[1];
+};
+
+export const CACHE_RESET_TOPIC = `${TOPIC_PREFIX}CACHE_RESET_TOPIC`;
+
+export const publishCacheResetEvent = async (entityType: string) => {
+  resetCacheForEntity(entityType);
+  await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
 };
 
 /* v8 ignore next */

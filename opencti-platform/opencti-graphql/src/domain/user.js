@@ -26,7 +26,7 @@ import {
   UnsupportedError,
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache, resetCacheForEntity } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
@@ -40,7 +40,7 @@ import {
   pageRegardingEntitiesConnection,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, notify, setEditContext } from '../database/redis';
+import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
 import { findUserSessions, killSessions, killUserSessions } from '../database/session';
 import {
   buildPagination,
@@ -694,7 +694,7 @@ export const clearAllUsersPasswordValidUntil = async (_context) => {
       },
     },
   });
-  resetCacheForEntity(ENTITY_TYPE_USER);
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 /**
@@ -797,7 +797,7 @@ export const adjustAllUsersPasswordValidUntil = async (_context, oldDays, newDay
       },
     });
   }
-  resetCacheForEntity(ENTITY_TYPE_USER);
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 export const sendEmailToUser = async (context, user, input) => {
