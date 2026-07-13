@@ -4,8 +4,6 @@ import { wait } from '../../../../src/database/utils';
 import * as ee from '../../../../src/enterprise-edition/ee';
 import * as masterLock from '../../../../src/lock/master-lock';
 
-// This suite validates that ManagerDefinition.enterpriseEditionOnly is enforced centrally by managerModule,
-// so no manager built on this generic module can forget to check enterprise edition before running (issue #16729).
 describe('Manager module: enterprise edition gate', () => {
   afterEach(async () => {
     vi.restoreAllMocks();

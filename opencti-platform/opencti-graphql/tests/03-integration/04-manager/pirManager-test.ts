@@ -11,7 +11,6 @@ import * as cache from '../../../src/database/cache';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import * as pirDomain from '../../../src/modules/pir/pir-domain';
 
-// Captured before any vi.spyOn() call so other cache lookups (e.g. lists of entities other than Pir) keep working normally.
 const originalGetEntitiesListFromCache = cache.getEntitiesListFromCache;
 
 const TEST_PIR_TARGET_1 = 'locations--9b8fd9c3-1ca3-41c2-be13-730f35b166b2';
@@ -150,8 +149,6 @@ describe('pirManager: pirManagerHandler()', () => {
     ...overrides,
   });
 
-  // Enterprise edition gating is handled centrally by managerModule.ts (see managerModule-ee-gate-test.ts),
-  // so pirManagerHandler itself only needs to be tested for its own business logic.
   it('should update the Pir lastEventId when the stream advances', async () => {
     const mockPir = buildMockPir();
     mockPirCache([mockPir]);
