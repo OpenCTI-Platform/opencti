@@ -5466,12 +5466,15 @@ class OpenCTIStix2:
             else None
         )
 
-        stix2_splitter = OpenCTIStix2Splitter()
+        stix2_splitter = OpenCTIStix2Splitter(
+            self.opencti.external_reference.generate_id
+        )
         _, incompatible_elements, bundles = (
             stix2_splitter.split_bundle_with_expectations(
                 stix_bundle, False, event_version
             )
         )
+        self._external_reference_ids.update(stix2_splitter.external_reference_ids)
         self._prefetch_import_vocabularies(
             item for bundle in bundles for item in bundle["objects"]
         )

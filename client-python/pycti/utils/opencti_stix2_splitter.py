@@ -47,7 +47,7 @@ class OpenCTIStix2Splitter:
     handling dependencies between objects and deduplicating references.
     """
 
-    def __init__(self):
+    def __init__(self, external_reference_id_generator=None):
         """Initialize the STIX2 bundle splitter.
 
         Sets up internal caches for tracking processed elements,
@@ -56,6 +56,9 @@ class OpenCTIStix2Splitter:
         self.cache_index = {}
         self.cache_refs = {}
         self.external_reference_ids = {}
+        self._external_reference_id_generator = (
+            external_reference_id_generator or external_reference_generate_id
+        )
         self.elements = []
         self.incompatible_items = []
 
@@ -69,16 +72,18 @@ class OpenCTIStix2Splitter:
             and (source_name is None or isinstance(source_name, str))
             and (external_id is None or isinstance(external_id, str))
         ):
-            return external_reference_generate_id(
+            return self._external_reference_id_generator(
                 url=url,
                 source_name=source_name,
                 external_id=external_id,
             )
         if cache_key not in self.external_reference_ids:
-            self.external_reference_ids[cache_key] = external_reference_generate_id(
-                url=url,
-                source_name=source_name,
-                external_id=external_id,
+            self.external_reference_ids[cache_key] = (
+                self._external_reference_id_generator(
+                    url=url,
+                    source_name=source_name,
+                    external_id=external_id,
+                )
             )
         return self.external_reference_ids[cache_key]
 
