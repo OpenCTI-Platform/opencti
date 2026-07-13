@@ -1,5 +1,5 @@
-import { FunctionComponent } from 'react';
-import { graphql } from 'react-relay';
+import { FunctionComponent, useEffect } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import MenuItem from '@mui/material/MenuItem';
 import MuiAutocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
@@ -10,7 +10,7 @@ import DatePicker from '../../../../components/common/input/DatePicker';
 import MarkdownFieldBase from '../../../../components/fields/markdownField/MarkdownFieldBase';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { CaseIncidentCustomFieldsQuery$data } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
+import { CaseIncidentCustomFieldsQuery, CaseIncidentCustomFieldsQuery$data } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
 
 // Shared by the Case-Incident creation form and edition overview: fetches the custom field
 // definitions applicable to Case-Incident (with their per-entity-type mandatory/default_value
@@ -39,6 +39,23 @@ export const customFieldDefinitionsForEntityTypeQuery = graphql`
 `;
 
 export type CustomFieldDef = NonNullable<NonNullable<CaseIncidentCustomFieldsQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
+
+// Isolates the useLazyLoadQuery call so it can be conditionally mounted (feature-flag gated)
+// without violating the Rules of Hooks. Meant to be rendered inside a <Suspense> boundary and
+// only when the CUSTOM_FIELDS feature flag is enabled: the query field itself throws server-side
+// (no softFail) when the flag is disabled, so it must never be called in that case.
+export const CaseIncidentCustomFieldsLoader: FunctionComponent<{
+  entityType: string;
+  onLoaded: (definitions: CustomFieldDef[]) => void;
+}> = ({ entityType, onLoaded }) => {
+  const data = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(customFieldDefinitionsForEntityTypeQuery, { entityType });
+  const definitions = (data.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+  const definitionsKey = JSON.stringify(definitions);
+  useEffect(() => {
+    onLoaded(definitions);
+  }, [definitionsKey]);
+  return null;
+};
 
 export const getCustomFieldSetting = (definition: CustomFieldDef, entityType: string) => (
   (definition.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType)

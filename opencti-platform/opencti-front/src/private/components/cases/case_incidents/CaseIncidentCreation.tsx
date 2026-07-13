@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, useState } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { FunctionComponent, Suspense, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
@@ -27,6 +27,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -41,8 +42,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
-import { CaseIncidentCustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from './CaseIncidentCustomFields';
+import { CaseIncidentCustomFieldInput, CaseIncidentCustomFieldsLoader, CustomFieldDef, getCustomFieldSetting } from './CaseIncidentCustomFields';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -122,12 +122,9 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CASE_INCIDENT_TYPE,
   );
-  const customFieldData = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
-    customFieldDefinitionsForEntityTypeQuery,
-    { entityType: CASE_INCIDENT_TYPE },
-  );
-  const customFieldDefs: CustomFieldDef[] = (customFieldData.customFieldDefinitionsForEntityType?.edges ?? [])
-    .map((edge) => edge.node);
+  const { isFeatureEnable } = useHelper();
+  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
@@ -394,6 +391,11 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          {isCustomFieldsEnabled && (
+            <Suspense fallback={null}>
+              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+            </Suspense>
+          )}
           {customFieldDefs.length > 0 && (
             <>
               <Divider style={{ marginTop: 20 }} />
