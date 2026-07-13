@@ -980,11 +980,10 @@ class OpenCTIApiClient:
             if isinstance(value, dict):
                 return bool(value)
             if isinstance(value, list):
-                is_not_empty = False
                 for v in value:
                     if len(v) > 0:
-                        is_not_empty = True
-                return is_not_empty
+                        return True
+                return False
             if isinstance(value, float):
                 return True
             if isinstance(value, int):
