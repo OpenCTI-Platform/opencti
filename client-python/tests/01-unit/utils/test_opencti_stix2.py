@@ -5,7 +5,11 @@ from types import SimpleNamespace
 import pytest
 
 from pycti.utils.opencti_file_utils import BASE64_FILE_MEMORY_THRESHOLD
-from pycti.utils.opencti_stix2 import IMPORT_PREFETCH_BATCH_SIZE, OpenCTIStix2
+from pycti.utils.opencti_stix2 import (
+    IMPORT_PREFETCH_BATCH_SIZE,
+    NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE,
+    OpenCTIStix2,
+)
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
 
 
@@ -2025,6 +2029,86 @@ def test_import_observable_passes_embedded_flags_to_create(
     opencti_stix2.import_observable(stix_object, update=False)
 
     assert captured_kwargs.get("embedded") == [True]
+
+
+def test_import_observable_batches_nested_ref_relationship_creates(monkeypatch):
+    class _NestedRefCollection:
+        def __init__(self):
+            self.add_many_calls = []
+            self.create_calls = []
+
+        def add_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
+            self.add_many_calls.append((from_id, to_ids, relationship_type))
+
+        def create(self, **kwargs):
+            self.create_calls.append(kwargs)
+
+    nested_ref_collection = _NestedRefCollection()
+    fake_opencti = SimpleNamespace(
+        get_attribute_in_extension=lambda attribute, entity: None,
+        get_draft_id=lambda: "",
+        stix_cyber_observable=SimpleNamespace(
+            create=lambda **kwargs: {
+                "id": "observable--1",
+                "entity_type": "Stix-Cyber-Observable",
+            }
+        ),
+        stix_nested_ref_relationship=nested_ref_collection,
+    )
+    opencti_stix2 = OpenCTIStix2(fake_opencti)
+    monkeypatch.setattr(
+        opencti_stix2,
+        "extract_embedded_relationships",
+        lambda stix_object, types=None: {
+            "created_by": None,
+            "object_marking": None,
+            "object_label": None,
+            "open_vocabs": {},
+            "granted_refs": [],
+            "kill_chain_phases": [],
+            "object_refs": [],
+            "external_references": [],
+            "reports": {},
+            "sample_refs": [],
+        },
+    )
+
+    ref_count = (NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE * 2) + 1
+    opencti_stix2.import_observable(
+        {
+            "id": "directory--1",
+            "type": "directory",
+            "path": "/benchmark",
+            "contains_refs": [f"artifact--{index}" for index in range(ref_count)],
+            "x_opencti_custom_ref": "identity--custom",
+        },
+        update=False,
+    )
+
+    assert [len(call[1]) for call in nested_ref_collection.add_many_calls] == [
+        NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE,
+        NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE,
+    ]
+    assert nested_ref_collection.add_many_calls[0] == (
+        "observable--1",
+        [
+            f"artifact--{index}"
+            for index in range(NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE)
+        ],
+        "contains",
+    )
+    assert nested_ref_collection.create_calls == [
+        {
+            "fromId": "observable--1",
+            "toId": f"artifact--{ref_count - 1}",
+            "relationship_type": "contains",
+        },
+        {
+            "fromId": "observable--1",
+            "toId": "identity--custom",
+            "relationship_type": "x_opencti_custom",
+        },
+    ]
 
 
 def test_import_observable_closes_large_base64_upload_stream_after_create(monkeypatch):

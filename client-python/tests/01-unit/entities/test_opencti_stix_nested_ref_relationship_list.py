@@ -34,6 +34,20 @@ class _PagedClient:
         return page["items"]
 
 
+class _CreateClient:
+    def __init__(self):
+        self.app_logger = _NoOpLogger()
+        self.query_calls = []
+
+    def query(self, query, variables):
+        self.query_calls.append((query, variables))
+        return {"data": {"stixCoreObjectEdit": {"relationsAdd": {"id": "source--1"}}}}
+
+    @staticmethod
+    def process_multiple_fields(data):
+        return data
+
+
 def test_list_get_all_preserves_page_order():
     entity = StixNestedRefRelationship(_PagedClient())
 
@@ -44,3 +58,23 @@ def test_list_get_all_preserves_page_order():
         "relationship--2",
         "relationship--3",
     ]
+
+
+def test_add_many_to_stix_core_object_uses_one_bulk_edit_query():
+    client = _CreateClient()
+    entity = StixNestedRefRelationship(client)
+
+    result = entity.add_many_to_stix_core_object(
+        "observable--1",
+        ["observable--2", "observable--3"],
+        "resolves-to",
+    )
+
+    assert result == {"id": "source--1"}
+    assert len(client.query_calls) == 1
+    query, variables = client.query_calls[0]
+    assert "stixCoreObjectEdit(id: $id)" in query
+    assert "relationsAdd(input: $input)" in query
+    assert variables["id"] == "observable--1"
+    assert variables["input"]["relationship_type"] == "obs_resolves-to"
+    assert variables["input"]["toIds"] == ["observable--2", "observable--3"]

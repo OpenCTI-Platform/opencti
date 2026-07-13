@@ -304,6 +304,78 @@ class StixNestedRefRelationship:
             else:
                 return None
 
+    @staticmethod
+    def _normalize_relationship_type(relationship_type):
+        if relationship_type == "resolves-to":
+            return "obs_resolves-to"
+        if relationship_type == "belongs-to":
+            return "obs_belongs-to"
+        if relationship_type == "content":
+            return "obs_content"
+        return relationship_type
+
+    @classmethod
+    def _build_create_input(cls, kwargs):
+        return {
+            "fromId": kwargs.get("fromId", None),
+            "toId": kwargs.get("toId", None),
+            "relationship_type": cls._normalize_relationship_type(
+                kwargs.get("relationship_type", None)
+            ),
+            "start_time": kwargs.get("start_time", None),
+            "stop_time": kwargs.get("stop_time", None),
+            "stix_id": kwargs.get("stix_id", None),
+            "created": kwargs.get("created", None),
+            "modified": kwargs.get("modified", None),
+            "createdBy": kwargs.get("createdBy", None),
+            "objectMarking": kwargs.get("objectMarking", None),
+            "x_opencti_stix_ids": kwargs.get("x_opencti_stix_ids", None),
+            "update": kwargs.get("update", False),
+        }
+
+    def add_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
+        """Add several same-type nested refs to one Stix-Core-Object."""
+        if len(to_ids) == 0:
+            return None
+        if len(to_ids) == 1:
+            return self.create(
+                fromId=from_id,
+                toId=to_ids[0],
+                relationship_type=relationship_type,
+            )
+
+        relationship_type = self._normalize_relationship_type(relationship_type)
+        self.opencti.app_logger.info(
+            "Creating stix_observable_relationships",
+            {
+                "relationship_type": relationship_type,
+                "from_id": from_id,
+                "count": len(to_ids),
+            },
+        )
+        query = """
+                mutation StixCoreObjectEditRelationsAdd($id: ID!, $input: StixRefRelationshipsAddInput!) {
+                    stixCoreObjectEdit(id: $id) {
+                        relationsAdd(input: $input) {
+                            id
+                        }
+                    }
+                }
+                """
+        result = self.opencti.query(
+            query,
+            {
+                "id": from_id,
+                "input": {
+                    "toIds": to_ids,
+                    "relationship_type": relationship_type,
+                },
+            },
+        )
+        return self.opencti.process_multiple_fields(
+            result["data"]["stixCoreObjectEdit"]["relationsAdd"]
+        )
+
     def create(self, **kwargs):
         """Create a stix nested ref relationship object.
 
@@ -334,25 +406,10 @@ class StixNestedRefRelationship:
         :return: stix nested ref relationship object
         :rtype: dict
         """
-        from_id = kwargs.get("fromId", None)
-        to_id = kwargs.get("toId", None)
-        relationship_type = kwargs.get("relationship_type", None)
-        start_time = kwargs.get("start_time", None)
-        stop_time = kwargs.get("stop_time", None)
-        stix_id = kwargs.get("stix_id", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
-        update = kwargs.get("update", False)
-
-        if relationship_type == "resolves-to":
-            relationship_type = "obs_resolves-to"
-        elif relationship_type == "belongs-to":
-            relationship_type = "obs_belongs-to"
-        elif relationship_type == "content":
-            relationship_type = "obs_content"
+        create_input = self._build_create_input(kwargs)
+        from_id = create_input["fromId"]
+        to_id = create_input["toId"]
+        relationship_type = create_input["relationship_type"]
 
         self.opencti.app_logger.info(
             "Creating stix_observable_relationship",
@@ -374,22 +431,7 @@ class StixNestedRefRelationship:
                 """
         result = self.opencti.query(
             query,
-            {
-                "input": {
-                    "fromId": from_id,
-                    "toId": to_id,
-                    "relationship_type": relationship_type,
-                    "start_time": start_time,
-                    "stop_time": stop_time,
-                    "stix_id": stix_id,
-                    "created": created,
-                    "modified": modified,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "x_opencti_stix_ids": x_opencti_stix_ids,
-                    "update": update,
-                }
-            },
+            {"input": create_input},
         )
         return self.opencti.process_multiple_fields(
             result["data"]["stixRefRelationshipAdd"]
