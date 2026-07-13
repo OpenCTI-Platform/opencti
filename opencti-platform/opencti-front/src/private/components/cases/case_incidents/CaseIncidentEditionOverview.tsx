@@ -1,9 +1,10 @@
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import * as Yup from 'yup';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import Divider from '@mui/material/Divider';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -25,6 +26,16 @@ import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
+import {
+  buildCustomFieldValueEntry,
+  CaseIncidentCustomFieldInput,
+  customFieldDefinitionsForEntityTypeQuery,
+  CustomFieldStoredValue,
+  getCustomFieldCurrentValue,
+  getCustomFieldSetting,
+  isCustomFieldValueSet,
+} from './CaseIncidentCustomFields';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -123,6 +134,16 @@ const caseIncidentEditionOverviewFragment = graphql`
       name
       entity_type
     }
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      boolean_value
+      date_value
+      select_value
+      select_values
+    }
   }
 `;
 
@@ -208,6 +229,26 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     editionFocus: caseIncidentEditionOverviewFocus,
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
+  const customFieldData = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
+    customFieldDefinitionsForEntityTypeQuery,
+    { entityType: CASE_INCIDENT_TYPE },
+  );
+  const customFieldDefs = (customFieldData.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+  const currentCustomFieldValues: CustomFieldStoredValue[] = (caseData.customFieldValues ?? []).map((v) => ({ ...v }));
+  const handleSubmitCustomField = (definitionId: string, rawValue: string | boolean | string[]) => {
+    const definition = customFieldDefs.find((def) => def.id === definitionId);
+    if (!definition) return;
+    const withoutField = currentCustomFieldValues.filter((v) => v.field_id !== definitionId);
+    const nextValues = isCustomFieldValueSet(rawValue)
+      ? [...withoutField, buildCustomFieldValueEntry(definition, rawValue)]
+      : withoutField;
+    editor.fieldPatch({
+      variables: {
+        id: caseData.id,
+        input: { key: 'custom_field_values', value: nextValues },
+      },
+    });
+  };
   const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
@@ -430,6 +471,20 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          {customFieldDefs.length > 0 && (
+            <>
+              <Divider style={{ marginTop: 20 }} />
+              {customFieldDefs.map((def) => (
+                <CaseIncidentCustomFieldInput
+                  key={def.id}
+                  definition={def}
+                  mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
+                  value={getCustomFieldCurrentValue(def, currentCustomFieldValues)}
+                  onChange={(val) => handleSubmitCustomField(def.id, val)}
+                />
+              ))}
+            </>
+          )}
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
