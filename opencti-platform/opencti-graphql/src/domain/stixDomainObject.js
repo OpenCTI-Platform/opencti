@@ -38,6 +38,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE } from '../schema/stixRef
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { validateCustomFieldValues } from '../modules/customField/custom-field-validator';
 import { checkScore, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -331,6 +332,11 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const createdByKey = input.find((inputData) => inputData.key === INPUT_CREATED_BY);
   if (createdByKey && createdByKey.value?.length > 0) {
     await validateCreatedBy(context, user, createdByKey.value[0]);
+  }
+  // Validate custom field values against their definitions (mandatory / min-max / select options)
+  const customFieldValuesInput = input.find((inputData) => inputData.key === 'custom_field_values');
+  if (customFieldValuesInput) {
+    validateCustomFieldValues(customFieldValuesInput.value ?? [], stixDomainObject.entity_type);
   }
   // Start the element edition
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
