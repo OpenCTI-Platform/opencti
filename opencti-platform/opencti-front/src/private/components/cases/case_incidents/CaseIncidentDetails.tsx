@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
 import Divider from '@mui/material/Divider';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -12,6 +12,10 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
+import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
+import { customFieldDefinitionsForEntityTypeQuery } from './CaseIncidentCustomFields';
+
+const CASE_INCIDENT_TYPE = 'Case-Incident';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -49,6 +53,7 @@ const CaseIncidentDetailsFragment = graphql`
       boolean_value
       date_value
       select_value
+      select_values
     }
     relatedContainers(
       first: 10
@@ -79,6 +84,13 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
   const customFieldValues = data.customFieldValues ?? [];
+  const customFieldData = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
+    customFieldDefinitionsForEntityTypeQuery,
+    { entityType: CASE_INCIDENT_TYPE },
+  );
+  const customFieldLabelById = new Map(
+    (customFieldData.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => [edge.node.id, edge.node.label]),
+  );
 
   const getCustomFieldDisplayValue = (cfv: NonNullable<typeof customFieldValues>[number]) => {
     if (cfv.boolean_value !== null && cfv.boolean_value !== undefined) {
@@ -89,6 +101,9 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
     }
     if (cfv.int_value !== null && cfv.int_value !== undefined) {
       return String(cfv.int_value);
+    }
+    if (cfv.select_values && cfv.select_values.length > 0) {
+      return cfv.select_values.join(', ');
     }
     if (cfv.select_value) {
       return cfv.select_value;
@@ -150,7 +165,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           {customFieldValues.map((cfv) => (
             <Grid item xs={6} key={cfv.field_id}>
               <Label>
-                {formatCustomFieldLabel(cfv.field_name)}
+                {customFieldLabelById.get(cfv.field_id) ?? formatCustomFieldLabel(cfv.field_name)}
               </Label>
               <FieldOrEmpty source={getCustomFieldDisplayValue(cfv)}>
                 <Tag label={getCustomFieldDisplayValue(cfv)} />
