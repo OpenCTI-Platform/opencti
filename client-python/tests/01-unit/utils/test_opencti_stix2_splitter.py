@@ -282,6 +282,38 @@ def test_split_bundle_emits_single_oversized_object_as_is():
     assert len(bundles[0].encode("utf-8")) > max_bundle_bytes
 
 
+def test_split_bundle_skips_json_serialization_for_unbounded_dict_output(monkeypatch):
+    json_dumps_calls = []
+    original_json_dumps = json.dumps
+
+    def count_json_dumps(*args, **kwargs):
+        json_dumps_calls.append(args[0])
+        return original_json_dumps(*args, **kwargs)
+
+    monkeypatch.setattr(
+        "pycti.utils.opencti_stix2_splitter.json.dumps",
+        count_json_dumps,
+    )
+    stix_splitter = OpenCTIStix2Splitter()
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--dict-output",
+        "objects": [
+            {"id": "indicator--1", "type": "indicator"},
+            {"id": "indicator--2", "type": "indicator"},
+        ],
+    }
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle,
+        use_json=False,
+    )
+
+    assert expectations == 2
+    assert all(isinstance(split_bundle, dict) for split_bundle in bundles)
+    assert json_dumps_calls == []
+
+
 def test_split_bundle_reuses_external_reference_ids_across_objects(monkeypatch):
     generate_id_calls = []
 

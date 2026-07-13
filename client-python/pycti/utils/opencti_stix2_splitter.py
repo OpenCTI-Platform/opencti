@@ -356,15 +356,23 @@ class OpenCTIStix2Splitter:
         chunk_dep_size = None
 
         def append_chunk(bundle_seq, items):
+            if max_bundle_bytes is None:
+                bundles.append(
+                    self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        items,
+                        use_json,
+                        event_version,
+                    )
+                )
+                return
+
             serialized_bundle = self.stix2_create_bundle(
                 bundle_data["id"], bundle_seq, items, True, event_version
             )
             # json.dumps() keeps ensure_ascii=True, so string length is byte length.
-            if (
-                max_bundle_bytes is None
-                or len(items) == 1
-                or len(serialized_bundle) <= max_bundle_bytes
-            ):
+            if len(items) == 1 or len(serialized_bundle) <= max_bundle_bytes:
                 bundles.append(
                     serialized_bundle
                     if use_json
