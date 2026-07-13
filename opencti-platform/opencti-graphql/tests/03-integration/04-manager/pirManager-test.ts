@@ -10,9 +10,8 @@ import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import * as cache from '../../../src/database/cache';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import * as pirDomain from '../../../src/modules/pir/pir-domain';
-import * as ee from '../../../src/enterprise-edition/ee';
 
-// Captured before any vi.spyOn() call so non-Pir cache lookups (e.g. Settings) keep working normally.
+// Captured before any vi.spyOn() call so other cache lookups (e.g. lists of entities other than Pir) keep working normally.
 const originalGetEntitiesListFromCache = cache.getEntitiesListFromCache;
 
 const TEST_PIR_TARGET_1 = 'locations--9b8fd9c3-1ca3-41c2-be13-730f35b166b2';
@@ -133,40 +132,52 @@ describe('pirManager: pirManagerHandler()', () => {
     vi.restoreAllMocks();
   });
 
-  const mockPirCacheAndStream = () => {
+  const mockPirCache = (pirs: any[]) => {
     vi.spyOn(cache, 'getEntitiesListFromCache').mockImplementation(async (context, user, type) => {
       if (type === 'Pir') {
-        return [
-          {
-            id: 'pir-1',
-            internal_id: 'pir-1',
-            lastEventId: '1-0',
-            pir_filters: JSON.stringify({ mode: FilterMode.And, filters: [], filterGroups: [] }),
-            pir_criteria: [],
-          } as any,
-        ];
+        return pirs;
       }
       return originalGetEntitiesListFromCache(context, user, type);
     });
-    vi.spyOn(streamHandler, 'fetchStreamEventsRangeFromEventId').mockResolvedValue({ lastEventId: '2-0' } as any);
   };
 
-  it('should not throw nor try to update Pirs when enterprise edition is disabled', async () => {
-    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(false);
-    mockPirCacheAndStream();
-    // Simulates the real checkEnterpriseEdition() throwing if it were ever reached.
-    const updatePirSpy = vi.spyOn(pirDomain, 'updatePir').mockRejectedValue(new Error('Enterprise edition is not enabled'));
-
-    await expect(pirManagerHandler()).resolves.toBeUndefined();
-    expect(updatePirSpy).not.toHaveBeenCalled();
+  const buildMockPir = (overrides: Partial<any> = {}) => ({
+    id: 'pir-1',
+    internal_id: 'pir-1',
+    lastEventId: '1-0',
+    pir_filters: JSON.stringify({ mode: FilterMode.And, filters: [], filterGroups: [] }),
+    pir_criteria: [],
+    ...overrides,
   });
 
-  it('should update Pirs normally when enterprise edition is enabled', async () => {
-    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(true);
-    mockPirCacheAndStream();
+  // Enterprise edition gating is handled centrally by managerModule.ts (see managerModule-ee-gate-test.ts),
+  // so pirManagerHandler itself only needs to be tested for its own business logic.
+  it('should update the Pir lastEventId when the stream advances', async () => {
+    const mockPir = buildMockPir();
+    mockPirCache([mockPir]);
+    vi.spyOn(streamHandler, 'fetchStreamEventsRangeFromEventId').mockResolvedValue({ lastEventId: '2-0' } as any);
     const updatePirSpy = vi.spyOn(pirDomain, 'updatePir').mockResolvedValue({} as any);
 
-    await expect(pirManagerHandler()).resolves.toBeUndefined();
+    await pirManagerHandler();
+
     expect(updatePirSpy).toHaveBeenCalledTimes(1);
+    expect(updatePirSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      mockPir.id,
+      [{ key: 'lastEventId', value: ['2-0'] }],
+      { auditLogEnabled: false },
+    );
+  });
+
+  it('should not update the Pir lastEventId when the stream does not advance', async () => {
+    const mockPir = buildMockPir();
+    mockPirCache([mockPir]);
+    vi.spyOn(streamHandler, 'fetchStreamEventsRangeFromEventId').mockResolvedValue({ lastEventId: mockPir.lastEventId } as any);
+    const updatePirSpy = vi.spyOn(pirDomain, 'updatePir').mockResolvedValue({} as any);
+
+    await pirManagerHandler();
+
+    expect(updatePirSpy).not.toHaveBeenCalled();
   });
 });

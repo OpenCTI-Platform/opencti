@@ -9,7 +9,7 @@ import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import type { DataEvent, SseEvent } from '../types/event';
-import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { isEnterpriseEditionFromSettings, isEnterpriseEditionAuthorized } from '../enterprise-edition/ee';
 import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
@@ -61,6 +61,9 @@ const initManager = (manager: ManagerDefinition) => {
 
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
+      if (!(await isEnterpriseEditionAuthorized(manager))) {
+        return;
+      }
       let lock;
       let cronInput;
       const startDate = utcDate();
@@ -101,6 +104,9 @@ const initManager = (manager: ManagerDefinition) => {
 
   const streamHandler = async () => {
     if (manager.streamSchedulerHandler) {
+      if (!(await isEnterpriseEditionAuthorized(manager))) {
+        return;
+      }
       let lock;
       try {
       // Lock the manager

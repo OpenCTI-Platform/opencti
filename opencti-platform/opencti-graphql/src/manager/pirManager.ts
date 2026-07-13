@@ -22,7 +22,6 @@ import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
-import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -166,10 +165,6 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
  */
 export const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
-  const isEE = await isEnterpriseEdition(context);
-  if (!isEE) {
-    return;
-  }
   const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
   // Loop through all Pirs by group
