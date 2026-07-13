@@ -1358,31 +1358,27 @@ class OpenCTIApiClient:
         :return: the attribute value if found, None otherwise
         :rtype: Any
         """
-        if (
-            "extensions" in stix_object
-            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+        if "extensions" in stix_object:
+            extensions = stix_object["extensions"]
+            if (
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ][key]
-        elif (
-            "extensions" in stix_object
-            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+                in extensions
+            ):
+                opencti_extension = extensions[
+                    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+                ]
+                if key in opencti_extension:
+                    return opencti_extension[key]
+            if (
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ][key]
-        elif key in stix_object and key not in ["type"]:
+                in extensions
+            ):
+                sco_extension = extensions[
+                    "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+                ]
+                if key in sco_extension:
+                    return sco_extension[key]
+        if key in stix_object and key != "type":
             return stix_object[key]
         return None
 
