@@ -1,9 +1,11 @@
 import base64
 import datetime
+from collections import Counter
 from types import SimpleNamespace
 
 import pytest
 
+from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.utils.opencti_file_utils import BASE64_FILE_MEMORY_THRESHOLD
 from pycti.utils.opencti_stix2 import (
     IMPORT_PREFETCH_BATCH_SIZE,
@@ -138,6 +140,75 @@ def test_element_operation_delete_routes_observable_to_observable_api():
     )
 
     assert delete_calls == [{"id": "domain-name--1"}]
+
+
+@pytest.mark.parametrize(
+    ("import_method", "stix_object", "result"),
+    [
+        (
+            "import_object",
+            {
+                "id": "malware--1",
+                "type": "malware",
+                "name": "benchmark",
+                "is_family": False,
+                "extensions": {
+                    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                        "files": []
+                    }
+                },
+            },
+            {"id": "malware--1", "entity_type": "Malware"},
+        ),
+        (
+            "import_observable",
+            {
+                "id": "directory--1",
+                "type": "directory",
+                "path": "/benchmark",
+                "extensions": {
+                    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                        "files": []
+                    }
+                },
+            },
+            {"id": "directory--1", "entity_type": "Directory"},
+        ),
+    ],
+)
+def test_import_reads_extension_files_once(import_method, stix_object, result):
+    extension_lookup_counts = Counter()
+
+    def get_attribute_in_extension(key, entity):
+        extension_lookup_counts[key] += 1
+        return OpenCTIApiClient.get_attribute_in_extension(key, entity)
+
+    fake_opencti = SimpleNamespace(
+        app_logger=SimpleNamespace(info=lambda *_args, **_kwargs: None),
+        get_attribute_in_extension=get_attribute_in_extension,
+        get_draft_id=lambda: "",
+        stix_cyber_observable=SimpleNamespace(create=lambda **_kwargs: result),
+    )
+    opencti_stix2 = OpenCTIStix2(fake_opencti)
+    opencti_stix2.extract_embedded_relationships = lambda *_args, **_kwargs: {
+        "created_by": None,
+        "object_marking": None,
+        "object_label": None,
+        "open_vocabs": {},
+        "granted_refs": [],
+        "kill_chain_phases": [],
+        "object_refs": [],
+        "external_references": [],
+        "reports": {},
+        "sample_refs": [],
+    }
+    opencti_stix2.get_stix_helper = lambda: {
+        "malware": SimpleNamespace(import_from_stix2=lambda **_kwargs: result)
+    }
+
+    getattr(opencti_stix2, import_method)(stix_object, update=False)
+
+    assert extension_lookup_counts["files"] == 1
 
 
 class _EmptyNestedRefCollection:

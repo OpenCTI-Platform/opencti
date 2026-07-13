@@ -2311,10 +2311,9 @@ class OpenCTIStix2:
         x_opencti_files = []
         if "x_opencti_files" in stix_object:
             x_opencti_files.extend(stix_object["x_opencti_files"])
-        if self.opencti.get_attribute_in_extension("files", stix_object) is not None:
-            x_opencti_files.extend(
-                self.opencti.get_attribute_in_extension("files", stix_object)
-            )
+        extension_files = self.opencti.get_attribute_in_extension("files", stix_object)
+        if extension_files is not None:
+            x_opencti_files.extend(extension_files)
 
         with ExitStack() as upload_stack:
             # Prepare all files for direct upload during creation
@@ -2545,10 +2544,9 @@ class OpenCTIStix2:
         x_opencti_files = []
         if "x_opencti_files" in stix_object:
             x_opencti_files.extend(stix_object["x_opencti_files"])
-        if self.opencti.get_attribute_in_extension("files", stix_object) is not None:
-            x_opencti_files.extend(
-                self.opencti.get_attribute_in_extension("files", stix_object)
-            )
+        extension_files = self.opencti.get_attribute_in_extension("files", stix_object)
+        if extension_files is not None:
+            x_opencti_files.extend(extension_files)
         observable_data = stix_object
         if self._artifact_payload_is_already_in_files(stix_object, x_opencti_files):
             observable_data = dict(stix_object)
