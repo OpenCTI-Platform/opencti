@@ -5256,15 +5256,15 @@ class OpenCTIStix2:
                     if "x_opencti_location_type" in item:
                         if item["x_opencti_location_type"].lower() in types:
                             self.import_object(item, update, types)
-                    elif (
-                        self.opencti.get_attribute_in_extension("location_type", item)
-                        is not None
-                    ):
-                        if (
+                    else:
+                        extension_location_type = (
                             self.opencti.get_attribute_in_extension(
                                 "location_type", item
-                            ).lower()
-                            in types
+                            )
+                        )
+                        if (
+                            extension_location_type is not None
+                            and extension_location_type.lower() in types
                         ):
                             self.import_object(item, update, types)
         if work_id is not None:
