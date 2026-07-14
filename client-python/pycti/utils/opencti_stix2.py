@@ -1741,18 +1741,12 @@ class OpenCTIStix2:
                 if kill_chain_phase_in_cache is not None:
                     kill_chain_phase = kill_chain_phase_in_cache
                 else:
-                    if (
-                        "x_opencti_order" not in kill_chain_phase
-                        and self.opencti.get_attribute_in_extension(
+                    if "x_opencti_order" not in kill_chain_phase:
+                        extension_order = self.opencti.get_attribute_in_extension(
                             "order", kill_chain_phase
                         )
-                        is not None
-                    ):
-                        kill_chain_phase["x_opencti_order"] = (
-                            self.opencti.get_attribute_in_extension(
-                                "order", kill_chain_phase
-                            )
-                        )
+                        if extension_order is not None:
+                            kill_chain_phase["x_opencti_order"] = extension_order
                     kill_chain_phase = self.opencti.kill_chain_phase.create(
                         kill_chain_name=kill_chain_phase["kill_chain_name"],
                         phase_name=kill_chain_phase["phase_name"],
@@ -1783,18 +1777,12 @@ class OpenCTIStix2:
                 if kill_chain_phase_in_cache is not None:
                     kill_chain_phase = kill_chain_phase_in_cache
                 else:
-                    if (
-                        "x_opencti_order" not in kill_chain_phase
-                        and self.opencti.get_attribute_in_extension(
+                    if "x_opencti_order" not in kill_chain_phase:
+                        extension_order = self.opencti.get_attribute_in_extension(
                             "order", kill_chain_phase
                         )
-                        is not None
-                    ):
-                        kill_chain_phase["x_opencti_order"] = (
-                            self.opencti.get_attribute_in_extension(
-                                "order", kill_chain_phase
-                            )
-                        )
+                        if extension_order is not None:
+                            kill_chain_phase["x_opencti_order"] = extension_order
                     kill_chain_phase = self.opencti.kill_chain_phase.create(
                         kill_chain_name=kill_chain_phase["kill_chain_name"],
                         phase_name=kill_chain_phase["phase_name"],
