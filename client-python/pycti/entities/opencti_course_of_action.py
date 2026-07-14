@@ -579,22 +579,22 @@ class CourseOfAction:
             x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
-            elif (
-                self.opencti.get_attribute_in_mitre_extension("id", stix_object)
-                is not None
-            ):
-                x_mitre_id = self.opencti.get_attribute_in_mitre_extension(
+            else:
+                mitre_extension_id = self.opencti.get_attribute_in_mitre_extension(
                     "id", stix_object
                 )
-            elif "external_references" in stix_object:
-                for external_reference in stix_object["external_references"]:
-                    if (
-                        external_reference["source_name"] == "mitre-attack"
-                        or external_reference["source_name"] == "mitre-pre-attack"
-                        or external_reference["source_name"] == "mitre-mobile-attack"
-                        or external_reference["source_name"] == "amitt-attack"
-                    ):
-                        x_mitre_id = external_reference.get("external_id", None)
+                if mitre_extension_id is not None:
+                    x_mitre_id = mitre_extension_id
+                elif "external_references" in stix_object:
+                    for external_reference in stix_object["external_references"]:
+                        if (
+                            external_reference["source_name"] == "mitre-attack"
+                            or external_reference["source_name"] == "mitre-pre-attack"
+                            or external_reference["source_name"]
+                            == "mitre-mobile-attack"
+                            or external_reference["source_name"] == "amitt-attack"
+                        ):
+                            x_mitre_id = external_reference.get("external_id", None)
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
