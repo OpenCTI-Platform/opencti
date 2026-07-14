@@ -56,6 +56,7 @@ type WorkspaceHeaderProps = {
   handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
   handleExport?: (workspace: { id: string; name: string }) => void;
+  titleActions?: React.ReactNode;
 };
 
 const WorkspaceHeader = ({
@@ -65,6 +66,7 @@ const WorkspaceHeader = ({
   handleAddWidget = () => {},
   handleImportWidget = () => {},
   handleExport = () => {},
+  titleActions,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -108,6 +110,7 @@ const WorkspaceHeader = ({
             workspaceId={workspace.id}
             canEdit={canEdit}
           />
+          {titleActions}
         </div>
         <div
           id="dashboard-buttons"

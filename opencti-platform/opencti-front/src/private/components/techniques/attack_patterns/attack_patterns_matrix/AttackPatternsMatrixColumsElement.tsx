@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
@@ -10,6 +9,8 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
+import MatrixEntityMarkers, { MatrixCellEntity } from './MatrixEntityMarkers';
+import MatrixCoverageIndicator, { CoverageInformation } from './MatrixCoverageIndicator';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 
 interface AttackPatternsMatrixColumnsElementProps {
@@ -20,6 +21,8 @@ interface AttackPatternsMatrixColumnsElementProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
+  entityUsageMap?: Map<string, MatrixCellEntity[]>;
+  coverageOverlayMap?: Map<string, CoverageInformation>;
 }
 
 const AttackPatternsMatrixColumnsElement = ({
@@ -29,6 +32,8 @@ const AttackPatternsMatrixColumnsElement = ({
   isSecurityPlatform,
   isCoverage = false,
   coverageMap,
+  entityUsageMap,
+  coverageOverlayMap,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
@@ -78,6 +83,14 @@ const AttackPatternsMatrixColumnsElement = ({
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
   const { border, backgroundColor } = styles;
+  const cellEntities = entityUsageMap?.get(attackPattern.attack_pattern_id) ?? [];
+  const cellCoverage = coverageOverlayMap?.get(attackPattern.attack_pattern_id) ?? [];
+  // "Compare with security posture": show the tick/cross in the top-right corner
+  // (alongside the coverage donuts) when comparison is active for a covered technique.
+  const showOverlap = !isSecurityPlatform && !isCoverage
+    && attackPatternIdsToOverlap?.length !== undefined
+    && attackPattern.isCovered;
+  const hasCorner = cellCoverage.length > 0 || showOverlap;
   return (
     <Box
       onMouseEnter={() => setIsHovered(true)}
@@ -85,37 +98,42 @@ const AttackPatternsMatrixColumnsElement = ({
       onClick={(e) => handleOpen(attackPattern, e)}
       sx={{
         display: 'flex',
+        flexDirection: 'column',
         cursor: 'pointer',
         border,
         backgroundColor,
         padding: 1.25,
-        justifyContent: 'space-between',
-        gap: 1,
-        alignItems: 'center',
+        // Reserve space in the top-right corner for the coverage donut / overlap overlay.
+        paddingRight: hasCorner ? 4.5 : 1.25,
+        gap: 0.75,
         whiteSpace: 'normal',
         width: '100%',
         position: 'relative',
       }}
     >
-      <Typography variant="body2" fontSize={10}>
-        {attackPattern.name}
-      </Typography>
+      <MatrixCoverageIndicator
+        coverageInformation={cellCoverage}
+        entities={cellEntities}
+        showOverlap={showOverlap}
+        isOverlapping={attackPattern.isOverlapping || false}
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'center' }}>
+        <Typography variant="body2" fontSize={10}>
+          {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
+        </Typography>
 
-      {isCoverage && attackPattern.isCovered && (
-        <>
+        {isCoverage && attackPattern.isCovered && (
           <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <SecurityCoverageScores
               coverage_information={coverage || null}
               variant="matrix"
             />
           </Box>
-        </>
-      )}
+        )}
+      </Box>
 
-      {!isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && !isCoverage && (
-        <AttackPatternsMatrixShouldCoverIcon
-          isOverlapping={attackPattern.isOverlapping || false}
-        />
+      {cellEntities.length > 0 && (
+        <MatrixEntityMarkers entities={cellEntities} />
       )}
     </Box>
   );

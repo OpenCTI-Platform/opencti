@@ -26,6 +26,8 @@ import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
+import InvestigationViewSwitcher, { InvestigationView } from './InvestigationViewSwitcher';
+import InvestigationMatrix from './InvestigationMatrix';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -436,6 +438,16 @@ const InvestigationGraphComponent = ({
 
   const investigation = useFragment(investigationGraphFragment, dataInvestigation);
 
+  // Persisted per-investigation view (graph or read-only matrix).
+  const viewStorageKey = `investigation-view-${investigation.id}`;
+  const [view, setView] = useState<InvestigationView>(
+    () => (localStorage.getItem(viewStorageKey) as InvestigationView) ?? 'graph',
+  );
+  const handleChangeView = (newView: InvestigationView) => {
+    localStorage.setItem(viewStorageKey, newView);
+    setView(newView);
+  };
+
   const {
     addInvestigationOpInStack,
     getOpsUntilExpand,
@@ -564,21 +576,32 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
+        titleActions={(
+          <InvestigationViewSwitcher view={view} onChange={handleChangeView} />
+        )}
       />
-      <div style={graphContainerStyle} ref={ref}>
-        <Graph parentRef={ref} onPositionsChanged={savePositions}>
-          <GraphToolbar
-            onUnfixNodes={() => savePositions({})}
-            stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-            relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-            entity={investigation}
-            onAddRelation={addRelation}
-            onRemove={remove}
-            onInvestigationExpand={expand}
-            onInvestigationRollback={rollback}
-          />
-        </Graph>
-      </div>
+      {view === 'matrix' ? (
+        <div style={graphContainerStyle}>
+          <Suspense fallback={<Loader />}>
+            <InvestigationMatrix objects={rawObjects} />
+          </Suspense>
+        </div>
+      ) : (
+        <div style={graphContainerStyle} ref={ref}>
+          <Graph parentRef={ref} onPositionsChanged={savePositions}>
+            <GraphToolbar
+              onUnfixNodes={() => savePositions({})}
+              stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+              relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+              entity={investigation}
+              onAddRelation={addRelation}
+              onRemove={remove}
+              onInvestigationExpand={expand}
+              onInvestigationRollback={rollback}
+            />
+          </Graph>
+        </div>
+      )}
     </div>
   );
 };

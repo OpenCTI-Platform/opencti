@@ -83,6 +83,7 @@ export const attackPatternsMatrixColumnsFragment = graphql`
             attack_pattern_id
             name
             description
+            x_mitre_id
           }
           subAttackPatternsSearchText
           killChainPhasesIds
@@ -151,6 +152,10 @@ const AttackPatternsMatrixColumns = ({
   selectedKillChain,
   isModeOnlyActive,
   inPaper,
+  fillContainer,
+  onlyActiveSubAttackPatterns,
+  entityUsageMap,
+  coverageOverlayMap,
   isCoverage = false,
   coverageMap,
   entityId,
@@ -222,13 +227,13 @@ const AttackPatternsMatrixColumns = ({
             level: getSubAttackPatternLevel(sub),
             isCovered: isAttackPatternCovered(sub),
             isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
-          })),
+          })).filter((sub) => (onlyActiveSubAttackPatterns ? sub.isCovered : true)),
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
         .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
         .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive]);
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, onlyActiveSubAttackPatterns]);
 
   const { height: topBannerHeight } = useTopBanner();
 
@@ -248,13 +253,13 @@ const AttackPatternsMatrixColumns = ({
         return (
           <Box
             sx={{
-              width: `calc(100vw - ${matrixWidth}px)`,
-              height: `calc(100vh - ${matrixHeight}px)`,
+              width: fillContainer ? '100%' : `calc(100vw - ${matrixWidth}px)`,
+              height: fillContainer ? '100%' : `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               paddingBottom: 2,
               position: 'relative',
-              marginBlockStart: 3,
+              marginBlockStart: fillContainer ? 0 : 3,
             }}
           >
             <Box display="inline-flex" id="container">
@@ -316,6 +321,8 @@ const AttackPatternsMatrixColumns = ({
                                 isCoverage={isCoverage}
                                 coverageMap={coverageMap}
                                 entityId={entityId}
+                                entityUsageMap={entityUsageMap}
+                                coverageOverlayMap={coverageOverlayMap}
                               />
                             </AttackPatternsMatrixBadge>
                           );
@@ -330,6 +337,8 @@ const AttackPatternsMatrixColumns = ({
                           isCoverage={isCoverage}
                           coverageMap={coverageMap}
                           entityId={entityId}
+                          entityUsageMap={entityUsageMap}
+                          coverageOverlayMap={coverageOverlayMap}
                         />
                       )
                     );
