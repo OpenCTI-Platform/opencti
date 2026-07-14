@@ -1013,22 +1013,29 @@ class OpenCTIApiClient:
         # Data can be multiple in edges or directly.
         # -- When data is directly a listing
         if isinstance(data, list):
-            for row in data:
-                if with_pagination:
-                    result["entities"].append(self.process_multiple_fields(row))
-                else:
+            if with_pagination:
+                process_multiple_fields = self.process_multiple_fields
+                append_result = result["entities"].append
+                for row in data:
+                    append_result(process_multiple_fields(row))
+            else:
+                for row in data:
                     result.append(self.process_multiple_fields(row))
             return result
 
         # -- When data is wrapped in edges
-        for edge in (
-            data["edges"] if "edges" in data and data["edges"] is not None else []
-        ):
-            row = edge["node"]
-            if with_pagination:
-                result["entities"].append(self.process_multiple_fields(row))
-            else:
-                result.append(self.process_multiple_fields(row))
+        if with_pagination:
+            process_multiple_fields = self.process_multiple_fields
+            append_result = result["entities"].append
+            for edge in (
+                data["edges"] if "edges" in data and data["edges"] is not None else []
+            ):
+                append_result(process_multiple_fields(edge["node"]))
+        else:
+            for edge in (
+                data["edges"] if "edges" in data and data["edges"] is not None else []
+            ):
+                result.append(self.process_multiple_fields(edge["node"]))
 
         # -- Add page info if required
         if with_pagination and "pageInfo" in data:
