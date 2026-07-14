@@ -612,17 +612,21 @@ class Location:
             return None
         if "x_opencti_location_type" in stix_object:
             type = stix_object["x_opencti_location_type"]
-        elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
-            type = self.opencti.get_attribute_in_extension("type", stix_object)
         else:
-            if "city" in stix_object:
-                type = "City"
-            elif "country" in stix_object:
-                type = "Country"
-            elif "region" in stix_object:
-                type = "Region"
+            extension_type = self.opencti.get_attribute_in_extension(
+                "type", stix_object
+            )
+            if extension_type is not None:
+                type = extension_type
             else:
-                type = "Position"
+                if "city" in stix_object:
+                    type = "City"
+                elif "country" in stix_object:
+                    type = "Country"
+                elif "region" in stix_object:
+                    type = "Region"
+                else:
+                    type = "Position"
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:
