@@ -1861,17 +1861,11 @@ class OpenCTIStix2:
                         ext_ref_files = []
                         if "x_opencti_files" in external_reference:
                             ext_ref_files.extend(external_reference["x_opencti_files"])
-                        if (
-                            self.opencti.get_attribute_in_extension(
-                                "files", external_reference
-                            )
-                            is not None
-                        ):
-                            ext_ref_files.extend(
-                                self.opencti.get_attribute_in_extension(
-                                    "files", external_reference
-                                )
-                            )
+                        extension_files = self.opencti.get_attribute_in_extension(
+                            "files", external_reference
+                        )
+                        if extension_files is not None:
+                            ext_ref_files.extend(extension_files)
 
                         external_reference_id = self._create_or_get_external_reference(
                             generated_ref_id,
@@ -2023,17 +2017,11 @@ class OpenCTIStix2:
                     all_files = []
                     if "x_opencti_files" in external_reference:
                         all_files.extend(external_reference["x_opencti_files"])
-                    if (
-                        self.opencti.get_attribute_in_extension(
-                            "files", external_reference
-                        )
-                        is not None
-                    ):
-                        all_files.extend(
-                            self.opencti.get_attribute_in_extension(
-                                "files", external_reference
-                            )
-                        )
+                    extension_files = self.opencti.get_attribute_in_extension(
+                        "files", external_reference
+                    )
+                    if extension_files is not None:
+                        all_files.extend(extension_files)
 
                     external_reference_id = self._create_or_get_external_reference(
                         generated_ref_id,
