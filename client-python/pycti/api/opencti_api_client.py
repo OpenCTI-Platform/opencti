@@ -442,6 +442,7 @@ class OpenCTIApiClient:
 
         # Keep track of draft context
         self.draft_id = ""
+        self._process_multiple_fields_attribute_cache = {}
 
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
@@ -1062,9 +1063,25 @@ class OpenCTIApiClient:
         """
 
         # Handle process_multiple_fields specific case
-        attribute = OpenCTIStix2Utils.retrieveClassForMethod(
-            self, data, "entity_type", "process_multiple_fields"
-        )
+        attribute = None
+        entity_type = data.get("entity_type") if isinstance(data, dict) else None
+        if isinstance(entity_type, str):
+            try:
+                attribute_cache = self._process_multiple_fields_attribute_cache
+            except AttributeError:
+                attribute_cache = {}
+                self._process_multiple_fields_attribute_cache = attribute_cache
+            try:
+                attribute = attribute_cache[entity_type]
+            except KeyError:
+                attribute = OpenCTIStix2Utils.retrieve_class_for_method(
+                    self, data, "entity_type", "process_multiple_fields"
+                )
+                attribute_cache[entity_type] = attribute
+        else:
+            attribute = OpenCTIStix2Utils.retrieve_class_for_method(
+                self, data, "entity_type", "process_multiple_fields"
+            )
         if attribute is not None:
             data = attribute.process_multiple_fields(data)
 
