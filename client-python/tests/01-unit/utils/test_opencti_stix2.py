@@ -211,6 +211,56 @@ def test_import_reads_extension_files_once(import_method, stix_object, result):
     assert extension_lookup_counts["files"] == 1
 
 
+def test_import_sighting_reads_negative_extension_once():
+    extension_lookup_counts = Counter()
+    create_calls = []
+
+    def get_attribute_in_extension(key, entity):
+        extension_lookup_counts[key] += 1
+        return OpenCTIApiClient.get_attribute_in_extension(key, entity)
+
+    fake_opencti = SimpleNamespace(
+        get_attribute_in_extension=get_attribute_in_extension,
+        get_draft_id=lambda: "",
+        stix_sighting_relationship=SimpleNamespace(
+            create=lambda **kwargs: (
+                create_calls.append(kwargs)
+                or {"id": "sighting--1", "entity_type": "stix-sighting-relationship"}
+            )
+        ),
+    )
+    opencti_stix2 = OpenCTIStix2(fake_opencti)
+
+    opencti_stix2.import_sighting(
+        {
+            "id": "sighting--1",
+            "type": "sighting",
+            "extensions": {
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+                    "negative": True
+                }
+            },
+        },
+        "indicator--1",
+        "identity--1",
+        embedded_relationships={
+            "created_by": None,
+            "object_marking": None,
+            "object_label": None,
+            "open_vocabs": {},
+            "granted_refs": [],
+            "kill_chain_phases": [],
+            "object_refs": [],
+            "external_references": [],
+            "reports": {},
+            "sample_refs": [],
+        },
+    )
+
+    assert extension_lookup_counts["negative"] == 1
+    assert create_calls[0]["x_opencti_negative"] is True
+
+
 class _EmptyNestedRefCollection:
     @staticmethod
     def list(**_kwargs):

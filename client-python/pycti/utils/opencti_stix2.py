@@ -2861,14 +2861,12 @@ class OpenCTIStix2:
             "opencti_upsert_operations", stix_sighting
         )
 
-        if (
-            "x_opencti_negative" not in stix_sighting
-            and self.opencti.get_attribute_in_extension("negative", stix_sighting)
-            is not None
-        ):
-            stix_sighting["x_opencti_negative"] = (
-                self.opencti.get_attribute_in_extension("negative", stix_sighting)
+        if "x_opencti_negative" not in stix_sighting:
+            extension_negative = self.opencti.get_attribute_in_extension(
+                "negative", stix_sighting
             )
+            if extension_negative is not None:
+                stix_sighting["x_opencti_negative"] = extension_negative
         if "x_opencti_workflow_id" not in stix_sighting:
             stix_sighting["x_opencti_workflow_id"] = (
                 self.opencti.get_attribute_in_extension("workflow_id", stix_sighting)
