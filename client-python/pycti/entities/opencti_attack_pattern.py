@@ -616,21 +616,20 @@ class AttackPattern:
             x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
-            elif (
-                self.opencti.get_attribute_in_mitre_extension("id", stix_object)
-                is not None
-            ):
-                x_mitre_id = self.opencti.get_attribute_in_mitre_extension(
+            else:
+                mitre_extension_id = self.opencti.get_attribute_in_mitre_extension(
                     "id", stix_object
                 )
-            elif "external_references" in stix_object:
-                for external_reference in stix_object["external_references"]:
-                    if external_reference["source_name"].startswith("mitre-"):
-                        x_mitre_id = (
-                            external_reference["external_id"]
-                            if "external_id" in external_reference
-                            else None
-                        )
+                if mitre_extension_id is not None:
+                    x_mitre_id = mitre_extension_id
+                elif "external_references" in stix_object:
+                    for external_reference in stix_object["external_references"]:
+                        if external_reference["source_name"].startswith("mitre-"):
+                            x_mitre_id = (
+                                external_reference["external_id"]
+                                if "external_id" in external_reference
+                                else None
+                            )
 
             # Search in extensions
             if "x_opencti_order" not in stix_object:
