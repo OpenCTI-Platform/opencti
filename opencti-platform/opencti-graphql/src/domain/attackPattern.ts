@@ -85,7 +85,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
 
   const subTechniqueIds = new Set(subTechniquesRelations.map((s) => s.fromId));
   // This map regroups sub attack patterns by the parent attack pattern
-  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string }[]>();
+  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string; x_mitre_id?: string }[]>();
   const searchTextPartsByParentId = new Map<string, string[]>();
   for (const s of subTechniquesRelations) {
     const subAP = allAttackPatternsById.get(s.fromId);
