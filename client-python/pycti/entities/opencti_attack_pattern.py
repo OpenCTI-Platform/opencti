@@ -633,11 +633,11 @@ class AttackPattern:
 
             # Search in extensions
             if "x_opencti_order" not in stix_object:
+                extension_order = self.opencti.get_attribute_in_extension(
+                    "order", stix_object
+                )
                 stix_object["x_opencti_order"] = (
-                    self.opencti.get_attribute_in_extension("order", stix_object)
-                    if self.opencti.get_attribute_in_extension("order", stix_object)
-                    is not None
-                    else 0
+                    extension_order if extension_order is not None else 0
                 )
             if "x_mitre_platforms" not in stix_object:
                 stix_object["x_mitre_platforms"] = (
