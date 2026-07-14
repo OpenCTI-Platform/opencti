@@ -15,7 +15,8 @@ import {
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
-import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
+import MatrixEntityMarkers, { MatrixCellEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixEntityMarkers';
+import MatrixCoverageIndicator, { CoverageInformation } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixCoverageIndicator';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
@@ -28,6 +29,8 @@ interface AccordionAttackPatternProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
+  entityUsageMap?: Map<string, MatrixCellEntity[]>;
+  coverageOverlayMap?: Map<string, CoverageInformation>;
 }
 
 const AccordionAttackPattern = ({
@@ -38,6 +41,8 @@ const AccordionAttackPattern = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  entityUsageMap,
+  coverageOverlayMap,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
@@ -107,6 +112,26 @@ const AccordionAttackPattern = ({
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
   const { border, backgroundColor } = styles;
 
+  // Aggregate the entities that use this technique directly or via any of its
+  // (present) sub-techniques, de-duplicated, for the parent summary markers.
+  const aggregatedUsage: MatrixCellEntity[] = (() => {
+    if (!entityUsageMap) return [];
+    const byId = new Map<string, MatrixCellEntity>();
+    const collect = (id: string) => (entityUsageMap.get(id) ?? []).forEach((e) => byId.set(e.id, e));
+    collect(attackPattern.attack_pattern_id);
+    attackPattern.subAttackPatterns?.forEach((sub) => collect(sub.attack_pattern_id));
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
+  })();
+
+  const cellCoverage = coverageOverlayMap?.get(attackPattern.attack_pattern_id) ?? [];
+  // "Compare with security posture": show the tick/cross in the top-right corner
+  // (alongside the coverage donuts) when comparison is active for a covered technique
+  // (directly or via one of its sub-techniques).
+  const showOverlap = !isCoverage
+    && attackPatternIdsToOverlap?.length !== undefined
+    && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern));
+  const hasCorner = cellCoverage.length > 0 || showOverlap;
+
   return (
     <MuiAccordion
       expanded={expanded}
@@ -144,19 +169,32 @@ const AccordionAttackPattern = ({
         sx={{
           minHeight: 0,
           paddingLeft: 0,
-          paddingRight: 1.25,
+          // Reserve space in the top-right corner for the coverage donut / overlap overlay.
+          paddingRight: hasCorner ? 4.5 : 1.25,
           backgroundColor,
           whiteSpace: 'wrap',
+          position: 'relative',
           flexDirection: 'row-reverse',
           '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
             transform: 'rotate(90deg)',
           },
-          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
+          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'flex-start' },
         }}
       >
-        <Typography variant="body2" fontSize={10}>
-          {attackPattern.name}
-        </Typography>
+        <MatrixCoverageIndicator
+          coverageInformation={cellCoverage}
+          entities={aggregatedUsage}
+          showOverlap={showOverlap}
+          isOverlapping={attackPattern.isOverlapping || false}
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1, minWidth: 0 }}>
+          <Typography variant="body2" fontSize={10}>
+            {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
+          </Typography>
+          {aggregatedUsage.length > 0 && (
+            <MatrixEntityMarkers entities={aggregatedUsage} />
+          )}
+        </Box>
 
         {isCoverage && attackPattern.isCovered && (
           <Box sx={{ marginLeft: 'auto' }}>
@@ -166,14 +204,6 @@ const AccordionAttackPattern = ({
             />
           </Box>
         )}
-
-        {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
-          && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
-          && (
-            <AttackPatternsMatrixShouldCoverIcon
-              isOverlapping={attackPattern.isOverlapping || false}
-            />
-          )}
       </MuiAccordionSummary>
       <AccordionDetails
         sx={{
@@ -192,6 +222,8 @@ const AccordionAttackPattern = ({
               isCoverage={isCoverage}
               coverageMap={coverageMap}
               entityId={entityId}
+              entityUsageMap={entityUsageMap}
+              coverageOverlayMap={coverageOverlayMap}
             />
           );
         })}

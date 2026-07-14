@@ -7,6 +7,8 @@ import { graphql } from 'react-relay';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
+import { MatrixCellEntity } from './MatrixEntityMarkers';
+import { CoverageInformation } from './MatrixCoverageIndicator';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
@@ -18,6 +20,14 @@ export interface AttackPatternsMatrixProps {
   isModeOnlyActive: boolean;
   entityType: string;
   inPaper?: boolean;
+  fillContainer?: boolean;
+  // When set, only the sub-techniques that are present (covered) are kept in the
+  // expandable accordion, instead of the full MITRE sub-technique list.
+  onlyActiveSubAttackPatterns?: boolean;
+  // attack_pattern_id -> entities (colour + shape markers) that use the technique.
+  entityUsageMap?: Map<string, MatrixCellEntity[]>;
+  // attack_pattern_id -> has-covered coverage scores, shown as donuts in the cell corner.
+  coverageOverlayMap?: Map<string, CoverageInformation>;
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
@@ -38,6 +48,10 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   isModeOnlyActive,
   entityType,
   inPaper,
+  fillContainer,
+  onlyActiveSubAttackPatterns,
+  entityUsageMap,
+  coverageOverlayMap,
   isCoverage = false,
   coverageMap,
   entityId,
@@ -64,6 +78,10 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             selectedKillChain={selectedKillChain}
             isModeOnlyActive={isModeOnlyActive}
             inPaper={inPaper}
+            fillContainer={fillContainer}
+            onlyActiveSubAttackPatterns={onlyActiveSubAttackPatterns}
+            entityUsageMap={entityUsageMap}
+            coverageOverlayMap={coverageOverlayMap}
             isCoverage={isCoverage}
             coverageMap={coverageMap}
             entityId={entityId}

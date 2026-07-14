@@ -94,7 +94,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
         subTechniquesByParentId.set(s.toId, []);
         searchTextPartsByParentId.set(s.toId, []);
       }
-      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description });
+      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description, x_mitre_id: subAP.x_mitre_id });
       searchTextPartsByParentId.get(s.toId)!.push(`${subAP.x_mitre_id} ${subAP.name} ${subAP.description}`);
     }
   }

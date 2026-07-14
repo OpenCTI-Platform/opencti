@@ -3127,6 +3127,7 @@ type SubAttackPatternForMatrix {
   attack_pattern_id: String!
   name: String!
   description: String
+  x_mitre_id: String
 }
 
 type AttackPatternsByKillChain {
