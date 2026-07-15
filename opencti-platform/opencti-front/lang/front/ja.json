@@ -4007,6 +4007,7 @@
   "Select Parent Relationships of Selected Nodes (To)": "選択したノードの親関係を選択",
   "Select Relationships of Selected Nodes": "選択したノードの関係を選択",
   "Select saved filter": "保存したフィルタを選択",
+  "Select the OpenAEV instance": "OpenAEVインスタンスを選択してください",
   "Select the organizations to share the draft content with during this transition.": "この移行期間中にドラフトコンテンツを共有する組織を選択します。",
   "Select the organizations to unshare the draft content from during this transition.": "この移行期間中にドラフトコンテンツの共有を解除する組織を選択します。",
   "Select your file": "ファイルを選択してください",

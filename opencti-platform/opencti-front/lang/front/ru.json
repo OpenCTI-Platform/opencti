@@ -4007,6 +4007,7 @@
   "Select Parent Relationships of Selected Nodes (To)": "Выбрать родительские отношения выбранных узлов (To)",
   "Select Relationships of Selected Nodes": "Выбор отношений выбранных узлов",
   "Select saved filter": "Выберите сохраненный фильтр",
+  "Select the OpenAEV instance": "Выберите экземпляр OpenAEV",
   "Select the organizations to share the draft content with during this transition.": "Выберите организации, с которыми нужно поделиться черновым содержимым во время этого перехода.",
   "Select the organizations to unshare the draft content from during this transition.": "Выберите организации, с которыми необходимо снять доступ к черновому содержимому во время этого перехода.",
   "Select your file": "Выберите свой файл",
