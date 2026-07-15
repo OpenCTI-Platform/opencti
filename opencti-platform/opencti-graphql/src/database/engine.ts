@@ -2459,6 +2459,20 @@ export const buildLocalMustFilter = (validFilter: any) => {
                   query: nestedSearchValue.toString(),
                 },
               });
+            } else if (['contains', 'not_contains', 'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with'].includes(nestedOperator)) {
+              // Substring/prefix/suffix match on a nested string field, mirroring the non-nested handling:
+              // wildcarded query_string on the .keyword sub-field, routed to must (positive) or must_not (negated).
+              const target = nestedOperator.startsWith('not_') ? nestedMustNot : nestedShould;
+              const val = specialElasticCharsEscape(nestedSearchValue).replace(/\s/g, '\\ ');
+              let query;
+              if (nestedOperator === 'contains' || nestedOperator === 'not_contains') {
+                query = `*${val}*`;
+              } else if (nestedOperator === 'starts_with' || nestedOperator === 'not_starts_with') {
+                query = `${val}*`;
+              } else {
+                query = `*${val}`;
+              }
+              target.push({ query_string: { query, analyze_wildcard: true, fields: [`${nestedFieldKey}.keyword`] } } as any);
             } else if (RANGE_OPERATORS.includes(nestedOperator)) {
               nestedShould.push({
                 range: {
@@ -2476,13 +2490,18 @@ export const buildLocalMustFilter = (validFilter: any) => {
           }
         }
       }
-      const should = {
-        bool: {
-          should: nestedShould,
-          minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
-        },
-      };
-      nestedMust.push(should);
+      // Only add a should clause when there is at least one positive condition; a negated-only
+      // operator (not_eq / not_contains / nil ...) puts its clause in nestedMustNot and must not
+      // be paired with an empty should (minimum_should_match would otherwise match nothing).
+      if (nestedShould.length > 0) {
+        const should = {
+          bool: {
+            should: nestedShould,
+            minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
+          },
+        };
+        nestedMust.push(should);
+      }
     }
     const nestedQuery = {
       path: headKey,
