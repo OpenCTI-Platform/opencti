@@ -5,14 +5,18 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
-import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { logApp } from '../../config/conf';
+import conf, { isFeatureEnabled, logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
+import { buildCatalogMapFromDefinitions, buildContractsByImageCache, clearCatalogCacheValidators, type InternalCatalog } from './catalog-cache';
 
 const validatorCache = new Map<string, ValidateFunction>();
+const MAX_VALIDATOR_CACHE_SIZE = 500;
+const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
+
+export type CatalogStatus = 'loading' | 'ready' | 'error';
 
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
@@ -22,6 +26,10 @@ const validatorCache = new Map<string, ValidateFunction>();
 const getOrCompileValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
   let validate = validatorCache.get(cacheKey);
   if (!validate) {
+    if (validatorCache.size >= MAX_VALIDATOR_CACHE_SIZE) {
+      logApp.warn('Validator cache size limit reached, compiling without caching', { size: validatorCache.size });
+      return ajv.compile(jsonValidation);
+    }
     validate = ajv.compile(jsonValidation);
     validatorCache.set(cacheKey, validate);
   }
@@ -36,90 +44,53 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 let catalogMap: Promise<Record<string, CatalogType>> | undefined;
 // cache for contracts by image map
 let contractsByImageCache: Promise<Map<string, CatalogContract>> | undefined;
+let managerInternalCatalog: InternalCatalog | undefined;
+let managerCatalogStatus: CatalogStatus = 'loading';
 
 // Build catalog map from files
 const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
-  const newCatalogMap: Record<string, CatalogType> = {};
-  const catalogs = [];
-  catalogs.push(JSON.stringify(filigranCatalog));
+  const catalogDefinitions: CatalogDefinition[] = [filigranCatalog as unknown as CatalogDefinition];
   // Add custom catalogs
   for (let index = 0; index < CUSTOM_CATALOGS.length; index += 1) {
     const customCatalog = CUSTOM_CATALOGS[index];
     const catalog = await readFile(customCatalog, { encoding: 'utf8', flag: 'r' });
-    catalogs.push(catalog);
+    catalogDefinitions.push(JSON.parse(catalog) as CatalogDefinition);
   }
-  // Prepare catalogs map
-  for (let index = 0; index < catalogs.length; index += 1) {
-    const catalogRaw = catalogs[index];
-    const catalog = JSON.parse(catalogRaw) as CatalogDefinition;
-    // Validate each contract
-    for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
-      const contract = catalog.contracts[contractIndex];
-      if (contract.manager_supported) {
-        if (!contract.config_schema) {
-          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
-        } else {
-          if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
-          }
-          if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
-          }
 
-          if (contract.config_schema) {
-            const jsonValidation = {
-              type: contract.config_schema.type,
-              properties: contract.config_schema.properties,
-              required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties,
-            };
-            try {
-              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
-            } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-            }
-          }
-        }
-      }
-    }
-    newCatalogMap[catalog.id] = {
-      definition: catalog,
-      graphql: {
-        id: catalog.id,
-        entity_type: 'Catalog',
-        parent_types: ['Internal'],
-        standard_id: idGenFromData('catalog', { id: catalog.id }),
-        name: catalog.name,
-        description: catalog.description,
-        contracts: catalog.contracts.map((c) => {
-          const finalContract = c;
-          if (finalContract.manager_supported) {
-            if (!finalContract.config_schema) {
-              logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
-            } else {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-              EXCLUDED_CONFIG_VARS.forEach((property) => {
-                delete finalContract.config_schema.properties[property];
-              });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
-            }
-          }
-          return JSON.stringify(finalContract);
-        }),
-      },
-    };
-  }
-  return newCatalogMap;
+  return buildCatalogMapFromDefinitions(catalogDefinitions);
 };
 
 // Enable custom catalogs - clears cache and enables live catalog loading
 export const resetCatalogs = () => {
   catalogMap = undefined;
   contractsByImageCache = undefined;
+  managerInternalCatalog = undefined;
+  managerCatalogStatus = 'loading';
   validatorCache.clear();
+  clearCatalogCacheValidators();
+};
+
+export const updateCatalogManagerInternalCache = (internalCatalog: InternalCatalog | undefined, status: CatalogStatus, keepExistingSnapshot = false) => {
+  if (!keepExistingSnapshot) {
+    managerInternalCatalog = internalCatalog;
+  }
+  managerCatalogStatus = status;
+};
+
+export const getCatalogManagerInternalCache = () => managerInternalCatalog;
+
+export const getCatalogStatus = (): CatalogStatus => {
+  if (!isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+    return 'ready';
+  }
+  return managerCatalogStatus;
 };
 
 const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog) {
+    return managerInternalCatalog.catalogMap;
+  }
+
   if (!catalogMap) {
     // We memoize the Promise immediately (not after it resolves) so that
     // all concurrent calls share the same in-flight execution.
@@ -443,11 +414,14 @@ export const computeConnectorTargetContract = (
 };
 
 export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog) {
+    return managerInternalCatalog.contractsByImage;
+  }
+
   if (!contractsByImageCache) {
     contractsByImageCache = (async () => {
       const catalogDefinitions = await getCatalogs();
-      const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
-      return new Map(contracts.map((contract) => [contract.container_image, contract]));
+      return buildContractsByImageCache(catalogDefinitions);
     })().catch((err) => {
       contractsByImageCache = undefined;
       throw err;

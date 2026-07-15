@@ -33,6 +33,7 @@ import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
 import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
+import catalogManager from './manager/catalogManager';
 import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-connector';
 import authenticationProviderListener from './modules/authenticationProvider/authenticationProvider-listener';
 import supportPackageListener from './modules/support/supportPackage-listener';
@@ -144,6 +145,7 @@ export const startModules = async () => {
   // region Audit
   startingPromises.push(activityListener.start());
   startingPromises.push(activityManager.start());
+  startingPromises.push(catalogManager.start());
   // endregion
 
   startingPromises.push(supportPackageListener.start());
@@ -233,6 +235,7 @@ export const shutdownModules = async () => {
   // region Audit listener
   stoppingPromises.push(activityListener.shutdown());
   stoppingPromises.push(activityManager.shutdown());
+  stoppingPromises.push(catalogManager.shutdown());
   // endregion
   stoppingPromises.push(supportPackageListener.shutdown());
   stoppingPromises.push(authenticationProviderListener.shutdown());
