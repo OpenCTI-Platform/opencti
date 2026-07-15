@@ -16,7 +16,7 @@ import type { ExecutionEnvelop } from '../types/playbookExecution';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
-import { refreshLocalCacheForEntity, resetCacheForEntity } from './cache';
+import { refreshLocalCacheForEntity } from './cache';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -329,7 +329,6 @@ export const getRedisVersion = async () => {
 export const CACHE_RESET_TOPIC = `${TOPIC_PREFIX}CACHE_RESET_TOPIC`;
 
 export const publishCacheResetEvent = async (entityType: string) => {
-  resetCacheForEntity(entityType);
   await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
 };
 
