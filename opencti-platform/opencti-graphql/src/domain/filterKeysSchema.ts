@@ -247,9 +247,10 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       if (cfDef.field_type === 'integer') filterType = 'integer';
       else if (cfDef.field_type === 'boolean') filterType = 'boolean';
       else if (cfDef.field_type === 'date') filterType = 'date';
-      else if (cfDef.field_type === 'select') filterType = 'enum';
+      else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select') filterType = 'enum';
 
-      const elementsForSearch = cfDef.field_type === 'select' && cfDef.select_options
+      const isSelectLike = cfDef.field_type === 'select' || cfDef.field_type === 'multi_select';
+      const elementsForSearch = isSelectLike && cfDef.select_options
         ? cfDef.select_options
         : [];
 
