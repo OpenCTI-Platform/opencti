@@ -1,9 +1,11 @@
 import React from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { NoMatch } from '@components/Error';
+import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../utils/hooks/useGranted';
 
 export const XTM_HUB_AUTO_REGISTER_QUERY_PARAM = 'xtmHubAutoRegister';
 export const XTM_HUB_PRODUCT_NAME_QUERY_PARAM = 'productName';
+export const XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM = 'xtmHubPermissionRequired';
 
 const STATIC_PATH_REDIRECTS: Record<string, string> = {
   'connect-xtm-hub': '/dashboard/settings/experience',
@@ -20,6 +22,7 @@ const normalizePathKey = (value?: string) => (value ?? '').replace(/^\/+|\/+$/g,
 const RedirectByPath = () => {
   const { '*': pathKey } = useParams();
   const { search } = useLocation();
+  const isGrantedToXtmHubRegistration = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const normalizedPathKey = normalizePathKey(pathKey);
   const targetPath = STATIC_PATH_REDIRECTS[normalizedPathKey];
 
@@ -28,6 +31,12 @@ const RedirectByPath = () => {
   }
 
   const searchParams = new URLSearchParams(search);
+  if (normalizedPathKey === 'connect-xtm-hub' && !isGrantedToXtmHubRegistration) {
+    searchParams.set(XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM, 'true');
+    const targetSearch = searchParams.toString();
+    return <Navigate to={{ pathname: '/dashboard', search: targetSearch ? `?${targetSearch}` : '' }} replace={true} />;
+  }
+
   const extraParams = PATH_REDIRECT_QUERY_PARAMS[normalizedPathKey] ?? {};
   Object.entries(extraParams).forEach(([key, value]) => searchParams.set(key, value));
   const targetSearch = searchParams.toString();

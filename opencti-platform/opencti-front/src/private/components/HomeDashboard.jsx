@@ -1,8 +1,13 @@
+import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import { assoc, head, last, map, pluck } from 'ramda';
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PLATFORM_DASHBOARD } from './HomeDashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
@@ -23,6 +28,7 @@ import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
+import { XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM } from './RedirectByPath';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -560,8 +566,11 @@ const LOCAL_STORAGE_KEY = 'dashboard';
 const HomeDashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const location = useLocation();
+  const navigate = useNavigate();
   const authContext = useAuth();
   const currentMe = authContext.me;
+  const [isPermissionDialogOpen, setIsPermissionDialogOpen] = useState(false);
   const data = usePreloadedQuery(dashboardQuery, queryRef);
   const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
@@ -585,9 +594,41 @@ const HomeDashboardComponent = ({ queryRef }) => {
     [authContext, currentMe, me],
   );
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get(XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM) !== 'true') {
+      return;
+    }
+
+    setIsPermissionDialogOpen(true);
+    searchParams.delete(XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM);
+    const targetSearch = searchParams.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: targetSearch ? `?${targetSearch}` : '',
+      },
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate]);
+
   return (
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
+        <Dialog
+          open={isPermissionDialogOpen}
+          onClose={() => setIsPermissionDialogOpen(false)}
+          title={t_i18n('Permission required')}
+        >
+          <DialogContentText>
+            {t_i18n('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')}
+          </DialogContentText>
+          <DialogActions>
+            <Button onClick={() => setIsPermissionDialogOpen(false)}>
+              {t_i18n('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
             dashboard={defaultDashboard}
