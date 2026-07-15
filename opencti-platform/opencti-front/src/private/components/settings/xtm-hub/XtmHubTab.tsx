@@ -1,6 +1,8 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -12,6 +14,8 @@ import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '@components/RedirectByPath';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -49,8 +53,11 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAutoRegistrationPromptOpen, setIsAutoRegistrationPromptOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings, about } = useContext(UserContext);
+  const location = useLocation();
+  const navigate = useNavigate();
   const eeSettings = settings?.platform_enterprise_edition;
   const isEnterpriseEdition = eeSettings?.license_validated;
   const isDemo = settings?.platform_demo ?? false;
@@ -178,6 +185,35 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     setIsDialogOpen(true);
   };
 
+  const clearAutoRegisterQueryParam = useCallback(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (!searchParams.has(XTM_HUB_AUTO_REGISTER_QUERY_PARAM)) {
+      return;
+    }
+    searchParams.delete(XTM_HUB_AUTO_REGISTER_QUERY_PARAM);
+    const targetSearch = searchParams.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: targetSearch ? `?${targetSearch}` : '',
+      },
+      { replace: true },
+    );
+  }, [location.pathname, location.search, navigate]);
+
+  const handleConfirmAutoRegistration = () => {
+    setIsAutoRegistrationPromptOpen(false);
+    setOperationType(OperationType.REGISTER);
+    setIsDialogOpen(true);
+    handleWaitingHubStep();
+  };
+
+  const handleCancelAutoRegistration = () => {
+    setIsAutoRegistrationPromptOpen(false);
+    setProcessStep(ProcessSteps.INSTRUCTIONS);
+    setOperationType(null);
+  };
+
   const handleCancelClose = () => {
     setShowConfirmation(false);
   };
@@ -203,6 +239,21 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     openTab();
     setProcessStep(ProcessSteps.WAITING_HUB);
   };
+
+  useEffect(() => {
+    if (isDemo || isRegistered) {
+      return;
+    }
+    const searchParams = new URLSearchParams(location.search);
+    const shouldAutoRegister = searchParams.get(XTM_HUB_AUTO_REGISTER_QUERY_PARAM) === 'true';
+    if (!shouldAutoRegister) {
+      return;
+    }
+    setOperationType(OperationType.REGISTER);
+    setProcessStep(ProcessSteps.INSTRUCTIONS);
+    setIsAutoRegistrationPromptOpen(true);
+    clearAutoRegisterQueryParam();
+  }, [clearAutoRegisterQueryParam, isDemo, isRegistered, location.search]);
 
   const config = useMemo(() => {
     const isUnregister = operationType === OperationType.UNREGISTER;
@@ -318,6 +369,29 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
           {getButtonText()}
         </Button>
       </div>
+      <Dialog
+        open={isAutoRegistrationPromptOpen}
+        onClose={handleCancelAutoRegistration}
+        aria-labelledby="xtm-hub-auto-registration-title"
+        aria-describedby="xtm-hub-auto-registration-description"
+        title={(
+          <span id="xtm-hub-auto-registration-title">
+            {t_i18n('Authorize connection')}
+          </span>
+        )}
+      >
+        <DialogContentText id="xtm-hub-auto-registration-description">
+          {t_i18n('Allow OpenCTI to connect with XTM Hub')}
+        </DialogContentText>
+        <DialogActions>
+          <Button variant="secondary" onClick={handleCancelAutoRegistration} color="primary">
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={handleConfirmAutoRegistration} color="primary" autoFocus>
+            {t_i18n('Continue')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <ProcessDialog
         open={isDialogOpen}
         title={config.dialogTitle}

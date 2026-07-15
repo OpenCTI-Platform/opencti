@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
-import RedirectByPath from './RedirectByPath';
+import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from './RedirectByPath';
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -20,7 +20,19 @@ describe('RedirectByPath', () => {
       { route: '/dashboard/redirect/connect-xtm-hub?name=toto' },
     );
 
-    expect(await screen.findByTestId('location')).toHaveTextContent('/dashboard/settings/experience?name=toto');
+    expect(await screen.findByTestId('location')).toHaveTextContent(`/dashboard/settings/experience?name=toto&${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`);
+  });
+
+  it('adds xtm hub auto register query param for connect redirect', async () => {
+    testRender(
+      <Routes>
+        <Route path="/dashboard/redirect/*" element={<RedirectByPath />} />
+        <Route path="/dashboard/settings/experience" element={<LocationProbe />} />
+      </Routes>,
+      { route: '/dashboard/redirect/connect-xtm-hub' },
+    );
+
+    expect(await screen.findByTestId('location')).toHaveTextContent(`/dashboard/settings/experience?${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`);
   });
 
   it('renders not found for unknown mapping key', () => {
