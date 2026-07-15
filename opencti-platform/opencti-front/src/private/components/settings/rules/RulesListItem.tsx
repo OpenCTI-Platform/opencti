@@ -1,5 +1,5 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import { Grid2 as Grid, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import FormGroup from '@mui/material/FormGroup';
@@ -18,6 +18,8 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import Divider from '@mui/material/Divider';
+import Collapse from '@mui/material/Collapse';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -592,7 +594,7 @@ const FilterSummaryChips = ({ filters }: { filters: FilterGroup }) => {
   const activeFilters: Filter[] = filters.filters ?? [];
   if (activeFilters.length === 0) return null;
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
       {activeFilters.map((f) => {
         const op = operatorLabel(f.operator);
         const vals = f.values?.slice(0, 2).map(formatFilterValue).join(', ');
@@ -606,7 +608,17 @@ const FilterSummaryChips = ({ filters }: { filters: FilterGroup }) => {
             label={label}
             size="small"
             variant="outlined"
-            sx={{ fontSize: '0.65rem', height: 20, color: theme.palette.text.secondary }}
+            sx={{
+              fontSize: '0.75rem',
+              height: 28,
+              borderRadius: 1,
+              color: theme.palette.text.primary,
+              backgroundColor: theme.palette.background.paper,
+              borderColor: theme.palette.divider,
+              '& .MuiChip-label': {
+                paddingInline: 1.25,
+              },
+            }}
           />
         );
       })}
@@ -707,10 +719,10 @@ const ConfiguredRulePreview = ({
                 disabled={disabled}
                 sx={{
                   position: 'absolute',
-                  top: -6,
-                  right: -6,
-                  width: 18,
-                  height: 18,
+                  top: -8,
+                  right: -8,
+                  width: 26,
+                  height: 26,
                   backgroundColor: (t) => t.palette.background.paper,
                   border: (t) => `1px solid ${t.palette.divider}`,
                   '&:hover': {
@@ -718,7 +730,7 @@ const ConfiguredRulePreview = ({
                   },
                 }}
               >
-                <AddOutlined sx={{ fontSize: 12 }} />
+                <AddOutlined sx={{ fontSize: 18 }} />
               </IconButton>
             </span>
           </Tooltip>
@@ -1312,7 +1324,7 @@ const ConfiguredRuleAccordion = ({
         <Stack spacing={1.5}>
           <TextField
             fullWidth
-            label={t_i18n('Configuration name')}
+            label={t_i18n('Rule Configuration Name')}
             value={configuredRule.name}
             onChange={(event) => onChange(configuredRule.id, { name: event.target.value })}
             size="small"
@@ -1323,7 +1335,7 @@ const ConfiguredRuleAccordion = ({
             fullWidth
             multiline
             minRows={2}
-            label={t_i18n('Configuration description')}
+            label={t_i18n('Rule Configuration Description')}
             value={configuredRule.description}
             onChange={(event) => onChange(configuredRule.id, { description: event.target.value })}
             size="small"
@@ -1356,7 +1368,11 @@ const ConfiguredRuleAccordion = ({
         <Dialog
           open={Boolean(conditionEditorSlot)}
           onClose={closeConditionEditor}
-          title={t_i18n('Add condition')}
+          title={conditionEditorSlot
+            ? `${t_i18n(conditionEditorSlot.kind === 'relationship'
+              ? 'Add condition on relationship'
+              : 'Add condition on')} ${t_i18n(conditionEditorSlot.label)}`
+            : t_i18n('Add condition')}
           size="large"
         >
           <Stack spacing={2} sx={{ pt: 0.5 }}>
@@ -1428,6 +1444,7 @@ const RulesListItem = ({
   const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
   const canManageConfiguredRules = isEnterpriseEdition && isEngineEnabled;
 
+  const [cardExpanded, setCardExpanded] = useState(true);
   const [configuredRules, setConfiguredRules] = useState<ConfiguredRule[]>([]);
   const [configuredRuleToDelete, setConfiguredRuleToDelete] = useState<string | null>(null);
   const [configuredRulesLoaded, setConfiguredRulesLoaded] = useState(false);
@@ -1585,11 +1602,6 @@ const RulesListItem = ({
     setConfiguredRuleToDelete(null);
   };
 
-  const styleRuleRoot: CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-  };
   const styleRuleTitle: CSSProperties = {
     textWrap: 'nowrap',
     display: 'flex',
@@ -1639,179 +1651,184 @@ const RulesListItem = ({
   };
 
   return (
-    <Grid container spacing={3} sx={{ marginBottom: 3 }}>
-      <Grid size={{ xs: 3 }} sx={{ ...styleRuleRoot, alignSelf: 'stretch' }}>
-        <DangerZoneBlock
-          type="rules"
-          displayTitle={false}
-          title={t_i18n(rule.name)}
-          sx={{ title: styleRuleTitle }}
-          component={({ disabled, style, title }) => (
-            <Card
-              title={title}
-              sx={style}
+    <Box sx={{ marginBottom: 3 }}>
+      <DangerZoneBlock
+        type="rules"
+        displayTitle={false}
+        title={t_i18n(rule.name)}
+        sx={{ title: styleRuleTitle }}
+        component={({ disabled, style, title }) => (
+          <Card sx={style}>
+            {/* ─── Header bar ─────────────────────────────────────────────── */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: 2,
+                flexWrap: 'wrap',
+              }}
             >
-              <Stack gap={2}>
-                <div>
-                  <Label>
-                    {t_i18n('Description')}
-                  </Label>
-                  <span>{t_i18n(rule.description)}</span>
-                </div>
-
-                {configuredRules.length === 0 ? (
-                  <div>
-                    <Label>
-                      {t_i18n('Status')}
-                    </Label>
-                    <FormGroup>
-                      <FormControlLabel
-                        label={ruleStatus}
-                        control={(
-                          <Switch
-                            color="secondary"
-                            disabled={!isEngineEnabled || disabled}
-                            checked={isEngineEnabled && rule.activated}
-                            onChange={toggle}
-                          />
-                        )}
-                      />
-                    </FormGroup>
-                  </div>
-                ) : (
-                  <div>
-                    <Label>
-                      {t_i18n('Disable all')}
-                    </Label>
-                    <FormGroup>
-                      <FormControlLabel
-                        label={activeConfiguredRulesCount === 0 ? t_i18n('All disabled') : t_i18n('All active')}
-                        control={(
-                          <Switch
-                            color="secondary"
-                            disabled={!isEngineEnabled || disabled}
-                            checked={isEngineEnabled && activeConfiguredRulesCount > 0}
-                            onChange={() => {
-                              const allDisabled = activeConfiguredRulesCount === 0;
-                              setConfiguredRules((prev) => prev.map((r) => ({ ...r, active: allDisabled })));
-                            }}
-                          />
-                        )}
-                      />
-                    </FormGroup>
-                  </div>
-                )}
-
-                {configuredRules.length > 0 && (
-                  <div>
-                    <Label>
-                      {t_i18n('Configured rules')}
-                    </Label>
-                    <span>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                  {title}
+                  {configuredRules.length === 0 ? (
+                    <Tooltip title={ruleStatus}>
+                      <FormGroup sx={{ m: 0 }}>
+                        <FormControlLabel
+                          sx={{ m: 0 }}
+                          label=""
+                          control={(
+                            <Switch
+                              color="secondary"
+                              disabled={!isEngineEnabled || disabled}
+                              checked={isEngineEnabled && rule.activated}
+                              onChange={toggle}
+                            />
+                          )}
+                        />
+                      </FormGroup>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title={activeConfiguredRulesCount === 0 ? t_i18n('All disabled') : t_i18n('All active')}>
+                      <FormGroup sx={{ m: 0 }}>
+                        <FormControlLabel
+                          sx={{ m: 0 }}
+                          label=""
+                          control={(
+                            <Switch
+                              color="secondary"
+                              disabled={!isEngineEnabled || disabled}
+                              checked={isEngineEnabled && activeConfiguredRulesCount > 0}
+                              onChange={() => {
+                                const allDisabled = activeConfiguredRulesCount === 0;
+                                setConfiguredRules((prev) => prev.map((r) => ({ ...r, active: allDisabled })));
+                              }}
+                            />
+                          )}
+                        />
+                      </FormGroup>
+                    </Tooltip>
+                  )}
+                  {configuredRules.length > 0 && (
+                    <Typography variant="caption" color="text.secondary">
                       {activeConfiguredRulesCount}
                       /
                       {configuredRules.length}
                       {' '}
                       {t_i18n('active')}
-                    </span>
-                  </div>
-                )}
-
-                {isEngineEnabled && taskWork && (
-                  <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
-                )}
-              </Stack>
-            </Card>
-          )}
-        />
-      </Grid>
-      <Grid size={{ xs: 9 }}>
-        <Stack spacing={3}>
-          <Card
-            sx={{ overflowX: 'auto', minWidth: 0 }}
-            title=" "
-          >
-            <Box
-              sx={{
-                borderRadius: 1,
-                p: 1.5,
-              }}
-            >
+                    </Typography>
+                  )}
+                </Box>
+                <Typography variant="body2" color="text.secondary">
+                  {t_i18n(rule.description)}
+                </Typography>
+              </Box>
               {canManageConfiguredRules && (
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-                  <Button
-                    size="small"
-                    variant="secondary"
-                    onClick={handleAddConfiguredRule}
-                    startIcon={<AddOutlined fontSize="small" />}
-                  >
-                    {t_i18n('Add configuration')}
-                  </Button>
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={handleAddConfiguredRule}
+                  startIcon={<AddOutlined fontSize="small" />}
+                  style={{ flexShrink: 0 }}
+                >
+                  {t_i18n('Add configuration')}
+                </Button>
+              )}
+              <Tooltip title={cardExpanded ? t_i18n('Collapse') : t_i18n('Expand')}>
+                <IconButton
+                  size="small"
+                  onClick={() => setCardExpanded((prev) => !prev)}
+                  sx={{ flexShrink: 0 }}
+                >
+                  <ExpandMore
+                    fontSize="small"
+                    sx={{
+                      transform: cardExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: (t) => t.transitions.create('transform', { duration: t.transitions.duration.shortest }),
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            <Collapse in={cardExpanded} timeout="auto" unmountOnExit={false}>
+              <Divider sx={{ my: 2 }} />
+
+              {/* ─── Rule definition ────────────────────────────────────────── */}
+              <Box sx={{ overflowX: 'auto', minWidth: 0 }}>
+                <div style={styleDefinition}>
+                  <div style={styleIfThenBlock}>
+                    {(rule.display?.if ?? []).map((step, index) => (
+                      <div key={index} style={styleStep}>
+                        <div style={styleProgramTokenTop}>{t_i18n('IF')}</div>
+                        <RuleTag color={step?.source_color} label={step?.source} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span>{t_i18n(step?.relation)}</span>
+                        </div>
+                        <RuleTag color={step?.target_color} label={step?.target} />
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <ArrowRightAlt fontSize="large" />
+                    <div style={{ ...styleProgramTokenTop, marginTop: theme.spacing(0.5) }}>{t_i18n('THEN')}</div>
+                  </div>
+                  <div style={styleIfThenBlock}>
+                    {(rule.display?.then ?? []).map((step, index) => {
+                      return (
+                        <div key={index} style={styleStep}>
+                          {step?.action && <div style={styleProgramTokenTop}>{step.action}</div>}
+                          <RuleTag color={step?.source_color} label={step?.source} />
+                          {step?.relation && (
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span>{t_i18n(step?.relation)}</span>
+                            </div>
+                          )}
+                          {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </Box>
+
+              {isEngineEnabled && taskWork && (
+                <Box sx={{ mt: 2 }}>
+                  <RuleListItemProgressBar taskEnable={task.enable ?? false} work={taskWork} />
                 </Box>
               )}
 
-              <div style={styleDefinition}>
-                <div style={styleIfThenBlock}>
-                  {(rule.display?.if ?? []).map((step, index) => (
-                    <div key={index} style={styleStep}>
-                      <div style={styleProgramTokenTop}>{t_i18n('IF')}</div>
-                      <RuleTag color={step?.source_color} label={step?.source} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span>{t_i18n(step?.relation)}</span>
-                      </div>
-                      <RuleTag color={step?.target_color} label={step?.target} />
-                    </div>
-                  ))}
-                </div>
-                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <ArrowRightAlt fontSize="large" />
-                  <div style={{ ...styleProgramTokenTop, marginTop: theme.spacing(0.5) }}>{t_i18n('THEN')}</div>
-                </div>
-                <div style={styleIfThenBlock}>
-                  {(rule.display?.then ?? []).map((step, index) => {
-                    return (
-                      <div key={index} style={styleStep}>
-                        {step?.action && <div style={styleProgramTokenTop}>{step.action}</div>}
-                        <RuleTag color={step?.source_color} label={step?.source} />
-                        {step?.relation && (
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <span>{t_i18n(step?.relation)}</span>
-                          </div>
-                        )}
-                        {step?.target && <RuleTag color={step?.target_color} label={step?.target} />}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </Box>
+              {/* ─── Configured rules ───────────────────────────────────────── */}
+              {configuredRules.length > 0 && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Label>{t_i18n('Configured rules')}</Label>
+                  <Stack spacing={1.5} sx={{ mt: 1 }}>
+                    {configuredRules.map((configuredRule) => (
+                      <AccordionErrorBoundary key={configuredRule.id}>
+                        <ConfiguredRuleAccordion
+                          configuredRule={configuredRule}
+                          rule={rule}
+                          ruleEntities={ruleEntities}
+                          schemaRelationsTypesMapping={schema.schemaRelationsTypesMapping}
+                          schemaSdoTypes={schemaSdoTypes}
+                          schemaScoTypes={schemaScoTypes}
+                          canManage={canManageConfiguredRules}
+                          onChange={handleConfiguredRuleChange}
+                          onFiltersMapChange={handleConfiguredRuleFiltersMapChange}
+                          onToggleExpand={handleConfiguredRuleToggleExpanded}
+                          onDelete={(id) => setConfiguredRuleToDelete(id)}
+                        />
+                      </AccordionErrorBoundary>
+                    ))}
+                  </Stack>
+                </>
+              )}
+            </Collapse>
           </Card>
-
-          {configuredRules.length > 0 && (
-            <Card title={t_i18n('Configured rules')}>
-              <Stack spacing={1.5}>
-                {configuredRules.map((configuredRule) => (
-                  <AccordionErrorBoundary key={configuredRule.id}>
-                    <ConfiguredRuleAccordion
-                      configuredRule={configuredRule}
-                      rule={rule}
-                      ruleEntities={ruleEntities}
-                      schemaRelationsTypesMapping={schema.schemaRelationsTypesMapping}
-                      schemaSdoTypes={schemaSdoTypes}
-                      schemaScoTypes={schemaScoTypes}
-                      canManage={canManageConfiguredRules}
-                      onChange={handleConfiguredRuleChange}
-                      onFiltersMapChange={handleConfiguredRuleFiltersMapChange}
-                      onToggleExpand={handleConfiguredRuleToggleExpanded}
-                      onDelete={(id) => setConfiguredRuleToDelete(id)}
-                    />
-                  </AccordionErrorBoundary>
-                ))}
-              </Stack>
-            </Card>
-          )}
-        </Stack>
-      </Grid>
+        )}
+      />
 
       <Dialog
         open={Boolean(configuredRulePendingDeletion)}
@@ -1837,7 +1854,7 @@ const RulesListItem = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Grid>
+    </Box>
   );
 };
 

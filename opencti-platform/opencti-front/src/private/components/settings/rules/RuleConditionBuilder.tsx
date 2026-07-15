@@ -15,6 +15,7 @@ import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
 import Divider from '@mui/material/Divider';
 import { DeleteOutline } from '@mui/icons-material';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import type { Theme } from '../../../../components/Theme';
@@ -431,15 +432,11 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
       {/* Spacer for And column */}
       <Box />
 
-      {/* "Entity Type" grey label box — spans the Property column */}
+      {/* "Entity Type" label — spans the Property column */}
       <Box sx={{
         height: 40,
         display: 'flex',
         alignItems: 'center',
-        px: 1.5,
-        borderRadius: 1,
-        border: (t) => `1px solid ${t.palette.divider}`,
-        background: (t) => t.palette.action.selected,
         mt: 'auto',
       }}>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>{t_i18n('Entity Type')}</Typography>
@@ -474,7 +471,7 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
             <TextField
               {...params}
               size="small"
-              placeholder={entityTypeValues.length === 0 ? t_i18n('Any') : ''}
+              placeholder={entityTypeValues.length === 0 ? t_i18n('Select entity type...') : ''}
             />
           )}
         />
@@ -573,8 +570,32 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
 
   const hasAnyContent = showEntityTypeRow || propertyRows.length > 0;
 
+  // For multi-type entity slots, the user must pick an entity type first: the set
+  // of available property conditions is derived from the selected type(s).
+  const mustSelectEntityTypeFirst = showEntityTypeRow && entityTypeValues.length === 0;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+      {/* Guidance: tell the user to pick an entity type before adding conditions */}
+      {showEntityTypeRow && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 1,
+            p: 1.25,
+            borderRadius: 1,
+            border: (t) => `1px solid ${t.palette.divider}`,
+            backgroundColor: (t) => t.palette.action.hover,
+          }}
+        >
+          <InfoOutlined sx={{ fontSize: 18, color: 'primary.main', mt: '1px' }} />
+          <Typography variant="body2" color="text.secondary">
+            {t_i18n('Start by selecting one or more entity types below. The available property conditions depend on the entity types you choose.')}
+          </Typography>
+        </Box>
+      )}
+
       {/* Entity type row */}
       {showEntityTypeRow && renderEntityTypeRow()}
 
@@ -583,30 +604,39 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
         <Divider sx={{ my: 0.5 }} />
       )}
 
-      {/* Property condition rows */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-        {propertyRows.map((row, index) => renderPropertyRow(row, index))}
-      </Box>
-
-      {/* Empty state */}
-      {!hasAnyContent && (
+      {/* Prompt to select an entity type before property conditions become available */}
+      {mustSelectEntityTypeFirst ? (
         <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 1 }}>
-          {t_i18n('No conditions set. Add a property condition below.')}
+          {t_i18n('Select an entity type above to add property conditions.')}
         </Typography>
-      )}
+      ) : (
+        <>
+          {/* Property condition rows */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+            {propertyRows.map((row, index) => renderPropertyRow(row, index))}
+          </Box>
 
-      {/* Add property condition */}
-      {!disabled && effectiveAvailablePropertyKeys.length > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
-          <Button
-            variant="secondary"
-            size="small"
-            onClick={addRow}
-            sx={{ color: theme.palette.primary.main, textTransform: 'none', fontWeight: 500 }}
-          >
-            {t_i18n('Add property condition')}
-          </Button>
-        </Box>
+          {/* Empty state */}
+          {!hasAnyContent && (
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', py: 1 }}>
+              {t_i18n('No conditions set. Add a property condition below.')}
+            </Typography>
+          )}
+
+          {/* Add property condition */}
+          {!disabled && effectiveAvailablePropertyKeys.length > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 0.5 }}>
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={addRow}
+                sx={{ color: theme.palette.primary.main, textTransform: 'none', fontWeight: 500 }}
+              >
+                {t_i18n('Add property condition')}
+              </Button>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );
