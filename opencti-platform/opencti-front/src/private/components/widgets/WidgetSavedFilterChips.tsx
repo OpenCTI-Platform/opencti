@@ -51,7 +51,7 @@ const WidgetSavedFilterChipsComponent = ({
     entityTypes,
   );
 
-  // Render fallback chip when the saved filter is missing, inaccessible, or invalid.
+  // not accessible, deleted, or invalid saved filter
   if (!parsedFilters) {
     return (
       <Chip
