@@ -5,6 +5,14 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+_STIX_CORE_RELATIONSHIP_EXTENSION_FIELDS = (
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_workflow_id", "workflow_id"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("opencti_upsert_operations", "opencti_upsert_operations"),
+)
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -1354,35 +1362,9 @@ class StixCoreRelationship:
         update = kwargs.get("update", False)
         default_date = kwargs.get("defaultDate", False)
         if stix_relation is not None:
-            # Search in extensions
-            if "x_opencti_stix_ids" not in stix_relation:
-                stix_relation["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_relation)
-                )
-            if "x_opencti_granted_refs" not in stix_relation:
-                stix_relation["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "granted_refs", stix_relation
-                    )
-                )
-            if "x_opencti_workflow_id" not in stix_relation:
-                stix_relation["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "workflow_id", stix_relation
-                    )
-                )
-            if "x_opencti_modified_at" not in stix_relation:
-                stix_relation["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "modified_at", stix_relation
-                    )
-                )
-            if "opencti_upsert_operations" not in stix_relation:
-                stix_relation["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_relation
-                    )
-                )
+            self.opencti.copy_attributes_from_extension(
+                _STIX_CORE_RELATIONSHIP_EXTENSION_FIELDS, stix_relation
+            )
 
             raw_coverages = (
                 stix_relation["coverage"] if "coverage" in stix_relation else []
