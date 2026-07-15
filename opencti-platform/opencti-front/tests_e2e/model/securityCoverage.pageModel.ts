@@ -18,7 +18,7 @@ export default class SecurityCoveragePage {
   getCreateButton() {
     return this.page.getByRole(
       'button',
-      { name: 'Create Security Coverages', exact: true },
+      { name: 'Create Security Coverage', exact: true },
     );
   }
 
