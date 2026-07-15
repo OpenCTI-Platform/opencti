@@ -171,7 +171,7 @@ describe('String utils', () => {
   describe('uniqWithByFields', () => {
     it('should remove duplicates based on a single field', () => {
       const data = [{ id: '1', name: 'a' }, { id: '2', name: 'b' }, { id: '1', name: 'c' }];
-      const result = uniqWithByFields<typeof data[0]>(['id'])(data);
+      const result = uniqWithByFields<typeof data[0]>(['id'], data);
       expect(result).toEqual([{ id: '1', name: 'a' }, { id: '2', name: 'b' }]);
     });
 
@@ -181,7 +181,7 @@ describe('String utils', () => {
         { x: 1, y: 2, z: 'b' },
         { x: 1, y: 3, z: 'c' },
       ];
-      const result = uniqWithByFields<typeof data[0]>(['x', 'y'])(data);
+      const result = uniqWithByFields<typeof data[0]>(['x', 'y'], data);
       expect(result).toEqual([
         { x: 1, y: 2, z: 'a' },
         { x: 1, y: 3, z: 'c' },
@@ -189,7 +189,7 @@ describe('String utils', () => {
     });
 
     it('should return empty array for empty input', () => {
-      expect(uniqWithByFields(['id'])([])).toEqual([]);
+      expect(uniqWithByFields(['id'], [])).toEqual([]);
     });
 
     it('should handle deep equality for object fields', () => {
@@ -198,7 +198,7 @@ describe('String utils', () => {
         { id: '2', meta: { a: 1 } },
         { id: '3', meta: { a: 2 } },
       ];
-      const result = uniqWithByFields<typeof data[0]>(['meta'])(data);
+      const result = uniqWithByFields<typeof data[0]>(['meta'], data);
       expect(result).toEqual([
         { id: '1', meta: { a: 1 } },
         { id: '3', meta: { a: 2 } },
