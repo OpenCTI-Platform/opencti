@@ -88,7 +88,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.type || filters.useCase;
+  const hasActiveFilters = !!filters.search || !!filters.type || !!filters.useCase;
 
   return (
     <Stack flexDirection="row" gap={2} flex={1} alignItems="center">
