@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, Suspense, useState } from 'react';
-import { graphql } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { handleErrorInForm } from 'src/relay/environment';
@@ -42,7 +42,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import { CaseIncidentCustomFieldInput, CaseIncidentCustomFieldsLoader, CustomFieldDef, getCustomFieldSetting } from './CaseIncidentCustomFields';
+import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
+import { CaseIncidentCustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from './CaseIncidentCustomFields';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -106,13 +107,16 @@ interface IncidentFormProps {
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
-export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
+// Inner form: receives the resolved custom field definitions as a prop so that Formik's
+// initialValues (default values) are computed synchronously with the definitions available.
+const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { customFieldDefs: CustomFieldDef[] }> = ({
   updater,
   onClose,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
   inputValue,
+  customFieldDefs,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -122,14 +126,26 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     CASE_INCIDENT_TYPE,
   );
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
-  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
     authorized_members: Yup.array().nullable(),
+    // Enforce mandatory custom fields client-side (backend enforces them too)
+    customFields: Yup.object().shape(
+      Object.fromEntries(
+        customFieldDefs.map((def) => {
+          const isMandatory = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false;
+          if (def.field_type === 'multi_select') {
+            return [def.id, isMandatory ? Yup.array().min(1, t_i18n('This field is required')) : Yup.array().nullable()];
+          }
+          if (def.field_type === 'boolean') {
+            return [def.id, Yup.boolean().nullable()];
+          }
+          return [def.id, isMandatory ? Yup.string().required(t_i18n('This field is required')) : Yup.string().nullable()];
+        }),
+      ),
+    ),
   }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
@@ -391,11 +407,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isCustomFieldsEnabled && (
-            <Suspense fallback={null}>
-              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
-            </Suspense>
-          )}
           {customFieldDefs.length > 0 && (
             <>
               <Divider style={{ marginTop: 20 }} />
@@ -464,6 +475,30 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       )}
     </Formik>
   );
+};
+
+// Fetches the custom field definitions synchronously (suspends) so they are available before the
+// inner form initializes. Only mounted when the CUSTOM_FIELDS feature flag is enabled, since the
+// underlying query throws server-side otherwise.
+const CaseIncidentCreationFormWithCustomFields: FunctionComponent<IncidentFormProps> = (props) => {
+  const data = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
+    customFieldDefinitionsForEntityTypeQuery,
+    { entityType: CASE_INCIDENT_TYPE },
+  );
+  const customFieldDefs = (data.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+  return <CaseIncidentCreationFormContent {...props} customFieldDefs={customFieldDefs} />;
+};
+
+export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = (props) => {
+  const { isFeatureEnable } = useHelper();
+  if (isFeatureEnable('CUSTOM_FIELDS')) {
+    return (
+      <Suspense fallback={<CaseIncidentCreationFormContent {...props} customFieldDefs={[]} />}>
+        <CaseIncidentCreationFormWithCustomFields {...props} />
+      </Suspense>
+    );
+  }
+  return <CaseIncidentCreationFormContent {...props} customFieldDefs={[]} />;
 };
 
 const CaseIncidentCreation = ({
