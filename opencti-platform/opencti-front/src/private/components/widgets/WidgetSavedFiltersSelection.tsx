@@ -1,10 +1,11 @@
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, SyntheticEvent, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
 import { type SavedFiltersAutocompleteOptionType, type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { type WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
+import type { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 
 const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
@@ -69,13 +70,17 @@ const WidgetSavedFiltersComponent = ({
     onRefetch();
   };
 
+  const handleInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
+    if (reason === 'input') setInputValue(value);
+  };
+
   return (
     <SavedFiltersAutocomplete
       isDisabled={!data.length}
       value={selectedOption}
       inputValue={inputValue}
       onChange={handleChange}
-      onInputChange={(_, value) => setInputValue(value)}
+      onInputChange={handleInputChange}
       onDelete={handleDelete}
       options={options}
       onRefetch={onRefetch}
