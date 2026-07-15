@@ -4034,14 +4034,14 @@ export const elAttributeValues = async (
 };
 // endregion
 
-// Per-item errors considered transient: the engine refused the item under load or contention,
+// The list of per-item errors considered transient: elasticsearch refused the item under load or contention,
 // the operation was NOT applied and can be resubmitted as-is.
 const BULK_ITEM_TRANSIENT_ERRORS = [
   'es_rejected_execution_exception',
   'circuit_breaking_exception',
   'too_many_requests',
   'unavailable_shards_exception',
-  'version_conflict_engine_exception', // only surfaces after retry_on_conflict is exhausted
+  'version_conflict_engine_exception', // only after retry_on_conflict is exhausted
 ];
 const isTransientBulkItemError = (itemResult: any): boolean => {
   return itemResult.status === 429 || BULK_ITEM_TRANSIENT_ERRORS.includes(itemResult.error?.type);
@@ -4053,12 +4053,16 @@ export const elBulk = async (context: AuthContext, args: any) => {
   if (!data.errors) {
     return data;
   }
-  // Partial failure (HTTP 200, per-item errors): succeeded items are already applied and must not
-  // be resubmitted; failed items are guaranteed not applied. Retry only the failed transient ones.
+  // So, from here, we have a partial failure (HTTP 200 fot the top HTTP response, but with per-item errors).
+  // We need to retry the failed items, but only the transient ones. Permanent errors will be reported.
+  // -> Succeeded items are already applied and must not be resubmitted;
+  // -> Failed items are guaranteed not applied on Elasticsearch side. So we retry only the failed transient ones.
+
   const { body, ...bulkArgs } = args;
   const operations: Array<{ lines: any[]; index: number }> = [];
   for (let i = 0; i < body.length; i += 1) {
-    // A bulk operation is one action line plus, except for delete, one source line
+    // We need to group the bulk lines into operations, because the bulk API is a sequence of action lines and source lines.
+    // And for that we need to know if the action is a delete or not, because delete has no source line.
     const isDelete = body[i].delete !== undefined;
     const lines = isDelete ? [body[i]] : [body[i], body[i + 1]];
     operations.push({ lines, index: operations.length });
@@ -4068,6 +4072,8 @@ export const elBulk = async (context: AuthContext, args: any) => {
   const finalItems: any[] = new Array(operations.length);
   let pending = operations;
   let response = data;
+
+  // Start the retry loop, with exponential backoff.
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     if (attempt > 0) {
       response = await elRawBulk(context, { ...bulkArgs, body: pending.flatMap((operation) => operation.lines) });
@@ -4082,9 +4088,12 @@ export const elBulk = async (context: AuthContext, args: any) => {
       const itemResult = bulkItemResult(items[k]);
       const error = itemResult?.error;
       if (!error || error.type === DOCUMENT_MISSING_EXCEPTION) {
-        continue; // success, or tolerated update of an already deleted document
+        // We skip this case of missing document,
+        // because it is a tolerated update of an already deleted document (the document is not there, but the operation is considered successful).
+        continue;
       }
       if (isTransientBulkItemError(itemResult)) {
+        // This is a transient error, we will retry this operation in the next loop iteration.
         retryable.push(operation);
         transientErrors.push(error);
       } else {
@@ -4092,6 +4101,7 @@ export const elBulk = async (context: AuthContext, args: any) => {
       }
     }
     if (permanentErrors.length > 0) {
+      // So here we have permanent errors, we cannot continue, we need to throw an error with the details of the permanent errors.
       throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: permanentErrors });
     }
     if (retryable.length === 0) {
@@ -4101,6 +4111,7 @@ export const elBulk = async (context: AuthContext, args: any) => {
       return { ...response, items: finalItems, errors: finalItems.some((item) => item && bulkItemResult(item)?.error !== undefined) };
     }
     if (attempt === BULK_MAX_RETRIES) {
+      // We have exhausted the maximum number of retries, we need to throw an error with the details of the transient errors.
       throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: transientErrors });
     }
     const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
