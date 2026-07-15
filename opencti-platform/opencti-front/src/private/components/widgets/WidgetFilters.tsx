@@ -33,6 +33,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
+  const isSavedFiltersAccessible = isDashboardSavedFiltersFeatureEnabled && host.kind === 'workspace';
 
   const [useSavedFilter, setUseSavedFilter] = useState(!!dataSelection.filters_id);
   const [useSavedFilterDynamicFrom, setUseSavedFilterDynamicFrom] = useState(!!dataSelection.dynamicFrom_id);
@@ -180,7 +181,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
-              {isDashboardSavedFiltersFeatureEnabled && (
+              {isSavedFiltersAccessible && (
                 <Button
                   variant="text"
                   size="small"
@@ -226,7 +227,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
-                  {isDashboardSavedFiltersFeatureEnabled && (
+                  {isSavedFiltersAccessible && (
                     <Button
                       variant="text"
                       size="small"
@@ -264,7 +265,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="to"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
-                  {isDashboardSavedFiltersFeatureEnabled && (
+                  {isSavedFiltersAccessible && (
                     <Button
                       variant="text"
                       size="small"
