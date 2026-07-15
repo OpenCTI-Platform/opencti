@@ -483,15 +483,6 @@ type AiHistory {
 ###### INTERNAL
 
 ############## Logs
-type LogsWorkerConfig {
-  elasticsearch_url: [String]!
-  elasticsearch_proxy: String
-  elasticsearch_index: String!
-  elasticsearch_username: String
-  elasticsearch_password: String
-  elasticsearch_api_key: String
-  elasticsearch_ssl_reject_unauthorized: Boolean
-}
 enum LogsOrdering {
   event
   timestamp
@@ -14299,7 +14290,6 @@ type Query {
   ###### INTERNAL
 
   about: AppInfo @auth
-  logsWorkerConfig: LogsWorkerConfig @auth(for: [CONNECTORAPI])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   elasticSearchMetrics: ElasticSearchMetrics @auth(for: [MODULES])
   logs(
