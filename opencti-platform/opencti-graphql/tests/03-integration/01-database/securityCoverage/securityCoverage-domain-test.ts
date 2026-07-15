@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { addSecurityCoverage, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
+import { addSecurityCoverage, getSecurityCoverageResults, securityCoverageDelete } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import type { StoreEntityReport } from '../../../../src/types/store';
@@ -62,6 +62,37 @@ describe('SecurityCoverage domain', () => {
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
+      expect(results.length).toEqual(0);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+  });
+
+  describe('Function getSecurityCoverageResults()', () => {
+    it('should return the same results as the denormalized results loader', async () => {
+      const externalUri = 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a133';
+      const input = {
+        ...BASE_INPUT(),
+        name: 'sc for getSecurityCoverageResults',
+        coverage_information: [{
+          coverage_name: 'prevention',
+          coverage_score: 10,
+        }],
+        external_uri: externalUri,
+      };
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
+      const results = await getSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
+      expect(results.length).toEqual(1);
+      expect(results[0].name).toEqual(externalUri);
+      expect(results[0].external_uri).toEqual(externalUri);
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should return an empty array when the security coverage has no result', async () => {
+      const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, {
+        ...BASE_INPUT(),
+        name: 'sc without result',
+      });
+      const results = await getSecurityCoverageResults(testContext, ADMIN_USER, securityCoverage);
       expect(results.length).toEqual(0);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
