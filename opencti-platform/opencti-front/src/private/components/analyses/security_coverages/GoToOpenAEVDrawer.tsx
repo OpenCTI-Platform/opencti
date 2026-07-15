@@ -7,7 +7,6 @@ import { useState } from 'react';
 import Drawer from '../../common/drawer/Drawer';
 import { Stack, Typography } from '@mui/material';
 import { OpenInNewOutlined } from '@mui/icons-material';
-import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 
 const fragment = graphql`
   fragment GoToOpenAEVDrawerFragment on SecurityCoverage {
@@ -25,11 +24,15 @@ interface GoToOpenAEVDrawerProps {
 const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [selectedLink, setSelectedLink] = useState<string>();
 
   const { results } = useFragment(fragment, data);
   const instances = (results ?? []).filter((r) => !!r.external_uri);
   const disabled = instances.length === 0;
+
+  const handleBrowseLink = (externalUri: string) => {
+    window.open(externalUri, '_blank');
+    setOpen(false);
+  };
 
   return (
     <>
@@ -57,7 +60,7 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
                 <Typography variant="body2">{instance.external_uri}</Typography>
               </div>
               <Button
-                onClick={() => setSelectedLink(instance.external_uri!)}
+                onClick={() => handleBrowseLink(instance.external_uri!)}
                 startIcon={<OpenInNewOutlined fontSize="small" />}
               >
                 {t_i18n('Browse the link')}
@@ -66,16 +69,6 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
           ))}
         </Stack>
       </Drawer>
-
-      <ExternalLinkPopover
-        externalLink={selectedLink}
-        displayExternalLink={!!selectedLink}
-        setDisplayExternalLink={() => setSelectedLink('')}
-        onConfirm={() => {
-          setSelectedLink('');
-          setOpen(false);
-        }}
-      />
     </>
   );
 };
