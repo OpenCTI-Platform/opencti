@@ -289,7 +289,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         loaderButtonText: t_i18n('Continue to connect'),
         confirmationTitle: t_i18n('Close connection process?'),
         confirmationMessage: t_i18n('connection_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue registration'),
+        continueButtonText: t_i18n('Continue connection'),
         instructionKey: 'connection_instruction_paragraph',
       },
       unregister: {
@@ -299,7 +299,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         loaderButtonText: t_i18n('Continue to disconnect'),
         confirmationTitle: t_i18n('Close disconnection process?'),
         confirmationMessage: t_i18n('disconnection_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue unregistration'),
+        continueButtonText: t_i18n('Continue disconnection'),
         instructionKey: 'disconnection_instruction_paragraph',
       },
     };
