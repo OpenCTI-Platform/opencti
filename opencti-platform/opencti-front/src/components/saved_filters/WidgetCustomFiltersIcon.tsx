@@ -1,5 +1,5 @@
 import { Button, Divider } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import { FilterList } from '@mui/icons-material';
 import React from 'react';
 import { useFormatter } from 'src/components/i18n';
