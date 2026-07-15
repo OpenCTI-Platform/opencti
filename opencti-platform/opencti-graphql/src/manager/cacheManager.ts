@@ -250,7 +250,9 @@ const platformUsers = (context: AuthContext) => {
       }
       // If user not available (cluster mode)
       const user = await resolveUserById(context, instance.internal_id);
-      values.push(user);
+      if (user) {
+        values.push(user);
+      }
       return values;
     }
     return values;
