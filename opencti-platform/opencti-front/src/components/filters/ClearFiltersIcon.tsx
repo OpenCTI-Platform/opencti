@@ -3,12 +3,13 @@ import { FilterAltOff } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import { useFormatter } from 'src/components/i18n';
+import { ButtonColorKey } from '@common/button/Button.types';
 
 interface ClearFiltersIconProps {
   hasActiveFilters?: boolean;
   handleClearFilters: () => void;
   disabled?: boolean;
-  color?: string;
+  color?: ButtonColorKey;
 }
 
 const ClearFiltersIcon = ({
