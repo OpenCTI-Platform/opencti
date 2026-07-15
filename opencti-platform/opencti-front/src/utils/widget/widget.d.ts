@@ -88,6 +88,7 @@ interface WidgetParameters {
   legend?: boolean | null;
   distributed?: boolean | null;
   content?: string | null;
+  mainColor?: string | null;
 }
 
 interface WidgetLayout {

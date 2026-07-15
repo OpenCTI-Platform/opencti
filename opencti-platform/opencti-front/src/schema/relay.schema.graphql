@@ -904,6 +904,7 @@ type WidgetParameters {
   stacked: Boolean
   legend: Boolean
   distributed: Boolean
+  mainColor: String
 }
 
 type WidgetLayout {

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
-import { treeMapOptions } from '../../utils/Charts';
+import { resolveWidgetMainColor, treeMapOptions } from '../../utils/Charts';
 import { getMainRepresentative, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
 import { simpleNumberFormat } from '../../utils/Number';
 
@@ -13,6 +13,7 @@ interface WidgetTreeProps {
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
   isDistributed?: boolean;
+  mainColor?: string | null;
 }
 
 const WidgetTree = ({
@@ -20,6 +21,7 @@ const WidgetTree = ({
   groupBy,
   onMounted,
   isDistributed = false,
+  mainColor = null,
 }: WidgetTreeProps) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
@@ -43,8 +45,9 @@ const WidgetTree = ({
       simpleNumberFormat,
       'bottom',
       isDistributed,
+      resolveWidgetMainColor(theme, mainColor),
     ) as ApexOptions;
-  }, [theme, isDistributed]);
+  }, [theme, isDistributed, mainColor]);
 
   return (
     <Chart

@@ -166,7 +166,7 @@ const widgetVisualizationTypes = [
     name: 'Tree',
     dataSelectionLimit: 1,
     category: 'distribution',
-    availableParameters: ['attribute', 'distributed'],
+    availableParameters: ['attribute', 'distributed', 'mainColor'],
     isRelationships: true,
     isEntities: true,
     isAudits: true,
