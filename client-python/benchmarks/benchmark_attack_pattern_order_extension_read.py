@@ -38,6 +38,9 @@ class _OpenCTI:
         self.extension_lookup_counts[key] += 1
         return OpenCTIApiClient.get_attribute_in_extension(key, stix_object)
 
+    def copy_attributes_from_extension(self, attribute_map, stix_object):
+        OpenCTIApiClient.copy_attributes_from_extension(attribute_map, stix_object)
+
 
 def _build_attack_pattern(index: int):
     return {
