@@ -10,35 +10,39 @@ export const validateCustomFieldValues = (
   customFieldValues: CustomFieldValue[],
   entityType: string,
 ): void => {
-  if (!customFieldValues || customFieldValues.length === 0) {
+  const values = customFieldValues ?? [];
+  const definitions = getCustomFieldDefinitionsForEntityType(entityType);
+  // No custom fields configured for this entity type
+  if (definitions.length === 0) {
+    if (values.length > 0) {
+      throw FunctionalError('No custom field definitions found for entity type', { entityType });
+    }
     return;
   }
 
-  const definitions = getCustomFieldDefinitionsForEntityType(entityType);
-  if (definitions.length === 0) {
-    throw FunctionalError('No custom field definitions found for entity type', { entityType });
-  }
-
-  // Check for duplicate field_name entries
-  const fieldNames = customFieldValues.map((v) => v.field_name);
-  const uniqueFieldNames = new Set(fieldNames);
-  if (fieldNames.length !== uniqueFieldNames.size) {
-    throw FunctionalError('Duplicate custom field entries found in customFieldValues', { duplicates: fieldNames.filter((n, i) => fieldNames.indexOf(n) !== i) });
-  }
-
-  // Validate each value against its definition
-  for (const value of customFieldValues) {
-    const definition = definitions.find((d) => d.name === value.field_name);
-    if (!definition) {
-      throw FunctionalError('Custom field definition not found for this entity type', { field_name: value.field_name, entityType });
+  if (values.length > 0) {
+    // Check for duplicate field_name entries
+    const fieldNames = values.map((v) => v.field_name);
+    const uniqueFieldNames = new Set(fieldNames);
+    if (fieldNames.length !== uniqueFieldNames.size) {
+      throw FunctionalError('Duplicate custom field entries found in customFieldValues', { duplicates: fieldNames.filter((n, i) => fieldNames.indexOf(n) !== i) });
     }
-    validateSingleCustomFieldValue(value, definition);
+
+    // Validate each value against its definition
+    for (const value of values) {
+      const definition = definitions.find((d) => d.name === value.field_name);
+      if (!definition) {
+        throw FunctionalError('Custom field definition not found for this entity type', { field_name: value.field_name, entityType });
+      }
+      validateSingleCustomFieldValue(value, definition);
+    }
   }
 
-  // Check mandatory fields are present (mandatory is resolved per entity type - US.2)
+  // Check mandatory fields are present (mandatory is resolved per entity type - US.2).
+  // Runs even when no values are provided, so an omitted mandatory field is rejected.
   const mandatoryDefs = definitions.filter((d) => d.entity_type_settings?.find((s) => s.entity_type === entityType)?.mandatory);
   for (const def of mandatoryDefs) {
-    const valueEntry = customFieldValues.find((v) => v.field_name === def.name);
+    const valueEntry = values.find((v) => v.field_name === def.name);
     if (!valueEntry) {
       throw FunctionalError('Mandatory custom field is missing', { field_name: def.name, label: def.label });
     }
