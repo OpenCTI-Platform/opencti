@@ -92,7 +92,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
-      successMessage: t_i18n('Your OpenCTI platform is successfully registered'),
+      successMessage: t_i18n('Your OpenCTI product is successfully connected'),
     },
   );
 
@@ -101,7 +101,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     undefined,
     {
       successMessage: t_i18n(
-        'Your OpenCTI platform is successfully unregistered',
+        'Your OpenCTI product is successfully disconnected',
       ),
     },
   );
@@ -283,24 +283,24 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     const isUnregister = operationType === OperationType.UNREGISTER;
     const messages = {
       register: {
-        dialogTitle: t_i18n('Registering your platform...'),
+        dialogTitle: t_i18n('Connect your product to XTM Hub'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the registration process'),
-        loaderButtonText: t_i18n('Continue to register'),
-        confirmationTitle: t_i18n('Close registration process?'),
-        confirmationMessage: t_i18n('registration_confirmation_dialog'),
+        canceledMessage: t_i18n('You have canceled the connection process'),
+        loaderButtonText: t_i18n('Continue to connect'),
+        confirmationTitle: t_i18n('Close connection process?'),
+        confirmationMessage: t_i18n('connection_confirmation_dialog'),
         continueButtonText: t_i18n('Continue registration'),
-        instructionKey: 'registration_instruction_paragraph',
+        instructionKey: 'connection_instruction_paragraph',
       },
       unregister: {
-        dialogTitle: t_i18n('Unregistering your platform...'),
+        dialogTitle: t_i18n('Disconnect your product from XTM Hub'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the unregistration process'),
-        loaderButtonText: t_i18n('Continue to unregister'),
-        confirmationTitle: t_i18n('Close unregistration process?'),
-        confirmationMessage: t_i18n('unregistration_confirmation_dialog'),
+        canceledMessage: t_i18n('You have canceled the disconnection process'),
+        loaderButtonText: t_i18n('Continue to disconnect'),
+        confirmationTitle: t_i18n('Close disconnection process?'),
+        confirmationMessage: t_i18n('disconnection_confirmation_dialog'),
         continueButtonText: t_i18n('Continue unregistration'),
-        instructionKey: 'unregistration_instruction_paragraph',
+        instructionKey: 'disconnection_instruction_paragraph',
       },
     };
 
@@ -336,9 +336,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const getButtonText = () => {
     if (isRegistered) {
-      return t_i18n('Unregister from XTM Hub');
+      return t_i18n('Disconnect from XTM Hub');
     }
-    return t_i18n('Register in XTM Hub');
+    return t_i18n('Connect to XTM Hub');
   };
 
   if (isDemo) {
