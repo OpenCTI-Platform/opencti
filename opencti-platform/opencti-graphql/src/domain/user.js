@@ -1197,7 +1197,7 @@ export const deleteBookmark = async (context, user, id) => {
 };
 
 export const bookmarks = async (context, user, args) => {
-  const { types = [], filters = null } = args;
+  const { first = 10, after, types = [], filters = null, orderBy = null, orderMode = 'asc' } = args;
   const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
   // handle types
   let bookmarkList = types && types.length > 0
@@ -1219,8 +1219,8 @@ export const bookmarks = async (context, user, args) => {
     };
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
-  const filteredBookmarks = [];
-
+  let filteredBookmarks = [];
+  // Clean up bookmarks that no longer exist
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
@@ -1229,12 +1229,20 @@ export const bookmarks = async (context, user, args) => {
       await deleteBookmark(context, user, bookmark.id);
     }
   }
-  return buildPagination(
-    0,
-    null,
-    filteredBookmarks.map((n) => ({ node: n })),
-    filteredBookmarks.length,
-  );
+  // No bookmarks to fetch
+  if (filteredBookmarks.length === 0) {
+    return buildPagination(0, null, [], 0);
+  }
+  const bookmarkIds = filteredBookmarks.map((b) => b.id);
+  // Fetch all bookmarks in a single ES query with ordering and pagination
+  const connection = await pageEntitiesConnection(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
+    ids: bookmarkIds,
+    first: first ?? bookmarkIds.length,
+    after: after || undefined,
+    orderBy: orderBy || undefined,
+    orderMode: orderBy ? (orderMode ?? 'asc') : undefined,
+  });
+  return connection;
 };
 
 export const addBookmark = async (context, user, id, type) => {

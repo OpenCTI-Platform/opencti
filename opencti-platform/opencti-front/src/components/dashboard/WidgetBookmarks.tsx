@@ -8,9 +8,17 @@ import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 import Card from '../common/card/Card';
 
+interface BookmarkEdge {
+  readonly node: {
+    readonly id: string;
+    readonly entity_type: string;
+    readonly name?: string;
+    readonly modified: string | null | undefined;
+  };
+}
+
 interface WidgetBookmarksProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bookmarks: readonly any[];
+  bookmarks: readonly BookmarkEdge[];
 }
 
 const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {

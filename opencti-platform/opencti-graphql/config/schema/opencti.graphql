@@ -2917,7 +2917,7 @@ enum StixDomainObjectsOrdering {
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
-  edges: [StixDomainObjectEdge]
+  edges: [StixDomainObjectEdge!]!
 }
 type StixDomainObjectEdge {
   cursor: String!
@@ -15113,7 +15113,14 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
+  bookmarks(
+    first: Int,
+    after: ID,
+    types: [String],
+    orderBy: StixDomainObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+  ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     authorId: String

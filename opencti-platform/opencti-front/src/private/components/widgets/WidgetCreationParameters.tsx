@@ -576,63 +576,65 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute', 'custom-attributes'].includes(type) && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      marginTop: 20,
-                    }}
-                  >
-                    <FormControl fullWidth={true} style={{ flex: 1 }}>
-                      <InputLabel id="relative" size="small">
-                        {isNotEmptyField(dataSelection[i].label)
-                          ? dataSelection[i].label
-                          : t_i18n('Date attribute')}
-                      </InputLabel>
-                      <Select
-                        labelId="relative"
-                        size="small"
-                        fullWidth={true}
-                        value={dataSelection[i].date_attribute ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
-                      >
-                        <MenuItem value="created_at">
-                          created_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="updated_at">
-                          updated_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="created">
-                          created ({t_i18n('Functional date')})
-                        </MenuItem>
-                        <MenuItem value="modified">
-                          modified ({t_i18n('Functional date')})
-                        </MenuItem>
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="start_time">
-                            start_time ({t_i18n('Functional date')})
+                {dataSelection[i].perspective !== 'audits'
+                  && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
+                  && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t_i18n('Date attribute')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].date_attribute ?? 'created_at'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
+                        >
+                          <MenuItem value="created_at">
+                            created_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="stop_time">
-                            stop_time ({t_i18n('Functional date')})
+                          <MenuItem value="updated_at">
+                            updated_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="first_seen">
-                            first_seen ({t_i18n('Functional date')})
+                          <MenuItem value="created">
+                            created ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="last_seen">
-                            last_seen ({t_i18n('Functional date')})
+                          <MenuItem value="modified">
+                            modified ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </div>
-                )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="start_time">
+                              start_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="stop_time">
+                              stop_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="first_seen">
+                              first_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="last_seen">
+                              last_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
