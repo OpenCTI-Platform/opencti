@@ -3,6 +3,7 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { NoMatch } from '@components/Error';
 
 export const XTM_HUB_AUTO_REGISTER_QUERY_PARAM = 'xtmHubAutoRegister';
+export const XTM_HUB_PRODUCT_NAME_QUERY_PARAM = 'productName';
 
 const STATIC_PATH_REDIRECTS: Record<string, string> = {
   'connect-xtm-hub': '/dashboard/settings/experience',

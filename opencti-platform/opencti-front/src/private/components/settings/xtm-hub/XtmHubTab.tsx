@@ -15,7 +15,7 @@ import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '@components/RedirectByPath';
+import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PRODUCT_NAME_QUERY_PARAM } from '@components/RedirectByPath';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -49,12 +49,27 @@ interface XtmHubTabProps {
   registrationStatus?: string;
 }
 
+export const getXtmHubProductName = (search: string) => {
+  const productName = new URLSearchParams(search).get(XTM_HUB_PRODUCT_NAME_QUERY_PARAM);
+  if (!productName) {
+    return null;
+  }
+  const trimmedProductName = productName.trim();
+  return trimmedProductName.length > 0 ? trimmedProductName : null;
+};
+
+export const getRegistrationPlatformTitle = ({ autoRegistrationProductName, fallbackPlatformTitle }: {
+  autoRegistrationProductName: string | null;
+  fallbackPlatformTitle: string;
+}) => autoRegistrationProductName ?? fallbackPlatformTitle;
+
 const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isAutoRegistrationPromptOpen, setIsAutoRegistrationPromptOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [autoRegistrationProductName, setAutoRegistrationProductName] = useState<string | null>(null);
   const { settings, about } = useContext(UserContext);
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,6 +77,11 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const isEnterpriseEdition = eeSettings?.license_validated;
   const isDemo = settings?.platform_demo ?? false;
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+  const fallbackPlatformTitle = settings?.platform_title ?? 'OpenCTI Platform';
+  const registrationPlatformTitle = getRegistrationPlatformTitle({
+    autoRegistrationProductName,
+    fallbackPlatformTitle,
+  });
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
   );
@@ -90,7 +110,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const OCTIInformations = {
     platform_url: window.location.origin,
-    platform_title: settings?.platform_title ?? 'OpenCTI Platform',
+    platform_title: registrationPlatformTitle,
     platform_id: settings?.id ?? '',
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
     platform_version: about?.version ?? '',
@@ -178,13 +198,6 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     onClosingTab: handleClosingTab,
   });
 
-  const handleOpenDialog = () => {
-    setOperationType(
-      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
-    );
-    setIsDialogOpen(true);
-  };
-
   const clearAutoRegisterQueryParam = useCallback(() => {
     const searchParams = new URLSearchParams(location.search);
     if (!searchParams.has(XTM_HUB_AUTO_REGISTER_QUERY_PARAM)) {
@@ -209,6 +222,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   };
 
   const handleCancelAutoRegistration = () => {
+    setAutoRegistrationProductName(null);
     setIsAutoRegistrationPromptOpen(false);
     setProcessStep(ProcessSteps.INSTRUCTIONS);
     setOperationType(null);
@@ -220,6 +234,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const handleCloseDialog = () => {
     closeTab();
+    setAutoRegistrationProductName(null);
     setIsDialogOpen(false);
     setShowConfirmation(false);
     setProcessStep(ProcessSteps.INSTRUCTIONS);
@@ -240,6 +255,14 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     setProcessStep(ProcessSteps.WAITING_HUB);
   };
 
+  const handleOpenDialog = () => {
+    setAutoRegistrationProductName(null);
+    setOperationType(
+      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
+    );
+    setIsDialogOpen(true);
+  };
+
   useEffect(() => {
     if (isDemo || isRegistered) {
       return;
@@ -249,6 +272,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     if (!shouldAutoRegister) {
       return;
     }
+    setAutoRegistrationProductName(getXtmHubProductName(location.search));
     setOperationType(OperationType.REGISTER);
     setProcessStep(ProcessSteps.INSTRUCTIONS);
     setIsAutoRegistrationPromptOpen(true);

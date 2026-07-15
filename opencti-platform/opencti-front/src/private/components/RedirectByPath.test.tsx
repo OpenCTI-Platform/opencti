@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
-import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from './RedirectByPath';
+import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PRODUCT_NAME_QUERY_PARAM } from './RedirectByPath';
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -17,10 +17,12 @@ describe('RedirectByPath', () => {
         <Route path="/dashboard/redirect/*" element={<RedirectByPath />} />
         <Route path="/dashboard/settings/experience" element={<LocationProbe />} />
       </Routes>,
-      { route: '/dashboard/redirect/connect-xtm-hub?name=toto' },
+      { route: '/dashboard/redirect/connect-xtm-hub?productName=toto' },
     );
 
-    expect(await screen.findByTestId('location')).toHaveTextContent(`/dashboard/settings/experience?name=toto&${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`);
+    expect(await screen.findByTestId('location')).toHaveTextContent(
+      `/dashboard/settings/experience?${XTM_HUB_PRODUCT_NAME_QUERY_PARAM}=toto&${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`,
+    );
   });
 
   it('adds xtm hub auto register query param for connect redirect', async () => {
