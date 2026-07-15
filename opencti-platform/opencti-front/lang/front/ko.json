@@ -4007,6 +4007,7 @@
   "Select Parent Relationships of Selected Nodes (To)": "선택한 노드의 상위 관계 선택(대상)",
   "Select Relationships of Selected Nodes": "선택한 노드의 관계 선택",
   "Select saved filter": "저장된 필터 선택",
+  "Select the OpenAEV instance": "OpenAEV 인스턴스를 선택하십시오",
   "Select the organizations to share the draft content with during this transition.": "이 전환 중에 초안 콘텐츠를 공유할 조직을 선택합니다.",
   "Select the organizations to unshare the draft content from during this transition.": "이 전환 중에 초안 콘텐츠의 공유를 해제할 조직을 선택하세요.",
   "Select your file": "파일 선택",

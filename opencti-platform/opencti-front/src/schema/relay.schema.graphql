@@ -15893,6 +15893,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   objectCovered: StixDomainObject
   toStixBundle: String
   security_platform_type: String
+  results: [SecurityCoverageResult!]
 }
 
 enum SecurityCoverageOrdering {
