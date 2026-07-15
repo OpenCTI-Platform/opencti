@@ -623,7 +623,7 @@ class DataTableToolBar extends Component {
     if (key === 'field') {
       if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
-      } else if (value === 'password_valid_until') {
+      } else if (value === 'password_valid_until' || value === 'account_lock_after_date') {
         actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
       } else if (['start_time', 'stop_time'].includes(value) && actionsInputs[i]?.type === 'REMOVE') {
         actionsInputs[i] = R.assoc('values', [''], actionsInputs[i] || {});
@@ -1519,12 +1519,13 @@ class DataTableToolBar extends Component {
 
   handleAcceptDate(i, newValue) {
     const { actionsInputs } = this.state;
-    if (actionsInputs[i]?.type === 'REMOVE' && ['start_time', 'stop_time'].includes(actionsInputs[i]?.field)) {
-      return;
-    }
+    const toISOValue = (v) => (v instanceof Date ? v.toISOString() : v);
+    const values = Array.isArray(newValue)
+      ? newValue.map(toISOValue)
+      : [toISOValue(newValue)];
     actionsInputs[i] = R.assoc(
       'values',
-      Array.isArray(newValue) ? newValue : [newValue],
+      values,
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
