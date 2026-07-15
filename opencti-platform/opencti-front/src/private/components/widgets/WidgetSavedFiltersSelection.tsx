@@ -2,10 +2,12 @@ import React, { Suspense, SyntheticEvent, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
-import { type SavedFiltersAutocompleteOptionType, type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
+import { type SavedFiltersAutocompleteOptionType } from 'src/components/saved_filters/SavedFilterSelection';
 import { type WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 import type { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
+import WidgetCustomFiltersIcon from 'src/components/saved_filters/WidgetCustomFiltersIcon';
 
 const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
@@ -34,6 +36,7 @@ const widgetSavedFiltersSelectionQuery = graphql`
 interface WidgetSavedFiltersComponentProps {
   queryRef: PreloadedQuery<WidgetSavedFiltersSelectionQuery>;
   onSelect: (savedFilterId: string) => void;
+  onDeselect: () => void;
   onClear: () => void;
   selectedFilterId?: string | null;
   onRefetch: () => void;
@@ -42,6 +45,7 @@ interface WidgetSavedFiltersComponentProps {
 const WidgetSavedFiltersComponent = ({
   queryRef,
   onSelect,
+  onDeselect,
   onClear,
   selectedFilterId,
   onRefetch,
@@ -62,12 +66,9 @@ const WidgetSavedFiltersComponent = ({
     setInputValue(option.label);
   };
 
-  const handleDelete = (deleted: SavedFiltersSelectionData) => {
-    if (selectedFilterId === deleted.id) {
-      onClear();
-      setInputValue('');
-    }
-    onRefetch();
+  const handleClear = () => {
+    onClear();
+    setInputValue('');
   };
 
   const handleInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
@@ -75,22 +76,29 @@ const WidgetSavedFiltersComponent = ({
   };
 
   return (
-    <SavedFiltersAutocomplete
-      isDisabled={!data.length}
-      value={selectedOption}
-      inputValue={inputValue}
-      onChange={handleChange}
-      onInputChange={handleInputChange}
-      onDelete={handleDelete}
-      options={options}
-      onRefetch={onRefetch}
-    />
+    <>
+      <SavedFiltersAutocomplete
+        isDisabled={!data.length}
+        value={selectedOption}
+        inputValue={inputValue}
+        onChange={handleChange}
+        onInputChange={handleInputChange}
+        options={options}
+        onRefetch={onRefetch}
+      />
+      <ClearFiltersIcon
+        disabled={!selectedFilterId}
+        onClear={handleClear}
+      />
+      <WidgetCustomFiltersIcon onClick={onDeselect} />
+    </>
   );
 };
 
 interface WidgetSavedFiltersSelectionProps {
   scope: string;
   onSelect: (savedFilterId: string) => void;
+  onDeselect: () => void;
   onClear: () => void;
   selectedFilterId?: string | null;
 }
@@ -102,6 +110,7 @@ interface WidgetSavedFiltersSelectionProps {
 const WidgetSavedFiltersSelection = ({
   scope,
   onSelect,
+  onDeselect,
   onClear,
   selectedFilterId,
 }: WidgetSavedFiltersSelectionProps) => {
@@ -122,6 +131,7 @@ const WidgetSavedFiltersSelection = ({
             <WidgetSavedFiltersComponent
               queryRef={queryRef}
               onSelect={onSelect}
+              onDeselect={onDeselect}
               onClear={onClear}
               selectedFilterId={selectedFilterId}
               onRefetch={handleRefetch}

@@ -7,15 +7,15 @@ import { ButtonColorKey } from '@common/button/Button.types';
 
 interface ClearFiltersIconProps {
   hasActiveFilters?: boolean;
-  handleClearFilters: () => void;
+  onClear: () => void;
   disabled?: boolean;
   color?: ButtonColorKey;
 }
 
 const ClearFiltersIcon = ({
   hasActiveFilters,
-  handleClearFilters,
-  disabled = undefined,
+  onClear,
+  disabled,
   color,
 }: ClearFiltersIconProps) => {
   const { t_i18n } = useFormatter();
@@ -24,9 +24,9 @@ const ClearFiltersIcon = ({
     <Tooltip title={t_i18n('Clear filters')}>
       <IconButton
         color={buttonColor}
-        onClick={handleClearFilters}
+        onClick={onClear}
         size="small"
-        disabled={disabled != undefined ? disabled : !hasActiveFilters}
+        disabled={hasActiveFilters != undefined ? !hasActiveFilters : disabled}
       >
         <FilterAltOff fontSize="small" />
       </IconButton>

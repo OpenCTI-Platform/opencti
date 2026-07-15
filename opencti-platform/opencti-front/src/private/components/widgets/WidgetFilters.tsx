@@ -1,18 +1,18 @@
 import Filters from '@components/common/lists/Filters';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isFilterGroupNotEmpty, isDraftWorkspaceFilterGroup, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
 import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
-import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
+import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -167,16 +167,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               <WidgetSavedFiltersSelection
                 scope={savedFiltersScope}
                 onSelect={handleSavedFilterSelect}
+                onDeselect={handleSwitchToCustomFilters}
                 onClear={handleSavedFilterClear}
                 selectedFilterId={dataSelection.filters_id}
               />
-              <ClearFiltersIcon
-                disabled={!dataSelection.filters_id}
-                handleClearFilters={handleSavedFilterClear}
-              />
-              <Button variant="text" size="small" sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }} onClick={handleSwitchToCustomFilters}>
-                {t_i18n('Set custom filters')}
-              </Button>
             </>
           ) : (
             <>
@@ -187,14 +181,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
               {isSavedFiltersAccessible && (
-                <Button
-                  variant="text"
-                  size="small"
-                  sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
-                  onClick={handleSwitchToSavedFilter}
-                >
-                  {t_i18n('Use a saved filter')}
-                </Button>
+                <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} />
               )}
             </>
           )}
@@ -208,21 +195,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                   <WidgetSavedFiltersSelection
                     scope="Stix-Core-Object"
                     onSelect={handleSavedFilterSelectDynamicFrom}
+                    onDeselect={handleSwitchToCustomFiltersDynamicFrom}
                     onClear={handleSavedFilterClearDynamicFrom}
                     selectedFilterId={dataSelection.dynamicFrom_id}
                   />
-                  <ClearFiltersIcon
-                    disabled={!dataSelection.dynamicFrom_id}
-                    handleClearFilters={handleSavedFilterClearDynamicFrom}
-                  />
-                  <Button
-                    variant="text"
-                    size="small"
-                    sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }}
-                    onClick={handleSwitchToCustomFiltersDynamicFrom}
-                  >
-                    {t_i18n('Set custom filters')}
-                  </Button>
                 </>
               ) : (
                 <>
@@ -237,14 +213,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
                   {isSavedFiltersAccessible && (
-                    <Button
-                      variant="text"
-                      size="small"
-                      sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
-                      onClick={handleSwitchToSavedFilterDynamicFrom}
-                    >
-                      {t_i18n('Use a saved filter')}
-                    </Button>
+                    <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicFrom} />
                   )}
                 </>
               )}
@@ -255,16 +224,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                   <WidgetSavedFiltersSelection
                     scope="Stix-Core-Object"
                     onSelect={handleSavedFilterSelectDynamicTo}
+                    onDeselect={handleSwitchToCustomFiltersDynamicTo}
                     onClear={handleSavedFilterClearDynamicTo}
                     selectedFilterId={dataSelection.dynamicTo_id}
                   />
-                  <ClearFiltersIcon
-                    disabled={!dataSelection.dynamicTo_id}
-                    handleClearFilters={handleSavedFilterClearDynamicTo}
-                  />
-                  <Button variant="text" size="small" sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }} onClick={handleSwitchToCustomFiltersDynamicTo}>
-                    {t_i18n('Set custom filters')}
-                  </Button>
                 </>
               ) : (
                 <>
@@ -279,14 +242,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
                   {isSavedFiltersAccessible && (
-                    <Button
-                      variant="text"
-                      size="small"
-                      sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
-                      onClick={handleSwitchToSavedFilterDynamicTo}
-                    >
-                      {t_i18n('Use a saved filter')}
-                    </Button>
+                    <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicTo} />
                   )}
                 </>
               )}
