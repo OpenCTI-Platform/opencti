@@ -1406,6 +1406,50 @@ class OpenCTIApiClient:
         return None
 
     @staticmethod
+    def copy_attributes_from_extension(attribute_map, stix_object) -> None:
+        """Copy multiple resolved extension attributes into a STIX object.
+
+        This preserves the precedence of :meth:`get_attribute_in_extension`
+        while resolving the extension containers once for callers that need to
+        populate several target fields from the same STIX object. Existing
+        target fields are left unchanged.
+
+        :param attribute_map: ``(target_key, source_key)`` pairs to populate
+        :type attribute_map: Iterable[Tuple[str, str]]
+        :param stix_object: the STIX object containing extensions
+        :type stix_object: dict
+        """
+        extensions = stix_object.get("extensions")
+        opencti_extension = None
+        sco_extension = None
+        if extensions is not None:
+            opencti_extension = extensions.get(
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            )
+            sco_extension = extensions.get(
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            )
+
+        missing = object()
+        for target_key, source_key in attribute_map:
+            if target_key in stix_object:
+                continue
+            value = (
+                opencti_extension.get(source_key, missing)
+                if opencti_extension is not None
+                else missing
+            )
+            if value is missing and sco_extension is not None:
+                value = sco_extension.get(source_key, missing)
+            if value is missing:
+                value = (
+                    stix_object[source_key]
+                    if source_key != "type" and source_key in stix_object
+                    else None
+                )
+            stix_object[target_key] = value
+
+    @staticmethod
     def get_attribute_in_mitre_extension(key, stix_object) -> Any:
         """Get an attribute value from MITRE ATT&CK STIX extension.
 
