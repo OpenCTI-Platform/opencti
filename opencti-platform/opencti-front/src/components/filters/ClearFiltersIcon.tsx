@@ -25,7 +25,7 @@ const ClearFiltersIcon = ({
         color={buttonColor}
         onClick={handleClearFilters}
         size="small"
-        disabled={disabled ?? !hasActiveFilters}
+        disabled={disabled != undefined ? disabled : !hasActiveFilters}
       >
         <FilterAltOff fontSize="small" />
       </IconButton>

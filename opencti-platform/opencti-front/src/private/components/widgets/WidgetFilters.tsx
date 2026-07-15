@@ -12,6 +12,7 @@ import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widg
 import useHelper from '../../../utils/hooks/useHelper';
 import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -169,6 +170,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 onClear={handleSavedFilterClear}
                 selectedFilterId={dataSelection.filters_id}
               />
+              <ClearFiltersIcon
+                disabled={!dataSelection.filters_id}
+                handleClearFilters={handleSavedFilterClear}
+              />
               <Button variant="text" size="small" sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }} onClick={handleSwitchToCustomFilters}>
                 {t_i18n('Set custom filters')}
               </Button>
@@ -205,6 +210,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     onSelect={handleSavedFilterSelectDynamicFrom}
                     onClear={handleSavedFilterClearDynamicFrom}
                     selectedFilterId={dataSelection.dynamicFrom_id}
+                  />
+                  <ClearFiltersIcon
+                    disabled={!dataSelection.dynamicFrom_id}
+                    handleClearFilters={handleSavedFilterClearDynamicFrom}
                   />
                   <Button
                     variant="text"
@@ -248,6 +257,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     onSelect={handleSavedFilterSelectDynamicTo}
                     onClear={handleSavedFilterClearDynamicTo}
                     selectedFilterId={dataSelection.dynamicTo_id}
+                  />
+                  <ClearFiltersIcon
+                    disabled={!dataSelection.dynamicTo_id}
+                    handleClearFilters={handleSavedFilterClearDynamicTo}
                   />
                   <Button variant="text" size="small" sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }} onClick={handleSwitchToCustomFiltersDynamicTo}>
                     {t_i18n('Set custom filters')}
