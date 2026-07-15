@@ -4034,16 +4034,91 @@ export const elAttributeValues = async (
 };
 // endregion
 
+// Per-item errors considered transient: the engine refused the item under load or contention,
+// the operation was NOT applied and can be resubmitted as-is.
+const BULK_ITEM_TRANSIENT_ERRORS = [
+  'es_rejected_execution_exception',
+  'circuit_breaking_exception',
+  'too_many_requests',
+  'unavailable_shards_exception',
+  'version_conflict_engine_exception', // only surfaces after retry_on_conflict is exhausted
+];
+const isTransientBulkItemError = (itemResult: any): boolean => {
+  return itemResult.status === 429 || BULK_ITEM_TRANSIENT_ERRORS.includes(itemResult.error?.type);
+};
+const bulkItemResult = (item: any) => item.index ?? item.update ?? item.delete ?? item.create;
+
 export const elBulk = async (context: AuthContext, args: any) => {
-  return elRawBulk(context, args).then((data) => {
-    if (data.errors) {
-      const errors = data.items.map((i: any) => i.index?.error || i.update?.error).filter((f: any) => f !== undefined);
-      if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
-        throw DatabaseError('Bulk indexing fail', { errors });
+  const data = await elRawBulk(context, args);
+  if (!data.errors) {
+    return data;
+  }
+  // Partial failure (HTTP 200, per-item errors): succeeded items are already applied and must not
+  // be resubmitted; failed items are guaranteed not applied. Retry only the failed transient ones.
+  const { body, ...bulkArgs } = args;
+  const operations: Array<{ lines: any[]; index: number }> = [];
+  for (let i = 0; i < body.length; i += 1) {
+    // A bulk operation is one action line plus, except for delete, one source line
+    const isDelete = body[i].delete !== undefined;
+    const lines = isDelete ? [body[i]] : [body[i], body[i + 1]];
+    operations.push({ lines, index: operations.length });
+    i += lines.length - 1;
+  }
+  const bulkId = generateInternalId().substring(0, 8);
+  const finalItems: any[] = new Array(operations.length);
+  let pending = operations;
+  let response = data;
+  for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
+    if (attempt > 0) {
+      response = await elRawBulk(context, { ...bulkArgs, body: pending.flatMap((operation) => operation.lines) });
+    }
+    const items = response.items ?? [];
+    const retryable: typeof pending = [];
+    const transientErrors: any[] = [];
+    const permanentErrors: any[] = [];
+    for (let k = 0; k < items.length; k += 1) {
+      const operation = pending[k];
+      finalItems[operation.index] = items[k];
+      const itemResult = bulkItemResult(items[k]);
+      const error = itemResult?.error;
+      if (!error || error.type === DOCUMENT_MISSING_EXCEPTION) {
+        continue; // success, or tolerated update of an already deleted document
+      }
+      if (isTransientBulkItemError(itemResult)) {
+        retryable.push(operation);
+        transientErrors.push(error);
+      } else {
+        permanentErrors.push(error);
       }
     }
-    return data;
-  });
+    if (permanentErrors.length > 0) {
+      throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: permanentErrors });
+    }
+    if (retryable.length === 0) {
+      if (attempt > 0) {
+        logApp.info('[SEARCH] Bulk recovered after partial failures', { bulkId, attempts: attempt + 1, opsTotal: operations.length });
+      }
+      return { ...response, items: finalItems, errors: finalItems.some((item) => item && bulkItemResult(item)?.error !== undefined) };
+    }
+    if (attempt === BULK_MAX_RETRIES) {
+      throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: transientErrors });
+    }
+    const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
+    const errorTypes: Record<string, number> = {};
+    transientErrors.forEach((error) => {
+      errorTypes[error.type] = (errorTypes[error.type] ?? 0) + 1;
+    });
+    logApp.warn(`[SEARCH] Bulk partial failure, retrying failed items in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, {
+      bulkId,
+      opsTotal: operations.length,
+      opsOk: operations.length - retryable.length,
+      opsRetrying: retryable.length,
+      errorTypes,
+    });
+    await wait(delayMs);
+    pending = retryable;
+  }
+  return response;
 };
 /* v8 ignore next */
 export const elIndex = async (
