@@ -177,7 +177,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
-              <Button variant="text" size="small" sx={{ textTransform: 'none', whiteSpace: 'nowrap' }} onClick={handleSwitchToSavedFilter}>
+              <Button
+                variant="text"
+                size="small"
+                sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                onClick={handleSwitchToSavedFilter}
+              >
                 {t_i18n('Use a saved filter')}
               </Button>
             </>
@@ -195,7 +200,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     onClear={handleSavedFilterClearDynamicFrom}
                     selectedFilterId={dataSelection.dynamicFrom_id}
                   />
-                  <Button variant="text" size="small" sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }} onClick={handleSwitchToCustomFiltersDynamicFrom}>
+                  <Button
+                    variant="text"
+                    size="small"
+                    sx={{ fontSize: '0.75rem', textTransform: 'none', whiteSpace: 'nowrap', maxWidth: 150 }}
+                    onClick={handleSwitchToCustomFiltersDynamicFrom}
+                  >
                     {t_i18n('Set custom filters')}
                   </Button>
                 </>
@@ -211,7 +221,12 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
-                  <Button variant="text" size="small" sx={{ textTransform: 'none', whiteSpace: 'nowrap' }} onClick={handleSwitchToSavedFilterDynamicFrom}>
+                  <Button
+                    variant="text"
+                    size="small"
+                    sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                    onClick={handleSwitchToSavedFilterDynamicFrom}
+                  >
                     {t_i18n('Use a saved filter')}
                   </Button>
                 </>

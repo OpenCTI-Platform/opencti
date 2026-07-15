@@ -926,7 +926,10 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   };
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (
+  filters?: FilterGroup | null,
+  entityTypes = ['Stix-Core-Object'],
+): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(NOT_CLEANABLE_FILTER_KEYS);
   return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };

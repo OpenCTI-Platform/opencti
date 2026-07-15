@@ -2,9 +2,9 @@ import React, { Suspense, FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import FilterIconButton from 'src/components/FilterIconButton';
-import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import type { WidgetSavedFilterChipsQuery } from './__generated__/WidgetSavedFilterChipsQuery.graphql';
 import type { ChipOwnProps } from '@mui/material';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
 
 const widgetSavedFilterChipsQuery = graphql`
   query WidgetSavedFilterChipsQuery($id: ID!) {
@@ -31,10 +31,15 @@ const WidgetSavedFilterChipsComponent = ({
 
   if (!savedFilter?.filters) return null;
 
-  const parsedFilters: FilterGroup = JSON.parse(savedFilter.filters);
+  // removing of empty filters (useful in list, not in widgets)
+  const parsedFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    JSON.parse(savedFilter.filters),
+    entityTypes,
+  );
 
   return (
     <FilterIconButton
+      variant="small"
       filters={parsedFilters}
       entityTypes={entityTypes}
       chipColor={chipColor}
