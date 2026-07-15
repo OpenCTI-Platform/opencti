@@ -234,7 +234,7 @@ const ListFilters = ({
           <ClearFiltersIcon
             disabled={disabled}
             color={color}
-            handleClearFilters={handleClearFilters}
+            onClear={handleClearFilters}
           />
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilterButton

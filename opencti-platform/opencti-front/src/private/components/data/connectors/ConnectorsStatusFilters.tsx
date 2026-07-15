@@ -108,7 +108,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
 
             <ClearFiltersIcon
               hasActiveFilters={hasActiveFilters}
-              handleClearFilters={handleClearFilters}
+              onClear={handleClearFilters}
             />
           </>
         )

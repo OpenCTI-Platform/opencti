@@ -132,7 +132,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
 
       <ClearFiltersIcon
         hasActiveFilters={hasActiveFilters}
-        handleClearFilters={handleClearFilters}
+        onClear={handleClearFilters}
       />
     </Stack>
   );
