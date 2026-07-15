@@ -524,7 +524,7 @@ export function normalizeFilterGroupForBackend(filterGroup?: FilterGroup | null)
 export function normalizeFilterGroupForBackend(
   filterGroup?: FilterGroup | null,
 ): GqlFilterGroup | undefined {
-  if (!filterGroup || !isFilterGroupNotEmpty(filterGroup)) {
+  if (!filterGroup) {
     return undefined;
   }
   return {
