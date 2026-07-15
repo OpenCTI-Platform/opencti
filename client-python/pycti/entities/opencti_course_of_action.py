@@ -5,6 +5,15 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+_COURSE_OF_ACTION_EXTENSION_FIELDS = (
+    ("x_opencti_aliases", "aliases"),
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_workflow_id", "workflow_id"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("opencti_upsert_operations", "opencti_upsert_operations"),
+)
+
 
 class CourseOfAction:
     """Main CourseOfAction class for OpenCTI
@@ -596,33 +605,9 @@ class CourseOfAction:
                         ):
                             x_mitre_id = external_reference.get("external_id", None)
 
-            # Search in extensions
-            if "x_opencti_aliases" not in stix_object:
-                stix_object["x_opencti_aliases"] = (
-                    self.opencti.get_attribute_in_extension("aliases", stix_object)
-                )
-            if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
-            if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
-            if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
-            if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
-            if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
-                )
+            self.opencti.copy_attributes_from_extension(
+                _COURSE_OF_ACTION_EXTENSION_FIELDS, stix_object
+            )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
