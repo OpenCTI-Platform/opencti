@@ -9,7 +9,6 @@ import {
   queryEntitySettingSchemaAttributes,
   queryMandatoryAttributesForSetting,
   queryScaleAttributesForSetting,
-  getTemplatesForSetting,
 } from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
