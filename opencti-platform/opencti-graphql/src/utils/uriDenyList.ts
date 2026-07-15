@@ -2,16 +2,31 @@ import { FunctionalError } from '../config/errors';
 import { uriDenyList } from '../config/uriDenyList';
 
 /**
- * Extracts the host (with optional port) from a URI string.
+ * Extracts hostname/host/port from a URI-like string.
  * Handles URIs with or without a protocol scheme.
  */
-const extractHostFromUri = (uri: string): string => {
+type UriHostParts = {
+  hostname: string;
+  host: string;
+  port: string;
+};
+
+const extractHostParts = (uri: string): UriHostParts => {
   try {
     const normalizedUri = uri.includes('://') ? uri : `http://${uri}`;
     const parsed = new URL(normalizedUri);
-    return parsed.host.toLowerCase();
+    return {
+      hostname: parsed.hostname.toLowerCase(),
+      host: parsed.host.toLowerCase(),
+      port: parsed.port,
+    };
   } catch {
-    return uri.toLowerCase();
+    const normalizedUri = uri.toLowerCase();
+    return {
+      hostname: normalizedUri,
+      host: normalizedUri,
+      port: '',
+    };
   }
 };
 
@@ -19,24 +34,22 @@ const extractHostFromUri = (uri: string): string => {
  * Checks if a given host matches a deny list pattern.
  * Supports:
  * - Exact match: 'mydomain.com' matches 'mydomain.com'
- * - Wildcard match: '*.mydomain.com' matches 'sub.mydomain.com'
+ * - Wildcard match: '*.mydomain.com' matches both 'sub.mydomain.com' and 'mydomain.com'
  * - Host with port: 'localhost:4200' matches 'http://localhost:4200/path'
  */
-const matchesDenyPattern = (host: string, pattern: string): boolean => {
+const matchesDenyPattern = (hostParts: UriHostParts, pattern: string): boolean => {
   const normalizedPattern = pattern.toLowerCase().trim();
-  const normalizedHost = host.toLowerCase();
-
-  const patternHasPort = normalizedPattern.includes(':');
-  const hostWithoutPort = normalizedHost.includes(':') && !patternHasPort
-    ? normalizedHost.slice(0, normalizedHost.lastIndexOf(':'))
-    : normalizedHost;
+  const normalizedPatternParts = extractHostParts(normalizedPattern);
 
   if (normalizedPattern.startsWith('*.')) {
-    const domainSuffix = normalizedPattern.slice(2);
-    return hostWithoutPort === domainSuffix || hostWithoutPort.endsWith(`.${domainSuffix}`);
+    const domainSuffix = extractHostParts(normalizedPattern.slice(2)).hostname;
+    return hostParts.hostname === domainSuffix || hostParts.hostname.endsWith(`.${domainSuffix}`);
   }
 
-  return hostWithoutPort === normalizedPattern;
+  if (normalizedPatternParts.port.length > 0) {
+    return hostParts.host === normalizedPatternParts.host;
+  }
+  return hostParts.hostname === normalizedPatternParts.hostname;
 };
 
 /**
@@ -46,9 +59,9 @@ const matchesDenyPattern = (host: string, pattern: string): boolean => {
 export const verifyUriWithDenyList = (uri: string, denyList: string[], errorMessage = 'This URI is not allowed.'): void => {
   if (denyList.length === 0) return;
 
-  const host = extractHostFromUri(uri);
+  const hostParts = extractHostParts(uri);
   for (const pattern of denyList) {
-    if (matchesDenyPattern(host, pattern)) {
+    if (matchesDenyPattern(hostParts, pattern)) {
       throw FunctionalError(errorMessage, { field: 'uri', uri, denied_pattern: pattern });
     }
   }

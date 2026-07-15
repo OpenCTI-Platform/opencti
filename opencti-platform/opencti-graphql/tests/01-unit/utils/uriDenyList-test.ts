@@ -45,13 +45,23 @@ describe('URI deny list coverage', () => {
   });
 
   it('should block if any entry matches', () => {
-    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['allowed.com', 'blocked.com', '*.evil.org']);
+    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['blocked-example.com', 'blocked.com', '*.evil.org']);
     expect(() => verifyUri('https://blocked.com/feed')).toThrow('This URI is not allowed.');
     expect(() => verifyUri('https://sub.evil.org/feed')).toThrow('This URI is not allowed.');
-    expect(() => verifyUri('https://allowed.com/feed')).toThrow('This URI is not allowed.');
+    expect(() => verifyUri('https://blocked-example.com/feed')).toThrow('This URI is not allowed.');
     expect(() => verifyUri('https://safe.com/feed')).not.toThrow();
     expect(() => verifyUri('blocked.com/path/to/feed')).toThrow('This URI is not allowed.');
   });
+
+  it('should block IPv6 hosts and port patterns correctly', () => {
+    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['[::1]']);
+    expect(() => verifyUri('http://[::1]/feed')).toThrow('This URI is not allowed.');
+    expect(() => verifyUri('http://[::1]:8080/feed')).toThrow('This URI is not allowed.');
+    expect(() => verifyUri('http://[::2]/feed')).not.toThrow();
+
+    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['[::1]:4200']);
+    expect(() => verifyUri('http://[::1]:4200/feed')).toThrow('This URI is not allowed.');
+    expect(() => verifyUri('http://[::1]:8080/feed')).not.toThrow();
+    expect(() => verifyUri('http://[::1]/feed')).not.toThrow();
+  });
 });
-
-
