@@ -49,7 +49,7 @@ const DeployCustomDashboard = () => {
   });
 
   const onConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/dashboard/redirect/connect-xtm-hub');
   };
 
   const onCancel = () => {

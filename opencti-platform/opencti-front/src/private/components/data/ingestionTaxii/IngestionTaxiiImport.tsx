@@ -73,7 +73,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
   });
 
   const handleConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/dashboard/redirect/connect-xtm-hub');
   };
 
   const handleCancel = () => {

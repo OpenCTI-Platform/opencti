@@ -75,7 +75,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
   });
 
   const handleConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/dashboard/redirect/connect-xtm-hub');
   };
 
   const handleCancel = () => {
