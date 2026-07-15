@@ -5,6 +5,9 @@ import FilterIconButton from 'src/components/FilterIconButton';
 import type { WidgetSavedFilterChipsQuery } from './__generated__/WidgetSavedFilterChipsQuery.graphql';
 import type { ChipOwnProps } from '@mui/material';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
+import Chip from '@mui/material/Chip';
+import { useFormatter } from 'src/components/i18n';
+import { useTheme } from '@mui/material/styles';
 
 const widgetSavedFilterChipsQuery = graphql`
   query WidgetSavedFilterChipsQuery($id: ID!) {
@@ -27,11 +30,22 @@ const WidgetSavedFilterChipsComponent = ({
   entityTypes,
   chipColor,
 }: WidgetSavedFilterChipsComponentProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const { savedFilter } = usePreloadedQuery(widgetSavedFilterChipsQuery, queryRef);
 
-  if (!savedFilter?.filters) return null;
+  // not accessible or deleted saved filter
+  if (!savedFilter?.filters) {
+    return (
+      <Chip
+        label={t_i18n('Not accessible saved filter')}
+        size="small"
+        sx={{ marginLeft: 1, backgroundColor: theme.palette.warning.main, color: theme.palette.warning.contrastText }}
+      />
+    );
+  };
 
-  // removing of empty filters (useful in list, not in widgets)
+  // removing incomplete filters
   const parsedFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
     JSON.parse(savedFilter.filters),
     entityTypes,
