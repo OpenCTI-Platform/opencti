@@ -1788,8 +1788,6 @@ type MeUser implements BasicObject & InternalObject {
   description: String
   firstname: String
   otp_activated: Boolean
-  otp_qr: String
-  password_valid_until: DateTime
   lastname: String
   theme: String
   language: String

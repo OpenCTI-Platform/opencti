@@ -16628,9 +16628,7 @@ export type MeUser = BasicObject & InternalObject & {
   objectOrganization?: Maybe<MeOrganizationConnection>;
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
-  otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  password_valid_until?: Maybe<Scalars['DateTime']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -47296,9 +47294,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   objectOrganization?: Resolver<Maybe<ResolversTypes['MeOrganizationConnection']>, ParentType, ContextType>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
