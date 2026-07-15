@@ -9,6 +9,7 @@ import {
   CUSTOM_FIELD_DATE_VALUE_SUBFILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
+  CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
   ID_SUBFILTER,
   IDS_FILTER,
@@ -647,6 +648,9 @@ const adaptFilterToCustomFieldFilterKey = (filter: Filter) => {
       break;
     case 'select_value':
       subfilterKey = CUSTOM_FIELD_SELECT_VALUE_SUBFILTER;
+      break;
+    case 'select_values':
+      subfilterKey = CUSTOM_FIELD_SELECT_VALUES_SUBFILTER;
       break;
     default:
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;

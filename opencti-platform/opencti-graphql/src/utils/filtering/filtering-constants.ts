@@ -117,6 +117,7 @@ export const CUSTOM_FIELD_STRING_VALUE_SUBFILTER = 'string_value';
 export const CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER = 'boolean_value';
 export const CUSTOM_FIELD_DATE_VALUE_SUBFILTER = 'date_value';
 export const CUSTOM_FIELD_SELECT_VALUE_SUBFILTER = 'select_value';
+export const CUSTOM_FIELD_SELECT_VALUES_SUBFILTER = 'select_values';
 
 /**
  * Check if a filter key corresponds to a custom field (dynamically detected by prefix).
