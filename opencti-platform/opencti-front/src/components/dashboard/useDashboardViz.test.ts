@@ -42,10 +42,11 @@ vi.mock('./dashboardVizUtils', () => ({
   }: {
     dataSelection: Array<unknown>;
     host?: { kind?: string; customViewTargetEntityId?: string };
-  }) => ({
+  }) => Promise.resolve({
     resolvedDataSelection: dataSelection,
     isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
     isPreviewMode: false,
+    isMissingSavedFilters: false,
   })),
 }));
 
