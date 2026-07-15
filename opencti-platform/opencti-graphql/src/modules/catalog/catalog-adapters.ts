@@ -123,16 +123,6 @@ const normalizeContractFromNewManifest = (contract: Record<string, any>): Catalo
 };
 
 const toCatalogDefinitionsFromNewManifest = (raw: Record<string, any>): CatalogDefinition[] => {
-  const manifestSchemaVersion = String(raw.manifest_schema_version ?? '');
-
-  if (!manifestSchemaVersion) {
-    throw UnsupportedError('Catalog manifest is missing manifest_schema_version');
-  }
-
-  if (!manifestSchemaVersion.startsWith('16')) {
-    throw UnsupportedError(`Unsupported manifest_schema_version: ${manifestSchemaVersion}`);
-  }
-
   if (!raw.id || !Array.isArray(raw.contracts)) {
     throw UnsupportedError('Catalog manifest is missing required fields: id and contracts');
   }

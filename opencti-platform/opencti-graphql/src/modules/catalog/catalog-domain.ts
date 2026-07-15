@@ -74,6 +74,11 @@ export const updateCatalogManagerInternalCache = (internalCatalog: InternalCatal
   if (!keepExistingSnapshot) {
     managerInternalCatalog = internalCatalog;
   }
+  logApp.info('[OPENCTI-MODULE] Updating catalog manager internal cache status', {
+    status,
+    hasSnapshot: Boolean(managerInternalCatalog),
+    keepExistingSnapshot,
+  });
   managerCatalogStatus = status;
 };
 
@@ -87,8 +92,15 @@ export const getCatalogStatus = (): CatalogStatus => {
 };
 
 const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
-  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog) {
-    return managerInternalCatalog.catalogMap;
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+    if (managerInternalCatalog) {
+      return managerInternalCatalog.catalogMap;
+    }
+
+    // Strict decoupling mode: fallback to legacy sources only after an explicit error.
+    if (managerCatalogStatus !== 'error') {
+      return {};
+    }
   }
 
   if (!catalogMap) {
@@ -414,8 +426,15 @@ export const computeConnectorTargetContract = (
 };
 
 export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
-  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog) {
-    return managerInternalCatalog.contractsByImage;
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+    if (managerInternalCatalog) {
+      return managerInternalCatalog.contractsByImage;
+    }
+
+    // Strict decoupling mode: fallback to legacy sources only after an explicit error.
+    if (managerCatalogStatus !== 'error') {
+      return new Map();
+    }
   }
 
   if (!contractsByImageCache) {

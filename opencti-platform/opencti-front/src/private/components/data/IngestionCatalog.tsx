@@ -1,4 +1,4 @@
-import React, { Suspense, useContext, useEffect } from 'react';
+import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
@@ -29,6 +29,8 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../utils/utils';
+
+const CATALOG_POLL_INTERVAL_MS = 5000;
 
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
@@ -216,15 +218,37 @@ const IngestionCatalogComponent = ({
 
 const IngestionCatalog = () => {
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
+  const [hasCatalogResults, setHasCatalogResults] = useState(false);
 
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
 
+  const handleCatalogsResolved = useCallback((catalogs: IngestionConnectorsCatalogsQuery['response']['catalogs']) => {
+    if ((catalogs?.length ?? 0) > 0) {
+      setHasCatalogResults(true);
+    }
+  }, []);
+
   useEffect(() => {
-    // fetch once the catalogs and use the cache during runtime
+    // Initial bootstrap fetch.
     loadCatalogs({}, { fetchPolicy: 'store-or-network' });
     loadDeployment({}, { fetchPolicy: 'store-and-network' });
-  }, []);
+  }, [loadCatalogs, loadDeployment]);
+
+  useEffect(() => {
+    if (!catalogsRef || hasCatalogResults) {
+      return undefined;
+    }
+
+    // Retry while the catalog manager is still loading and catalogs are empty.
+    const intervalId = setInterval(() => {
+      loadCatalogs({}, { fetchPolicy: 'network-only' });
+    }, CATALOG_POLL_INTERVAL_MS);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [catalogsRef, hasCatalogResults, loadCatalogs]);
 
   if (!deploymentRef || !catalogsRef) {
     return <Loader variant={LoaderVariant.container} />;
@@ -235,18 +259,27 @@ const IngestionCatalog = () => {
       <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
         <ConnectorManagerStatusProvider>
           {catalogsRef && (
-            <IngestionConnectorsCatalogs queryRef={catalogsRef}>
-              {({ data: catalogsData }) => (
-                <IngestionConnectors queryRef={deploymentRef}>
-                  {({ data: deploymentData }) => (
-                    <IngestionCatalogComponent
-                      catalogsData={catalogsData}
-                      deploymentData={deploymentData}
-                      onClickDeploy={handleOpenDeployDialog}
-                    />
-                  )}
-                </IngestionConnectors>
-              )}
+            <IngestionConnectorsCatalogs queryRef={catalogsRef} onCatalogsResolved={handleCatalogsResolved}>
+              {({ data: catalogsData }) => {
+                const currentCatalogsCount = catalogsData.catalogs?.length ?? 0;
+                const shouldRenderCatalogLoader = !hasCatalogResults && currentCatalogsCount === 0;
+
+                if (shouldRenderCatalogLoader) {
+                  return <Loader variant={LoaderVariant.container} />;
+                }
+
+                return (
+                  <IngestionConnectors queryRef={deploymentRef}>
+                    {({ data: deploymentData }) => (
+                      <IngestionCatalogComponent
+                        catalogsData={catalogsData}
+                        deploymentData={deploymentData}
+                        onClickDeploy={handleOpenDeployDialog}
+                      />
+                    )}
+                  </IngestionConnectors>
+                );
+              }}
             </IngestionConnectorsCatalogs>
           )}
         </ConnectorManagerStatusProvider>

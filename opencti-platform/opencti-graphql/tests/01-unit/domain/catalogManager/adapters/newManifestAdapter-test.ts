@@ -89,12 +89,19 @@ describe('NewManifestAdapter', () => {
     expect(contract?.manager_supported).toBeTruthy();
   });
 
-  it('rejects unsupported manifest schema versions', () => {
+  it('rejects a manifest missing required top-level fields (id, contracts)', () => {
     const adapter = new NewManifestAdapter();
 
-    expect(() => adapter.toInternalCatalog({
-      ...fixtureManifest,
-      manifest_schema_version: '2.0.0',
-    })).toThrow();
+    expect(() => adapter.toInternalCatalog({ manifest_schema_version: '1' })).toThrow();
+    expect(() => adapter.toInternalCatalog({ id: 'catalog-v2' })).toThrow();
+  });
+
+  it('accepts any manifest_schema_version value as long as id and contracts are present', () => {
+    const adapter = new NewManifestAdapter();
+
+    for (const version of ['1', '16.0.0', '99.0', 'future']) {
+      const internal = adapter.toInternalCatalog({ ...fixtureManifest, manifest_schema_version: version });
+      expect(Object.keys(internal.catalogMap)).toEqual(['catalog-v2']);
+    }
   });
 });

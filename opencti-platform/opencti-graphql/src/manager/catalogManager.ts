@@ -99,17 +99,23 @@ const refreshCatalog = async () => {
 
 const isDecouplingEnabled = () => CATALOG_MANAGER_ENABLED && isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS);
 
+const triggerRefreshInBackground = () => {
+  void refreshCatalog().catch((error) => {
+    logApp.warn('[OPENCTI-MODULE] Catalog manager background refresh failed', { cause: error });
+  });
+};
+
 const start = async () => {
   if (!isDecouplingEnabled()) {
     logApp.info('[OPENCTI-MODULE] Catalog manager not started (disabled by configuration or feature flag)');
     return;
   }
 
-  await refreshCatalog();
+  triggerRefreshInBackground();
 
   if (CATALOG_MANAGER_INTERVAL && Number(CATALOG_MANAGER_INTERVAL) > 0) {
     scheduler = setIntervalAsync(async () => {
-      await refreshCatalog();
+      triggerRefreshInBackground();
     }, Number(CATALOG_MANAGER_INTERVAL));
     logApp.info(`[OPENCTI-MODULE] Catalog manager scheduled every ${Number(CATALOG_MANAGER_INTERVAL)}ms`);
   } else {
