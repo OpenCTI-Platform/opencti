@@ -1,12 +1,11 @@
 import React, { ChangeEvent, useState } from 'react';
 import { Autocomplete, Stack, TextField } from '@mui/material';
-import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 
 export interface ConnectorsStatusFilterState {
   search: string;
@@ -62,7 +61,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.slug || filters.isManaged !== null;
+  const hasActiveFilters = !!filters.search || !!filters.slug || filters.isManaged !== null;
 
   const managedOptions = [
     { label: 'True', value: true },
@@ -107,16 +106,10 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
               )}
             />
 
-            <Tooltip title={t_i18n('Clear filters')}>
-              <IconButton
-                color={hasActiveFilters ? 'primary' : 'default'}
-                onClick={handleClearFilters}
-                size="small"
-                disabled={!hasActiveFilters}
-              >
-                <FilterListOffOutlined fontSize="small" />
-              </IconButton>
-            </Tooltip>
+            <ClearFiltersIcon
+              hasActiveFilters={hasActiveFilters}
+              handleClearFilters={handleClearFilters}
+            />
           </>
         )
       }
