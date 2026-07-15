@@ -26,6 +26,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const { isFeatureEnable } = useHelper();
   // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and related checks when flag is removed
   const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
+
+  const isDashboardSavedFiltersFeatureEnabled = isFeatureEnable('DASHBOARD_SAVED_FILTERS');
+
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
@@ -177,14 +180,16 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
-              <Button
-                variant="text"
-                size="small"
-                sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
-                onClick={handleSwitchToSavedFilter}
-              >
-                {t_i18n('Use a saved filter')}
-              </Button>
+              {isDashboardSavedFiltersFeatureEnabled && (
+                <Button
+                  variant="text"
+                  size="small"
+                  sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                  onClick={handleSwitchToSavedFilter}
+                >
+                  {t_i18n('Use a saved filter')}
+                </Button>
+              )}
             </>
           )}
         </Box>
@@ -221,14 +226,16 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
-                  <Button
-                    variant="text"
-                    size="small"
-                    sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
-                    onClick={handleSwitchToSavedFilterDynamicFrom}
-                  >
-                    {t_i18n('Use a saved filter')}
-                  </Button>
+                  {isDashboardSavedFiltersFeatureEnabled && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                      onClick={handleSwitchToSavedFilterDynamicFrom}
+                    >
+                      {t_i18n('Use a saved filter')}
+                    </Button>
+                  )}
                 </>
               )}
             </Box>
@@ -257,9 +264,16 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="to"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
-                  <Button variant="text" size="small" sx={{ textTransform: 'none', whiteSpace: 'nowrap' }} onClick={handleSwitchToSavedFilterDynamicTo}>
-                    {t_i18n('Use a saved filter')}
-                  </Button>
+                  {isDashboardSavedFiltersFeatureEnabled && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      sx={{ textTransform: 'none', whiteSpace: 'nowrap' }}
+                      onClick={handleSwitchToSavedFilterDynamicTo}
+                    >
+                      {t_i18n('Use a saved filter')}
+                    </Button>
+                  )}
                 </>
               )}
             </Box>
