@@ -49,7 +49,7 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
         onClose={() => setOpen(false)}
         title={t_i18n('Select the OpenAEV instance')}
       >
-        <Stack>
+        <Stack spacing={2}>
           {instances.map((instance) => (
             <Stack direction="row" key={instance.external_uri}>
               <div style={{ flex: 1 }}>
