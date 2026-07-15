@@ -1,6 +1,6 @@
 import { Button, Divider } from '@mui/material';
 import Bookmarks from '@mui/icons-material/Bookmarks';
-import Tooltip from '@mui/material/Tooltip/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import { useFormatter } from '../../components/i18n';
 
