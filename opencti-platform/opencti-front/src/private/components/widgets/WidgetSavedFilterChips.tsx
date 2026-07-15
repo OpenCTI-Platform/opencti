@@ -4,7 +4,8 @@ import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import FilterIconButton from 'src/components/FilterIconButton';
 import type { WidgetSavedFilterChipsQuery } from './__generated__/WidgetSavedFilterChipsQuery.graphql';
 import type { ChipOwnProps } from '@mui/material';
-import { removeFrontendIdAndEmptyFiltersFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
+import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from 'src/components/i18n';
 import { useTheme } from '@mui/material/styles';
@@ -34,8 +35,24 @@ const WidgetSavedFilterChipsComponent = ({
   const theme = useTheme();
   const { savedFilter } = usePreloadedQuery(widgetSavedFilterChipsQuery, queryRef);
 
-  // not accessible or deleted saved filter
-  if (!savedFilter?.filters) {
+  // Parse defensively: savedFilter may be null (deleted/inaccessible)
+  // and filters is a JSON string that could be malformed.
+  let rawFilters: FilterGroup | null = null;
+  if (savedFilter?.filters) {
+    try {
+      rawFilters = JSON.parse(savedFilter.filters) as FilterGroup;
+    } catch {
+      // malformed JSON – treat as unavailable
+    }
+  }
+
+  const parsedFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    rawFilters,
+    entityTypes,
+  );
+
+  // Render fallback chip when the saved filter is missing, inaccessible, or invalid.
+  if (!parsedFilters) {
     return (
       <Chip
         label={t_i18n('Saved filter unavailable')}
@@ -43,13 +60,7 @@ const WidgetSavedFilterChipsComponent = ({
         sx={{ marginLeft: 1, backgroundColor: theme.palette.warning.main, color: theme.palette.warning.contrastText }}
       />
     );
-  };
-
-  // removing incomplete filters
-  const parsedFilters = removeFrontendIdAndEmptyFiltersFromFilterGroupObject(
-    JSON.parse(savedFilter.filters),
-    entityTypes,
-  );
+  }
 
   return (
     <FilterIconButton
