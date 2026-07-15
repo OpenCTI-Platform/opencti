@@ -43,7 +43,8 @@ describe('otpUserActivation()', () => {
     expect(freshUser.otp_activated).toBeFalsy();
 
     const secret = totp.generateSecret();
-    const code = totp.generate({ secret });
+    // totp.generate() is async and resolves directly to the code string (no { token } wrapper).
+    const code = await totp.generate({ secret });
 
     const context = buildContextWithSession(freshUser);
     const notifierResult = await otpUserActivation(context, freshUser, { secret, code });
@@ -87,14 +88,14 @@ describe('otpUserActivation()', () => {
     let freshUser = await findById(setupContext, ADMIN_USER, ADMIN_USER.id);
 
     const secret = totp.generateSecret();
-    const code = totp.generate({ secret });
+    const code = await totp.generate({ secret });
     const activationContext = buildContextWithSession(freshUser);
     await otpUserActivation(activationContext, freshUser, { secret, code });
     freshUser = await findById(activationContext, ADMIN_USER, ADMIN_USER.id);
     expect(freshUser.otp_activated).toBe(true);
 
     const secondSecret = totp.generateSecret();
-    const secondCode = totp.generate({ secret: secondSecret });
+    const secondCode = await totp.generate({ secret: secondSecret });
     const secondContext = buildContextWithSession(freshUser);
     await expect(otpUserActivation(secondContext, freshUser, { secret: secondSecret, code: secondCode }))
       .rejects.toThrow('You need to deactivate your current 2FA before generating a new one');
@@ -111,7 +112,7 @@ describe('otpUserDeactivation()', () => {
     });
     const freshUser = await findById(setupContext, ADMIN_USER, ADMIN_USER.id);
     const secret = totp.generateSecret();
-    const code = totp.generate({ secret });
+    const code = await totp.generate({ secret });
     const activationContext = buildContextWithSession(freshUser);
     await otpUserActivation(activationContext, freshUser, { secret, code });
 
