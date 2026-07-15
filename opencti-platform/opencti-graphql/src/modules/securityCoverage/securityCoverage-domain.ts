@@ -193,6 +193,14 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
 };
 // endregion
 
+export const getSecurityCoverageResults = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+) => {
+  return loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
+};
+
 export const getSecurityCoverageResultProperty = async (
   context: AuthContext,
   user: AuthUser,
