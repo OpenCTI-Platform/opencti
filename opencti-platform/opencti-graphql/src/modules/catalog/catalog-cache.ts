@@ -110,7 +110,7 @@ export const buildCatalogMapFromDefinitions = (catalogDefinitions: CatalogDefini
 
 export const buildContractsByImageCache = (catalogMap: Record<string, CatalogType>): Map<string, CatalogContract> => {
   const contracts = Object.values(catalogMap)
-    .map((catalog) => catalog.definition.contracts)
+    .map((catalog) => catalog.definition.contracts.map((contract) => sanitizeManagerConfigurationSchema(contract)))
     .flat();
   return new Map(contracts.map((contract) => [contract.container_image, contract]));
 };

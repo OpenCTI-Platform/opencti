@@ -4,7 +4,7 @@ import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
 import { useSearchParams } from 'react-router-dom';
-import { Stack } from '@mui/material';
+import { Skeleton, Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -21,7 +21,6 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../components/PageContainer';
-import Loader, { LoaderVariant } from '../../../components/Loader';
 import Button from '@common/button/Button';
 import IngestionCatalogFilters from './IngestionCatalog/IngestionCatalogFilters';
 import GradientCard from '../../../components/GradientCard';
@@ -131,6 +130,55 @@ const CatalogsEmptyState = () => {
         <BrowseMoreButton />
       </GradientCard>
     </Stack>
+  );
+};
+
+const IngestionCatalogSkeleton = () => {
+  const { t_i18n } = useFormatter();
+
+  return (
+    <div data-testid="catalog-page-skeleton">
+      <IngestionMenu />
+      <PageContainer withRightMenu withGap>
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
+
+        <Stack flexDirection="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1}>
+            <Skeleton variant="rounded" width={220} height={40} />
+            <Skeleton variant="rounded" width={180} height={40} />
+          </Stack>
+          <Skeleton variant="rounded" width={130} height={40} />
+        </Stack>
+
+        <Grid container spacing={2}>
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Grid
+              key={`skeleton-card-${index}`}
+              size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+            >
+              <Stack
+                spacing={1.2}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Skeleton variant="rounded" width="100%" height={120} />
+                <Skeleton variant="text" width="70%" height={34} />
+                <Skeleton variant="text" width="95%" />
+                <Skeleton variant="text" width="90%" />
+                <Stack direction="row" spacing={1} sx={{ pt: 1 }}>
+                  <Skeleton variant="rounded" width={72} height={24} />
+                  <Skeleton variant="rounded" width={84} height={24} />
+                </Stack>
+                <Skeleton variant="rounded" width="100%" height={36} sx={{ mt: 1 }} />
+              </Stack>
+            </Grid>
+          ))}
+        </Grid>
+      </PageContainer>
+    </div>
   );
 };
 
@@ -251,12 +299,12 @@ const IngestionCatalog = () => {
   }, [catalogsRef, hasCatalogResults, loadCatalogs]);
 
   if (!deploymentRef || !catalogsRef) {
-    return <Loader variant={LoaderVariant.container} />;
+    return <IngestionCatalogSkeleton />;
   }
 
   return (
     <>
-      <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <Suspense fallback={<IngestionCatalogSkeleton />}>
         <ConnectorManagerStatusProvider>
           {catalogsRef && (
             <IngestionConnectorsCatalogs queryRef={catalogsRef} onCatalogsResolved={handleCatalogsResolved}>
@@ -265,7 +313,7 @@ const IngestionCatalog = () => {
                 const shouldRenderCatalogLoader = !hasCatalogResults && currentCatalogsCount === 0;
 
                 if (shouldRenderCatalogLoader) {
-                  return <Loader variant={LoaderVariant.container} />;
+                  return <IngestionCatalogSkeleton />;
                 }
 
                 return (

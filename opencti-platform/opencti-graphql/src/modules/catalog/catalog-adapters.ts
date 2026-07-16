@@ -19,7 +19,7 @@ export type CatalogResolutionConfig = {
 export type RawManifest = unknown;
 
 export interface CatalogSourceAdapter {
-  fetch(source: CatalogSourceConfig): Promise<RawManifest>;
+  fetch(source: CatalogSourceConfig, options?: { signal?: AbortSignal }): Promise<RawManifest>;
   toInternalCatalog(raw: RawManifest): InternalCatalog;
 }
 
@@ -158,13 +158,13 @@ export class LegacyManifestAdapter implements CatalogSourceAdapter {
 }
 
 export class NewManifestAdapter implements CatalogSourceAdapter {
-  async fetch(source: CatalogSourceConfig): Promise<RawManifest> {
+  async fetch(source: CatalogSourceConfig, options?: { signal?: AbortSignal }): Promise<RawManifest> {
     if (source.kind === 'local') {
       const content = await readFile(source.uri, { encoding: 'utf8', flag: 'r' });
       return JSON.parse(content);
     }
 
-    const res = await fetch(source.uri);
+    const res = await fetch(source.uri, { signal: options?.signal });
     if (!res.ok) {
       throw UnsupportedError(`Failed to fetch remote catalog (${res.status}) from ${source.uri}`);
     }

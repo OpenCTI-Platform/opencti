@@ -47,6 +47,7 @@
       "enabled": true,
       "lock_key": "catalog_manager_lock",
       "interval": null,
+      "request_timeout": 15000,
       "custom_catalog_refresh_endpoint_uri": "./connector-catalog.json.local"
     },
     "encryption_key": "wbQnxC2ZIoohYzkXW19LiYU2V3lfoCVFkBadFd/dFAY="
