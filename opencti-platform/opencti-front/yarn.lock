@@ -9601,13 +9601,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.0.8":
-  version: 6.0.8
-  resolution: "graphql-ws@npm:6.0.8"
+"graphql-ws@npm:6.1.0":
+  version: 6.1.0
+  resolution: "graphql-ws@npm:6.1.0"
   peerDependencies:
     "@fastify/websocket": ^10 || ^11
     crossws: ~0.3
-    graphql: ^15.10.1 || ^16
+    graphql: ^15.10.1 || ^16 || ^17
     ws: ^8
   peerDependenciesMeta:
     "@fastify/websocket":
@@ -9616,7 +9616,7 @@ __metadata:
       optional: true
     ws:
       optional: true
-  checksum: 10c0/df3672448de0ba77052697ad4285330cde49d3fef29a283974b47ce9cf9de46aa7f9c1ea9fe084877aeeab817a0264d65c987e58cb866fcf1beac9ac70368df7
+  checksum: 10c0/ac5eaa3a4c9d01206c9d1a80987f5c175e90988b76449b23342fb97654a9374d74509b0d8db5d25f8ddbe91711ac5ed8d7cf1a991a8395473d06110f4e5a4d61
   languageName: node
   linkType: hard
 
@@ -13019,7 +13019,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     globals: "npm:17.7.0"
     graphiql: "npm:5.2.4"
-    graphql-ws: "npm:6.0.8"
+    graphql-ws: "npm:6.1.0"
     html-react-parser: "npm:6.1.4"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.33"
