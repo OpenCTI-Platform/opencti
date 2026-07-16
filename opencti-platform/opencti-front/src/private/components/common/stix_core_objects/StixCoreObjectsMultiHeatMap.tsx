@@ -101,6 +101,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiHeatMapTimeSeriesQuery['variables'] => {
   const { startDate, endDate } = computeStartEndDates(config);
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
@@ -119,7 +120,7 @@ const buildQueryVariables = (
   return {
     startDate: startDate ?? monthsAgo(12),
     endDate: endDate ?? now(),
-    interval: 'day',
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
 };
@@ -154,6 +155,7 @@ const StixCoreObjectsMultiHeatMap = ({
     refreshRate,
     query: stixCoreObjectsMultiHeatMapTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 
