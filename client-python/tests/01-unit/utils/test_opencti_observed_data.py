@@ -27,6 +27,10 @@ class _FakeOpenCTI:
         del args, kwargs
         return None
 
+    @staticmethod
+    def copy_attributes_from_extension(*args, **kwargs):
+        del args, kwargs
+
 
 class _CaptureObservedData(ObservedData):
     def __init__(self, opencti):
