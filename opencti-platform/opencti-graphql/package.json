@@ -139,7 +139,7 @@
     "license-checker-rseidelsohn": "5.0.1",
     "lru-cache": "11.5.2",
     "luxon": "3.7.2",
-    "marked": "18.0.5",
+    "marked": "18.0.6",
     "migrate": "2.1.0",
     "mime-types": "3.0.2",
     "moment": "2.30.1",
