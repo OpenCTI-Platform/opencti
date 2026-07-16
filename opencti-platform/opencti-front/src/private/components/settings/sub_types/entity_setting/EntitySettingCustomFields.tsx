@@ -19,10 +19,12 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownFieldBase from '../../../../../components/fields/markdownField/MarkdownFieldBase';
+import DateTimePicker from '../../../../../components/common/input/DateTimePicker';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
+import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
 import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
@@ -189,19 +191,31 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
             style={{ marginTop: 20 }}
           />
         );
-      case 'date':
+      case 'date': {
+        const isNow = defaultValue === CUSTOM_FIELD_NOW_TOKEN;
         return (
-          <MuiTextField
-            type="date"
-            variant="standard"
-            fullWidth
-            label={t_i18n('Default value')}
-            value={defaultValue}
-            onChange={(event) => setDefaultValue(event.target.value)}
-            slotProps={{ inputLabel: { shrink: true } }}
-            style={{ marginTop: 20 }}
-          />
+          <>
+            <FormControlLabel
+              style={{ marginTop: 20, display: 'flex' }}
+              control={(
+                <Switch
+                  checked={isNow}
+                  onChange={(_, checked) => setDefaultValue(checked ? CUSTOM_FIELD_NOW_TOKEN : '')}
+                />
+              )}
+              label={t_i18n('Use current date/time (@now)')}
+            />
+            {!isNow && (
+              <DateTimePicker
+                value={defaultValue ? new Date(defaultValue) : null}
+                onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
+                label={t_i18n('Default value')}
+                slotProps={{ textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } } }}
+              />
+            )}
+          </>
         );
+      }
       case 'markdown':
         return (
           <MarkdownFieldBase
