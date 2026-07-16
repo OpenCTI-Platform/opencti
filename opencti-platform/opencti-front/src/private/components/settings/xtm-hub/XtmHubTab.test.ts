@@ -8,7 +8,7 @@ import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PRODUCT_NAME_QUERY_PARAM } f
 const mockOpenTab = vi.fn();
 const mockCloseTab = vi.fn();
 const mockFocusTab = vi.fn();
-const mockUseExternalTab = vi.fn(() => ({
+const mockUseExternalTab = vi.fn((_args: { url: string }) => ({
   isTabOpen: false,
   openTab: mockOpenTab,
   closeTab: mockCloseTab,
@@ -16,7 +16,7 @@ const mockUseExternalTab = vi.fn(() => ({
 }));
 
 vi.mock('./useExternalTab', () => ({
-  default: () => mockUseExternalTab(),
+  default: (args: { url: string }) => mockUseExternalTab(args),
 }));
 
 const getLastRegistrationUrl = () => {
@@ -24,7 +24,7 @@ const getLastRegistrationUrl = () => {
   if (calls.length === 0) {
     return '';
   }
-  return ((calls[calls.length - 1] as { url: string }[])?.[0] as unknown as { url: string })?.url ?? '';
+  return (calls[calls.length - 1]?.[0] as { url?: string } | undefined)?.url ?? '';
 };
 
 const renderXtmHubTab = (route: string, platformTitle = 'OpenCTI Platform') => {
