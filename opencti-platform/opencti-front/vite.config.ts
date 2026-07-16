@@ -6,11 +6,16 @@ import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 // Handle ESM/CJS interop for vite-plugin-monaco-editor
 const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typeof monacoEditorPluginImport}).default;
 
-const basePath = '';
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+
+  // Support APP__BASE_PATH from .env* files (via loadEnv) or from process.env (e.g. set by test scripts).
+  // Normalize: ensure leading slash, strip trailing slash.
+  const rawBasePath = env.APP__BASE_PATH ?? process.env.APP__BASE_PATH ?? '';
+  const basePath = rawBasePath && rawBasePath !== '/'
+    ? `/${rawBasePath.replace(/^\/|\/$/g, '')}`
+    : '';
 
   const backProxy = (ws = false) => ({
     target: env.BACK_END_URL ?? 'http://localhost:4000',
@@ -70,16 +75,16 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        '/logout': backProxy(),
-        '/stream': backProxy(),
-        '/storage': backProxy(),
-        '/schema': backProxy(),
+        [`${basePath}/logout`]: backProxy(),
+        [`${basePath}/stream`]: backProxy(),
+        [`${basePath}/storage`]: backProxy(),
+        [`${basePath}/schema`]: backProxy(),
         '^/.*/embedded/.*': backProxy(),
-        '/taxii2': backProxy(),
-        '/feeds': backProxy(),
-        '/graphql': backProxy(true),
-        '/auth': backProxy(),
-        '/chatbot': backProxy(),
+        [`${basePath}/taxii2`]: backProxy(),
+        [`${basePath}/feeds`]: backProxy(),
+        [`${basePath}/graphql`]: backProxy(true),
+        [`${basePath}/auth`]: backProxy(),
+        [`${basePath}/chatbot`]: backProxy(),
       },
     },
   };
