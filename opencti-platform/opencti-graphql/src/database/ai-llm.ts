@@ -23,14 +23,16 @@ const AI_MAX_TOKENS = conf.get('ai:max_tokens');
 const AI_VERSION = conf.get('ai:version');
 const AI_AZURE_INSTANCE = conf.get('ai:ai_azure_instance');
 const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
+const MISTRAL_OFFICIAL_ENDPOINT = 'https://api.mistral.ai';
 
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
 if (AI_ENABLED && AI_TOKEN) {
   switch (AI_TYPE) {
-    case 'mistralai':
+    case 'mistralai': {
+      const mistralEndpoint = isEmptyField(AI_ENDPOINT) ? MISTRAL_OFFICIAL_ENDPOINT : AI_ENDPOINT;
       client = new Mistral({
-        serverURL: isEmptyField(AI_ENDPOINT) ? undefined : AI_ENDPOINT,
+        serverURL: mistralEndpoint,
         apiKey: AI_TOKEN,
         /* uncomment if you need low level debug on AI
         debugLogger: {
@@ -40,7 +42,19 @@ if (AI_ENABLED && AI_TOKEN) {
         } */
       });
 
-      if (AI_ENDPOINT.includes('https://api.mistral.ai')) {
+      const isOfficialMistralEndpoint = (() => {
+        try {
+          const official = new URL(MISTRAL_OFFICIAL_ENDPOINT);
+          const endpointUrl = new URL(mistralEndpoint);
+          return endpointUrl.protocol === official.protocol
+            && endpointUrl.hostname === official.hostname
+            && endpointUrl.port === official.port;
+        } catch {
+          return false;
+        }
+      })();
+
+      if (isOfficialMistralEndpoint) {
         // Official MistralAI API
         nlqChat = new ChatMistralAI({
           model: AI_MODEL,
@@ -54,12 +68,13 @@ if (AI_ENABLED && AI_TOKEN) {
           apiKey: AI_TOKEN,
           temperature: 0,
           configuration: {
-            baseURL: `${AI_ENDPOINT}/v1`,
+            baseURL: `${mistralEndpoint}/v1`,
           },
         });
       }
 
       break;
+    }
 
     case 'openai':
       client = new OpenAI({
