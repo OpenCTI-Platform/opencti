@@ -1,20 +1,16 @@
-import { useRef, useState, useEffect, CSSProperties, ReactNode } from 'react';
-import { graphql } from 'react-relay';
+import React, { CSSProperties, ReactNode, useRef } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useResolveDataSelection from '../../../../components/dashboard/useResolveDataSelection';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
+import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { DraftsListQuery$data } from './__generated__/DraftsListQuery.graphql';
+import { DraftsListQuery } from './__generated__/DraftsListQuery.graphql';
 import useHelper from '../../../../utils/hooks/useHelper';
 
 const defaultDraftColumns: WidgetColumn[] = [
@@ -84,6 +80,91 @@ export const draftsListQuery = graphql`
   }
 `;
 
+// ---------------------------------------------------------------------------
+// Query variables builder
+// ---------------------------------------------------------------------------
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): DraftsListQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const { startDate, endDate } = computeStartEndDates(config);
+  const orderBy = (selection.sort_by && selection.sort_by.length > 0
+    ? selection.sort_by
+    : 'created_at') as DraftsListQuery['variables']['orderBy'];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+  return {
+    first: selection.number ?? 10,
+    orderBy,
+    orderMode: (selection.sort_mode ?? 'desc') as DraftsListQuery['variables']['orderMode'],
+    filters: normalizeFilterGroupForBackend(filters),
+  };
+};
+
+// ---------------------------------------------------------------------------
+// Inner component (Suspense boundary consumer)
+// ---------------------------------------------------------------------------
+
+interface DraftsListComponentProps {
+  rootRef: React.RefObject<HTMLDivElement | null>;
+  queryRef: PreloadedQuery<DraftsListQuery>;
+  dataSelection: WidgetDataSelection[];
+  widgetId: string;
+  isDraftWorkflowEnabled: boolean;
+}
+
+const DraftsListComponent = ({
+  rootRef,
+  queryRef,
+  dataSelection,
+  widgetId,
+  isDraftWorkflowEnabled,
+}: DraftsListComponentProps) => {
+  const data = usePreloadedQuery(draftsListQuery, queryRef);
+  const selection = dataSelection[0];
+  const rawColumns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
+  const columns = isDraftWorkflowEnabled ? rawColumns : rawColumns.filter((c) => c.attribute !== 'workflowInstance');
+  const edges = data?.draftWorkspaces?.edges ?? [];
+
+  if (edges.length === 0) {
+    return <WidgetNoData />;
+  }
+
+  return (
+    <WidgetListCoreObjects
+      data={[...edges]}
+      rootRef={rootRef.current ?? undefined}
+      widgetId={widgetId}
+      pageSize={selection.number ?? 10}
+      columns={columns}
+    />
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Outer component (query loader + layout)
+// ---------------------------------------------------------------------------
+
+interface DraftsListProps {
+  title?: string;
+  variant?: string;
+  height?: CSSProperties['height'];
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  widgetId: string;
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+}
+
 const DraftsList = ({
   title,
   variant,
@@ -95,95 +176,21 @@ const DraftsList = ({
   parameters = {},
   popover,
   host,
-}: {
-  title?: string;
-  variant?: string;
-  height?: CSSProperties['height'];
-  config: DashboardConfig;
-  refreshRate?: number | null;
-  dataSelection: WidgetDataSelection[];
-  widgetId: string;
-  parameters?: WidgetParameters;
-  popover?: ReactNode;
-  host?: WidgetHost;
-}) => {
+}: DraftsListProps) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
-  const { startDate, endDate } = computeStartEndDates(config);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const refreshToken = useDashboardRefreshToken();
-  const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    setLocalRefreshKey((k) => k + 1);
-  }, [refreshToken]);
-  useEffect(() => {
-    if (!refreshRate || refreshToken !== null) return () => {};
-    const interval = setInterval(() => setLocalRefreshKey((k) => k + 1), refreshRate);
-    return () => clearInterval(interval);
-  }, [refreshRate, refreshToken]);
-
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useResolveDataSelection({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: draftsListQuery,
+    config,
+    buildQueryVariables,
   });
-  const selection = resolvedDataSelection[0];
-  const rawColumns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
-  const columns = isDraftWorkflowEnabled ? rawColumns : rawColumns.filter((c) => c.attribute !== 'workflowInstance');
-
-  const sortBy = selection.sort_by && selection.sort_by.length > 0
-    ? selection.sort_by
-    : 'created_at';
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
-
-  const rootRef = useRef(null);
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    return (
-      <QueryRenderer
-        key={localRefreshKey}
-        query={draftsListQuery}
-        variables={{
-          first: selection.number ?? 10,
-          orderBy: sortBy,
-          orderMode: selection.sort_mode ?? 'desc',
-          filters,
-        }}
-        render={({ props }: { props: DraftsListQuery$data }) => {
-          if (props && props.draftWorkspaces && props.draftWorkspaces.edges.length > 0) {
-            return (
-              <WidgetListCoreObjects
-                data={[...props.draftWorkspaces.edges]}
-                rootRef={rootRef.current ?? undefined}
-                widgetId={widgetId}
-                pageSize={selection.number ?? 10}
-                columns={columns}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
 
   return (
     <WidgetContainer
@@ -195,7 +202,20 @@ const DraftsList = ({
       showPreviewTag={isPreviewMode}
     >
       <div ref={rootRef} style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <DraftsListComponent
+            queryRef={queryRef!}
+            rootRef={rootRef}
+            dataSelection={resolvedDataSelection}
+            widgetId={widgetId}
+            isDraftWorkflowEnabled={isDraftWorkflowEnabled}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

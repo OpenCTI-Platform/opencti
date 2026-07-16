@@ -7,7 +7,6 @@ vi.mock('../../../../relay/environment', () => ({
   fileUri: (f: string) => f,
   MESSAGING$: { messages$: { subscribe: () => ({}) } },
   environment: {},
-  QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) => render({ props: null }),
   fetchQuery: vi.fn(),
 }));
 
@@ -28,17 +27,20 @@ vi.mock('../../../../components/Loader', () => ({
   LoaderVariant: { inElement: 'inElement' },
 }));
 
-vi.mock('../../../../components/dashboard/DashboardRefreshContext', () => ({
-  useDashboardRefreshToken: () => null,
-}));
-
-vi.mock('../../../../components/dashboard/useResolveDataSelection', () => ({
+vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
     resolvedDataSelection: dataSelection,
     isMissingHostEntity: false,
     isMissingSavedFilters: false,
     isPreviewMode: false,
+    queryRef: null,
   }),
+}));
+
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
@@ -71,7 +73,7 @@ describe('DraftsNumber', () => {
     expect(container).toBeTruthy();
   });
 
-  it('shows loader while data is loading', () => {
+  it('shows loader while queryRef is null', () => {
     const { getByTestId } = testRender(<DraftsNumber {...minimalProps} />);
     expect(getByTestId('loader')).toBeTruthy();
   });
