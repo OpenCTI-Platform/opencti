@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsHorizontalBarsQuery.graphql';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
@@ -113,7 +113,7 @@ const PublicStixRelationshipsHorizontalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsHorizontalBarsQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsHorizontalBarsQuery>(
     publicStixRelationshipsHorizontalBarsQuery,
     {
       uriKey,

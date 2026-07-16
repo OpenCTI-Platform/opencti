@@ -5,7 +5,7 @@ import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCo
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsListQuery } from './__generated__/PublicStixCoreObjectsListQuery.graphql';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -461,7 +461,7 @@ const PublicStixCoreObjectsList = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsListQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsListQuery>(
     publicStixCoreObjectsListQuery,
     {
       uriKey,

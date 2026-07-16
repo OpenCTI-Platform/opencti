@@ -51,6 +51,7 @@ vi.mock('./dashboard-viz-utils', () => ({
 
 vi.mock('./DashboardRefreshContext', () => ({
   useDashboardRefreshToken: vi.fn(() => refreshTokenMockValue),
+  useDashboardSetQueryPending: vi.fn(() => () => {}),
 }));
 
 describe('useDashboardViz', () => {
@@ -65,55 +66,6 @@ describe('useDashboardViz', () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
-  });
-
-  it('aligns refresh ticks for widgets mounted at different times', () => {
-    const buildQueryVariables = vi.fn(() => ({ marker: 'same-vars' }));
-
-    renderHook(() => useDashboardViz({
-      dataSelection: [],
-      perspective: 'entities',
-      refreshRate: 5_000,
-      query: {} as never,
-      config: {},
-      parameters: { title: 'A1' },
-      buildQueryVariables,
-    }));
-
-    expect(loadMocks).toHaveLength(1);
-
-    act(() => {
-      vi.advanceTimersByTime(1_000);
-    });
-
-    renderHook(() => useDashboardViz({
-      dataSelection: [],
-      perspective: 'entities',
-      refreshRate: 5_000,
-      query: {} as never,
-      config: {},
-      parameters: { title: 'A2' },
-      buildQueryVariables,
-    }));
-
-    expect(loadMocks).toHaveLength(2);
-    const [a1Load, a2Load] = loadMocks;
-    const a1BaselineCalls = a1Load.mock.calls.length;
-    const a2BaselineCalls = a2Load.mock.calls.length;
-
-    act(() => {
-      vi.advanceTimersByTime(1_654);
-    });
-
-    expect(a1Load).toHaveBeenCalledTimes(a1BaselineCalls);
-    expect(a2Load).toHaveBeenCalledTimes(a2BaselineCalls);
-
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-
-    expect(a1Load).toHaveBeenCalledTimes(a1BaselineCalls + 1);
-    expect(a2Load).toHaveBeenCalledTimes(a2BaselineCalls + 1);
   });
 
   it('does not refetch sibling widget when only one widget parameters change', () => {

@@ -3,11 +3,11 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
+import usePublicWidgetDefaultDates from '../usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsMultiHeatMapQuery } from './__generated__/PublicStixCoreObjectsMultiHeatMapQuery.graphql';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
-import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
 
@@ -83,13 +83,13 @@ const PublicStixCoreObjectsMultiHeatMap = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiHeatMapQuery>(
+  const dates = usePublicWidgetDefaultDates(startDate, endDate);
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsMultiHeatMapQuery>(
     publicStixCoreObjectsMultiHeatMapQuery,
     {
       uriKey,
       widgetId: id,
-      startDate: startDate ?? monthsAgo(12),
-      endDate: endDate ?? now(),
+      ...dates,
     },
   );
 

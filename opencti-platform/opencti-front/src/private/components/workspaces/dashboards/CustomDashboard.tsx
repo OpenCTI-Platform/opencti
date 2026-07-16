@@ -11,6 +11,7 @@ import useDashboard from '../../../../components/dashboard/useDashboard';
 import useDashboardRefresh from '../../../../components/dashboard/useDashboardRefresh';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
+import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -197,43 +198,44 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       )
       }
       <div id="container">
-        {!noToolbar && (
-          <Security
-            needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-            hasAccess={userCanEdit}
-          >
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 1.5,
-              }}
+        <DashboardRefreshProvider refreshToken={refreshToken}>
+          {!noToolbar && (
+            <Security
+              needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
+              hasAccess={userCanEdit}
             >
-              <DashboardTimeFilters
-                config={config}
-                handleDateChange={handleDateChange}
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <DashboardRefreshControl
-                  onRefresh={handleManualRefresh}
-                  interval={localRefreshRateSeconds}
-                  onIntervalChange={handleRefreshRateChange}
-                  isRefreshing={isAutoRefreshing}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 1.5,
+                }}
+              >
+                <DashboardTimeFilters
+                  config={config}
+                  handleDateChange={handleDateChange}
                 />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <DashboardRefreshControl
+                    onRefresh={handleManualRefresh}
+                    interval={localRefreshRateSeconds}
+                    onIntervalChange={handleRefreshRateChange}
+                    isRefreshing={isAutoRefreshing}
+                  />
+                </Box>
               </Box>
-            </Box>
-          </Security>
-        )
-        }
-        <DashboardContent
-          helpers={helpers}
-          isEditable={userCanEdit}
-          entity={workspace}
-          host={WIDGET_WORKSPACE_HOST}
-          refreshRate={refreshRate}
-          refreshToken={refreshToken}
-        />
+            </Security>
+          )
+          }
+          <DashboardContent
+            helpers={helpers}
+            isEditable={userCanEdit}
+            entity={workspace}
+            host={WIDGET_WORKSPACE_HOST}
+            refreshRate={refreshRate}
+          />
+        </DashboardRefreshProvider>
       </div>
     </Stack>
   );
