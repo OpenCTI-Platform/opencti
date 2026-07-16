@@ -3,15 +3,6 @@ import { describe, it, expect, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
-vi.mock('../../../../relay/environment', () => ({
-  APP_BASE_PATH: '',
-  fileUri: (f: string) => f,
-  MESSAGING$: { messages$: { subscribe: () => ({}) } },
-  environment: {},
-  QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) => render({ props: null }),
-  fetchQuery: vi.fn(),
-}));
-
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
 }));
@@ -24,30 +15,33 @@ vi.mock('../../../../components/dashboard/WidgetHorizontalBars', () => ({
   default: () => <div data-testid="widget-horizontal-bars" />,
 }));
 
-vi.mock('../../../../components/Loader', () => ({
-  default: () => <div data-testid="loader" />,
-  LoaderVariant: { inElement: 'inElement' },
-}));
-
-vi.mock('../../../../components/dashboard/DashboardRefreshContext', () => ({
-  useDashboardRefreshToken: () => null,
-}));
-
-vi.mock('../../../../components/dashboard/useResolveDataSelection', () => ({
-  default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
-    resolvedDataSelection: dataSelection,
+vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
+  default: () => ({
+    resolvedDataSelection: [{
+      filters: emptyFilterGroup,
+      attribute: 'entity_type',
+      date_attribute: 'created_at',
+    }],
     isMissingHostEntity: false,
     isMissingSavedFilters: false,
     isPreviewMode: false,
+    queryRef: null,
   }),
+}));
+
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeStartEndDates: () => ({ startDate: null, endDate: null }),
 }));
 
-vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
-  default: () => <div data-testid="widget-no-host" />,
+vi.mock('../../../../utils/hooks/useGranted', () => ({
+  default: () => true,
+  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
 }));
 
 vi.mock('../../../../utils/hooks/useDistributionGraphData', () => ({
@@ -74,7 +68,7 @@ describe('DraftsHorizontalBars', () => {
     expect(container).toBeTruthy();
   });
 
-  it('shows loader while data is loading', () => {
+  it('shows loader when queryRef is null', () => {
     const { getByTestId } = testRender(<DraftsHorizontalBars {...minimalProps} />);
     expect(getByTestId('loader')).toBeTruthy();
   });
