@@ -4,7 +4,7 @@ import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import FilterIconButton from 'src/components/FilterIconButton';
 import type { WidgetSavedFilterChipsQuery } from './__generated__/WidgetSavedFilterChipsQuery.graphql';
 import type { ChipOwnProps } from '@mui/material';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
+import { removeFrontendIdAndEmptyFiltersFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from 'src/components/i18n';
@@ -46,10 +46,7 @@ const WidgetSavedFilterChipsComponent = ({
     }
   }
 
-  const parsedFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
-    rawFilters,
-    entityTypes,
-  );
+  const parsedFilters = removeFrontendIdAndEmptyFiltersFromFilterGroupObject(rawFilters);
 
   // not accessible, deleted, or invalid saved filter
   if (!parsedFilters) {
