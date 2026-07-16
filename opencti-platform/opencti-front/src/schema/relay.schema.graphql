@@ -10480,6 +10480,7 @@ type Mutation {
   channelContextClean(id: ID!): Channel
   channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
+  refreshCatalog: Boolean!
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language

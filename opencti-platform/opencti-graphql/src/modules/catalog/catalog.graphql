@@ -45,3 +45,8 @@ type Query {
   catalogVersionInfo: CatalogVersionInfo! @auth(for: [INGESTION])
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }
+
+# Mutations
+type Mutation {
+  refreshCatalog: Boolean! @auth(for: [INGESTION])
+}

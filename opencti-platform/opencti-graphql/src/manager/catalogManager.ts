@@ -181,4 +181,5 @@ const shutdown = async () => {
 export default {
   start,
   shutdown,
+  triggerRefreshInBackground,
 };

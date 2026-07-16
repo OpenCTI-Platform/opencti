@@ -1,7 +1,8 @@
-import React, { createContext, ReactNode, useContext, useEffect } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import React, { createContext, ReactNode, useContext, useEffect, useRef } from 'react';
+import { graphql, useLazyLoadQuery, useMutation } from 'react-relay';
 import { interval } from 'rxjs';
 import { ConnectorManagerStatusContextQuery } from '@components/data/connectors/__generated__/ConnectorManagerStatusContextQuery.graphql';
+import type { ConnectorManagerStatusContextRefreshCatalogMutation } from '@components/data/connectors/__generated__/ConnectorManagerStatusContextRefreshCatalogMutation.graphql';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
 export const connectorManagerStatusQuery = graphql`
@@ -16,6 +17,12 @@ export const connectorManagerStatusQuery = graphql`
       revision
       updated_at
     }
+  }
+`;
+
+const refreshCatalogMutation = graphql`
+  mutation ConnectorManagerStatusContextRefreshCatalogMutation {
+    refreshCatalog
   }
 `;
 
@@ -63,7 +70,29 @@ export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProv
   const connectorManagers = data?.connectorManagers || null;
   const hasRegisteredManagers = connectorManagers ? connectorManagers.length > 0 : false;
   const hasActiveManagers = connectorManagers ? connectorManagers.some((cm) => cm.active) : false;
-  const catalogVersionInfo = data?.catalogVersionInfo ?? null;
+  const rawCatalogVersionInfo = data?.catalogVersionInfo ?? null;
+  const catalogVersionInfo = rawCatalogVersionInfo
+    ? {
+        status: rawCatalogVersionInfo.status,
+        revision: rawCatalogVersionInfo.revision ?? null,
+        updated_at: rawCatalogVersionInfo.updated_at ?? null,
+      }
+    : null;
+
+  const [triggerRefresh] = useMutation<ConnectorManagerStatusContextRefreshCatalogMutation>(refreshCatalogMutation);
+  const hasTriggeredOnDemandRefresh = useRef(false);
+
+  // When the user lands on the catalog page and the catalog is not yet ready
+  // (e.g. the remote server was unavailable at startup), fire a one-shot
+  // on-demand refresh so they don't wait the full scheduled interval.
+  useEffect(() => {
+    if (!catalogVersionInfo) return;
+    if (catalogVersionInfo.status === 'ready') return;
+    if (hasTriggeredOnDemandRefresh.current) return;
+
+    hasTriggeredOnDemandRefresh.current = true;
+    triggerRefresh({ variables: {} });
+  }, [catalogVersionInfo, triggerRefresh]);
 
   useEffect(() => {
     if (!onCatalogVersionChange) {

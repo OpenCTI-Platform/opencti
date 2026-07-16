@@ -17332,6 +17332,7 @@ export type Mutation = {
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
   queryTaskAdd: BackgroundTask;
+  refreshCatalog: Scalars['Boolean']['output'];
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
   registerConnector?: Maybe<Connector>;
@@ -47796,6 +47797,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
+  refreshCatalog?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
