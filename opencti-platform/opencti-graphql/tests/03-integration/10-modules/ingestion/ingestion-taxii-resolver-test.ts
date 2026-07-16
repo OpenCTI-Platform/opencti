@@ -8,6 +8,7 @@ import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { now } from '../../../../src/utils/format';
 import { findTaxiiIngestionById as findIngestionById, patchTaxiiIngestion } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { findById as findUserById } from '../../../../src/domain/user';
+import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
 
 const DELETE_USER_QUERY = gql`
     mutation userDelete($id: ID!) {
@@ -382,5 +383,145 @@ describe('TAXII ingestion resolver — authentication encryption', () => {
       variables: { id: taxiiBearerIngestionId },
     });
     expect(result.data?.ingestionTaxiiDelete).toEqual(taxiiBearerIngestionId);
+  });
+});
+
+describe('TAXII ingestion resolver — ingestion logs', () => {
+  let taxiiLogsIngestionId: string;
+  const taxiiLogsIngestionName = 'Taxii logs resolver test';
+
+  it('should create a TAXII ingestion for logs tests', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createTaxiiIngesterForLogs($input: IngestionTaxiiAddInput!) {
+          ingestionTaxiiAdd(input: $input) {
+            id
+            name
+          }
+        }
+      `,
+      variables: {
+        input: {
+          authentication_type: IngestionAuthType.Basic,
+          authentication_value: 'username:P@ssw0rd!',
+          name: taxiiLogsIngestionName,
+          version: TaxiiVersion.V21,
+          collection: 'TaxiCollection',
+          uri: 'http://taxiserver.invalid',
+          user_id: ADMIN_USER.id,
+          scheduling_period: 'PT1H',
+        },
+      },
+    });
+    taxiiLogsIngestionId = result.data?.ingestionTaxiiAdd.id;
+    expect(taxiiLogsIngestionId).toBeDefined();
+  });
+
+  it('should resolve logs from ingestionTaxiiLogs query and ingestionLogs field', async () => {
+    await redisDeleteIngestionLogHistory(taxiiLogsIngestionId);
+    await redisPushIngestionLog(taxiiLogsIngestionId, {
+      level: 'info',
+      type: 'taxii',
+      identifier: taxiiLogsIngestionName,
+      message: 'info-log',
+      meta: { step: 1 },
+    });
+    await redisPushIngestionLog(taxiiLogsIngestionId, {
+      level: 'success',
+      type: 'taxii',
+      identifier: taxiiLogsIngestionName,
+      message: 'success-log',
+      meta: { step: 2 },
+    });
+    await redisPushIngestionLog(taxiiLogsIngestionId, {
+      level: 'warn',
+      type: 'taxii',
+      identifier: taxiiLogsIngestionName,
+      message: 'warn-log',
+      meta: { step: 3 },
+    });
+    await redisPushIngestionLog(taxiiLogsIngestionId, {
+      level: 'error',
+      type: 'taxii',
+      identifier: taxiiLogsIngestionName,
+      message: 'error-log',
+      meta: { step: 4 },
+    });
+
+    const queryLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readTaxiiLogs($id: String!) {
+          ingestionTaxiiLogs(id: $id) {
+            level
+            message
+            type
+            identifier
+            meta
+          }
+        }
+      `,
+      variables: { id: taxiiLogsIngestionId },
+    });
+    expect(queryLogsResult.data?.ingestionTaxiiLogs).toHaveLength(4);
+    expect(queryLogsResult.data?.ingestionTaxiiLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+    expect(queryLogsResult.data?.ingestionTaxiiLogs[0].message).toBe('error-log');
+
+    const fieldLogsResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readTaxiiLogsField($id: String!) {
+          ingestionTaxii(id: $id) {
+            id
+            ingestionLogs {
+              level
+              message
+            }
+          }
+        }
+      `,
+      variables: { id: taxiiLogsIngestionId },
+    });
+    expect(fieldLogsResult.data?.ingestionTaxii.ingestionLogs).toHaveLength(4);
+    expect(fieldLogsResult.data?.ingestionTaxii.ingestionLogs.map((l: { level: string }) => l.level)).toEqual(['error', 'warn', 'success', 'info']);
+  });
+
+  it('should fail when encountering an unknown log level', async () => {
+    await redisDeleteIngestionLogHistory(taxiiLogsIngestionId);
+    await getClientBase().lpush(`ingestion-${taxiiLogsIngestionId}-history`, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'unknown_level',
+      type: 'taxii',
+      identifier: taxiiLogsIngestionName,
+      message: 'bad-level',
+      meta: {},
+    }));
+
+    const result = await queryAsAdmin({
+      query: gql`
+        query readTaxiiLogsWithBadLevel($id: String!) {
+          ingestionTaxiiLogs(id: $id) {
+            level
+            message
+          }
+        }
+      `,
+      variables: { id: taxiiLogsIngestionId },
+    });
+    expect(result.errors).toBeDefined();
+    if (result.errors) {
+      expect(result.errors[0].message).toContain('Unknown ingestion log level');
+    }
+  });
+
+  it('should delete the TAXII ingestion used for logs tests', async () => {
+    await redisDeleteIngestionLogHistory(taxiiLogsIngestionId);
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation deleteTaxiiIngesterForLogs($id: ID!) {
+          ingestionTaxiiDelete(id: $id)
+        }
+      `,
+      variables: { id: taxiiLogsIngestionId },
+    });
+    expect(result.data?.ingestionTaxiiDelete).toEqual(taxiiLogsIngestionId);
   });
 });

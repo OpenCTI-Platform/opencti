@@ -423,7 +423,7 @@ export const handleConfidenceToScoreTransformation = (ingestion: BasicStoreEntit
 export const processTaxiiResponse = async (
   context: AuthContext,
   ingestion: BasicStoreEntityIngestionTaxii,
-  taxiResponse: TaxiiResponseData
+  taxiResponse: TaxiiResponseData,
 ): Promise<TaxiiExecutionResult> => {
   const { data, addedLastHeader } = taxiResponse;
   if (data.objects && data.objects.length > 0) {
