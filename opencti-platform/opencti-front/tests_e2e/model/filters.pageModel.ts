@@ -15,7 +15,6 @@ export default class FiltersPageModel {
 
     await expect(this.page.getByRole('combobox', { name: filterKey, exact: true })).toBeVisible();
     await this.page.getByRole('combobox', { name: filterKey }).click();
-    await this.page.getByRole('combobox', { name: filterKey }).fill(filterLabel);
 
     await expect(this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox')).toBeVisible();
     await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();
