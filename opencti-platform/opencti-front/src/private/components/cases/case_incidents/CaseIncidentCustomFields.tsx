@@ -6,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import MuiTextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import DatePicker from '../../../../components/common/input/DatePicker';
+import DateTimePicker from '../../../../components/common/input/DateTimePicker';
 import MarkdownFieldBase from '../../../../components/fields/markdownField/MarkdownFieldBase';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -157,7 +157,7 @@ export const CaseIncidentCustomFieldInput: FunctionComponent<{
   }
   if (definition.field_type === 'date') {
     return (
-      <DatePicker
+      <DateTimePicker
         value={value ? new Date(String(value)) : null}
         onChange={(date) => onChange(date ? date.toISOString() : '')}
         label={label}
