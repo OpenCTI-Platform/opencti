@@ -237,9 +237,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-s3@npm:3.1083.0":
-  version: 3.1083.0
-  resolution: "@aws-sdk/client-s3@npm:3.1083.0"
+"@aws-sdk/client-s3@npm:3.1085.0":
+  version: 3.1085.0
+  resolution: "@aws-sdk/client-s3@npm:3.1085.0"
   dependencies:
     "@aws-sdk/checksums": "npm:^3.1000.16"
     "@aws-sdk/core": "npm:^3.975.1"
@@ -252,13 +252,13 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.9.4"
     "@smithy/types": "npm:^4.16.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/d35d9fdd24a045ee4088716d1861996919d2baf0bea1345f9c1e28028a7913acc2275ce2c8ba335a98242c4373e5a9d25d51142ae4c585bd217b98297cce7dfa
+  checksum: 10c0/4646de6cd67db5958d90ee9a692bb0d391c25b516ba44e7269a59e31e8b96e2381880f6e67040fc93eb67b4c79161219ef5dd89ff42931a97f805191ee5e2d2c
   languageName: node
   linkType: hard
 
-"@aws-sdk/client-sts@npm:3.1083.0":
-  version: 3.1083.0
-  resolution: "@aws-sdk/client-sts@npm:3.1083.0"
+"@aws-sdk/client-sts@npm:3.1085.0":
+  version: 3.1085.0
+  resolution: "@aws-sdk/client-sts@npm:3.1085.0"
   dependencies:
     "@aws-sdk/core": "npm:^3.975.1"
     "@aws-sdk/credential-provider-node": "npm:^3.972.66"
@@ -269,7 +269,7 @@ __metadata:
     "@smithy/node-http-handler": "npm:^4.9.4"
     "@smithy/types": "npm:^4.16.0"
     tslib: "npm:^2.6.2"
-  checksum: 10c0/b893de01849275436a0c8d1f61216c1c567e60e27813f715269664e87cd3898c716264dda246d446f2d03ad80d97e303b950add040ad62ca30003bd7b8c7f17a
+  checksum: 10c0/2a5b556b890328e34096549fff547e9732f9f275ebac579d349759935348f259c0f6b73e1563f3786966c12c541389ecbeacbf62db841a2993c8c2595ed0ca53
   languageName: node
   linkType: hard
 
@@ -413,9 +413,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/lib-storage@npm:3.1083.0":
-  version: 3.1083.0
-  resolution: "@aws-sdk/lib-storage@npm:3.1083.0"
+"@aws-sdk/lib-storage@npm:3.1085.0":
+  version: 3.1085.0
+  resolution: "@aws-sdk/lib-storage@npm:3.1085.0"
   dependencies:
     "@smithy/core": "npm:^3.29.2"
     "@smithy/types": "npm:^4.16.0"
@@ -424,8 +424,8 @@ __metadata:
     stream-browserify: "npm:3.0.0"
     tslib: "npm:^2.6.2"
   peerDependencies:
-    "@aws-sdk/client-s3": ^3.1083.0
-  checksum: 10c0/d5ca54c1b33a5e64f73c8b6b784acf8f8fc9bb64c887d524c99d57bb4df836be4ae90794301922c7ab0e1df3a18ac5ec9a5bc61768a6618a5c671cdc86497608
+    "@aws-sdk/client-s3": ^3.1085.0
+  checksum: 10c0/2bbf8fe99116f0e3b5e160f44bf123d97b16247d656884e1ed659c06409c7929fdb1bd93fbecd4b393429710b4d74ace551bde521a93cd0260b5630998c3aae2
   languageName: node
   linkType: hard
 
@@ -10053,10 +10053,10 @@ __metadata:
   dependencies:
     "@apollo/server": "npm:5.5.1"
     "@as-integrations/express5": "npm:1.1.2"
-    "@aws-sdk/client-s3": "npm:3.1083.0"
-    "@aws-sdk/client-sts": "npm:3.1083.0"
+    "@aws-sdk/client-s3": "npm:3.1085.0"
+    "@aws-sdk/client-sts": "npm:3.1085.0"
     "@aws-sdk/credential-provider-node": "npm:3.972.66"
-    "@aws-sdk/lib-storage": "npm:3.1083.0"
+    "@aws-sdk/lib-storage": "npm:3.1085.0"
     "@datadog/pprof": "npm:5.16.0"
     "@elastic/elasticsearch": "npm:8.19.2"
     "@escape.tech/graphql-armor": "npm:3.2.0"
