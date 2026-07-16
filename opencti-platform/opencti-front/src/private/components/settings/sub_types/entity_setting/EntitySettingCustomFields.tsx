@@ -339,7 +339,10 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
       <DeleteDialog
         deletion={deletion}
         submitDelete={handleRemove}
-        onClose={() => { deletion.handleCloseDelete(); setRemovingId(null); }}
+        onClose={() => {
+          deletion.handleCloseDelete();
+          setRemovingId(null);
+        }}
         message={t_i18n('Do you want to remove this custom field from this entity type?')}
         warning={{
           title: t_i18n('This action deletes data'),
@@ -362,37 +365,39 @@ const EntitySettingCustomFields = () => {
   const refresh = () => loadQuery({}, { fetchPolicy: 'network-only' });
 
   return (
-    <Card
-      title={t_i18n('Custom fields')}
-      titleSx={{ alignItems: 'end' }}
-      sx={{ paddingTop: 0, paddingBottom: 0, marginTop: 2 }}
-      action={(
-        <Button onClick={() => setAddOpen(true)}>
-          {t_i18n('Add custom field')}
-        </Button>
-      )}
-    >
-      {queryRef && (
-        <>
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <EntitySettingCustomFieldsTable
-              queryRef={queryRef}
-              entityType={entityType}
-              refresh={refresh}
-            />
-          </Suspense>
-          <Suspense fallback={null}>
-            <EntitySettingCustomFieldsAddDialog
-              queryRef={queryRef}
-              open={addOpen}
-              onClose={() => setAddOpen(false)}
-              entityType={entityType}
-              onAdded={refresh}
-            />
-          </Suspense>
-        </>
-      )}
-    </Card>
+    <div style={{ marginTop: 24 }}>
+      <Card
+        title={t_i18n('Custom fields')}
+        titleSx={{ alignItems: 'end' }}
+        sx={{ paddingTop: 0, paddingBottom: 0 }}
+        action={(
+          <Button onClick={() => setAddOpen(true)}>
+            {t_i18n('Add custom field')}
+          </Button>
+        )}
+      >
+        {queryRef && (
+          <>
+            <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <EntitySettingCustomFieldsTable
+                queryRef={queryRef}
+                entityType={entityType}
+                refresh={refresh}
+              />
+            </Suspense>
+            <Suspense fallback={null}>
+              <EntitySettingCustomFieldsAddDialog
+                queryRef={queryRef}
+                open={addOpen}
+                onClose={() => setAddOpen(false)}
+                entityType={entityType}
+                onAdded={refresh}
+              />
+            </Suspense>
+          </>
+        )}
+      </Card>
+    </div>
   );
 };
 
