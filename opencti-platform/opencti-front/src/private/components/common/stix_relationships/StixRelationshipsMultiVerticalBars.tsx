@@ -87,6 +87,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
@@ -112,7 +113,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: 'day',
+    interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
 };
@@ -149,6 +150,7 @@ const StixRelationshipsMultiVerticalBars = ({
     refreshRate,
     query: stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 
