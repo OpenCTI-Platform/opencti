@@ -28,3 +28,7 @@ venv
 
 # Copilot
 thoughts/
+# FDS migration: local-only validation artifacts (screenshots, raw DB dumps).
+# Zero binary/image files committed to git history — see fds-migration/reports/
+# for the narrative reports that reference this folder.
+.fds-validation-artifacts/

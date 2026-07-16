@@ -9,14 +9,14 @@ import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00BD94';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--color-elevation-background-layer-0'];
-export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
+export const THEME_LIGHT_DEFAULT_BACKGROUND = FDS.colors.light['--bg-elevation-default-layer-0'];
+export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = FDS.colors.light['--bg-elevation-default-layer-0-gradient'];
 export const THEME_LIGHT_DEFAULT_PRIMARY = FDS.colors.light['--color-filigran-brand-primary'];
 const THEME_LIGHT_DEFAULT_SECONDARY = FDS.colors.light['--color-filigran-tonic-primary'];
-const THEME_LIGHT_DEFAULT_ACCENT = FDS.colors.light['--color-elevation-background-layer-3'];
-const THEME_LIGHT_DEFAULT_TEXT = FDS.colors.light['--color-text-default-primary'];
-export const THEME_LIGHT_DEFAULT_PAPER = FDS.colors.light['--color-elevation-background-layer-1'];
-const THEME_LIGHT_DEFAULT_NAV = FDS.colors.light['--color-elevation-surface-heading-layer-0'];
+const THEME_LIGHT_DEFAULT_ACCENT = FDS.colors.light['--bg-elevation-default-layer-3'];
+const THEME_LIGHT_DEFAULT_TEXT = FDS.colors.light['--text-default-primary'];
+export const THEME_LIGHT_DEFAULT_PAPER = FDS.colors.light['--bg-elevation-default-layer-1'];
+const THEME_LIGHT_DEFAULT_NAV = FDS.colors.light['--bg-elevation-heading-layer-0'];
 export const THEME_LIGHT_DIALOG_BACKGROUND = '#FFFFFF';
 
 const getAppBodyGradientEndColor = (background: string | null): string => {
@@ -74,7 +74,7 @@ const ThemeLight = (
     },
     chip: { main: '#000000' },
     ai: {
-      main: FDS.colors.light['--color-filigran-ia-main'],
+      main: FDS.colors.light['--color-filigran-ia-primary'],
       light: FDS.colors.light['--color-filigran-ia-tertiary'],
       dark: FDS.colors.light['--color-filigran-ia-secondary'],
       contrastText: '#000000',
@@ -115,7 +115,7 @@ const ThemeLight = (
       header: {
         itemBackground: '#ECECF2',
       },
-      popoverItem: '#ECECF2',
+      popoverItem: THEME_LIGHT_DEFAULT_BACKGROUND,
       hover: '#0015A81A',
       text: '#18191B',
     },
@@ -152,7 +152,7 @@ const ThemeLight = (
         dark: FDS.colors.light['--color-feedback-error-tertiary'],
       },
       ia: {
-        main: FDS.colors.light['--color-filigran-ia-main'],
+        main: FDS.colors.light['--color-filigran-ia-primary'],
         light: FDS.colors.light['--color-filigran-ia-tertiary'],
         dark: FDS.colors.light['--color-filigran-ia-secondary'],
       },
@@ -172,7 +172,7 @@ const ThemeLight = (
         border2: '#999797',
       },
       gradient: {
-        background: FDS.gradients.light['--gradient-background'],
+        background: FDS.gradients.light['--gradient-default'],
         ia: FDS.gradients.light['--gradient-ia'],
         focus: FDS.gradients.light['--gradient-focus'],
       },
@@ -201,9 +201,9 @@ const ThemeLight = (
       },
       tertiary: {
         grey: {
-          400: FDS.colors.light['--color-gray-400'],
-          700: FDS.colors.light['--color-gray-700'],
-          800: FDS.colors.light['--color-gray-800'],
+          400: FDS.scalars['--gray-400'],
+          700: FDS.scalars['--gray-700'],
+          800: FDS.scalars['--gray-800'],
         },
         // No FDS scale matches these two values, left as-is.
         blue: {
@@ -211,32 +211,32 @@ const ThemeLight = (
           900: '#003242',
         },
         darkBlue: {
-          300: FDS.colors.light['--color-darkblue-300'],
-          500: FDS.colors.light['--color-darkblue-500'],
+          300: FDS.scalars['--darkblue-300'],
+          500: FDS.scalars['--darkblue-500'],
         },
         turquoise: {
-          600: FDS.colors.light['--color-turquoise-600'],
-          800: FDS.colors.light['--color-turquoise-800'],
+          600: FDS.scalars['--turquoise-600'],
+          800: FDS.scalars['--turquoise-800'],
         },
         green: {
-          400: FDS.colors.light['--color-green-400'],
-          600: FDS.colors.light['--color-green-600'],
-          800: FDS.colors.light['--color-green-800'],
+          400: FDS.scalars['--green-400'],
+          600: FDS.scalars['--green-600'],
+          800: FDS.scalars['--green-800'],
         },
         red: {
-          100: FDS.colors.light['--color-red-100'],
-          200: FDS.colors.light['--color-red-200'],
-          400: FDS.colors.light['--color-red-400'],
-          500: FDS.colors.light['--color-red-500'],
-          600: FDS.colors.light['--color-red-600'],
-          700: FDS.colors.light['--color-red-700'],
+          100: FDS.scalars['--red-100'],
+          200: FDS.scalars['--red-200'],
+          400: FDS.scalars['--red-400'],
+          500: FDS.scalars['--red-500'],
+          600: FDS.scalars['--red-600'],
+          700: FDS.scalars['--red-700'],
         },
         orange: {
-          400: FDS.colors.light['--color-orange-400'],
-          500: FDS.colors.light['--color-orange-500'],
+          400: FDS.scalars['--orange-400'],
+          500: FDS.scalars['--orange-500'],
         },
         yellow: {
-          400: FDS.colors.light['--color-yellow-400'],
+          400: FDS.scalars['--yellow-400'],
         },
       },
     },
