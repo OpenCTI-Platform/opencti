@@ -33,10 +33,11 @@ vi.mock('../../../../components/dashboard/DashboardRefreshContext', () => ({
   useDashboardRefreshToken: () => null,
 }));
 
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
+vi.mock('../../../../components/dashboard/useResolveDataSelection', () => ({
   default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
     resolvedDataSelection: dataSelection,
     isMissingHostEntity: false,
+    isMissingSavedFilters: false,
     isPreviewMode: false,
   }),
 }));

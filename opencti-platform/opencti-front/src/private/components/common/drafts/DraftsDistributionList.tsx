@@ -11,7 +11,7 @@ import { computeStartEndDates } from '../../../../components/dashboard/dashboard
 import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import useResolveDataSelection from '../../../../components/dashboard/useResolveDataSelection';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -100,7 +100,7 @@ const DraftsDistributionList = ({
     return () => clearInterval(interval);
   }, [refreshRate, refreshToken]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useResolveDataSelection({
     perspective: 'entities',
     dataSelection,
     host,

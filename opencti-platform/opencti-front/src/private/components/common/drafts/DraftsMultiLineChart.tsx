@@ -11,7 +11,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import useResolveDataSelection from '../../../../components/dashboard/useResolveDataSelection';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -64,7 +64,7 @@ const DraftsMultiLineChart = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useResolveDataSelection({
     perspective: 'entities',
     dataSelection,
     host,

@@ -1,11 +1,10 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
-import useAuth from '../../utils/hooks/useAuth';
-import { resolveDataSelection } from './dashboardVizUtils';
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import type { WidgetDataSelection, WidgetPerspective, WidgetHost, WidgetParameters } from '../../utils/widget/widget';
+import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
 import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
 import { useQueryLoader } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
+import useResolveDataSelection from './useResolveDataSelection';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -22,43 +21,22 @@ const useDashboardViz = <TQuery extends OperationType>({
   // Accepted for backward compatibility with widget props; no longer used for
   // scheduling (refresh is driven centrally by the refreshToken context).
   refreshRate?: number | null;
-  query?: GraphQLTaggedNode;
+  query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
-  const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
+  const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
   const [isPending, startTransition] = useTransition();
   const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
   const setQueryPending = useDashboardSetQueryPending();
   const queryIdRef = useRef(`dashboard-viz-${Math.random().toString(36).slice(2)}`);
-  const { filterKeysSchema } = useAuth().schema;
 
-  const [resolvedDataSelection, setResolvedDataSelection] = useState<WidgetDataSelection[]>([]);
-  const [isMissingHostEntity, setIsMissingHostEntity] = useState(false);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    resolveDataSelection({
-      filterKeysSchema,
-      dataSelection,
-      perspective,
-      host,
-    }).then((result) => {
-      // Only update state if the effect has not been cleaned up (component unmounted or deps changed)
-      if (!cancelled) {
-        setResolvedDataSelection(result.resolvedDataSelection);
-        setIsMissingHostEntity(result.isMissingHostEntity);
-        setIsPreviewMode(result.isPreviewMode);
-        setIsMissingSavedFilters(result.isMissingSavedFilters);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [filterKeysSchema, dataSelection, perspective, host]);
+  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, isMissingSavedFilters } = useResolveDataSelection({
+    dataSelection,
+    perspective,
+    host,
+  });
 
   const queryVariables = useMemo(
     () => (buildQueryVariables && config && resolvedDataSelection.length > 0
