@@ -1,11 +1,8 @@
-/* eslint-disable */
-// noinspection ES6UnusedImports,ES6CheckImport
-
-import fs from 'node:fs';
-import _ from '../src/modules/index';
+import fs from 'node:fs/promises';
 import { printSchema } from 'graphql';
+import '../src/modules/index';
 import createSchema from '../src/graphql/schema';
 
 const schema = createSchema();
 const printedSchema = printSchema(schema);
-fs.writeFileSync('../opencti-front/src/schema/relay.schema.graphql', printedSchema);
+await fs.writeFile('../opencti-front/src/schema/relay.schema.graphql', printedSchema);

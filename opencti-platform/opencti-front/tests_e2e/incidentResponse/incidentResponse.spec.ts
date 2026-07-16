@@ -1,5 +1,4 @@
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import IncidentResponsePage from 'tests_e2e/model/incidentResponse.pageModel';
@@ -15,7 +14,8 @@ import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 import CardPage from '../model/card.pageModel';
 
-const baseDir = path.dirname(fileURLToPath(import.meta.url));
+const TEST_MD_PATH = fileURLToPath(new URL('assets/incidentResponse.test.md', import.meta.url));
+const TEST_PDF_PATH = fileURLToPath(new URL('assets/incidentResponse.test.pdf', import.meta.url));
 
 /**
  * Content of the test
@@ -117,7 +117,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   await incidentResponseForm.markingsAutocomplete.selectOption('TLP:GREEN');
   await expect(incidentResponseForm.markingsAutocomplete.getOption('TLP:GREEN')).toBeVisible();
 
-  await incidentResponseForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/incidentResponse.test.md'));
+  await incidentResponseForm.associatedFileField.uploadContentFile(TEST_MD_PATH);
   await expect(incidentResponseForm.associatedFileField.getByText('incidentResponse.test.md')).toBeVisible();
 
   await incidentResponseForm.getCreateButton().click();
@@ -350,7 +350,7 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref incident response');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/client-python');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/incidentResponse.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('incidentResponse.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
   await expect(incidentResponseForm.externalReferencesAutocomplete.getOption('external ref')).toBeVisible();

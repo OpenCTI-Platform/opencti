@@ -2,27 +2,28 @@
   "name": "opencti-graphql",
   "version": "7.260722.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "check-ts": "tsc --noEmit",
     "install:python": "pip3 install -r src/python/requirements.txt",
+    "script:exec": "echo \"Building ${0}...\" && node builder/builder.js --script script/${0}.js && echo \"Executing ${0}...\" && node build/${0}.mjs ${1:-} ${2:-} ${3:-} ${4:-} ${5:-} && echo \"${0} done!\"",
     "build:types": "graphql-codegen --config graphql-codegen.yml",
-    "build:schema": "yarn build:types && node builder/schema/schema.js && node build/script-generate-schema.js",
-    "build:prod": "yarn get-connectors-manifest && yarn build:types && yarn check-ts && node builder/prod/prod.js",
-    "build:dev": "yarn get-connectors-manifest && yarn build:schema && node builder/dev/dev.js",
+    "build:schema": "run build:types && run script:exec script-generate-schema",
+    "build:prod": "run get-connectors-manifest && run build:types && node builder/builder.js",
+    "build:dev": "run get-connectors-manifest && run build:schema && node builder/builder.js --development",
     "build:antlr": "java -jar ./builder/antlr/antlr-4.13.0-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "migrate:add": "migrate create --template-file src/templates/migration-template.ts --migrations-dir=./src/migrations",
-    "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
-    "backend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis back",
-    "frontend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis front",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
-    "build": "yarn install:python && yarn build:prod",
-    "start": "NODE_ENV=development yarn build:dev && node --enable-source-maps build/back.js",
-    "start:e2e": "NODE_ENV=development yarn build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.js",
-    "start:light": "NODE_ENV=development node build/back.js",
-    "start:cluster": "NODE_ENV=cluster node build/back.js",
-    "serv": "node build/back.js",
-    "insert:dev": "node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,poisonivy",
-    "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy",
+    "backend:stack:analysis": "node ./script/script-stack-analysis back",
+    "frontend:stack:analysis": "node ./script/script-stack-analysis front",
+    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.js src",
+    "build": "run install:python && run build:prod",
+    "start": "run build:dev && node --enable-source-maps build/back.mjs",
+    "start:e2e": "run build:dev && APP__BASE_PATH=/e2e APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.mjs",
+    "start:light": "NODE_ENV=development node --enable-source-maps build/back.mjs",
+    "start:cluster": "NODE_ENV=cluster node --enable-source-maps build/back.mjs",
+    "serv": "node --enable-source-maps build/back.mjs",
+    "insert:dev": "run script:exec script-insert-dataset --datasets=DATA-TEST-STIX2_v2,poisonivy",
+    "insert:dev:e2e": "ELASTICSEARCH__INDEX_PREFIX=e2e-start run script:exec script-insert-dataset --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy",
     "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-dataInjection/00-inject/loader-test.ts",
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",
@@ -33,8 +34,8 @@
     "test:watch:resume": "SKIP_CLEANUP_PLATFORM=true vitest watch --config vitest.config.dev.ts",
     "test:watch": "vitest watch --config vitest.config.dev.ts",
     "test": "vitest --silent --bail 1 run --config vitest.config.integration.ts --coverage",
-    "verify-licenses": "yarn license-checker-rseidelsohn --production --summary --onlyAllow '0BSD;Apache-2.0;BlueOak-1.0.0;BSD-2-Clause;BSD-3-Clause;CC-BY-3.0;CC-BY-4.0;CC0-1.0;Hippocratic-2.1;ISC;LGPL-3.0;MIT;OFL-1.1;Python-2.0;Unlicense;UNLICENSED' --excludePackagesStartingWith 'opencti'",
-    "wait-api": "node build/script-wait-for-api.js",
+    "verify-licenses": "license-checker-rseidelsohn --production --summary --onlyAllow '0BSD;Apache-2.0;BlueOak-1.0.0;BSD-2-Clause;BSD-3-Clause;CC-BY-3.0;CC-BY-4.0;CC0-1.0;Hippocratic-2.1;ISC;LGPL-3.0;MIT;OFL-1.1;Python-2.0;Unlicense;UNLICENSED' --excludePackagesStartingWith 'opencti'",
+    "wait-api": "node script/script-wait-for-api.js",
     "get-connectors-manifest": "node script/get-connectors-manifest.js"
   },
   "pkg": {
@@ -55,7 +56,6 @@
     "@aws-sdk/client-sts": "3.1088.0",
     "@aws-sdk/credential-provider-node": "3.972.69",
     "@aws-sdk/lib-storage": "3.1088.0",
-    "@datadog/pprof": "5.16.0",
     "@elastic/elasticsearch": "8.19.2",
     "@escape.tech/graphql-armor": "3.2.0",
     "@graphql-tools/merge": "9.2.2",
@@ -228,10 +228,15 @@
     "json5": "2.2.3",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
-    "node-calls-python": "patch:node-calls-python@1.12.0#./patch/node-calls-python.patch",
     "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
   },
   "dependenciesMeta": {
+    "@apollo/protobufjs": {
+      "built": false
+    },
+    "@datadog/pprof": {
+      "built": false
+    },
     "es5-ext": {
       "built": false
     },
@@ -241,11 +246,11 @@
     "node-calls-python": {
       "built": true
     },
-    "protobufjs": {
-      "built": false
-    },
     "re2": {
       "built": true
+    },
+    "unrs-resolver": {
+      "built": false
     }
   }
 }

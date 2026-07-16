@@ -22,6 +22,8 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './domain/user';
+import type { BasicStoreEntityMigrationStatus } from './types/store';
+import type { AuthContext } from './types/user';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -37,7 +39,7 @@ const refreshMappingsAndIndices = async () => {
   await elUpdateIndicesMappings();
 };
 
-const initializeMigration = async (context) => {
+const initializeMigration = async (context: AuthContext) => {
   logApp.info('[INIT] Creating migration structure');
   const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
@@ -45,19 +47,19 @@ const initializeMigration = async (context) => {
   await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
-const isExistingPlatform = async (context) => {
+const isExistingPlatform = async (context: AuthContext) => {
   const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
   return migration !== undefined;
 };
 
-const isCompatiblePlatform = async (context) => {
-  const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-  const { platformVersion: currentVersion } = migration;
+const isCompatiblePlatform = async (context: AuthContext) => {
+  const migration = await loadEntity<BasicStoreEntityMigrationStatus>(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+  const currentVersion = migration && migration.platformVersion;
   // For old platform, version is not set yet, continue
   if (!currentVersion) return;
   // Runtime version must be >= of the stored runtime
-  const runtimeVersion = semver.coerce(PLATFORM_VERSION).version;
-  if (semver.lt(runtimeVersion, currentVersion)) {
+  const runtimeVersion = semver.coerce(PLATFORM_VERSION);
+  if (runtimeVersion && semver.lt(runtimeVersion, currentVersion)) {
     throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
   }
 };
@@ -112,7 +114,7 @@ const platformInit = async (withMarkings = true) => {
     // parse schema metrics conf to throw error on start if bad configured
     loadEntityMetricsConfiguration();
   } catch (e) {
-    if (e.name === TYPE_LOCK_ERROR) {
+    if ((e as Error).name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';
       throw LockTimeoutError({ participantIds: [PLATFORM_LOCK_ID] }, reason);
     } else {

@@ -15,7 +15,7 @@ export const platformStart = async () => {
   try {
     // Start the liveness probe first so orchestrators can detect the process is alive
     try {
-      await startLivenessServer();
+      startLivenessServer();
     } catch (livenessError) {
       logApp.error('[OPENCTI] Liveness server startup failed', { cause: livenessError });
       throw livenessError;
@@ -81,14 +81,14 @@ export const platformStop = async () => {
 // endregion
 
 // region signals management
-process.on('unhandledRejection', (reason, p) => {
-  logApp.error('[OPENCTI] Engine unhandled rejection', { reason: reason?.stack, promise: p?.stack });
+process.on('unhandledRejection', (reason: Error) => {
+  logApp.error('[OPENCTI] Engine unhandled rejection', { reason: reason?.stack });
 });
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
   process.on(signal, async (message) => {
     if (signal !== 'message' || message === 'shutdown') {
-      if (getStoppingState() === false) {
+      if (!getStoppingState()) {
         setStoppingState(true);
         logApp.info(`[OPENCTI] ${signal} signal received, stopping OpenCTI`);
         try {

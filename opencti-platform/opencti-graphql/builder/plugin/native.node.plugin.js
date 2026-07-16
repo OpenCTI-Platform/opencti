@@ -1,22 +1,30 @@
-const path = require('node:path');
+import path from 'node:path';
+import fs from "node:fs/promises";
 
 const nativeNodeModulesPlugin = () => ({
   name: 'native-node-modules',
-  setup(build) {
+  setup: (build) => {
     // If a ".node" file is imported within a module in the "file" namespace, resolve
     // it to an absolute path and put it into the "node-file" virtual namespace.
-    build.onResolve({ filter: /\.node$/, namespace: 'file' }, (args) => {
-      const resolvedId = require.resolve(args.path, {
-        paths: [args.resolveDir],
-      });
-      if (resolvedId.endsWith('.node')) {
-        return {
-          path: resolvedId,
-          namespace: 'node-file',
-        };
+    build.onResolve({ filter: /\.*$/, namespace: 'file' }, async (args) => {
+      if (!args.path.startsWith('.')) {
+        return;
       }
+
+      const nodeFile = path.resolve(
+        args.resolveDir,
+        args.path.endsWith('.node') ? args.path : `${args.path}.node`,
+      );
+
+      try {
+        await fs.access(nodeFile);
+      } catch {
+        return;
+      }
+
       return {
-        path: resolvedId,
+        path: path.relative(process.cwd(), nodeFile),
+        namespace: 'node-file',
       };
     });
 
@@ -25,9 +33,8 @@ const nativeNodeModulesPlugin = () => ({
     build.onLoad({ filter: /.*/, namespace: 'node-file' }, (args) => {
       return {
         contents: `
-            import path from ${JSON.stringify(args.path)}
-            try { module.exports = require(path) }
-            catch {}
+            import nodeFilePath from ${JSON.stringify(args.path)};
+            module.exports = require(nodeFilePath);
           `,
         resolveDir: path.dirname(args.path),
       };
@@ -39,17 +46,18 @@ const nativeNodeModulesPlugin = () => ({
     build.onResolve(
       { filter: /\.node$/, namespace: 'node-file' },
       (args) => ({
-        path: args.path,
+        path: path.join(process.cwd(), args.path),
         namespace: 'file',
       })
     );
 
-    // Tell esbuild's default loading behavior to use the "file" loader for
-    // these ".node" files.
-    const opts = build.initialOptions;
-    opts.loader = opts.loader || {};
-    opts.loader['.node'] = 'file';
+    // Tell esbuild's default loading behavior to use the "file" loader for these ".node" files.
+    const { initialOptions} = build;
+    initialOptions.loader = {
+      ...(initialOptions.loader ?? {}),
+      '.node': 'file',
+    };
   },
 });
 
-module.exports = nativeNodeModulesPlugin;
+export default nativeNodeModulesPlugin;

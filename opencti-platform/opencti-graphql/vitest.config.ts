@@ -1,27 +1,25 @@
-import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
-import type { PluginOption } from 'vite';
 
 export const buildTestConfig = (include: string[]) => defineConfig({
-  plugins: [graphql() as PluginOption],
+  plugins: [graphql()],
   test: {
     dir: './tests',
     include,
     testTimeout: 300000,
     teardownTimeout: 5000,
-    setupFiles: [],
     coverage: {
       provider: 'v8',
-      include: ['src/**'],
-      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**', '*.md'],
+      include: ['src/**/*.{ts,js}'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
       clean: false,
     },
     alias: {
-      graphql: path.resolve(__dirname, './node_modules/graphql/index.js'),
+      graphql: fileURLToPath(new URL('node_modules/graphql/index.js', import.meta.url)),
     },
   },
 });
 
-export default buildTestConfig(['**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
+export default buildTestConfig(['**/*-test.{ts,js}']);
