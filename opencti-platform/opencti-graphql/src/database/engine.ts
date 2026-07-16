@@ -4053,7 +4053,7 @@ export const elBulk = async (context: AuthContext, args: any) => {
   if (!data.errors) {
     return data;
   }
-  // So, from here, we have a partial failure (HTTP 200 fot the top HTTP response, but with per-item errors).
+  // So, from here, we have a partial failure (HTTP 200 for the top-level HTTP response, but with per-item errors).
   // We need to retry the failed items, but only the transient ones. Permanent errors will be reported.
   // -> Succeeded items are already applied and must not be resubmitted;
   // -> Failed items are guaranteed not applied on Elasticsearch side. So we retry only the failed transient ones.
