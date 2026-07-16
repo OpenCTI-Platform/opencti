@@ -156,7 +156,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
-    image: prom/prometheus:v3.13.0
+    image: prom/prometheus:v3.13.1
     restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
