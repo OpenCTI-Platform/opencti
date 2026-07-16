@@ -27,17 +27,19 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
 
   const { results } = useFragment(fragment, data);
   const instances = (results ?? []).filter((r) => !!r.external_uri);
-  const disabled = instances.length === 0;
 
   const handleBrowseLink = (externalUri: string) => {
     window.open(externalUri, '_blank');
     setOpen(false);
   };
 
+  if (instances.length === 0) {
+    return null;
+  }
+
   return (
     <>
       <Button
-        disabled={disabled}
         startIcon={<OaevLogo />}
         onClick={() => setOpen(true)}
         variant="tertiary"
