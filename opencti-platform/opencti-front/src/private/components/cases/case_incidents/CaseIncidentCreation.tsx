@@ -31,6 +31,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
+import { resolveCustomFieldDefaultValue } from '../../../../utils/customFieldDefaults';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -262,7 +263,8 @@ const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { c
       authorized_members: undefined,
       customFields: Object.fromEntries(
         customFieldDefs.map((def) => {
-          const defaultValue = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.default_value ?? null;
+          const rawDefaultValue = getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.default_value ?? null;
+          const defaultValue = def.field_type === 'date' ? resolveCustomFieldDefaultValue(rawDefaultValue) : rawDefaultValue;
           if (def.field_type === 'boolean') {
             return [def.id, defaultValue === 'true'];
           }
