@@ -98,4 +98,3 @@ describe('StixRelationshipsMultiVerticalBars', () => {
     expect(variables.interval).toBe('day');
   });
 });
-
