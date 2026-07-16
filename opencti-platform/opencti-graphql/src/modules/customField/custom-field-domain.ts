@@ -440,8 +440,11 @@ export const customFieldDefinitionRemoveEntityType = async (
   }
   const nextTypes = (definition.entity_types ?? []).filter((type) => type !== entityType);
   const nextSettings = (definition.entity_type_settings ?? []).filter((setting) => setting.entity_type !== entityType);
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+  const updated = await customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
     { key: 'entity_types', value: nextTypes, operation: EditOperation.Replace },
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);
+  // Remove the field's stored values from existing entities of the detached type
+  await scheduleCustomFieldValuesCleanupTask(definition.name, [entityType]);
+  return updated;
 };
