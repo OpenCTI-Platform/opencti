@@ -182,7 +182,7 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = fromB64(dashboard.manifest ?? '{}');
-  const dashboardRefreshInterval = (dashboard as unknown as { refresh_interval?: number | null }).refresh_interval ?? 0;
+  const dashboardRefreshInterval = dashboard.refresh_interval ?? 0;
   parsedManifest.config = {
     ...(parsedManifest.config ?? {}),
     refresh_interval: dashboardRefreshInterval,
