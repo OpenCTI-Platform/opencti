@@ -32,6 +32,7 @@ const SHA_512 = 'SHA-512';
 const SHA3_256 = 'SHA3-256';
 const SHA3_512 = 'SHA3-512';
 const SSDEEP = 'SSDEEP';
+const TLSH = 'TLSH';
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
@@ -162,6 +163,8 @@ const stixBaseCyberObservableContribution = {
       if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256] };
       if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512] };
       if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
+      if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
+      if (hashes[TLSH]) return { [TLSH]: hashes[TLSH] };
       return undefined;
     },
     name(value, data) {
