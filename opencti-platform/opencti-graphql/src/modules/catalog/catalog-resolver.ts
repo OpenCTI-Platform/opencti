@@ -1,4 +1,4 @@
-import { findCatalog, findById, findContractBySlug } from './catalog-domain';
+import { findCatalog, findById, findContractBySlug, getCatalogVersionInfo } from './catalog-domain';
 import type { Resolvers } from '../../generated/graphql';
 
 const catalogResolver: Resolvers = {
@@ -8,6 +8,9 @@ const catalogResolver: Resolvers = {
     },
     catalogs: (_, args, context) => {
       return findCatalog(context, context.user);
+    },
+    catalogVersionInfo: () => {
+      return getCatalogVersionInfo();
     },
     contract: (_, { slug }, context) => {
       return findContractBySlug(context, context.user, slug);

@@ -1,4 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { createHash } from 'node:crypto';
 import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -30,6 +31,13 @@ const getCatalogManagerRequestTimeoutMs = (): number => {
 };
 
 const createRequestTimeoutSignal = (): AbortSignal => AbortSignal.timeout(getCatalogManagerRequestTimeoutMs());
+
+const computeCatalogRevision = (rawManifest: unknown, etag?: string): string => {
+  if (etag) {
+    return etag;
+  }
+  return createHash('sha256').update(JSON.stringify(rawManifest)).digest('hex');
+};
 
 const isCatalogRequestTimeout = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
@@ -69,7 +77,7 @@ const refreshCatalogInternal = async () => {
         nextEtag = headResponse.headers.get('etag') ?? undefined;
         if (nextEtag && currentEtag && nextEtag === currentEtag) {
           logApp.info('[OPENCTI-MODULE] Catalog manager skipping fetch, remote manifest unchanged (ETag match)', { etag: currentEtag });
-          updateCatalogManagerInternalCache(undefined, 'ready', true);
+          updateCatalogManagerInternalCache(undefined, 'ready', true, currentEtag);
           return;
         }
       }
@@ -83,7 +91,8 @@ const refreshCatalogInternal = async () => {
     }
 
     const internalCatalog = newManifestAdapter.toInternalCatalog(rawManifest);
-    updateCatalogManagerInternalCache(internalCatalog, 'ready');
+    const revision = computeCatalogRevision(rawManifest, nextEtag);
+    updateCatalogManagerInternalCache(internalCatalog, 'ready', false, revision);
 
     if (shouldCheckEtag && nextEtag) {
       currentEtag = nextEtag;
@@ -109,7 +118,8 @@ const refreshCatalogInternal = async () => {
       logApp.info('[OPENCTI-MODULE] Catalog manager falling back to embedded legacy manifest');
       const legacyRaw = await legacyAdapter.fetch({ kind: 'local', uri: 'embedded' });
       const legacyInternal = legacyAdapter.toInternalCatalog(legacyRaw);
-      updateCatalogManagerInternalCache(legacyInternal, 'ready');
+      const legacyRevision = computeCatalogRevision(legacyRaw);
+      updateCatalogManagerInternalCache(legacyInternal, 'ready', false, legacyRevision);
     } catch (legacyError) {
       logApp.warn('[OPENCTI-MODULE] Catalog manager failed to load embedded legacy manifest fallback', { cause: legacyError });
       updateCatalogManagerInternalCache(undefined, 'error');

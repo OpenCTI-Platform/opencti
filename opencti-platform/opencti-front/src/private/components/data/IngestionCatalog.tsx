@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import IngestionMenu from '@components/data/IngestionMenu';
 import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
@@ -267,6 +267,7 @@ const IngestionCatalogComponent = ({
 const IngestionCatalog = () => {
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
   const [hasCatalogResults, setHasCatalogResults] = useState(false);
+  const lastSeenCatalogRevision = useRef<string | null | undefined>(undefined);
 
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
@@ -276,6 +277,23 @@ const IngestionCatalog = () => {
       setHasCatalogResults(true);
     }
   }, []);
+
+  const handleCatalogVersionChange = useCallback((revision: string | null) => {
+    if (!revision) {
+      return;
+    }
+
+    // First seen revision establishes baseline and avoids immediate duplicate refetch.
+    if (lastSeenCatalogRevision.current === undefined) {
+      lastSeenCatalogRevision.current = revision;
+      return;
+    }
+
+    if (lastSeenCatalogRevision.current !== revision) {
+      lastSeenCatalogRevision.current = revision;
+      loadCatalogs({}, { fetchPolicy: 'network-only' });
+    }
+  }, [loadCatalogs]);
 
   useEffect(() => {
     // Initial bootstrap fetch.
@@ -305,7 +323,7 @@ const IngestionCatalog = () => {
   return (
     <>
       <Suspense fallback={<IngestionCatalogSkeleton />}>
-        <ConnectorManagerStatusProvider>
+        <ConnectorManagerStatusProvider onCatalogVersionChange={handleCatalogVersionChange}>
           {catalogsRef && (
             <IngestionConnectorsCatalogs queryRef={catalogsRef} onCatalogsResolved={handleCatalogsResolved}>
               {({ data: catalogsData }) => {

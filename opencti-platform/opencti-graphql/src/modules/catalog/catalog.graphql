@@ -16,6 +16,12 @@ type ExtendedContract {
   contract: String!
 }
 
+type CatalogVersionInfo {
+  status: String!
+  revision: String
+  updated_at: String
+}
+
 # Ordering
 enum CatalogsOrdering {
   name
@@ -36,5 +42,6 @@ type CatalogEdge {
 type Query {
   catalog(id: String!): Catalog @auth(for: [INGESTION])
   catalogs: [Catalog!]! @auth(for: [INGESTION])
+  catalogVersionInfo: CatalogVersionInfo! @auth(for: [INGESTION])
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
 }

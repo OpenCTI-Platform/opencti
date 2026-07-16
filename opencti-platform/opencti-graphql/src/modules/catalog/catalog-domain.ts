@@ -18,6 +18,12 @@ const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
 
 export type CatalogStatus = 'loading' | 'ready' | 'error';
 
+export type CatalogVersionInfo = {
+  status: CatalogStatus;
+  revision: string | null;
+  updated_at: string | null;
+};
+
 /**
  * Compiles (or retrieves from cache) an AJV validator for a given schema.
  * The cacheKey must accurately reflect the exact shape of the schema (properties + required)
@@ -46,6 +52,8 @@ let catalogMap: Promise<Record<string, CatalogType>> | undefined;
 let contractsByImageCache: Promise<Map<string, CatalogContract>> | undefined;
 let managerInternalCatalog: InternalCatalog | undefined;
 let managerCatalogStatus: CatalogStatus = 'loading';
+let managerCatalogRevision: string | null = null;
+let managerCatalogUpdatedAt: string | null = null;
 
 // Build catalog map from files
 const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
@@ -66,18 +74,30 @@ export const resetCatalogs = () => {
   contractsByImageCache = undefined;
   managerInternalCatalog = undefined;
   managerCatalogStatus = 'loading';
+  managerCatalogRevision = null;
+  managerCatalogUpdatedAt = null;
   validatorCache.clear();
   clearCatalogCacheValidators();
 };
 
-export const updateCatalogManagerInternalCache = (internalCatalog: InternalCatalog | undefined, status: CatalogStatus, keepExistingSnapshot = false) => {
+export const updateCatalogManagerInternalCache = (
+  internalCatalog: InternalCatalog | undefined,
+  status: CatalogStatus,
+  keepExistingSnapshot = false,
+  revision?: string | null,
+) => {
   if (!keepExistingSnapshot) {
     managerInternalCatalog = internalCatalog;
   }
+  if (revision !== undefined) {
+    managerCatalogRevision = revision;
+  }
+  managerCatalogUpdatedAt = new Date().toISOString();
   logApp.info('[OPENCTI-MODULE] Updating catalog manager internal cache status', {
     status,
     hasSnapshot: Boolean(managerInternalCatalog),
     keepExistingSnapshot,
+    revision: managerCatalogRevision,
   });
   managerCatalogStatus = status;
 };
@@ -89,6 +109,21 @@ export const getCatalogStatus = (): CatalogStatus => {
     return 'ready';
   }
   return managerCatalogStatus;
+};
+
+export const getCatalogVersionInfo = (): CatalogVersionInfo => {
+  if (!isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+    return {
+      status: 'ready',
+      revision: null,
+      updated_at: null,
+    };
+  }
+  return {
+    status: managerCatalogStatus,
+    revision: managerCatalogRevision,
+    updated_at: managerCatalogUpdatedAt,
+  };
 };
 
 const getCatalogs = async (): Promise<Record<string, CatalogType>> => {

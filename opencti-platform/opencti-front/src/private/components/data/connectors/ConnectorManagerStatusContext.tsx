@@ -11,6 +11,11 @@ export const connectorManagerStatusQuery = graphql`
       active
       last_sync_execution
     }
+    catalogVersionInfo {
+      status
+      revision
+      updated_at
+    }
   }
 `;
 
@@ -18,16 +23,23 @@ interface ConnectorManagerStatusContextValue {
   connectorManagers: readonly { id: string; active: boolean }[] | null;
   hasRegisteredManagers: boolean;
   hasActiveManagers: boolean;
+  catalogVersionInfo: {
+    status: string;
+    revision: string | null;
+    updated_at: string | null;
+  } | null;
 }
 
 const ConnectorManagerStatusContext = createContext<ConnectorManagerStatusContextValue | null>(null);
 
 interface ConnectorManagerStatusProviderProps {
   children: ReactNode;
+  onCatalogVersionChange?: (revision: string | null) => void;
 }
 
 export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProviderProps> = ({
   children,
+  onCatalogVersionChange,
 }) => {
   const [fetchKey, setFetchKey] = React.useState(0);
 
@@ -51,11 +63,20 @@ export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProv
   const connectorManagers = data?.connectorManagers || null;
   const hasRegisteredManagers = connectorManagers ? connectorManagers.length > 0 : false;
   const hasActiveManagers = connectorManagers ? connectorManagers.some((cm) => cm.active) : false;
+  const catalogVersionInfo = data?.catalogVersionInfo ?? null;
+
+  useEffect(() => {
+    if (!onCatalogVersionChange) {
+      return;
+    }
+    onCatalogVersionChange(catalogVersionInfo?.revision ?? null);
+  }, [catalogVersionInfo?.revision, onCatalogVersionChange]);
 
   const contextValue: ConnectorManagerStatusContextValue = {
     connectorManagers,
     hasRegisteredManagers,
     hasActiveManagers,
+    catalogVersionInfo,
   };
 
   return (
