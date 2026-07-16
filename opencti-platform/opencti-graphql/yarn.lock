@@ -2926,14 +2926,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:1.42.0":
-  version: 1.42.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.42.0"
-  checksum: 10c0/ea43b5ebb61fbda1856ce0be55feb2cf83ea0e606b4739d2d8bd8b7e82fee46dff8415c9b17f13478bca41ff714de56475915d9153ffa3255dc6e8b54815d81b
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:^1.29.0":
+"@opentelemetry/semantic-conventions@npm:1.43.0, @opentelemetry/semantic-conventions@npm:^1.29.0":
   version: 1.43.0
   resolution: "@opentelemetry/semantic-conventions@npm:1.43.0"
   checksum: 10c0/ea4b4b07c9414b0c5e7ce7349f608cb2572d16922d96077fb0882b59f173ec9b94aada74896bd5dd4aeb1759924503bd5a34b6dc2847a84c36f71626a0578ec4
@@ -10077,7 +10070,7 @@ __metadata:
     "@opentelemetry/sdk-metrics": "npm:2.9.0"
     "@opentelemetry/sdk-trace-base": "npm:2.9.0"
     "@opentelemetry/sdk-trace-node": "npm:2.9.0"
-    "@opentelemetry/semantic-conventions": "npm:1.42.0"
+    "@opentelemetry/semantic-conventions": "npm:1.43.0"
     "@pyroscope/nodejs": "npm:0.6.1"
     "@rollup/plugin-graphql": "npm:3.0.0"
     "@sesamecare-oss/redlock": "npm:1.4.0"
