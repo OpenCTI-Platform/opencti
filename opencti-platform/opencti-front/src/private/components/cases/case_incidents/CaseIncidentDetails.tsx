@@ -80,7 +80,7 @@ interface CaseIncidentDetailsProps {
 const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   caseIncidentData,
 }) => {
-  const { t_i18n, fsd } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
   const customFieldValues = data.customFieldValues ?? [];
@@ -94,7 +94,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
       return cfv.boolean_value ? t_i18n('True') : t_i18n('False');
     }
     if (cfv.date_value) {
-      return fsd(cfv.date_value);
+      return fldt(cfv.date_value);
     }
     if (cfv.int_value !== null && cfv.int_value !== undefined) {
       return String(cfv.int_value);
