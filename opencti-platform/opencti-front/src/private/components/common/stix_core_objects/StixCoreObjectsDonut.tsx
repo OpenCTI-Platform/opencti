@@ -107,14 +107,14 @@ const StixCoreObjectsDonutComponent = ({
   const selection = dataSelection[0];
   const data = stixCoreObjectsDistribution ?? [];
 
-  return data.length === 0 ? (
-    <WidgetNoData />
-  ) : (
-    <WidgetDonut
-      data={data}
-      groupBy={selection.attribute ?? 'entity_type'}
-    />
-  );
+  return data.length === 0
+    ? <WidgetNoData />
+    : (
+        <WidgetDonut
+          data={data}
+          groupBy={selection.attribute ?? 'entity_type'}
+        />
+      );
 };
 
 interface StixCoreObjectsDonutProps {

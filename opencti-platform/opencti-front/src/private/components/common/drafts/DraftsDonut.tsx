@@ -1,20 +1,17 @@
 import ApexCharts from 'apexcharts';
-import { graphql } from 'react-relay';
-import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
-import { QueryRenderer } from '../../../../relay/environment';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { CSSProperties, ReactNode, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useResolveDataSelection from '../../../../components/dashboard/useResolveDataSelection';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from 'src/components/dashboard/WidgetNoSavedFilters';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { DraftsDonutDistributionQuery$data } from './__generated__/DraftsDonutDistributionQuery.graphql';
+import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsDonutDistributionQuery } from './__generated__/DraftsDonutDistributionQuery.graphql';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
+import useDashboardViz from 'src/components/dashboard/useDashboardViz';
+import WidgetRenderContent from 'src/components/dashboard/WidgetRenderContent';
 
 const draftsDonutDistributionQuery = graphql`
   query DraftsDonutDistributionQuery(
@@ -62,6 +59,71 @@ const draftsDonutDistributionQuery = graphql`
   }
 `;
 
+interface DraftsDonutComponentProps {
+  queryRef: PreloadedQuery<DraftsDonutDistributionQuery>;
+  dataSelection: Widget['dataSelection'];
+  setChart: (chart: ApexCharts) => void;
+}
+
+const DraftsDonutComponent = ({
+  queryRef,
+  dataSelection,
+  setChart,
+}: DraftsDonutComponentProps) => {
+  const { draftWorkspacesDistribution } = usePreloadedQuery(
+    draftsDonutDistributionQuery,
+    queryRef,
+  );
+  const selection = dataSelection[0];
+  const data = draftWorkspacesDistribution ?? [];
+
+  return data.length === 0
+    ? <WidgetNoData />
+    : (
+        <WidgetDonut
+          data={data}
+          groupBy={selection.attribute ?? 'entity_type'}
+          onMounted={setChart}
+        />
+      );
+};
+
+interface DraftsDonutProps {
+  variant?: string;
+  height?: CSSProperties['height'];
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  host?: WidgetHost;
+}
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): DraftsDonutDistributionQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute
+    = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+  return {
+    field: selection.attribute ?? 'entity_type',
+    operation: 'count',
+    startDate,
+    endDate,
+    dateAttribute,
+    filters: normalizeFilterGroupForBackend(filters),
+    limit: selection.number ?? 10,
+  };
+};
+
 const DraftsDonut = ({
   variant,
   height,
@@ -71,83 +133,19 @@ const DraftsDonut = ({
   parameters = {},
   popover,
   host,
-}: {
-  variant?: string;
-  height?: CSSProperties['height'];
-  config: DashboardConfig;
-  refreshRate?: number | null;
-  dataSelection: WidgetDataSelection[];
-  parameters?: WidgetParameters;
-  popover?: ReactNode;
-  host?: WidgetHost;
-}) => {
+}: DraftsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { startDate, endDate } = computeStartEndDates(config);
 
-  const refreshToken = useDashboardRefreshToken();
-  const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    setLocalRefreshKey((k) => k + 1);
-  }, [refreshToken]);
-  useEffect(() => {
-    if (!refreshRate || refreshToken !== null) return () => {};
-    const interval = setInterval(() => setLocalRefreshKey((k) => k + 1), refreshRate);
-    return () => clearInterval(interval);
-  }, [refreshRate, refreshToken]);
-
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useResolveDataSelection({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: draftsDonutDistributionQuery,
+    config,
+    buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-    const selection = resolvedDataSelection[0];
-    return (
-      <QueryRenderer
-        key={localRefreshKey}
-        query={draftsDonutDistributionQuery}
-        variables={{
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute: selection.date_attribute && selection.date_attribute.length > 0
-            ? selection.date_attribute
-            : 'created_at',
-          filters: selection.filters,
-          limit: selection.number ?? 10,
-        }}
-        render={({ props }: { props: DraftsDonutDistributionQuery$data }) => {
-          if (props && props.draftWorkspacesDistribution && props.draftWorkspacesDistribution.length > 0) {
-            return (
-              <WidgetDonut
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                data={props.draftWorkspacesDistribution as any[]}
-                groupBy={selection.attribute || 'entity_type'}
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
 
   return (
     <WidgetContainer
@@ -159,7 +157,18 @@ const DraftsDonut = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <DraftsDonutComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          setChart={setChart}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

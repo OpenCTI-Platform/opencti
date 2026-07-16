@@ -60,6 +60,9 @@ const draftsHorizontalBarsDistributionQuery = graphql`
           id
           name
         }
+        ... on DraftWorkspace {
+          name
+        }
       }
     }
   }
