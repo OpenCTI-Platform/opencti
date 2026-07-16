@@ -279,17 +279,23 @@ const IngestionCatalog = () => {
   }, []);
 
   const handleCatalogVersionChange = useCallback((revision: string | null) => {
+    const prev = lastSeenCatalogRevision.current;
+
+    // Track null revisions so we can detect when the remote catalog first becomes available.
     if (!revision) {
+      lastSeenCatalogRevision.current = null;
       return;
     }
 
-    // First seen revision establishes baseline and avoids immediate duplicate refetch.
-    if (lastSeenCatalogRevision.current === undefined) {
+    // Component just mounted and remote catalog is already available: establish baseline, no refetch.
+    if (prev === undefined) {
       lastSeenCatalogRevision.current = revision;
       return;
     }
 
-    if (lastSeenCatalogRevision.current !== revision) {
+    // Refetch when revision changes OR when remote catalog just became available after loading
+    // (prev === null means we were in loading state and showed the embedded catalog as baseline).
+    if (prev !== revision) {
       lastSeenCatalogRevision.current = revision;
       loadCatalogs({}, { fetchPolicy: 'network-only' });
     }

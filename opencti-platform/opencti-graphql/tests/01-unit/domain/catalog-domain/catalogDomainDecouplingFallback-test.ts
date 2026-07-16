@@ -16,7 +16,7 @@ describe('catalog-domain decoupling fallback policy', () => {
     delete process.env.APP__CUSTOM_CATALOGS;
   });
 
-  it('does not fallback to legacy catalog while manager status is loading', async () => {
+  it('uses embedded catalog as baseline while manager status is loading', async () => {
     const catalogDomain = await import('../../../../src/modules/catalog/catalog-domain');
 
     catalogDomain.resetCatalogs();
@@ -24,19 +24,22 @@ describe('catalog-domain decoupling fallback policy', () => {
     const catalogs = await catalogDomain.findCatalog(FAKE_CONTEXT, FAKE_USER);
     const contractsByImage = await catalogDomain.getSupportedContractsByImage();
 
-    expect(catalogs).toEqual([]);
-    expect(contractsByImage.size).toBe(0);
+    // Embedded catalog is always the baseline — connectors get data immediately.
+    expect(catalogs.length).toBeGreaterThan(0);
+    expect(contractsByImage.size).toBeGreaterThan(0);
   });
 
-  it('falls back to legacy catalog only when manager status is error', async () => {
+  it('uses embedded catalog as baseline while manager status is error', async () => {
     const catalogDomain = await import('../../../../src/modules/catalog/catalog-domain');
 
     catalogDomain.resetCatalogs();
     catalogDomain.updateCatalogManagerInternalCache(undefined, 'error');
 
     const catalogs = await catalogDomain.findCatalog(FAKE_CONTEXT, FAKE_USER);
+    const contractsByImage = await catalogDomain.getSupportedContractsByImage();
 
     expect(catalogs.length).toBeGreaterThan(0);
+    expect(contractsByImage.size).toBeGreaterThan(0);
   });
 
   // ── scenario: load → reduced catalog (revision changes) ────────────────────

@@ -42,12 +42,12 @@ vi.mock('../../../../src/config/conf', async () => {
 
 vi.mock('../../../../src/modules/catalog/catalog-adapters', () => ({
   resolveCatalogSource: resolveCatalogSourceMock,
-  // eslint-disable-next-line object-shorthand
+
   LegacyManifestAdapter: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
     this.fetch = legacyAdapterFetchMock;
     this.toInternalCatalog = legacyAdapterToInternalCatalogMock;
   }),
-  // eslint-disable-next-line object-shorthand
+
   NewManifestAdapter: vi.fn().mockImplementation(function (this: Record<string, unknown>) {
     this.fetch = newAdapterFetchMock;
     this.toInternalCatalog = newAdapterToInternalCatalogMock;
@@ -101,7 +101,7 @@ describe('catalogManager', () => {
 
     resolveCatalogSourceMock.mockReturnValue({ source: REMOTE_SOURCE, originalUri: REMOTE_SOURCE.uri });
     makeSuccessfulNewAdapter();
-      // HEAD fetch default (can be overridden per test)
+    // HEAD fetch default (can be overridden per test)
     legacyAdapterFetchMock.mockResolvedValue([]);
     legacyAdapterToInternalCatalogMock.mockReturnValue(fakeInternalCatalog());
   });
@@ -123,7 +123,9 @@ describe('catalogManager', () => {
     const manager = (await import('../../../../src/manager/catalogManager')).default;
 
     await manager.start();
-    await new Promise<void>((resolve) => { setImmediate(resolve); });
+    await new Promise<void>((resolve) => {
+      setImmediate(resolve);
+    });
 
     expect(lockResourcesMock).not.toHaveBeenCalled();
   });
@@ -199,7 +201,7 @@ describe('catalogManager', () => {
 
     await manager.start();
 
-  await waitForCall(updateCatalogManagerInternalCacheMock, undefined, 'ready', true, 'etag-stable');
+    await waitForCall(updateCatalogManagerInternalCacheMock, undefined, 'ready', true, 'etag-stable');
 
     // Adapter fetch was NOT called on the second start (ETag skip happened at HEAD level)
     expect(newAdapterFetchMock).not.toHaveBeenCalled();

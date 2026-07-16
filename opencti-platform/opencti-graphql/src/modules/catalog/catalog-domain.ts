@@ -131,11 +131,7 @@ const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
     if (managerInternalCatalog) {
       return managerInternalCatalog.catalogMap;
     }
-
-    // Strict decoupling mode: fallback to legacy sources only after an explicit error.
-    if (managerCatalogStatus !== 'error') {
-      return {};
-    }
+    // No remote snapshot yet (loading or error): fall through to embedded catalog as baseline.
   }
 
   if (!catalogMap) {
@@ -465,11 +461,7 @@ export const getSupportedContractsByImage = async (): Promise<Map<string, Catalo
     if (managerInternalCatalog) {
       return managerInternalCatalog.contractsByImage;
     }
-
-    // Strict decoupling mode: fallback to legacy sources only after an explicit error.
-    if (managerCatalogStatus !== 'error') {
-      return new Map();
-    }
+    // No remote snapshot yet (loading or error): fall through to embedded catalog as baseline.
   }
 
   if (!contractsByImageCache) {
