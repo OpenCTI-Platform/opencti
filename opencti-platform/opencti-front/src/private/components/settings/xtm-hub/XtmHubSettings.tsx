@@ -128,22 +128,15 @@ const XtmHubSettingsComponent = () => {
 };
 
 const XtmHubSettings: React.FC = () => {
-  const [commitCheckConnectivity] = useApiMutation(checkHubConnectivity);
-  const [isCheckDone, setIsCheckDone] = useState(false);
+  const [commitCheckConnectivity, isConnectivityCheckInFlight] = useApiMutation(checkHubConnectivity);
+  const [isCheckStarted, setIsCheckStarted] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({
-      variables: {},
-      onCompleted: () => {
-        setIsCheckDone(true);
-      },
-      onError: () => {
-        setIsCheckDone(true);
-      },
-    });
+    setIsCheckStarted(true);
+    commitCheckConnectivity({ variables: {} });
   }, []);
 
-  if (!isCheckDone) {
+  if (!isCheckStarted || isConnectivityCheckInFlight) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
 
