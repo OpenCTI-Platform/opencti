@@ -17,7 +17,6 @@ const backProxy = (ws = false) => ({
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    target: ['chrome58'],
     sourcemap: true,
   },
 
