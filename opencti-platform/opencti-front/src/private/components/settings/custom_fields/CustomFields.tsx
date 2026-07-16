@@ -18,6 +18,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
+import { getCustomFieldTypeLabel } from '../sub_types/entity_setting/EntitySettingCustomFields';
 
 export const customFieldsQuery = graphql`
   query CustomFieldsLinesPaginationQuery(
@@ -119,13 +120,13 @@ const CustomFields = () => {
     label: {
       id: 'label',
       label: 'Label',
-      percentWidth: 15,
+      percentWidth: 20,
       render: (data: CustomFieldsLine_node$data) => defaultRender(data.label),
     },
     entity_types: {
       id: 'entity_types',
       label: 'Used in',
-      percentWidth: 30,
+      percentWidth: 38,
       isSortable: false,
       render: (data: CustomFieldsLine_node$data) => (
         <FieldOrEmpty source={data.entity_types}>
@@ -143,13 +144,13 @@ const CustomFields = () => {
     field_type: {
       id: 'field_type',
       label: 'Type',
-      percentWidth: 12,
-      render: (data: CustomFieldsLine_node$data) => defaultRender(data.field_type),
+      percentWidth: 16,
+      render: (data: CustomFieldsLine_node$data) => defaultRender(getCustomFieldTypeLabel(data.field_type, t_i18n)),
     },
     name: {
       id: 'name',
       label: 'Technical name',
-      percentWidth: 20,
+      percentWidth: 26,
     },
   };
 
