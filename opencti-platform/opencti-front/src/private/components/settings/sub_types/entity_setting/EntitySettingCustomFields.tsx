@@ -20,6 +20,8 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import MarkdownFieldBase from '../../../../../components/fields/markdownField/MarkdownFieldBase';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
+import DeleteDialog from '../../../../../components/DeleteDialog';
 import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
@@ -261,13 +263,29 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
   const assignedCustomFields = allCustomFields.filter((cf) => (cf.entity_types ?? []).includes(entityType));
 
   const [editing, setEditing] = useState<CustomFieldDefinitionNode | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const [commitRemove] = useApiMutation(entitySettingCustomFieldsRemoveMutation);
-  const handleRemove = (id: string) => {
+  const deletion = useDeletion({});
+  const handleRemove = () => {
+    if (!removingId) return;
+    deletion.setDeleting(true);
     commitRemove({
-      variables: { id, entityType },
-      onCompleted: () => refresh(),
+      variables: { id: removingId, entityType },
+      onCompleted: () => {
+        deletion.setDeleting(false);
+        deletion.handleCloseDelete();
+        setRemovingId(null);
+        refresh();
+      },
+      onError: () => {
+        deletion.setDeleting(false);
+      },
     });
+  };
+  const openRemove = (id: string) => {
+    setRemovingId(id);
+    deletion.handleOpenDelete();
   };
 
   return (
@@ -296,7 +314,7 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
                 <IconButton onClick={() => setEditing(cf)} aria-label={t_i18n('Update')}>
                   <EditOutlined fontSize="small" />
                 </IconButton>
-                <IconButton onClick={() => handleRemove(cf.id)} aria-label={t_i18n('Remove')}>
+                <IconButton onClick={() => openRemove(cf.id)} aria-label={t_i18n('Remove')}>
                   <DeleteOutlined fontSize="small" />
                 </IconButton>
               </TableCell>
@@ -318,6 +336,16 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
           onUpdated={refresh}
         />
       )}
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={handleRemove}
+        onClose={() => { deletion.handleCloseDelete(); setRemovingId(null); }}
+        message={t_i18n('Do you want to remove this custom field from this entity type?')}
+        warning={{
+          title: t_i18n('This action deletes data'),
+          message: t_i18n('The values stored for this custom field will be permanently removed from all existing entities of this type.'),
+        }}
+      />
     </Table>
   );
 };
