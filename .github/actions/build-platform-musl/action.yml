@@ -1,0 +1,57 @@
+name: build-platform-musl
+description: Build the opencti platform with musl (Alpine) and produce a tar.gz artifact
+
+inputs:
+  checkout_ref:
+    description: "Reference of the branch or commit sha"
+    default: ${{ github.sha }}
+  client_python_local:
+    description: "Use client python from the same commit"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Use client-python in OpenCTI from same branch
+      shell: bash
+      if: ${{ inputs.client_python_local == 'true' }}
+      run: |
+        find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i {} \;
+
+    - name: Build platform (musl) and package tar.gz
+      shell: bash
+      run: |
+        docker run --rm \
+          -v "${{ github.workspace }}:/workspace" \
+          -w /workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c '
+            apk update && apk upgrade && apk --no-cache add git tini gcc g++ make musl-dev python3 python3-dev postfix postfix-pcre build-base libmagic libffi-dev curl &&
+            npm install -g node-gyp &&
+            cd /workspace/opencti-platform/opencti-graphql &&
+            yarn install &&
+            yarn build
+          '
+
+    - name: Package musl tar.gz
+      shell: bash
+      run: |
+        mkdir -p release
+        rm -rf ./opencti-platform/opencti-graphql/.yarn/cache
+        cp -a ./opencti-platform/opencti-graphql release/opencti
+        cp -a ./opencti-platform/.yarnrc.yml release/opencti/
+        cp -a ./opencti-worker/src release/opencti/worker
+        cd release && tar -zcvf /tmp/opencti-musl.tar.gz opencti
+
+    - name: Upload musl tar artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: opencti-platform-musl
+        path: /tmp/opencti-musl.tar.gz
+        retention-days: 7
+
