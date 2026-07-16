@@ -147,6 +147,10 @@ const GRAPH_IMAGES: GraphImages = {
     rawImg: SecurityCoverage,
     img: generateHtmlImageElement(SecurityCoverage),
   },
+  'Security-Coverage-Result': {
+    rawImg: SecurityCoverage,
+    img: generateHtmlImageElement(SecurityCoverage),
+  },
   SecurityPlatform: {
     rawImg: SecurityPlatform,
     img: generateHtmlImageElement(SecurityPlatform),

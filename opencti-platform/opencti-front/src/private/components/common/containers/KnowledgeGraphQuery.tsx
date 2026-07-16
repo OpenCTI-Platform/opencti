@@ -56,6 +56,14 @@ export const knowledgeGraphStixCoreObjectQuery = graphql`
                 name
                 description
             }
+            ... on SecurityCoverage {
+                name
+                description
+            }
+            ... on SecurityCoverageResult {
+                name
+                description
+            }
             ... on Individual {
                 name
             }
