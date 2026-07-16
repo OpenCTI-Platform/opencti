@@ -1,4 +1,4 @@
-import React, { CSSProperties, FunctionComponent, Suspense, useEffect, useRef, useState, useTransition } from 'react';
+import React, { CSSProperties, FunctionComponent, Suspense, useState } from 'react';
 import type { PreloadedQuery } from 'react-relay';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
@@ -10,12 +10,11 @@ import WidgetContainer from '../../../../../components/dashboard/WidgetContainer
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQueryLoading';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
+import { computeStartEndDates } from '../../../../../components/dashboard/dashboardVizUtils';
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from '../../../../../components/dashboard/WidgetNoSavedFilters';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
-import { useDashboardRefreshToken } from '../../../../../components/dashboard/DashboardRefreshContext';
 import type {
   StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
 } from './__generated__/StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery.graphql';
@@ -362,6 +361,75 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
 `;
 
 // ---------------------------------------------------------------------------
+// Query variables builder
+// ---------------------------------------------------------------------------
+
+type MultiHorizontalBarsQuery
+  = StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
+    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery;
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): MultiHorizontalBarsQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const subSelection = resolvedDataSelection.length > 1 ? resolvedDataSelection[1] : undefined;
+
+  const { startDate, endDate } = computeStartEndDates(config);
+
+  const finalField = selection.attribute || 'entity_type';
+  const finalSubDistributionField = subSelection?.attribute || 'entity_type';
+
+  const filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
+  const subDistributionFiltersAndOptions = subSelection
+    ? buildFiltersAndOptionsForWidgets(subSelection.filters)
+    : undefined;
+
+  const baseVariables = {
+    field: finalField,
+    operation: 'count' as const,
+    startDate,
+    endDate,
+    dateAttribute: selection.date_attribute ?? 'created_at',
+    limit: selection.number ?? 10,
+    filters: normalizeFilterGroupForBackend(filtersAndOptions?.filters),
+    isTo: selection.isTo,
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    subDistributionField: finalSubDistributionField,
+    subDistributionOperation: 'count' as const,
+  };
+
+  if (subSelection?.perspective === 'entities') {
+    return {
+      ...baseVariables,
+      subDistributionStartDate: startDate,
+      subDistributionEndDate: endDate,
+      subDistributionDateAttribute:
+        subSelection.date_attribute && subSelection.date_attribute.length > 0
+          ? subSelection.date_attribute
+          : 'created_at',
+      subDistributionLimit: subSelection.number ?? 15,
+      subDistributionTypes: ['Stix-Core-Object'],
+      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
+    } as StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'];
+  }
+
+  return {
+    ...baseVariables,
+    subDistributionStartDate: startDate,
+    subDistributionEndDate: endDate,
+    subDistributionDateAttribute:
+      subSelection?.date_attribute && subSelection.date_attribute.length > 0
+        ? subSelection.date_attribute
+        : 'created_at',
+    subDistributionIsTo: subSelection?.isTo,
+    subDistributionLimit: subSelection?.number ?? 15,
+    subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
+  } as StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables'];
+};
+
+// ---------------------------------------------------------------------------
 // Inner component (Suspense boundary consumer)
 // ---------------------------------------------------------------------------
 
@@ -441,106 +509,45 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
   title,
   variant,
   height,
-  field,
-  startDate,
-  endDate,
   dataSelection,
   parameters = {},
   popover,
   host,
+  config,
+  refreshRate = null,
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode } = useDashboardViz({
+
+  // Determine the query to use based on the sub-selection perspective (known from raw props).
+  const isSubSelectionEntities = dataSelection[1]?.perspective === 'entities';
+  const queryToCall = isSubSelectionEntities
+    ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
+    : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
+
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<MultiHorizontalBarsQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
+    refreshRate,
+    query: queryToCall,
+    config,
+    buildQueryVariables,
   });
 
-  let selection: Partial<WidgetDataSelection> = {};
-  let filtersAndOptions;
-  let subDistributionFiltersAndOptions;
+  // Derive display values from resolved data selection
   let subSelection: Partial<WidgetDataSelection> = {};
-  let subDistributionTypes: string[] | null = null;
-  if (resolvedDataSelection) {
-    selection = resolvedDataSelection[0];
-    filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
+  let finalField = 'entity_type';
+  let finalSubDistributionField = 'entity_type';
+
+  if (resolvedDataSelection.length > 0) {
+    const selection = resolvedDataSelection[0];
+    finalField = selection.attribute || 'entity_type';
     if (resolvedDataSelection.length > 1) {
       subSelection = resolvedDataSelection[1];
-      subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters);
-      if (subSelection.perspective === 'entities') {
-        subDistributionTypes = ['Stix-Core-Object'];
-      }
+      finalSubDistributionField = subSelection.attribute || 'entity_type';
     }
   }
-
-  const finalField = selection.attribute || field || 'entity_type';
-  const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
-
-  // Base variables shared by both query variants.
-  let variables:
-    | StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables']
-    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'] = {
-      field: finalField,
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute: selection.date_attribute ?? 'created_at',
-      limit: selection.number ?? 10,
-      filters: normalizeFilterGroupForBackend(filtersAndOptions?.filters),
-      isTo: selection.isTo,
-      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-      subDistributionField: finalSubDistributionField,
-      subDistributionOperation: 'count',
-    };
-
-  if (subSelection.perspective === 'entities') {
-    variables = {
-      ...variables,
-      subDistributionStartDate: startDate,
-      subDistributionEndDate: endDate,
-      subDistributionDateAttribute:
-        subSelection.date_attribute && subSelection.date_attribute.length > 0
-          ? subSelection.date_attribute
-          : 'created_at',
-      subDistributionLimit: subSelection.number ?? 15,
-      subDistributionTypes,
-      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
-    } as StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'];
-  } else {
-    variables = {
-      ...variables,
-      subDistributionStartDate: startDate,
-      subDistributionEndDate: endDate,
-      subDistributionDateAttribute:
-        subSelection.date_attribute && subSelection.date_attribute.length > 0
-          ? subSelection.date_attribute
-          : 'created_at',
-      subDistributionIsTo: subSelection.isTo,
-      subDistributionLimit: subSelection.number ?? 15,
-      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
-    } as StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables'];
-  }
-
-  const queryToCall = subSelection.perspective === 'entities'
-    ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-    : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<
-    StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
-    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
-  >(queryToCall, variables);
-  const [, startTransition] = useTransition();
-
-  const refreshToken = useDashboardRefreshToken();
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    startTransition(() => {
-      loadQuery(variables, { fetchPolicy: 'store-and-network' });
-    });
-  }, [refreshToken, loadQuery, startTransition, variables]);
 
   const renderContent = () => {
     if (isMissingHostEntity) {
