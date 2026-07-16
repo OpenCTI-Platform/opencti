@@ -9,7 +9,8 @@ import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import type { DataEvent, SseEvent } from '../types/event';
-import { isEnterpriseEditionFromSettings, isEnterpriseEditionAuthorized } from '../enterprise-edition/ee';
+import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { executionContext } from '../utils/access';
 import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
@@ -47,6 +48,13 @@ export interface ManagerDefinition {
   enterpriseEditionOnly?: boolean;
   warning?: () => boolean; // condition to display a warning on manager module (ex: missing configuration, manager can't start)
 }
+
+const isEnterpriseEditionAuthorized = async (manager: ManagerDefinition): Promise<boolean> => {
+  if (!manager.enterpriseEditionOnly) {
+    return true;
+  }
+  return isEnterpriseEdition(executionContext(manager.executionContext));
+};
 
 const initManager = (manager: ManagerDefinition) => {
   const WAIT_TIME_ACTION = 2000;

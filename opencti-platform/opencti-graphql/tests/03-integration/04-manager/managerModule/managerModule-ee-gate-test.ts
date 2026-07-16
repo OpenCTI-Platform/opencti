@@ -38,7 +38,7 @@ describe('Manager module: enterprise edition gate', () => {
 
   it('should not call the handler of an enterpriseEditionOnly manager when EE is disabled', async () => {
     mockLock();
-    vi.spyOn(ee, 'isEnterpriseEditionAuthorized').mockResolvedValue(false);
+    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(false);
     const handler = vi.fn().mockResolvedValue(undefined);
     const managerDefinition = buildEeOnlyManager('TEST_EE_MANAGER_DISABLED', handler);
     registerManager(managerDefinition);
@@ -53,7 +53,7 @@ describe('Manager module: enterprise edition gate', () => {
 
   it('should call the handler of an enterpriseEditionOnly manager when EE is enabled', async () => {
     mockLock();
-    vi.spyOn(ee, 'isEnterpriseEditionAuthorized').mockResolvedValue(true);
+    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(true);
     const handler = vi.fn().mockResolvedValue(undefined);
     const managerDefinition = buildEeOnlyManager('TEST_EE_MANAGER_ENABLED', handler);
     registerManager(managerDefinition);
