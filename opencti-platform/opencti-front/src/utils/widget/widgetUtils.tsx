@@ -18,7 +18,7 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-import type { WidgetDataSelection, WidgetMultiTimeSeries } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
 
 const widgetVisualizationTypes = [
   {
@@ -257,6 +257,11 @@ export const getCurrentIsRelationships = (type: string) => {
 export const isWidgetListOrTimeline = (type: string) => {
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
 };
+
+/**
+ * Returns the time interval to use in a widget.
+ */
+export const getWidgetInterval = (params: WidgetParameters) => params?.interval ?? 'day';
 
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {

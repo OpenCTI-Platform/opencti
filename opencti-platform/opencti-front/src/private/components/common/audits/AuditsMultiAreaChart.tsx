@@ -29,7 +29,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
-import { showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
+import { getWidgetInterval, showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetMultiTimeSeries, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 
@@ -169,7 +169,7 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
       operation: 'count' as const,
       startDate: startDate ?? fallbackDates.start,
       endDate: endDate ?? fallbackDates.end,
-      interval: parameters.interval ?? 'day',
+      interval: getWidgetInterval(parameters),
       timeSeriesParameters,
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);

@@ -31,6 +31,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
 const auditsMultiHeatMapTimeSeriesQuery = graphql`
   query AuditsMultiHeatMapTimeSeriesQuery(
@@ -160,7 +161,7 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
       operation: 'count' as const,
       startDate: startDate ?? fallbackDates.start,
       endDate: endDate ?? fallbackDates.end,
-      interval: parameters.interval ?? 'day',
+      interval: getWidgetInterval(parameters),
       timeSeriesParameters,
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
