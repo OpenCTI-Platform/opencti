@@ -3,10 +3,10 @@ import { FunctionalError } from '../../config/errors';
 import { decryptValue, encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { verifyUriWithDenyList } from '../../utils/uriDenyList';
-import { ingestionUriDenyList } from '../../manager/ingestionManager/ingestionManagerConfiguration';
+import { uriDenyList } from '../../config/uriDenyList';
 
 export const verifyIngestionUri = (uri: string): void => {
-  verifyUriWithDenyList(uri, ingestionUriDenyList(), 'This URI is not allowed for ingestion.');
+  verifyUriWithDenyList(uri, uriDenyList(), 'This URI is not allowed for ingestion.');
 };
 
 export const getIngestionKeyPair = memoize(async () => {
