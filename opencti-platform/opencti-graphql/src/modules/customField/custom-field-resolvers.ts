@@ -19,8 +19,12 @@ const customFieldResolvers: Resolvers = {
     customFieldDefinitionAdd: (_, { input }, context) => customFieldDefinitionAdd(context, context.user, input),
     customFieldDefinitionDelete: (_, { id }, context) => customFieldDefinitionDelete(context, context.user, id),
     customFieldDefinitionFieldPatch: (_, { id, input }, context) => customFieldDefinitionEdit(context, context.user, id, input),
-    customFieldDefinitionAddEntityType: (_, { id, entityType, mandatory, default_value }, context) => customFieldDefinitionAddEntityType(context, context.user, id, entityType, mandatory, default_value),
-    customFieldDefinitionUpdateEntityType: (_, { id, entityType, mandatory, default_value }, context) => customFieldDefinitionUpdateEntityType(context, context.user, id, entityType, mandatory, default_value),
+    customFieldDefinitionAddEntityType: (_, { id, entityType, mandatory, default_value }, context) => (
+      customFieldDefinitionAddEntityType(context, context.user, id, entityType, mandatory, default_value)
+    ),
+    customFieldDefinitionUpdateEntityType: (_, { id, entityType, mandatory, default_value }, context) => (
+      customFieldDefinitionUpdateEntityType(context, context.user, id, entityType, mandatory, default_value)
+    ),
     customFieldDefinitionRemoveEntityType: (_, { id, entityType }, context) => customFieldDefinitionRemoveEntityType(context, context.user, id, entityType),
   },
 };
