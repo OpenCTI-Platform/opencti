@@ -185,7 +185,8 @@
     "json5": "2.2.3",
     "react": "19.2.7",
     "webpack": "5.108.4",
-    "unrs-resolver": "1.11.1"
+    "unrs-resolver": "1.11.1",
+    "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch"
   },
   "dependenciesMeta": {
     "core-js": {

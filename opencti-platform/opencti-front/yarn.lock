@@ -13174,6 +13174,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-relay@patch:react-relay@21.0.1#./patch/react-relay.patch::locator=opencti-front%40workspace%3A.":
+  version: 21.0.1
+  resolution: "react-relay@patch:react-relay@npm%3A21.0.1#./patch/react-relay.patch::version=21.0.1&hash=673f54&locator=opencti-front%40workspace%3A."
+  dependencies:
+    "@babel/runtime": "npm:^7.25.0"
+    fbjs: "npm:^3.0.2"
+    invariant: "npm:^2.2.4"
+    nullthrows: "npm:^1.1.1"
+    relay-runtime: "npm:21.0.1"
+  peerDependencies:
+    react: ^16.9.0 || ^17 || ^18 || ^19
+  checksum: 10c0/2ad903a991fa9049cd623839c17d7e75ee50b12d8de00733d434783ba8e37673e944b6eb4539784d5233d8491b0319586f7ef59ae46efefc5988a6aed88e0864
+  languageName: node
+  linkType: hard
+
 "react-remove-scroll-bar@npm:^2.3.7":
   version: 2.3.8
   resolution: "react-remove-scroll-bar@npm:2.3.8"
