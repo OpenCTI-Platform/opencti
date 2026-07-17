@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
 import { RootPlaybookQuery } from './__generated__/RootPlaybookQuery.graphql';
 import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
 import Playbook, { playbookComponentsQuery } from './Playbook';

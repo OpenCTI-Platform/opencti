@@ -3,7 +3,6 @@ import { TextField } from 'formik-mui';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { RelayResponsePayload } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -25,7 +24,14 @@ interface LoginFormValues {
 }
 
 interface RelayResponseError extends Error {
-  res?: RelayResponsePayload;
+  res?: {
+    errors?: {
+      message?: string;
+      extensions?: {
+        code?: string;
+      };
+    }[];
+  };
 }
 
 const LoginForm = () => {
@@ -44,7 +50,7 @@ const LoginForm = () => {
       onCompleted: () => window.location.reload(),
       onError: (error: RelayResponseError) => {
         const firstError = error.res?.errors?.at?.(0);
-        const errorCode = (firstError as { extensions?: { code?: string } } | undefined)?.extensions?.code;
+        const errorCode = firstError?.extensions?.code;
         if (errorCode === 'PASSWORD_CHANGE_REQUIRED') {
           setValue('email', input.email);
           setValue('forcePasswordChange', true);

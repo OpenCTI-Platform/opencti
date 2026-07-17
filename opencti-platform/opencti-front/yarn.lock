@@ -4512,16 +4512,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-relay@npm:*, @types/react-relay@npm:18.2.1":
-  version: 18.2.1
-  resolution: "@types/react-relay@npm:18.2.1"
-  dependencies:
-    "@types/react": "npm:*"
-    "@types/relay-runtime": "npm:*"
-  checksum: 10c0/3cf09d22980199d099e9151de7b79ec4d35fae239dfdd881d63b0dbed2c7f7184de32624f7cc61d0a6ea89f828ee592f2a61ffcccf291318d167da8fd4810f9d
-  languageName: node
-  linkType: hard
-
 "@types/react-syntax-highlighter@npm:15.5.13":
   version: 15.5.13
   resolution: "@types/react-syntax-highlighter@npm:15.5.13"
@@ -4555,24 +4545,6 @@ __metadata:
   peerDependencies:
     "@types/react": "*"
   checksum: 10c0/f1b1e257dd7f02e1b50b2622c05a3fdcdb67045fdbbeab1f6ed7ef91e06f19d8899a3d7bd828c34bd2b243b7b7dd4c35376b947a683f5c0d56ea8a16b482f73d
-  languageName: node
-  linkType: hard
-
-"@types/relay-runtime@npm:*":
-  version: 20.1.1
-  resolution: "@types/relay-runtime@npm:20.1.1"
-  checksum: 10c0/37bb94d5bf2acb6d524bb7ba8e644ff81dba452e37385b2a037752c3ac024adaebe7f69e92130a2ece092b21526650ec4657f5d37307af89b5a1b43e11768b0d
-  languageName: node
-  linkType: hard
-
-"@types/relay-test-utils@npm:19.0.0":
-  version: 19.0.0
-  resolution: "@types/relay-test-utils@npm:19.0.0"
-  dependencies:
-    "@types/react": "npm:*"
-    "@types/react-relay": "npm:*"
-    "@types/relay-runtime": "npm:*"
-  checksum: 10c0/384c4510340726ddb71a02f9f535e8d59d584ae5883c42c8e3dae6adc1c6f69bfc568f2c2afd3d46518d96744cd7cf23fe84ec6e7e49690b1a483a8c70fc021c
   languageName: node
   linkType: hard
 
@@ -11832,10 +11804,8 @@ __metadata:
     "@types/react-color": "npm:3.0.13"
     "@types/react-csv": "npm:1.1.10"
     "@types/react-dom": "npm:19.2.3"
-    "@types/react-relay": "npm:18.2.1"
     "@types/react-syntax-highlighter": "npm:15.5.13"
     "@types/react-transition-group": "npm:4.4.12"
-    "@types/relay-test-utils": "npm:19.0.0"
     "@vitejs/plugin-react": "npm:6.0.3"
     "@vitest/coverage-v8": "npm:4.1.10"
     analytics: "npm:0.8.19"
@@ -11940,6 +11910,8 @@ __metadata:
     esbuild:
       built: false
     protobufjs:
+      built: false
+    unrs-resolver:
       built: false
   languageName: unknown
   linkType: soft

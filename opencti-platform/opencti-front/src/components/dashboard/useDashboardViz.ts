@@ -4,9 +4,8 @@ import { resolveDataSelection } from './dashboard-viz-utils';
 import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
 import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
-import { OperationType } from 'relay-runtime';
+import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,

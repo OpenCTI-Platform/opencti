@@ -145,10 +145,8 @@
     "@types/react-color": "3.0.13",
     "@types/react-csv": "1.1.10",
     "@types/react-dom": "19.2.3",
-    "@types/react-relay": "18.2.1",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-transition-group": "4.4.12",
-    "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "6.0.3",
     "@vitest/coverage-v8": "4.1.10",
     "babel-plugin-relay": "21.0.1",
@@ -197,6 +195,9 @@
       "built": false
     },
     "protobufjs": {
+      "built": false
+    },
+    "unrs-resolver": {
       "built": false
     }
   }

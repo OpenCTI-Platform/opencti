@@ -1,5 +1,5 @@
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
-import { RelayEnvironmentProvider } from 'react-relay/hooks';
+import { RelayEnvironmentProvider } from 'react-relay';
 import React, { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { render, renderHook } from '@testing-library/react';
