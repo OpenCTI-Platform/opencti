@@ -97,8 +97,9 @@ describe('Custom fields wired on Case-Incident', () => {
       },
     });
     expect(addResult.errors).toBeUndefined();
-    customFieldId = addResult.data.customFieldDefinitionAdd.id;
-    customFieldName = addResult.data.customFieldDefinitionAdd.name;
+    expect(addResult.data).not.toBeNull();
+    customFieldId = addResult.data?.customFieldDefinitionAdd.id;
+    customFieldName = addResult.data?.customFieldDefinitionAdd.name;
     expect(customFieldId).toBeDefined();
 
     const attachResult = await queryAsAdmin({
@@ -121,8 +122,9 @@ describe('Custom fields wired on Case-Incident', () => {
       },
     });
     expect(createResult.errors).toBeUndefined();
-    caseIncidentId = createResult.data.caseIncidentAdd.id;
-    const values = createResult.data.caseIncidentAdd.customFieldValues;
+    expect(createResult.data).not.toBeNull();
+    caseIncidentId = createResult.data?.caseIncidentAdd.id;
+    const values = createResult.data?.caseIncidentAdd.customFieldValues;
     expect(values).toHaveLength(1);
     expect(values[0].int_value).toEqual(42);
   });
@@ -130,7 +132,8 @@ describe('Custom fields wired on Case-Incident', () => {
   it('should read back the custom field value on the Case-Incident', async () => {
     const readResult = await queryAsAdmin({ query: CASE_INCIDENT_READ_QUERY, variables: { id: caseIncidentId } });
     expect(readResult.errors).toBeUndefined();
-    const values = readResult.data.caseIncident.customFieldValues;
+    expect(readResult.data).not.toBeNull();
+    const values = readResult.data?.caseIncident.customFieldValues;
     expect(values).toHaveLength(1);
     expect(values[0].field_name).toEqual(customFieldName);
     expect(values[0].int_value).toEqual(42);
@@ -145,7 +148,8 @@ describe('Custom fields wired on Case-Incident', () => {
       },
     });
     expect(patchResult.errors).toBeUndefined();
-    const values = patchResult.data.stixDomainObjectEdit.fieldPatch.customFieldValues;
+    expect(patchResult.data).not.toBeNull();
+    const values = patchResult.data?.stixDomainObjectEdit.fieldPatch.customFieldValues;
     expect(values).toHaveLength(1);
     expect(values[0].int_value).toEqual(55);
   });
