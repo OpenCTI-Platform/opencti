@@ -252,7 +252,9 @@ export const schemaAttributesDefinition = {
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
     if (attributeName.includes('.') && !attributeName.endsWith('*')) {
       const attribute = schemaAttributesDefinition.getAttributeByName(attributeName.split('.')[0]);
-      if (attribute && attribute.type === 'object' && attribute.format === 'standard') {
+      // 'nested' objects (e.g. custom_field_values) have typed sub-mappings resolvable the same
+      // way as 'standard' objects; only 'flat' objects have no typed sub-mapping to resolve.
+      if (attribute && attribute.type === 'object' && attribute.format !== 'flat') {
         const { type } = schemaAttributesDefinition.getAttributeMappingFromPath(attributeName);
         return attributeType.includes(type);
       }
