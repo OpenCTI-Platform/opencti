@@ -46,6 +46,27 @@ jobs:
 
             const issueTypeName = (issue.type?.name ?? '').toLowerCase();
             const labelNames    = (issue.labels ?? []).map(l => l.name.toLowerCase());
+
+            // completed Tasks have their milestone unset and are skipped
+            if (issueTypeName === 'task') {
+              if (issue.milestone) {
+                console.log(
+                  `☑️ Issue #${issue.number} is a completed Task — unsetting milestone "${issue.milestone.title}".`
+                );
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  milestone: null,
+                });
+              } else {
+                console.log(
+                  `Issue #${issue.number} is a completed Task and has no milestone — skipping.`
+                );
+              }
+              return;
+            }
+
             const isBug =
               issueTypeName === 'bug' ||
               labelNames.includes('bug');
