@@ -15977,7 +15977,7 @@ type Subscription {
 type WorkEditMutations {
   delete: ID!
   ping: ID!
-  reportExpectation(error: WorkErrorInput): ID!
+  reportExpectation(error: WorkErrorInput, expectations: Int): ID!
   addExpectations(expectations: Int): ID!
   addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!

@@ -7,7 +7,7 @@ import re
 import time
 import traceback
 import uuid
-from contextlib import ExitStack, contextmanager
+from contextlib import ExitStack, contextmanager, nullcontext
 from contextvars import ContextVar
 from functools import wraps
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -5456,59 +5456,68 @@ class OpenCTIStix2:
             item for bundle in bundles for item in bundle["objects"]
         )
 
-        # Report every element ignored during bundle splitting
+        expectation_batch = nullcontext()
         if work_id is not None:
-            for incompatible_element in incompatible_elements:
-                self.opencti.work.report_expectation(
-                    work_id,
-                    {
-                        "error": "Incompatible element in bundle",
-                        "source": "Element "
-                        + incompatible_element["id"]
-                        + " is incompatible and couldn't be processed",
-                    },
-                )
+            expectation_batch_factory = getattr(
+                self.opencti.work, "expectation_batch", None
+            )
+            if expectation_batch_factory is not None:
+                expectation_batch = expectation_batch_factory()
 
-        # Import every element in a specific order
-        imported_elements = []
-        too_large_elements_bundles = []
-        # Report relation mutations can repeat heavily within one imported bundle.
-        with self._report_object_ref_dedupe_scope():
-            for bundle in bundles:
-                bundle_id = bundle["id"]
-                for item in bundle["objects"]:
-                    # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
-                    if (
-                        0
-                        < objects_max_refs
-                        <= OpenCTIStix2Utils.compute_object_refs_number(item)
-                    ):
-                        too_large_element_message = "Too large element in bundle"
-                        worker_logger.warning(too_large_element_message)
-                        item["rejection_info"] = {
-                            "reject_reason": "ELEMENT_TOO_LARGE",
-                            "objects_max_refs": objects_max_refs,
-                        }
-                        self.opencti.work.report_expectation(
-                            work_id,
-                            {
-                                "error": too_large_element_message,
-                                "source": "Element "
-                                + item["id"]
-                                + " is too large and couldn't be processed",
-                            },
-                        )
-                        too_large_elements_bundles.append(item)
-                    else:
-                        failed_item = self.import_item_with_retries(
-                            item, update, types, work_id, bundle_id
-                        )
-                        if failed_item is not None:
-                            too_large_elements_bundles.append(failed_item)
-                        else:
-                            imported_elements.append(
-                                {"id": item["id"], "type": item["type"]}
+        with expectation_batch:
+            # Report every element ignored during bundle splitting
+            if work_id is not None:
+                for incompatible_element in incompatible_elements:
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": "Incompatible element in bundle",
+                            "source": "Element "
+                            + incompatible_element["id"]
+                            + " is incompatible and couldn't be processed",
+                        },
+                    )
+
+            # Import every element in a specific order
+            imported_elements = []
+            too_large_elements_bundles = []
+            # Report relation mutations can repeat heavily within one imported bundle.
+            with self._report_object_ref_dedupe_scope():
+                for bundle in bundles:
+                    bundle_id = bundle["id"]
+                    for item in bundle["objects"]:
+                        # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
+                        if (
+                            0
+                            < objects_max_refs
+                            <= OpenCTIStix2Utils.compute_object_refs_number(item)
+                        ):
+                            too_large_element_message = "Too large element in bundle"
+                            worker_logger.warning(too_large_element_message)
+                            item["rejection_info"] = {
+                                "reject_reason": "ELEMENT_TOO_LARGE",
+                                "objects_max_refs": objects_max_refs,
+                            }
+                            self.opencti.work.report_expectation(
+                                work_id,
+                                {
+                                    "error": too_large_element_message,
+                                    "source": "Element "
+                                    + item["id"]
+                                    + " is too large and couldn't be processed",
+                                },
                             )
+                            too_large_elements_bundles.append(item)
+                        else:
+                            failed_item = self.import_item_with_retries(
+                                item, update, types, work_id, bundle_id
+                            )
+                            if failed_item is not None:
+                                too_large_elements_bundles.append(failed_item)
+                            else:
+                                imported_elements.append(
+                                    {"id": item["id"], "type": item["type"]}
+                                )
 
         return imported_elements, too_large_elements_bundles
 

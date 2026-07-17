@@ -38127,6 +38127,7 @@ export type WorkEditMutationsAddExpectationsArgs = {
 
 export type WorkEditMutationsReportExpectationArgs = {
   error?: InputMaybe<WorkErrorInput>;
+  expectations?: InputMaybe<Scalars['Int']['input']>;
 };
 
 

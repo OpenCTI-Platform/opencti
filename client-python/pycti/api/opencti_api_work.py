@@ -1,6 +1,10 @@
 import time
 import traceback
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Dict, List, Optional
+
+WORK_EXPECTATION_REPORT_BATCH_SIZE = 100
 
 
 class OpenCTIApiWork:
@@ -19,6 +23,10 @@ class OpenCTIApiWork:
         :type api: OpenCTIApiClient
         """
         self.api = api
+        self._expectation_batch_state = ContextVar(
+            "work_expectation_batch_state", default=None
+        )
+        self._supports_batched_expectation_reporting = None
 
     def to_received(self, work_id: str, message: str):
         """Mark work as received.
@@ -88,27 +96,164 @@ class OpenCTIApiWork:
            """
         self.api.query(query, {"id": work_id})
 
-    def report_expectation(self, work_id: str, error):
+    @staticmethod
+    def _validate_expectation_count(expectations: int):
+        if (
+            isinstance(expectations, bool)
+            or not isinstance(expectations, int)
+            or expectations <= 0
+        ):
+            raise ValueError("expectations must be a positive integer")
+
+    @staticmethod
+    def _is_unsupported_batched_expectation_error(error: Exception) -> bool:
+        error_text = str(error)
+        return "Unknown argument" in error_text and "expectations" in error_text
+
+    def _report_single_expectation(self, work_id: str, error):
+        self.api.app_logger.info("Report expectation", {"work_id": work_id})
+        query = """
+            mutation reportExpectation($id: ID!, $error: WorkErrorInput) {
+                workEdit(id: $id) {
+                    reportExpectation(error: $error)
+                }
+            }
+           """
+        self.api.query(query, {"id": work_id, "error": error}, True)
+
+    def _report_expectations_now(self, work_id: str, error, expectations: int) -> bool:
+        if expectations == 1:
+            self._report_single_expectation(work_id, error)
+            return True
+        if self._supports_batched_expectation_reporting is False:
+            return False
+
+        self.api.app_logger.info(
+            "Report expectations",
+            {"work_id": work_id, "expectations": expectations},
+        )
+        query = """
+            mutation reportExpectation($id: ID!, $error: WorkErrorInput, $expectations: Int) {
+                workEdit(id: $id) {
+                    reportExpectation(error: $error, expectations: $expectations)
+                }
+            }
+           """
+        try:
+            self.api.query(
+                query,
+                {"id": work_id, "error": error, "expectations": expectations},
+                True,
+            )
+            self._supports_batched_expectation_reporting = True
+            return True
+        except Exception as ex:
+            if self._is_unsupported_batched_expectation_error(ex):
+                self._supports_batched_expectation_reporting = False
+                return False
+            raise
+
+    def _report_expectations_immediately(self, work_id: str, error, expectations: int):
+        pending = expectations
+        next_error = error
+        while pending > 0:
+            report_count = (
+                1 if self._supports_batched_expectation_reporting is False else pending
+            )
+            if not self._report_expectations_now(work_id, next_error, report_count):
+                continue
+            pending -= report_count
+            next_error = None
+
+    @staticmethod
+    def _set_pending_expectation_count(state, work_id: str, pending: int):
+        if pending > 0:
+            state["pending"][work_id] = pending
+        else:
+            state["pending"].pop(work_id, None)
+
+    def _flush_pending_expectations(self, state, work_id: str, flush_all: bool):
+        pending = state["pending"].get(work_id, 0)
+        batch_size = state["batch_size"]
+        while pending >= batch_size or (flush_all and pending > 0):
+            chunk_pending = min(batch_size, pending)
+            while chunk_pending > 0:
+                report_count = (
+                    1
+                    if self._supports_batched_expectation_reporting is False
+                    else chunk_pending
+                )
+                if not self._report_expectations_now(work_id, None, report_count):
+                    continue
+                pending -= report_count
+                chunk_pending -= report_count
+                self._set_pending_expectation_count(state, work_id, pending)
+
+    def _try_flush_pending_expectations(self, state, work_id: str, flush_all: bool):
+        try:
+            self._flush_pending_expectations(state, work_id, flush_all)
+        except Exception:
+            self.api.app_logger.error("Cannot report expectation")
+
+    def flush_expectations(self, work_id: str = None):
+        """Flush pending batched successful expectation reports."""
+        state = self._expectation_batch_state.get()
+        if state is None:
+            return
+        if work_id is not None:
+            self._try_flush_pending_expectations(state, work_id, flush_all=True)
+            return
+        for pending_work_id in list(state["pending"]):
+            self._try_flush_pending_expectations(state, pending_work_id, flush_all=True)
+
+    @contextmanager
+    def expectation_batch(self, batch_size: int = WORK_EXPECTATION_REPORT_BATCH_SIZE):
+        """Batch successful expectation reports within one import scope."""
+        self._validate_expectation_count(batch_size)
+        current_state = self._expectation_batch_state.get()
+        if current_state is not None:
+            yield
+            return
+
+        state = {"batch_size": batch_size, "pending": {}}
+        token = self._expectation_batch_state.set(state)
+        try:
+            yield
+        finally:
+            try:
+                self.flush_expectations()
+            finally:
+                self._expectation_batch_state.reset(token)
+
+    def report_expectation(self, work_id: str, error, expectations: int = 1):
         """Report a work expectation.
 
         :param work_id: the work id
         :type work_id: str
         :param error: the error to report (WorkErrorInput format)
         :type error: dict
+        :param expectations: number of processed expectations to report
+        :type expectations: int
         :return: None
         :rtype: None
         """
         if self.api.bundle_send_to_queue:
-            self.api.app_logger.info("Report expectation", {"work_id": work_id})
-            query = """
-                mutation reportExpectation($id: ID!, $error: WorkErrorInput) {
-                    workEdit(id: $id) {
-                        reportExpectation(error: $error)
-                    }
-                }
-               """
+            self._validate_expectation_count(expectations)
             try:
-                self.api.query(query, {"id": work_id, "error": error}, True)
+                batch_state = self._expectation_batch_state.get()
+                if batch_state is not None and error is None:
+                    pending = batch_state["pending"].get(work_id, 0) + expectations
+                    batch_state["pending"][work_id] = pending
+                    if pending >= batch_state["batch_size"]:
+                        self._try_flush_pending_expectations(
+                            batch_state, work_id, flush_all=False
+                        )
+                    return
+                if batch_state is not None:
+                    self._try_flush_pending_expectations(
+                        batch_state, work_id, flush_all=True
+                    )
+                self._report_expectations_immediately(work_id, error, expectations)
             except Exception:
                 self.api.app_logger.error("Cannot report expectation")
 

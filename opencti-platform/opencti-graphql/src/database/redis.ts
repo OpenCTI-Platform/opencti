@@ -505,7 +505,7 @@ export const redisGetWorkCompletionState = async (workId: string) => {
   const isMultiPartWork = is_multipart === 'true';
   return { total, expected, isProcessed, isMultiPartWork };
 };
-export const redisUpdateWorkFigures = async (workId: string) => {
+export const redisUpdateWorkFigures = async (workId: string, expectations = 1) => {
   const timestamp = now();
   const clientBase = getClientBase();
   if (workId.includes('_')) { // Handle a connector status.
@@ -513,7 +513,7 @@ export const redisUpdateWorkFigures = async (workId: string) => {
     await clientBase.set(`work:${connectorId}`, workId);
   }
   await redisTx(clientBase, async (tx) => {
-    await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
+    await updateObjectCounterRaw(tx, workId, 'import_processed_number', expectations);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
   });
 };
