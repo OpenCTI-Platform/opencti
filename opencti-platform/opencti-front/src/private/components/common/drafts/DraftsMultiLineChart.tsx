@@ -15,6 +15,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsMultiLineChartTimeSeriesQuery$data } from './__generated__/DraftsMultiLineChartTimeSeriesQuery.graphql';
+import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
 const draftsMultiLineChartTimeSeriesQuery = graphql`
   query DraftsMultiLineChartTimeSeriesQuery(
@@ -96,7 +97,7 @@ const DraftsMultiLineChart = ({
     operation: 'count',
     startDate,
     endDate,
-    interval: parameters.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     filters,
   }), [startDate, endDate, parameters.interval, selection, filters]);
 

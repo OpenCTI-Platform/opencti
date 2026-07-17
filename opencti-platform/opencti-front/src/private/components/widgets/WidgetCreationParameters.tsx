@@ -28,7 +28,14 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from 'src/utils/widget/widgetUtils';
+import {
+  getCurrentAvailableParameters,
+  getCurrentCategory,
+  getCurrentIsRelationships,
+  isWidgetListOrTimeline,
+  getMaxResultCount,
+  getWidgetInterval,
+} from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -406,7 +413,7 @@ const WidgetCreationParameters = () => {
           <Select
             labelId="relative"
             fullWidth={true}
-            value={parameters.interval ?? 'day'}
+            value={getWidgetInterval(parameters)}
             onChange={(event) => handleChangeParameter('interval', event.target.value)
             }
           >

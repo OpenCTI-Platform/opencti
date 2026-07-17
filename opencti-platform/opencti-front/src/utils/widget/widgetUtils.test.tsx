@@ -12,8 +12,9 @@ import {
   WidgetVisualizationTypes,
   workspacesWidgetVisualizationTypes,
   fintelTemplatesWidgetVisualizationTypes,
+  getWidgetInterval,
 } from './widgetUtils';
-import type { WidgetDataSelection, WidgetMultiTimeSeries } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
 
 describe('widgetUtils', () => {
   describe('getCurrentCategory', () => {
@@ -378,6 +379,27 @@ describe('widgetUtils', () => {
 
     it('should return false for empty data selection', () => {
       expect(showEstimationWarningForUniqCount([], [])).toBe(false);
+    });
+  });
+
+  describe('getWidgetInterval', () => {
+    it('should return "day" when parameters have no interval set or is undefined', () => {
+      const params = {} as WidgetParameters;
+      expect(getWidgetInterval(params)).toBe('day');
+      expect(getWidgetInterval(undefined)).toBe('day');
+    });
+
+    it('should return "day" when interval is undefined', () => {
+      const params = { interval: undefined } as WidgetParameters;
+      expect(getWidgetInterval(params)).toBe('day');
+    });
+
+    it('should return the configured interval when set', () => {
+      expect(getWidgetInterval({ interval: 'week' } as WidgetParameters)).toBe('week');
+      expect(getWidgetInterval({ interval: 'month' } as WidgetParameters)).toBe('month');
+      expect(getWidgetInterval({ interval: 'quarter' } as WidgetParameters)).toBe('quarter');
+      expect(getWidgetInterval({ interval: 'year' } as WidgetParameters)).toBe('year');
+      expect(getWidgetInterval({ interval: 'day' } as WidgetParameters)).toBe('day');
     });
   });
 

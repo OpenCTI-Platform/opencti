@@ -9,10 +9,11 @@ import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiAreaChartTimeSeriesQuery.graphql';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
@@ -99,6 +100,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiAreaChartTimeSeriesQuery['variables'] => {
   const computed = computeStartEndDates(config);
   const startDate = computed.startDate ?? monthsAgo(12);
@@ -121,7 +123,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -144,6 +146,7 @@ const StixCoreObjectsMultiAreaChart = ({
     refreshRate,
     query: stixCoreObjectsMultiAreaChartTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 

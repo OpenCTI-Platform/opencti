@@ -8,11 +8,12 @@ import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalB
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { monthsAgo, now } from '../../../../utils/Time';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiVerticalBarsTimeSeriesQuery(
@@ -98,6 +99,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiVerticalBarsTimeSeriesQuery['variables'] => {
   const computed = computeStartEndDates(config);
   const startDate = computed.startDate ?? monthsAgo(12);
@@ -120,7 +122,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -143,6 +145,7 @@ const StixCoreObjectsMultiVerticalBars = ({
     refreshRate,
     query: stixCoreObjectsMultiVerticalBarsTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 

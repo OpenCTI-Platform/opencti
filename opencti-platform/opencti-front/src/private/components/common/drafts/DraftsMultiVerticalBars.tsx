@@ -15,6 +15,7 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsMultiVerticalBarsTimeSeriesQuery$data } from './__generated__/DraftsMultiVerticalBarsTimeSeriesQuery.graphql';
+import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
 const draftsMultiVerticalBarsTimeSeriesQuery = graphql`
   query DraftsMultiVerticalBarsTimeSeriesQuery(
@@ -96,7 +97,7 @@ const DraftsMultiVerticalBars = ({
     operation: 'count',
     startDate,
     endDate,
-    interval: parameters.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     filters,
   }), [startDate, endDate, parameters.interval, selection, filters]);
 

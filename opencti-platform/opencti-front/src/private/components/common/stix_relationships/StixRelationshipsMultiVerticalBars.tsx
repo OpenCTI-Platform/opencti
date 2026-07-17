@@ -13,6 +13,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { StixRelationshipsMultiVerticalBarsTimeSeriesQuery } from './__generated__/StixRelationshipsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
@@ -87,6 +88,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
@@ -112,7 +114,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -149,6 +151,7 @@ const StixRelationshipsMultiVerticalBars = ({
     refreshRate,
     query: stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
 

@@ -12,6 +12,7 @@ import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEnt
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -118,7 +119,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };

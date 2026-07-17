@@ -28,7 +28,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
+import { UNIQUE_COUNT_ESTIMATION_WARNING, getWidgetInterval, showEstimationWarningForUniqCount } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
@@ -165,7 +165,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
       operation: 'count' as const,
       startDate: startDate ?? fallbackDates.start,
       endDate: endDate ?? fallbackDates.end,
-      interval: parameters.interval ?? 'day',
+      interval: getWidgetInterval(parameters),
       timeSeriesParameters,
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
