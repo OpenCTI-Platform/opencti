@@ -54,20 +54,15 @@ When a non-zero password validity duration is configured, each user's password i
 
 ### Admin actions
 
-- **Individual reset**: In the user edition drawer (Password tab), click "Force password change". This immediately sets the user's `password_valid_until` to the current time, forcing a change on their next request.
+- **Individual reset**: In the user edition drawer (Password tab), click "Force password change". This immediately sets the user's `password expiration date` to the current time, forcing a change on their next request.
 - **Bulk reset (Mass operation)**: In the users list, select the target users, click **Mass operation**, then set **Password valid until** to **Today** and apply. This expires all selected users' passwords immediately and forces a password change on their next request.
-- **Policy change**: When the validity duration is changed, all existing users' expiration dates are adjusted proportionally. Setting the value back to `0` clears all expiration dates.
+ - **Policy change**: When the validity duration is changed, existing users' password expiration dates may be recalculated to align with the new policy. Setting the value back to `0` disables password expiration.
 
 ### User experience
 
-- **Authenticated users**: When a password expires while the user is logged in, they are redirected to a full-screen password change page at `/dashboard/change-password`.
+- **Authenticated users**: When a password expires while the user is logged in, they are redirected to a dedicated full-screen password change page.
 - **At login**: If the password is already expired at login time, the user is shown a password change form directly within the login page.
 - **Session invalidation**: After changing an expired password, all other active sessions for that user are terminated.
-
-!!! note "Feature flag"
-
-    This feature is gated behind the `FORCE_PASSWORD_CHANGE` feature flag. It must be enabled in `app.enabled_dev_features` or as a platform feature flag to activate the functionality.
-
 
 ## Login messages
 
