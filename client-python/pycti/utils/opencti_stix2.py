@@ -3623,16 +3623,16 @@ class OpenCTIStix2:
             created = "2017-01-20T00:00:00.000Z"
         else:
             created = entity_marking_definition["created"]
+        definition_type = entity_marking_definition["definition_type"].lower()
         return {
             "type": "marking-definition",
             "spec_version": SPEC_VERSION,
             "id": entity_marking_definition["standard_id"],
             "created": created,
-            "definition_type": entity_marking_definition["definition_type"].lower(),
+            "definition_type": definition_type,
             "name": entity_marking_definition["definition"],
             "definition": {
-                entity_marking_definition["definition_type"]
-                .lower(): entity_marking_definition["definition"]
+                definition_type: entity_marking_definition["definition"]
                 .lower()
                 .replace("tlp:", "")
             },

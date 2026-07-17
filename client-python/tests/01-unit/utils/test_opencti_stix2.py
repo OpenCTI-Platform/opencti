@@ -479,6 +479,33 @@ def test_export_selected_reuses_shared_file_marking_definition_conversion(monkey
     assert build_calls == ["marking-definition--shared"]
 
 
+def test_build_export_marking_definition_normalizes_type_once():
+    class _LowerCountingType(str):
+        def __new__(cls, value):
+            instance = super().__new__(cls, value)
+            instance.lower_calls = 0
+            return instance
+
+        def lower(self):
+            self.lower_calls += 1
+            return super().lower()
+
+    definition_type = _LowerCountingType("statement")
+
+    result = OpenCTIStix2._build_export_marking_definition(
+        {
+            "standard_id": "marking-definition--benchmark",
+            "definition_type": definition_type,
+            "definition": "Benchmark",
+            "created": "2026-01-01T00:00:00.000Z",
+        }
+    )
+
+    assert result["definition_type"] == "statement"
+    assert result["definition"] == {"statement": "benchmark"}
+    assert definition_type.lower_calls == 1
+
+
 def _shared_creator_export_entity(index):
     return {
         "id": f"indicator-internal--{index}",
