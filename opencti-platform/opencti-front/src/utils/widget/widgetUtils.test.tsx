@@ -383,9 +383,10 @@ describe('widgetUtils', () => {
   });
 
   describe('getWidgetInterval', () => {
-    it('should return "day" when parameters have no interval set', () => {
+    it('should return "day" when parameters have no interval set or is undefined', () => {
       const params = {} as WidgetParameters;
       expect(getWidgetInterval(params)).toBe('day');
+      expect(getWidgetInterval(undefined)).toBe('day');
     });
 
     it('should return "day" when interval is undefined', () => {

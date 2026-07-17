@@ -14,6 +14,7 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import ApexCharts from 'apexcharts';
 import { StixCoreObjectsMultiHeatMapTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiHeatMapTimeSeriesQuery.graphql';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiHeatMapTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiHeatMapTimeSeriesQuery(
@@ -120,7 +121,7 @@ const buildQueryVariables = (
   return {
     startDate: startDate ?? monthsAgo(12),
     endDate: endDate ?? now(),
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };

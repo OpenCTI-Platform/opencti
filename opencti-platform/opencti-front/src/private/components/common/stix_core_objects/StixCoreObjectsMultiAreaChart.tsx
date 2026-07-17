@@ -13,6 +13,7 @@ import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../..
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiAreaChartTimeSeriesQuery.graphql';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
@@ -122,7 +123,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };

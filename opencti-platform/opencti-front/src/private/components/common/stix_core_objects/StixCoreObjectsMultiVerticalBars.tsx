@@ -13,6 +13,7 @@ import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/com
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { monthsAgo, now } from '../../../../utils/Time';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiVerticalBarsTimeSeriesQuery(
@@ -121,7 +122,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };

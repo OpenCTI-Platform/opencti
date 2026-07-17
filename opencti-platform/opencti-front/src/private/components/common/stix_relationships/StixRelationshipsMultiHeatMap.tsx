@@ -13,6 +13,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
 import { monthsAgo, now } from '../../../../utils/Time';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
   query StixRelationshipsMultiHeatMapTimeSeriesQuery(
@@ -120,7 +121,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate: startDate ?? monthsAgo(12),
     endDate: endDate ?? now(),
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };

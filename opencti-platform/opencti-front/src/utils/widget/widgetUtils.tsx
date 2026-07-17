@@ -261,7 +261,7 @@ export const isWidgetListOrTimeline = (type: string) => {
 /**
  * Returns the time interval to use in a widget.
  */
-export const getWidgetInterval = (params: WidgetParameters) => params?.interval ?? 'day';
+export const getWidgetInterval = (params?: WidgetParameters) => params?.interval ?? 'day';
 
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {

@@ -13,6 +13,7 @@ import { StixRelationshipsMultiLineChartTimeSeriesQuery } from '@components/comm
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiLineChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiLineChartTimeSeriesQuery(
@@ -114,7 +115,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: parameters?.interval ?? 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
