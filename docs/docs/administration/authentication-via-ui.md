@@ -83,6 +83,7 @@ By clicking on the local authentication you can manage your local password polic
 | `Number of words (split on hyphen, space) must be greater or equals to` | Enforce a minimum count of words in a password.               |
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
+| `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
