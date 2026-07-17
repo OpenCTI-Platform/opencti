@@ -545,7 +545,7 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
-export const isTransitoryError = (error: any): boolean => {
+export const isTransitoryError = (error: any, args: any): boolean => {
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status
@@ -575,20 +575,23 @@ export const isTransitoryError = (error: any): boolean => {
     ...collectErrorFieldValues(error, 'name'),
     ...collectErrorFieldValues(error, 'stack'),
   ].join(' ');
-
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-  if (/circuit_breaking_exception|version_conflict|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
+    return true;
+  }
+  // Only retry version conflicts tagged as retriable
+  if (args.retriableVersionConflict && /version_conflict/.test(errorText)) {
     return true;
   }
   return false;
 };
 
-export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
+export const retryElOperations = async (operation: () => Promise<any>, args: any): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
       return await operation();
     } catch (error) {
-      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
+      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error, args)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
         logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
@@ -687,7 +690,7 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
       () => (engine as OpenClient).bulk(args),
     );
   };
-  return retryElOperations(bulkOperation);
+  return retryElOperations(bulkOperation, args);
 };
 export const elRawUpdateByQuery = async (query: any) => {
   const rawUpdateOperation = async () => {
@@ -4892,7 +4895,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate, retriableVersionConflict: true });
           await Promise.all([bulkPromise]);
         }
       }
