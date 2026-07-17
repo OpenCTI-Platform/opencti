@@ -2315,6 +2315,9 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
+        # OpenCTI permits empty Reports, so retain object_refs for consistency with server-side exports.
+        if not no_custom_attributes and entity["type"] == "report":
+            entity.setdefault("object_refs", [])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
