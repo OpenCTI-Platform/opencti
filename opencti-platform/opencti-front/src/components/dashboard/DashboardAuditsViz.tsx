@@ -15,7 +15,7 @@ import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
-import WidgetNotImplemented from 'src/components/dashboard/WidgetNotImplemented';
+import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
