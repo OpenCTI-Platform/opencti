@@ -10,13 +10,14 @@ import DateTimePicker from '../../../../components/common/input/DateTimePicker';
 import MarkdownFieldBase from '../../../../components/fields/markdownField/MarkdownFieldBase';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { CaseIncidentCustomFieldsQuery, CaseIncidentCustomFieldsQuery$data } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
+import { CustomFieldsInputQuery, CustomFieldsInputQuery$data } from './__generated__/CustomFieldsInputQuery.graphql';
 
-// Shared by the Case-Incident creation form and edition overview: fetches the custom field
-// definitions applicable to Case-Incident (with their per-entity-type mandatory/default_value
-// settings resolved), and renders the appropriate input for a given definition.
+// Generic, entity-agnostic custom field infra: fetches the custom field definitions applicable
+// to a given entity type (with their per-entity-type mandatory/default_value settings resolved),
+// and renders the appropriate input for a given definition. Shared by every entity type wiring
+// custom fields into its creation form / edition overview / details view.
 export const customFieldDefinitionsForEntityTypeQuery = graphql`
-  query CaseIncidentCustomFieldsQuery($entityType: String!) {
+  query CustomFieldsInputQuery($entityType: String!) {
     customFieldDefinitionsForEntityType(entityType: $entityType) {
       edges {
         node {
@@ -38,17 +39,17 @@ export const customFieldDefinitionsForEntityTypeQuery = graphql`
   }
 `;
 
-export type CustomFieldDef = NonNullable<NonNullable<CaseIncidentCustomFieldsQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
+export type CustomFieldDef = NonNullable<NonNullable<CustomFieldsInputQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
 
 // Isolates the useLazyLoadQuery call so it can be conditionally mounted (feature-flag gated)
 // without violating the Rules of Hooks. Meant to be rendered inside a <Suspense> boundary and
 // only when the CUSTOM_FIELDS feature flag is enabled: the query field itself throws server-side
 // (no softFail) when the flag is disabled, so it must never be called in that case.
-export const CaseIncidentCustomFieldsLoader: FunctionComponent<{
+export const CustomFieldsLoader: FunctionComponent<{
   entityType: string;
   onLoaded: (definitions: CustomFieldDef[]) => void;
 }> = ({ entityType, onLoaded }) => {
-  const data = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(customFieldDefinitionsForEntityTypeQuery, { entityType });
+  const data = useLazyLoadQuery<CustomFieldsInputQuery>(customFieldDefinitionsForEntityTypeQuery, { entityType });
   const definitions = (data.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
   const definitionsKey = JSON.stringify(definitions);
   useEffect(() => {
@@ -132,7 +133,7 @@ export const isCustomFieldValueSet = (rawValue: string | boolean | string[]): bo
 // Fully controlled (Formik-less) input for a custom field definition; value/onChange are wired
 // to whichever form state manages the caller (Formik initial-submit for creation, per-field
 // blur-submit for edition).
-export const CaseIncidentCustomFieldInput: FunctionComponent<{
+export const CustomFieldInput: FunctionComponent<{
   definition: CustomFieldDef;
   mandatory: boolean;
   value: string | boolean | string[];

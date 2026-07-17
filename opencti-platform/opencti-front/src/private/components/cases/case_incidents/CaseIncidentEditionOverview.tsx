@@ -29,14 +29,14 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import {
   buildCustomFieldValueEntry,
-  CaseIncidentCustomFieldInput,
-  CaseIncidentCustomFieldsLoader,
+  CustomFieldInput,
+  CustomFieldsLoader,
   CustomFieldDef,
   CustomFieldStoredValue,
   getCustomFieldCurrentValue,
   getCustomFieldSetting,
   isCustomFieldValueSet,
-} from './CaseIncidentCustomFields';
+} from '../../common/custom_fields/CustomFieldsInput';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
@@ -472,14 +472,14 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
           />
           {isCustomFieldsEnabled && (
             <Suspense fallback={null}>
-              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+              <CustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
             </Suspense>
           )}
           {customFieldDefs.length > 0 && (
             <>
               <Divider style={{ marginTop: 20 }} />
               {customFieldDefs.map((def) => (
-                <CaseIncidentCustomFieldInput
+                <CustomFieldInput
                   key={def.id}
                   definition={def}
                   mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
