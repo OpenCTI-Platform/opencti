@@ -545,7 +545,7 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
-export const isTransitoryError = (error: any, args?: any): boolean => {
+export const isTransitoryError = (error: any, opts?: { retriableVersionConflict: boolean }): boolean => {
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status
@@ -580,18 +580,18 @@ export const isTransitoryError = (error: any, args?: any): boolean => {
     return true;
   }
   // Only retry version conflicts tagged as retriable
-  if (args?.retriableVersionConflict && /version_conflict/.test(errorText)) {
+  if (opts?.retriableVersionConflict && /version_conflict/.test(errorText)) {
     return true;
   }
   return false;
 };
 
-export const retryElOperations = async (operation: () => Promise<any>, args?: any): Promise<any> => {
+export const retryElOperations = async (operation: () => Promise<any>, opts?: { retriableVersionConflict: boolean }): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
       return await operation();
     } catch (error) {
-      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error, args)) {
+      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error, opts)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
         logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
         await wait(delayMs);
@@ -682,7 +682,7 @@ export const elRawDeleteByQuery = async (query: any) => {
   };
   return retryElOperations(rawDeleteOperation);
 };
-export const elRawBulk = async (context: AuthContext, args: any) => {
+export const elRawBulk = async (context: AuthContext, args: any, bulkOpts?: { retriableVersionConflict: boolean }) => {
   const bulkOperation = async () => {
     return await elExecuteWithAbortSignal(
       context?.requestAbortSignal,
@@ -690,7 +690,7 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
       () => (engine as OpenClient).bulk(args),
     );
   };
-  return retryElOperations(bulkOperation, args);
+  return retryElOperations(bulkOperation, bulkOpts);
 };
 export const elRawUpdateByQuery = async (query: any) => {
   const rawUpdateOperation = async () => {
@@ -4037,8 +4037,8 @@ export const elAttributeValues = async (
 };
 // endregion
 
-export const elBulk = async (context: AuthContext, args: any) => {
-  return elRawBulk(context, args).then((data) => {
+export const elBulk = async (context: AuthContext, args: any, opts?: { retriableVersionConflict: boolean }) => {
+  return elRawBulk(context, args, opts).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i: any) => i.index?.error || i.update?.error).filter((f: any) => f !== undefined);
       if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
@@ -4895,7 +4895,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate, retriableVersionConflict: true });
+          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate }, { retriableVersionConflict: true });
           await Promise.all([bulkPromise]);
         }
       }
