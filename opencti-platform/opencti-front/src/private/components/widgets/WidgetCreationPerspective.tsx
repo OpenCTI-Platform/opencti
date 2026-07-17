@@ -87,6 +87,9 @@ const WidgetCreationPerspective = () => {
       filters: perspective === n.perspective ? n.filters : initialFilters,
       dynamicFrom: perspective === n.perspective ? n.dynamicFrom : emptyFilterGroup,
       dynamicTo: perspective === n.perspective ? n.dynamicTo : emptyFilterGroup,
+      filters_id: undefined,
+      dynamicFrom_id: undefined,
+      dynamicTo_id: undefined,
       columns: perspective === n.perspective ? n.columns : initialColumns,
     }
     ));
