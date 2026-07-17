@@ -191,10 +191,15 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // Init providers from env
     await initializeEnvAuthenticationProviders();
   } else {
-    // Migration first (already created will be not replayed)
-    await runAuthenticationProviderMigration(context, SYSTEM_USER);
-    // In standard mode, init from providers in the database
-    await initDatabaseAuthenticationProviders(context, SYSTEM_USER);
+    // If Local auth is forced through env, do not load other providers at the risk of being locked out of platform
+    if (isLocalAuthForcedEnabledFromEnv()) {
+      logApp.info('[AUTH] Providers were not migrated and enabled because Local Auth is currently enforced through env vars');
+    } else {
+      // Migration first (already created will be not replayed)
+      await runAuthenticationProviderMigration(context, SYSTEM_USER);
+      // In standard mode, init from providers in the database
+      await initDatabaseAuthenticationProviders(context, SYSTEM_USER);
+    }
   }
   // Safety net: force local_auth enabled when no other provider is available
   const finalSettings = await getSettings(context) as unknown as BasicStoreSettings;
