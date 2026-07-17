@@ -64,7 +64,7 @@ describe('catalog-domain decoupling fallback policy', () => {
       manager_supported: true,
       container_version: '1.0.0',
       container_image: 'ghcr.io/test/reduced:1.0.0',
-      container_type: 'EXTERNAL_IMPORT',
+      container_type: 'EXTERNAL_IMPORT' as const,
       config_schema: {
         $schema: 'http://json-schema.org/draft-07/schema#',
         $id: 'reduced-config',

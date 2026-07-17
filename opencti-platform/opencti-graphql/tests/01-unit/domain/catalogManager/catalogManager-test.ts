@@ -165,8 +165,8 @@ describe('catalogManager', () => {
 
     // Wait until a ready call is made (snapshot replaced, keepExistingSnapshot=false)
     await vi.waitFor(() => {
-      const readyCall = updateCatalogManagerInternalCacheMock.mock.calls.find(
-        ([, status]: [unknown, string]) => status === 'ready',
+      const readyCall = (updateCatalogManagerInternalCacheMock.mock.calls as Array<[unknown, string, boolean, string?]>).find(
+        ([, status]) => status === 'ready',
       );
       expect(readyCall).toBeDefined();
       expect(readyCall![2]).toBe(false);
@@ -184,8 +184,8 @@ describe('catalogManager', () => {
     await manager.start();
     // Wait until a full ready call is made (snapshot set = keepExistingSnapshot false)
     await vi.waitFor(() => {
-      const readyCall = updateCatalogManagerInternalCacheMock.mock.calls.find(
-        ([, status, keep]: [unknown, string, boolean]) => status === 'ready' && keep === false,
+      const readyCall = (updateCatalogManagerInternalCacheMock.mock.calls as Array<[unknown, string, boolean, string?]>).find(
+        ([, status, keep]) => status === 'ready' && keep === false,
       );
       expect(readyCall).toBeDefined();
       expect(readyCall![3]).toBe('etag-stable');
@@ -216,8 +216,8 @@ describe('catalogManager', () => {
     await manager.start();
 
     await vi.waitFor(() => {
-      const readyCall = updateCatalogManagerInternalCacheMock.mock.calls.find(
-        ([, status]: [unknown, string]) => status === 'ready',
+      const readyCall = (updateCatalogManagerInternalCacheMock.mock.calls as Array<[unknown, string, boolean, string?]>).find(
+        ([, status]) => status === 'ready',
       );
       expect(readyCall).toBeDefined();
       // 4th argument is revision – should be the ETag value
