@@ -55,8 +55,6 @@ test('Check Logo replacement', { tag: ['@ce'] }, async ({ page }) => {
   await page
     .getByLabel('Close')
     .click();
-  await page.waitForTimeout(1000);
-
   const isLogoBackToDefault = async () => {
     await page.reload();
     const logoSrcChangedToDefault = await page.getByRole('link', { name: 'logo' }).locator('img').getAttribute('src');

@@ -34,7 +34,6 @@ test('Security Coverage CRUD', { tag: ['@securityCoverage', '@mutation'] }, asyn
   const response = await addReport(request, { name: reportScName });
   const reportScId = (await response.json()).data.reportAdd.id;
   const waitForReportCreated = async () => {
-    await securityCoveragePage.navigateFromMenu();
     await reportPage.navigateFromMenu();
     return reportPage.getItemFromList(reportScName).isVisible();
   };

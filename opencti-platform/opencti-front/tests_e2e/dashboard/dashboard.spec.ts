@@ -139,7 +139,6 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   // -------------------------
 
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await expect(dashboardPage.getPageTitle()).toBeVisible();
   await expect(dashboardPage.getItemFromList(duplicateDashboardName)).toBeHidden();
@@ -169,7 +168,6 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await expect(dashboardDetailsPage.getDashboardDetailsPage()).toBeVisible();
   await expect(dashboardDetailsPage.getTitle(updateDashboardName)).toBeVisible();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
 
   // Import dashboard with exhaustive list of widgets
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
@@ -206,7 +204,6 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
 
   // Delete imported dashboard
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000); // After delete need to wait a bit
   // ---------
   // endregion
 
@@ -224,7 +221,6 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await widgetsPage.getActionsWidgetsPopover().click();
   await widgetsPage.getActionButton('Delete').click();
   await widgetsPage.getConfirmButton().click();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
 
   await widgetsPage.createTimelineOfMalwaresWidget();
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
@@ -301,5 +297,4 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
   await dashboardPage.getItemFromList(updateDashboardName).click();
   await dashboardDetailsPage.delete();
-  await page.waitForTimeout(1000);// After delete need to wait a bit
 });

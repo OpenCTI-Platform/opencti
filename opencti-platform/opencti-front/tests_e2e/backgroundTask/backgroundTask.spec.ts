@@ -27,22 +27,19 @@ const waitAndRefreshUntilFirstTaskInStatus = async (page: Page, tasksPage: DataP
   const loopCount = 20; // 10*6000 = 2' max
   let loopCurrent = 0;
 
-  const isOneStatusTaskOk = async () => {
-    await sleep(6000);
+  const checkStatus = async () => {
     await tasksPage.goto();
     if (expectVisible) {
       await expect(tasksPage.getPage()).toBeVisible();
-      const isOneOrMoreStatusVisible = await page.getByText(status).first().isVisible();
-      return isOneOrMoreStatusVisible;
+      return page.getByText(status).first().isVisible();
     }
-    await expect(tasksPage.getPage()).toBeHidden();
-    const isOneOrMoreStatusHidden = await page.getByText(status).first().isHidden();
-    return isOneOrMoreStatusHidden;
+    return page.getByText(status).first().isHidden();
   };
 
-  let isStatusOk = await isOneStatusTaskOk();
+  let isStatusOk = await checkStatus();
   while (!isStatusOk && loopCurrent < loopCount) {
-    isStatusOk = await isOneStatusTaskOk();
+    await sleep(6000);
+    isStatusOk = await checkStatus();
     loopCurrent += 1;
   }
 };
@@ -58,7 +55,6 @@ test('Verify background tasks execution', { tag: ['@ce', '@mutation'] }, async (
   await runBackgroundTaskOnIncidentBySearch(page, false);
 
   // Region Background task page
-  await sleep(3000); // Wait 3 secs for task creation
   await tasksPage.goto();
   await expect(tasksPage.getPage()).toBeVisible();
 

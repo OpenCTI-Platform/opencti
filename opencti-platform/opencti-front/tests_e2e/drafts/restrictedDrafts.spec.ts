@@ -39,8 +39,7 @@ test.describe('Draft Review Tab Navigation', { tag: ['@ce'] }, () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
 
     // Verify deletion completed
-    await page.reload();
-    await expect(Drafts.getDraft(draftName)).not.toBeVisible();
+    await expect(Drafts.getDraft(draftName)).toBeHidden({ timeout: 5000 });
   });
 });
 
@@ -67,8 +66,7 @@ test.describe('Restricted Drafts', { tag: ['@ce'] }, () => {
 
     // remove restrictions on the draft
     await Restrictions.removeRestrictionsOnDraft(draftName);
-    await page.reload();
-    await expect(Restrictions.getDraft(draftName)).not.toBeVisible();
+    await expect(Restrictions.getDraft(draftName)).toBeHidden({ timeout: 5000 });
 
     // verify the draft no longer appears in the restricted drafts list
     await Drafts.navigate();
@@ -76,7 +74,6 @@ test.describe('Restricted Drafts', { tag: ['@ce'] }, () => {
 
     // clean up by deleting the created draft
     await Drafts.deleteDraft(draftName);
-    await page.reload();
-    await expect(Drafts.getDraft(draftName)).not.toBeVisible();
+    await expect(Drafts.getDraft(draftName)).toBeHidden({ timeout: 5000 });
   });
 });

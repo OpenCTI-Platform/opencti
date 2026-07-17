@@ -54,7 +54,7 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   // Select system default
   await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId(`${THEME.name}-li`).click();
-  await page.waitForTimeout(1000);
+  await expect(page.getByRole('link', { name: 'logo' }).locator('img')).not.toHaveAttribute('src', /static\/images\/logo_text_dark/);
   let logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
@@ -70,7 +70,7 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   for (const closeBtn of await page.getByLabel('Close').all()) {
     closeBtn.click();
   }
-  await page.waitForTimeout(1000);
+  await expect(page.getByRole('link', { name: 'logo' }).locator('img')).toHaveAttribute('src', /logo_text_dark/);
 
   // expect to have the default dark logo
   logoSrc = await page
@@ -81,7 +81,6 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
   await page.getByTestId('Dark-li').click();
-  await page.waitForTimeout(1000);
 
   // Delete theme
   await page.getByTestId(`${THEME.name}-popover`).click();

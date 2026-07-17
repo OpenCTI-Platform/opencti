@@ -27,11 +27,13 @@ export default class StixCoreObjectContentTabPage {
     const element = this.page.getByLabel('Editing area: main');
     await element.click();
     if (isAutoSave) {
+      // Set up the response listener before fill so we don't miss the auto-save request
+      const saveResponse = this.page.waitForResponse(
+        (response) => response.url().includes('/graphql') && response.status() === 200,
+      );
       await element.fill(input);
-      // We wait for changes to be saved before leaving page
-      return new Promise((r) => {
-        setTimeout(r, 4000);
-      });
+      await saveResponse;
+      return;
     }
 
     await element.fill(input);

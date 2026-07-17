@@ -5,7 +5,6 @@ import PirPage from '../model/pir.pageModel';
 import PirFormPageModel from '../model/form/pirForm.pageModel';
 import PirDetailsPageModel from '../model/pirDetails.pageModel';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
-import { awaitUntilCondition } from '../utils';
 
 /**
  * Content of the test
@@ -83,24 +82,21 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
   // region Control tab Overview after flagging
   // ------------------------------------------
 
-  const waitForFlagging = async () => {
+  await expect.poll(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '1';
-  };
-  await awaitUntilCondition(waitForFlagging, 5000, 20);
+    return pirDetails.getEntityTypeCount('Malware').innerText();
+  }, { timeout: 100000, intervals: [5000] }).toContain('1');
   await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
   await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
   await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
 
   const historyItemName = 'Malware E2E dashboard - Malware - month ago added to PIR';
-  const waitForHistory = async () => {
+  await expect.poll(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
     return pirDetails.getNewsFeedItem(historyItemName).isVisible();
-  };
-  await awaitUntilCondition(waitForHistory, 5000, 20);
+  }, { timeout: 100000, intervals: [5000] }).toBe(true);
   await expect(pirDetails.getNewsFeedItem(historyItemName)).toBeVisible();
 
   // ---------
@@ -142,13 +138,11 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
   // region Control tab Overview after unflagging
   // --------------------------------------------
 
-  const waitForUnflagging = async () => {
+  await expect.poll(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '0';
-  };
-  await awaitUntilCondition(waitForUnflagging, 5000, 20);
+    return pirDetails.getEntityTypeCount('Malware').innerText();
+  }, { timeout: 100000, intervals: [5000] }).toContain('0');
   await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
 
   // ---------
