@@ -47,7 +47,6 @@ const RootAudit = lazy(() => import('./components/settings/activity/audit/Root')
 const RootPir = lazy(() => import('./components/pir/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
 const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
-const RedirectByPath = lazy(() => import('./components/RedirectByPath'));
 
 interface IndexProps {
   settings: RootSettings$data;
@@ -131,7 +130,6 @@ const Index = ({ settings }: IndexProps) => {
                 />
                 {/* Search need to be rework */}
                 <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
-                <Route path="/redirect/*" element={boundaryWrapper(RedirectByPath)} />
                 <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
                 <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
                 <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />

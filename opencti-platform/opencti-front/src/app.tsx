@@ -8,6 +8,7 @@ import Loader from './components/Loader';
 
 const PublicRoot = lazy(() => import('./public/PublicRoot'));
 const PrivateRoot = lazy(() => import('./private/Root'));
+const RedirectByPath = lazy(() => import('./private/components/RedirectByPath'));
 
 const App = () => (
   <CookiesProvider>
@@ -18,6 +19,7 @@ const App = () => (
             <Routes>
               <Route path="/dashboard/*" Component={PrivateRoot} />
               <Route path="/public/*" Component={PublicRoot} />
+              <Route path="/redirect/*" element={<RedirectByPath />} />
               {/* By default, redirect to dashboard */}
               <Route
                 path="/*"

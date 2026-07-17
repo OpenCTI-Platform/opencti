@@ -1,11 +1,23 @@
 import React from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { NoMatch } from '@components/Error';
-import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../utils/hooks/useGranted';
+import { BYPASS, SETTINGS_SETMANAGEXTMHUB, getCapabilitiesName } from '../../utils/hooks/useGranted';
+import type { RedirectByPathQuery as RedirectByPathQueryType } from './__generated__/RedirectByPathQuery.graphql';
 
 export const XTM_HUB_AUTO_REGISTER_QUERY_PARAM = 'xtmHubAutoRegister';
 export const XTM_HUB_PRODUCT_NAME_QUERY_PARAM = 'productName';
 export const XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM = 'xtmHubPermissionRequired';
+
+const redirectByPathQuery = graphql`
+  query RedirectByPathQuery {
+    me {
+      capabilities {
+        name
+      }
+    }
+  }
+`;
 
 const STATIC_PATH_REDIRECTS: Record<string, string> = {
   'connect-xtm-hub': '/dashboard/settings/experience',
@@ -22,7 +34,10 @@ const normalizePathKey = (value?: string) => (value ?? '').replace(/^\/+|\/+$/g,
 const RedirectByPath = () => {
   const { '*': pathKey } = useParams();
   const { search } = useLocation();
-  const isGrantedToXtmHubRegistration = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const data = useLazyLoadQuery<RedirectByPathQueryType>(redirectByPathQuery, {});
+  const userCapabilities = getCapabilitiesName(data.me.capabilities);
+  const isGrantedToXtmHubRegistration = userCapabilities.includes(BYPASS)
+    || userCapabilities.some((cap) => cap !== BYPASS && cap.includes(SETTINGS_SETMANAGEXTMHUB));
   const normalizedPathKey = normalizePathKey(pathKey);
   const targetPath = STATIC_PATH_REDIRECTS[normalizedPathKey];
 
