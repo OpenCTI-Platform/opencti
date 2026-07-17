@@ -259,6 +259,7 @@ type AppMemory {
 input ExportContext {
   entity_id: String
   entity_type: String!
+  visible_columns: [String]
 }
 
 type AppDebugDistribution {

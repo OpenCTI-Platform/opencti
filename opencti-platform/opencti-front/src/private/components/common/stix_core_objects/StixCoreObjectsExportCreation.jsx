@@ -65,15 +65,26 @@ const StixCoreObjectsExportCreation = ({
 
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
+  const visibleColumnExportEnabledFormats = ['text/csv'];
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
     const { orderBy, filters, orderMode, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
+    const updatedExportContext = { ...exportContext };
+    // Only forward visible_columns for a "Current view" CSV export. The column
+    // selector is hidden for other formats, so clear it otherwise (including
+    // after the format is switched away from CSV) to avoid sending a stale
+    // hidden-field value to the export connector.
+    if (values.columns !== 'view' || values.format !== 'text/csv') {
+      updatedExportContext.visible_columns = undefined;
+    }
+
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
         input: {
-          exportContext,
+          exportContext: updatedExportContext,
           format: values.format,
           exportType: exportType ?? 'full',
           selectedIds,
@@ -105,13 +116,14 @@ const StixCoreObjectsExportCreation = ({
               format: '',
               contentMaxMarkings: [],
               fileMarkings: [],
+              columns: 'all',
             }}
             validationSchema={exportValidation(t_i18n)}
             onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
             }
             onReset={() => setOpen(false)}
           >
-            {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+            {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
               <Form>
                 <Dialog
                   open={open}
@@ -170,6 +182,24 @@ const StixCoreObjectsExportCreation = ({
                               style={fieldSpacingContainerStyle}
                               setFieldValue={setFieldValue}
                             />
+                            {visibleColumnExportEnabledFormats.includes(values.format)
+                              ? (
+                                  <Field
+                                    component={SelectField}
+                                    variant="standard"
+                                    name="columns"
+                                    label={t_i18n('Choose column to export')}
+                                    fullWidth={true}
+                                    containerstyle={fieldSpacingContainerStyle}
+                                  >
+                                    <MenuItem value="all">
+                                      {t_i18n('All attributes')}
+                                    </MenuItem>
+                                    <MenuItem value="view">
+                                      {t_i18n('Current view')}
+                                    </MenuItem>
+                                  </Field>
+                                ) : undefined}
                           </>
                         );
                       }
