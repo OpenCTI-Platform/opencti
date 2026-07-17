@@ -18,13 +18,8 @@ vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
   default: () => <div data-testid="widget-vertical-bars" />,
 }));
 
-vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
-  default: () => <div data-testid="widget-no-host" />,
-}));
-
-vi.mock('../../../../components/Loader', () => ({
-  default: () => <div data-testid="loader" />,
-  LoaderVariant: { inElement: 'inElement' },
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-render-content">{children}</div>,
 }));
 
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
@@ -37,6 +32,7 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
         date_attribute: 'created_at',
       }],
       isMissingHostEntity: false,
+      isMissingSavedFilters: false,
       isPreviewMode: false,
       queryRef: null,
     };
@@ -44,11 +40,6 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/dashboard-types', () => ({}));
-
-vi.mock('../../../../utils/hooks/useGranted', () => ({
-  default: () => true,
-  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
-}));
 
 import StixRelationshipsMultiVerticalBars from './StixRelationshipsMultiVerticalBars';
 
