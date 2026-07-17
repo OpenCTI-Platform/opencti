@@ -1,0 +1,103 @@
+name: Run OpenCTI frontend quality checks
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: "Reference of the branch or commit sha"
+        type: string
+        default: ${{ github.sha }}
+
+jobs:
+  opencti-frontend-test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Frontend install and build
+      run: |
+        docker run  \
+          --name frontend-build \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn install
+            yarn build
+            '
+
+    - name: Frontend type checking and linting
+      run: |
+        docker run  \
+          --name frontend-lint \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn check-ts
+            yarn lint
+            '
+
+    - name: Frontend tests
+      if: '!cancelled()'
+      run: |
+        docker run  \
+          --name frontend-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
+            '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v7
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
+        flags: opencti-front
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
+
+  opencti-frontend-verify-translation:
+    name: Verify translation
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Frontend verify translation
+      run: |
+        docker run  \
+          --name frontend-verify-translation \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-front
+            node script/verify-translation.js
+            '
+

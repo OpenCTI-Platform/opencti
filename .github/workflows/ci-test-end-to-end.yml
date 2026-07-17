@@ -119,7 +119,7 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
           -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
           -e APP__PORT=4100 \
-          -e APP__ENABLED_DEV_FEATURES='["*"]' \
+          -e APP__ENABLED_DEV_FEATURES='[]' \
           -e APP__ADMIN__PASSWORD=admin \
           -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \

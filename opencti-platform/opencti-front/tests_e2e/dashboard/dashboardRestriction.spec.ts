@@ -17,7 +17,7 @@ import DashboardWidgetsPageModel from '../model/DashboardWidgets.pageModel';
 import DashboardDetailsPage from '../model/dashboardDetails.pageModel';
 import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 
-test('Dashboard restriction access', { tag: ['@ce'] }, async ({ page }) => {
+test('Dashboard restriction access', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   test.setTimeout(300000); // This test has 7 login/logout cycles — needs more headroom than the default 200s
 
   const leftBar = new LeftBarPage(page);

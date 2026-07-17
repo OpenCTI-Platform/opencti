@@ -282,9 +282,9 @@ jobs:
           docker load --input /tmp/opencti-builder.tar   
           docker images
 
-    - name: Start unit and linter (aka yarn test:ci-unit)
+    - name: Backend install and build
       run: |
-        docker run --name unit-and-other-tests \
+        docker run --name backend-build \
           -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
@@ -294,8 +294,31 @@ jobs:
             yarn install
             yarn install:python
             yarn build
+        '
+
+    - name: Backend type checking and linting
+      run: |
+        docker run --name backend-lint \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
             yarn check-ts
             yarn lint
+        '
+
+    - name: Start unit tests (aka yarn test:ci-unit)
+      if: '!cancelled()'
+      run: |
+        docker run --name unit-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
 
