@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import {
   getCurrentCategory,
   getCurrentAvailableParameters,
@@ -13,8 +14,15 @@ import {
   workspacesWidgetVisualizationTypes,
   fintelTemplatesWidgetVisualizationTypes,
   getWidgetInterval,
+  useGetNumberWidgetTitle,
 } from './widgetUtils';
 import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+
+vi.mock('src/utils/hooks/useEntityTranslation', () => ({
+  default: () => ({
+    translateEntityType: (label: string) => `translated_${label}`,
+  }),
+}));
 
 describe('widgetUtils', () => {
   describe('getCurrentCategory', () => {
@@ -427,6 +435,28 @@ describe('widgetUtils', () => {
       ];
 
       expect(validTypes.length).toBe(18);
+    });
+  });
+
+  describe('useGetNumberWidgetTitle', () => {
+    it('should return translated custom title when parameters.title is set', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: 'My Custom Title' } as WidgetParameters, 'Default'));
+      expect(result.current).toBe('translated_My Custom Title');
+    });
+
+    it('should return translated default title when parameters.title is empty', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: '' } as WidgetParameters, 'Fallback Title'));
+      expect(result.current).toBe('translated_Fallback Title');
+    });
+
+    it('should return translated default title when parameters.title is null', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: null } as WidgetParameters, 'Default Title'));
+      expect(result.current).toBe('translated_Default Title');
+    });
+
+    it('should return translated default title when parameters.title is undefined', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({} as WidgetParameters, 'Number of entities'));
+      expect(result.current).toBe('translated_Number of entities');
     });
   });
 });

@@ -4,6 +4,9 @@ const useEntityTranslation = () => {
   const { t_i18n } = useFormatter();
 
   const translateEntityType = (type: string) => {
+    if (type === '') {
+      return type;
+    }
     if (t_i18n(`entity_${type}`) !== `entity_${type}`) {
       return t_i18n(`entity_${type}`);
     }
