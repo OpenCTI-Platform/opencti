@@ -3,8 +3,7 @@ name: PR conventions checks
 # It avoids jobs that require elevated write permissions/secrets on fork PRs; PR-write operations should live in a separate workflow.
 
 on:
-  #pull_request_target:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, reopened, ready_for_review, synchronize]
 
 permissions: {}
