@@ -11,6 +11,9 @@ import {
   getRedisVersion,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
+  CACHE_RESET_TOPIC,
+  publishCacheResetEvent,
+  pubSubSubscription,
   redisAddIngestionHistory,
   redisClearTelemetry,
   redisGetForgotPasswordOtp,
@@ -315,5 +318,58 @@ describe('Redis ingestion history', () => {
     expect(history).toHaveLength(20);
     expect(history[0].messages).toEqual(['msg-24']);
     expect(history[19].messages).toEqual(['msg-5']);
+  });
+});
+
+describe('Redis publishCacheResetEvent', () => {
+  it('should publish a cache reset event that subscribers receive', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+
+      const timeout = 5000;
+      const start = Date.now();
+      while (!receivedEvents.some((e) => e.entityType === 'User') && Date.now() - start < timeout) {
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+      }
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(1);
+      const userEvent = receivedEvents.find((e) => e.entityType === 'User');
+      expect(userEvent).toBeDefined();
+      expect(userEvent.entityType).toBe('User');
+    } finally {
+      subscription.unsubscribe();
+    }
+  });
+
+  it('should publish distinct events for different entity types', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+      await publishCacheResetEvent('Settings');
+
+      const timeout = 5000;
+      const start = Date.now();
+      while (
+        (!receivedEvents.some((e) => e.entityType === 'User') || !receivedEvents.some((e) => e.entityType === 'Settings'))
+        && Date.now() - start < timeout
+      ) {
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
+      }
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(2);
+      expect(receivedEvents.some((e) => e.entityType === 'User')).toBe(true);
+      expect(receivedEvents.some((e) => e.entityType === 'Settings')).toBe(true);
+    } finally {
+      subscription.unsubscribe();
+    }
   });
 });
