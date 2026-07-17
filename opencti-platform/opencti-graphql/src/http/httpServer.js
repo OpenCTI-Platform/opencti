@@ -36,10 +36,10 @@ const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
 const graphqlMethodRestriction = (req, res, next) => {
-  if (req.method === 'POST') {
+  if (req.method === 'POST' || req.method === 'OPTIONS') {
     return next();
   }
-  res.set('Allow', 'POST');
+  res.set('Allow', 'POST, OPTIONS');
   return res.status(405).json({
     name: 'MethodNotAllowedError',
     message: 'Method Not Allowed. Use POST for GraphQL requests.',
