@@ -77,9 +77,11 @@ Allow to define messages on the login page to customize and highlight your platf
 - Platform consent message: A consent message that obscures the login form until users check the approval box, ensuring informed user consent.
 - Platform consent confirm text: A message accompanying the consent box, providing clarity on the consent confirmation process.
 
-![Login message configuration](./assets/login-message-configuration.png)
+![Login message configuration](./assets/login-message-configuration1.png)
+![Login message configuration](./assets/login-message-configuration2.jpeg)
 
-![Login message illustration](./assets/login-message-illustration.png)
+![Login message illustration](./assets/login-message-illustration1.jpeg)
+![Login message illustration](./assets/login-message-illustration2.png)
 
 
 ### Platform banner configuration
