@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { DialogActions } from '@mui/material';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
 import { PopoverProps } from '@mui/material/Popover';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import Loader from 'src/components/Loader';

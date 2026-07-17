@@ -5,7 +5,7 @@ import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
 import Workflow from './Workflow';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 

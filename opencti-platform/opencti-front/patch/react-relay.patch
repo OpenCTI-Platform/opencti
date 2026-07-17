@@ -1,0 +1,12 @@
+diff --git a/ReactRelayTypes.d.ts b/ReactRelayTypes.d.ts
+index f41fd49a16a73cfae7b299fc718c95a7e0790d72..ef8e5feb17835cd9bc5c8d7f09a8c9b4b120a887 100644
+--- a/ReactRelayTypes.d.ts
++++ b/ReactRelayTypes.d.ts
+@@ -137,6 +137,7 @@ export type PreloadedQuery<
+     TEnvironmentProviderOptions = EnvironmentProviderOptions,
+ > = Readonly<{
+     kind: 'PreloadedQuery';
++    ' $__type'?: TQuery;
+     environment: IEnvironment;
+     environmentProviderOptions?: TEnvironmentProviderOptions | null | undefined;
+     fetchKey: string | number;

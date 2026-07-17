@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, usePreloadedQuery } from 'react-relay';
+import type { PreloadedQuery } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import List from '@mui/material/List';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import LocalPoliceOutlined from '@mui/icons-material/LocalPoliceOutlined';
 import { useTheme } from '@mui/styles';
