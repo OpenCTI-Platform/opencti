@@ -43,8 +43,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import { CaseIncidentCustomFieldsQuery } from './__generated__/CaseIncidentCustomFieldsQuery.graphql';
-import { CaseIncidentCustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from './CaseIncidentCustomFields';
+import { CustomFieldsInputQuery } from '../../common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
+import { CustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from '../../common/custom_fields/CustomFieldsInput';
 
 const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
@@ -413,7 +413,7 @@ const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { c
             <>
               <Divider style={{ marginTop: 20 }} />
               {customFieldDefs.map((def) => (
-                <CaseIncidentCustomFieldInput
+                <CustomFieldInput
                   key={def.id}
                   definition={def}
                   mandatory={getCustomFieldSetting(def, CASE_INCIDENT_TYPE)?.mandatory ?? false}
@@ -483,7 +483,7 @@ const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { c
 // inner form initializes. Only mounted when the CUSTOM_FIELDS feature flag is enabled, since the
 // underlying query throws server-side otherwise.
 const CaseIncidentCreationFormWithCustomFields: FunctionComponent<IncidentFormProps> = (props) => {
-  const data = useLazyLoadQuery<CaseIncidentCustomFieldsQuery>(
+  const data = useLazyLoadQuery<CustomFieldsInputQuery>(
     customFieldDefinitionsForEntityTypeQuery,
     { entityType: CASE_INCIDENT_TYPE },
   );
