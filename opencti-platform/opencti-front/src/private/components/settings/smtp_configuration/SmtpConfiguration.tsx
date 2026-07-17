@@ -3,9 +3,11 @@ import SmtpConfigurationForm from './SmtpConfigurationForm';
 import SmtpTestDialog from './SmtpTestDialog';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import { useFormatter } from 'src/components/i18n';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { DialogActions } from '@mui/material';
@@ -25,6 +27,7 @@ import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
 import Security from 'src/utils/Security';
 import { SETTINGS_SETACCESSES } from 'src/utils/hooks/useGranted';
+import Card from 'src/components/common/card/Card';
 
 const smtpConfigurationDeleteMutation = graphql`
   mutation SmtpConfigurationDeleteMutation($id: ID!) {
@@ -151,72 +154,90 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           </Button>
         </div>
       </Security>
-      <List style={{ marginTop: 20 }}>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('SMTP enabled')} />
-          <ItemBoolean status={smtpEnabled} label={smtpEnabled ? t_i18n('Yes') : t_i18n('No')} />
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Use DB configuration')} />
-          {renderBoolean(smtpConfiguration?.use_db_config)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Sender email address')} />
-          {renderText(smtpConfiguration?.sender_email_address)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Hostname')} />
-          {renderText(smtpConfiguration?.hostname)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Port')} />
-          {renderText(smtpConfiguration?.port)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Use SSL/TLS')} />
-          {renderBoolean(smtpConfiguration?.use_ssl)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Reject unauthorized certificates')} />
-          {renderBoolean(smtpConfiguration?.reject_unauthorized)}
-        </ListItem>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Authentication type')} />
-          {renderText(authType)}
-        </ListItem>
-        {authType === 'basic' && (
-          <>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Username')} />
-              {renderText(smtpConfiguration?.username)}
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Password')} />
-              <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
-            </ListItem>
-          </>
-        )}
-        {authType === 'oauth2' && (
-          <>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('OAuth user')} />
-              {renderText(smtpConfiguration?.oauth_user)}
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('OAuth client ID')} />
-              <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('OAuth issuer')} />
-              {renderText(smtpConfiguration?.oauth_issuer)}
-            </ListItem>
-            <ListItem divider={false}>
-              <ListItemText primary={t_i18n('Refresh token expiration date')} />
-              {renderText(smtpConfiguration?.oauth_refresh_token_expires_at ? nsdt(smtpConfiguration.oauth_refresh_token_expires_at) : null)}
-            </ListItem>
-          </>
-        )}
-      </List>
+      <Card title={t_i18n('SMTP configuration')} sx={{ marginTop: 2, paddingTop: 1 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>{t_i18n('SMTP fields')}</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', paddingY: 2 }}>{t_i18n('SMTP value')}</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell>{t_i18n('SMTP enabled')}</TableCell>
+              <TableCell>
+                <ItemBoolean status={smtpEnabled} label={smtpEnabled ? t_i18n('Yes') : t_i18n('No')} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('use configuration in interface')}</TableCell>
+              <TableCell>{renderBoolean(smtpConfiguration?.use_db_config)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Sender email address')}</TableCell>
+              <TableCell>{renderText(smtpConfiguration?.sender_email_address)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Hostname')}</TableCell>
+              <TableCell>{renderText(smtpConfiguration?.hostname)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Port')}</TableCell>
+              <TableCell>{renderText(smtpConfiguration?.port)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Use SSL/TLS')}</TableCell>
+              <TableCell>{renderBoolean(smtpConfiguration?.use_ssl)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Reject unauthorized certificates')}</TableCell>
+              <TableCell>{renderBoolean(smtpConfiguration?.reject_unauthorized)}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>{t_i18n('Authentication type')}</TableCell>
+              <TableCell>{renderText(authType)}</TableCell>
+            </TableRow>
+            {authType === 'basic' && (
+              <>
+                <TableRow>
+                  <TableCell>{t_i18n('Username')}</TableCell>
+                  <TableCell>{renderText(smtpConfiguration?.username)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>{t_i18n('Password')}</TableCell>
+                  <TableCell>
+                    <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
+            {authType === 'oauth2' && (
+              <>
+                <TableRow>
+                  <TableCell>{t_i18n('OAuth user')}</TableCell>
+                  <TableCell>{renderText(smtpConfiguration?.oauth_user)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>{t_i18n('OAuth client ID')}</TableCell>
+                  <TableCell>
+                    <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>{t_i18n('OAuth issuer')}</TableCell>
+                  <TableCell>{renderText(smtpConfiguration?.oauth_issuer)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>{t_i18n('Refresh token expiration date')}</TableCell>
+                  <TableCell>
+                    {renderText(smtpConfiguration?.oauth_refresh_token_expires_at ? nsdt(smtpConfiguration.oauth_refresh_token_expires_at) : null)}
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
+          </TableBody>
+        </Table>
+      </Card>
       <Security needs={[SETTINGS_SETACCESSES]}>
         <>
           <Drawer
