@@ -13,7 +13,7 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { CaseIncidentCustomFieldsLoader, CustomFieldDef } from './CaseIncidentCustomFields';
+import { CustomFieldsLoader, CustomFieldDef } from '../../common/custom_fields/CustomFieldsInput';
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
 
@@ -161,7 +161,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
           {isCustomFieldsEnabled && customFieldValues.length > 0 && (
             <Suspense fallback={null}>
-              <CaseIncidentCustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+              <CustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
             </Suspense>
           )}
           {customFieldValues.map((cfv) => (
