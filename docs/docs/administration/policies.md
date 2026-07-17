@@ -55,7 +55,7 @@ When a non-zero password validity duration is configured, each user's password i
 ### Admin actions
 
 - **Individual reset**: In the user edition drawer (Password tab), click "Force password change". This immediately sets the user's `password_valid_until` to the current time, forcing a change on their next request.
-- **Bulk reset**: In the users list, select multiple users and use the toolbar action "Force password change" to expire all selected users' passwords at once.
+- **Bulk reset (Mass operation)**: In the users list, select the target users, click **Mass operation**, then set **Password valid until** to **Today** and apply. This expires all selected users' passwords immediately and forces a password change on their next request.
 - **Policy change**: When the validity duration is changed, all existing users' expiration dates are adjusted proportionally. Setting the value back to `0` clears all expiration dates.
 
 ### User experience
