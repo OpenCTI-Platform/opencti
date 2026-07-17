@@ -28,13 +28,6 @@ type CustomFieldEntityTypeSetting {
   default_value: String
 }
 
-# Per-entity-type settings of a custom field definition (mandatory / default value are per entity type - US.2)
-type CustomFieldEntityTypeSetting {
-  entity_type: String!
-  mandatory: Boolean!
-  default_value: String
-}
-
 type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
