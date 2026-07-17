@@ -1,7 +1,7 @@
-import WidgetContainer from 'src/components/dashboard/WidgetContainer';
-import { useFormatter } from 'src/components/i18n';
 import { ReactNode } from 'react';
-import WidgetNoData from 'src/components/dashboard/WidgetNoData';
+import WidgetContainer from './WidgetContainer';
+import WidgetNoData from './WidgetNoData';
+import { useFormatter } from '../i18n';
 
 interface WidgetNotImplementedProps {
   popover: ReactNode;
