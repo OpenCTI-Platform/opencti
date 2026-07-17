@@ -27,7 +27,7 @@ import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
 import useHelper from '../../utils/hooks/useHelper';
-import WidgetNotImplemented from 'src/components/dashboard/WidgetNotImplemented';
+import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
