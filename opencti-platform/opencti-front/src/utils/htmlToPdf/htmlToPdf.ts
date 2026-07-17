@@ -27,18 +27,15 @@ import { dateFormat } from '../Time';
  *
  * @param pdfMakeObject Definition of the PDF to generate.
  * @param checkOrientation True if check content to determine PDF orientation.
-
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF ready to be downloaded.
  */
 const generatePdf = (
   pdfMakeObject: TDocumentDefinitions,
   checkOrientation = false,
-  isTiptapEnabled = false,
 ) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
-    docDefinition.pageOrientation = determineOrientation(isTiptapEnabled);
+    docDefinition.pageOrientation = determineOrientation();
   }
   pdfMake.setTableLayouts(defaultTableLayout);
   pdfMake.setFonts(FONTS);
@@ -50,16 +47,14 @@ const generatePdf = (
  *
  * @param fileName name of the file to transform.
  * @param content The content of the file.
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdf = (
   fileName: string,
   content: string,
-  isTiptapEnabled = false,
 ) => {
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
 
   // Improve render for markdown files.
   if (fileName && fileName.endsWith('.md')) {
@@ -91,7 +86,7 @@ export const htmlToPdf = (
     font: selectedFont,
   };
 
-  return generatePdf(pdfMakeObject, false, isTiptapEnabled);
+  return generatePdf(pdfMakeObject, false);
 };
 /**
  * Part to handle the embedded images of a file
@@ -162,7 +157,6 @@ export const resolvePdfMakeEmbeddedImages = async (
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
  * @param fintelDesign Design of the template
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdfReport = async (
@@ -171,7 +165,6 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
-  isTiptapEnabled = false,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -192,7 +185,7 @@ export const htmlToPdfReport = async (
   }
 
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
@@ -295,5 +288,5 @@ export const htmlToPdfReport = async (
     pageBreakBefore: pdfPageBreaks,
   };
 
-  return generatePdf(docDefinition, false, isTiptapEnabled);
+  return generatePdf(docDefinition, false);
 };
