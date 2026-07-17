@@ -16932,6 +16932,7 @@ type DataSanityImpactedElement {
 
 type DataSanityDryRunOutput {
   estimated_impact: [DataSanityImpactedElement!]!
+}
 
 type CustomFieldValue {
   field_id: ID!
@@ -16965,6 +16966,7 @@ type CustomFieldDefinition implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics: [Metric]
   created: DateTime

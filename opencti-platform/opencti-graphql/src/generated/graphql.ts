@@ -6459,6 +6459,7 @@ export type CustomFieldDefinition = BasicObject & InternalObject & {
   multiple: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  representative: Representative;
   select_options?: Maybe<Array<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
 };
@@ -43951,6 +43952,7 @@ export type CustomFieldDefinitionResolvers<ContextType = any, ParentType extends
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   select_options?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
