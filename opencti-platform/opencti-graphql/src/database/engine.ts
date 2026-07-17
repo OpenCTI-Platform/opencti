@@ -545,7 +545,7 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
-export const isTransitoryError = (error: any, args: any): boolean => {
+export const isTransitoryError = (error: any, args?: any): boolean => {
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status
@@ -580,13 +580,13 @@ export const isTransitoryError = (error: any, args: any): boolean => {
     return true;
   }
   // Only retry version conflicts tagged as retriable
-  if (args.retriableVersionConflict && /version_conflict/.test(errorText)) {
+  if (args?.retriableVersionConflict && /version_conflict/.test(errorText)) {
     return true;
   }
   return false;
 };
 
-export const retryElOperations = async (operation: () => Promise<any>, args: any): Promise<any> => {
+export const retryElOperations = async (operation: () => Promise<any>, args?: any): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
       return await operation();
