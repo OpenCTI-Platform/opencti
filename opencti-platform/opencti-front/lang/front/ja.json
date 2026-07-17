@@ -3297,7 +3297,7 @@
   "Only lowercase letters, numbers and hyphens are allowed": "小文字、数字、ハイフンのみ使用可",
   "Only successful tests allow the ingestion creation.": "成功したテストのみが取り込みの作成を許可します。",
   "Only successful tests allow the ingestion edition.": "成功したテストのみがインジェスト版を許可します。",
-  "Only yourself and service accounts can be selected": "選択できるのはご自身とサービスアカウントのみです",
+  "Only yourself and service accounts can be selected": "選択できるのは、ご自身とサービスアカウントのみです",
   "only_eq_to": "に等しい。",
   "Open": "開く",
   "Open chatbot": "オープンチャットボット",
