@@ -161,14 +161,22 @@ const transformToWorkflowDefinition = (
   });
 
   // 3. Identify Initial State
-  const initialState = nodes
-    .filter((node) => node.type === WorkflowNodeType.status)
-    .find(({ id }) => !edges.find((e) => e.target === id));
+  const statusNodes = nodes.filter((node) => node.type === WorkflowNodeType.status);
+  const rootStatusNode = statusNodes.find(({ id }) => !edges.find((e) => e.target === id));
+
+  // When the graph holds no status node (empty draft / reset), do NOT fall back to the
+  // server's initialState: that would carry a stale value into an otherwise empty schema.
+  // Use the wildcard '*' instead — the backend treats it as a neutral initial state and
+  // skips state-existence checks for it. This also keeps this function's output aligned
+  // between handleReset and the autosave effect, preventing a spurious follow-up mutation.
+  const initialState = statusNodes.length === 0
+    ? '*'
+    : (nodes.find((n) => n.id === rootStatusNode?.id)?.data.statusTemplate.id || workflowDefinition?.initialState);
 
   return {
     id: workflowDefinition?.id,
     name: workflowDefinition?.name,
-    initialState: nodes.find((n) => n.id === initialState?.id)?.data.statusTemplate.id || workflowDefinition?.initialState,
+    initialState,
     states,
     transitions,
   };
