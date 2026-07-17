@@ -4,6 +4,7 @@ import type { Widget, WidgetHost } from 'src/utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboard-viz-utils';
+import WidgetNotImplemented from 'src/components/dashboard/WidgetNotImplemented';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -44,7 +45,9 @@ const DashboardRawViz = ({
         />
       );
     default:
-      return 'Not implemented yet';
+      return (
+        <WidgetNotImplemented popover={popover} />
+      );
   }
 };
 
