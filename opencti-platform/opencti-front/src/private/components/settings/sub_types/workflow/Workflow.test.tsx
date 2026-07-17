@@ -179,7 +179,7 @@ vi.mock('./WorkflowEditionDrawer', () => ({
 
 vi.mock('./PublishButton', () => ({
   default: ({ validationStatus, onPublish, onReset, onRestore }: {
-    validationStatus?: { published?: boolean; validationErrors?: unknown[] };
+    validationStatus?: { hasUnpublishedChanges?: boolean; validationErrors?: unknown[] };
     onPublish?: () => void;
     onReset?: () => void;
     onRestore?: () => void;
@@ -190,7 +190,7 @@ vi.mock('./PublishButton', () => ({
         onClick={onPublish}
         disabled={(validationStatus?.validationErrors?.length ?? 0) > 0}
       >
-        {validationStatus?.published ? 'Published' : 'Publish'}
+        {!validationStatus?.hasUnpublishedChanges ? 'Published' : 'Publish'}
       </button>
       <button data-testid="reset-button" onClick={onReset}>Reset</button>
       <button data-testid="restore-button" onClick={onRestore}>Restore</button>

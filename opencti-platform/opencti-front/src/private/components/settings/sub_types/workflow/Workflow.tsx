@@ -181,11 +181,11 @@ const Workflow = ({
   );
 
   const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
-    published: boolean;
+    hasUnpublishedChanges: boolean;
     hasPublishedVersion: boolean;
     validationErrors: WorkflowValidationError[];
   }>({
-    published: workflowDefinition?.published ?? false,
+    hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
     hasPublishedVersion: workflowDefinition?.hasPublishedVersion ?? false,
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
@@ -208,7 +208,7 @@ const Workflow = ({
     );
     // Sync publish status with the freshly fetched definition (e.g. after restore)
     setWorkflowDefinitionStatus({
-      published: workflowDefinition?.published ?? false,
+      hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
       hasPublishedVersion: workflowDefinition?.hasPublishedVersion ?? false,
       validationErrors: workflowDefinition?.errors
         ? [...workflowDefinition.errors as WorkflowValidationError[]]
@@ -248,10 +248,10 @@ const Workflow = ({
                 message: e!.message,
                 path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
               }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, published: false, validationErrors }));
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
           } else {
             // No errors, but stay in draft mode until explicitly published
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, published: false, validationErrors: [] }));
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
           }
         }
       },
@@ -279,9 +279,9 @@ const Workflow = ({
                 message: e!.message,
                 path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
               }));
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, published: false, validationErrors }));
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
           } else {
-            setWorkflowDefinitionStatus((prev) => ({ ...prev, published: false, validationErrors: [] }));
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
           }
         }
         setNodes([]);
@@ -303,7 +303,7 @@ const Workflow = ({
       onCompleted: () => {
         // Update status to published
         setWorkflowDefinitionStatus({
-          published: true,
+          hasUnpublishedChanges: false,
           hasPublishedVersion: true,
           validationErrors: [],
         });
@@ -326,7 +326,7 @@ const Workflow = ({
         previousSchemaRef.current = JSON.stringify(
           transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
         );
-        setWorkflowDefinitionStatus({ published: true, hasPublishedVersion: true, validationErrors: [] });
+        setWorkflowDefinitionStatus({ hasUnpublishedChanges: false, hasPublishedVersion: true, validationErrors: [] });
         // Also refetch in case the store is stale (e.g. published version changed
         // after the initial page load). The sync useEffect handles that case.
         onRefetch();

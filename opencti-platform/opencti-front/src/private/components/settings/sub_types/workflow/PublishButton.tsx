@@ -15,7 +15,7 @@ interface ValidationError {
 const BUTTON_WIDTH = 120;
 
 interface ValidationStatus {
-  published: boolean;
+  hasUnpublishedChanges: boolean;
   validationErrors: ValidationError[];
 }
 
@@ -73,19 +73,19 @@ const PublishButton = ({
     return null;
   }
 
-  const { published, validationErrors } = validationStatus;
+  const { hasUnpublishedChanges, validationErrors } = validationStatus;
 
   let mainButtonTooltip: string;
   let mainButtonIcon: React.ReactNode;
   let mainButtonDisabled: boolean;
   let mainButtonOnClick: (() => void) | undefined;
 
-  if (published && validationErrors.length === 0) {
+  if (!hasUnpublishedChanges && validationErrors.length === 0) {
     mainButtonTooltip = t_i18n('Workflow is published');
     mainButtonIcon = <CircleIcon color="success" />;
     mainButtonDisabled = true;
     mainButtonOnClick = undefined;
-  } else if (!published && validationErrors.length > 0) {
+  } else if (hasUnpublishedChanges && validationErrors.length > 0) {
     mainButtonTooltip = t_i18n('Click to see validation errors');
     mainButtonIcon = <CircleIcon color="error" />;
     mainButtonDisabled = disabled ?? false;
@@ -108,7 +108,7 @@ const PublishButton = ({
             disabled={mainButtonDisabled}
             sx={{ width: BUTTON_WIDTH, borderRadius: '4px 0 0 4px' }}
           >
-            {published && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
+            {!hasUnpublishedChanges && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
           </Button>
           <Button
             variant="secondary"
@@ -139,7 +139,7 @@ const PublishButton = ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
-                  <MenuItem onClick={handleRestoreClick} disabled={published || !hasPublishedVersion}>
+                  <MenuItem onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
                     {t_i18n('Restore published version')}
                   </MenuItem>
                   <MenuItem onClick={handleResetClick}>

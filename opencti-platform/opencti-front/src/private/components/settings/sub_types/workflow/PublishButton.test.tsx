@@ -53,7 +53,7 @@ describe('PublishButton', () => {
     it('should render published button when published and no errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: true, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: false, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -84,7 +84,7 @@ describe('PublishButton', () => {
     it('should render enabled button when not published and has errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -101,7 +101,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -118,7 +118,7 @@ describe('PublishButton', () => {
     it('should render enabled button when not published and no errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -135,7 +135,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -155,7 +155,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -176,7 +176,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -194,7 +194,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -213,7 +213,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -232,7 +232,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: true, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: false, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
@@ -249,7 +249,7 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
           onRestore={mockOnRestore}
