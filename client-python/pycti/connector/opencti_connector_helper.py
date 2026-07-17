@@ -34,6 +34,8 @@ import threading
 import time
 import uuid
 from collections import deque
+from contextlib import ExitStack, contextmanager
+from contextvars import ContextVar
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -72,6 +74,16 @@ DEFAULT_BUNDLE_SPLIT_MAX_BYTES = 1000000
 
 S3_DELETE_BATCH_SIZE = 1000
 """Maximum number of object keys accepted by one S3 bulk delete request."""
+
+_CONNECTOR_REQUEST_CONTEXT_FIELDS = (
+    "work_id",
+    "validation_mode",
+    "force_validation",
+    "draft_id",
+    "playbook",
+    "enrichment_shared_organizations",
+    "applicant_id",
+)
 
 app = FastAPI()
 
@@ -563,6 +575,7 @@ class ListenQueue(threading.Thread):
         :type body: bytes
         """
         json_data = json.loads(body)
+        work_id = json_data.get("internal", {}).get("work_id")
         # Message should be ack before processing as we don't own the processing
         # Not ACK the message here may lead to infinite re-deliver if the connector is broken
         # Also ACK, will not have any impact on the blocking aspect of the following functions
@@ -580,8 +593,8 @@ class ListenQueue(threading.Thread):
             self.pika_connection.sleep(0.05)
             now = time.monotonic()
             # Ping every 5 minutes
-            if self.helper.work_id is not None and now - last_ping > five_minutes:
-                self.helper.api.work.ping(self.helper.work_id)
+            if work_id is not None and now - last_ping > five_minutes:
+                self.helper.api.work.ping(work_id)
                 last_ping = now
         self.helper.connector_logger.info(
             "Message processed, thread terminated",
@@ -599,6 +612,10 @@ class ListenQueue(threading.Thread):
         self.helper.api_impersonate.set_draft_id(draft_id)
 
     def _data_handler(self, json_data: Dict) -> None:
+        with self.helper.request_context():
+            self._data_handler_in_context(json_data)
+
+    def _data_handler_in_context(self, json_data: Dict) -> None:
         """Process incoming message data and execute the callback.
 
         Handles the full message processing workflow including:
@@ -2007,6 +2024,104 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         DAYS = 86400
         WEEKS = 604800
         YEARS = 31536000
+
+    def _ensure_request_context(self):
+        if not hasattr(self, "_request_context"):
+            self._request_context = ContextVar(
+                f"opencti_connector_request_context_{id(self)}", default=None
+            )
+
+    def _get_request_context_value(self, field_name):
+        self._ensure_request_context()
+        request_context = self._request_context.get()
+        if request_context is not None:
+            return request_context[field_name]
+        return getattr(self, f"_default_{field_name}", None)
+
+    def _set_request_context_value(self, field_name, value):
+        self._ensure_request_context()
+        request_context = self._request_context.get()
+        if request_context is not None:
+            request_context[field_name] = value
+            return
+        setattr(self, f"_default_{field_name}", value)
+
+    @contextmanager
+    def request_context(self):
+        """Run one connector callback with isolated request-local state."""
+
+        self._ensure_request_context()
+        request_context = {
+            field_name: self._get_request_context_value(field_name)
+            for field_name in _CONNECTOR_REQUEST_CONTEXT_FIELDS
+        }
+        token = self._request_context.set(request_context)
+        try:
+            with ExitStack() as stack:
+                for api_name in ("api", "api_impersonate"):
+                    api = getattr(self, api_name, None)
+                    api_request_context = getattr(api, "request_context", None)
+                    if api_request_context is not None:
+                        stack.enter_context(api_request_context())
+                yield
+        finally:
+            self._request_context.reset(token)
+
+    @property
+    def work_id(self):
+        return self._get_request_context_value("work_id")
+
+    @work_id.setter
+    def work_id(self, value):
+        self._set_request_context_value("work_id", value)
+
+    @property
+    def validation_mode(self):
+        return self._get_request_context_value("validation_mode")
+
+    @validation_mode.setter
+    def validation_mode(self, value):
+        self._set_request_context_value("validation_mode", value)
+
+    @property
+    def force_validation(self):
+        return self._get_request_context_value("force_validation")
+
+    @force_validation.setter
+    def force_validation(self, value):
+        self._set_request_context_value("force_validation", value)
+
+    @property
+    def draft_id(self):
+        return self._get_request_context_value("draft_id")
+
+    @draft_id.setter
+    def draft_id(self, value):
+        self._set_request_context_value("draft_id", value)
+
+    @property
+    def playbook(self):
+        return self._get_request_context_value("playbook")
+
+    @playbook.setter
+    def playbook(self, value):
+        self._set_request_context_value("playbook", value)
+
+    @property
+    def enrichment_shared_organizations(self):
+        return self._get_request_context_value("enrichment_shared_organizations")
+
+    @enrichment_shared_organizations.setter
+    def enrichment_shared_organizations(self, value):
+        self._set_request_context_value("enrichment_shared_organizations", value)
+
+    @property
+    def applicant_id(self):
+        return self._get_request_context_value("applicant_id")
+
+    @applicant_id.setter
+    def applicant_id(self, value):
+        self._set_request_context_value("applicant_id", value)
 
     def __init__(self, config: Dict, playbook_compatible: bool = False) -> None:
         """Initialize the OpenCTIConnectorHelper.
