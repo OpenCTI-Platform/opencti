@@ -17,7 +17,7 @@ import StixRelationshipsMap from '../../private/components/common/stix_relations
 import StixRelationshipsWordCloud from '../../private/components/common/stix_relationships/StixRelationshipsWordCloud';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
-import WidgetNotImplemented from 'src/components/dashboard/WidgetNotImplemented';
+import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
