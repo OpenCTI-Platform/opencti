@@ -98,7 +98,7 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
   }
 };
 
-const validateStringField = (value: CustomFieldValue, definition: BasicStoreEntityCustomFieldDefinition): void => {
+const validateStringField = (value: CustomFieldValue, _definition: BasicStoreEntityCustomFieldDefinition): void => {
   if (value.string_value === undefined || value.string_value === null) {
     throw FunctionalError('string_value is required for string type custom field', { field_name: value.field_name });
   }
