@@ -26,6 +26,7 @@ import {
   stixCoreObjectCleanContext,
   stixCoreObjectDelete,
   stixCoreObjectDeleteRelation,
+  stixCoreObjectDeleteRelations,
   stixCoreObjectEditContext,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
@@ -165,6 +166,7 @@ const stixCoreObjectResolvers = {
       delete: () => stixCoreObjectDelete(context, context.user, id),
       relationAdd: ({ input }) => stixCoreObjectAddRelation(context, context.user, id, input),
       relationsAdd: ({ input, commitMessage, references }) => stixCoreObjectAddRelations(context, context.user, id, input, { commitMessage, references }),
+      relationsDelete: ({ input, commitMessage, references }) => stixCoreObjectDeleteRelations(context, context.user, id, input, { commitMessage, references }),
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => {
         return stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references });
       },

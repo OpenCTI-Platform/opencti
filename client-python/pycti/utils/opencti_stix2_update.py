@@ -8,7 +8,9 @@ EXTERNAL_REFERENCE_PREFETCH_BATCH_SIZE = 1000
 KILL_CHAIN_PHASE_PREFETCH_BATCH_SIZE = 1000
 LABEL_PREFETCH_BATCH_SIZE = 1000
 LABEL_RELATION_CREATE_BATCH_SIZE = 100
+REF_RELATION_DELETE_BATCH_SIZE = 100
 BULK_REF_RELATION_VALIDATION_API_FEATURE = "BULK_REF_RELATION_VALIDATION"
+BULK_REF_RELATION_DELETE_API_FEATURE = "BULK_REF_RELATION_DELETE"
 _OBJECT_REF_ENTITY_ATTRIBUTES = {
     "report": "report",
     "note": "note",
@@ -41,6 +43,51 @@ class OpenCTIStix2Update:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
+
+    def _get_ref_relation_remove_many(self, entity_type):
+        nested_ref_relationship = getattr(
+            self.opencti, "stix_nested_ref_relationship", None
+        )
+        if nested_ref_relationship is None:
+            return None
+        if entity_type == "relationship":
+            return getattr(
+                nested_ref_relationship, "remove_many_to_stix_core_relationship", None
+            )
+        if entity_type == "sighting":
+            return getattr(
+                nested_ref_relationship,
+                "remove_many_to_stix_sighting_relationship",
+                None,
+            )
+        return getattr(nested_ref_relationship, "remove_many_to_stix_core_object", None)
+
+    def _can_bulk_remove_ref_relations(self, remove_many, ref_count):
+        if remove_many is None or ref_count <= 1:
+            return False
+        supports_api_feature = getattr(self.opencti, "supports_api_feature", None)
+        return supports_api_feature is not None and supports_api_feature(
+            BULK_REF_RELATION_DELETE_API_FEATURE
+        )
+
+    def _remove_ref_relations(
+        self, entity_id, ref_ids, relationship_type, remove_one, remove_many
+    ):
+        if len(ref_ids) == 0:
+            return
+        if not self._can_bulk_remove_ref_relations(remove_many, len(ref_ids)):
+            for ref_id in ref_ids:
+                remove_one(ref_id)
+            return
+
+        for start_index in range(0, len(ref_ids), REF_RELATION_DELETE_BATCH_SIZE):
+            batch_ref_ids = ref_ids[
+                start_index : start_index + REF_RELATION_DELETE_BATCH_SIZE
+            ]
+            if len(batch_ref_ids) == 1:
+                remove_one(batch_ref_ids[0])
+            else:
+                remove_many(entity_id, batch_ref_ids, relationship_type)
 
     def add_object_marking_refs(
         self, entity_type, entity_id, object_marking_refs, version=2
@@ -143,25 +190,39 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
-        for object_marking_ref in object_marking_refs:
-            if version == 2:
-                object_marking_ref = object_marking_ref["value"]
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.remove_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
-            elif entity_type == "sighting":
-                self.opencti.stix_sighting_relationship.remove_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.remove_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
-            else:
-                self.opencti.stix_domain_object.remove_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
+        normalized_object_marking_refs = [
+            object_marking_ref["value"] if version == 2 else object_marking_ref
+            for object_marking_ref in object_marking_refs
+        ]
+        if len(normalized_object_marking_refs) == 0:
+            return
+
+        if entity_type == "relationship":
+            remove_marking_definition = (
+                self.opencti.stix_core_relationship.remove_marking_definition
+            )
+        elif entity_type == "sighting":
+            remove_marking_definition = (
+                self.opencti.stix_sighting_relationship.remove_marking_definition
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            remove_marking_definition = (
+                self.opencti.stix_cyber_observable.remove_marking_definition
+            )
+        else:
+            remove_marking_definition = (
+                self.opencti.stix_domain_object.remove_marking_definition
+            )
+
+        self._remove_ref_relations(
+            entity_id,
+            normalized_object_marking_refs,
+            "object-marking",
+            lambda marking_definition_id: remove_marking_definition(
+                id=entity_id, marking_definition_id=marking_definition_id
+            ),
+            self._get_ref_relation_remove_many(entity_type),
+        )
 
     def add_external_references(
         self, entity_type, entity_id, external_references, version=2
@@ -356,19 +417,34 @@ class OpenCTIStix2Update:
         :param external_references: List of external references
         :type external_references: list
         """
-        for external_reference in external_references:
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.remove_external_reference(
-                    id=entity_id, external_reference_id=external_reference["id"]
-                )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.remove_external_reference(
-                    id=entity_id, external_reference_id=external_reference["id"]
-                )
-            else:
-                self.opencti.stix_domain_object.remove_external_reference(
-                    id=entity_id, external_reference_id=external_reference["id"]
-                )
+        external_reference_ids = [
+            external_reference["id"] for external_reference in external_references
+        ]
+        if len(external_reference_ids) == 0:
+            return
+
+        if entity_type == "relationship":
+            remove_external_reference = (
+                self.opencti.stix_core_relationship.remove_external_reference
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            remove_external_reference = (
+                self.opencti.stix_cyber_observable.remove_external_reference
+            )
+        else:
+            remove_external_reference = (
+                self.opencti.stix_domain_object.remove_external_reference
+            )
+
+        self._remove_ref_relations(
+            entity_id,
+            external_reference_ids,
+            "external-reference",
+            lambda external_reference_id: remove_external_reference(
+                id=entity_id, external_reference_id=external_reference_id
+            ),
+            self._get_ref_relation_remove_many(entity_type),
+        )
 
     def add_kill_chain_phases(
         self, entity_type, entity_id, kill_chain_phases, version=2
@@ -560,19 +636,34 @@ class OpenCTIStix2Update:
         :param kill_chain_phases: List of kill chain phases
         :type kill_chain_phases: list
         """
-        for kill_chain_phase in kill_chain_phases:
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.remove_kill_chain_phase(
-                    id=entity_id, kill_chain_phase_id=kill_chain_phase["id"]
-                )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.remove_kill_chain_phase(
-                    id=entity_id, kill_chain_phase_id=kill_chain_phase["id"]
-                )
-            else:
-                self.opencti.stix_domain_object.remove_kill_chain_phase(
-                    id=entity_id, kill_chain_phase_id=kill_chain_phase["id"]
-                )
+        kill_chain_phase_ids = [
+            kill_chain_phase["id"] for kill_chain_phase in kill_chain_phases
+        ]
+        if len(kill_chain_phase_ids) == 0:
+            return
+
+        if entity_type == "relationship":
+            remove_kill_chain_phase = (
+                self.opencti.stix_core_relationship.remove_kill_chain_phase
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            remove_kill_chain_phase = (
+                self.opencti.stix_cyber_observable.remove_kill_chain_phase
+            )
+        else:
+            remove_kill_chain_phase = (
+                self.opencti.stix_domain_object.remove_kill_chain_phase
+            )
+
+        self._remove_ref_relations(
+            entity_id,
+            kill_chain_phase_ids,
+            "kill-chain-phase",
+            lambda kill_chain_phase_id: remove_kill_chain_phase(
+                id=entity_id, kill_chain_phase_id=kill_chain_phase_id
+            ),
+            self._get_ref_relation_remove_many(entity_type),
+        )
 
     def add_object_refs(self, entity_type, entity_id, object_refs, version=2):
         """Add object references to a container entity.
@@ -640,49 +731,27 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
-        for object_ref in object_refs:
-            if version == 2:
-                object_ref = object_ref["value"]
-            if entity_type == "report":
-                self.opencti.report.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "note":
-                self.opencti.note.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "observed-data":
-                self.opencti.observed_data.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "opinion":
-                self.opencti.opinion.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "grouping":
-                self.opencti.grouping.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-incident":
-                self.opencti.case_incident.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-rfi":
-                self.opencti.case_rfi.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-rft":
-                self.opencti.case_rft.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "feedback":
-                self.opencti.feedback.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "task":
-                self.opencti.task.remove_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
+        entity_attribute = _OBJECT_REF_ENTITY_ATTRIBUTES.get(entity_type)
+        if entity_attribute is None:
+            return
+
+        object_ref_remover = getattr(
+            getattr(self.opencti, entity_attribute),
+            "remove_stix_object_or_stix_relationship",
+        )
+        normalized_object_refs = [
+            object_ref["value"] if version == 2 else object_ref
+            for object_ref in object_refs
+        ]
+        self._remove_ref_relations(
+            entity_id,
+            normalized_object_refs,
+            "object",
+            lambda object_ref: object_ref_remover(
+                id=entity_id, stixObjectOrStixRelationshipId=object_ref
+            ),
+            self._get_ref_relation_remove_many(entity_type),
+        )
 
     def add_labels(self, entity_type, entity_id, labels, version=2):
         """Add labels to an entity.
@@ -813,21 +882,43 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
-        for label in labels:
-            if version == 2:
-                label = label["value"]
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.remove_label(
-                    id=entity_id, label_name=label
-                )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.remove_label(
-                    id=entity_id, label_name=label
-                )
-            else:
-                self.opencti.stix_domain_object.remove_label(
-                    id=entity_id, label_name=label
-                )
+        normalized_labels = [
+            label["value"] if version == 2 else label for label in labels
+        ]
+        if len(normalized_labels) == 0:
+            return
+
+        if entity_type == "relationship":
+            remove_label = self.opencti.stix_core_relationship.remove_label
+        elif StixCyberObservableTypes.has_value(entity_type):
+            remove_label = self.opencti.stix_cyber_observable.remove_label
+        else:
+            remove_label = self.opencti.stix_domain_object.remove_label
+
+        remove_many = self._get_ref_relation_remove_many(entity_type)
+        if not self._can_bulk_remove_ref_relations(remove_many, len(normalized_labels)):
+            for label in normalized_labels:
+                remove_label(id=entity_id, label_name=label)
+            return
+
+        prefetched_labels = self._prefetch_patch_labels(normalized_labels)
+        if prefetched_labels is None:
+            for label in normalized_labels:
+                remove_label(id=entity_id, label_name=label)
+            return
+
+        label_ids = []
+        for label in normalized_labels:
+            label_data = prefetched_labels.get(self._normalize_patch_label_value(label))
+            if label_data is not None:
+                label_ids.append(label_data["id"])
+        self._remove_ref_relations(
+            entity_id,
+            label_ids,
+            "object-label",
+            lambda label_id: remove_label(id=entity_id, label_id=label_id),
+            remove_many,
+        )
 
     def replace_created_by_ref(self, entity_type, entity_id, created_by_ref, version=2):
         """Replace the created_by reference of an entity.

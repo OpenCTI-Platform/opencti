@@ -288,6 +288,9 @@ type AppInfo {
   """The OpenCTI application version"""
   version: String!
 
+  """API behavior flags available to compatible clients"""
+  api_features: [String!]!
+
   """The OpenCTI api current memory usage"""
   memory: AppMemory
 
@@ -9853,7 +9856,7 @@ type Subscription {
 type WorkEditMutations {
   delete: ID!
   ping: ID!
-  reportExpectation(error: WorkErrorInput): ID!
+  reportExpectation(error: WorkErrorInput, expectations: Int): ID!
   addExpectations(expectations: Int): ID!
   addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
@@ -9995,6 +9998,7 @@ type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
   clearAccessRestriction: StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
@@ -10280,6 +10284,7 @@ type StixCoreRelationshipEditMutations {
   contextClean: StixCoreRelationship
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship
@@ -10293,6 +10298,7 @@ type StixSightingRelationshipEditMutations {
   contextClean: StixSightingRelationship
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship

@@ -77,6 +77,35 @@ def test_stix2_update_add_external_references_supports_bulk_relation_edits(api_c
             f"bulk-relationship-one-{suffix}",
             f"bulk-relationship-two-{suffix}",
         }
+
+        api_client.stix2.stix2_update.remove_external_references(
+            "intrusion-set",
+            intrusion_set["id"],
+            [
+                {"id": external_reference_id}
+                for external_reference_id in updated_intrusion_set[
+                    "externalReferencesIds"
+                ]
+            ],
+        )
+        api_client.stix2.stix2_update.remove_external_references(
+            "relationship",
+            relationship["id"],
+            [
+                {"id": external_reference_id}
+                for external_reference_id in updated_relationship[
+                    "externalReferencesIds"
+                ]
+            ],
+        )
+
+        updated_intrusion_set = api_client.intrusion_set.read(id=intrusion_set["id"])
+        updated_relationship = api_client.stix_core_relationship.read(
+            id=relationship["id"]
+        )
+
+        assert updated_intrusion_set["externalReferences"] == []
+        assert updated_relationship["externalReferences"] == []
     finally:
         api_client.stix_core_relationship.delete(id=relationship["id"])
         api_client.stix_domain_object.delete(id=intrusion_set["id"])

@@ -8,6 +8,7 @@ import {
   stixSightingRelationshipCleanContext,
   stixSightingRelationshipDelete,
   stixSightingRelationshipDeleteRelation,
+  stixSightingRelationshipDeleteRelations,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipRemoveFromDraft,
@@ -87,6 +88,7 @@ const stixSightingRelationshipResolvers = {
       contextClean: () => stixSightingRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(context, context.user, id, input),
       relationsAdd: ({ input, commitMessage, references }) => stixSightingRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
+      relationsDelete: ({ input, commitMessage, references }) => stixSightingRelationshipDeleteRelations(context, context.user, id, input, { commitMessage, references }),
       // eslint-disable-next-line max-len
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId, directContainerSharing }) => {

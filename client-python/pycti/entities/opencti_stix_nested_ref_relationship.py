@@ -393,6 +393,62 @@ class StixNestedRefRelationship:
             "stixSightingRelationshipEdit", from_id, to_ids, relationship_type
         )
 
+    def _remove_many(self, edit_field, from_id, to_ids, relationship_type):
+        if len(to_ids) == 0:
+            return None
+
+        relationship_type = self._normalize_relationship_type(relationship_type)
+        self.opencti.app_logger.info(
+            "Removing stix_observable_relationships",
+            {
+                "relationship_type": relationship_type,
+                "from_id": from_id,
+                "count": len(to_ids),
+            },
+        )
+        query = f"""
+                mutation StixRefRelationshipsDelete($id: ID!, $input: StixRefRelationshipsAddInput!) {{
+                    {edit_field}(id: $id) {{
+                        relationsDelete(input: $input) {{
+                            id
+                        }}
+                    }}
+                }}
+                """
+        result = self.opencti.query(
+            query,
+            {
+                "id": from_id,
+                "input": {
+                    "toIds": to_ids,
+                    "relationship_type": relationship_type,
+                },
+            },
+        )
+        return self.opencti.process_multiple_fields(
+            result["data"][edit_field]["relationsDelete"]
+        )
+
+    def remove_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
+        """Remove several same-type nested refs from one Stix-Core-Object."""
+        return self._remove_many(
+            "stixCoreObjectEdit", from_id, to_ids, relationship_type
+        )
+
+    def remove_many_to_stix_core_relationship(self, from_id, to_ids, relationship_type):
+        """Remove several same-type nested refs from one Stix-Core-Relationship."""
+        return self._remove_many(
+            "stixCoreRelationshipEdit", from_id, to_ids, relationship_type
+        )
+
+    def remove_many_to_stix_sighting_relationship(
+        self, from_id, to_ids, relationship_type
+    ):
+        """Remove several same-type nested refs from one Stix-Sighting-Relationship."""
+        return self._remove_many(
+            "stixSightingRelationshipEdit", from_id, to_ids, relationship_type
+        )
+
     def create(self, **kwargs):
         """Create a stix nested ref relationship object.
 

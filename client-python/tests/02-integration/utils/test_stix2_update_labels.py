@@ -51,6 +51,31 @@ def test_stix2_update_add_labels_supports_prefetch_and_bulk_relation_edits(api_c
             f"bulk-relationship-one-{suffix}",
             f"bulk-relationship-two-{suffix}",
         }
+
+        api_client.stix2.stix2_update.remove_labels(
+            "intrusion-set",
+            intrusion_set["id"],
+            [
+                {"value": f"bulk-domain-one-{suffix}"},
+                {"value": f"bulk-domain-two-{suffix}"},
+            ],
+        )
+        api_client.stix2.stix2_update.remove_labels(
+            "relationship",
+            relationship["id"],
+            [
+                {"value": f"bulk-relationship-one-{suffix}"},
+                {"value": f"bulk-relationship-two-{suffix}"},
+            ],
+        )
+
+        updated_intrusion_set = api_client.intrusion_set.read(id=intrusion_set["id"])
+        updated_relationship = api_client.stix_core_relationship.read(
+            id=relationship["id"]
+        )
+
+        assert updated_intrusion_set["objectLabel"] == []
+        assert updated_relationship["objectLabel"] == []
     finally:
         api_client.stix_core_relationship.delete(id=relationship["id"])
         api_client.stix_domain_object.delete(id=intrusion_set["id"])

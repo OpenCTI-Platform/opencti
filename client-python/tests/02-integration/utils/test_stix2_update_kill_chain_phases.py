@@ -85,6 +85,33 @@ def test_stix2_update_add_kill_chain_phases_supports_bulk_relation_edits(api_cli
             kill_chain_phase["phase_name"]
             for kill_chain_phase in updated_relationship["killChainPhases"]
         } == {"phase-one", "phase-two"}
+
+        api_client.stix2.stix2_update.remove_kill_chain_phases(
+            "attack-pattern",
+            attack_pattern["id"],
+            [
+                {"id": kill_chain_phase_id}
+                for kill_chain_phase_id in updated_attack_pattern["killChainPhasesIds"]
+            ],
+        )
+        api_client.stix2.stix2_update.remove_kill_chain_phases(
+            "relationship",
+            relationship["id"],
+            [
+                {"id": kill_chain_phase_id}
+                for kill_chain_phase_id in updated_relationship["killChainPhasesIds"]
+            ],
+        )
+
+        updated_attack_pattern = api_client.attack_pattern.read(
+            id=attack_pattern["id"], customAttributes=custom_attributes
+        )
+        updated_relationship = api_client.stix_core_relationship.read(
+            id=relationship["id"], customAttributes=custom_attributes
+        )
+
+        assert updated_attack_pattern["killChainPhases"] == []
+        assert updated_relationship["killChainPhases"] == []
     finally:
         api_client.stix_core_relationship.delete(id=relationship["id"])
         api_client.stix_domain_object.delete(id=attack_pattern["id"])

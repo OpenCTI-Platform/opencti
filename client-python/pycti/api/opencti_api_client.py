@@ -95,6 +95,7 @@ _PROXY_CERT_DIR = None
 _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 API_FEATURE_BULK_REF_RELATION_VALIDATION = "BULK_REF_RELATION_VALIDATION"
+API_FEATURE_BULK_REF_RELATION_DELETE = "BULK_REF_RELATION_DELETE"
 
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
