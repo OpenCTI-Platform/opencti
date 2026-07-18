@@ -1,5 +1,19 @@
 from pycti.utils.constants import StixCyberObservableTypes
 
+OBJECT_REF_CREATE_BATCH_SIZE = 100
+_OBJECT_REF_ENTITY_ATTRIBUTES = {
+    "report": "report",
+    "note": "note",
+    "observed-data": "observed_data",
+    "opinion": "opinion",
+    "grouping": "grouping",
+    "case-incident": "case_incident",
+    "case-rfi": "case_rfi",
+    "case-rft": "case_rft",
+    "feedback": "feedback",
+    "task": "task",
+}
+
 
 class OpenCTIStix2Update:
     """Python API for Stix2 Update in OpenCTI.
@@ -237,49 +251,47 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
-        for object_ref in object_refs:
-            if version == 2:
-                object_ref = object_ref["value"]
-            if entity_type == "report":
-                self.opencti.report.add_stix_object_or_stix_relationship(
+        entity_attribute = _OBJECT_REF_ENTITY_ATTRIBUTES.get(entity_type)
+        if entity_attribute is None:
+            return
+
+        object_ref_adder = getattr(
+            getattr(self.opencti, entity_attribute),
+            "add_stix_object_or_stix_relationship",
+        )
+        normalized_object_refs = [
+            object_ref["value"] if version == 2 else object_ref
+            for object_ref in object_refs
+        ]
+        if len(normalized_object_refs) == 0:
+            return
+
+        nested_ref_relationship = getattr(
+            self.opencti, "stix_nested_ref_relationship", None
+        )
+        add_many = getattr(
+            nested_ref_relationship, "add_many_to_stix_core_object", None
+        )
+        if add_many is None or len(normalized_object_refs) == 1:
+            for object_ref in normalized_object_refs:
+                object_ref_adder(
                     id=entity_id, stixObjectOrStixRelationshipId=object_ref
                 )
-            elif entity_type == "note":
-                self.opencti.note.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
+            return
+
+        for start_index in range(
+            0, len(normalized_object_refs), OBJECT_REF_CREATE_BATCH_SIZE
+        ):
+            batch_object_refs = normalized_object_refs[
+                start_index : start_index + OBJECT_REF_CREATE_BATCH_SIZE
+            ]
+            if len(batch_object_refs) == 1:
+                object_ref_adder(
+                    id=entity_id,
+                    stixObjectOrStixRelationshipId=batch_object_refs[0],
                 )
-            elif entity_type == "observed-data":
-                self.opencti.observed_data.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "opinion":
-                self.opencti.opinion.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "grouping":
-                self.opencti.grouping.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-incident":
-                self.opencti.case_incident.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-rfi":
-                self.opencti.case_rfi.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "case-rft":
-                self.opencti.case_rft.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "feedback":
-                self.opencti.feedback.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
-            elif entity_type == "task":
-                self.opencti.task.add_stix_object_or_stix_relationship(
-                    id=entity_id, stixObjectOrStixRelationshipId=object_ref
-                )
+            else:
+                add_many(entity_id, batch_object_refs, "object")
 
     def remove_object_refs(self, entity_type, entity_id, object_refs, version=2):
         """Remove object references from a container entity.
