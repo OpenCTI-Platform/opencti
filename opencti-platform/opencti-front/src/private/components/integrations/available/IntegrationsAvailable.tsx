@@ -222,10 +222,10 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
       )}
 
       <BuiltInIntegrationCreation
-        kind={builtInCreationKind}
+        activeKind={builtInCreationKind}
         onClose={() => {
-          // Refresh the instance counters: creations insert into paginated
-          // connections that are not mounted on this screen.
+          // Refresh the instance counters in the background: creations insert
+          // into paginated connections that are not mounted on this screen.
           if (builtInCreationKind === 'form') {
             refetchForms();
           } else {

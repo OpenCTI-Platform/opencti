@@ -10,37 +10,52 @@ import { IngestionRssLinesDataTableQuery$variables } from '@components/data/inge
 import { BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 
 interface BuiltInIntegrationCreationProps {
-  kind: BuiltInIntegrationKind | null;
+  activeKind: BuiltInIntegrationKind | null;
   onClose: () => void;
 }
 
 // Hosts the existing per-kind creation drawers, driven from the catalog cards.
-const BuiltInIntegrationCreation = ({ kind, onClose }: BuiltInIntegrationCreationProps) => {
-  if (!kind) return null;
-  switch (kind) {
-    case 'sync':
-      return <SyncCreation open={true} handleClose={onClose} />;
-    case 'taxii':
-      return <IngestionTaxiiCreation triggerButton={false} open={true} handleClose={onClose} />;
-    case 'taxii-push':
-      return <IngestionTaxiiCollectionCreation open={true} handleClose={onClose} />;
-    case 'rss':
-      return (
-        <IngestionRssCreation
-          triggerButton={false}
-          open={true}
-          handleClose={onClose}
-          paginationOptions={{ count: 25 } as IngestionRssLinesDataTableQuery$variables}
-        />
-      );
-    case 'csv':
-      return <IngestionCsvCreationContainer triggerButton={false} open={true} handleClose={onClose} />;
-    case 'json':
-      return <IngestionJsonCreationContainer open={true} handleClose={onClose} isDuplicated={false} />;
-    case 'form':
-    default:
-      return <FormCreationContainer triggerButton={false} open={true} handleClose={onClose} />;
-  }
+// Every drawer stays mounted (closed) so opening one plays the standard
+// slide-in transition instead of appearing already open.
+const BuiltInIntegrationCreation = ({ activeKind, onClose }: BuiltInIntegrationCreationProps) => {
+  return (
+    <>
+      <SyncCreation
+        open={activeKind === 'sync'}
+        handleClose={onClose}
+      />
+      <IngestionTaxiiCreation
+        triggerButton={false}
+        open={activeKind === 'taxii'}
+        handleClose={onClose}
+      />
+      <IngestionTaxiiCollectionCreation
+        open={activeKind === 'taxii-push'}
+        handleClose={onClose}
+      />
+      <IngestionRssCreation
+        triggerButton={false}
+        open={activeKind === 'rss'}
+        handleClose={onClose}
+        paginationOptions={{ count: 25 } as IngestionRssLinesDataTableQuery$variables}
+      />
+      <IngestionCsvCreationContainer
+        triggerButton={false}
+        open={activeKind === 'csv'}
+        handleClose={onClose}
+      />
+      <IngestionJsonCreationContainer
+        open={activeKind === 'json'}
+        handleClose={onClose}
+        isDuplicated={false}
+      />
+      <FormCreationContainer
+        triggerButton={false}
+        open={activeKind === 'form'}
+        handleClose={onClose}
+      />
+    </>
+  );
 };
 
 export default BuiltInIntegrationCreation;

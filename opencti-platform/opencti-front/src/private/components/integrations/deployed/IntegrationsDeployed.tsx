@@ -198,8 +198,9 @@ const IntegrationsDeployed = ({ data }: IntegrationsDeployedProps) => {
 
   const onConnectorsChange = useCallback(() => {
     if (!isConnectorReader) return;
-    loadConnectorsList({}, { fetchPolicy: 'network-only' });
-    loadConnectorsState({}, { fetchPolicy: 'network-only' });
+    // store-and-network keeps the current cards rendered while refreshing.
+    loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
   }, [isConnectorReader]);
 
   const renderContent = (

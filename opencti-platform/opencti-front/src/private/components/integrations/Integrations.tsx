@@ -76,14 +76,16 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     }
   }, []);
 
+  // store-and-network: the previous data keeps rendering while the refresh
+  // happens in the background, so refetching never suspends the whole page.
   const refetchFeeds = () => {
     if (isIngestionReader) {
-      loadFeeds({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'network-only' });
+      loadFeeds({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
   };
   const refetchForms = () => {
     if (isFormReader) {
-      loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'network-only' });
+      loadForms({ first: FEEDS_PAGE_SIZE }, { fetchPolicy: 'store-and-network' });
     }
   };
 
