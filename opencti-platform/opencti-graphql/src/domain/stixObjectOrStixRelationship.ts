@@ -12,7 +12,7 @@ import { type StixRefRelationshipAddInput, type StixRefRelationshipsAddInput } f
 import type { BasicStoreCommon, BasicStoreObject, BasicConnection } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
-import { validateMarking } from '../utils/access';
+import { validateMarking, validateMarkings } from '../utils/access';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
@@ -78,6 +78,14 @@ export const stixObjectOrRelationshipAddRefRelations = async (
   type: string,
   opts = {},
 ) => {
+  if (input.relationship_type === RELATION_OBJECT_MARKING) {
+    await validateMarkings(context, user, input.toIds);
+  }
+  if (input.relationship_type === RELATION_CREATED_BY) {
+    for (const toId of input.toIds) {
+      await validateCreatedBy(context, user, toId);
+    }
+  }
   return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, input.toIds, UPDATE_OPERATION_ADD, opts);
 };
 

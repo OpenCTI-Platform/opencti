@@ -385,6 +385,14 @@ class StixNestedRefRelationship:
             "stixCoreRelationshipEdit", from_id, to_ids, relationship_type
         )
 
+    def add_many_to_stix_sighting_relationship(
+        self, from_id, to_ids, relationship_type
+    ):
+        """Add several same-type nested refs to one Stix-Sighting-Relationship."""
+        return self._add_many(
+            "stixSightingRelationshipEdit", from_id, to_ids, relationship_type
+        )
+
     def create(self, **kwargs):
         """Create a stix nested ref relationship object.
 

@@ -1,10 +1,12 @@
 from pycti.utils.constants import StixCyberObservableTypes
 
 OBJECT_REF_CREATE_BATCH_SIZE = 100
+OBJECT_MARKING_REF_CREATE_BATCH_SIZE = 100
 EXTERNAL_REFERENCE_RELATION_CREATE_BATCH_SIZE = 100
 KILL_CHAIN_PHASE_RELATION_CREATE_BATCH_SIZE = 100
 LABEL_PREFETCH_BATCH_SIZE = 1000
 LABEL_RELATION_CREATE_BATCH_SIZE = 100
+BULK_REF_RELATION_VALIDATION_API_FEATURE = "BULK_REF_RELATION_VALIDATION"
 _OBJECT_REF_ENTITY_ATTRIBUTES = {
     "report": "report",
     "note": "note",
@@ -52,25 +54,78 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
-        for object_marking_ref in object_marking_refs:
-            if version == 2:
-                object_marking_ref = object_marking_ref["value"]
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.add_marking_definition(
+        normalized_object_marking_refs = [
+            object_marking_ref["value"] if version == 2 else object_marking_ref
+            for object_marking_ref in object_marking_refs
+        ]
+        if len(normalized_object_marking_refs) == 0:
+            return
+
+        nested_ref_relationship = getattr(
+            self.opencti, "stix_nested_ref_relationship", None
+        )
+        if entity_type == "relationship":
+            add_marking_definition = (
+                self.opencti.stix_core_relationship.add_marking_definition
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_relationship", None
+            )
+        elif entity_type == "sighting":
+            add_marking_definition = (
+                self.opencti.stix_sighting_relationship.add_marking_definition
+            )
+            add_many = getattr(
+                nested_ref_relationship,
+                "add_many_to_stix_sighting_relationship",
+                None,
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            add_marking_definition = (
+                self.opencti.stix_cyber_observable.add_marking_definition
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_object", None
+            )
+        else:
+            add_marking_definition = (
+                self.opencti.stix_domain_object.add_marking_definition
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_object", None
+            )
+
+        can_bulk_marking_refs = (
+            add_many is not None and len(normalized_object_marking_refs) > 1
+        )
+        if can_bulk_marking_refs:
+            supports_api_feature = getattr(self.opencti, "supports_api_feature", None)
+            can_bulk_marking_refs = (
+                supports_api_feature is not None
+                and supports_api_feature(BULK_REF_RELATION_VALIDATION_API_FEATURE)
+            )
+        if not can_bulk_marking_refs:
+            for object_marking_ref in normalized_object_marking_refs:
+                add_marking_definition(
                     id=entity_id, marking_definition_id=object_marking_ref
                 )
-            elif entity_type == "sighting":
-                self.opencti.stix_sighting_relationship.add_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.add_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
+            return
+
+        for start_index in range(
+            0,
+            len(normalized_object_marking_refs),
+            OBJECT_MARKING_REF_CREATE_BATCH_SIZE,
+        ):
+            batch_object_marking_refs = normalized_object_marking_refs[
+                start_index : start_index + OBJECT_MARKING_REF_CREATE_BATCH_SIZE
+            ]
+            if len(batch_object_marking_refs) == 1:
+                add_marking_definition(
+                    id=entity_id,
+                    marking_definition_id=batch_object_marking_refs[0],
                 )
             else:
-                self.opencti.stix_domain_object.add_marking_definition(
-                    id=entity_id, marking_definition_id=object_marking_ref
-                )
+                add_many(entity_id, batch_object_marking_refs, "object-marking")
 
     def remove_object_marking_refs(
         self, entity_type, entity_id, object_marking_refs, version=2

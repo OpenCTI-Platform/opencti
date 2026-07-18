@@ -25,12 +25,15 @@ import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { getXtmOneRegistrationVersion } from '../modules/xtm/one/xtm-one';
 
+export const API_FEATURE_BULK_REF_RELATION_VALIDATION = 'BULK_REF_RELATION_VALIDATION';
+
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
 
 export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
+  api_features: [API_FEATURE_BULK_REF_RELATION_VALIDATION],
   debugStats: {}, // Lazy loaded
 });
 

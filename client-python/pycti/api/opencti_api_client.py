@@ -94,6 +94,7 @@ _PROXY_CERT_BUNDLE = None
 _PROXY_CERT_DIR = None
 _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
+API_FEATURE_BULK_REF_RELATION_VALIDATION = "BULK_REF_RELATION_VALIDATION"
 
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
@@ -446,6 +447,8 @@ class OpenCTIApiClient:
         self.settings = Settings(self)
 
         self._process_multiple_fields_attribute_cache = {}
+        self._api_features = None
+        self._api_features_lock = threading.Lock()
 
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
@@ -1032,6 +1035,54 @@ class OpenCTIApiClient:
             self.app_logger.error(str(err))
             return False
         return False
+
+    @staticmethod
+    def _is_missing_api_features_field_error(error):
+        error_text = str(error)
+        return "Cannot query field" in error_text and "api_features" in error_text
+
+    def _load_api_features(self):
+        if self._api_features is not None:
+            return self._api_features
+
+        with self._api_features_lock:
+            if self._api_features is not None:
+                return self._api_features
+
+            try:
+                result = self.query("""
+                    query pyctiApiFeatures {
+                      about {
+                        api_features
+                      }
+                    }
+                    """)
+            except ValueError as error:
+                if self._is_missing_api_features_field_error(error):
+                    self._api_features = frozenset()
+                    return self._api_features
+                raise
+
+            self._api_features = frozenset(
+                result.get("data", {}).get("about", {}).get("api_features") or []
+            )
+            return self._api_features
+
+    def supports_api_feature(self, feature):
+        """Return whether the connected platform advertises an API behavior flag.
+
+        A missing ``api_features`` field means an older platform schema. Other
+        lookup failures do not prevent the caller from using its legacy path.
+
+        :param feature: API feature identifier
+        :type feature: str
+        :return: True when the platform advertises the feature
+        :rtype: bool
+        """
+        try:
+            return feature in self._load_api_features()
+        except Exception:  # pylint: disable=broad-except
+            return False
 
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.

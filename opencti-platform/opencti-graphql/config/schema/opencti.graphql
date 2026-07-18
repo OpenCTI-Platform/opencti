@@ -280,6 +280,10 @@ type AppInfo {
   """
   version: String! @auth
   """
+  API behavior flags available to compatible clients
+  """
+  api_features: [String!]! @auth
+  """
   The OpenCTI api current memory usage
   """
   memory: AppMemory @auth(for: [SETTINGS_SETPARAMETERS])

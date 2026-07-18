@@ -656,6 +656,8 @@ export type AppDebugStatistics = {
 /** Retrieve the application information version add dependencies */
 export type AppInfo = {
   __typename?: 'AppInfo';
+  /** API behavior flags available to compatible clients */
+  api_features: Array<Scalars['String']['output']>;
   /** The objects statistics */
   debugStats?: Maybe<AppDebugStatistics>;
   /** The list of OpenCTI software dependencies */
@@ -41901,6 +41903,7 @@ export type AppDebugStatisticsResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type AppInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppInfo'] = ResolversParentTypes['AppInfo']> = ResolversObject<{
+  api_features?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   debugStats?: Resolver<Maybe<ResolversTypes['AppDebugStatistics']>, ParentType, ContextType>;
   dependencies?: Resolver<Array<ResolversTypes['DependencyVersion']>, ParentType, ContextType>;
   memory?: Resolver<Maybe<ResolversTypes['AppMemory']>, ParentType, ContextType>;

@@ -47,6 +47,14 @@ class _CreateClient:
                     "stixCoreRelationshipEdit": {"relationsAdd": {"id": "source--1"}}
                 }
             }
+        if "stixSightingRelationshipEdit(id: $id)" in query:
+            return {
+                "data": {
+                    "stixSightingRelationshipEdit": {
+                        "relationsAdd": {"id": "source--1"}
+                    }
+                }
+            }
         return {"data": {"stixCoreObjectEdit": {"relationsAdd": {"id": "source--1"}}}}
 
     @staticmethod
@@ -106,4 +114,27 @@ def test_add_many_to_stix_core_relationship_uses_one_bulk_edit_query():
     assert variables["input"]["toIds"] == [
         "external-reference--1",
         "external-reference--2",
+    ]
+
+
+def test_add_many_to_stix_sighting_relationship_uses_one_bulk_edit_query():
+    client = _CreateClient()
+    entity = StixNestedRefRelationship(client)
+
+    result = entity.add_many_to_stix_sighting_relationship(
+        "sighting--1",
+        ["marking-definition--1", "marking-definition--2"],
+        "object-marking",
+    )
+
+    assert result == {"id": "source--1"}
+    assert len(client.query_calls) == 1
+    query, variables = client.query_calls[0]
+    assert "stixSightingRelationshipEdit(id: $id)" in query
+    assert "relationsAdd(input: $input)" in query
+    assert variables["id"] == "sighting--1"
+    assert variables["input"]["relationship_type"] == "object-marking"
+    assert variables["input"]["toIds"] == [
+        "marking-definition--1",
+        "marking-definition--2",
     ]
