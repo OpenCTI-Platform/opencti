@@ -333,8 +333,7 @@ class StixNestedRefRelationship:
             "update": kwargs.get("update", False),
         }
 
-    def add_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
-        """Add several same-type nested refs to one Stix-Core-Object."""
+    def _add_many(self, edit_field, from_id, to_ids, relationship_type):
         if len(to_ids) == 0:
             return None
         if len(to_ids) == 1:
@@ -353,14 +352,14 @@ class StixNestedRefRelationship:
                 "count": len(to_ids),
             },
         )
-        query = """
-                mutation StixCoreObjectEditRelationsAdd($id: ID!, $input: StixRefRelationshipsAddInput!) {
-                    stixCoreObjectEdit(id: $id) {
-                        relationsAdd(input: $input) {
+        query = f"""
+                mutation StixRefRelationshipsAdd($id: ID!, $input: StixRefRelationshipsAddInput!) {{
+                    {edit_field}(id: $id) {{
+                        relationsAdd(input: $input) {{
                             id
-                        }
-                    }
-                }
+                        }}
+                    }}
+                }}
                 """
         result = self.opencti.query(
             query,
@@ -373,7 +372,17 @@ class StixNestedRefRelationship:
             },
         )
         return self.opencti.process_multiple_fields(
-            result["data"]["stixCoreObjectEdit"]["relationsAdd"]
+            result["data"][edit_field]["relationsAdd"]
+        )
+
+    def add_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
+        """Add several same-type nested refs to one Stix-Core-Object."""
+        return self._add_many("stixCoreObjectEdit", from_id, to_ids, relationship_type)
+
+    def add_many_to_stix_core_relationship(self, from_id, to_ids, relationship_type):
+        """Add several same-type nested refs to one Stix-Core-Relationship."""
+        return self._add_many(
+            "stixCoreRelationshipEdit", from_id, to_ids, relationship_type
         )
 
     def create(self, **kwargs):

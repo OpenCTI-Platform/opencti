@@ -41,6 +41,12 @@ class _CreateClient:
 
     def query(self, query, variables):
         self.query_calls.append((query, variables))
+        if "stixCoreRelationshipEdit(id: $id)" in query:
+            return {
+                "data": {
+                    "stixCoreRelationshipEdit": {"relationsAdd": {"id": "source--1"}}
+                }
+            }
         return {"data": {"stixCoreObjectEdit": {"relationsAdd": {"id": "source--1"}}}}
 
     @staticmethod
@@ -78,3 +84,26 @@ def test_add_many_to_stix_core_object_uses_one_bulk_edit_query():
     assert variables["id"] == "observable--1"
     assert variables["input"]["relationship_type"] == "obs_resolves-to"
     assert variables["input"]["toIds"] == ["observable--2", "observable--3"]
+
+
+def test_add_many_to_stix_core_relationship_uses_one_bulk_edit_query():
+    client = _CreateClient()
+    entity = StixNestedRefRelationship(client)
+
+    result = entity.add_many_to_stix_core_relationship(
+        "relationship--1",
+        ["external-reference--1", "external-reference--2"],
+        "external-reference",
+    )
+
+    assert result == {"id": "source--1"}
+    assert len(client.query_calls) == 1
+    query, variables = client.query_calls[0]
+    assert "stixCoreRelationshipEdit(id: $id)" in query
+    assert "relationsAdd(input: $input)" in query
+    assert variables["id"] == "relationship--1"
+    assert variables["input"]["relationship_type"] == "external-reference"
+    assert variables["input"]["toIds"] == [
+        "external-reference--1",
+        "external-reference--2",
+    ]

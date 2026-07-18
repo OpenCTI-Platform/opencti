@@ -1,6 +1,7 @@
 from pycti.utils.constants import StixCyberObservableTypes
 
 OBJECT_REF_CREATE_BATCH_SIZE = 100
+EXTERNAL_REFERENCE_RELATION_CREATE_BATCH_SIZE = 100
 _OBJECT_REF_ENTITY_ATTRIBUTES = {
     "report": "report",
     "note": "note",
@@ -116,6 +117,32 @@ class OpenCTIStix2Update:
         :param version: Version of the patch format (default: 2)
         :type version: int
         """
+        nested_ref_relationship = getattr(
+            self.opencti, "stix_nested_ref_relationship", None
+        )
+        if entity_type == "relationship":
+            add_external_reference = (
+                self.opencti.stix_core_relationship.add_external_reference
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_relationship", None
+            )
+        elif StixCyberObservableTypes.has_value(entity_type):
+            add_external_reference = (
+                self.opencti.stix_cyber_observable.add_external_reference
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_object", None
+            )
+        else:
+            add_external_reference = (
+                self.opencti.stix_domain_object.add_external_reference
+            )
+            add_many = getattr(
+                nested_ref_relationship, "add_many_to_stix_core_object", None
+            )
+
+        pending_external_reference_ids = []
         for external_reference in external_references:
             if version == 2:
                 external_reference = external_reference["value"]
@@ -138,18 +165,38 @@ class OpenCTIStix2Update:
                     else None
                 ),
             )["id"]
-            if entity_type == "relationship":
-                self.opencti.stix_core_relationship.add_external_reference(
+            pending_external_reference_ids.append(external_reference_id)
+            if (
+                len(pending_external_reference_ids)
+                >= EXTERNAL_REFERENCE_RELATION_CREATE_BATCH_SIZE
+            ):
+                self._flush_external_reference_relation_batch(
+                    entity_id,
+                    pending_external_reference_ids,
+                    add_external_reference,
+                    add_many,
+                )
+                pending_external_reference_ids = []
+        self._flush_external_reference_relation_batch(
+            entity_id,
+            pending_external_reference_ids,
+            add_external_reference,
+            add_many,
+        )
+
+    @staticmethod
+    def _flush_external_reference_relation_batch(
+        entity_id, external_reference_ids, add_external_reference, add_many
+    ):
+        if len(external_reference_ids) == 0:
+            return
+        if add_many is None or len(external_reference_ids) == 1:
+            for external_reference_id in external_reference_ids:
+                add_external_reference(
                     id=entity_id, external_reference_id=external_reference_id
                 )
-            elif StixCyberObservableTypes.has_value(entity_type):
-                self.opencti.stix_cyber_observable.add_external_reference(
-                    id=entity_id, external_reference_id=external_reference_id
-                )
-            else:
-                self.opencti.stix_domain_object.add_external_reference(
-                    id=entity_id, external_reference_id=external_reference_id
-                )
+            return
+        add_many(entity_id, external_reference_ids, "external-reference")
 
     def remove_external_references(self, entity_type, entity_id, external_references):
         """Remove external references from an entity.
