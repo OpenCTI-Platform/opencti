@@ -123,6 +123,15 @@ connector:
 
     Currently the connector cannot send bundle larger the the configuration of the OpenCTI backend (default 50Mb). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
 
+#### AMQP listener concurrency
+
+AMQP listeners default to one callback worker for compatibility. Connectors whose callbacks are safe to run concurrently can raise the worker count to keep multiple unacked deliveries in flight at once. Deliveries are acknowledged after callback completion or durable error reporting. The prefetch count defaults to the worker count and should normally stay at or above it so every configured worker can receive work.
+
+| Parameter (yml)                  | Environment variable              | Default value | Description                                                        |
+|:---------------------------------|:----------------------------------|:--------------|:-------------------------------------------------------------------|
+| connector:listen_worker_count    | CONNECTOR_LISTEN_WORKER_COUNT     | 1             | Maximum number of concurrent AMQP callback workers                 |
+| connector:listen_prefetch_count  | CONNECTOR_LISTEN_PREFETCH_COUNT   | worker count  | Maximum number of unacked AMQP deliveries held in flight at once   |
+
 #### Listening data / jobs using HTTP instead of RabbitMQ
 
 By default, some connectors are connecting to `RabbitMQ` in order to listen for jobs (enrichment, export) and eventually associated data to enrich / process. In some cases, you may like the connector to listen data directly on an HTTP endpoint (for instance, if they cannot connect to RabbitMQ).
