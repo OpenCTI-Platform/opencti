@@ -4,11 +4,11 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 
 export type DeployedSortMode = 'name' | 'status' | 'lastRun';
 
-export type DeployedStatusFacet = 'active' | 'inactive';
+export type DeployedStatusFacet = 'active' | 'processing' | 'inactive';
 
 export type DeployedKindFacet = 'connector' | 'built-in';
 
-export const DEPLOYED_STATUS_FACETS: DeployedStatusFacet[] = ['active', 'inactive'];
+export const DEPLOYED_STATUS_FACETS: DeployedStatusFacet[] = ['active', 'processing', 'inactive'];
 
 export const DEPLOYED_KIND_FACETS: DeployedKindFacet[] = ['connector', 'built-in'];
 
@@ -46,7 +46,7 @@ const itemKindFacet = (item: DeployedIntegrationItem): DeployedKindFacet => {
 };
 
 const itemStatusFacet = (item: DeployedIntegrationItem): DeployedStatusFacet => {
-  return item.status === 'active' ? 'active' : 'inactive';
+  return item.status;
 };
 
 type FacetGroup = 'types' | 'statuses' | 'kinds';

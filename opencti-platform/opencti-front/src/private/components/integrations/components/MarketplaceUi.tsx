@@ -12,15 +12,17 @@ import { isNotEmptyField } from '../../../../utils/utils';
 export const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
   const { settings } = useContext(UserContext);
-  const browseHubCatalog = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings.platform_xtmhub_url}/cybersecurity-solutions/open-cti-integrations`
-    : '';
+  // Hidden when the platform is not linked to an XTM Hub (same behavior as the
+  // Import from Hub buttons of the legacy feed screens).
+  if (!isNotEmptyField(settings?.platform_xtmhub_url)) return null;
+  const browseHubCatalog = `${settings.platform_xtmhub_url}/cybersecurity-solutions/open-cti-integrations`;
   return (
     <Button
       gradient
       variant="secondary"
       href={browseHubCatalog}
       target="_blank"
+      rel="noopener noreferrer"
       title={t_i18n('Browse More')}
     >
       {t_i18n('Browse More')}

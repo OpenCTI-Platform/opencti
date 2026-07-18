@@ -166,7 +166,7 @@ const IntegrationsStatsStrip = () => {
       loadQuery({}, { fetchPolicy: 'store-and-network' });
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isConnectorReader, loadQuery]);
 
   if (!isConnectorReader || !queryRef) return null;
 
