@@ -22,6 +22,7 @@ import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integ
 import BuiltInIntegrationCard from '@components/integrations/available/BuiltInIntegrationCard';
 import BuiltInIntegrationCreation from '@components/integrations/available/BuiltInIntegrationCreation';
 import { BrowseMoreButton, MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
+import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -103,13 +104,32 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
     clearAllFilters();
   };
 
-  const renderSectionHeader = (section: CatalogSection) => {
+  // Progressive mounting: with a large catalog, rendering every card at once
+  // makes the tab lag. Cards are revealed by batches while scrolling.
+  const revealResetKey = JSON.stringify({ filters, sort });
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const visibleSections = useMemo(() => {
+    const result: (CatalogSection & { totalCount: number })[] = [];
+    let remaining = visibleCount;
+    for (const section of sections) {
+      if (remaining <= 0) break;
+      result.push({
+        ...section,
+        items: section.items.slice(0, remaining),
+        totalCount: section.items.length,
+      });
+      remaining -= section.items.length;
+    }
+    return result;
+  }, [sections, visibleCount]);
+
+  const renderSectionHeader = (section: CatalogSection & { totalCount: number }) => {
     if (section.key === BUILT_IN_SECTION_KEY) {
       return (
         <MarketplaceSectionHeader
           icon={WidgetsOutlined}
           label={t_i18n('Built-in ingestion')}
-          count={section.items.length}
+          count={section.totalCount}
         />
       );
     }
@@ -117,7 +137,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
       <MarketplaceSectionHeader
         icon={getConnectorTypeIcon(section.key)}
         label={getConnectorMetadata(section.key as IngestionConnectorType, t_i18n).label}
-        count={section.items.length}
+        count={section.totalCount}
       />
     );
   };
@@ -189,7 +209,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
             />
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {sections.map((section) => (
+              {visibleSections.map((section) => (
                 <Box component="section" key={section.key}>
                   {renderSectionHeader(section)}
                   <Grid container spacing={2}>
@@ -204,6 +224,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                   </Grid>
                 </Box>
               ))}
+              {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}
             </Box>
           )}
         </Box>

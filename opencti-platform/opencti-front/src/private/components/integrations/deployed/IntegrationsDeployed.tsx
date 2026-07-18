@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Suspense, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Box, MenuItem, Stack, TextField } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -15,8 +15,9 @@ import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/
 import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
-import useDeployedIntegrationsFilters, { DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
+import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
+import useProgressiveReveal from '@components/integrations/components/useProgressiveReveal';
 import { IntegrationsData } from '@components/integrations/Integrations';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -93,6 +94,24 @@ const IntegrationsDeployedContent = ({
     refetchForms();
   }, [onConnectorsChange, refetchFeeds, refetchForms]);
 
+  // Progressive mounting while scrolling, as on the available tab.
+  const revealResetKey = JSON.stringify({ filters, sort });
+  const { visibleCount, sentinelRef, hasMore } = useProgressiveReveal(filteredItems.length, revealResetKey);
+  const visibleSections = useMemo(() => {
+    const result: (DeployedSection & { totalCount: number })[] = [];
+    let remaining = visibleCount;
+    for (const section of sections) {
+      if (remaining <= 0) break;
+      result.push({
+        ...section,
+        items: section.items.slice(0, remaining),
+        totalCount: section.items.length,
+      });
+      remaining -= section.items.length;
+    }
+    return result;
+  }, [sections, visibleCount]);
+
   return (
     <Stack direction="row" gap={2} alignItems="flex-start">
       <DeployedFacetSidebar
@@ -141,14 +160,14 @@ const IntegrationsDeployedContent = ({
           />
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {sections.map((section) => {
+            {visibleSections.map((section) => {
               const { label, icon } = typeMetadata(section.key);
               return (
                 <Box component="section" key={section.key}>
                   <MarketplaceSectionHeader
                     icon={icon}
                     label={label}
-                    count={section.items.length}
+                    count={section.totalCount}
                   />
                   <Grid container spacing={2}>
                     {section.items.map((item) => (
@@ -163,6 +182,7 @@ const IntegrationsDeployedContent = ({
                 </Box>
               );
             })}
+            {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}
           </Box>
         )}
       </Box>
