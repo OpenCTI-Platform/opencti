@@ -1,10 +1,11 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import { Check, ExtensionOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { Check, ExtensionOutlined, GroupsOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import { getUseCaseIcon } from '@components/integrations/catalog/utils/useCaseIcons';
 import {
   CATALOG_DEPLOYMENT_FACETS,
   CATALOG_STATUS_FACETS,
@@ -17,10 +18,14 @@ import { useFormatter } from '../../../../components/i18n';
 export const useCatalogStatusLabel = () => {
   const { t_i18n } = useFormatter();
   return (status: CatalogStatusFacet): string => {
-    if (status === 'verified') return t_i18n('Verified by Filigran');
-    if (status === 'deployed') return t_i18n('Deployed');
-    return t_i18n('Playbook supported');
+    if (status === 'filigran') return t_i18n('Supported by Filigran');
+    return t_i18n('Supported by Community');
   };
+};
+
+const STATUS_FACET_ICONS: Record<CatalogStatusFacet, SvgIconComponent> = {
+  filigran: VerifiedOutlined,
+  community: GroupsOutlined,
 };
 
 export const useCatalogDeploymentLabel = () => {
@@ -278,6 +283,7 @@ const IngestionCatalogFacetSidebar = ({
                 key={useCase}
                 checked={filters.useCases.includes(useCase)}
                 count={facets.useCaseCounts[useCase] ?? 0}
+                icon={getUseCaseIcon(useCase)}
                 label={useCase} // no translation on purpose, values come from the catalog
                 onToggle={() => onFiltersChange((prev) => ({ ...prev, useCases: toggleValue(prev.useCases, useCase) }))}
               />
@@ -292,6 +298,7 @@ const IngestionCatalogFacetSidebar = ({
               key={status}
               checked={filters.statuses.includes(status)}
               count={facets.statusCounts[status] ?? 0}
+              icon={STATUS_FACET_ICONS[status]}
               label={statusLabel(status)}
               onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
             />

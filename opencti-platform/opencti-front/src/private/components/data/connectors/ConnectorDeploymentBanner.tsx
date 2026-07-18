@@ -12,6 +12,8 @@ type ConnectorDeploymentBannerProps = {
   isVerified?: boolean;
 };
 
+// The EE license requirement is intentionally not surfaced as a banner: the
+// deploy buttons already carry the EE chip and gating.
 const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({
   hasActiveManagers,
   isVerified,
@@ -19,17 +21,7 @@ const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProp
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  if (!isEnterpriseEdition) {
-    return (
-      <Alert severity="info" variant="outlined">
-        <Typography>
-          {t_i18n('The deployment of connectors from this catalog requires an Enterprise Edition license.')}
-        </Typography>
-      </Alert>
-    );
-  }
-
-  if (!hasActiveManagers) {
+  if (isEnterpriseEdition && !hasActiveManagers) {
     return (
       <Alert severity="warning">
         <Typography>

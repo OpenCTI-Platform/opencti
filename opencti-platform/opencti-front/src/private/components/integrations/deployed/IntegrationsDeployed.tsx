@@ -14,7 +14,6 @@ import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
-import IntegrationsStatsStrip from '@components/integrations/deployed/IntegrationsStatsStrip';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
 import useDeployedIntegrationsFilters, { DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
@@ -105,8 +104,6 @@ const IntegrationsDeployedContent = ({
       />
 
       <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <IntegrationsStatsStrip />
-
         <Stack direction="row" alignItems="center" flexWrap="wrap" gap={2}>
           <SearchInput
             value={searchInput}

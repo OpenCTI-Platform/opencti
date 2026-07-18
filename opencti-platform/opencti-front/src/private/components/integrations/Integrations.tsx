@@ -25,6 +25,7 @@ import { BUILT_IN_INTEGRATIONS } from '@components/integrations/available/builtI
 import { BrowseMoreButton, HeroStatChip } from '@components/integrations/components/MarketplaceUi';
 import IntegrationsAvailable from '@components/integrations/available/IntegrationsAvailable';
 import IntegrationsDeployed from '@components/integrations/deployed/IntegrationsDeployed';
+import IntegrationsStatsStrip from '@components/integrations/deployed/IntegrationsStatsStrip';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -198,6 +199,9 @@ const IntegrationsHero = ({ deployedCount, availableCount, verifiedCount, builtI
         </Box>
         <BrowseMoreButton />
       </Stack>
+      <Box sx={{ position: 'relative' }}>
+        <IntegrationsStatsStrip />
+      </Box>
     </Box>
   );
 };

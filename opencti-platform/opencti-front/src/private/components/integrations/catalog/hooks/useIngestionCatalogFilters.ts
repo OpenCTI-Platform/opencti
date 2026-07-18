@@ -8,11 +8,13 @@ import { useFormatter } from '../../../../../components/i18n';
 
 export type CatalogSortMode = 'name' | 'deployed' | 'verified';
 
-export type CatalogStatusFacet = 'verified' | 'deployed' | 'playbook';
+// Support origin of the item: verified contracts and built-in methods are
+// supported by Filigran, the rest by the community.
+export type CatalogStatusFacet = 'filigran' | 'community';
 
 export type CatalogDeploymentFacet = 'connector' | 'built-in';
 
-export const CATALOG_STATUS_FACETS: CatalogStatusFacet[] = ['verified', 'deployed', 'playbook'];
+export const CATALOG_STATUS_FACETS: CatalogStatusFacet[] = ['filigran', 'community'];
 
 export const CATALOG_DEPLOYMENT_FACETS: CatalogDeploymentFacet[] = ['connector', 'built-in'];
 
@@ -41,7 +43,6 @@ export interface CatalogItem {
   sectionKey: string;
   deployment: CatalogDeploymentFacet;
   verified: boolean;
-  playbookSupported: boolean;
   useCases: string[];
   deploymentCount: number;
   connector?: CatalogConnectorEntry;
@@ -83,9 +84,8 @@ const parseListParam = (value: string | null): string[] => {
 };
 
 const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean => {
-  if (status === 'verified') return item.verified;
-  if (status === 'deployed') return item.deploymentCount > 0;
-  return item.playbookSupported;
+  if (status === 'filigran') return item.verified;
+  return !item.verified;
 };
 
 type FacetGroup = 'types' | 'useCases' | 'statuses' | 'deployments';
@@ -172,8 +172,8 @@ const useIngestionCatalogFilters = ({
         searchText: `${label} ${description}`.toLowerCase(),
         sectionKey: BUILT_IN_SECTION_KEY,
         deployment: 'built-in',
-        verified: false,
-        playbookSupported: false,
+        // Built-in methods ship with the platform: supported by Filigran.
+        verified: true,
         useCases: [],
         deploymentCount: builtIn.deploymentCount,
         builtIn: builtIn.definition,
@@ -196,7 +196,6 @@ const useIngestionCatalogFilters = ({
               sectionKey: connector.container_type,
               deployment: 'connector',
               verified: connector.verified,
-              playbookSupported: connector.playbook_supported,
               useCases: connector.use_cases ?? [],
               deploymentCount: deploymentCounts.get(connector.container_image) ?? 0,
               connector: { connector, catalogId: catalog.id },

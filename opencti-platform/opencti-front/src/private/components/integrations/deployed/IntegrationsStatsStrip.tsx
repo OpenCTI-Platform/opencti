@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { Stack, Typography } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DnsOutlined, DownloadOutlined, EngineeringOutlined, SpeedOutlined, StorageOutlined, UploadOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
@@ -43,35 +43,42 @@ const integrationsStatsStripQuery = graphql`
   }
 `;
 
-interface StatChipProps {
+interface StatItemProps {
   icon: SvgIconComponent;
   value: string;
   label: string;
 }
 
-const StatChip = ({ icon: Icon, value, label }: StatChipProps) => {
+const StatItem = ({ icon: Icon, value, label }: StatItemProps) => {
   const theme = useTheme();
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      gap={0.75}
-      sx={{
-        paddingInline: 1.25,
-        paddingBlock: 0.5,
-        borderRadius: 1,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
-        backgroundColor: theme.palette.background.paper,
-      }}
-    >
-      <Icon sx={{ fontSize: 15, color: theme.palette.primary.main }} />
-      <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-        {value}
-      </Typography>
-      <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}>
-        {label}
-      </Typography>
-    </Stack>
+    <Tooltip title={label}>
+      <Stack direction="row" alignItems="center" gap={0.75}>
+        <Icon sx={{ fontSize: 15, color: theme.palette.primary.main }} />
+        <Typography
+          component="span"
+          sx={{
+            fontSize: 13,
+            fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1,
+          }}
+        >
+          {value}
+        </Typography>
+        <Typography
+          component="span"
+          sx={{
+            fontSize: 12,
+            color: theme.palette.text.secondary,
+            whiteSpace: 'nowrap',
+            lineHeight: 1,
+          }}
+        >
+          {label}
+        </Typography>
+      </Stack>
+    </Tooltip>
   );
 };
 
@@ -81,6 +88,7 @@ interface StatsStripContentProps {
 
 const StatsStripContent = ({ queryRef }: StatsStripContentProps) => {
   const { t_i18n, n } = useFormatter();
+  const theme = useTheme();
   const data = usePreloadedQuery(integrationsStatsStripQuery, queryRef);
   const lastReadOperations = useRef(0);
   const lastWriteOperations = useRef(0);
@@ -122,19 +130,31 @@ const StatsStripContent = ({ queryRef }: StatsStripContentProps) => {
   };
 
   return (
-    <Stack direction="row" flexWrap="wrap" gap={1}>
-      <StatChip icon={EngineeringOutlined} value={safeValue(consumers)} label={t_i18n('Connected workers')} />
-      <StatChip icon={DnsOutlined} value={safeValue(queuedBundles)} label={t_i18n('Queued bundles')} />
-      <StatChip icon={SpeedOutlined} value={safeValue(ackRate, '/s')} label={t_i18n('Bundles processed')} />
-      <StatChip icon={DownloadOutlined} value={safeValue(readOperations, '/s')} label={t_i18n('Read operations')} />
-      <StatChip icon={UploadOutlined} value={safeValue(writeOperations, '/s')} label={t_i18n('Write operations')} />
-      <StatChip icon={StorageOutlined} value={safeValue(docsCount)} label={t_i18n('Total number of documents')} />
+    <Stack
+      direction="row"
+      flexWrap="wrap"
+      alignItems="center"
+      columnGap={3}
+      rowGap={1}
+      sx={{
+        marginTop: 2,
+        paddingTop: 2,
+        borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
+      }}
+    >
+      <StatItem icon={EngineeringOutlined} value={safeValue(consumers)} label={t_i18n('Connected workers')} />
+      <StatItem icon={DnsOutlined} value={safeValue(queuedBundles)} label={t_i18n('Queued bundles')} />
+      <StatItem icon={SpeedOutlined} value={safeValue(ackRate, '/s')} label={t_i18n('Bundles processed')} />
+      <StatItem icon={DownloadOutlined} value={safeValue(readOperations, '/s')} label={t_i18n('Read operations')} />
+      <StatItem icon={UploadOutlined} value={safeValue(writeOperations, '/s')} label={t_i18n('Write operations')} />
+      <StatItem icon={StorageOutlined} value={safeValue(docsCount)} label={t_i18n('Total number of documents')} />
     </Stack>
   );
 };
 
-// Compact platform-health strip: workers, queues and search engine metrics,
-// refreshed every five seconds (replaces the legacy monitoring cards).
+// Live platform-health metrics rendered inside the Integrations hero, and
+// refreshed every five seconds. The refetch uses store-and-network so the
+// previous values stay on screen while polling (no flicker).
 const IntegrationsStatsStrip = () => {
   const isConnectorReader = useGranted([MODULES]);
   const [queryRef, loadQuery] = useQueryLoader<IntegrationsStatsStripQuery>(integrationsStatsStripQuery);
@@ -143,7 +163,7 @@ const IntegrationsStatsStrip = () => {
     if (!isConnectorReader) return undefined;
     loadQuery({}, { fetchPolicy: 'store-and-network' });
     const subscription = interval$.subscribe(() => {
-      loadQuery({}, { fetchPolicy: 'network-only' });
+      loadQuery({}, { fetchPolicy: 'store-and-network' });
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -151,7 +171,7 @@ const IntegrationsStatsStrip = () => {
   if (!isConnectorReader || !queryRef) return null;
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<Box sx={{ marginTop: 2 }} />}>
       <StatsStripContent queryRef={queryRef} />
     </Suspense>
   );
