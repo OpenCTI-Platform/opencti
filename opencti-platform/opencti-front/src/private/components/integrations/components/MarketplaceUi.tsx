@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { Box, Stack, Typography } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
+import { CheckCircleOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
@@ -25,6 +25,34 @@ export const BrowseMoreButton = () => {
     >
       {t_i18n('Browse More')}
     </Button>
+  );
+};
+
+// Deployed-instances indicator on catalog cards: a discreet success chip with
+// a tooltip (same design as the OpenAEV integrations catalog).
+export const DeployedCountChip = ({ count }: { count: number }) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  if (count <= 0) return null;
+  return (
+    <Tooltip title={t_i18n('This integration has {count} deployed instance(s). Manage them from the Deployed tab.', { values: { count } })}>
+      <Chip
+        icon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
+        label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
+        size="small"
+        variant="outlined"
+        sx={{
+          height: 24,
+          fontSize: 11,
+          fontWeight: 600,
+          borderRadius: 1,
+          color: theme.palette.success.main,
+          borderColor: alpha(theme.palette.success.main, 0.4),
+          backgroundColor: alpha(theme.palette.success.main, 0.08),
+          '& .MuiChip-icon': { color: theme.palette.success.main },
+        }}
+      />
+    </Tooltip>
   );
 };
 

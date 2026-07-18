@@ -1,6 +1,7 @@
-import { Badge, Tooltip } from '@mui/material';
+import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import React from 'react';
+import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type IngestionCatalogCardDeployButtonProps = {
@@ -8,20 +9,19 @@ type IngestionCatalogCardDeployButtonProps = {
   onClick: () => void;
 };
 
-const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: IngestionCatalogCardDeployButtonProps) => {
+const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, onClick }: IngestionCatalogCardDeployButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
-    <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : ''}>
-      <Badge badgeContent={deploymentCount} color="warning">
-        <Button
-          size="small"
-          onClick={onClick}
-        >
-          {t_i18n('Deploy')}
-        </Button>
-      </Badge>
-    </Tooltip>
+    <Stack direction="row" alignItems="center" gap={1}>
+      <DeployedCountChip count={deploymentCount} />
+      <Button
+        size="small"
+        onClick={onClick}
+      >
+        {t_i18n('Deploy')}
+      </Button>
+    </Stack>
   );
 };
 

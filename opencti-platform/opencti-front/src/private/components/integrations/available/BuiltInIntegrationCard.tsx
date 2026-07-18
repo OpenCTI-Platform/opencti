@@ -1,9 +1,10 @@
 import React from 'react';
-import { Badge, CardActions, Chip, Stack, Tooltip, Typography } from '@mui/material';
+import { CardActions, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { BuiltInIntegrationDefinition } from '@components/integrations/available/builtInIntegrations';
+import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -120,26 +121,15 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             alignItems: 'center',
           }}
         >
-          <Chip
-            label={(() => {
-              if (deploymentCount === 1) return t_i18n('1 instance');
-              return t_i18n('{count} instances', { values: { count: deploymentCount } });
-            })()}
-            size="small"
-            variant="outlined"
-            sx={{ borderRadius: 0.5, fontSize: 11 }}
-          />
+          <DeployedCountChip count={deploymentCount} />
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Tooltip title={deploymentCount ? t_i18n('{count} instances', { values: { count: deploymentCount } }) : ''}>
-              <Badge badgeContent={deploymentCount} color="warning">
-                <Button
-                  size="small"
-                  onClick={onClickCreate}
-                >
-                  {t_i18n('Create')}
-                </Button>
-              </Badge>
-            </Tooltip>
+            <Button
+              size="small"
+              onClick={onClickCreate}
+              sx={{ marginLeft: 'auto' }}
+            >
+              {t_i18n('Create')}
+            </Button>
           </Security>
         </CardActions>
       </Card>
