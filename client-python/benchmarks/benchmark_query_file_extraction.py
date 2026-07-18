@@ -2,7 +2,7 @@
 
 The benchmark isolates the work performed by OpenCTIApiClient.query() before a
 non-upload request is handed to requests. The fake session keeps network and
-JSON encoding out of the measurement so the cost of scanning GraphQL variables
+JSON encoding out of the measurement so the cost of probing GraphQL variables
 for File objects is visible.
 """
 
@@ -42,6 +42,22 @@ def _build_client() -> OpenCTIApiClient:
     client.proxies = None
     client.session_requests_timeout = 300
     client.session = _FakeSession()
+    client.extract_files_root_calls = 0
+    client.contains_file_calls = 0
+    extract_files = client._extract_files
+    contains_file = client._contains_file
+
+    def tracking_extract_files(obj, path_prefix=""):
+        if path_prefix == "":
+            client.extract_files_root_calls += 1
+        return extract_files(obj, path_prefix)
+
+    def tracking_contains_file(obj):
+        client.contains_file_calls += 1
+        return contains_file(obj)
+
+    client._extract_files = tracking_extract_files
+    client._contains_file = tracking_contains_file
     return client
 
 
@@ -65,17 +81,29 @@ def _build_variables(item_count: int) -> dict:
     }
 
 
-def _run_once(client: OpenCTIApiClient, variables: dict) -> tuple[float, int, bool]:
+def _run_once(
+    client: OpenCTIApiClient, variables: dict
+) -> tuple[float, int, bool, int, int]:
     gc.collect()
     tracemalloc.start()
+    client.extract_files_root_calls = 0
+    client.contains_file_calls = 0
     started_at = time.perf_counter()
     client.query("query Benchmark { about { version } }", variables)
     elapsed_seconds = time.perf_counter() - started_at
+    extract_files_root_calls = client.extract_files_root_calls
+    contains_file_calls = client.contains_file_calls
     _, peak_bytes = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
     cleaned, files = client._extract_files(variables)
-    return elapsed_seconds, peak_bytes, cleaned is variables and files == []
+    return (
+        elapsed_seconds,
+        peak_bytes,
+        cleaned is variables and files == [],
+        extract_files_root_calls,
+        contains_file_calls,
+    )
 
 
 def main() -> None:
@@ -90,6 +118,8 @@ def main() -> None:
     samples = [_run_once(client, variables) for _ in range(args.repeat)]
     elapsed_samples = [sample[0] for sample in samples]
     peak_samples = [sample[1] for sample in samples]
+    extract_files_root_call_samples = [sample[3] for sample in samples]
+    contains_file_call_samples = [sample[4] for sample in samples]
 
     result = {
         "items": args.items,
@@ -99,6 +129,10 @@ def main() -> None:
         "max_runtime_ms": round(max(elapsed_samples) * 1000, 3),
         "median_peak_kib": round(statistics.median(peak_samples) / 1024, 3),
         "reuses_variable_tree": samples[-1][2],
+        "median_extract_files_root_calls": statistics.median(
+            extract_files_root_call_samples
+        ),
+        "median_contains_file_calls": statistics.median(contains_file_call_samples),
     }
     print(json.dumps(result, sort_keys=True))
 

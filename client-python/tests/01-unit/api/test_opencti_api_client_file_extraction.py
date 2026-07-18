@@ -119,6 +119,66 @@ class _UploadSession:
         return _UploadResponse()
 
 
+class _JsonSession:
+    def __init__(self):
+        self.kwargs = None
+
+    def post(self, *args, **kwargs):
+        del args
+        self.kwargs = kwargs
+        return _UploadResponse()
+
+
+def test_query_skips_file_extraction_when_variables_have_no_files(monkeypatch):
+    client = _client()
+    client.api_url = "http://benchmark.invalid/graphql"
+    client.request_headers = {}
+    client.ssl_verify = False
+    client.cert = None
+    client.proxies = None
+    client.session_requests_timeout = 300
+    client.session = _JsonSession()
+
+    def fail_extract_files(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("non-upload query should not scan variables for files")
+
+    monkeypatch.setattr(client, "_extract_files", fail_extract_files)
+    variables = {"filters": [{"key": "entity_type", "values": ["Report"]}]}
+
+    result = client.query(
+        "query Reports { reports { edges { node { id } } } }", variables
+    )
+
+    assert result == {"data": {"ok": True}}
+    assert client.session.kwargs["json"]["variables"] is variables
+
+
+def test_query_extracts_nested_input_file_without_upload_scalar():
+    upload = _TrackingFile(b"payload")
+    client = _client()
+    client.api_url = "http://benchmark.invalid/graphql"
+    client.request_headers = {}
+    client.ssl_verify = False
+    client.cert = None
+    client.proxies = None
+    client.session_requests_timeout = 300
+    client.session = _UploadSession(upload)
+
+    result = client.query(
+        "mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {"
+        " intrusionSetAdd(input: $input) { id }"
+        " }",
+        {"input": {"files": File("artifact.txt", upload, "text/plain")}},
+    )
+
+    assert result == {"data": {"ok": True}}
+    assert client.session.read_calls_before_post == 0
+    assert client.session.content_type.startswith("multipart/form-data; boundary=")
+    assert b'filename="artifact.txt"' in client.session.body
+    assert b"payload" in client.session.body
+
+
 def test_query_streams_multipart_file_body():
     upload = _TrackingFile(b"payload")
     client = _client()

@@ -783,6 +783,25 @@ class OpenCTIApiClient:
 
         return obj, []
 
+    @staticmethod
+    def _contains_file(obj):
+        """Return whether a nested variable tree contains an upload File."""
+        if isinstance(obj, File):
+            return True
+        if isinstance(obj, dict):
+            for value in obj.values():
+                if isinstance(
+                    value, (File, dict, list)
+                ) and OpenCTIApiClient._contains_file(value):
+                    return True
+        elif isinstance(obj, list):
+            for item in obj:
+                if isinstance(
+                    item, (File, dict, list)
+                ) and OpenCTIApiClient._contains_file(item):
+                    return True
+        return False
+
     def query(self, query, variables=None, disable_impersonate=False):
         """Submit a query to the OpenCTI GraphQL API.
 
@@ -802,7 +821,13 @@ class OpenCTIApiClient:
         # Batching or mixed upload or not supported
         # Recursively extract File objects from nested dictionaries
         query_var, files_vars = (
-            self._extract_files(variables) if variables else (variables, [])
+            self._extract_files(variables)
+            if variables
+            and (
+                (isinstance(query, str) and "Upload" in query)
+                or self._contains_file(variables)
+            )
+            else (variables, [])
         )
 
         query_headers = self._get_current_request_headers().copy()
