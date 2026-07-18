@@ -10,7 +10,7 @@ import uuid
 from contextlib import ExitStack, contextmanager, nullcontext
 from contextvars import ContextVar
 from functools import wraps
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Union
 from urllib.parse import quote, unquote, urljoin, urlparse
 
 import datefinder
@@ -72,6 +72,7 @@ MAX_PROCESSING_COUNT: int = 100
 EXPORT_PREFETCH_BATCH_SIZE: int = 1000
 IMPORT_PREFETCH_BATCH_SIZE: int = 1000
 NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE: int = 100
+REPORT_OBJECT_REF_CREATE_BATCH_SIZE: int = 100
 _EXPORT_OBJECT_REF_EXCLUDED_ENTITY_TYPES: Dict[str, frozenset[str]] = {
     "report": frozenset({"Note", "Report", "Opinion"}),
     "note": frozenset({"Note", "Opinion"}),
@@ -120,6 +121,25 @@ _MISSING_IMPORT_VOCABULARY_VALUES: ContextVar[Optional[set[str]]] = ContextVar(
 _EXTERNAL_REFERENCE_FILE_REUSE_CACHE: ContextVar[
     Optional[Dict[Tuple[Any, ...], str]]
 ] = ContextVar("_external_reference_file_reuse_cache", default=None)
+
+
+class _ReportObjectRefScopeState:
+    __slots__ = ("owner", "dedupe_cache", "batches", "add_many")
+
+    def __init__(
+        self,
+        owner: Any,
+        add_many: Optional[Callable[[str, List[str], str], Any]],
+    ):
+        self.owner = owner
+        self.dedupe_cache = LRUCache(maxsize=50000)
+        self.batches = {} if add_many is not None else None
+        self.add_many = add_many
+
+
+_REPORT_OBJECT_REF_SCOPE_STATE: ContextVar[Optional[_ReportObjectRefScopeState]] = (
+    ContextVar("_report_object_ref_scope_state", default=None)
+)
 
 
 def _reuse_serialized_export_file_cache(method):
@@ -318,8 +338,6 @@ class OpenCTIStix2:
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
         self._external_reference_ids = LRUCache(maxsize=50000)
-        self._report_object_refs = LRUCache(maxsize=50000)
-        self._report_object_ref_dedupe_active = False
         self._readers = None
         self._stix_helpers = None
         self._internal_helpers = None
@@ -445,7 +463,11 @@ class OpenCTIStix2:
     def _add_report_object_ref_once(
         self, report_id: str, stix_object_or_relationship_id: str
     ) -> bool:
-        if not self._report_object_ref_dedupe_active:
+        report_object_ref_scope_state = _REPORT_OBJECT_REF_SCOPE_STATE.get()
+        if (
+            report_object_ref_scope_state is None
+            or report_object_ref_scope_state.owner is not self
+        ):
             return self.opencti.report.add_stix_object_or_stix_relationship(
                 id=report_id,
                 stixObjectOrStixRelationshipId=stix_object_or_relationship_id,
@@ -457,26 +479,77 @@ class OpenCTIStix2:
                 report_id, stix_object_or_relationship_id
             ),
         )
-        if self._report_object_refs.get(cache_key) is not None:
+        if report_object_ref_scope_state.dedupe_cache.get(cache_key) is not None:
             return False
 
-        added = self.opencti.report.add_stix_object_or_stix_relationship(
-            id=report_id,
-            stixObjectOrStixRelationshipId=stix_object_or_relationship_id,
+        if report_object_ref_scope_state.batches is None:
+            added = self.opencti.report.add_stix_object_or_stix_relationship(
+                id=report_id,
+                stixObjectOrStixRelationshipId=stix_object_or_relationship_id,
+            )
+            if added:
+                report_object_ref_scope_state.dedupe_cache[cache_key] = True
+            return added
+
+        report_object_ref_scope_state.dedupe_cache[cache_key] = True
+        report_object_ref_batch = report_object_ref_scope_state.batches.setdefault(
+            report_id, []
         )
-        if added:
-            self._report_object_refs[cache_key] = True
-        return added
+        report_object_ref_batch.append(stix_object_or_relationship_id)
+        if len(report_object_ref_batch) >= REPORT_OBJECT_REF_CREATE_BATCH_SIZE:
+            self._flush_report_object_ref_batch(
+                report_id,
+                report_object_ref_batch,
+                report_object_ref_scope_state.add_many,
+            )
+        return True
+
+    def _get_report_object_ref_batch_adder(self):
+        nested_ref_relationship = getattr(
+            self.opencti, "stix_nested_ref_relationship", None
+        )
+        return getattr(nested_ref_relationship, "add_many_to_stix_core_object", None)
+
+    def _flush_report_object_ref_batch(
+        self, report_id: str, object_ref_ids: List[str], add_many
+    ) -> None:
+        if len(object_ref_ids) == 0:
+            return
+        if len(object_ref_ids) == 1:
+            self.opencti.report.add_stix_object_or_stix_relationship(
+                id=report_id,
+                stixObjectOrStixRelationshipId=object_ref_ids[0],
+            )
+        else:
+            add_many(report_id, list(object_ref_ids), "object")
+        object_ref_ids.clear()
+
+    def _flush_report_object_ref_batches(
+        self, report_object_ref_scope_state: _ReportObjectRefScopeState
+    ) -> None:
+        if report_object_ref_scope_state.batches is None:
+            return
+        for report_id, object_ref_ids in report_object_ref_scope_state.batches.items():
+            self._flush_report_object_ref_batch(
+                report_id, object_ref_ids, report_object_ref_scope_state.add_many
+            )
 
     @contextmanager
     def _report_object_ref_dedupe_scope(self):
-        self._report_object_refs.clear()
-        self._report_object_ref_dedupe_active = True
+        current_state = _REPORT_OBJECT_REF_SCOPE_STATE.get()
+        if current_state is not None and current_state.owner is self:
+            yield
+            return
+
+        report_object_ref_scope_state = _ReportObjectRefScopeState(
+            self, self._get_report_object_ref_batch_adder()
+        )
+        scope_token = _REPORT_OBJECT_REF_SCOPE_STATE.set(report_object_ref_scope_state)
         try:
             yield
+            self._flush_report_object_ref_batches(report_object_ref_scope_state)
         finally:
-            self._report_object_ref_dedupe_active = False
-            self._report_object_refs.clear()
+            _REPORT_OBJECT_REF_SCOPE_STATE.reset(scope_token)
 
     @contextmanager
     def _external_reference_file_reuse_scope(self):

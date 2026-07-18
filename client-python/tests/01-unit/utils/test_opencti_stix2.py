@@ -1,5 +1,6 @@
 import base64
 import datetime
+import threading
 from collections import Counter
 from types import SimpleNamespace
 
@@ -10,6 +11,7 @@ from pycti.utils.opencti_file_utils import BASE64_FILE_MEMORY_THRESHOLD
 from pycti.utils.opencti_stix2 import (
     IMPORT_PREFETCH_BATCH_SIZE,
     NESTED_REF_RELATIONSHIP_CREATE_BATCH_SIZE,
+    REPORT_OBJECT_REF_CREATE_BATCH_SIZE,
     OpenCTIStix2,
 )
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
@@ -939,6 +941,15 @@ class _StixCoreRelationshipImportRecorder:
         }
 
 
+class _NestedRefBatchRecorder:
+    def __init__(self):
+        self.add_many_calls = []
+
+    def add_many_to_stix_core_object(self, from_id, to_ids, relationship_type):
+        self.add_many_calls.append((from_id, list(to_ids), relationship_type))
+        return True
+
+
 def _build_report_relation_importer():
     opencti = SimpleNamespace(
         report=_ReportRelationRecorder(),
@@ -1003,6 +1014,122 @@ def test_import_relationship_report_relation_dedupe_scope_does_not_leak():
         ("report--shared", "relationship--shared"),
         ("report--shared", "malware--shared-source"),
         ("report--shared", "indicator--shared-target"),
+    ]
+
+
+def test_import_relationship_batches_report_relation_adds_when_bulk_edit_available():
+    opencti, opencti_stix2 = _build_report_relation_importer()
+    opencti.stix_nested_ref_relationship = _NestedRefBatchRecorder()
+
+    with opencti_stix2._report_object_ref_dedupe_scope():
+        for index in range(2):
+            opencti_stix2.import_relationship(
+                {
+                    "id": f"relationship--{index}",
+                    "type": "relationship",
+                    "source_ref": "malware--shared-source",
+                    "target_ref": "indicator--shared-target",
+                }
+            )
+
+    assert opencti.report.add_calls == []
+    assert opencti.stix_nested_ref_relationship.add_many_calls == [
+        (
+            "report--shared",
+            [
+                "relationship--0",
+                "malware--shared-source",
+                "indicator--shared-target",
+                "relationship--1",
+            ],
+            "object",
+        )
+    ]
+
+
+def test_report_relation_batch_scope_is_context_local():
+    opencti, opencti_stix2 = _build_report_relation_importer()
+    opencti.stix_nested_ref_relationship = _NestedRefBatchRecorder()
+    barrier = threading.Barrier(2)
+    errors = []
+
+    def queue_refs(prefix):
+        try:
+            with opencti_stix2._report_object_ref_dedupe_scope():
+                opencti_stix2._add_report_object_ref_once(
+                    "report--shared", f"{prefix}--one"
+                )
+                opencti_stix2._add_report_object_ref_once(
+                    "report--shared", f"{prefix}--two"
+                )
+                barrier.wait(timeout=5)
+        except Exception as exc:  # pragma: no cover - only used for thread handoff
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=queue_refs, args=("alpha",)),
+        threading.Thread(target=queue_refs, args=("beta",)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=5)
+
+    assert errors == []
+    assert all(not thread.is_alive() for thread in threads)
+    assert opencti.report.add_calls == []
+    assert {
+        tuple(to_ids)
+        for _, to_ids, _ in opencti.stix_nested_ref_relationship.add_many_calls
+    } == {
+        ("alpha--one", "alpha--two"),
+        ("beta--one", "beta--two"),
+    }
+
+
+def test_report_relation_batch_scope_does_not_cross_importers():
+    outer_opencti, outer_stix2 = _build_report_relation_importer()
+    inner_opencti, inner_stix2 = _build_report_relation_importer()
+    outer_opencti.stix_nested_ref_relationship = _NestedRefBatchRecorder()
+    inner_opencti.stix_nested_ref_relationship = _NestedRefBatchRecorder()
+
+    with outer_stix2._report_object_ref_dedupe_scope():
+        outer_stix2._add_report_object_ref_once("report--shared", "outer--one")
+        with inner_stix2._report_object_ref_dedupe_scope():
+            inner_stix2._add_report_object_ref_once("report--shared", "inner--one")
+            inner_stix2._add_report_object_ref_once("report--shared", "inner--two")
+        outer_stix2._add_report_object_ref_once("report--shared", "outer--two")
+
+    assert outer_opencti.stix_nested_ref_relationship.add_many_calls == [
+        ("report--shared", ["outer--one", "outer--two"], "object")
+    ]
+    assert inner_opencti.stix_nested_ref_relationship.add_many_calls == [
+        ("report--shared", ["inner--one", "inner--two"], "object")
+    ]
+
+
+def test_report_relation_batch_scope_flushes_bounded_chunks():
+    opencti, opencti_stix2 = _build_report_relation_importer()
+    opencti.stix_nested_ref_relationship = _NestedRefBatchRecorder()
+
+    with opencti_stix2._report_object_ref_dedupe_scope():
+        for index in range((REPORT_OBJECT_REF_CREATE_BATCH_SIZE * 2) + 1):
+            opencti_stix2._add_report_object_ref_once(
+                "report--shared", f"object--{index}"
+            )
+
+    assert [
+        len(to_ids)
+        for _, to_ids, _ in opencti.stix_nested_ref_relationship.add_many_calls
+    ] == [
+        REPORT_OBJECT_REF_CREATE_BATCH_SIZE,
+        REPORT_OBJECT_REF_CREATE_BATCH_SIZE,
+    ]
+    assert opencti.report.add_calls == [
+        (
+            "report--shared",
+            f"object--{REPORT_OBJECT_REF_CREATE_BATCH_SIZE * 2}",
+        )
     ]
 
 
