@@ -5,6 +5,7 @@ OBJECT_MARKING_REF_CREATE_BATCH_SIZE = 100
 EXTERNAL_REFERENCE_RELATION_CREATE_BATCH_SIZE = 100
 KILL_CHAIN_PHASE_RELATION_CREATE_BATCH_SIZE = 100
 EXTERNAL_REFERENCE_PREFETCH_BATCH_SIZE = 1000
+KILL_CHAIN_PHASE_PREFETCH_BATCH_SIZE = 1000
 LABEL_PREFETCH_BATCH_SIZE = 1000
 LABEL_RELATION_CREATE_BATCH_SIZE = 100
 BULK_REF_RELATION_VALIDATION_API_FEATURE = "BULK_REF_RELATION_VALIDATION"
@@ -406,20 +407,40 @@ class OpenCTIStix2Update:
                 nested_ref_relationship, "add_many_to_stix_core_object", None
             )
 
-        pending_kill_chain_phase_ids = []
+        normalized_kill_chain_phases = []
         for kill_chain_phase in kill_chain_phases:
             if version == 2:
                 kill_chain_phase = kill_chain_phase["value"]
-            kill_chain_phase_id = self.opencti.kill_chain_phase.create(
-                kill_chain_name=kill_chain_phase["kill_chain_name"],
-                phase_name=kill_chain_phase["phase_name"],
-                x_opencti_order=(
-                    kill_chain_phase["x_opencti_order"]
-                    if "x_opencti_order" in kill_chain_phase
-                    else 0
-                ),
-                stix_id=kill_chain_phase["id"] if "id" in kill_chain_phase else None,
-            )["id"]
+            normalized_kill_chain_phases.append(kill_chain_phase)
+        if len(normalized_kill_chain_phases) == 0:
+            return
+
+        prefetched_kill_chain_phase_ids = self._prefetch_patch_kill_chain_phases(
+            normalized_kill_chain_phases
+        )
+        pending_kill_chain_phase_ids = []
+        for kill_chain_phase in normalized_kill_chain_phases:
+            kill_chain_phase_id = None
+            cache_key = None
+            if (
+                prefetched_kill_chain_phase_ids is not None
+                and "id" not in kill_chain_phase
+            ):
+                cache_key = self._patch_kill_chain_phase_cache_key(kill_chain_phase)
+                kill_chain_phase_id = prefetched_kill_chain_phase_ids.get(cache_key)
+            if kill_chain_phase_id is None:
+                kill_chain_phase_data = self.opencti.kill_chain_phase.create(
+                    kill_chain_name=kill_chain_phase["kill_chain_name"],
+                    phase_name=kill_chain_phase["phase_name"],
+                    x_opencti_order=kill_chain_phase.get("x_opencti_order", 0),
+                    stix_id=kill_chain_phase.get("id"),
+                )
+                kill_chain_phase_id = kill_chain_phase_data["id"]
+                if (
+                    prefetched_kill_chain_phase_ids is not None
+                    and cache_key is not None
+                ):
+                    prefetched_kill_chain_phase_ids[cache_key] = kill_chain_phase_id
             pending_kill_chain_phase_ids.append(kill_chain_phase_id)
             if (
                 len(pending_kill_chain_phase_ids)
@@ -438,6 +459,82 @@ class OpenCTIStix2Update:
             add_kill_chain_phase,
             add_many,
         )
+
+    @staticmethod
+    def _patch_kill_chain_phase_cache_key(kill_chain_phase):
+        return (
+            kill_chain_phase.get("kill_chain_name"),
+            kill_chain_phase.get("phase_name"),
+            kill_chain_phase.get("x_opencti_order", 0),
+        )
+
+    def _prefetch_patch_kill_chain_phases(self, kill_chain_phases):
+        if len(kill_chain_phases) <= 1:
+            return None
+
+        cache_keys_by_generated_phase_id = {}
+        try:
+            for kill_chain_phase in kill_chain_phases:
+                if "id" in kill_chain_phase:
+                    continue
+                generated_phase_id = self.opencti.kill_chain_phase.generate_id(
+                    kill_chain_phase["phase_name"],
+                    kill_chain_phase["kill_chain_name"],
+                )
+                cache_key = self._patch_kill_chain_phase_cache_key(kill_chain_phase)
+                cache_keys_by_generated_phase_id.setdefault(
+                    generated_phase_id, set()
+                ).add(cache_key)
+
+            if len(cache_keys_by_generated_phase_id) == 0:
+                return None
+
+            prefetched_kill_chain_phase_ids = {}
+            generated_phase_ids = list(cache_keys_by_generated_phase_id.keys())
+            for start_index in range(
+                0, len(generated_phase_ids), KILL_CHAIN_PHASE_PREFETCH_BATCH_SIZE
+            ):
+                batch_generated_phase_ids = generated_phase_ids[
+                    start_index : start_index + KILL_CHAIN_PHASE_PREFETCH_BATCH_SIZE
+                ]
+                kill_chain_phase_data_list = (
+                    self.opencti.kill_chain_phase.list(
+                        filters={
+                            "mode": "and",
+                            "filters": [
+                                {
+                                    "key": "ids",
+                                    "values": batch_generated_phase_ids,
+                                }
+                            ],
+                            "filterGroups": [],
+                        },
+                        first=len(batch_generated_phase_ids),
+                    )
+                    or []
+                )
+                for kill_chain_phase_data in kill_chain_phase_data_list:
+                    generated_phase_id = kill_chain_phase_data.get("standard_id")
+                    if generated_phase_id is None:
+                        generated_phase_id = self.opencti.kill_chain_phase.generate_id(
+                            kill_chain_phase_data["phase_name"],
+                            kill_chain_phase_data["kill_chain_name"],
+                        )
+                    candidate_cache_keys = cache_keys_by_generated_phase_id.get(
+                        generated_phase_id
+                    )
+                    if candidate_cache_keys is None:
+                        continue
+                    cache_key = self._patch_kill_chain_phase_cache_key(
+                        kill_chain_phase_data
+                    )
+                    if cache_key in candidate_cache_keys:
+                        prefetched_kill_chain_phase_ids[cache_key] = (
+                            kill_chain_phase_data["id"]
+                        )
+            return prefetched_kill_chain_phase_ids
+        except Exception:
+            return None
 
     @staticmethod
     def _flush_kill_chain_phase_relation_batch(
