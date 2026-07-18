@@ -4,6 +4,7 @@ OBJECT_REF_CREATE_BATCH_SIZE = 100
 OBJECT_MARKING_REF_CREATE_BATCH_SIZE = 100
 EXTERNAL_REFERENCE_RELATION_CREATE_BATCH_SIZE = 100
 KILL_CHAIN_PHASE_RELATION_CREATE_BATCH_SIZE = 100
+EXTERNAL_REFERENCE_PREFETCH_BATCH_SIZE = 1000
 LABEL_PREFETCH_BATCH_SIZE = 1000
 LABEL_RELATION_CREATE_BATCH_SIZE = 100
 BULK_REF_RELATION_VALIDATION_API_FEATURE = "BULK_REF_RELATION_VALIDATION"
@@ -200,29 +201,38 @@ class OpenCTIStix2Update:
                 nested_ref_relationship, "add_many_to_stix_core_object", None
             )
 
-        pending_external_reference_ids = []
+        normalized_external_references = []
         for external_reference in external_references:
             if version == 2:
                 external_reference = external_reference["value"]
             if "url" in external_reference and "source_name" in external_reference:
-                url = external_reference["url"]
-                source_name = external_reference["source_name"]
-            else:
-                continue
-            external_reference_id = self.opencti.external_reference.create(
-                source_name=source_name,
-                url=url,
-                external_id=(
-                    external_reference["external_id"]
-                    if "external_id" in external_reference
-                    else None
-                ),
-                description=(
-                    external_reference["description"]
-                    if "description" in external_reference
-                    else None
-                ),
-            )["id"]
+                normalized_external_references.append(external_reference)
+        if len(normalized_external_references) == 0:
+            return
+
+        prefetched_external_reference_ids = self._prefetch_patch_external_references(
+            normalized_external_references
+        )
+        pending_external_reference_ids = []
+        for external_reference in normalized_external_references:
+            external_reference_id = None
+            cache_key = None
+            if prefetched_external_reference_ids is not None:
+                cache_key = self._patch_external_reference_cache_key(external_reference)
+                external_reference_id = prefetched_external_reference_ids.get(cache_key)
+            if external_reference_id is None:
+                external_reference_data = self.opencti.external_reference.create(
+                    source_name=external_reference["source_name"],
+                    url=external_reference["url"],
+                    external_id=external_reference.get("external_id"),
+                    description=external_reference.get("description"),
+                )
+                external_reference_id = external_reference_data["id"]
+                if (
+                    prefetched_external_reference_ids is not None
+                    and cache_key is not None
+                ):
+                    prefetched_external_reference_ids[cache_key] = external_reference_id
             pending_external_reference_ids.append(external_reference_id)
             if (
                 len(pending_external_reference_ids)
@@ -241,6 +251,85 @@ class OpenCTIStix2Update:
             add_external_reference,
             add_many,
         )
+
+    @staticmethod
+    def _patch_external_reference_cache_key(external_reference):
+        return (
+            external_reference.get("source_name"),
+            external_reference.get("url"),
+            external_reference.get("external_id"),
+            external_reference.get("description"),
+        )
+
+    def _prefetch_patch_external_references(self, external_references):
+        if len(external_references) <= 1:
+            return None
+
+        cache_keys_by_generated_ref_id = {}
+        try:
+            for external_reference in external_references:
+                generated_ref_id = self.opencti.external_reference.generate_id(
+                    external_reference.get("url"),
+                    external_reference.get("source_name"),
+                    external_reference.get("external_id"),
+                )
+                if generated_ref_id is None:
+                    continue
+                cache_key = self._patch_external_reference_cache_key(external_reference)
+                cache_keys_by_generated_ref_id.setdefault(generated_ref_id, set()).add(
+                    cache_key
+                )
+
+            if len(cache_keys_by_generated_ref_id) == 0:
+                return None
+
+            prefetched_external_reference_ids = {}
+            generated_ref_ids = list(cache_keys_by_generated_ref_id.keys())
+            for start_index in range(
+                0, len(generated_ref_ids), EXTERNAL_REFERENCE_PREFETCH_BATCH_SIZE
+            ):
+                batch_generated_ref_ids = generated_ref_ids[
+                    start_index : start_index + EXTERNAL_REFERENCE_PREFETCH_BATCH_SIZE
+                ]
+                external_reference_data_list = (
+                    self.opencti.external_reference.list(
+                        filters={
+                            "mode": "and",
+                            "filters": [
+                                {
+                                    "key": "ids",
+                                    "values": batch_generated_ref_ids,
+                                }
+                            ],
+                            "filterGroups": [],
+                        },
+                        getAll=True,
+                    )
+                    or []
+                )
+                for external_reference_data in external_reference_data_list:
+                    generated_ref_id = external_reference_data.get("standard_id")
+                    if generated_ref_id is None:
+                        generated_ref_id = self.opencti.external_reference.generate_id(
+                            external_reference_data.get("url"),
+                            external_reference_data.get("source_name"),
+                            external_reference_data.get("external_id"),
+                        )
+                    candidate_cache_keys = cache_keys_by_generated_ref_id.get(
+                        generated_ref_id
+                    )
+                    if candidate_cache_keys is None:
+                        continue
+                    cache_key = self._patch_external_reference_cache_key(
+                        external_reference_data
+                    )
+                    if cache_key in candidate_cache_keys:
+                        prefetched_external_reference_ids[cache_key] = (
+                            external_reference_data["id"]
+                        )
+            return prefetched_external_reference_ids
+        except Exception:
+            return None
 
     @staticmethod
     def _flush_external_reference_relation_batch(
