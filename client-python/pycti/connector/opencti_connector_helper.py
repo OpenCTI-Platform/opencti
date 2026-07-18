@@ -843,7 +843,8 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, self._data_handler, data)
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
