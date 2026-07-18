@@ -106,7 +106,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             isEnterpriseEdition ? (
               <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
             ) : (
-              <EnterpriseEditionButton title="Deploy" />
+              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
             )
           }
         </Security>

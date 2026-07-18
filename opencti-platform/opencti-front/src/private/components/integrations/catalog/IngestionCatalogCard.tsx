@@ -125,7 +125,7 @@ const ConnectorActions = ({
           ) : (
             <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
               {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-              <EnterpriseEditionButton title="Deploy" />
+              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
             </Box>
           )}
         </Security>
