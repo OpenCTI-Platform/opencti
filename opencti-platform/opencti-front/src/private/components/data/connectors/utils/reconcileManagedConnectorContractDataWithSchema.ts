@@ -1,4 +1,4 @@
-import { IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { IngestionTypedProperty } from '@components/integrations/catalog/types';
 
 export type ManagerContractProperty = [string, IngestionTypedProperty];
 

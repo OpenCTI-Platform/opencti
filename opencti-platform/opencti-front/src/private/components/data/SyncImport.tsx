@@ -61,7 +61,7 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
   };
 
   const handleDownloadError = () => {
-    navigate('/dashboard/data/ingestion/sync');
+    navigate('/dashboard/integrations/deployed?kind=sync');
     MESSAGING$.notifyError(t_i18n('An error occurred while importing Synchronizer configuration.'));
   };
 

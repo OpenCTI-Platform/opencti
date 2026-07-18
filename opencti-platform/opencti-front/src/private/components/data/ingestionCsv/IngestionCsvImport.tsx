@@ -100,7 +100,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   };
 
   const onDownloadError = () => {
-    navigate('/dashboard/data/ingestion/csv');
+    navigate('/dashboard/integrations/deployed?kind=csv');
     MESSAGING$.notifyError('An error occurred while importing CSV Feed configuration.');
   };
 
