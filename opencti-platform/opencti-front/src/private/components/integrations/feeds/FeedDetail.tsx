@@ -284,7 +284,7 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const Icon = definition.icon;
 
   return (
-    <PageContainer withGap>
+    <PageContainer withGap style={{ paddingBottom: 50 }}>
       <Breadcrumbs
         elements={[
           { label: t_i18n('Integrations') },

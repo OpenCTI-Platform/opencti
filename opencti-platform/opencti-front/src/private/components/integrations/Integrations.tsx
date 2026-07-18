@@ -266,7 +266,8 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
 
   return (
     <div data-testid="integrations-page">
-      <PageContainer withGap>
+      {/* Same 50px bottom spacing as the other screens (legacy page containers). */}
+      <PageContainer withGap style={{ paddingBottom: 50 }}>
         {/* The active tab is enough context: the breadcrumb only carries the
             section name (detail pages do include the originating tab). */}
         <Breadcrumbs
