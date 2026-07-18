@@ -173,7 +173,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               </Typography>
               {item.isManaged && (
                 <Tooltip title={t_i18n('Managed by the connector manager')}>
-                  <DeveloperBoardOutlined sx={{ fontSize: 14, color: theme.palette.text.secondary }} />
+                  <DeveloperBoardOutlined sx={{ fontSize: 15, color: theme.palette.primary.main }} />
                 </Tooltip>
               )}
             </Stack>
@@ -239,7 +239,12 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('Last run')} value={nsdt(item.lastRunDate)} />
             )}
             {!item.lastRunDate && item.updatedAt && (
-              <Metric label={t_i18n('Modified')} value={nsdt(item.updatedAt)} />
+              // The connector updated_at is refreshed by pings: it is a last
+              // seen date, unlike the feed entities modification date.
+              <Metric
+                label={item.kind === 'connector' ? t_i18n('Last seen') : t_i18n('Modified')}
+                value={nsdt(item.updatedAt)}
+              />
             )}
             {item.userName && (
               <Metric label={t_i18n('User')} value={item.userName} />

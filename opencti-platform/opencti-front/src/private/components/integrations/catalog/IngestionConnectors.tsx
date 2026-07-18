@@ -5,6 +5,7 @@ import React from 'react';
 export const ingestionConnectorsQuery = graphql`
   query IngestionConnectorsQuery {
     connectors {
+      id
       manager_contract_image
     }
   }

@@ -1,6 +1,5 @@
-import { IngestionConnectorsQuery$data } from '@components/integrations/catalog/__generated__/IngestionConnectorsQuery.graphql';
-
-type Connector = NonNullable<IngestionConnectorsQuery$data['connectors']>[number];
+// Minimal shape shared by every query exposing deployed connector images.
+type Connector = { readonly manager_contract_image: string | null | undefined };
 
 const createDeploymentCountMap = (connectors: readonly Connector[]) => {
   const deploymentCountMap = new Map<string, number>();

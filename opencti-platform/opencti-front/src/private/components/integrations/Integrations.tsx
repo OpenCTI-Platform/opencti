@@ -26,6 +26,7 @@ import { BrowseMoreButton, HeroStatChip } from '@components/integrations/compone
 import IntegrationsAvailable from '@components/integrations/available/IntegrationsAvailable';
 import IntegrationsDeployed from '@components/integrations/deployed/IntegrationsDeployed';
 import IntegrationsStatsStrip from '@components/integrations/deployed/IntegrationsStatsStrip';
+import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -238,14 +239,30 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
     return { availableCount: available, verifiedCount: verified };
   }, [catalogsData]);
 
-  const deployedCount = (deploymentData?.connectors?.length ?? 0)
-    + (feedsData?.synchronizers?.pageInfo?.globalCount ?? 0)
-    + (feedsData?.ingestionRsss?.pageInfo?.globalCount ?? 0)
-    + (feedsData?.ingestionTaxiis?.pageInfo?.globalCount ?? 0)
-    + (feedsData?.ingestionTaxiiCollections?.pageInfo?.globalCount ?? 0)
-    + (feedsData?.ingestionCsvs?.pageInfo?.globalCount ?? 0)
-    + (feedsData?.ingestionJsons?.pageInfo?.globalCount ?? 0)
-    + (formsData?.forms?.pageInfo?.globalCount ?? 0);
+  // Feed instances register a technical twin connector: excluded from the
+  // connector count so deployed integrations are not counted twice.
+  const deployedCount = useMemo(() => {
+    const feedIds = [
+      ...(feedsData?.ingestionRsss?.edges ?? []),
+      ...(feedsData?.ingestionTaxiis?.edges ?? []),
+      ...(feedsData?.ingestionTaxiiCollections?.edges ?? []),
+      ...(feedsData?.ingestionCsvs?.edges ?? []),
+      ...(feedsData?.ingestionJsons?.edges ?? []),
+      ...(formsData?.forms?.edges ?? []),
+    ].flatMap((edge) => (edge?.node ? [edge.node.id] : []));
+    const twinConnectorIds = new Set(feedIds.map((id) => connectorIdFromIngestId(id)));
+    const connectorCount = (deploymentData?.connectors ?? [])
+      .filter((connector) => !twinConnectorIds.has(connector.id))
+      .length;
+    return connectorCount
+      + (feedsData?.synchronizers?.pageInfo?.globalCount ?? 0)
+      + (feedsData?.ingestionRsss?.pageInfo?.globalCount ?? 0)
+      + (feedsData?.ingestionTaxiis?.pageInfo?.globalCount ?? 0)
+      + (feedsData?.ingestionTaxiiCollections?.pageInfo?.globalCount ?? 0)
+      + (feedsData?.ingestionCsvs?.pageInfo?.globalCount ?? 0)
+      + (feedsData?.ingestionJsons?.pageInfo?.globalCount ?? 0)
+      + (formsData?.forms?.pageInfo?.globalCount ?? 0);
+  }, [deploymentData, feedsData, formsData]);
 
   return (
     <div data-testid="integrations-page">

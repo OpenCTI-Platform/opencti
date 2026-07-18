@@ -1,9 +1,16 @@
 import { useMemo } from 'react';
+import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
 import { computeConnectorStatus } from '../../../../utils/Connector';
+
+// Mirrors the backend: every built-in feed registers a technical queue
+// connector whose id is derived from the ingestion id (uuid v5 in the OpenCTI
+// namespace). Used to fold those connectors back into their feed entry.
+const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
+export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 
 export type DeployedIntegrationStatus = 'active' | 'inactive' | 'processing';
 
@@ -85,8 +92,25 @@ const useDeployedIntegrations = ({
       queueMessagesByConnector.set(connectorId, (queueMessagesByConnector.get(connectorId) ?? 0) + messages);
     }
 
+    // Every built-in feed instance registers a technical queue connector: those
+    // twins are folded into the feed entry (no duplicated card), and their
+    // queue metrics are surfaced on the feed itself.
+    const feedIds = [
+      ...(feedsData?.ingestionRsss?.edges ?? []),
+      ...(feedsData?.ingestionTaxiis?.edges ?? []),
+      ...(feedsData?.ingestionTaxiiCollections?.edges ?? []),
+      ...(feedsData?.ingestionCsvs?.edges ?? []),
+      ...(feedsData?.ingestionJsons?.edges ?? []),
+      ...(formsData?.forms?.edges ?? []),
+    ].flatMap((edge) => (edge?.node ? [edge.node.id] : []));
+    const feedTwinConnectorIds = new Set(feedIds.map((id) => connectorIdFromIngestId(id)));
+    const feedQueueMessages = (feedId: string): number => {
+      return queueMessagesByConnector.get(connectorIdFromIngestId(feedId)) ?? 0;
+    };
+
     for (const connector of connectorsListData?.connectors ?? []) {
       if (connector.connector_type === 'internal') continue;
+      if (feedTwinConnectorIds.has(connector.id)) continue;
       const state = connectorsStateData?.connectors?.find((s) => s.id === connector.id);
       const merged = { ...connector, ...state };
       const { status, label, processing } = computeConnectorStatus({
@@ -166,7 +190,7 @@ const useDeployedIntegrations = ({
         description: node.description,
         ...feedStatus(node.ingestion_running),
         running: !!node.ingestion_running,
-        messagesCount: null,
+        messagesCount: feedQueueMessages(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
@@ -204,7 +228,7 @@ const useDeployedIntegrations = ({
         description: node.description,
         ...feedStatus(node.active),
         running: !!node.active,
-        messagesCount: null,
+        messagesCount: feedQueueMessages(node.id),
         lastRunDate: null,
         updatedAt: (node.updated_at as string | null) ?? null,
         isManaged: false,
