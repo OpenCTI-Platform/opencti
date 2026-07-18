@@ -709,6 +709,18 @@ const LeftBarComponent = ({ queryRef }) => {
           <Separator />
 
           <MenuList component="nav">
+            <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
+              {!draftContext && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="integrations"
+                  icon={<ExtensionOutlined />}
+                  label={t_i18n('Integrations')}
+                  link="/dashboard/integrations"
+                />
+              )}
+            </Security>
+
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <LeftBarItem
                 {...itemProps}
@@ -727,18 +739,6 @@ const LeftBarComponent = ({ queryRef }) => {
                   { granted: isTrashEnable() && isGrantedToDelete && !draftContext, link: '/dashboard/trash', label: t_i18n('Trash') },
                 ]}
               />
-            </Security>
-
-            <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
-              {!draftContext && (
-                <LeftBarItem
-                  {...itemProps}
-                  id="integrations"
-                  icon={<ExtensionOutlined />}
-                  label={t_i18n('Integrations')}
-                  link="/dashboard/integrations"
-                />
-              )}
             </Security>
           </MenuList>
         </Security>
