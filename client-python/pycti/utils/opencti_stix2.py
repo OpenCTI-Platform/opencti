@@ -3414,6 +3414,13 @@ class OpenCTIStix2:
 
         uncached_object_ids_by_type = {}
         seen_read_object_keys = set()
+        nested_ref_source_ids = []
+        seen_nested_ref_source_ids = set()
+
+        def add_nested_ref_source_id(entity_id):
+            if entity_id is not None and entity_id not in seen_nested_ref_source_ids:
+                seen_nested_ref_source_ids.add(entity_id)
+                nested_ref_source_ids.append(entity_id)
 
         def add_uncached_entity_object(entity_object):
             entity_id = entity_object["id"]
@@ -3456,6 +3463,10 @@ class OpenCTIStix2:
                 continue
             for stix_relationships in relationships_by_entity_id.values():
                 for stix_relationship in stix_relationships:
+                    add_nested_ref_source_id(
+                        stix_relationship.get("x_opencti_id")
+                        or stix_relationship.get("id")
+                    )
                     for endpoint in ("from", "to"):
                         entity_object = stix_relationship[endpoint]
                         entity_id = entity_object["id"]
@@ -3473,12 +3484,11 @@ class OpenCTIStix2:
             do_list = self.get_lister(resolve_type)
             if do_list is not None:
                 batchable_object_ids_by_type[resolve_type] = (do_list, entity_ids)
-        if len(batchable_object_ids_by_type) == 0:
-            return stix_nested_ref_relationships_by_entity_id
 
         stix_nested_ref_relationships_by_entity_id = (
             self._prefetch_export_nested_ref_relationships_by_entity_ids(
-                [
+                nested_ref_source_ids
+                + [
                     entity_id
                     for _, entity_ids in batchable_object_ids_by_type.values()
                     for entity_id in entity_ids
@@ -3487,6 +3497,9 @@ class OpenCTIStix2:
                 stix_nested_ref_relationships_by_entity_id,
             )
         )
+        if len(batchable_object_ids_by_type) == 0:
+            return stix_nested_ref_relationships_by_entity_id
+
         for resolve_type, (do_list, entity_ids) in batchable_object_ids_by_type.items():
             for start_index in range(0, len(entity_ids), EXPORT_PREFETCH_BATCH_SIZE):
                 batch_entity_ids = entity_ids[
@@ -4150,6 +4163,7 @@ class OpenCTIStix2:
                 self._prefetch_export_nested_ref_relationships_by_entity_ids(
                     [
                         stix_core_relationship.get("x_opencti_id")
+                        or stix_core_relationship.get("id")
                         for stix_core_relationship in stix_core_relationships
                     ]
                     + [entity_object.get("id") for entity_object in objects_to_get],
@@ -4206,6 +4220,7 @@ class OpenCTIStix2:
                 self._prefetch_export_nested_ref_relationships_by_entity_ids(
                     [
                         stix_sighting_relationship.get("x_opencti_id")
+                        or stix_sighting_relationship.get("id")
                         for stix_sighting_relationship in stix_sighting_relationships
                     ]
                     + [entity_object.get("id") for entity_object in objects_to_get],

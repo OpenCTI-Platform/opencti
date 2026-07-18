@@ -485,6 +485,15 @@ def test_prepare_export_full_batches_nested_refs_for_relationships_and_related_o
             _relationship("relationship--3", "target-3"),
         ]
     )
+    for relationship in helper.opencti.stix_core_relationship.items:
+        relationship["standard_id"] = relationship["id"]
+        relationship["id"] = relationship.pop("x_opencti_id")
+        relationship["entity_type"] = "uses"
+        relationship["parent_types"] = [
+            "basic-relationship",
+            "stix-relationship",
+            "stix-core-relationship",
+        ]
     nested_ref_collection = _NestedRefRelationshipCollection(
         {
             "target-target-1": [
@@ -857,6 +866,83 @@ def test_export_selected_batches_unique_related_object_reads_across_roots():
 
     assert lister.list_calls == 1
     assert lister.filters == [["target-target-1", "target-target-2", "target-target-3"]]
+
+
+def test_export_selected_prefetches_nested_refs_for_top_level_relationships_across_roots():
+    helper = _helper([])
+    helper.opencti.stix_core_relationship = _RelationshipCollection(
+        {
+            "root-1": [_relationship("relationship--1", "target-1")],
+            "root-2": [_relationship("relationship--2", "target-2")],
+            "root-3": [_relationship("relationship--3", "target-3")],
+        }
+    )
+    for index, relationship in enumerate(
+        helper.opencti.stix_core_relationship.relationships_by_root.values(), start=1
+    ):
+        relationship[0]["standard_id"] = relationship[0]["id"]
+        relationship[0]["id"] = relationship[0].pop("x_opencti_id")
+        relationship[0]["entity_type"] = "uses"
+        relationship[0]["parent_types"] = [
+            "basic-relationship",
+            "stix-relationship",
+            "stix-core-relationship",
+        ]
+        relationship[0]["from"]["id"] = f"root-{index}"
+        relationship[0]["from"]["standard_id"] = f"indicator--root-{index}"
+    nested_ref_collection = _NestedRefRelationshipCollection({})
+    helper.opencti.stix_nested_ref_relationship = nested_ref_collection
+    helper.opencti.opencti_stix_object_or_stix_relationship = (
+        _CountingAccessCollection()
+    )
+    lister = _CountingRelatedObjectLister(
+        {
+            f"target-target-{index}": {
+                "id": f"target-target-{index}",
+                "standard_id": f"malware--target-{index}",
+                "entity_type": "Malware",
+                "parent_types": ["Stix-Domain-Object"],
+            }
+            for index in range(1, 4)
+        }
+    )
+    helper.get_lister = lambda resolve_type: lister.list
+    helper.prepare_id_filters_export = lambda entity_id, access_filter: entity_id
+    helper.generate_export = lambda entity: (
+        {
+            "id": entity["standard_id"],
+            "type": entity["entity_type"].lower(),
+            "x_opencti_id": entity["id"],
+        }
+        if "standard_id" in entity
+        else entity.copy()
+    )
+    helper.get_reader = lambda resolve_type: lambda filters: (_ for _ in ()).throw(
+        AssertionError("batchable related objects should not use the reader")
+    )
+    entities = [
+        {
+            "id": f"indicator--root-{index}",
+            "type": "indicator",
+            "x_opencti_id": f"root-{index}",
+        }
+        for index in range(1, 4)
+    ]
+
+    helper.export_selected(entities_list=entities, mode="full")
+
+    assert nested_ref_collection.list_calls == 2
+    assert nested_ref_collection.from_id_queries == [
+        ["root-1", "root-2", "root-3"],
+        [
+            "internal-relationship--1",
+            "internal-relationship--2",
+            "internal-relationship--3",
+            "target-target-1",
+            "target-target-2",
+            "target-target-3",
+        ],
+    ]
 
 
 def test_export_list_batches_unique_related_object_reads_across_roots():
