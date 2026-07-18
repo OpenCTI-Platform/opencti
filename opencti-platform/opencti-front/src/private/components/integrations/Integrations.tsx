@@ -267,11 +267,10 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   return (
     <div data-testid="integrations-page">
       <PageContainer withGap>
+        {/* The active tab is enough context: the breadcrumb only carries the
+            section name (detail pages do include the originating tab). */}
         <Breadcrumbs
-          elements={[
-            { label: t_i18n('Integrations') },
-            { label: tab === 'deployed' ? t_i18n('Deployed') : t_i18n('Available'), current: true },
-          ]}
+          elements={[{ label: t_i18n('Integrations'), current: true }]}
           noMargin
         />
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />

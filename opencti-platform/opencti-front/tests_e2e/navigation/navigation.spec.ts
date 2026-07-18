@@ -1839,7 +1839,7 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.clickOnMenu('Data', 'Relationships');
   await leftBarPage.expectBreadcrumb('Data', 'Relationships');
   await leftBarPage.clickOnMenu('Integrations');
-  await leftBarPage.expectBreadcrumb('Integrations', 'Deployed');
+  await leftBarPage.expectBreadcrumb('Integrations');
   await leftBarPage.clickOnMenu('Data', 'Import');
   await leftBarPage.expectBreadcrumb('Data', 'Import');
   await leftBarPage.clickOnMenu('Data', 'Processing');
