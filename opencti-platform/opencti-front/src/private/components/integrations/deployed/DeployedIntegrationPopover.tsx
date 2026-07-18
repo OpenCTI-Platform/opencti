@@ -11,6 +11,7 @@ import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDe
 import canDeleteConnector from '@components/data/connectors/utils/canDeleteConnector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
+import FeedUpdateDrawer from '@components/integrations/feeds/FeedUpdateDrawer';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -30,6 +31,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayReset, setDisplayReset] = useState(false);
   const [displayClearWorks, setDisplayClearWorks] = useState(false);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const isGrantedToModules = useGranted([MODULES_MODMANAGE]);
   const isGrantedToIngestion = useGranted([INGESTION_SETINGESTIONS]);
@@ -196,6 +198,16 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
             {item.running ? t_i18n('Stop') : t_i18n('Start')}
           </MenuItem>
         )}
+        {canManageFeed && (
+          <MenuItem
+            onClick={(event) => {
+              handleClose(event);
+              setDisplayUpdate(true);
+            }}
+          >
+            {t_i18n('Update')}
+          </MenuItem>
+        )}
         {canManageConnector && (
           <MenuItem
             onClick={(event) => {
@@ -227,6 +239,17 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
           </MenuItem>
         )}
       </Menu>
+
+      {displayUpdate && item.kind !== 'connector' && (
+        <FeedUpdateDrawer
+          kind={item.kind}
+          feedId={item.id}
+          onClose={() => {
+            setDisplayUpdate(false);
+            onChange();
+          }}
+        />
+      )}
 
       <Dialog
         open={displayClearWorks}
