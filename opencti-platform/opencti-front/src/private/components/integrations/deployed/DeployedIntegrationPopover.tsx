@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
@@ -27,7 +26,6 @@ interface DeployedIntegrationPopoverProps {
 // and clear for connectors, delete for built-in feeds.
 const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopoverProps) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayReset, setDisplayReset] = useState(false);
@@ -48,11 +46,6 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
       event.stopPropagation();
     }
     setAnchorEl(null);
-  };
-
-  const handleDetails = (event: React.MouseEvent) => {
-    handleClose(event);
-    navigate(item.detailUrl);
   };
 
   const handleToggleRunning = (event: React.MouseEvent) => {
@@ -156,6 +149,12 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
     && canDeleteConnector(item.connector as unknown as Connector_connector$data);
   const canManageFeed = !isConnector && isGrantedToIngestion;
 
+  // Opening the card already navigates to the details: without any granted
+  // action, the popover has nothing to offer.
+  if (!canManageConnector && !canManageFeed) {
+    return null;
+  }
+
   return (
     <div onClick={stopEvent}>
       <IconButton
@@ -172,9 +171,6 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
       >
-        <MenuItem onClick={handleDetails}>
-          {t_i18n('Details')}
-        </MenuItem>
         {canManageFeed && (
           <MenuItem onClick={handleToggleRunning} disabled={submitting}>
             {item.running ? t_i18n('Stop') : t_i18n('Start')}
