@@ -7,7 +7,7 @@ import { MoreVert } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import { connectorDeletionMutation, connectorResetStateMutation } from '@components/data/connectors/Connector';
+import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
 import canDeleteConnector from '@components/data/connectors/utils/canDeleteConnector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
@@ -22,13 +22,14 @@ interface DeployedIntegrationPopoverProps {
   onChange: () => void;
 }
 
-// Per-card actions: view details, start/stop for built-in feeds, reset state
-// and clear for connectors, delete for built-in feeds.
+// Per-card actions: start/stop and delete for built-in feeds; reset state,
+// clear works and delete for connectors (same set as the detail page).
 const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopoverProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayReset, setDisplayReset] = useState(false);
+  const [displayClearWorks, setDisplayClearWorks] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const isGrantedToModules = useGranted([MODULES_MODMANAGE]);
   const isGrantedToIngestion = useGranted([INGESTION_SETINGESTIONS]);
@@ -89,6 +90,26 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
     }
   };
 
+  const submitClearWorks = () => {
+    setSubmitting(true);
+    commitMutation({
+      mutation: connectorWorkDeleteMutation,
+      variables: { connectorId: item.id },
+      onCompleted: () => {
+        // Same untranslated notification as the connector detail popover.
+        MESSAGING$.notifySuccess('The connector works have been cleared');
+        setSubmitting(false);
+        setDisplayClearWorks(false);
+        onChange();
+      },
+      onError: () => setSubmitting(false),
+      updater: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      setSubmitting: undefined,
+    });
+  };
+
   const submitDelete = () => {
     setSubmitting(true);
     if (isConnector) {
@@ -96,7 +117,6 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
         mutation: connectorDeletionMutation,
         variables: { id: item.id },
         onCompleted: () => {
-          MESSAGING$.notifySuccess(t_i18n('The connector has been cleared'));
           setSubmitting(false);
           setDisplayDelete(false);
           onChange();
@@ -190,13 +210,13 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
           <MenuItem
             onClick={(event) => {
               handleClose(event);
-              setDisplayDelete(true);
+              setDisplayClearWorks(true);
             }}
           >
-            {t_i18n('Clear this connector')}
+            {t_i18n('Clear all works')}
           </MenuItem>
         )}
-        {canManageFeed && (
+        {(canManageConnector || canManageFeed) && (
           <MenuItem
             onClick={(event) => {
               handleClose(event);
@@ -209,13 +229,36 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
       </Menu>
 
       <Dialog
+        open={displayClearWorks}
+        onClose={() => setDisplayClearWorks(false)}
+        size="small"
+        title={t_i18n('Are you sure?')}
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to clear the works of this connector?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            variant="secondary"
+            onClick={() => setDisplayClearWorks(false)}
+            disabled={submitting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={submitClearWorks} disabled={submitting}>
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
         open={displayDelete}
         onClose={() => setDisplayDelete(false)}
         title={t_i18n('Are you sure?')}
       >
         <DialogContentText>
           {isConnector
-            ? t_i18n('Do you want to remove this connector registration?')
+            ? t_i18n('Do you want to delete this connector?')
             : t_i18n('Do you want to delete this integration instance?')}
         </DialogContentText>
         <DialogActions>
