@@ -4891,7 +4891,7 @@ class OpenCTIStix2:
         :param item: Item to rescan rules for
         :type item: dict
         """
-        self.opencti.stix_core_object.rules_rescan_async(
+        self.opencti.stix_core_object.rule_rescan_async(
             element_id=item["id"], execution_id=bundle_id
         )
 
