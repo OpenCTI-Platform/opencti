@@ -511,9 +511,13 @@ Can be configured manually using the configuration file `config.yml` or through 
 
 #### Technical
 
-| Parameter               | Environment variable    | Default value | Description                                                                                                                                                              |
-|:------------------------|:------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+| Parameter                       | Environment variable             | Default value | Description                                                                                                                                                              |
+|:--------------------------------|:---------------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| worker:objects_max_refs         | WORKER_OBJECTS_MAX_REFS          | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+| worker:bundle_split_max_objects | WORKER_BUNDLE_SPLIT_MAX_OBJECTS  | 100           | Maximum same-dependency-level objects per bundle chunk when a worker splits an incoming bundle                                                                          |
+| worker:bundle_split_max_bytes   | WORKER_BUNDLE_SPLIT_MAX_BYTES    | 1000000       | Maximum serialized STIX bundle bytes per bundle chunk when a worker splits an incoming bundle                                                                           |
+
+Set `worker:bundle_split_max_objects` or `WORKER_BUNDLE_SPLIT_MAX_OBJECTS` to `1` to restore the previous one-object-per-requeued-chunk behavior.
 
 #### Telemetry
 

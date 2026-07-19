@@ -123,6 +123,17 @@ connector:
 
     Currently the connector cannot send bundle larger the the configuration of the OpenCTI backend (default 50Mb). This configuration can be changed using the parameter `APP__MAX_PAYLOAD_BODY_SIZE=50mb` on the platform side.
 
+#### AMQP bundle chunking
+
+When a connector sends bundles through RabbitMQ, the connector helper preserves dependency ordering while grouping objects from the same dependency level into queue chunks. By default, each queued chunk is capped at 100 objects and 1,000,000 serialized bytes. This reduces queue message fan-out for large bundles. These limits do not apply when `connector:queue_protocol` is set to `api`.
+
+| Parameter (yml)                         | Environment variable                     | Default value | Description                                                              |
+|:----------------------------------------|:-----------------------------------------|:--------------|:-------------------------------------------------------------------------|
+| connector:bundle_split_max_objects      | CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS       | 100           | Maximum same-dependency-level objects per queued AMQP chunk              |
+| connector:bundle_split_max_bytes        | CONNECTOR_BUNDLE_SPLIT_MAX_BYTES         | 1000000       | Maximum serialized STIX bundle bytes per queued AMQP chunk               |
+
+Set `connector:bundle_split_max_objects` or `CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS` to `1` to restore the previous one-object-per-message behavior. Workers have corresponding `worker:bundle_split_max_objects` and `worker:bundle_split_max_bytes` settings for bundles that still need to be split after arrival.
+
 #### AMQP listener concurrency
 
 AMQP listeners default to one callback worker for compatibility. Connectors whose callbacks are safe to run concurrently can raise the worker count to keep multiple unacked deliveries in flight at once. Deliveries are acknowledged after callback completion or durable error reporting. The prefetch count defaults to the worker count and should normally stay at or above it so every configured worker can receive work.
