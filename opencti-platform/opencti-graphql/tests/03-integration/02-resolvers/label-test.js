@@ -49,7 +49,7 @@ describe('Label resolver standard behavior', () => {
     });
     expect(label).not.toBeNull();
     expect(label.data.labelAdd).not.toBeNull();
-    expect(label.data.labelAdd.value).toEqual('state-sponsored');
+    expect(label.data.labelAdd.value).toEqual('State-Sponsored');
     labelInternalId = label.data.labelAdd.id;
   });
   it('should label loaded by internal id', async () => {
