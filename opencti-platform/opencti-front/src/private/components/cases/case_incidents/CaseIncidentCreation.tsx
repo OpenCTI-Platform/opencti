@@ -7,11 +7,11 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, Suspense, useState } from 'react';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { handleErrorInForm } from 'src/relay/environment';
+import { fetchQuery, handleErrorInForm } from 'src/relay/environment';
 import * as Yup from 'yup';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -43,7 +43,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import { CustomFieldsInputQuery } from '../../common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
+import type { CustomFieldsInputQuery$data } from '../../common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
 import { CustomFieldInput, customFieldDefinitionsForEntityTypeQuery, CustomFieldDef, getCustomFieldSetting } from '../../common/custom_fields/CustomFieldsInput';
 
 const caseIncidentMutation = graphql`
@@ -479,28 +479,21 @@ const CaseIncidentCreationFormContent: FunctionComponent<IncidentFormProps & { c
   );
 };
 
-// Fetches the custom field definitions synchronously (suspends) so they are available before the
-// inner form initializes. Only mounted when the CUSTOM_FIELDS feature flag is enabled, since the
-// underlying query throws server-side otherwise.
-const CaseIncidentCreationFormWithCustomFields: FunctionComponent<IncidentFormProps> = (props) => {
-  const data = useLazyLoadQuery<CustomFieldsInputQuery>(
-    customFieldDefinitionsForEntityTypeQuery,
-    { entityType: CASE_INCIDENT_TYPE },
-  );
-  const customFieldDefs = (data.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
-  return <CaseIncidentCreationFormContent {...props} customFieldDefs={customFieldDefs} />;
-};
-
 export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = (props) => {
   const { isFeatureEnable } = useHelper();
-  if (isFeatureEnable('CUSTOM_FIELDS')) {
-    return (
-      <Suspense fallback={<CaseIncidentCreationFormContent {...props} customFieldDefs={[]} />}>
-        <CaseIncidentCreationFormWithCustomFields {...props} />
-      </Suspense>
-    );
-  }
-  return <CaseIncidentCreationFormContent {...props} customFieldDefs={[]} />;
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
+
+  useEffect(() => {
+    if (!isFeatureEnable('CUSTOM_FIELDS')) return;
+    fetchQuery(customFieldDefinitionsForEntityTypeQuery, { entityType: CASE_INCIDENT_TYPE })
+      .toPromise()
+      .then((data) => {
+        const defs = ((data as CustomFieldsInputQuery$data)?.customFieldDefinitionsForEntityType?.edges ?? []).map((edge) => edge.node);
+        setCustomFieldDefs(defs as CustomFieldDef[]);
+      });
+  }, []);
+
+  return <CaseIncidentCreationFormContent {...props} customFieldDefs={customFieldDefs} />;
 };
 
 const CaseIncidentCreation = ({
