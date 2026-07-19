@@ -74,19 +74,19 @@ class WorkersStatusComponent extends Component {
         <Grid item xs={2}>
           <CardStatistic
             label={t('Bundles processed')}
-            value={this.safeValue(overview ? pathOr(0, ['message_stats', 'ack_details', 'rate'], overview) : null, n, '/s')}
+            value={this.safeValue(overview ? pathOr(0, ['message_stats', 'ack_details', 'rate'], overview) : null, n, t('/s'))}
           />
         </Grid>
         <Grid item xs={2}>
           <CardStatistic
             label={t('Read operations')}
-            value={this.safeValue(readOperations, n, '/s')}
+            value={this.safeValue(readOperations, n, t('/s'))}
           />
         </Grid>
         <Grid item xs={2}>
           <CardStatistic
             label={t('Write operations')}
-            value={this.safeValue(writeOperations, n, '/s')}
+            value={this.safeValue(writeOperations, n, t('/s'))}
           />
         </Grid>
         <Grid item xs={2}>

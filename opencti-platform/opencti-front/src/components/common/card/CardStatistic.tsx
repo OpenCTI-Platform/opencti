@@ -18,13 +18,13 @@ const CardStatistic = ({
   const theme = useTheme<Theme>();
 
   const valueStyle = {
-    fontSize: 32,
+    fontSize: 24,
     lineHeight: 1,
     fontWeight: 600,
   };
 
   return (
-    <Card sx={{ paddingY: 2 }}>
+    <Card sx={{ paddingY: 2, paddingX: 2 }}>
       <Stack height="100%" justifyContent="space-between">
         <Typography
           color={theme.palette.text.light}

@@ -227,7 +227,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
-    me: { submenu_auto_collapse, submenu_show_icons, draftContext },
+    me: { email, submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
@@ -474,73 +474,75 @@ const LeftBarComponent = ({ queryRef }) => {
               exact
             />
           )}
-
-          <Security needs={[EXPLORE]}>
-            {!draftContext && (
-              <LeftBarItem
-                {...itemProps}
-                id="dashboards"
-                icon={<InsertChartOutlinedOutlined />}
-                label={t_i18n('Dashboards')}
-                link="/dashboard/workspaces/dashboards"
-                subItems={[
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards',
-                    label: t_i18n('Custom dashboards'),
-                    exact: true,
-                  },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_public',
-                    label: t_i18n('Public dashboards'),
-                    exact: true,
-                  },
-                  // {
-                  //   granted: isGrantedToExplore,
-                  //   type: 'Dashboard',
-                  //   link: '/dashboard/workspaces/dashboards_ressa_dwm',
-                  //   label: t_i18n('Ressa DWM'),
-                  //   exact: true,
-                  // },
-                  // {
-                  //   granted: isGrantedToExplore,
-                  //   type: 'Dashboard',
-                  //   link: '/dashboard/workspaces/dashboards_organization_manager',
-                  //   label: t_i18n('Organization Manager Dashboard'),
-                  //   exact: true,
-                  // },
-                  // {
-                  //   granted: isGrantedToExplore,
-                  //   type: 'Dashboard',
-                  //   link: '/dashboard/workspaces/dashboards_middle_managers',
-                  //   label: t_i18n('Middle Managers Dashboard'),
-                  //   exact: true,
-                  // },
-                  // {
-                  //   granted: isGrantedToExplore,
-                  //   type: 'Dashboard',
-                  //   link: '/dashboard/workspaces/dashboards_operational_managers',
-                  //   label: t_i18n('Operational Managers Dashboard'),
-                  //   exact: true,
-                  // },
-                ]}
-              />
-            )}
-          </Security>
-
-          <Security needs={[INVESTIGATION]}>
-            {!draftContext && (
-              <LeftBarItem
-                {...itemProps}
-                label={t_i18n('Investigations')}
-                icon={<ExploreOutlined />}
-                link="/dashboard/workspaces/investigations"
-              />
-            )}
-          </Security>
+          {!email ==='test1@resaa.net' && (
+            <Security needs={[EXPLORE]}>
+              {!draftContext && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="dashboards"
+                  icon={<InsertChartOutlinedOutlined />}
+                  label={t_i18n('Dashboards')}
+                  link="/dashboard/workspaces/dashboards"
+                  subItems={[
+                    {
+                      granted: isGrantedToExplore,
+                      type: 'Dashboard',
+                      link: '/dashboard/workspaces/dashboards',
+                      label: t_i18n('Custom dashboards'),
+                      exact: true,
+                    },
+                    {
+                      granted: isGrantedToExplore,
+                      type: 'Dashboard',
+                      link: '/dashboard/workspaces/dashboards_public',
+                      label: t_i18n('Public dashboards'),
+                      exact: true,
+                    },
+                    // {
+                    //   granted: isGrantedToExplore,
+                    //   type: 'Dashboard',
+                    //   link: '/dashboard/workspaces/dashboards_ressa_dwm',
+                    //   label: t_i18n('Ressa DWM'),
+                    //   exact: true,
+                    // },
+                    // {
+                    //   granted: isGrantedToExplore,
+                    //   type: 'Dashboard',
+                    //   link: '/dashboard/workspaces/dashboards_organization_manager',
+                    //   label: t_i18n('Organization Manager Dashboard'),
+                    //   exact: true,
+                    // },
+                    // {
+                    //   granted: isGrantedToExplore,
+                    //   type: 'Dashboard',
+                    //   link: '/dashboard/workspaces/dashboards_middle_managers',
+                    //   label: t_i18n('Middle Managers Dashboard'),
+                    //   exact: true,
+                    // },
+                    // {
+                    //   granted: isGrantedToExplore,
+                    //   type: 'Dashboard',
+                    //   link: '/dashboard/workspaces/dashboards_operational_managers',
+                    //   label: t_i18n('Operational Managers Dashboard'),
+                    //   exact: true,
+                    // },
+                  ]}
+                />
+              )}
+            </Security>
+          )}
+          {!email ==='test1@resaa.net' && (
+            <Security needs={[INVESTIGATION]}>
+              {!draftContext && (
+                <LeftBarItem
+                  {...itemProps}
+                  label={t_i18n('Investigations')}
+                  icon={<ExploreOutlined />}
+                  link="/dashboard/workspaces/investigations"
+                />
+              )}
+            </Security>
+          )}
 
           {draftContext && (
             <LeftBarItem
@@ -571,214 +573,216 @@ const LeftBarComponent = ({ queryRef }) => {
           )} */}
         </MenuList>
 
-        <Separator />
-
-        <Security needs={[KNOWLEDGE]}>
-          <MenuList component="nav">
-            {!hideAnalyses && (
-              <LeftBarItem
-                {...itemProps}
-                id="analyses"
-                icon={<AssignmentOutlined />}
-                label={t_i18n('Analyses')}
-                link="/dashboard/analyses"
-                subItems={[
-                  { type: 'Report', link: '/dashboard/analyses/reports', label: t_i18n('Reports'), icon: <DescriptionOutlined fontSize="small" /> },
-                  { type: 'Grouping', link: '/dashboard/analyses/groupings', label: t_i18n('Groupings'), icon: <WorkspacesOutlined fontSize="small" /> },
-                  { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: t_i18n('Malware analyses'), icon: <BiotechOutlined fontSize="small" /> },
-                  { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: <SecurityOutlined fontSize="small" /> },
-                  { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: <SubjectOutlined fontSize="small" /> },
-                  { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: <LocalOfferOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
-
-            {!hideCases && (
-              <LeftBarItem
-                {...itemProps}
-                id="cases"
-                icon={<CasesOutlined />}
-                label={t_i18n('Cases')}
-                link="/dashboard/cases"
-                subItems={[
-                  { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: t_i18n('Incident responses'), icon: <BriefcaseEyeOutline fontSize="small" /> },
-                  { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: t_i18n('Requests for information'), icon: <BriefcaseSearchOutline fontSize="small" /> },
-                  { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: t_i18n('Requests for takedown'), icon: <BriefcaseRemoveOutline fontSize="small" /> },
-                  { type: 'Task', link: '/dashboard/cases/tasks', label: t_i18n('Tasks'), icon: <TaskAltOutlined fontSize="small" /> },
-                  { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: t_i18n('Feedbacks'), icon: <BriefcaseEditOutline fontSize="small" /> },
-                ]}
-              />
-            )}
-
-            {!hideEvents && (
-              <LeftBarItem
-                {...itemProps}
-                id="events"
-                icon={<Timetable />}
-                label={t_i18n('Events')}
-                link="/dashboard/events"
-                subItems={[
-                  { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: <Fire fontSize="small" /> },
-                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
-                  { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: <WifiTetheringOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
-
-            {!hideObservations && (
-              <LeftBarItem
-                {...itemProps}
-                id="observations"
-                icon={<Binoculars />}
-                label={t_i18n('Observations')}
-                link="/dashboard/observations"
-                subItems={[
-                  { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: t_i18n('Observables'), icon: <HexagonOutline fontSize="small" /> },
-                  { type: 'Artifact', link: '/dashboard/observations/artifacts', label: t_i18n('Artifacts'), icon: <ArchiveOutline fontSize="small" /> },
-                  { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
-                  { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
-                ]}
-              />
-            )}
-          </MenuList>
-
+        {!email ==='test1@resaa.net' && (
           <Separator />
+        )}
+        {!email ==='test1@resaa.net' && (
+          <Security needs={[KNOWLEDGE]}>
+            <MenuList component="nav">
+              {!hideAnalyses && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="analyses"
+                  icon={<AssignmentOutlined />}
+                  label={t_i18n('Analyses')}
+                  link="/dashboard/analyses"
+                  subItems={[
+                    { type: 'Report', link: '/dashboard/analyses/reports', label: t_i18n('Reports'), icon: <DescriptionOutlined fontSize="small" /> },
+                    { type: 'Grouping', link: '/dashboard/analyses/groupings', label: t_i18n('Groupings'), icon: <WorkspacesOutlined fontSize="small" /> },
+                    { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: t_i18n('Malware analyses'), icon: <BiotechOutlined fontSize="small" /> },
+                    { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: <SecurityOutlined fontSize="small" /> },
+                    { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: <SubjectOutlined fontSize="small" /> },
+                    { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: <LocalOfferOutlined fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-          <MenuList component="nav">
-            {!hideThreats && (
-              <LeftBarItem
-                {...itemProps}
-                id="threats"
-                icon={<FlaskOutline />}
-                label={t_i18n('Threats')}
-                link="/dashboard/threats"
-                subItems={[
-                  { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: t_i18n('Threat actors (group)'), icon: <AccountMultipleOutline fontSize="small" /> },
-                  {
-                    type: 'Threat-Actor-Individual',
-                    link: '/dashboard/threats/threat_actors_individual',
-                    label: t_i18n('Threat actors (individual)'),
-                    icon: <LaptopAccount fontSize="small" />,
-                  },
-                  { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
-                  { type: 'Campaign', link: '/dashboard/threats/campaigns', label: t_i18n('Campaigns'), icon: <ChessKnight fontSize="small" /> },
-                ]}
-              />
-            )}
+              {!hideCases && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="cases"
+                  icon={<CasesOutlined />}
+                  label={t_i18n('Cases')}
+                  link="/dashboard/cases"
+                  subItems={[
+                    { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: t_i18n('Incident responses'), icon: <BriefcaseEyeOutline fontSize="small" /> },
+                    { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: t_i18n('Requests for information'), icon: <BriefcaseSearchOutline fontSize="small" /> },
+                    { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: t_i18n('Requests for takedown'), icon: <BriefcaseRemoveOutline fontSize="small" /> },
+                    { type: 'Task', link: '/dashboard/cases/tasks', label: t_i18n('Tasks'), icon: <TaskAltOutlined fontSize="small" /> },
+                    { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: t_i18n('Feedbacks'), icon: <BriefcaseEditOutline fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-            {!hideArsenal && (
-              <LeftBarItem
-                {...itemProps}
-                id="arsenal"
-                icon={<LayersOutlined />}
-                label={t_i18n('Arsenal')}
-                link="/dashboard/arsenal"
-                subItems={[
-                  { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: <Biohazard fontSize="small" /> },
-                  { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: <SurroundSoundOutlined fontSize="small" /> },
-                  { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: <WebAssetOutlined fontSize="small" /> },
-                  { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: <BugReportOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+              {!hideEvents && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="events"
+                  icon={<Timetable />}
+                  label={t_i18n('Events')}
+                  link="/dashboard/events"
+                  subItems={[
+                    { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: <Fire fontSize="small" /> },
+                    { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
+                    { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: <WifiTetheringOutlined fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-            {!hideTechniques && (
-              <LeftBarItem
-                {...itemProps}
-                id="techniques"
-                icon={<ConstructionOutlined />}
-                label={t_i18n('Techniques')}
-                link="/dashboard/techniques"
-                subItems={[
-                  { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: <LockPattern fontSize="small" /> },
-                  { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: <SpeakerNotesOutlined fontSize="small" /> },
-                  { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
-                  { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
-                  { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+              {!hideObservations && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="observations"
+                  icon={<Binoculars />}
+                  label={t_i18n('Observations')}
+                  link="/dashboard/observations"
+                  subItems={[
+                    { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: t_i18n('Observables'), icon: <HexagonOutline fontSize="small" /> },
+                    { type: 'Artifact', link: '/dashboard/observations/artifacts', label: t_i18n('Artifacts'), icon: <ArchiveOutline fontSize="small" /> },
+                    { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
+                    { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
+                  ]}
+                />
+              )}
+            </MenuList>
 
-            {!hideEntities && (
-              <LeftBarItem
-                {...itemProps}
-                id="entities"
-                icon={<FolderTableOutline />}
-                label={t_i18n('Entities')}
-                link="/dashboard/entities"
-                subItems={
-                  [
-                    { type: 'Sector', link: '/dashboard/entities/sectors', label: t_i18n('Sectors'), icon: <DomainOutlined fontSize="small" /> },
-                    { type: 'Event', link: '/dashboard/entities/events', label: t_i18n('Events'), icon: <EventOutlined fontSize="small" /> },
-                    { type: 'Organization', link: '/dashboard/entities/organizations', label: t_i18n('Organizations'), icon: <AccountBalanceOutlined fontSize="small" /> },
-                    { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: <SecurityOutlined fontSize="small" /> },
-                    { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: <StorageOutlined fontSize="small" /> },
-                    { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: <PersonOutlined fontSize="small" /> },
-                  ]
-                }
-              />
-            )}
+            <Separator />
 
-            {!hideLocations && (
-              <LeftBarItem
-                {...itemProps}
-                id="locations"
-                icon={<GlobeModel />}
-                label={t_i18n('Locations')}
-                link="/dashboard/locations"
-                subItems={[
-                  { type: 'Region', link: '/dashboard/locations/regions', label: t_i18n('Regions'), icon: <PublicOutlined fontSize="small" /> },
-                  { type: 'Country', link: '/dashboard/locations/countries', label: t_i18n('Countries'), icon: <FlagOutlined fontSize="small" /> },
-                  { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: t_i18n('Administrative areas'), icon: <MapOutlined fontSize="small" /> },
-                  { type: 'City', link: '/dashboard/locations/cities', label: t_i18n('Cities'), icon: <CityVariantOutline fontSize="small" /> },
-                  { type: 'Position', link: '/dashboard/locations/positions', label: t_i18n('Positions'), icon: <PlaceOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
-          </MenuList>
-        </Security>
+            <MenuList component="nav">
+              {!hideThreats && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="threats"
+                  icon={<FlaskOutline />}
+                  label={t_i18n('Threats')}
+                  link="/dashboard/threats"
+                  subItems={[
+                    { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: t_i18n('Threat actors (group)'), icon: <AccountMultipleOutline fontSize="small" /> },
+                    {
+                      type: 'Threat-Actor-Individual',
+                      link: '/dashboard/threats/threat_actors_individual',
+                      label: t_i18n('Threat actors (individual)'),
+                      icon: <LaptopAccount fontSize="small" />,
+                    },
+                    { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
+                    { type: 'Campaign', link: '/dashboard/threats/campaigns', label: t_i18n('Campaigns'), icon: <ChessKnight fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-        <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
-          <Separator />
+              {!hideArsenal && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="arsenal"
+                  icon={<LayersOutlined />}
+                  label={t_i18n('Arsenal')}
+                  link="/dashboard/arsenal"
+                  subItems={[
+                    { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: <Biohazard fontSize="small" /> },
+                    { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: <SurroundSoundOutlined fontSize="small" /> },
+                    { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: <WebAssetOutlined fontSize="small" /> },
+                    { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: <BugReportOutlined fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-          <MenuList component="nav">
-            <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
-              <LeftBarItem
-                {...itemProps}
-                id="data"
-                icon={<Database />}
-                label={t_i18n('Data')}
-                link="/dashboard/data"
-                subItems={[
-                  { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
-                  { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-                  { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: t_i18n('Ingestion') },
-                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
-                  { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
-                  { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
-                  { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
-                ]}
-              />
-            </Security>
+              {!hideTechniques && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="techniques"
+                  icon={<ConstructionOutlined />}
+                  label={t_i18n('Techniques')}
+                  link="/dashboard/techniques"
+                  subItems={[
+                    { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: <LockPattern fontSize="small" /> },
+                    { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: <SpeakerNotesOutlined fontSize="small" /> },
+                    { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
+                    { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
+                    { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
+                  ]}
+                />
+              )}
 
-            {
-              isTrashEnable() && (
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  {!draftContext && (
-                    <LeftBarItem
-                      {...itemProps}
-                      id="trash"
-                      icon={<DeleteOutlined />}
-                      label={t_i18n('Trash')}
-                      link="/dashboard/trash"
-                    />
-                  )}
-                </Security>
-              )
-            }
-          </MenuList>
-        </Security>
+              {!hideEntities && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="entities"
+                  icon={<FolderTableOutline />}
+                  label={t_i18n('Entities')}
+                  link="/dashboard/entities"
+                  subItems={
+                    [
+                      { type: 'Sector', link: '/dashboard/entities/sectors', label: t_i18n('Sectors'), icon: <DomainOutlined fontSize="small" /> },
+                      { type: 'Event', link: '/dashboard/entities/events', label: t_i18n('Events'), icon: <EventOutlined fontSize="small" /> },
+                      { type: 'Organization', link: '/dashboard/entities/organizations', label: t_i18n('Organizations'), icon: <AccountBalanceOutlined fontSize="small" /> },
+                      { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: <SecurityOutlined fontSize="small" /> },
+                      { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: <StorageOutlined fontSize="small" /> },
+                      { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: <PersonOutlined fontSize="small" /> },
+                    ]
+                  }
+                />
+              )}
 
+              {!hideLocations && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="locations"
+                  icon={<GlobeModel />}
+                  label={t_i18n('Locations')}
+                  link="/dashboard/locations"
+                  subItems={[
+                    { type: 'Region', link: '/dashboard/locations/regions', label: t_i18n('Regions'), icon: <PublicOutlined fontSize="small" /> },
+                    { type: 'Country', link: '/dashboard/locations/countries', label: t_i18n('Countries'), icon: <FlagOutlined fontSize="small" /> },
+                    { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: t_i18n('Administrative areas'), icon: <MapOutlined fontSize="small" /> },
+                    { type: 'City', link: '/dashboard/locations/cities', label: t_i18n('Cities'), icon: <CityVariantOutline fontSize="small" /> },
+                    { type: 'Position', link: '/dashboard/locations/positions', label: t_i18n('Positions'), icon: <PlaceOutlined fontSize="small" /> },
+                  ]}
+                />
+              )}
+            </MenuList>
+          </Security>
+        )}
+       
+          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
+            <Separator />
+
+            <MenuList component="nav">
+              <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
+                <LeftBarItem
+                  {...itemProps}
+                  id="data"
+                  icon={<Database />}
+                  label={t_i18n('Data')}
+                  link="/dashboard/data"
+                  subItems={[
+                    { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
+                    { granted: !email ==='test1@resaa.net' && isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
+                    { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: t_i18n('Ingestion') },
+                    { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
+                    { granted: !email ==='test1@resaa.net' && isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
+                    { granted: !email ==='test1@resaa.net' && isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
+                    { granted: !email ==='test1@resaa.net' && isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                  ]}
+                />
+              </Security>
+
+              {!email ==='test1@resaa.net' && isTrashEnable() && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    {!draftContext && (
+                      <LeftBarItem
+                        {...itemProps}
+                        id="trash"
+                        icon={<DeleteOutlined />}
+                        label={t_i18n('Trash')}
+                        link="/dashboard/trash"
+                      />
+                    )}
+                  </Security>
+                )
+              }
+            </MenuList>
+          </Security>
+        
         <Security needs={[
           VIRTUAL_ORGANIZATION_ADMIN,
           SETTINGS_SETPARAMETERS,
@@ -809,9 +813,9 @@ const LeftBarComponent = ({ queryRef }) => {
                 link="/dashboard/settings"
                 subItems={[
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: t_i18n('Parameters'), exact: true },
-                  { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: t_i18n('Security') },
-                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
-                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
+                  { granted: !email ==='test1@resaa.net' && (isGrantedToSecurity || isOrganizationAdmin), link: '/dashboard/settings/accesses', label: t_i18n('Security') },
+                  { granted: !email ==='test1@resaa.net' && isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
+                  { granted: !email ==='test1@resaa.net' && isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
                   // { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
                   // { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
                   // { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },

@@ -44,7 +44,7 @@ export const getConnectorMetadata = (
     default:
       // return raw type if type not handled
       return {
-        label: containerType,
+        label: t_i18n(containerType),
         color: 'default' as const,
       };
   }

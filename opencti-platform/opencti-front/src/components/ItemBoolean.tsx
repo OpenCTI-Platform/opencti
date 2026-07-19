@@ -27,10 +27,11 @@ const ItemBoolean = ({
   const { t_i18n } = useFormatter();
 
   const renderTag = () => {
+    debugger;
     if (status === true) {
       return (
         <Tag
-          label={label}
+          label={t_i18n(label)}
           color={reverse ? theme.palette.error.main : theme.palette.success.main}
           labelTextTransform={labelTextTransform}
         />
@@ -71,7 +72,7 @@ const ItemBoolean = ({
 
     return (
       <Tag
-        label={label}
+        label={t_i18n(label)}
         color={reverse ? theme.palette.success.main : theme.palette.error.main}
       />
     );

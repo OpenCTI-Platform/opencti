@@ -8,6 +8,14 @@ html[data-theme='fluent'] {
   --fluent-color-tab: #151515;
   --fluent-color-sidebar: #f0f0f0;
   --fluent-color-background: #fafafa;
+
+  [data-theme='dark'] {
+    --fluent-color-sidebar: #0C1524;
+    --fluent-color-bg: #0C1524;
+  }
+  .fa-num{
+    font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
+  }
   body {
     * {
       font-family: 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
@@ -342,7 +350,7 @@ html[data-theme='fluent'] {
   }
   &[dir='rtl'] {
     body * {
-      font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
+      font-family: 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
     }
     .MuiSlider-thumb {
       transform: translate(-50%, -50%);
@@ -371,11 +379,11 @@ html[data-theme='fluent'] {
     .MuiFormLabel-root,
     .MuiChip-label,
     .MuiPopper-root {
-      font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
+      font-family:  'Iranyekan', 'IBM Plex Sans', sans-serif !important;
     }
     .MuiInputBase-input {
       fieldset {
-        font-family: 'IranYekanNu', 'Iranyekan', 'IBM Plex Sans', sans-serif !important;
+        font-family:  'Iranyekan', 'IBM Plex Sans', sans-serif !important;
       }
     }
     .MuiFormLabel-root {
