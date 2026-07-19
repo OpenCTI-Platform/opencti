@@ -262,11 +262,11 @@ test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page })
   await expect(incidentResponseType).toBeVisible();
 
   await incidentResponseDetailsPage.openLabelsSelect();
-  await incidentResponseDetailsPage.labelsSelect.selectOption('covid-19');
+  await incidentResponseDetailsPage.labelsSelect.selectOption('COVID-19');
   await incidentResponseDetailsPage.addLabels();
   await expect(incidentResponseDetailsPage.overview.getLabel('campaign')).toBeVisible();
   await expect(incidentResponseDetailsPage.overview.getLabel('report')).toBeVisible();
-  await expect(incidentResponseDetailsPage.overview.getLabel('covid-19')).toBeVisible();
+  await expect(incidentResponseDetailsPage.overview.getLabel('COVID-19')).toBeVisible();
 
   // ---------
   // endregion

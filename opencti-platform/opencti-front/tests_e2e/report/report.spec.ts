@@ -273,11 +273,11 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await expect(processingStatus).toBeVisible();
 
   await reportDetailsPage.openLabelsSelect();
-  await reportDetailsPage.labelsSelect.selectOption('covid-19');
+  await reportDetailsPage.labelsSelect.selectOption('COVID-19');
   await reportDetailsPage.addLabels();
   await expect(reportDetailsPage.overview.getLabel('campaign')).toBeVisible();
   await expect(reportDetailsPage.overview.getLabel('report')).toBeVisible();
-  await expect(reportDetailsPage.overview.getLabel('covid-19')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel('COVID-19')).toBeVisible();
 
   // ---------
   // endregion
