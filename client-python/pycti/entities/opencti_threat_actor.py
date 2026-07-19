@@ -186,8 +186,10 @@ class ThreatActor:
         data_type = "Threat-Actor-Group"
         if "x_opencti_type" in data:
             data_type = data["x_opencti_type"]
-        elif self.opencti.get_attribute_in_extension("type", data) is not None:
-            data_type = self.opencti.get_attribute_in_extension("type", data)
+        else:
+            extension_type = self.opencti.get_attribute_in_extension("type", data)
+            if extension_type is not None:
+                data_type = extension_type
         return ThreatActor.generate_id(data["name"], data_type)
 
     def list(self, **kwargs) -> dict:
@@ -226,7 +228,8 @@ class ThreatActor:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Threat-Actors with filters", {"filters": json.dumps(filters)}
+            "Listing Threat-Actors with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -264,7 +267,7 @@ class ThreatActor:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["threatActors"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["threatActors"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["threatActors"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing threatActors", {"after": after})
@@ -280,7 +283,7 @@ class ThreatActor:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["threatActors"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -359,15 +362,19 @@ class ThreatActor:
         stix_object = kwargs.get("stixObject", None)
         if "x_opencti_type" in stix_object:
             type = stix_object["x_opencti_type"].lower()
-        elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
-            type = self.opencti.get_attribute_in_extension("type", stix_object).lower()
-        elif (
-            "resource_level" in stix_object
-            and stix_object["resource_level"].lower() == "individual"
-        ):
-            type = "threat-actor-individual"
         else:
-            type = "threat-actor-group"
+            extension_type = self.opencti.get_attribute_in_extension(
+                "type", stix_object
+            )
+            if extension_type is not None:
+                type = extension_type.lower()
+            elif (
+                "resource_level" in stix_object
+                and stix_object["resource_level"].lower() == "individual"
+            ):
+                type = "threat-actor-individual"
+            else:
+                type = "threat-actor-group"
 
         if type == "threat-actor-individual":
             return self.threat_actor_individual.import_from_stix2(**kwargs)

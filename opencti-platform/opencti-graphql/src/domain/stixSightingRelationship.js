@@ -6,7 +6,12 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
-import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation,
+  stixObjectOrRelationshipDeleteRefRelations,
+} from './stixObjectOrStixRelationship';
 import { FunctionalError } from '../config/errors';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
@@ -56,6 +61,9 @@ export const stixSightingRelationshipAddRelations = async (context, user, stixSi
 };
 export const stixSightingRelationshipDeleteRelation = async (context, user, stixSightingRelationshipId, toId, relationshipType, opts = {}) => {
   return stixObjectOrRelationshipDeleteRefRelation(context, user, stixSightingRelationshipId, toId, relationshipType, STIX_SIGHTING_RELATIONSHIP, opts);
+};
+export const stixSightingRelationshipDeleteRelations = async (context, user, stixSightingRelationshipId, input, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelations(context, user, stixSightingRelationshipId, input, STIX_SIGHTING_RELATIONSHIP, opts);
 };
 // endregion
 

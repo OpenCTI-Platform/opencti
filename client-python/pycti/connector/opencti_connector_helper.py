@@ -34,7 +34,11 @@ import threading
 import time
 import uuid
 from collections import deque
+from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import ExitStack, contextmanager
+from contextvars import ContextVar
 from enum import Enum
+from functools import partial
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
@@ -47,7 +51,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
-from pika.exceptions import NackError, UnroutableError
+from pika.exceptions import AMQPError, NackError, UnroutableError
 from pydantic import TypeAdapter
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
@@ -60,6 +64,37 @@ TRUTHY: List[str] = ["yes", "true", "True"]
 
 FALSY: List[str] = ["no", "false", "False"]
 """List of string values considered as boolean False."""
+
+BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS = 60
+"""Minimum interval between full bundle retention scans."""
+
+DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS = 100
+"""Maximum same-dependency-level objects to publish in one queue message."""
+
+DEFAULT_BUNDLE_SPLIT_MAX_BYTES = 1000000
+"""Maximum serialized STIX bundle bytes to publish in one queue message."""
+
+DEFAULT_LISTEN_WORKER_COUNT = 1
+"""Default number of concurrent AMQP callback workers."""
+
+IN_FLIGHT_WORK_PING_INTERVAL_SECONDS = 60 * 5
+"""How often to ping long-running in-flight AMQP work."""
+
+IN_FLIGHT_WORK_PING_POLL_SECONDS = 5
+"""How often to check in-flight AMQP work for keepalive pings."""
+
+S3_DELETE_BATCH_SIZE = 1000
+"""Maximum number of object keys accepted by one S3 bulk delete request."""
+
+_CONNECTOR_REQUEST_CONTEXT_FIELDS = (
+    "work_id",
+    "validation_mode",
+    "force_validation",
+    "draft_id",
+    "playbook",
+    "enrichment_shared_organizations",
+    "applicant_id",
+)
 
 app = FastAPI()
 
@@ -468,6 +503,10 @@ class ListenQueue(threading.Thread):
     :type listen_protocol_api_path: str
     :param listen_protocol_api_port: Port for API server
     :type listen_protocol_api_port: int
+    :param listen_worker_count: Maximum concurrent AMQP callback workers
+    :type listen_worker_count: int
+    :param listen_prefetch_count: Maximum unacked AMQP deliveries held in flight
+    :type listen_prefetch_count: int
     :param callback: Function to call when processing messages
     :type callback: Callable[[Dict], str]
     """
@@ -483,6 +522,8 @@ class ListenQueue(threading.Thread):
         listen_protocol_api_ssl: bool,
         listen_protocol_api_path: str,
         listen_protocol_api_port: int,
+        listen_worker_count: int,
+        listen_prefetch_count: int,
         callback: Callable[[Dict], str],
     ) -> None:
         """Initialize the ListenQueue thread.
@@ -505,6 +546,10 @@ class ListenQueue(threading.Thread):
         :type listen_protocol_api_path: str
         :param listen_protocol_api_port: Port for API server
         :type listen_protocol_api_port: int
+        :param listen_worker_count: Maximum concurrent AMQP callback workers
+        :type listen_worker_count: int
+        :param listen_prefetch_count: Maximum unacked AMQP deliveries held in flight
+        :type listen_prefetch_count: int
         :param callback: Function to process received messages
         :type callback: Callable[[Dict], str]
         """
@@ -521,6 +566,8 @@ class ListenQueue(threading.Thread):
         self.listen_protocol_api_ssl = listen_protocol_api_ssl
         self.listen_protocol_api_path = listen_protocol_api_path
         self.listen_protocol_api_port = listen_protocol_api_port
+        self.listen_worker_count = listen_worker_count
+        self.listen_prefetch_count = listen_prefetch_count
         self.connector_applicant_id = applicant_id
         self.host = connector_config["connection"]["host"]
         self.vhost = connector_config["connection"]["vhost"]
@@ -531,15 +578,128 @@ class ListenQueue(threading.Thread):
         self.connector_jwks = PyJWKSet.from_json(connector_config["connector_jwks"])
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
-        self.thread = None
+        self._worker_pool = None
+        self._in_flight_messages = {}
+        self._in_flight_lock = threading.Lock()
+        self._ping_timer_id = None
+
+    def _ensure_worker_pool(self) -> ThreadPoolExecutor:
+        if self._worker_pool is None:
+            self._worker_pool = ThreadPoolExecutor(
+                max_workers=self.listen_worker_count,
+                thread_name_prefix="opencti-listen",
+            )
+        return self._worker_pool
+
+    def _shutdown_worker_pool(self) -> None:
+        if self._worker_pool is not None:
+            self._worker_pool.shutdown(wait=True)
+            self._worker_pool = None
+
+    @staticmethod
+    def _message_key(channel, delivery_tag):
+        return id(channel), delivery_tag
+
+    def _remove_in_flight_message(self, message_key):
+        with self._in_flight_lock:
+            return self._in_flight_messages.pop(message_key, None)
+
+    def _schedule_in_flight_ping_check(self) -> None:
+        if (
+            self.exit_event.is_set()
+            or self.pika_connection is None
+            or self.pika_connection.is_closed
+        ):
+            return
+        self._ping_timer_id = self.pika_connection.call_later(
+            IN_FLIGHT_WORK_PING_POLL_SECONDS,
+            self._ping_in_flight_work,
+        )
+
+    def _ping_in_flight_work(self) -> None:
+        now = time.monotonic()
+        work_ids = []
+        with self._in_flight_lock:
+            for message in self._in_flight_messages.values():
+                work_id = message["work_id"]
+                if (
+                    work_id is not None
+                    and now - message["last_ping"]
+                    > IN_FLIGHT_WORK_PING_INTERVAL_SECONDS
+                ):
+                    message["last_ping"] = now
+                    work_ids.append(work_id)
+        for work_id in work_ids:
+            try:
+                self.helper.api.work.ping(work_id)
+            except Exception as err:  # pylint: disable=broad-except
+                self.helper.connector_logger.error(
+                    "Error pinging in-flight work",
+                    {"work_id": work_id, "reason": str(err)},
+                )
+        self._schedule_in_flight_ping_check()
+
+    def _settle_message(
+        self,
+        message_key,
+        channel,
+        delivery_tag,
+        should_ack: bool,
+    ) -> None:
+        if self._remove_in_flight_message(message_key) is None:
+            return
+        if getattr(channel, "is_closed", False):
+            return
+        if should_ack:
+            channel.basic_ack(delivery_tag=delivery_tag)
+            self.helper.connector_logger.info("Message ack", {"tag": delivery_tag})
+        else:
+            channel.basic_nack(delivery_tag=delivery_tag, requeue=True)
+            self.helper.connector_logger.error(
+                "Message nack",
+                {"tag": delivery_tag, "requeue": True},
+            )
+
+    def _on_message_processed(
+        self,
+        message_key,
+        connection,
+        channel,
+        delivery_tag,
+        future: Future,
+    ) -> None:
+        try:
+            should_ack = future.result() is not False
+        except Exception as err:  # pylint: disable=broad-except
+            should_ack = False
+            self.helper.connector_logger.error(
+                "Unhandled error in message processing thread",
+                {"tag": delivery_tag, "reason": str(err)},
+            )
+        try:
+            connection.add_callback_threadsafe(
+                partial(
+                    self._settle_message,
+                    message_key,
+                    channel,
+                    delivery_tag,
+                    should_ack,
+                )
+            )
+        except Exception as err:  # pylint: disable=broad-except
+            self._remove_in_flight_message(message_key)
+            self.helper.connector_logger.error(
+                "Unable to settle message on RabbitMQ connection",
+                {"tag": delivery_tag, "reason": str(err)},
+            )
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
         """Process a message from the RabbitMQ queue.
 
-        Acknowledges the message immediately before processing to prevent
-        infinite re-delivery if the connector fails. Spawns a separate thread
-        for data handling and maintains the connection alive during processing.
+        Submits the callback to a bounded worker pool and keeps the message
+        unacked until processing reaches a durable outcome. Completion handlers
+        schedule ACK/NACK work back onto Pika's connection thread.
 
         :param channel: The RabbitMQ channel instance
         :type channel: pika.channel.Channel
@@ -550,29 +710,29 @@ class ListenQueue(threading.Thread):
         :param body: The message body containing JSON data
         :type body: bytes
         """
+        if self.exit_event.is_set():
+            channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+            return
         json_data = json.loads(body)
-        # Message should be ack before processing as we don't own the processing
-        # Not ACK the message here may lead to infinite re-deliver if the connector is broken
-        # Also ACK, will not have any impact on the blocking aspect of the following functions
-        channel.basic_ack(delivery_tag=method.delivery_tag)
-        self.helper.connector_logger.info("Message ack", {"tag": method.delivery_tag})
-
-        self.thread = threading.Thread(target=self._data_handler, args=[json_data])
-        self.thread.start()
-        five_minutes = 60 * 5
-        last_ping = time.monotonic()
-        # Wait for end of execution of the _data_handler
-        # pika_connection.sleep is required to keep servicing the connection I/O
-        # (AMQP heartbeats) while the processing thread is running
-        while self.thread.is_alive():  # Loop while the thread is processing
-            self.pika_connection.sleep(0.05)
-            now = time.monotonic()
-            # Ping every 5 minutes
-            if self.helper.work_id is not None and now - last_ping > five_minutes:
-                self.helper.api.work.ping(self.helper.work_id)
-                last_ping = now
+        work_id = json_data.get("internal", {}).get("work_id")
+        message_key = self._message_key(channel, method.delivery_tag)
+        future = self._ensure_worker_pool().submit(self._data_handler, json_data)
+        with self._in_flight_lock:
+            self._in_flight_messages[message_key] = {
+                "work_id": work_id,
+                "last_ping": time.monotonic(),
+            }
+        future.add_done_callback(
+            partial(
+                self._on_message_processed,
+                message_key,
+                self.pika_connection,
+                channel,
+                method.delivery_tag,
+            )
+        )
         self.helper.connector_logger.info(
-            "Message processed, thread terminated",
+            "Message submitted",
             {"tag": method.delivery_tag},
         )
 
@@ -586,7 +746,11 @@ class ListenQueue(threading.Thread):
         self.helper.api.set_draft_id(draft_id)
         self.helper.api_impersonate.set_draft_id(draft_id)
 
-    def _data_handler(self, json_data: Dict) -> None:
+    def _data_handler(self, json_data: Dict) -> bool:
+        with self.helper.request_context():
+            return self._data_handler_in_context(json_data)
+
+    def _data_handler_in_context(self, json_data: Dict) -> bool:
         """Process incoming message data and execute the callback.
 
         Handles the full message processing workflow including:
@@ -599,6 +763,8 @@ class ListenQueue(threading.Thread):
 
         :param json_data: The parsed JSON message data containing event and internal info
         :type json_data: Dict
+        :return: True when the message reached a durable processed outcome, False otherwise
+        :rtype: bool
         """
         work_id = None
         # Execute the callback
@@ -730,6 +896,7 @@ class ListenQueue(threading.Thread):
             if work_id:
                 self.helper.api.work.to_processed(work_id, message)
             self._set_draft_id("")
+            return True
 
         except Exception as e:  # pylint: disable=broad-except
             self.helper.metric.inc("error_count")
@@ -740,11 +907,13 @@ class ListenQueue(threading.Thread):
             if work_id:
                 try:
                     self.helper.api.work.to_processed(work_id, str(e), True)
+                    return True
                 except Exception:  # pylint: disable=broad-except
                     self.helper.metric.inc("error_count")
                     self.helper.connector_logger.error(
                         "Failing reporting the processing"
                     )
+            return False
 
     def is_token_valid(self, token):
         """
@@ -814,7 +983,13 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            loop = asyncio.get_running_loop()
+            processed = await loop.run_in_executor(None, self._data_handler, data)
+            if processed is False:
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Error processing message"},
+                )
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
@@ -828,19 +1003,9 @@ class ListenQueue(threading.Thread):
             status_code=202, content={"message": "Message successfully received"}
         )
 
-    def run(self) -> None:
-        """Execute the message listening thread.
-
-        Starts the appropriate listener based on the configured protocol:
-        - AMQP: Connects to RabbitMQ and consumes messages from the queue
-        - API: Starts a FastAPI/Uvicorn HTTP server to receive messages
-
-        The thread runs until stopped via the stop() method or an error occurs.
-
-        :raises ValueError: If an unsupported listen protocol is configured
-        """
-        if self.listen_protocol == "AMQP":
-            self.helper.connector_logger.info("Starting ListenQueue thread")
+    def _run_amqp_listener(self) -> None:
+        self.helper.connector_logger.info("Starting ListenQueue thread")
+        try:
             while not self.exit_event.is_set():
                 try:
                     self.helper.connector_logger.info(
@@ -873,11 +1038,12 @@ class ListenQueue(threading.Thread):
                         self.channel.confirm_delivery()
                     except Exception as err:  # pylint: disable=broad-except
                         self.helper.connector_logger.debug(str(err))
-                    self.channel.basic_qos(prefetch_count=1)
+                    self.channel.basic_qos(prefetch_count=self.listen_prefetch_count)
                     assert self.channel is not None
                     self.channel.basic_consume(
                         queue=self.queue_name, on_message_callback=self._process_message
                     )
+                    self._schedule_in_flight_ping_check()
                     self.channel.start_consuming()
                 except Exception as err:  # pylint: disable=broad-except
                     try:
@@ -892,6 +1058,22 @@ class ListenQueue(threading.Thread):
                     )
                     # Wait some time and then retry ListenQueue again.
                     time.sleep(10)
+        finally:
+            self._shutdown_worker_pool()
+
+    def run(self) -> None:
+        """Execute the message listening thread.
+
+        Starts the appropriate listener based on the configured protocol:
+        - AMQP: Connects to RabbitMQ and consumes messages from the queue
+        - API: Starts a FastAPI/Uvicorn HTTP server to receive messages
+
+        The thread runs until stopped via the stop() method or an error occurs.
+
+        :raises ValueError: If an unsupported listen protocol is configured
+        """
+        if self.listen_protocol == "AMQP":
+            self._run_amqp_listener()
         elif self.listen_protocol == "API":
             self.helper.connector_logger.info("Starting Listen HTTP thread")
             app.add_api_route(
@@ -920,14 +1102,17 @@ class ListenQueue(threading.Thread):
     def stop(self):
         """Stop the ListenQueue thread and close connections.
 
-        This method sets the exit event, closes the RabbitMQ connection,
-        and waits for the processing thread to complete.
+        This method sets the exit event, waits for in-flight callback workers,
+        and closes the RabbitMQ connection.
         """
         self.helper.connector_logger.info("Preparing ListenQueue for clean shutdown")
         self.exit_event.set()
-        self.pika_connection.close()
-        if self.thread:
-            self.thread.join()
+        self._shutdown_worker_pool()
+        if self.pika_connection is not None:
+            try:
+                self.pika_connection.add_callback_threadsafe(self.pika_connection.close)
+            except Exception:  # pylint: disable=broad-except
+                self.pika_connection.close()
 
 
 class PingAlive(threading.Thread):
@@ -1330,7 +1515,7 @@ class BatchCallbackWrapper:
         self.batch_timeout = batch_timeout
 
         # Batch state
-        self.batch: List = []
+        self.batch: deque = deque()
         self.batch_start_time: Optional[float] = None
         self._lock = threading.Lock()
 
@@ -1424,11 +1609,11 @@ class BatchCallbackWrapper:
         :return: Dictionary containing events and batch metadata
         """
         if self.batch_size:
-            extracted = self.batch[: self.batch_size]
-            self.batch = self.batch[self.batch_size :]
+            extract_count = min(self.batch_size, len(self.batch))
+            extracted = [self.batch.popleft() for _ in range(extract_count)]
         else:
-            extracted = self.batch.copy()
-            self.batch = []
+            extracted = list(self.batch)
+            self.batch.clear()
 
         elapsed = time.time() - self.batch_start_time if self.batch_start_time else 0
 
@@ -1996,6 +2181,104 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         WEEKS = 604800
         YEARS = 31536000
 
+    def _ensure_request_context(self):
+        if not hasattr(self, "_request_context"):
+            self._request_context = ContextVar(
+                f"opencti_connector_request_context_{id(self)}", default=None
+            )
+
+    def _get_request_context_value(self, field_name):
+        self._ensure_request_context()
+        request_context = self._request_context.get()
+        if request_context is not None:
+            return request_context[field_name]
+        return getattr(self, f"_default_{field_name}", None)
+
+    def _set_request_context_value(self, field_name, value):
+        self._ensure_request_context()
+        request_context = self._request_context.get()
+        if request_context is not None:
+            request_context[field_name] = value
+            return
+        setattr(self, f"_default_{field_name}", value)
+
+    @contextmanager
+    def request_context(self):
+        """Run one connector callback with isolated request-local state."""
+
+        self._ensure_request_context()
+        request_context = {
+            field_name: self._get_request_context_value(field_name)
+            for field_name in _CONNECTOR_REQUEST_CONTEXT_FIELDS
+        }
+        token = self._request_context.set(request_context)
+        try:
+            with ExitStack() as stack:
+                for api_name in ("api", "api_impersonate"):
+                    api = getattr(self, api_name, None)
+                    api_request_context = getattr(api, "request_context", None)
+                    if api_request_context is not None:
+                        stack.enter_context(api_request_context())
+                yield
+        finally:
+            self._request_context.reset(token)
+
+    @property
+    def work_id(self):
+        return self._get_request_context_value("work_id")
+
+    @work_id.setter
+    def work_id(self, value):
+        self._set_request_context_value("work_id", value)
+
+    @property
+    def validation_mode(self):
+        return self._get_request_context_value("validation_mode")
+
+    @validation_mode.setter
+    def validation_mode(self, value):
+        self._set_request_context_value("validation_mode", value)
+
+    @property
+    def force_validation(self):
+        return self._get_request_context_value("force_validation")
+
+    @force_validation.setter
+    def force_validation(self, value):
+        self._set_request_context_value("force_validation", value)
+
+    @property
+    def draft_id(self):
+        return self._get_request_context_value("draft_id")
+
+    @draft_id.setter
+    def draft_id(self, value):
+        self._set_request_context_value("draft_id", value)
+
+    @property
+    def playbook(self):
+        return self._get_request_context_value("playbook")
+
+    @playbook.setter
+    def playbook(self, value):
+        self._set_request_context_value("playbook", value)
+
+    @property
+    def enrichment_shared_organizations(self):
+        return self._get_request_context_value("enrichment_shared_organizations")
+
+    @enrichment_shared_organizations.setter
+    def enrichment_shared_organizations(self, value):
+        self._set_request_context_value("enrichment_shared_organizations", value)
+
+    @property
+    def applicant_id(self):
+        return self._get_request_context_value("applicant_id")
+
+    @applicant_id.setter
+    def applicant_id(self, value):
+        self._set_request_context_value("applicant_id", value)
+
     def __init__(self, config: Dict, playbook_compatible: bool = False) -> None:
         """Initialize the OpenCTIConnectorHelper.
 
@@ -2080,6 +2363,27 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 else "http://127.0.0.1:7070"
             ),
         )
+        self.listen_worker_count = get_config_variable(
+            "CONNECTOR_LISTEN_WORKER_COUNT",
+            ["connector", "listen_worker_count"],
+            config,
+            isNumber=True,
+            default=DEFAULT_LISTEN_WORKER_COUNT,
+        )
+        if isinstance(self.listen_worker_count, bool) or self.listen_worker_count <= 0:
+            raise ValueError("CONNECTOR_LISTEN_WORKER_COUNT must be > 0")
+        self.listen_prefetch_count = get_config_variable(
+            "CONNECTOR_LISTEN_PREFETCH_COUNT",
+            ["connector", "listen_prefetch_count"],
+            config,
+            isNumber=True,
+            default=self.listen_worker_count,
+        )
+        if (
+            isinstance(self.listen_prefetch_count, bool)
+            or self.listen_prefetch_count <= 0
+        ):
+            raise ValueError("CONNECTOR_LISTEN_PREFETCH_COUNT must be > 0")
         self.connect_type = get_config_variable(
             "CONNECTOR_TYPE", ["connector", "type"], config
         )
@@ -2150,6 +2454,27 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=True,
         )
+        self.bundle_split_max_objects = get_config_variable(
+            "CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS",
+            ["connector", "bundle_split_max_objects"],
+            config,
+            isNumber=True,
+            default=DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS,
+        )
+        if self.bundle_split_max_objects <= 0:
+            raise ValueError("CONNECTOR_BUNDLE_SPLIT_MAX_OBJECTS must be > 0")
+        self.bundle_split_max_bytes = get_config_variable(
+            "CONNECTOR_BUNDLE_SPLIT_MAX_BYTES",
+            ["connector", "bundle_split_max_bytes"],
+            config,
+            isNumber=True,
+            default=DEFAULT_BUNDLE_SPLIT_MAX_BYTES,
+        )
+        if (
+            isinstance(self.bundle_split_max_bytes, bool)
+            or self.bundle_split_max_bytes <= 0
+        ):
+            raise ValueError("CONNECTOR_BUNDLE_SPLIT_MAX_BYTES must be > 0")
         self.bundle_send_to_directory = get_config_variable(
             "CONNECTOR_SEND_TO_DIRECTORY",
             ["connector", "send_to_directory"],
@@ -2168,6 +2493,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             isNumber=True,
             default=7,
         )
+        self._directory_cleanup_lock = threading.Lock()
+        self._directory_cleanup_deadlines = {}
+        self._s3_cleanup_lock = threading.Lock()
+        self._next_s3_cleanup_at = 0
         # S3 send mode configuration
         self.bundle_send_to_s3 = get_config_variable(
             "CONNECTOR_SEND_TO_S3",
@@ -2409,7 +2738,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.enrichment_shared_organizations = None
         self.connector_id = connector_configuration["id"]
         self.applicant_id = connector_configuration["connector_user_id"]
-        self.connector_state = connector_configuration["connector_state"]
+        self.connector_state = self._normalize_state(
+            connector_configuration["connector_state"]
+        )
         self.connector_config = connector_configuration["config"]
         self.connector_config["connector_jwks"] = connector_configuration["jwks"]
 
@@ -2470,6 +2801,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=self.connector_config["connection"]["pass"],
         )
+        self._publisher_lock = threading.RLock()
+        self._publisher_connection = None
+        self._publisher_channel = None
+        self._publisher_heartbeat = 10
+        self._publisher_last_used_at = None
 
         # Initialize S3 config from backend, allow local overrides
         if "s3" in self.connector_config:
@@ -2599,7 +2935,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connect_name.lower().replace(" ", "_")
             + "-"
             + time.strftime("%Y%m%d-%H%M%S-")
-            + str(time.time())
+            + str(uuid.uuid4())
             + ".json"
         )
 
@@ -2700,6 +3036,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param s3_client: Configured boto3 S3 client
         :type s3_client: boto3.client
         """
+        now_monotonic = time.monotonic()
+        with self._s3_cleanup_lock:
+            if now_monotonic < self._next_s3_cleanup_at:
+                return
+            self._next_s3_cleanup_at = (
+                now_monotonic + BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS
+            )
+
         # Build prefix: folder + connector name prefix
         # Strip trailing slashes to avoid double slashes in S3 keys
         folder = (
@@ -2720,20 +3064,70 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         try:
             paginator = s3_client.get_paginator("list_objects_v2")
             paginate_args = {"Bucket": self.bundle_send_to_s3_bucket, "Prefix": prefix}
+            expired_keys = []
             for page in paginator.paginate(**paginate_args):
                 for obj in page.get("Contents", []):
                     if obj["LastModified"] < cutoff_time:
-                        s3_client.delete_object(
-                            Bucket=self.bundle_send_to_s3_bucket, Key=obj["Key"]
-                        )
-                        self.connector_logger.debug(
-                            "Deleted expired S3 bundle",
-                            {"key": obj["Key"], "modified": str(obj["LastModified"])},
-                        )
+                        expired_keys.append({"Key": obj["Key"]})
+                        if len(expired_keys) == S3_DELETE_BATCH_SIZE:
+                            self._delete_s3_bundle_batch(s3_client, expired_keys)
+                            expired_keys = []
+            if expired_keys:
+                self._delete_s3_bundle_batch(s3_client, expired_keys)
         except Exception as e:
             self.connector_logger.warning(
                 "Failed to cleanup old S3 bundles", {"error": str(e)}
             )
+
+    def _delete_s3_bundle_batch(
+        self, s3_client, expired_keys: List[Dict[str, str]]
+    ) -> None:
+        """Delete one bounded batch of expired S3 bundle keys."""
+
+        response = s3_client.delete_objects(
+            Bucket=self.bundle_send_to_s3_bucket,
+            Delete={"Objects": expired_keys, "Quiet": True},
+        )
+        errors = [] if response is None else response.get("Errors", [])
+        if errors:
+            self.connector_logger.warning(
+                "Failed to delete some expired S3 bundles",
+                {"count": len(errors), "errors": errors},
+            )
+        self.connector_logger.debug(
+            "Deleted expired S3 bundle batch",
+            {
+                "deleted_count": len(expired_keys) - len(errors),
+                "failed_count": len(errors),
+            },
+        )
+
+    def _cleanup_old_directory_bundles(
+        self, directory_path: str, retention_days: int
+    ) -> None:
+        """Delete expired directory bundles at most once per cleanup interval."""
+
+        cleanup_key = (directory_path, retention_days)
+        now_monotonic = time.monotonic()
+        with self._directory_cleanup_lock:
+            next_cleanup_at = self._directory_cleanup_deadlines.get(cleanup_key, 0)
+            if now_monotonic < next_cleanup_at:
+                return
+            self._directory_cleanup_deadlines[cleanup_key] = (
+                now_monotonic + BUNDLE_RETENTION_CLEANUP_INTERVAL_SECONDS
+            )
+
+        cutoff_time = time.time() - 86400 * retention_days
+        for filename in os.listdir(directory_path):
+            if not filename.endswith(".json"):
+                continue
+            file_location = os.path.join(directory_path, filename)
+            try:
+                if os.stat(file_location).st_mtime < cutoff_time:
+                    os.remove(file_location)
+            except FileNotFoundError:
+                # Another sender or cleanup process already removed the file.
+                continue
 
     def stop(self) -> None:
         """Stop the connector and clean up resources.
@@ -2747,6 +3141,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # if self.listen_stream:
         #     self.listen_stream.stop()
         self.ping.stop()
+        self._close_publisher_connection()
         self.api.connector.unregister(self.connector_id)
 
     def get_name(self) -> Optional[Union[bool, int, str]]:
@@ -2821,19 +3216,45 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         """
         return self.connect_validate_before_import
 
+    @staticmethod
+    def _clone_state_value(value):
+        """Clone JSON-compatible connector state without serializing it."""
+
+        if isinstance(value, Dict):
+            return {
+                key: OpenCTIConnectorHelper._clone_state_value(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, (list, tuple)):
+            return [OpenCTIConnectorHelper._clone_state_value(item) for item in value]
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+        raise TypeError(
+            f"Object of type {type(value).__name__} is not JSON serializable"
+        )
+
+    @staticmethod
+    def _normalize_state(state) -> Optional[Dict]:
+        """Normalize connector state into an internal dictionary snapshot."""
+
+        if isinstance(state, str):
+            try:
+                state = json.loads(state)
+            except (TypeError, ValueError):
+                return None
+        if isinstance(state, Dict) and state:
+            return OpenCTIConnectorHelper._clone_state_value(state)
+        return None
+
     def set_state(self, state) -> None:
         """Set the connector state.
 
-        Stores the connector state as a JSON string for persistence across runs.
-        The state can be retrieved later using get_state().
+        Stores a snapshot of the connector state for later retrieval.
 
         :param state: State object to store, or None to clear the state
-        :type state: Dict or None
+        :type state: Dict, str, or None
         """
-        if isinstance(state, Dict):
-            self.connector_state = json.dumps(state)
-        else:
-            self.connector_state = None
+        self.connector_state = self._normalize_state(state)
 
     def get_state(self) -> Optional[Dict]:
         """Get the connector state.
@@ -2844,13 +3265,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :return: The current state of the connector, or None if no state exists
         :rtype: Optional[Dict]
         """
-        try:
-            if self.connector_state:
-                state = json.loads(self.connector_state)
-                if isinstance(state, Dict) and state:
-                    return state
-        except:  # pylint: disable=bare-except  # noqa: E722
-            pass
+        if isinstance(self.connector_state, str):
+            self.connector_state = self._normalize_state(self.connector_state)
+        if isinstance(self.connector_state, Dict) and self.connector_state:
+            return self._clone_state_value(self.connector_state)
         return None
 
     def force_ping(self):
@@ -3183,6 +3601,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.listen_protocol_api_ssl,
             self.listen_protocol_api_path,
             self.listen_protocol_api_port,
+            self.listen_worker_count,
+            self.listen_prefetch_count,
             message_callback,
         )
         self.listen_queue.start()
@@ -3490,6 +3910,90 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             .replace("+00:00", "Z")
         )
 
+    def _open_publisher_connection(self):
+        """Open a RabbitMQ connection and confirmed channel for bundle publishing."""
+
+        pika_credentials = pika.PlainCredentials(
+            self.connector_config["connection"]["user"],
+            self.connector_config["connection"]["pass"],
+        )
+        pika_parameters = pika.ConnectionParameters(
+            heartbeat=self._publisher_heartbeat,
+            host=self.connector_config["connection"]["host"],
+            port=self.connector_config["connection"]["port"],
+            virtual_host=self.connector_config["connection"]["vhost"],
+            credentials=pika_credentials,
+            ssl_options=(
+                pika.SSLOptions(
+                    create_mq_ssl_context(self.config),
+                    self.connector_config["connection"]["host"],
+                )
+                if self.connector_config["connection"]["use_ssl"]
+                else None
+            ),
+        )
+        pika_connection = pika.BlockingConnection(pika_parameters)
+        channel = pika_connection.channel()
+        try:
+            channel.confirm_delivery()
+        except Exception as err:  # pylint: disable=broad-except
+            self.connector_logger.warning(str(err))
+        return pika_connection, channel
+
+    def _close_publisher_connection(self) -> None:
+        """Close and clear the cached RabbitMQ publisher resources."""
+
+        with self._publisher_lock:
+            channel = self._publisher_channel
+            connection = self._publisher_connection
+            self._publisher_channel = None
+            self._publisher_connection = None
+            self._publisher_last_used_at = None
+            if channel is not None and not channel.is_closed:
+                try:
+                    channel.close()
+                except AMQPError:
+                    pass
+            if connection is not None and not connection.is_closed:
+                try:
+                    connection.close()
+                except AMQPError:
+                    pass
+
+    def _get_publisher_channel(self):
+        """Return a cached healthy publisher channel, opening one if needed."""
+
+        if (
+            self._publisher_connection is not None
+            and self._publisher_channel is not None
+            and not self._publisher_connection.is_closed
+            and not self._publisher_channel.is_closed
+        ):
+            if (
+                self._publisher_last_used_at is not None
+                and time.monotonic() - self._publisher_last_used_at
+                >= self._publisher_heartbeat
+            ):
+                self._close_publisher_connection()
+            else:
+                try:
+                    self._publisher_connection.process_data_events(time_limit=0)
+                except AMQPError:
+                    self._close_publisher_connection()
+
+        if (
+            self._publisher_connection is None
+            or self._publisher_channel is None
+            or self._publisher_connection.is_closed
+            or self._publisher_channel.is_closed
+        ):
+            self._close_publisher_connection()
+            (
+                self._publisher_connection,
+                self._publisher_channel,
+            ) = self._open_publisher_connection()
+        return self._publisher_channel
+
     # Push Stix2 helper
     def send_stix2_bundle(self, bundle: str, **kwargs) -> list:
         """Send a STIX2 bundle to the OpenCTI platform.
@@ -3536,6 +4040,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type send_to_s3: bool, optional
         :param no_split: Whether to send without splitting (default: False)
         :type no_split: bool, optional
+        :param bundle_split_max_objects: Maximum same-dependency-level objects
+            per queued chunk (default: self.bundle_split_max_objects for AMQP
+            queue sends, 1 otherwise)
+        :type bundle_split_max_objects: int, optional
+        :param bundle_split_max_bytes: Maximum serialized STIX bundle bytes per
+            queued chunk (default: self.bundle_split_max_bytes for AMQP queue
+            sends, no byte bound otherwise)
+        :type bundle_split_max_bytes: int, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -3566,6 +4078,28 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         bundle_send_to_s3 = kwargs.get("send_to_s3", self.bundle_send_to_s3)
         no_split = kwargs.get("no_split", False)
+        bundle_split_max_objects = kwargs.get("bundle_split_max_objects")
+        if bundle_split_max_objects is None:
+            bundle_split_max_objects = (
+                getattr(
+                    self,
+                    "bundle_split_max_objects",
+                    DEFAULT_BUNDLE_SPLIT_MAX_OBJECTS,
+                )
+                if bundle_send_to_queue and self.queue_protocol == "amqp"
+                else 1
+            )
+        bundle_split_max_bytes = kwargs.get("bundle_split_max_bytes")
+        if bundle_split_max_bytes is None:
+            bundle_split_max_bytes = (
+                getattr(
+                    self,
+                    "bundle_split_max_bytes",
+                    DEFAULT_BUNDLE_SPLIT_MAX_BYTES,
+                )
+                if bundle_send_to_queue and self.queue_protocol == "amqp"
+                else None
+            )
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -3661,17 +4195,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             # Maintains the list of files under control
             if bundle_send_to_directory_retention > 0:  # If 0, disable the auto remove
-                current_time = time.time()
-                for f in os.listdir(bundle_send_to_directory_path):
-                    if f.endswith(".json"):
-                        file_location = os.path.join(bundle_send_to_directory_path, f)
-                        file_time = os.stat(file_location).st_mtime
-                        is_expired_file = (
-                            file_time
-                            < current_time - 86400 * bundle_send_to_directory_retention
-                        )  # 86400 = 1 day
-                        if is_expired_file:
-                            os.remove(file_location)
+                self._cleanup_old_directory_bundles(
+                    bundle_send_to_directory_path,
+                    bundle_send_to_directory_retention,
+                )
             # Write the bundle to target directory
             with open(write_file, "w") as f:
                 str_bundle = json.dumps(message_bundle)
@@ -3701,6 +4228,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundles = [bundle]
             expectations_number = 1
         else:
+            if (
+                isinstance(bundle_split_max_objects, bool)
+                or not isinstance(bundle_split_max_objects, int)
+                or bundle_split_max_objects <= 0
+            ):
+                raise ValueError("bundle_split_max_objects must be a positive integer")
+            if bundle_split_max_bytes is not None and (
+                isinstance(bundle_split_max_bytes, bool)
+                or not isinstance(bundle_split_max_bytes, int)
+                or bundle_split_max_bytes <= 0
+            ):
+                raise ValueError("bundle_split_max_bytes must be a positive integer")
             stix2_splitter = OpenCTIStix2Splitter()
             expectations_number, _, bundles = (
                 stix2_splitter.split_bundle_with_expectations(
@@ -3708,6 +4247,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                     use_json=True,
                     event_version=event_version,
                     cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+                    max_bundle_objects=bundle_split_max_objects,
+                    max_bundle_bytes=bundle_split_max_bytes,
                 )
             )
 
@@ -3721,47 +4262,29 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if self.queue_protocol == "amqp":
                 if work_id:
                     self.api.work.add_expectations(work_id, expectations_number)
-                pika_credentials = pika.PlainCredentials(
-                    self.connector_config["connection"]["user"],
-                    self.connector_config["connection"]["pass"],
-                )
-                pika_parameters = pika.ConnectionParameters(
-                    heartbeat=10,
-                    host=self.connector_config["connection"]["host"],
-                    port=self.connector_config["connection"]["port"],
-                    virtual_host=self.connector_config["connection"]["vhost"],
-                    credentials=pika_credentials,
-                    ssl_options=(
-                        pika.SSLOptions(
-                            create_mq_ssl_context(self.config),
-                            self.connector_config["connection"]["host"],
+                # The chunk is already dependency ordered; avoid worker requeue fanout.
+                queue_no_split = no_split or bundle_split_max_objects > 1
+                with self._publisher_lock:
+                    try:
+                        channel = self._get_publisher_channel()
+                        self.connector_logger.info(
+                            self.connect_name + " sending bundle to queue"
                         )
-                        if self.connector_config["connection"]["use_ssl"]
-                        else None
-                    ),
-                )
-                pika_connection = pika.BlockingConnection(pika_parameters)
-                channel = pika_connection.channel()
-                try:
-                    channel.confirm_delivery()
-                except Exception as err:  # pylint: disable=broad-except
-                    self.connector_logger.warning(str(err))
-                self.connector_logger.info(
-                    self.connect_name + " sending bundle to queue"
-                )
-                for sequence, bundle in enumerate(bundles, start=1):
-                    self._send_bundle(
-                        channel,
-                        bundle,
-                        work_id=work_id,
-                        entities_types=entities_types,
-                        sequence=sequence,
-                        update=update,
-                        draft_id=draft_id,
-                        no_split=no_split,
-                    )
-                channel.close()
-                pika_connection.close()
+                        for sequence, bundle in enumerate(bundles, start=1):
+                            self._send_bundle(
+                                channel,
+                                bundle,
+                                work_id=work_id,
+                                entities_types=entities_types,
+                                sequence=sequence,
+                                update=update,
+                                draft_id=draft_id,
+                                no_split=queue_no_split,
+                            )
+                        self._publisher_last_used_at = time.monotonic()
+                    except AMQPError:
+                        self._close_publisher_connection()
+                        raise
             elif self.queue_protocol == "api":
                 self.api.send_bundle_to_api(
                     connector_id=self.connector_id, bundle=bundle, work_id=work_id
@@ -3867,12 +4390,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :rtype: list
         """
 
-        ids = []
+        ids = set()
         final_items = []
         for item in items:
             if item["id"] not in ids:
                 final_items.append(item)
-                ids.append(item["id"])
+                ids.add(item["id"])
         return final_items
 
     @staticmethod
@@ -3970,31 +4493,27 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             >>> OpenCTIConnectorHelper.get_attribute_in_extension("score", obj)
             85
         """
-        if (
-            "extensions" in stix_object
-            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+        if "extensions" in stix_object:
+            extensions = stix_object["extensions"]
+            if (
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ][key]
-        elif (
-            "extensions" in stix_object
-            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+                in extensions
+            ):
+                opencti_extension = extensions[
+                    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+                ]
+                if key in opencti_extension:
+                    return opencti_extension[key]
+            if (
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ][key]
-        elif key in stix_object and key not in ["type"]:
+                in extensions
+            ):
+                sco_extension = extensions[
+                    "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+                ]
+                if key in sco_extension:
+                    return sco_extension[key]
+        if key in stix_object and key != "type":
             return stix_object[key]
         return None
 

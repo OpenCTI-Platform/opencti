@@ -13,7 +13,12 @@ import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
-import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation,
+  stixObjectOrRelationshipDeleteRefRelations,
+} from './stixObjectOrStixRelationship';
 import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filtering-utils';
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
@@ -134,6 +139,9 @@ export const stixCoreRelationshipAddRelations = async (context, user, stixCoreRe
 };
 export const stixCoreRelationshipDeleteRelation = async (context, user, stixCoreRelationshipId, toId, relationshipType, opts = {}) => {
   return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCoreRelationshipId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP, opts);
+};
+export const stixCoreRelationshipDeleteRelations = async (context, user, stixCoreRelationshipId, input, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelations(context, user, stixCoreRelationshipId, input, ABSTRACT_STIX_CORE_RELATIONSHIP, opts);
 };
 // endregion
 

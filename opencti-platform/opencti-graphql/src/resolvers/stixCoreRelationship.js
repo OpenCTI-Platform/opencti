@@ -9,6 +9,7 @@ import {
   stixCoreRelationshipDelete,
   stixCoreRelationshipDeleteByFromAndTo,
   stixCoreRelationshipDeleteRelation,
+  stixCoreRelationshipDeleteRelations,
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
   stixCoreRelationshipRemoveFromDraft,
@@ -104,6 +105,9 @@ const stixCoreRelationshipResolvers = {
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(context, context.user, id, input),
       relationsAdd: ({ input, commitMessage, references }) => {
         return stixCoreRelationshipAddRelations(context, context.user, id, input, { commitMessage, references });
+      },
+      relationsDelete: ({ input, commitMessage, references }) => {
+        return stixCoreRelationshipDeleteRelations(context, context.user, id, input, { commitMessage, references });
       },
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => {
         return stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references });

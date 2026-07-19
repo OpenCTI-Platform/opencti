@@ -235,6 +235,8 @@ bundle = Bundle(objects=bundle_objects).serialize()
 bundles_sent = self.opencti_connector_helper.send_stix2_bundle(bundle)
 ```
 
+`send_stix2_bundle` returns the list of processed bundle chunks. For AMQP queue sends, one returned chunk can contain multiple objects from the same dependency level, so callers should not assume one returned element per STIX object.
+
 #### **Reading from the OpenCTI platform**
 
 Read queries to the OpenCTI platform can be achieved using the API and the STIX IDs can be attached to reports to create the relationship between those two entities.

@@ -154,6 +154,27 @@ class TestBatchCallbackWrapper(TestCase):
         finally:
             wrapper.stop()
 
+    def test_extract_batch_data_preserves_fifo_order_across_chunks(self):
+        helper = DummyHelper()
+        wrapper = BatchCallbackWrapper(
+            helper, lambda _batch_data: None, batch_size=3, batch_timeout=10.0
+        )
+        try:
+            with wrapper._lock:
+                wrapper.batch.extend(DummyMessage(f"{i}-0") for i in range(8))
+                wrapper.batch_start_time = time.time()
+                first = wrapper._extract_batch_data("size_limit")
+                second = wrapper._extract_batch_data("size_limit")
+                third = wrapper._extract_batch_data("size_limit")
+
+            self.assertEqual([m.id for m in first["events"]], ["0-0", "1-0", "2-0"])
+            self.assertEqual([m.id for m in second["events"]], ["3-0", "4-0", "5-0"])
+            self.assertEqual([m.id for m in third["events"]], ["6-0", "7-0"])
+            self.assertEqual(len(wrapper.batch), 0)
+            self.assertIsNone(wrapper.batch_start_time)
+        finally:
+            wrapper.stop()
+
     def test_shutdown_processes_remaining_messages(self):
         helper = DummyHelper()
         batches = []

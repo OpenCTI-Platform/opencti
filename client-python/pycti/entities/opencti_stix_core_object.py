@@ -1,5 +1,8 @@
 # coding: utf-8
 import json
+import time
+
+ASYNC_RULE_POLL_INTERVAL_SECONDS = 1.0
 
 
 class StixCoreObject:
@@ -1475,7 +1478,8 @@ class StixCoreObject:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Stix-Core-Objects with filters", {"filters": json.dumps(filters)}
+            "Listing Stix-Core-Objects with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -1519,7 +1523,7 @@ class StixCoreObject:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["stixCoreObjects"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixCoreObjects"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCoreObjects"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -1538,7 +1542,7 @@ class StixCoreObject:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["stixCoreObjects"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -1895,6 +1899,12 @@ class StixCoreObject:
         rule_id = kwargs.get("rule_id", None)
         element_id = kwargs.get("element_id", None)
         execution_id = kwargs.get("execution_id", None)
+        poll_interval_seconds = max(
+            0.0,
+            float(
+                kwargs.get("poll_interval_seconds", ASYNC_RULE_POLL_INTERVAL_SECONDS)
+            ),
+        )
         rule_apply_complete = False
         if element_id is not None and rule_id is not None and execution_id is not None:
             while not rule_apply_complete:
@@ -1916,6 +1926,8 @@ class StixCoreObject:
                     },
                 )
                 rule_apply_complete = result["data"]["ruleApplyAsync"]
+                if not rule_apply_complete and poll_interval_seconds > 0:
+                    time.sleep(poll_interval_seconds)
             self.opencti.app_logger.info(
                 "Apply rule async stix_core_object complete", {"id": element_id}
             )
@@ -1982,6 +1994,12 @@ class StixCoreObject:
         """
         element_id = kwargs.get("element_id", None)
         execution_id = kwargs.get("execution_id", None)
+        poll_interval_seconds = max(
+            0.0,
+            float(
+                kwargs.get("poll_interval_seconds", ASYNC_RULE_POLL_INTERVAL_SECONDS)
+            ),
+        )
         rule_rescan_complete = False
         if element_id is not None and execution_id is not None:
             while not rule_rescan_complete:
@@ -1989,17 +2007,19 @@ class StixCoreObject:
                     "Apply rules rescan stix_core_object", {"id": element_id}
                 )
                 query = """
-                    mutation StixCoreRescanRules($elementId: ID!) {
-                        rulesRescanAsync(elementId: $elementId, $executionId: ID!)
+                    mutation StixCoreRescanRules($elementId: ID!, $executionId: ID!) {
+                        rulesRescanAsync(elementId: $elementId, executionId: $executionId)
                     }
                 """
                 result = self.opencti.query(
                     query, {"elementId": element_id, "executionId": execution_id}
                 )
                 rule_rescan_complete = result["data"]["rulesRescanAsync"]
-                self.opencti.app_logger.info(
-                    "Rescan rule async stix_core_object complete", {"id": element_id}
-                )
+                if not rule_rescan_complete and poll_interval_seconds > 0:
+                    time.sleep(poll_interval_seconds)
+            self.opencti.app_logger.info(
+                "Rescan rule async stix_core_object complete", {"id": element_id}
+            )
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot rescan rule, missing parameters: id"

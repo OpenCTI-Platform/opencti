@@ -3,6 +3,7 @@
 import json
 import os
 import uuid
+from contextlib import nullcontext
 
 import magic
 from stix2.canonicalization.Canonicalize import canonicalize
@@ -150,7 +151,8 @@ class ExternalReference:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing External-Reference with filters", {"filters": json.dumps(filters)}
+            "Listing External-Reference with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -191,7 +193,7 @@ class ExternalReference:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["externalReferences"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug(
@@ -210,7 +212,7 @@ class ExternalReference:
                 data = self.opencti.process_multiple(
                     result["data"]["externalReferences"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -382,31 +384,35 @@ class ExternalReference:
                     }
                 }
              """
+            data_context = nullcontext(data)
             if data is None:
-                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                data_context = open(file_name, "rb")
             self.opencti.app_logger.info(
                 "Uploading a file in External-Reference",
                 {"file": final_file_name, "id": id},
             )
-            return self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "file": (self.opencti.file(final_file_name, data, mime_type)),
-                    "fileMarkings": file_markings,
-                    "version": version,
-                    "noTriggerImport": (
-                        no_trigger_import
-                        if isinstance(no_trigger_import, bool)
-                        else no_trigger_import == "True"
-                    ),
-                    "embedded": embedded,
-                },
-            )
+            with data_context as upload_data:
+                return self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "file": (
+                            self.opencti.file(final_file_name, upload_data, mime_type)
+                        ),
+                        "fileMarkings": file_markings,
+                        "version": version,
+                        "noTriggerImport": (
+                            no_trigger_import
+                            if isinstance(no_trigger_import, bool)
+                            else no_trigger_import == "True"
+                        ),
+                        "embedded": embedded,
+                    },
+                )
         else:
             self.opencti.app_logger.error(
                 "[opencti_external_reference] Missing parameters: id or file_name"

@@ -108,7 +108,8 @@ class MarkingDefinition:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Marking-Definitions with filters", {"filters": json.dumps(filters)}
+            "Listing Marking-Definitions with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -361,14 +362,12 @@ class MarkingDefinition:
                 definition = "TLP:CLEAR"
 
             # Search in extensions
-            if (
-                "x_opencti_order" not in stix_object
-                and self.opencti.get_attribute_in_extension("order", stix_object)
-                is not None
-            ):
-                stix_object["x_opencti_order"] = (
-                    self.opencti.get_attribute_in_extension("order", stix_object)
+            if "x_opencti_order" not in stix_object:
+                extension_order = self.opencti.get_attribute_in_extension(
+                    "order", stix_object
                 )
+                if extension_order is not None:
+                    stix_object["x_opencti_order"] = extension_order
             if "x_opencti_color" not in stix_object:
                 stix_object["x_opencti_color"] = (
                     self.opencti.get_attribute_in_extension("color", stix_object)

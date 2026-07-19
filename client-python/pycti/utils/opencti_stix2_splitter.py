@@ -16,7 +16,7 @@ from pycti.utils.opencti_stix2_utils import (
 
 OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
-supported_types = (
+supported_types = frozenset(
     SUPPORTED_STIX_ENTITY_OBJECTS  # entities
     + SUPPORTED_INTERNAL_OBJECTS  # internals
     + list(STIX_CYBER_OBSERVABLE_MAPPING.keys())  # observables
@@ -33,8 +33,8 @@ def is_id_supported(key):
     :return: True if the ID type is supported, False otherwise
     :rtype: bool
     """
-    if "--" in key:
-        id_type = key.split("--")[0]
+    id_type, separator, _ = key.partition("--")
+    if separator:
         return id_type in supported_types
     # If not a stix id, don't try to filter
     return True
@@ -47,7 +47,7 @@ class OpenCTIStix2Splitter:
     handling dependencies between objects and deduplicating references.
     """
 
-    def __init__(self):
+    def __init__(self, external_reference_id_generator=None):
         """Initialize the STIX2 bundle splitter.
 
         Sets up internal caches for tracking processed elements,
@@ -55,8 +55,37 @@ class OpenCTIStix2Splitter:
         """
         self.cache_index = {}
         self.cache_refs = {}
+        self.external_reference_ids = {}
+        self._external_reference_id_generator = (
+            external_reference_id_generator or external_reference_generate_id
+        )
         self.elements = []
         self.incompatible_items = []
+
+    def _get_external_reference_id(self, reference):
+        url = reference.get("url")
+        source_name = reference.get("source_name")
+        external_id = reference.get("external_id")
+        cache_key = (url, source_name, external_id)
+        if not (
+            (url is None or isinstance(url, str))
+            and (source_name is None or isinstance(source_name, str))
+            and (external_id is None or isinstance(external_id, str))
+        ):
+            return self._external_reference_id_generator(
+                url=url,
+                source_name=source_name,
+                external_id=external_id,
+            )
+        if cache_key not in self.external_reference_ids:
+            self.external_reference_ids[cache_key] = (
+                self._external_reference_id_generator(
+                    url=url,
+                    source_name=source_name,
+                    external_id=external_id,
+                )
+            )
+        return self.external_reference_ids[cache_key]
 
     def get_internal_ids_in_extension(self, item):
         """Get internal IDs from OpenCTI extensions in a STIX object.
@@ -89,7 +118,7 @@ class OpenCTIStix2Splitter:
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
         :param parent_acc: accumulator of parent IDs to prevent circular references
-        :type parent_acc: list
+        :type parent_acc: set
         :return: number of dependencies enlisted
         :rtype: int
         """
@@ -103,13 +132,14 @@ class OpenCTIStix2Splitter:
 
         item = raw_data[item_id]
         if self.cache_refs.get(item_id) is None:
-            self.cache_refs[item_id] = []
-        for key in list(item.keys()):
+            self.cache_refs[item_id] = set()
+        for key in tuple(item):
             value = item[key]
             # Recursive enlist for every refs
-            if key.endswith("_refs") and item[key] is not None:
+            if key.endswith("_refs") and value is not None:
                 to_keep = []
-                for element_ref in item[key]:
+                to_keep_ids = set()
+                for element_ref in value:
                     # We need to check if this ref is not already a reference
                     is_missing_ref = raw_data.get(element_ref) is None
                     must_be_cleaned = is_missing_ref and cleanup_inconsistent_bundle
@@ -125,14 +155,17 @@ class OpenCTIStix2Splitter:
                         and element_ref != item_id
                         and not_dependency_ref
                     ):
-                        self.cache_refs[item_id].append(element_ref)
+                        self.cache_refs[item_id].add(element_ref)
+                        parent_acc.add(element_ref)
                         nb_deps += self.enlist_element(
                             element_ref,
                             raw_data,
                             cleanup_inconsistent_bundle,
-                            parent_acc + [element_ref],
+                            parent_acc,
                         )
-                        if element_ref not in to_keep:
+                        parent_acc.remove(element_ref)
+                        if element_ref not in to_keep_ids:
+                            to_keep_ids.add(element_ref)
                             to_keep.append(element_ref)
                     item[key] = to_keep
             elif key.endswith("_ref"):
@@ -151,28 +184,26 @@ class OpenCTIStix2Splitter:
                     and value != item_id
                     and not_dependency_ref
                 ):
-                    self.cache_refs[item_id].append(value)
+                    self.cache_refs[item_id].add(value)
+                    parent_acc.add(value)
                     nb_deps += self.enlist_element(
                         value,
                         raw_data,
                         cleanup_inconsistent_bundle,
-                        parent_acc + [value],
+                        parent_acc,
                     )
+                    parent_acc.remove(value)
                 else:
                     item[key] = None
             # Case for embedded elements (deduplicating and cleanup)
-            elif key == "external_references" and item[key] is not None:
+            elif key == "external_references" and value is not None:
                 # specific case of splitting external references
                 # reference_ids = []
                 deduplicated_references = []
                 deduplicated_references_cache = {}
-                references = item[key]
+                references = value
                 for reference in references:
-                    reference_id = external_reference_generate_id(
-                        url=reference.get("url"),
-                        source_name=reference.get("source_name"),
-                        external_id=reference.get("external_id"),
-                    )
+                    reference_id = self._get_external_reference_id(reference)
                     if (
                         reference_id is not None
                         and deduplicated_references_cache.get(reference_id) is None
@@ -187,12 +218,12 @@ class OpenCTIStix2Splitter:
                         #     reference_ids.append(reference_id)
                         # nb_deps += self.enlist_element(reference_id, raw_data)
                 item[key] = deduplicated_references
-            elif key == "kill_chain_phases" and item[key] is not None:
+            elif key == "kill_chain_phases" and value is not None:
                 # specific case of splitting kill_chain phases
                 # kill_chain_ids = []
                 deduplicated_kill_chain = []
                 deduplicated_kill_chain_cache = {}
-                kill_chains = item[key]
+                kill_chains = value
                 for kill_chain in kill_chains:
                     kill_chain_id = kill_chain_phase_generate_id(
                         kill_chain_name=kill_chain.get("kill_chain_name"),
@@ -246,6 +277,8 @@ class OpenCTIStix2Splitter:
         use_json=True,
         event_version=None,
         cleanup_inconsistent_bundle=False,
+        max_bundle_objects=1,
+        max_bundle_bytes=None,
     ) -> Tuple[int, list, list]:
         """Split a valid STIX2 bundle into a list of bundles.
 
@@ -257,9 +290,27 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
+        :param max_bundle_objects: maximum same-dependency-level objects per bundle
+        :type max_bundle_objects: int
+        :param max_bundle_bytes: maximum serialized bytes per bundle when more than
+            one object can be grouped; a single oversized object is emitted as-is
+        :type max_bundle_bytes: int or None
         :return: tuple of (number of expectations, incompatible items, list of bundles)
         :rtype: Tuple[int, list, list]
         """
+        if (
+            isinstance(max_bundle_objects, bool)
+            or not isinstance(max_bundle_objects, int)
+            or max_bundle_objects <= 0
+        ):
+            raise ValueError("max_bundle_objects must be a positive integer")
+        if max_bundle_bytes is not None and (
+            isinstance(max_bundle_bytes, bool)
+            or not isinstance(max_bundle_bytes, int)
+            or max_bundle_bytes <= 0
+        ):
+            raise ValueError("max_bundle_bytes must be a positive integer")
+
         if use_json:
             try:
                 bundle_data = json.loads(bundle)
@@ -281,7 +332,9 @@ class OpenCTIStix2Splitter:
             for internal_id in self.get_internal_ids_in_extension(item):
                 raw_data[internal_id] = item
         for item in bundle_data["objects"]:
-            self.enlist_element(item["id"], raw_data, cleanup_inconsistent_bundle, [])
+            self.enlist_element(
+                item["id"], raw_data, cleanup_inconsistent_bundle, set()
+            )
 
         # Build the bundles
         bundles = []
@@ -298,22 +351,96 @@ class OpenCTIStix2Splitter:
 
         self.elements.sort(key=by_dep_size)
 
-        elements_with_deps = list(
-            map(lambda e: {"nb_deps": e["nb_deps"], "elements": [e]}, self.elements)
-        )
-
         number_expectations = 0
-        for entity in elements_with_deps:
-            number_expectations += len(entity["elements"])
-            bundles.append(
+        chunk_items = []
+        chunk_dep_size = None
+
+        def append_chunk(bundle_seq, items):
+            if max_bundle_bytes is None:
+                bundles.append(
+                    self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        items,
+                        use_json,
+                        event_version,
+                    )
+                )
+                return
+
+            serialized_bundle = self.stix2_create_bundle(
+                bundle_data["id"], bundle_seq, items, True, event_version
+            )
+            # json.dumps() keeps ensure_ascii=True, so string length is byte length.
+            if len(items) == 1 or len(serialized_bundle) <= max_bundle_bytes:
+                bundles.append(
+                    serialized_bundle
+                    if use_json
+                    else self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        items,
+                        False,
+                        event_version,
+                    )
+                )
+                return
+
+            empty_bundle_size = len(
                 self.stix2_create_bundle(
-                    bundle_data["id"],
-                    entity["nb_deps"],
-                    entity["elements"],
-                    use_json,
-                    event_version,
+                    bundle_data["id"], bundle_seq, [], True, event_version
                 )
             )
+            bounded_items = []
+            bounded_serialized_bytes = empty_bundle_size
+            for item in items:
+                item_serialized_bytes = len(json.dumps(item))
+                projected_size = (
+                    bounded_serialized_bytes
+                    + (2 if bounded_items else 0)
+                    + item_serialized_bytes
+                )
+                if bounded_items and projected_size > max_bundle_bytes:
+                    bundles.append(
+                        self.stix2_create_bundle(
+                            bundle_data["id"],
+                            bundle_seq,
+                            bounded_items,
+                            use_json,
+                            event_version,
+                        )
+                    )
+                    bounded_items = []
+                    bounded_serialized_bytes = empty_bundle_size
+                bounded_items.append(item)
+                if len(bounded_items) > 1:
+                    bounded_serialized_bytes += 2
+                bounded_serialized_bytes += item_serialized_bytes
+            if bounded_items:
+                bundles.append(
+                    self.stix2_create_bundle(
+                        bundle_data["id"],
+                        bundle_seq,
+                        bounded_items,
+                        use_json,
+                        event_version,
+                    )
+                )
+
+        for element in self.elements:
+            number_expectations += 1
+            if chunk_items and (
+                element["nb_deps"] != chunk_dep_size
+                or len(chunk_items) >= max_bundle_objects
+            ):
+                append_chunk(chunk_dep_size, chunk_items)
+                chunk_items = []
+            if not chunk_items:
+                chunk_dep_size = element["nb_deps"]
+            chunk_items.append(element)
+
+        if chunk_items:
+            append_chunk(chunk_dep_size, chunk_items)
 
         return (
             number_expectations,

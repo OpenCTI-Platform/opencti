@@ -6,6 +6,14 @@ from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+_THREAT_ACTOR_INDIVIDUAL_EXTENSION_FIELDS = (
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_workflow_id", "workflow_id"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("opencti_upsert_operations", "opencti_upsert_operations"),
+)
+
 
 class ThreatActorIndividual:
     """Main ThreatActorIndividual class for OpenCTI
@@ -224,7 +232,7 @@ class ThreatActorIndividual:
 
         self.opencti.app_logger.info(
             "Listing Threat-Actors-Individual with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -264,7 +272,7 @@ class ThreatActorIndividual:
             data = self.opencti.process_multiple(
                 result["data"]["threatActorsIndividuals"]
             )
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["threatActorsIndividuals"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["threatActorsIndividuals"]["pageInfo"][
                     "endCursor"
@@ -286,7 +294,7 @@ class ThreatActorIndividual:
                 data = self.opencti.process_multiple(
                     result["data"]["threatActorsIndividuals"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -520,29 +528,9 @@ class ThreatActorIndividual:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-            # Search in extensions
-            if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
-            if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
-            if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
-            if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
-            if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
-                )
+            self.opencti.copy_attributes_from_extension(
+                _THREAT_ACTOR_INDIVIDUAL_EXTENSION_FIELDS, stix_object
+            )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(

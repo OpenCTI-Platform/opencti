@@ -69,7 +69,8 @@ class Vocabulary:
         """
         filters = kwargs.get("filters", None)
         self.opencti.app_logger.info(
-            "Listing Vocabularies with filters", {"filters": json.dumps(filters)}
+            "Listing Vocabularies with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """

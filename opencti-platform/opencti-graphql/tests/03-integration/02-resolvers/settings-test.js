@@ -9,6 +9,7 @@ const ABOUT_QUERY = gql`
   query about {
     about {
       version
+      api_features
       dependencies {
         name
         version
@@ -58,6 +59,7 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
+    expect(about.api_features).toContain('BULK_REF_RELATION_VALIDATION');
     expect(about.dependencies.length).toEqual(4);
   });
   it('should settings information', async () => {

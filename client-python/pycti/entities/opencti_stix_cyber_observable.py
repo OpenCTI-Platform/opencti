@@ -1,10 +1,12 @@
 # coding: utf-8
 
-import base64
 import json
 import os
+from contextlib import nullcontext
 
 import magic
+
+from pycti.utils.opencti_file_utils import decode_base64_file_data
 
 from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
@@ -78,7 +80,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
         self.opencti.app_logger.info(
             "Listing StixCyberObservables with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -122,7 +124,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["stixCyberObservables"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixCyberObservables"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["stixCyberObservables"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.info(
@@ -143,7 +145,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 data = self.opencti.process_multiple(
                     result["data"]["stixCyberObservables"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -243,31 +245,35 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         }
                     }
                  """
+            data_context = nullcontext(data)
             if data is None:
-                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                data_context = open(file_name, "rb")
             self.opencti.app_logger.info(
                 "Uploading a file in Stix-Cyber-Observable",
                 {"file": final_file_name, "id": id},
             )
-            return self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "file": (self.opencti.file(final_file_name, data, mime_type)),
-                    "fileMarkings": file_markings,
-                    "version": version,
-                    "noTriggerImport": (
-                        no_trigger_import
-                        if isinstance(no_trigger_import, bool)
-                        else no_trigger_import == "True"
-                    ),
-                    "embedded": embedded,
-                },
-            )
+            with data_context as upload_data:
+                return self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "file": (
+                            self.opencti.file(final_file_name, upload_data, mime_type)
+                        ),
+                        "fileMarkings": file_markings,
+                        "version": version,
+                        "noTriggerImport": (
+                            no_trigger_import
+                            if isinstance(no_trigger_import, bool)
+                            else no_trigger_import == "True"
+                        ),
+                        "embedded": embedded,
+                    },
+                )
         else:
             self.opencti.app_logger.error(
                 "[opencti_stix_cyber_observable] Missing parameters: id or file_name"
@@ -349,48 +355,56 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             )
         if type is None:
             return
-        if type.lower() == "file":
+        normalized_type = type.lower()
+        if normalized_type == "file":
             type = "StixFile"
-        elif type.lower() == "ipv4-addr":
+        elif normalized_type == "ipv4-addr":
             type = "IPv4-Addr"
-        elif type.lower() == "ipv6-addr":
+        elif normalized_type == "ipv6-addr":
             type = "IPv6-Addr"
-        elif type.lower() == "persona":
+        elif normalized_type == "persona":
             type = "Persona"
-        elif type.lower() == "ssh-key":
+        elif normalized_type == "ssh-key":
             type = "SSH-Key"
-        elif type.lower() == "ai-prompt":
+        elif normalized_type == "ai-prompt":
             type = "AI-Prompt"
-        elif type.lower() == "hostname" or type.lower() == "x-opencti-hostname":
+        elif normalized_type == "hostname" or normalized_type == "x-opencti-hostname":
             type = "Hostname"
-        elif type.lower() == "payment-card" or type.lower() == "x-opencti-payment-card":
+        elif (
+            normalized_type == "payment-card"
+            or normalized_type == "x-opencti-payment-card"
+        ):
             type = "Payment-Card"
-        elif type.lower() == "credential" or type.lower() == "x-opencti-credential":
+        elif (
+            normalized_type == "credential" or normalized_type == "x-opencti-credential"
+        ):
             type = "Credential"
         elif (
-            type.lower() == "tracking-number"
-            or type.lower() == "x-opencti-tracking-number"
+            normalized_type == "tracking-number"
+            or normalized_type == "x-opencti-tracking-number"
         ):
             type = "Tracking-Number"
         elif (
-            type.lower() == "cryptocurrency-wallet"
-            or type.lower() == "x-opencti-cryptocurrency-wallet"
+            normalized_type == "cryptocurrency-wallet"
+            or normalized_type == "x-opencti-cryptocurrency-wallet"
         ):
             type = "Cryptocurrency-Wallet"
-        elif type.lower() == "user-agent" or type.lower() == "x-opencti-user-agent":
+        elif (
+            normalized_type == "user-agent" or normalized_type == "x-opencti-user-agent"
+        ):
             type = "User-Agent"
         elif (
-            type.lower() == "cryptographic-key"
-            or type.lower() == "x-opencti-cryptographic-key"
+            normalized_type == "cryptographic-key"
+            or normalized_type == "x-opencti-cryptographic-key"
         ):
             type = "Cryptographic-Key"
-        elif type.lower() == "imei" or type.lower() == "x-opencti-imei":
+        elif normalized_type == "imei" or normalized_type == "x-opencti-imei":
             type = "IMEI"
-        elif type.lower() == "iccid" or type.lower() == "x-opencti-iccid":
+        elif normalized_type == "iccid" or normalized_type == "x-opencti-iccid":
             type = "ICCID"
-        elif type.lower() == "imsi" or type.lower() == "x-opencti-imsi":
+        elif normalized_type == "imsi" or normalized_type == "x-opencti-imsi":
             type = "IMSI"
-        elif type.lower() == "text" or type.lower() == "x-opencti-text":
+        elif normalized_type == "text" or normalized_type == "x-opencti-text":
             type = "Text"
 
         if "x_opencti_description" in observable_data:
@@ -405,10 +419,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
 
         if "x_opencti_score" in observable_data:
             x_opencti_score = observable_data["x_opencti_score"]
-        elif (
-            self.opencti.get_attribute_in_extension("score", observable_data)
-            is not None
-        ):
+        else:
             x_opencti_score = self.opencti.get_attribute_in_extension(
                 "score", observable_data
             )
@@ -697,18 +708,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "Artifact":
-                if (
-                    "x_opencti_additional_names" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
-                        "additional_names", observable_data
-                    )
-                    is not None
-                ):
-                    observable_data["x_opencti_additional_names"] = (
+                if "x_opencti_additional_names" not in observable_data:
+                    extension_additional_names = (
                         self.opencti.get_attribute_in_extension(
                             "additional_names", observable_data
                         )
                     )
+                    if extension_additional_names is not None:
+                        observable_data["x_opencti_additional_names"] = (
+                            extension_additional_names
+                        )
                 input_variables["Artifact"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
                     "mime_type": (
@@ -738,18 +747,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "StixFile":
-                if (
-                    "x_opencti_additional_names" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
-                        "additional_names", observable_data
-                    )
-                    is not None
-                ):
-                    observable_data["x_opencti_additional_names"] = (
+                if "x_opencti_additional_names" not in observable_data:
+                    extension_additional_names = (
                         self.opencti.get_attribute_in_extension(
                             "additional_names", observable_data
                         )
                     )
+                    if extension_additional_names is not None:
+                        observable_data["x_opencti_additional_names"] = (
+                            extension_additional_names
+                        )
                 input_variables["StixFile"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
                     "size": (
@@ -935,7 +942,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "SSH-Key" or type.lower() == "ssh-key":
+            elif type == "SSH-Key" or normalized_type == "ssh-key":
                 input_variables["SSHKey"] = {
                     "key_type": (
                         observable_data["key_type"]
@@ -1113,18 +1120,12 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif type == "Software":
-                if (
-                    "x_opencti_product" not in observable_data
-                    and self.opencti.get_attribute_in_extension(
+                if "x_opencti_product" not in observable_data:
+                    extension_product = self.opencti.get_attribute_in_extension(
                         "x_opencti_product", observable_data
                     )
-                    is not None
-                ):
-                    observable_data["x_opencti_product"] = (
-                        self.opencti.get_attribute_in_extension(
-                            "x_opencti_product", observable_data
-                        )
-                    )
+                    if extension_product is not None:
+                        observable_data["x_opencti_product"] = extension_product
                 input_variables["Software"] = {
                     "name": (
                         observable_data["name"] if "name" in observable_data else None
@@ -1424,7 +1425,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "Payment-Card" or type.lower() == "x-opencti-payment-card":
+            elif type == "Payment-Card" or normalized_type == "x-opencti-payment-card":
                 input_variables["PaymentCard"] = {
                     "card_number": (
                         observable_data["card_number"]
@@ -1449,7 +1450,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 }
             elif (
                 type == "Cryptocurrency-Wallet"
-                or type.lower() == "x-opencti-cryptocurrency-wallet"
+                or normalized_type == "x-opencti-cryptocurrency-wallet"
             ):
                 input_variables["CryptocurrencyWallet"] = {
                     "value": (
@@ -1460,7 +1461,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "Credential" or type.lower() == "x-opencti-credential":
+            elif type == "Credential" or normalized_type == "x-opencti-credential":
                 input_variables["Credential"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
@@ -1471,7 +1472,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "embedded": embedded,
                 }
             elif (
-                type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
+                type == "Tracking-Number"
+                or normalized_type == "x-opencti-tracking-number"
             ):
                 input_variables["TrackingNumber"] = {
                     "value": (
@@ -1482,19 +1484,19 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
-            elif type == "IMEI" or type.lower() == "x-opencti-imei":
+            elif type == "IMEI" or normalized_type == "x-opencti-imei":
                 input_variables["IMEI"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
                 }
-            elif type == "ICCID" or type.lower() == "x-opencti-iccid":
+            elif type == "ICCID" or normalized_type == "x-opencti-iccid":
                 input_variables["ICCID"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
                     ),
                 }
-            elif type == "IMSI" or type.lower() == "x-opencti-imsi":
+            elif type == "IMSI" or normalized_type == "x-opencti-imsi":
                 input_variables["IMSI"] = {
                     "value": (
                         observable_data["value"] if "value" in observable_data else None
@@ -1502,17 +1504,18 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 }
             result = self.opencti.query(query, input_variables)
             if "payload_bin" in observable_data and "mime_type" in observable_data:
-                self.add_file(
-                    id=result["data"]["stixCyberObservableAdd"]["id"],
-                    file_name=(
-                        observable_data["x_opencti_additional_names"][0]
-                        if "x_opencti_additional_names" in observable_data
-                        and len(observable_data["x_opencti_additional_names"]) > 0
-                        else "artifact.bin"
-                    ),
-                    data=base64.b64decode(observable_data["payload_bin"]),
-                    mime_type=observable_data["mime_type"],
-                )
+                with decode_base64_file_data(observable_data["payload_bin"]) as data:
+                    self.add_file(
+                        id=result["data"]["stixCyberObservableAdd"]["id"],
+                        file_name=(
+                            observable_data["x_opencti_additional_names"][0]
+                            if "x_opencti_additional_names" in observable_data
+                            and len(observable_data["x_opencti_additional_names"]) > 0
+                            else "artifact.bin"
+                        ),
+                        data=data,
+                        mime_type=observable_data["mime_type"],
+                    )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
             )
@@ -1661,23 +1664,27 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     }
                 }
             """
+            data_context = nullcontext(data)
             if data is None:
-                data = open(file_name, "rb")
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                data_context = open(file_name, "rb")
 
-            result = self.opencti.query(
-                query,
-                {
-                    "file": (self.opencti.file(final_file_name, data, mime_type)),
-                    "x_opencti_description": x_opencti_description,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "objectLabel": object_label,
-                },
-            )
+            with data_context as upload_data:
+                result = self.opencti.query(
+                    query,
+                    {
+                        "file": (
+                            self.opencti.file(final_file_name, upload_data, mime_type)
+                        ),
+                        "x_opencti_description": x_opencti_description,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                    },
+                )
             return self.opencti.process_multiple_fields(
                 result["data"]["artifactImport"]
             )

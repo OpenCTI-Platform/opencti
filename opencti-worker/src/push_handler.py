@@ -28,6 +28,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     bundles_global_counter: Any
     bundles_processing_time_gauge: Any
     objects_max_refs: int
+    bundle_split_max_objects: int
+    bundle_split_max_bytes: int
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -174,7 +176,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             stix2_splitter = OpenCTIStix2Splitter()
                             expectations, _, bundles = (
                                 stix2_splitter.split_bundle_with_expectations(
-                                    content, False, event_version
+                                    content,
+                                    False,
+                                    event_version,
+                                    max_bundle_objects=self.bundle_split_max_objects,
+                                    max_bundle_bytes=self.bundle_split_max_bytes,
                                 )
                             )
                             # Add expectations to the work
@@ -184,6 +190,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 )
                                 if not work_alive:
                                     return "ack"
+                            if len(bundles) < expectations:
+                                data["no_split"] = True
                             # For each split bundle, send it to the same queue
                             for bundle in bundles:
                                 self.send_bundle_to_specific_queue(

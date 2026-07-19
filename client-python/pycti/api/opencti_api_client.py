@@ -10,10 +10,14 @@ import shutil
 import signal
 import tempfile
 import threading
+import uuid
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any, Dict, Optional, Tuple, Union
 
 import magic
 import requests
+from urllib3.fields import RequestField
 
 from pycti import __version__
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
@@ -90,6 +94,8 @@ _PROXY_CERT_BUNDLE = None
 _PROXY_CERT_DIR = None
 _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
+API_FEATURE_BULK_REF_RELATION_VALIDATION = "BULK_REF_RELATION_VALIDATION"
+API_FEATURE_BULK_REF_RELATION_DELETE = "BULK_REF_RELATION_DELETE"
 
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
@@ -153,6 +159,109 @@ class File:
         self.name = name
         self.data = data
         self.mime = mime
+
+
+class _MultipartStream:
+    """Streaming multipart body for GraphQL file uploads."""
+
+    _CHUNK_SIZE = 1024 * 1024
+
+    def __init__(self, fields):
+        self.boundary = uuid.uuid4().hex
+        self.content_type = f"multipart/form-data; boundary={self.boundary}"
+        self._parts = []
+        self._owned_data = []
+        self._length = 0
+
+        try:
+            for name, value in fields:
+                if isinstance(value, tuple):
+                    filename, data, mime = value
+                    data, data_length, owns_data = self._normalize_data(data)
+                    field = RequestField(name=name, data=None, filename=filename)
+                    field.make_multipart(content_type=mime)
+                else:
+                    data, data_length, owns_data = self._normalize_data(value)
+                    field = RequestField(name=name, data=None)
+                    field.make_multipart()
+
+                if owns_data:
+                    self._owned_data.append(data)
+                prefix = (f"--{self.boundary}\r\n" + field.render_headers()).encode(
+                    "utf-8"
+                )
+                suffix = b"\r\n"
+                self._parts.append((prefix, data, suffix))
+                self._length += len(prefix) + data_length + len(suffix)
+
+            self._closing_boundary = f"--{self.boundary}--\r\n".encode("ascii")
+            self._length += len(self._closing_boundary)
+        except Exception:
+            self.close()
+            raise
+
+    @classmethod
+    def _normalize_data(cls, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8", "replace")
+        if isinstance(data, memoryview):
+            data = data.tobytes()
+        if data is None:
+            data = b""
+        if isinstance(data, (bytes, bytearray)):
+            return data, len(data), False
+        if hasattr(data, "read"):
+            try:
+                position = data.tell()
+                data.seek(0, os.SEEK_END)
+                data_length = data.tell() - position
+                data.seek(position)
+                return data, data_length, False
+            except (AttributeError, OSError, io.UnsupportedOperation):
+                buffered = tempfile.SpooledTemporaryFile(
+                    max_size=cls._CHUNK_SIZE, mode="w+b"
+                )
+                try:
+                    while True:
+                        chunk = data.read(cls._CHUNK_SIZE)
+                        if not chunk:
+                            break
+                        if isinstance(chunk, str):
+                            chunk = chunk.encode("utf-8", "replace")
+                        buffered.write(chunk)
+                    data_length = buffered.tell()
+                    buffered.seek(0)
+                    return buffered, data_length, True
+                except Exception:
+                    buffered.close()
+                    raise
+        raise TypeError(f"Unsupported multipart data type: {type(data)!r}")
+
+    def close(self):
+        for data in self._owned_data:
+            data.close()
+        self._owned_data.clear()
+
+    def __len__(self):
+        return self._length
+
+    def __iter__(self):
+        for prefix, data, suffix in self._parts:
+            yield prefix
+            if isinstance(data, bytes):
+                yield data
+            elif isinstance(data, bytearray):
+                yield bytes(data)
+            else:
+                while True:
+                    chunk = data.read(self._CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    if isinstance(chunk, str):
+                        chunk = chunk.encode("utf-8", "replace")
+                    yield chunk
+            yield suffix
+        yield self._closing_boundary
 
 
 class OpenCTIApiClient:
@@ -262,6 +371,9 @@ class OpenCTIApiClient:
         self.request_headers = build_request_headers(
             token, custom_headers, self.app_logger, provider
         )
+        self._request_header_overrides = ContextVar(
+            f"opencti_request_header_overrides_{id(self)}", default=None
+        )
         self.session = requests.session()
         self.session_requests_timeout = requests_timeout
         # Define the dependencies
@@ -335,8 +447,9 @@ class OpenCTIApiClient:
         self.user = User(self)
         self.settings = Settings(self)
 
-        # Keep track of draft context
-        self.draft_id = ""
+        self._process_multiple_fields_attribute_cache = {}
+        self._api_features = None
+        self._api_features_lock = threading.Lock()
 
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
@@ -491,7 +604,7 @@ class OpenCTIApiClient:
         :param applicant_id: the ID of the user to impersonate
         :type applicant_id: str
         """
-        self.request_headers["opencti-applicant-id"] = applicant_id
+        self._set_request_header("opencti-applicant-id", applicant_id)
 
     def set_playbook_id_header(self, playbook_id):
         """Set the playbook ID header for tracking playbook execution.
@@ -499,7 +612,7 @@ class OpenCTIApiClient:
         :param playbook_id: the ID of the playbook being executed
         :type playbook_id: str
         """
-        self.request_headers["opencti-playbook-id"] = playbook_id
+        self._set_request_header("opencti-playbook-id", playbook_id)
 
     def set_event_id(self, event_id):
         """Set the event ID header for event tracking.
@@ -507,7 +620,53 @@ class OpenCTIApiClient:
         :param event_id: the ID of the event
         :type event_id: str
         """
-        self.request_headers["opencti-event-id"] = event_id
+        self._set_request_header("opencti-event-id", event_id)
+
+    def _ensure_request_header_context(self):
+        if not hasattr(self, "_request_header_overrides"):
+            self._request_header_overrides = ContextVar(
+                f"opencti_request_header_overrides_{id(self)}", default=None
+            )
+
+    def _get_request_header_overrides(self):
+        self._ensure_request_header_context()
+        return self._request_header_overrides.get()
+
+    def _get_current_request_headers(self):
+        request_header_overrides = self._get_request_header_overrides()
+        if not request_header_overrides:
+            return self.request_headers
+        request_headers = self.request_headers.copy()
+        request_headers.update(request_header_overrides)
+        return request_headers
+
+    def _set_request_header(self, header_name, value):
+        request_header_overrides = self._get_request_header_overrides()
+        next_request_header_overrides = (
+            {} if request_header_overrides is None else request_header_overrides.copy()
+        )
+        next_request_header_overrides[header_name] = value
+        self._request_header_overrides.set(next_request_header_overrides)
+
+    @contextmanager
+    def request_context(self):
+        """Run one logical request with isolated contextual header overrides."""
+
+        self._ensure_request_header_context()
+        token = self._request_header_overrides.set({})
+        try:
+            yield
+        finally:
+            self._request_header_overrides.reset(token)
+
+    @property
+    def draft_id(self):
+        draft_id = self._get_current_request_headers().get("opencti-draft-id")
+        return "" if draft_id is None else draft_id
+
+    @draft_id.setter
+    def draft_id(self, draft_id):
+        self._set_request_header("opencti-draft-id", draft_id)
 
     def get_draft_id(self):
         """Get the current draft ID.
@@ -515,8 +674,6 @@ class OpenCTIApiClient:
         :return: the current draft ID or empty string if not set
         :rtype: str
         """
-        if self.draft_id is None:
-            return ""
         return self.draft_id
 
     def set_draft_id(self, draft_id):
@@ -526,7 +683,6 @@ class OpenCTIApiClient:
         :type draft_id: str
         """
         self.draft_id = draft_id
-        self.request_headers["opencti-draft-id"] = draft_id
 
     def set_work_id(self, work_id):
         """Set the work ID header for work validation
@@ -534,7 +690,7 @@ class OpenCTIApiClient:
         :param work_id: the ID of the work
         :type work_id: str
         """
-        self.request_headers["opencti-work-id"] = work_id
+        self._set_request_header("opencti-work-id", work_id)
 
     def set_synchronized_upsert_header(self, synchronized):
         """Set the synchronized upsert header.
@@ -542,8 +698,8 @@ class OpenCTIApiClient:
         :param synchronized: whether upsert should be synchronized
         :type synchronized: bool
         """
-        self.request_headers["synchronized-upsert"] = (
-            "true" if synchronized is True else "false"
+        self._set_request_header(
+            "synchronized-upsert", "true" if synchronized is True else "false"
         )
 
     def set_previous_standard_header(self, previous_standard):
@@ -552,7 +708,7 @@ class OpenCTIApiClient:
         :param previous_standard: the previous standard ID
         :type previous_standard: str
         """
-        self.request_headers["previous-standard"] = previous_standard
+        self._set_request_header("previous-standard", previous_standard)
 
     def get_request_headers(self, hide_token=True):
         """Get a copy of current request headers.
@@ -562,7 +718,7 @@ class OpenCTIApiClient:
         :return: copy of request headers
         :rtype: dict
         """
-        request_headers_copy = self.request_headers.copy()
+        request_headers_copy = self._get_current_request_headers().copy()
         if hide_token and "Authorization" in request_headers_copy:
             request_headers_copy["Authorization"] = "*****"
         return request_headers_copy
@@ -573,8 +729,8 @@ class OpenCTIApiClient:
         :param retry_number: the current retry attempt number, or None to clear
         :type retry_number: int or None
         """
-        self.request_headers["opencti-retry-number"] = (
-            "" if retry_number is None else str(retry_number)
+        self._set_request_header(
+            "opencti-retry-number", "" if retry_number is None else str(retry_number)
         )
 
     def _extract_files(self, obj, path_prefix=""):
@@ -590,36 +746,65 @@ class OpenCTIApiClient:
         if isinstance(obj, File):
             return None, [{"key": path_prefix, "file": obj, "multiple": False}]
 
-        if (
-            isinstance(obj, list)
-            and len(obj) > 0
-            and all(map(lambda x: isinstance(x, File), obj))
-        ):
-            return [None] * len(obj), [
-                {"key": path_prefix, "file": obj, "multiple": True}
-            ]
-
         if isinstance(obj, dict):
-            cleaned = {}
+            cleaned = obj
             files_vars = []
             for key, val in obj.items():
+                if not isinstance(val, (File, dict, list)):
+                    continue
                 new_path = f"{path_prefix}.{key}" if path_prefix else key
                 cleaned_val, nested_files = self._extract_files(val, new_path)
-                cleaned[key] = cleaned_val
-                files_vars.extend(nested_files)
+                if nested_files:
+                    if cleaned is obj:
+                        cleaned = obj.copy()
+                    cleaned[key] = cleaned_val
+                    files_vars.extend(nested_files)
             return cleaned, files_vars
 
         if isinstance(obj, list):
-            cleaned = []
+            if (
+                len(obj) > 0
+                and isinstance(obj[0], File)
+                and all(isinstance(item, File) for item in obj)
+            ):
+                return [None] * len(obj), [
+                    {"key": path_prefix, "file": obj, "multiple": True}
+                ]
+
+            cleaned = obj
             files_vars = []
             for i, item in enumerate(obj):
+                if not isinstance(item, (File, dict, list)):
+                    continue
                 new_path = f"{path_prefix}.{i}" if path_prefix else str(i)
                 cleaned_item, nested_files = self._extract_files(item, new_path)
-                cleaned.append(cleaned_item)
-                files_vars.extend(nested_files)
+                if nested_files:
+                    if cleaned is obj:
+                        cleaned = obj.copy()
+                    cleaned[i] = cleaned_item
+                    files_vars.extend(nested_files)
             return cleaned, files_vars
 
         return obj, []
+
+    @staticmethod
+    def _contains_file(obj):
+        """Return whether a nested variable tree contains an upload File."""
+        if isinstance(obj, File):
+            return True
+        if isinstance(obj, dict):
+            for value in obj.values():
+                if isinstance(
+                    value, (File, dict, list)
+                ) and OpenCTIApiClient._contains_file(value):
+                    return True
+        elif isinstance(obj, list):
+            for item in obj:
+                if isinstance(
+                    item, (File, dict, list)
+                ) and OpenCTIApiClient._contains_file(item):
+                    return True
+        return False
 
     def query(self, query, variables=None, disable_impersonate=False):
         """Submit a query to the OpenCTI GraphQL API.
@@ -639,16 +824,24 @@ class OpenCTIApiClient:
         # Support for single or multiple upload
         # Batching or mixed upload or not supported
         # Recursively extract File objects from nested dictionaries
-        query_var, files_vars = self._extract_files(variables)
+        query_var, files_vars = (
+            self._extract_files(variables)
+            if variables
+            and (
+                (isinstance(query, str) and "Upload" in query)
+                or self._contains_file(variables)
+            )
+            else (variables, [])
+        )
 
-        query_headers = self.request_headers.copy()
+        query_headers = self._get_current_request_headers().copy()
         if disable_impersonate and "opencti-applicant-id" in query_headers:
             del query_headers["opencti-applicant-id"]
         # If yes, transform variable (file to null) and create multipart query
         if len(files_vars) > 0:
-            multipart_data = {
-                "operations": json.dumps({"query": query, "variables": query_var})
-            }
+            multipart_fields = [
+                ("operations", json.dumps({"query": query, "variables": query_var}))
+            ]
             # Build the multipart map
             map_index = 0
             file_vars = {}
@@ -663,10 +856,9 @@ class OpenCTIApiClient:
                 else:
                     file_vars[str(map_index)] = [var_name]
                     map_index += 1
-            multipart_data["map"] = json.dumps(file_vars)
+            multipart_fields.append(("map", json.dumps(file_vars)))
             # Add the files
             file_index = 0
-            multipart_files = []
             for file_var_item in files_vars:
                 files = file_var_item["file"]
                 is_multiple_files = file_var_item["multiple"]
@@ -686,7 +878,7 @@ class OpenCTIApiClient:
                                 str(file_index),
                                 (file.name, file.data, file.mime),
                             )
-                        multipart_files.append(file_multi)
+                        multipart_fields.append(file_multi)
                         file_index += 1
                 else:
                     if isinstance(files.data, str):
@@ -703,19 +895,23 @@ class OpenCTIApiClient:
                             str(file_index),
                             (files.name, files.data, files.mime),
                         )
-                    multipart_files.append(file_multi)
+                    multipart_fields.append(file_multi)
                     file_index += 1
-            # Send the multipart request
-            r = self.session.post(
-                self.api_url,
-                data=multipart_data,
-                files=multipart_files,
-                headers=query_headers,
-                verify=self.ssl_verify,
-                cert=self.cert,
-                proxies=self.proxies,
-                timeout=self.session_requests_timeout,
-            )
+            multipart_stream = _MultipartStream(fields=multipart_fields)
+            query_headers["Content-Type"] = multipart_stream.content_type
+            try:
+                # Send the multipart request
+                r = self.session.post(
+                    self.api_url,
+                    data=multipart_stream,
+                    headers=query_headers,
+                    verify=self.ssl_verify,
+                    cert=self.cert,
+                    proxies=self.proxies,
+                    timeout=self.session_requests_timeout,
+                )
+            finally:
+                multipart_stream.close()
         # If no
         else:
             r = self.session.post(
@@ -764,15 +960,19 @@ class OpenCTIApiClient:
         :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
         :rtype: str, bytes, or None
         """
+        stream_response = binary and serialize
+        r = None
         try:
-            r = self.session.get(
-                fetch_uri,
-                headers=self.request_headers,
-                verify=self.ssl_verify,
-                cert=self.cert,
-                proxies=self.proxies,
-                timeout=self.session_requests_timeout,
-            )
+            request_kwargs = {
+                "headers": self._get_current_request_headers(),
+                "verify": self.ssl_verify,
+                "cert": self.cert,
+                "proxies": self.proxies,
+                "timeout": self.session_requests_timeout,
+            }
+            if stream_response:
+                request_kwargs["stream"] = True
+            r = self.session.get(fetch_uri, **request_kwargs)
             # Check if request was successful
             if not r.ok:
                 self.app_logger.warning(
@@ -782,7 +982,7 @@ class OpenCTIApiClient:
                 return None
             if binary:
                 if serialize:
-                    return base64.b64encode(r.content).decode("utf-8")
+                    return self._serialize_binary_response_content(r)
                 return r.content
             if serialize:
                 return base64.b64encode(r.text.encode("utf-8")).decode("utf-8")
@@ -792,6 +992,28 @@ class OpenCTIApiClient:
                 "Error fetching file", {"uri": fetch_uri, "error": str(e)}
             )
             return None
+        finally:
+            if stream_response and r is not None:
+                r.close()
+
+    @staticmethod
+    def _serialize_binary_response_content(response, chunk_size=2 * 1024 * 1024):
+        encoded_chunks = []
+        pending_bytes = b""
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if not chunk:
+                continue
+            if pending_bytes:
+                chunk = pending_bytes + chunk
+            complete_length = len(chunk) - (len(chunk) % 3)
+            if complete_length > 0:
+                encoded_chunks.append(
+                    base64.b64encode(chunk[:complete_length]).decode("ascii")
+                )
+            pending_bytes = chunk[complete_length:]
+        if pending_bytes:
+            encoded_chunks.append(base64.b64encode(pending_bytes).decode("ascii"))
+        return "".join(encoded_chunks)
 
     def health_check(self):
         """Submit an example request to the OpenCTI API.
@@ -815,6 +1037,54 @@ class OpenCTIApiClient:
             return False
         return False
 
+    @staticmethod
+    def _is_missing_api_features_field_error(error):
+        error_text = str(error)
+        return "Cannot query field" in error_text and "api_features" in error_text
+
+    def _load_api_features(self):
+        if self._api_features is not None:
+            return self._api_features
+
+        with self._api_features_lock:
+            if self._api_features is not None:
+                return self._api_features
+
+            try:
+                result = self.query("""
+                    query pyctiApiFeatures {
+                      about {
+                        api_features
+                      }
+                    }
+                    """)
+            except ValueError as error:
+                if self._is_missing_api_features_field_error(error):
+                    self._api_features = frozenset()
+                    return self._api_features
+                raise
+
+            self._api_features = frozenset(
+                result.get("data", {}).get("about", {}).get("api_features") or []
+            )
+            return self._api_features
+
+    def supports_api_feature(self, feature):
+        """Return whether the connected platform advertises an API behavior flag.
+
+        A missing ``api_features`` field means an older platform schema. Other
+        lookup failures do not prevent the caller from using its legacy path.
+
+        :param feature: API feature identifier
+        :type feature: str
+        :return: True when the platform advertises the feature
+        :rtype: bool
+        """
+        try:
+            return feature in self._load_api_features()
+        except Exception:  # pylint: disable=broad-except
+            return False
+
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.
 
@@ -834,11 +1104,10 @@ class OpenCTIApiClient:
             if isinstance(value, dict):
                 return bool(value)
             if isinstance(value, list):
-                is_not_empty = False
                 for v in value:
                     if len(v) > 0:
-                        is_not_empty = True
-                return is_not_empty
+                        return True
+                return False
             if isinstance(value, float):
                 return True
             if isinstance(value, int):
@@ -867,22 +1136,29 @@ class OpenCTIApiClient:
         # Data can be multiple in edges or directly.
         # -- When data is directly a listing
         if isinstance(data, list):
-            for row in data:
-                if with_pagination:
-                    result["entities"].append(self.process_multiple_fields(row))
-                else:
+            if with_pagination:
+                process_multiple_fields = self.process_multiple_fields
+                append_result = result["entities"].append
+                for row in data:
+                    append_result(process_multiple_fields(row))
+            else:
+                for row in data:
                     result.append(self.process_multiple_fields(row))
             return result
 
         # -- When data is wrapped in edges
-        for edge in (
-            data["edges"] if "edges" in data and data["edges"] is not None else []
-        ):
-            row = edge["node"]
-            if with_pagination:
-                result["entities"].append(self.process_multiple_fields(row))
-            else:
-                result.append(self.process_multiple_fields(row))
+        if with_pagination:
+            process_multiple_fields = self.process_multiple_fields
+            append_result = result["entities"].append
+            for edge in (
+                data["edges"] if "edges" in data and data["edges"] is not None else []
+            ):
+                append_result(process_multiple_fields(edge["node"]))
+        else:
+            for edge in (
+                data["edges"] if "edges" in data and data["edges"] is not None else []
+            ):
+                result.append(self.process_multiple_fields(edge["node"]))
 
         # -- Add page info if required
         if with_pagination and "pageInfo" in data:
@@ -917,9 +1193,25 @@ class OpenCTIApiClient:
         """
 
         # Handle process_multiple_fields specific case
-        attribute = OpenCTIStix2Utils.retrieveClassForMethod(
-            self, data, "entity_type", "process_multiple_fields"
-        )
+        attribute = None
+        entity_type = data.get("entity_type") if isinstance(data, dict) else None
+        if isinstance(entity_type, str):
+            try:
+                attribute_cache = self._process_multiple_fields_attribute_cache
+            except AttributeError:
+                attribute_cache = {}
+                self._process_multiple_fields_attribute_cache = attribute_cache
+            try:
+                attribute = attribute_cache[entity_type]
+            except KeyError:
+                attribute = OpenCTIStix2Utils.retrieve_class_for_method(
+                    self, data, "entity_type", "process_multiple_fields"
+                )
+                attribute_cache[entity_type] = attribute
+        else:
+            attribute = OpenCTIStix2Utils.retrieve_class_for_method(
+                self, data, "entity_type", "process_multiple_fields"
+            )
         if attribute is not None:
             data = attribute.process_multiple_fields(data)
 
@@ -1022,14 +1314,18 @@ class OpenCTIApiClient:
                         name
                     }
                 }
-             """
+            """
             if data is None:
-                with open(file_name, "rb") as f:
-                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                with open(file_name, "rb") as file_handle:
+                    query_vars = {"file": File(file_name, file_handle, mime_type)}
+                    # optional file markings
+                    if file_markings is not None:
+                        query_vars["fileMarkings"] = file_markings
+                    return self.query(query, query_vars)
             query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
@@ -1105,12 +1401,19 @@ class OpenCTIApiClient:
                     }
                  """
             if data is None:
-                with open(file_name, "rb") as f:
-                    data = f.read()
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
                     mime_type = magic.from_file(file_name, mime=True)
+                with open(file_name, "rb") as file_handle:
+                    return self.query(
+                        query,
+                        {
+                            "file": File(file_name, file_handle, mime_type),
+                            "entityId": entity_id,
+                            "file_markings": file_markings,
+                        },
+                    )
             return self.query(
                 query,
                 {
@@ -1201,33 +1504,73 @@ class OpenCTIApiClient:
         :return: the attribute value if found, None otherwise
         :rtype: Any
         """
-        if (
-            "extensions" in stix_object
-            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+        if "extensions" in stix_object:
+            extensions = stix_object["extensions"]
+            if (
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-            ][key]
-        elif (
-            "extensions" in stix_object
-            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            in stix_object["extensions"]
-            and key
-            in stix_object["extensions"][
+                in extensions
+            ):
+                opencti_extension = extensions[
+                    "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+                ]
+                if key in opencti_extension:
+                    return opencti_extension[key]
+            if (
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ]
-        ):
-            return stix_object["extensions"][
-                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-            ][key]
-        elif key in stix_object and key not in ["type"]:
+                in extensions
+            ):
+                sco_extension = extensions[
+                    "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+                ]
+                if key in sco_extension:
+                    return sco_extension[key]
+        if key in stix_object and key != "type":
             return stix_object[key]
         return None
+
+    @staticmethod
+    def copy_attributes_from_extension(attribute_map, stix_object) -> None:
+        """Copy multiple resolved extension attributes into a STIX object.
+
+        This preserves the precedence of :meth:`get_attribute_in_extension`
+        while resolving the extension containers once for callers that need to
+        populate several target fields from the same STIX object. Existing
+        target fields are left unchanged.
+
+        :param attribute_map: ``(target_key, source_key)`` pairs to populate
+        :type attribute_map: Iterable[Tuple[str, str]]
+        :param stix_object: the STIX object containing extensions
+        :type stix_object: dict
+        """
+        extensions = stix_object.get("extensions")
+        opencti_extension = None
+        sco_extension = None
+        if extensions is not None:
+            opencti_extension = extensions.get(
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            )
+            sco_extension = extensions.get(
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            )
+
+        missing = object()
+        for target_key, source_key in attribute_map:
+            if target_key in stix_object:
+                continue
+            value = (
+                opencti_extension.get(source_key, missing)
+                if opencti_extension is not None
+                else missing
+            )
+            if value is missing and sco_extension is not None:
+                value = sco_extension.get(source_key, missing)
+            if value is missing:
+                value = (
+                    stix_object[source_key]
+                    if source_key != "type" and source_key in stix_object
+                    else None
+                )
+            stix_object[target_key] = value
 
     @staticmethod
     def get_attribute_in_mitre_extension(key, stix_object) -> Any:

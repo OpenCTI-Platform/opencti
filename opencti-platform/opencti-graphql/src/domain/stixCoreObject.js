@@ -75,7 +75,12 @@ import {
 } from '../database/utils';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation,
+  stixObjectOrRelationshipDeleteRefRelations,
+} from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
@@ -355,6 +360,9 @@ export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId
 };
 export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType, opts = {}) => {
   return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT, opts);
+};
+export const stixCoreObjectDeleteRelations = async (context, user, stixCoreObjectId, input, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelations(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT, opts);
 };
 // endregion
 

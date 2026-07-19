@@ -7,6 +7,21 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 from pycti.utils.constants import IdentityTypes
 
+_IDENTITY_EXTENSION_FIELDS = (
+    ("x_opencti_aliases", "aliases"),
+    ("x_opencti_organization_type", "organization_type"),
+    ("security_platform_type", "security_platform_type"),
+    ("x_opencti_reliability", "reliability"),
+    ("x_opencti_score", "score"),
+    ("x_opencti_firstname", "firstname"),
+    ("x_opencti_lastname", "lastname"),
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_workflow_id", "workflow_id"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("opencti_upsert_operations", "opencti_upsert_operations"),
+)
+
 
 class Identity:
     """Main Identity class for OpenCTI
@@ -348,7 +363,8 @@ class Identity:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing Identities with filters", {"filters": json.dumps(filters)}
+            "Listing Identities with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -391,7 +407,7 @@ class Identity:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["identities"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["identities"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["identities"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Identities", {"after": after})
@@ -408,7 +424,7 @@ class Identity:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["identities"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -685,61 +701,9 @@ class Identity:
                 elif stix_object["identity_class"] == "securityplatform":
                     type = "SecurityPlatform"
 
-            # Search in extensions
-            if "x_opencti_aliases" not in stix_object:
-                stix_object["x_opencti_aliases"] = (
-                    self.opencti.get_attribute_in_extension("aliases", stix_object)
-                )
-            if "x_opencti_organization_type" not in stix_object:
-                stix_object["x_opencti_organization_type"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "organization_type", stix_object
-                    )
-                )
-            if "security_platform_type" not in stix_object:
-                stix_object["security_platform_type"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "security_platform_type", stix_object
-                    )
-                )
-            if "x_opencti_reliability" not in stix_object:
-                stix_object["x_opencti_reliability"] = (
-                    self.opencti.get_attribute_in_extension("reliability", stix_object)
-                )
-            if "x_opencti_score" not in stix_object:
-                stix_object["x_opencti_score"] = (
-                    self.opencti.get_attribute_in_extension("score", stix_object)
-                )
-            if "x_opencti_firstname" not in stix_object:
-                stix_object["x_opencti_firstname"] = (
-                    self.opencti.get_attribute_in_extension("firstname", stix_object)
-                )
-            if "x_opencti_lastname" not in stix_object:
-                stix_object["x_opencti_lastname"] = (
-                    self.opencti.get_attribute_in_extension("lastname", stix_object)
-                )
-            if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
-            if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
-            if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
-            if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
-            if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
-                )
+            self.opencti.copy_attributes_from_extension(
+                _IDENTITY_EXTENSION_FIELDS, stix_object
+            )
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],

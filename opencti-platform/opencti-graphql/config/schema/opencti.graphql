@@ -281,6 +281,10 @@ type AppInfo {
   """
   version: String! @auth
   """
+  API behavior flags available to compatible clients
+  """
+  api_features: [String!]! @auth
+  """
   The OpenCTI api current memory usage
   """
   memory: AppMemory @auth(for: [SETTINGS_SETPARAMETERS])
@@ -15985,7 +15989,7 @@ type Subscription {
 type WorkEditMutations {
   delete: ID!
   ping: ID!
-  reportExpectation(error: WorkErrorInput): ID!
+  reportExpectation(error: WorkErrorInput, expectations: Int): ID!
   addExpectations(expectations: Int): ID!
   addDraftContext(draftContext: String): ID!
   toReceived(message: String): ID!
@@ -16128,6 +16132,7 @@ type StixCoreObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
   clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -16401,6 +16406,7 @@ type StixCoreRelationshipEditMutations {
   contextClean: StixCoreRelationship
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
@@ -16416,6 +16422,7 @@ type StixSightingRelationshipEditMutations {
   contextClean: StixSightingRelationship
   relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
   relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
+  relationsDelete(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
   relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])

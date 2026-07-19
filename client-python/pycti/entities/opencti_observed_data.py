@@ -5,6 +5,14 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+_OBSERVED_DATA_EXTENSION_FIELDS = (
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_workflow_id", "workflow_id"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("opencti_upsert_operations", "opencti_upsert_operations"),
+)
+
 
 class ObservedData:
     """Main ObservedData class for OpenCTI
@@ -522,7 +530,8 @@ class ObservedData:
         with_files = kwargs.get("withFiles", False)
 
         self.opencti.app_logger.info(
-            "Listing ObservedDatas with filters", {"filters": json.dumps(filters)}
+            "Listing ObservedDatas with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -896,60 +905,34 @@ class ObservedData:
         object_refs = extras["object_ids"] if "object_ids" in extras else []
 
         if "objects" in stix_object:
-            stix_observable_results = []
             for key, observable_item in stix_object["objects"].items():
-                stix_observable_results.append(
-                    self.opencti.stix_cyber_observable.create(
-                        observableData=observable_item,
-                        createdBy=(
-                            extras["created_by_id"]
-                            if "created_by_id" in extras
-                            else None
-                        ),
-                        objectMarking=(
-                            extras["object_marking_ids"]
-                            if "object_marking_ids" in extras
-                            else None
-                        ),
-                        objectLabel=(
-                            extras["object_label_ids"]
-                            if "object_label_ids" in extras
-                            else None
-                        ),
-                        objectOrganization=(
-                            extras["granted_refs_ids"]
-                            if "granted_refs_ids" in extras
-                            else None
-                        ),
-                    )
+                stix_observable_result = self.opencti.stix_cyber_observable.create(
+                    observableData=observable_item,
+                    createdBy=(
+                        extras["created_by_id"] if "created_by_id" in extras else None
+                    ),
+                    objectMarking=(
+                        extras["object_marking_ids"]
+                        if "object_marking_ids" in extras
+                        else None
+                    ),
+                    objectLabel=(
+                        extras["object_label_ids"]
+                        if "object_label_ids" in extras
+                        else None
+                    ),
+                    objectOrganization=(
+                        extras["granted_refs_ids"]
+                        if "granted_refs_ids" in extras
+                        else None
+                    ),
                 )
-                for item in stix_observable_results:
-                    object_refs.append(item["standard_id"])
+                object_refs.append(stix_observable_result["standard_id"])
 
         if stix_object is not None:
-            # Search in extensions
-            if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
-            if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
-            if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
-            if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
-            if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
-                )
+            self.opencti.copy_attributes_from_extension(
+                _OBSERVED_DATA_EXTENSION_FIELDS, stix_object
+            )
 
             observed_data_result = self.create(
                 stix_id=stix_object["id"],

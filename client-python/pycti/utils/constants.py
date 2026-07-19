@@ -1,6 +1,7 @@
 """These are the custom STIX properties and observation types used internally by OpenCTI."""
 
 from enum import Enum
+from functools import lru_cache
 
 from stix2 import CustomObject, CustomObservable, ExternalReference
 from stix2.properties import (
@@ -16,6 +17,11 @@ class CaseInsensitiveEnum(Enum):
     """Base Enum class with case-insensitive value lookup."""
 
     @classmethod
+    @lru_cache(maxsize=None)
+    def _lower_values(cls):
+        return frozenset(v.lower() for v in cls._value2member_map_)
+
+    @classmethod
     def has_value(cls, value: str) -> bool:
         """Check if the enum contains the given value (case-insensitive).
 
@@ -24,8 +30,7 @@ class CaseInsensitiveEnum(Enum):
         :return: True if value exists in enum, False otherwise
         :rtype: bool
         """
-        lower_values = [v.lower() for v in cls._value2member_map_]
-        return value.lower() in lower_values
+        return value.lower() in cls._lower_values()
 
 
 class StixCyberObservableTypes(CaseInsensitiveEnum):

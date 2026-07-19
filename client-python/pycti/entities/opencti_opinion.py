@@ -6,6 +6,13 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+_OPINION_EXTENSION_FIELDS = (
+    ("x_opencti_stix_ids", "stix_ids"),
+    ("x_opencti_granted_refs", "granted_refs"),
+    ("x_opencti_modified_at", "modified_at"),
+    ("x_opencti_workflow_id", "workflow_id"),
+)
+
 
 class Opinion:
     """Main Opinion class for OpenCTI
@@ -320,7 +327,8 @@ class Opinion:
         with_pagination = kwargs.get("withPagination", False)
 
         self.opencti.app_logger.info(
-            "Listing Opinions with filters", {"filters": json.dumps(filters)}
+            "Listing Opinions with filters",
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -358,7 +366,7 @@ class Opinion:
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["opinions"])
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["opinions"]["pageInfo"]["hasNextPage"]:
                 after = result["data"]["opinions"]["pageInfo"]["endCursor"]
                 self.opencti.app_logger.debug("Listing Opinions", {"after": after})
@@ -374,7 +382,7 @@ class Opinion:
                     },
                 )
                 data = self.opencti.process_multiple(result["data"]["opinions"])
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
@@ -698,23 +706,9 @@ class Opinion:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-            # Search in extensions
-            if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
-            if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
-            if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
-            if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
+            self.opencti.copy_attributes_from_extension(
+                _OPINION_EXTENSION_FIELDS, stix_object
+            )
 
             return self.create(
                 stix_id=stix_object["id"],

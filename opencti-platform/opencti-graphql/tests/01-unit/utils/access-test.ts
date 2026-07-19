@@ -16,12 +16,14 @@ import {
   MEMBER_ACCESS_RIGHT_EDIT,
   MEMBER_ACCESS_RIGHT_VIEW,
   SYSTEM_USER,
+  validateMarking,
+  validateMarkings,
 } from '../../../src/utils/access';
 import type { BasicStoreCommon, StoreMarkingDefinition } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
-import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { buildStandardUser, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
@@ -69,6 +71,47 @@ describe('Check markings test coverage', () => {
     };
     const userAllowedMarking: string[] = [MARKING_TLP_GREEN, MARKING_TLP_AMBER];
     expect(isMarkingAllowed(element as BasicStoreCommon, userAllowedMarking)).toBeFalsy();
+  });
+});
+
+describe('Marking mutation validation', () => {
+  const allowedMarking = {
+    internal_id: 'marking-internal-allowed',
+    standard_id: 'marking-definition--allowed',
+  };
+  const otherMarking = {
+    internal_id: 'marking-internal-other',
+    standard_id: 'marking-definition--other',
+  };
+  const user = buildStandardUser([allowedMarking]);
+  const markingsMap = new Map<string, any>([
+    [allowedMarking.internal_id, allowedMarking],
+    [allowedMarking.standard_id, allowedMarking],
+    [otherMarking.internal_id, otherMarking],
+    [otherMarking.standard_id, otherMarking],
+  ]);
+
+  it('should validate one allowed marking with the shared map path', async () => {
+    await expect(
+      validateMarking(testContext, user, allowedMarking.standard_id, markingsMap),
+    ).resolves.toBeUndefined();
+  });
+
+  it('should validate all allowed markings in one bulk relation input', async () => {
+    await expect(
+      validateMarkings(testContext, user, [allowedMarking.standard_id], markingsMap),
+    ).resolves.toBeUndefined();
+  });
+
+  it('should reject a disallowed marking anywhere in one bulk relation input', async () => {
+    await expect(
+      validateMarkings(
+        testContext,
+        user,
+        [allowedMarking.standard_id, otherMarking.standard_id],
+        markingsMap,
+      ),
+    ).rejects.toThrowError('User trying to create the data has missing markings');
   });
 });
 

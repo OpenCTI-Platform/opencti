@@ -460,7 +460,7 @@ class StixSightingRelationship:
             data = self.opencti.process_multiple(
                 result["data"]["stixSightingRelationships"]
             )
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixSightingRelationships"]["pageInfo"][
                 "hasNextPage"
             ]:
@@ -493,7 +493,7 @@ class StixSightingRelationship:
                 data = self.opencti.process_multiple(
                     result["data"]["stixSightingRelationships"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(

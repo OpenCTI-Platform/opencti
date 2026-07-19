@@ -73,9 +73,9 @@ const UPDATE_WORK_ADD_EXPECTATIONS_QUERY = gql`
 `;
 
 const UPDATE_WORK_REPORT_EXPECTATION_QUERY = gql`
-  mutation workReportExpectation($id: ID!, $error: WorkErrorInput) {
+  mutation workReportExpectation($id: ID!, $error: WorkErrorInput, $expectations: Int) {
     workEdit(id: $id) {
-      reportExpectation(error: $error)
+      reportExpectation(error: $error, expectations: $expectations)
     }
   }
 `;
@@ -486,6 +486,30 @@ describe('Connector using the default work isMultiPartWork=false option', () => 
     // Status should have changed to `complete` without the need to call `toProcessed`
     queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
     expect(queryResult.data.work.status).toEqual('complete');
+  });
+
+  it('should mark work as completed when successful expectations are reported in a batch', async () => {
+    let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: CREATE_WORK_QUERY,
+      variables: {
+        connectorId: TEST_CN_ID,
+        friendlyName: 'TestConnectorBatchedExpectations',
+      },
+    });
+    const workId = queryResult.data.workAdd.id;
+
+    await queryAsAdminWithSuccess({
+      query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY,
+      variables: { id: workId, expectations: 5 },
+    });
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: UPDATE_WORK_REPORT_EXPECTATION_QUERY,
+      variables: { id: workId, expectations: 5 },
+    });
+
+    queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('complete');
+    expect(queryResult.data.work.completed_number).toEqual(5);
   });
 });
 

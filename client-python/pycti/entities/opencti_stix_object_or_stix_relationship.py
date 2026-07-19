@@ -827,7 +827,7 @@ class StixObjectOrStixRelationship:
 
         self.opencti.app_logger.info(
             "Listing StixObjectOrStixRelationships with filters",
-            {"filters": json.dumps(filters)},
+            lambda: {"filters": json.dumps(filters)},
         )
         query = (
             """
@@ -867,7 +867,7 @@ class StixObjectOrStixRelationship:
             data = self.opencti.process_multiple(
                 result["data"]["stixObjectOrStixRelationships"]
             )
-            final_data = final_data + data
+            final_data.extend(data)
             while result["data"]["stixObjectOrStixRelationships"]["pageInfo"][
                 "hasNextPage"
             ]:
@@ -882,7 +882,7 @@ class StixObjectOrStixRelationship:
                 data = self.opencti.process_multiple(
                     result["data"]["stixObjectOrStixRelationships"]
                 )
-                final_data = final_data + data
+                final_data.extend(data)
             return final_data
         else:
             return self.opencti.process_multiple(
