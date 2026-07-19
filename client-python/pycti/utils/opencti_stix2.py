@@ -1371,6 +1371,7 @@ class OpenCTIStix2:
                         if isinstance(vocabulary_data, dict)
                         else None
                     )
+                    response_has_category = vocabulary_category is not None
                     if vocabulary_category is None:
                         matching_candidates = (
                             batch_vocabulary_values_by_normalized_value.get(
@@ -1383,11 +1384,13 @@ class OpenCTIStix2:
                         }
                         if len(requested_categories) == 1:
                             vocabulary_category = next(iter(requested_categories))
+                        else:
+                            continue
                         # Test doubles and older custom Vocabulary wrappers may not return
                         # category metadata. Keep their legacy cache alias available.
-                        self.mapping_cache_permanent[
-                            "vocab_" + vocabulary_name
-                        ] = vocabulary_data
+                        self.mapping_cache_permanent["vocab_" + vocabulary_name] = (
+                            vocabulary_data
+                        )
                     if vocabulary_category is not None:
                         self.mapping_cache_permanent[
                             f"vocab_{vocabulary_category}_{vocabulary_name}"
@@ -1395,10 +1398,11 @@ class OpenCTIStix2:
                     normalized_vocabulary_value = self._normalize_import_prefetch_value(
                         vocabulary_name
                     )
-                    for matching_vocabulary_value, matching_category in (
-                        batch_vocabulary_values_by_normalized_value.get(
+                    for (
+                        matching_vocabulary_value,
+                        matching_category,
+                    ) in batch_vocabulary_values_by_normalized_value.get(
                         normalized_vocabulary_value, []
-                        )
                     ):
                         if (
                             vocabulary_category is not None
@@ -1416,6 +1420,10 @@ class OpenCTIStix2:
                                 else "vocab_" + matching_vocabulary_value
                             )
                         ] = vocabulary_data
+                        if not response_has_category:
+                            self.mapping_cache_permanent[
+                                "vocab_" + matching_vocabulary_value
+                            ] = vocabulary_data
                 if missing_vocabulary_values is not None:
                     missing_vocabulary_values.update(
                         (category, vocabulary_value)
