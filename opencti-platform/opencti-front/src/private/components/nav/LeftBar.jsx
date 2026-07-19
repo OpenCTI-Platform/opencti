@@ -227,7 +227,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
-    me: { email, submenu_auto_collapse, submenu_show_icons, draftContext },
+    me: { user_email, submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
@@ -474,7 +474,7 @@ const LeftBarComponent = ({ queryRef }) => {
               exact
             />
           )}
-          {!email ==='test1@resaa.net' && (
+          {!user_email ==='test1@resaa.net' && (
             <Security needs={[EXPLORE]}>
               {!draftContext && (
                 <LeftBarItem
@@ -531,7 +531,7 @@ const LeftBarComponent = ({ queryRef }) => {
               )}
             </Security>
           )}
-          {!email ==='test1@resaa.net' && (
+          {!user_email ==='test1@resaa.net' && (
             <Security needs={[INVESTIGATION]}>
               {!draftContext && (
                 <LeftBarItem
@@ -573,10 +573,10 @@ const LeftBarComponent = ({ queryRef }) => {
           )} */}
         </MenuList>
 
-        {!email ==='test1@resaa.net' && (
+        {!user_email ==='test1@resaa.net' && (
           <Separator />
         )}
-        {!email ==='test1@resaa.net' && (
+        {!user_email ==='test1@resaa.net' && (
           <Security needs={[KNOWLEDGE]}>
             <MenuList component="nav">
               {!hideAnalyses && (
@@ -756,17 +756,17 @@ const LeftBarComponent = ({ queryRef }) => {
                   link="/dashboard/data"
                   subItems={[
                     { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
-                    { granted: !email ==='test1@resaa.net' && isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
+                    { granted: !user_email ==='test1@resaa.net' && isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
                     { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: t_i18n('Ingestion') },
                     { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
-                    { granted: !email ==='test1@resaa.net' && isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
-                    { granted: !email ==='test1@resaa.net' && isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
-                    { granted: !email ==='test1@resaa.net' && isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                    { granted: !user_email ==='test1@resaa.net' && isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
+                    { granted: !user_email ==='test1@resaa.net' && isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
+                    { granted: !user_email ==='test1@resaa.net' && isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
                   ]}
                 />
               </Security>
 
-              {!email ==='test1@resaa.net' && isTrashEnable() && (
+              {!user_email ==='test1@resaa.net' && isTrashEnable() && (
                   <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                     {!draftContext && (
                       <LeftBarItem
@@ -813,9 +813,9 @@ const LeftBarComponent = ({ queryRef }) => {
                 link="/dashboard/settings"
                 subItems={[
                   { granted: isGrantedToParameters, link: '/dashboard/settings', label: t_i18n('Parameters'), exact: true },
-                  { granted: !email ==='test1@resaa.net' && (isGrantedToSecurity || isOrganizationAdmin), link: '/dashboard/settings/accesses', label: t_i18n('Security') },
-                  { granted: !email ==='test1@resaa.net' && isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
-                  { granted: !email ==='test1@resaa.net' && isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
+                  { granted: !user_email ==='test1@resaa.net' && (isGrantedToSecurity || isOrganizationAdmin), link: '/dashboard/settings/accesses', label: t_i18n('Security') },
+                  { granted: !user_email ==='test1@resaa.net' && isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
+                  { granted: !user_email ==='test1@resaa.net' && isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
                   // { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
                   // { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
                   // { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
