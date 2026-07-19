@@ -1,6 +1,6 @@
 import type { CustomFieldValue } from './custom-field-types';
 import { CUSTOM_FIELD_PREFIX } from './custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from './custom-field-domain';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from './custom-field-cache';
 
 /**
  * Flatten custom_field_values array into a flat object for STIX export.

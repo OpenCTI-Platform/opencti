@@ -1,6 +1,6 @@
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
-import { getCustomFieldDefinitionsForEntityType } from './custom-field-domain';
+import { getCustomFieldDefinitionsForEntityType } from './custom-field-cache';
 
 /**
  * Validates an array of custom field values against the definitions for a given entity type.

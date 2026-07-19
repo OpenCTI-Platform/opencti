@@ -5,7 +5,7 @@ import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
-import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
+import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
 import type { AttributeDefinition } from '../schema/attribute-definition';
 
 export interface DefaultValue {

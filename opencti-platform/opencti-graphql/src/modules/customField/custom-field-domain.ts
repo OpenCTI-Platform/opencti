@@ -2,7 +2,6 @@ import { type EntityOptions, type FilterGroupWithNested, countAllThings, fullEnt
 import {
   type BasicStoreEntityCustomFieldDefinition,
   CUSTOM_FIELD_PREFIX,
-  type CustomFieldEntityTypeSetting,
   type CustomFieldType,
   ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
   type StoreEntityCustomFieldDefinition,
@@ -21,9 +20,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
 import { CUSTOM_FIELDS_FEATURE_FLAG, logApp } from '../../config/conf';
-
-// ----- In-memory cache of all custom field definitions (loaded at boot) -----
-let customFieldDefinitionsCache: BasicStoreEntityCustomFieldDefinition[] = [];
+import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByName, getCustomFieldValueField, setCustomFieldDefinitionsCache } from './custom-field-cache';
 
 /**
  * Load all custom field definitions from the database into memory.
@@ -35,43 +32,8 @@ export const loadCustomFieldDefinitions = async (context: AuthContext): Promise<
     SYSTEM_USER,
     [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION],
   );
-  customFieldDefinitionsCache = definitions;
+  setCustomFieldDefinitionsCache(definitions);
   logApp.info(`[CUSTOM_FIELDS] Loaded ${definitions.length} custom field definitions`);
-};
-
-export const getCustomFieldDefinitions = (): BasicStoreEntityCustomFieldDefinition[] => {
-  return customFieldDefinitionsCache;
-};
-
-/**
- * Get cached custom field definitions for a given entity type.
- */
-export const getCustomFieldDefinitionsForEntityType = (entityType: string): BasicStoreEntityCustomFieldDefinition[] => {
-  return customFieldDefinitionsCache.filter(
-    (def) => def.entity_types && def.entity_types.includes(entityType),
-  );
-};
-
-/**
- * Resolve the per-entity-type settings (mandatory / default_value) of a definition
- * for a given entity type. Returns undefined if the field is not attached to it.
- */
-export const getCustomFieldSettingForEntityType = (
-  definition: BasicStoreEntityCustomFieldDefinition,
-  entityType: string,
-): CustomFieldEntityTypeSetting | undefined => {
-  return definition.entity_type_settings?.find((setting) => setting.entity_type === entityType);
-};
-
-/**
- * Get a cached custom field definition by its name (e.g. x_opencti_cf_score).
- */
-export const getCustomFieldDefinitionByName = (name: string): BasicStoreEntityCustomFieldDefinition | undefined => {
-  return customFieldDefinitionsCache.find((def) => def.name === name);
-};
-
-export const getCustomFieldDefinitionByLabel = (label: string): BasicStoreEntityCustomFieldDefinition | undefined => {
-  return customFieldDefinitionsCache.find((def) => def.label === label);
 };
 
 /**
@@ -86,29 +48,6 @@ const CUSTOM_FIELD_NAME_REGEX = /^x_opencti_cf_[a-z][a-z0-9_]*$/;
  */
 export const isCustomFieldKey = (key: string): boolean => {
   return key.startsWith(CUSTOM_FIELD_PREFIX);
-};
-
-/**
- * Get the value field name in the nested object based on the field type.
- */
-export const getCustomFieldValueField = (fieldType: CustomFieldType): string => {
-  switch (fieldType) {
-    case 'integer':
-      return 'int_value';
-    case 'string':
-    case 'markdown':
-      return 'string_value';
-    case 'boolean':
-      return 'boolean_value';
-    case 'date':
-      return 'date_value';
-    case 'select':
-      return 'select_value';
-    case 'multi_select':
-      return 'select_values';
-    default:
-      return 'string_value';
-  }
 };
 
 // ----- Domain CRUD operations -----

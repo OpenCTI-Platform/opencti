@@ -55,7 +55,7 @@ import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
 import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../../modules/customField/custom-field-domain';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
 import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';

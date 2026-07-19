@@ -56,7 +56,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-domain';
+import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
