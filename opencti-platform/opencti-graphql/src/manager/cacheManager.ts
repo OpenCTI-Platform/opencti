@@ -58,6 +58,7 @@ import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/ex
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -349,6 +350,17 @@ const platformPirs = (context: AuthContext) => {
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
 
+// Custom field definitions live in their own lightweight, synchronous cache (custom-field-cache.ts),
+// not in the generic async cache above, so keep it in sync cluster-wide on the same pub/sub topics.
+// Dynamic import avoids pulling the heavy custom-field-domain module graph into cacheManager's own.
+const refreshCustomFieldDefinitionsIfConcerned = async (instance: BasicStoreCommon | BasicStoreCommon[]) => {
+  const instances = Array.isArray(instance) ? instance : [instance];
+  if (instances.some((i) => i.entity_type === ENTITY_TYPE_CUSTOM_FIELD_DEFINITION)) {
+    const { loadCustomFieldDefinitions } = await import('../modules/customField/custom-field-domain');
+    await loadCustomFieldDefinitions(executionContext('cache_manager'));
+  }
+};
+
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
 const initCacheManager = () => {
@@ -383,12 +395,15 @@ const initCacheManager = () => {
       initCacheContent();
       subscribeAdd = await pubSubSubscription<SubEvent>(ADDS_TOPIC, async (event) => {
         await addCacheForEntity(event.instance);
+        await refreshCustomFieldDefinitionsIfConcerned(event.instance);
       });
       subscribeEdit = await pubSubSubscription<SubEvent>(EDITS_TOPIC, async (event) => {
         await refreshCacheForEntity(event.instance);
+        await refreshCustomFieldDefinitionsIfConcerned(event.instance);
       });
       subscribeDelete = await pubSubSubscription<SubEvent>(DELETES_TOPIC, async (event) => {
         await removeCacheForEntity(event.instance);
+        await refreshCustomFieldDefinitionsIfConcerned(event.instance);
       });
       subscribeReset = await pubSubSubscription<{ entityType: string }>(CACHE_RESET_TOPIC, (event) => {
         resetCacheForEntity(event.entityType);
