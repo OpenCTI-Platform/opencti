@@ -24,6 +24,7 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -874,11 +875,10 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const { getCustomFieldDefinitionByName: lookupCfDef, getCustomFieldValueField: getCfValueField } = await import('../modules/customField/custom-field-domain');
-    const customFieldDef = lookupCfDef(field);
+    const customFieldDef = getCustomFieldDefinitionByName(field);
     let valueField = 'custom_field_values.string_value';
     if (customFieldDef) {
-      valueField = `custom_field_values.${getCfValueField(customFieldDef.field_type)}`;
+      valueField = `custom_field_values.${getCustomFieldValueField(customFieldDef.field_type)}`;
     }
 
     distributionData = await elAggregationNestedTermsWithFilter(
