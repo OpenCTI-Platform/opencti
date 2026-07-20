@@ -11,14 +11,14 @@ This is useful for preventing ingestion from internal services, known-bad source
 
 ### Configuration
 
-The deny list is configured via the `ingestion_manager:uri_deny_list` parameter. It accepts a JSON array of URI patterns.
+The deny list is configured via the `app:uri_deny_list` parameter. It accepts a JSON array of URI patterns.
 
 **Default value**: [] (no deny list)
 
 **In the platform configuration file (`default.json` or environment-specific):**
 
 ```json
-"ingestion_manager":{
+"app": {
   "uri_deny_list": [
     "internal-service.local",
     "*.corp.internal",
@@ -30,7 +30,7 @@ The deny list is configured via the `ingestion_manager:uri_deny_list` parameter.
 **Using environment variables:**
 
 ```bash
-INGESTION_MANAGER__URI_DENY_LIST='["internal-service.local","*.corp.internal","localhost:4200"]'
+APP__URI_DENY_LIST='["internal-service.local","*.corp.internal","localhost:4200"]'
 ```
 
 ### Supported patterns
