@@ -33,6 +33,7 @@ import { createInternalObject, deleteInternalObject, editInternalObject } from '
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
+import { lockResources } from '../../lock/master-lock';
 
 /**
  * Exclusion list: entity types not capable of
@@ -197,34 +198,40 @@ export const addCustomView = async (
     enabled: input.enabled ?? false,
     default: input.default ?? false,
   };
-  const element = await createInternalObject<StoreEntityCustomView>(
-    context,
-    user,
-    customViewToCreate,
-    ENTITY_TYPE_CUSTOM_VIEW,
-    {
-      auditLogEnabled: true,
-      auditLogContextSanitizer: (element) => ({
-        ...element,
-        manifest: '[sanitized]',
-      }),
-    },
-  );
-  TELEMETRY.customViewCreated();
-  if (element.enabled) {
-    TELEMETRY.customViewEnabled();
-  }
-  if (element.default) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-    await applyUniqueDefaultCustomViewConstraint(
+
+  const lock = input.default ? await lockResources([`custom-view-default:${input.targetEntityType}`]) : null;
+  try {
+    const element = await createInternalObject<StoreEntityCustomView>(
       context,
       user,
-      element.target_entity_type,
-      element.id,
+      customViewToCreate,
+      ENTITY_TYPE_CUSTOM_VIEW,
+      {
+        auditLogEnabled: true,
+        auditLogContextSanitizer: (element) => ({
+          ...element,
+          manifest: '[sanitized]',
+        }),
+      },
     );
+    TELEMETRY.customViewCreated();
+    if (element.enabled) {
+      TELEMETRY.customViewEnabled();
+    }
+    if (element.default) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultCustomViewConstraint(
+        context,
+        user,
+        element.target_entity_type,
+        element.id,
+      );
+    }
+    return element;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  return element;
 };
 
 export const editCustomView = async (
@@ -236,40 +243,49 @@ export const editCustomView = async (
   const nameInput = input.find((i) => i.key === 'name');
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
   const enabledFieldValue = input.find((i) => i.key === 'enabled')?.value?.[0];
-  const element = await editInternalObject<StoreEntityCustomView>(
-    context,
-    user,
-    customViewId,
-    ENTITY_TYPE_CUSTOM_VIEW,
-    [
-      ...input,
-      ...(nameInput ? [{
-        key: 'slug',
-        value: [slugify(nameInput.value[0])],
-      }] : []),
-    ],
-    {
-      auditLogEnabled: true,
-      auditLogContextSanitizer: (input) => input.map((entry) => ({
-        ...entry,
-        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
-      })),
-    },
-  );
-  if (enabledFieldValue) {
-    TELEMETRY.customViewEnabled();
-  }
-  if (defaultFieldValue) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-    await applyUniqueDefaultCustomViewConstraint(
+
+  const existing = await storeLoadById<BasicStoreEntityCustomView>(context, user, customViewId, ENTITY_TYPE_CUSTOM_VIEW);
+  const entity_type = existing.target_entity_type;
+
+  const lock = defaultFieldValue ? await lockResources([`custom-view-default:${entity_type}`]) : null;
+  try {
+    const element = await editInternalObject<StoreEntityCustomView>(
       context,
       user,
-      element.target_entity_type,
-      element.id,
+      customViewId,
+      ENTITY_TYPE_CUSTOM_VIEW,
+      [
+        ...input,
+        ...(nameInput ? [{
+          key: 'slug',
+          value: [slugify(nameInput.value[0])],
+        }] : []),
+      ],
+      {
+        auditLogEnabled: true,
+        auditLogContextSanitizer: (input) => input.map((entry) => ({
+          ...entry,
+          value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+        })),
+      },
     );
+    if (enabledFieldValue) {
+      TELEMETRY.customViewEnabled();
+    }
+    if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultCustomViewConstraint(
+        context,
+        user,
+        element.target_entity_type,
+        element.id,
+      );
+    }
+    return element;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  return element;
 };
 
 export const customViewImportWidgetConfiguration = async (

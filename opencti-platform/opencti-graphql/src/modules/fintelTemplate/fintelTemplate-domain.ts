@@ -37,6 +37,7 @@ import {
 } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { lockResources } from '../../lock/master-lock';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -197,30 +198,36 @@ export const addFintelTemplate = async (
     template_content: input.template_content ?? '',
     fintel_template_widgets: widgetsWithIds,
   };
-  // create the fintel template
-  const created = await createEntity(
-    context,
-    user,
-    finalInput,
-    ENTITY_TYPE_FINTEL_TEMPLATE,
-  );
-  if (input.default) {
-    await applyUniqueDefaultTemplateConstraint(context, user, settings_type, created.id);
-  }
 
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'administration',
-    message: `creates fintel template \`${finalInput.name}\``,
-    context_data: {
-      id: created.id,
-      entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
-      input: finalInput,
-    },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
+  const lock = input.default ? await lockResources([`fintel-template-default:${settings_type}`]) : null;
+  try {
+    // create the fintel template
+    const created = await createEntity(
+      context,
+      user,
+      finalInput,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+    );
+    if (input.default) {
+      await applyUniqueDefaultTemplateConstraint(context, user, settings_type, created.id);
+    }
+
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates fintel template \`${finalInput.name}\``,
+      context_data: {
+        id: created.id,
+        entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
+        input: finalInput,
+      },
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 export const fintelTemplateEditField = async (
@@ -247,37 +254,46 @@ export const fintelTemplateEditField = async (
     }
     return i;
   });
-  // edit the fintel template
-  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
-    context,
-    user,
-    templateId,
-    ENTITY_TYPE_FINTEL_TEMPLATE,
-    formattedInput,
-  );
-
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
-  if (defaultFieldValue) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-    await applyUniqueDefaultTemplateConstraint(
+
+  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
+  const settingsType = existing.settings_types[0];
+
+  const lock = defaultFieldValue ? await lockResources([`fintel-template-default:${settingsType}`]) : null;
+  try {
+    // edit the fintel template
+    const { element } = await updateAttribute<StoreEntityFintelTemplate>(
       context,
       user,
-      element.settings_types[0],
-      element.id,
+      templateId,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+      formattedInput,
     );
+
+    if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultTemplateConstraint(
+        context,
+        user,
+        settingsType,
+        element.id,
+      );
+    }
+
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
+    });
+
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
+  } finally {
+    if (lock) await lock.unlock();
   }
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
-    context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
-  });
-
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
 };
 
 export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser, templateId: string) => {
