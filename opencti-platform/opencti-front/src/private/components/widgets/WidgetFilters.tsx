@@ -13,6 +13,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
+import Divider from '@mui/material/Divider';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -180,6 +181,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
+              <Divider orientation="vertical" flexItem />
               {isSavedFiltersAccessible && (
                 <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} />
               )}
@@ -212,6 +214,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
+                  <Divider orientation="vertical" flexItem />
                   {isSavedFiltersAccessible && (
                     <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicFrom} />
                   )}
@@ -241,6 +244,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                     type="to"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
                   />
+                  <Divider orientation="vertical" flexItem />
                   {isSavedFiltersAccessible && (
                     <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilterDynamicTo} />
                   )}

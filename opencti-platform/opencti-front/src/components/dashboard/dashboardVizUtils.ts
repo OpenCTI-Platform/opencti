@@ -4,8 +4,8 @@ import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObjec
 import { type FilterDefinition } from 'src/utils/hooks/useAuth';
 import { computeRelativeDate, dayStartDate, formatDate } from 'src/utils/Time';
 import { fetchQuery } from 'src/relay/environment';
-import type { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
 import { DashboardConfig } from './dashboard-types';
+import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
 
 export const savedFilterQuery = graphql`
   query dashboardVizUtilsSavedFilterQuery($id: ID!) {
@@ -49,27 +49,39 @@ export const resolveDataSelection = async ({
       const filters = [data.filters, data.dynamicFrom, data.dynamicTo];
       // Handle eventual saved filters
       if (data.filters_id) {
-        const result = await fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-        if (!result?.savedFilter) {
+        try {
+          const result = await fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+          if (!result?.savedFilter) {
+            isMissingSavedFilters = true;
+          } else {
+            filters[0] = JSON.parse(result.savedFilter.filters);
+          }
+        } catch {
           isMissingSavedFilters = true;
-        } else {
-          filters[0] = JSON.parse(result.savedFilter.filters);
         }
       }
       if (data.dynamicFrom_id) {
-        const result = await fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-        if (!result?.savedFilter) {
+        try {
+          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+          if (!result?.savedFilter) {
+            isMissingSavedFilters = true;
+          } else {
+            filters[1] = JSON.parse(result.savedFilter.filters);
+          }
+        } catch {
           isMissingSavedFilters = true;
-        } else {
-          filters[1] = JSON.parse(result.savedFilter.filters);
         }
       }
       if (data.dynamicTo_id) {
-        const result = await fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-        if (!result?.savedFilter) {
+        try {
+          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+          if (!result?.savedFilter) {
+            isMissingSavedFilters = true;
+          } else {
+            filters[2] = JSON.parse(result.savedFilter.filters);
+          }
+        } catch {
           isMissingSavedFilters = true;
-        } else {
-          filters[2] = JSON.parse(result.savedFilter.filters);
         }
       }
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID

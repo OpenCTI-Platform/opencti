@@ -1,4 +1,4 @@
-import { Button, Divider } from '@mui/material';
+import { Button } from '@mui/material';
 import Bookmarks from '@mui/icons-material/Bookmarks';
 import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
@@ -11,18 +11,15 @@ interface WidgetSavedFiltersIconProps {
 const WidgetSavedFiltersIcon = ({ onClick }: WidgetSavedFiltersIconProps) => {
   const { t_i18n } = useFormatter();
   return (
-    <>
-      <Divider orientation="vertical" flexItem />
-      <Tooltip title={t_i18n('Use a saved filter')}>
-        <Button
-          size="small"
-          onClick={onClick}
-          sx={{ minWidth: 'unset', padding: '4px' }}
-        >
-          <Bookmarks fontSize="small" />
-        </Button>
-      </Tooltip>
-    </>
+    <Tooltip title={t_i18n('Use a saved filter')}>
+      <Button
+        size="small"
+        onClick={onClick}
+        sx={{ minWidth: 'unset', padding: '4px' }}
+      >
+        <Bookmarks fontSize="small" />
+      </Button>
+    </Tooltip>
   );
 };
 

@@ -8,6 +8,7 @@ import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSa
 import type { AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 import WidgetCustomFiltersIcon from 'src/components/saved_filters/WidgetCustomFiltersIcon';
+import Divider from "@mui/material/Divider";
 
 const widgetSavedFiltersSelectionQuery = graphql`
   query WidgetSavedFiltersSelectionQuery($filters: FilterGroup) {
@@ -90,6 +91,7 @@ const WidgetSavedFiltersComponent = ({
         disabled={!selectedFilterId}
         onClear={handleClear}
       />
+      <Divider orientation="vertical" flexItem />
       <WidgetCustomFiltersIcon onClick={onDeselect} />
     </>
   );
