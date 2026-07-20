@@ -254,6 +254,25 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can duplicate workspace', async () => {
+    const manifestWithFiltersId = toB64(JSON.stringify({
+      widgets: {
+        'widget-1': {
+          id: 'widget-1',
+          type: 'vertical-bar',
+          perspective: 'entities',
+          dataSelection: [
+            {
+              filters_id: 'saved-filter-123',
+              date_attribute: 'created_at',
+              label: 'My widget',
+            },
+          ],
+          parameters: { title: 'Test widget' },
+        },
+      },
+      config: {},
+    }));
+
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
@@ -261,6 +280,7 @@ describe('Workspace resolver standard behavior', () => {
             id
             entity_type
             name
+            manifest
             authorizedMembers {
               access_right
             }
@@ -271,6 +291,7 @@ describe('Workspace resolver standard behavior', () => {
         input: {
           type: 'dashboard',
           name: 'Dashboard to duplicate',
+          manifest: manifestWithFiltersId,
         },
       },
     });
@@ -280,6 +301,15 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspaceDuplicate.entity_type).toBe('Workspace');
     expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
     expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+
+    // Verify filters_id is preserved in the duplicated manifest
+    const duplicatedManifest = JSON.parse(
+      Buffer.from(queryResult.data.workspaceDuplicate.manifest, 'base64').toString('utf-8'),
+    );
+    const widget = duplicatedManifest.widgets['widget-1'];
+    expect(widget).toBeDefined();
+    expect(widget.dataSelection[0].filters_id).toBe('saved-filter-123');
+
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },
