@@ -13,7 +13,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
     fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
-        totalCountPerEntityType : stixCoreRelationshipsDistribution(
+        totalCountPerEntityType : coveredEntitiesDistribution(
             field:"entity_type", 
             relationship_type: "has-covered", 
             operation:count,
@@ -27,7 +27,7 @@ const securityCoverageRelationshipDistributionFragment = graphql`
             label,
             value
         }
-        testedCountPerEntityType: stixCoreRelationshipsDistribution(
+        testedCountPerEntityType: coveredEntitiesDistribution(
             field:"entity_type", 
             relationship_type: "has-covered", 
             operation:count, 

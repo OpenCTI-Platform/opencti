@@ -1141,6 +1141,7 @@ class OpenCTIStix2:
             "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
             "Security-Coverage": self.opencti.security_coverage.read,
+            "Security-Coverage-Result": self.opencti.security_coverage_result.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -1219,6 +1220,7 @@ class OpenCTIStix2:
             "task": self.opencti.task,
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
+            "security-coverage-result": self.opencti.security_coverage_result,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
@@ -3271,6 +3273,8 @@ class OpenCTIStix2:
             self.opencti.external_reference.delete(item["id"])
         elif item["type"] == "sighting":
             self.opencti.stix_sighting_relationship.delete(id=item["id"])
+        elif item["type"] == "security-coverage":
+            self.opencti.security_coverage.delete(id=item["id"])
         elif item["type"] in STIX_META_OBJECTS:
             self.opencti.stix.delete(id=item["id"], force_delete=force_delete)
         elif item["type"] in list(STIX_CYBER_OBSERVABLE_MAPPING.keys()):

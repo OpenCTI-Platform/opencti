@@ -14010,6 +14010,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Organization
   | SecurityPlatform
   | SecurityCoverage
+  | SecurityCoverageResult
   | Sector
   | System
   | Indicator
@@ -14178,6 +14179,7 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
+  | SecurityCoverageResult
   | CustomView
   | IMEI
   | ICCID

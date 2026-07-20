@@ -1,10 +1,14 @@
 import {
   addSecurityCoverage,
-  pageSecurityCoverageConnections,
-  findSecurityCoverageById,
+  findSecurityCoveragePaginated,
+  findById,
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
+  getSecurityCoverageResultProperty,
+  averageCoverageInformation,
+  mostRecentLastCoverageResult,
+  getSecurityCoverageResults,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
@@ -17,15 +21,27 @@ import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
+import { distributionRelations } from '../../database/middleware';
+import { RELATION_RESULT_OF } from './securityCoverageResult/securityCoverageResult-types';
+import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
-    securityCoverage: (_, { id }, context) => findSecurityCoverageById(context, context.user, id),
-    securityCoverages: (_, args, context) => pageSecurityCoverageConnections(context, context.user, args),
+    securityCoverage: (_, { id }, context) => findById(context, context.user, id),
+    securityCoverages: (_, args, context) => findSecurityCoveragePaginated(context, context.user, args),
   },
   SecurityCoverage: {
-    objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
-    toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
+    objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
+    toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
+    results: (securityCoverage, _, context) => getSecurityCoverageResults(context, context.user, securityCoverage),
+    // security coverage result info
+    coverage_last_result: (securityCoverage, _, context) => mostRecentLastCoverageResult(context, context.user, securityCoverage),
+    coverage_valid_from: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
+    coverage_valid_to: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
+    coverage_information: (securityCoverage, _, context) => averageCoverageInformation(context, context.user, securityCoverage),
+    coveredEntitiesDistribution: (securityCoverage, args, context) =>
+      distributionRelations(context, context.user, { ...args, fromOrToId: securityCoverage[RELATION_RESULT_OF] } as any),
+    stixCoreRelationshipsFromResults: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),

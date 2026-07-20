@@ -31,7 +31,7 @@ import Card from '../../../../components/common/card/Card';
 const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
     id
-    attPatterns: stixCoreRelationships(
+    attPatterns: stixCoreRelationshipsFromResults(
         orderBy: created_at
         orderMode: asc
         relationship_type: "has-covered"

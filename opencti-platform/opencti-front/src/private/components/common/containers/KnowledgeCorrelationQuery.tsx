@@ -116,6 +116,12 @@ export const knowledgeCorrelationStixCoreObjectQuery = graphql`
       ... on Case {
         name
       }
+      ... on SecurityCoverage {
+        name
+      }
+      ... on SecurityCoverageResult {
+        name
+      }
       ... on StixCyberObservable {
         observable_value
       }

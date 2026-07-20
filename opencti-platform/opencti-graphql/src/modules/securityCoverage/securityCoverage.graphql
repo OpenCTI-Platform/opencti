@@ -1,8 +1,3 @@
-type CoverageResult {
-  coverage_name: String!
-  coverage_score: Int!
-}
-
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -59,6 +54,28 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): StixCoreRelationshipConnection
+  stixCoreRelationshipsFromResults(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): StixCoreRelationshipConnection
   stixCoreObjectsDistribution(
     relationship_type: [String]
     toTypes: [String]
@@ -94,6 +111,27 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  coveredEntitiesDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String!]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String!]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String!]!
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinions_metrics: OpinionsMetrics
   # StixDomainObject
   revoked: Boolean!
@@ -123,8 +161,6 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   roles: [String]
   x_opencti_aliases: [String]
   x_opencti_reliability: String
-  # SecurityCoverage
-  security_platform_type: String
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -165,6 +201,8 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
+  security_platform_type: String
+  results: [SecurityCoverageResult!]
 }
 
 # Ordering
@@ -224,7 +262,6 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
-  external_uri: String
   externalReferences: [String]
   file: Upload
   fileMarkings: [String]
@@ -234,6 +271,7 @@ input SecurityCoverageAddInput {
   embedded: [Boolean]
   update: Boolean
   # coverage specific
+  external_uri: String
   auto_enrichment_disable: Boolean!
   periodicity: String
   duration: String
