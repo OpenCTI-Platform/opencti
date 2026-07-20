@@ -288,9 +288,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         canceledMessage: t_i18n('You have canceled the connection process'),
         loaderButtonText: t_i18n('Continue to connect'),
         confirmationTitle: t_i18n('Close connection process?'),
-        confirmationMessage: t_i18n('connection_confirmation_dialog'),
+        confirmationMessage: t_i18n('The connection process is still in progress. Closing this dialog will terminate the connection. Are you sure you want to close?'),
         continueButtonText: t_i18n('Continue connection'),
-        instructionKey: 'connection_instruction_paragraph',
+        instructionKey: 'You will be redirected to a new tab to complete the connection. Please complete all required steps. Your current session will remain active during the process.',
       },
       unregister: {
         dialogTitle: t_i18n('Disconnect your product from XTM Hub'),
@@ -298,9 +298,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
         canceledMessage: t_i18n('You have canceled the disconnection process'),
         loaderButtonText: t_i18n('Continue to disconnect'),
         confirmationTitle: t_i18n('Close disconnection process?'),
-        confirmationMessage: t_i18n('disconnection_confirmation_dialog'),
+        confirmationMessage: t_i18n('The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?'),
         continueButtonText: t_i18n('Continue disconnection'),
-        instructionKey: 'disconnection_instruction_paragraph',
+        instructionKey: 'You will be redirected to a new tab to complete the disconnection. Please complete all required steps. Your current session will remain active during the process.',
       },
     };
 
