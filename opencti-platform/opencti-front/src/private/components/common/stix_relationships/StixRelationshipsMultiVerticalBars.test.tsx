@@ -18,13 +18,8 @@ vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
   default: () => <div data-testid="widget-vertical-bars" />,
 }));
 
-vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
-  default: () => <div data-testid="widget-no-host" />,
-}));
-
-vi.mock('../../../../components/Loader', () => ({
-  default: () => <div data-testid="loader" />,
-  LoaderVariant: { inElement: 'inElement' },
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-render-content">{children}</div>,
 }));
 
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
@@ -37,6 +32,7 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
         date_attribute: 'created_at',
       }],
       isMissingHostEntity: false,
+      isMissingSavedFilters: false,
       isPreviewMode: false,
       queryRef: null,
     };
@@ -45,21 +41,18 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 
 vi.mock('../../../../components/dashboard/dashboard-types', () => ({}));
 
-vi.mock('../../../../utils/hooks/useGranted', () => ({
-  default: () => true,
-  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
-}));
-
 import StixRelationshipsMultiVerticalBars from './StixRelationshipsMultiVerticalBars';
 
 describe('StixRelationshipsMultiVerticalBars', () => {
   const minimalProps = {
-    config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
       filters: emptyFilterGroup,
       date_attribute: 'created_at',
     }],
-    parameters: {},
+    config: {
+      startDate: '2025-01-01T00:00:00Z',
+      endDate: '2025-12-31T23:59:59Z',
+    },
   };
 
   beforeEach(() => {
@@ -67,8 +60,13 @@ describe('StixRelationshipsMultiVerticalBars', () => {
   });
 
   it('renders without crashing', () => {
-    const { container } = testRender(<StixRelationshipsMultiVerticalBars {...minimalProps} />);
-    expect(container).toBeTruthy();
+    const { getByTestId } = testRender(
+      <StixRelationshipsMultiVerticalBars
+        {...minimalProps}
+        parameters={{}}
+      />,
+    );
+    expect(getByTestId('widget-container')).toBeDefined();
   });
 
   it('passes configured interval to query variables', () => {
@@ -80,19 +78,24 @@ describe('StixRelationshipsMultiVerticalBars', () => {
     );
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       { interval: 'month' },
     );
     expect(variables.interval).toBe('month');
   });
 
   it('defaults interval to day when not specified', () => {
-    testRender(<StixRelationshipsMultiVerticalBars {...minimalProps} />);
+    testRender(
+      <StixRelationshipsMultiVerticalBars
+        {...minimalProps}
+        parameters={{}}
+      />,
+    );
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       {},
     );
     expect(variables.interval).toBe('day');

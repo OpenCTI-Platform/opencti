@@ -1,12 +1,10 @@
 import React, { ChangeEvent, useMemo, useState } from 'react';
 import { Autocomplete, Stack, TextField } from '@mui/material';
-import { FilterListOffOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@common/button/IconButton';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 
 interface Contract {
   title: string;
@@ -90,7 +88,7 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
     }
   };
 
-  const hasActiveFilters = filters.search || filters.type || filters.useCase;
+  const hasActiveFilters = !!filters.search || !!filters.type || !!filters.useCase;
 
   return (
     <Stack flexDirection="row" gap={2} flex={1} alignItems="center">
@@ -132,16 +130,10 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         clearOnEscape
       />
 
-      <Tooltip title={t_i18n('Clear filters')}>
-        <IconButton
-          color={hasActiveFilters ? 'primary' : 'default'}
-          onClick={handleClearFilters}
-          size="small"
-          disabled={!hasActiveFilters}
-        >
-          <FilterListOffOutlined fontSize="small" />
-        </IconButton>
-      </Tooltip>
+      <ClearFiltersIcon
+        hasActiveFilters={hasActiveFilters}
+        onClear={handleClearFilters}
+      />
     </Stack>
   );
 };

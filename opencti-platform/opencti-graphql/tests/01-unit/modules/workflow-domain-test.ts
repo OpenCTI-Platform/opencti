@@ -22,6 +22,7 @@ import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -158,7 +159,7 @@ describe('Workflow Domain', () => {
 
     it('does NOT call checkEnterpriseEdition when conditions is present but filters array is empty', async () => {
       const def = ceDefinition({
-        transitions: [{ from: 'open', to: 'closed', event: 'close', conditions: { mode: 'and', filters: [], filterGroups: [] } }],
+        transitions: [{ from: 'open', to: 'closed', event: 'close', conditions: emptyFilterGroup }],
       });
       await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
       expect(ee.checkEnterpriseEdition).not.toHaveBeenCalled();

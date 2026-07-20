@@ -4,7 +4,7 @@ import { useDataTableContext } from 'src/components/dataGrid/components/DataTabl
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
 import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
-import useAuth from '../../utils/hooks/useAuth';
+import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
@@ -31,7 +31,6 @@ const SavedFilterSelection = ({
   setCurrentSavedFilter,
   onRefetch,
 }: SavedFilterSelectionProps) => {
-  const { me } = useAuth();
   const {
     useDataTablePaginationLocalStorage: {
       localStorageKey,
@@ -44,26 +43,7 @@ const SavedFilterSelection = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
-  const options: SavedFiltersAutocompleteOptionType[] = data.map((item) => {
-    const isOwner = item.creator_id === me.id;
-    const ownerMember = item.authorizedMembers?.find((m) => m.member_id === item.creator_id);
-    const ownerName = ownerMember?.name ?? '';
-
-    return {
-      label: item.name,
-      value: item,
-      isOwner,
-      ownerName: isOwner ? undefined : ownerName,
-      canManage: item.currentUserAccessRight === 'admin',
-    };
-  });
-
-  // Sort options: "My filters" first, then "Shared with me"; alphabetically within each group
-  const sortedOptions = [...options].sort((a, b) => {
-    if (a.isOwner && !b.isOwner) return -1;
-    if (!a.isOwner && b.isOwner) return 1;
-    return a.label.localeCompare(b.label);
-  });
+  const options = useBuildSavedFiltersOptions(data);
 
   const handleReset = () => {
     setSelectedSavedFilter(undefined);
@@ -74,7 +54,7 @@ const SavedFilterSelection = ({
 
   useEffect(() => {
     if (savedFilters) {
-      const currentSavedFilters = sortedOptions.find((item) => item.value.id === savedFilters.id);
+      const currentSavedFilters = options.find((item) => item.value.id === savedFilters.id);
       if (!currentSavedFilters || !data.length) {
         helpers.handleRemoveSavedFilters();
         return;
@@ -88,7 +68,7 @@ const SavedFilterSelection = ({
 
   useEffect(() => {
     if (currentSavedFilter && !selectedSavedFilter) {
-      const found = sortedOptions.find((o) => o.value.id === currentSavedFilter.id);
+      const found = options.find((o) => o.value.id === currentSavedFilter.id);
       if (found) {
         setSelectedSavedFilter(found);
         setInputValue(found.label);
@@ -102,7 +82,7 @@ const SavedFilterSelection = ({
   // Sync local state when the underlying data changes (e.g. after a name edit)
   useEffect(() => {
     if (selectedSavedFilter) {
-      const updated = sortedOptions.find((o) => o.value.id === selectedSavedFilter.value.id);
+      const updated = options.find((o) => o.value.id === selectedSavedFilter.value.id);
       if (updated && updated.label !== selectedSavedFilter.label) {
         setSelectedSavedFilter(updated);
         setInputValue(updated.label);
@@ -136,7 +116,7 @@ const SavedFilterSelection = ({
     <>
       <SavedFiltersAutocomplete
         isDisabled={isDisabled}
-        options={sortedOptions}
+        options={options}
         onDelete={handleDelete}
         onChange={handleChange}
         onInputChange={onInputChange}

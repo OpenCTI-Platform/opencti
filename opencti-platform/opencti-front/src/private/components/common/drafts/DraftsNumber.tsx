@@ -1,21 +1,18 @@
-import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import { CSSProperties, ReactNode } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { DraftsNumberQuery$data } from './__generated__/DraftsNumberQuery.graphql';
+import { DraftsNumberQuery } from './__generated__/DraftsNumberQuery.graphql';
 
 const draftsNumberQuery = graphql`
   query DraftsNumberQuery(
@@ -38,6 +35,73 @@ const draftsNumberQuery = graphql`
   }
 `;
 
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): DraftsNumberQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const { startDate } = computeStartEndDates(config);
+  const dateAttribute = selection.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, dateAttribute },
+  );
+  return {
+    dateAttribute,
+    filters: normalizeFilterGroupForBackend(filters),
+    startDate,
+    endDate: dayAgo(),
+  };
+};
+
+interface DraftsNumberComponentProps {
+  queryRef: PreloadedQuery<DraftsNumberQuery>;
+  parameters?: WidgetParameters;
+  entityType?: string;
+}
+
+const DraftsNumberComponent = ({
+  queryRef,
+  parameters,
+  entityType,
+}: DraftsNumberComponentProps) => {
+  const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
+  const data = usePreloadedQuery(draftsNumberQuery, queryRef);
+
+  if (!data?.draftWorkspacesNumber) {
+    return <WidgetNoData />;
+  }
+
+  const { total, count } = data.draftWorkspacesNumber;
+  const title = parameters?.title ?? t_i18n('Draft workspaces number');
+  const translatedTitle = translateEntityType(title);
+
+  return (
+    <WidgetNumber
+      entityType={entityType}
+      label={translatedTitle}
+      value={total}
+      diffLabel={t_i18n('24 hours')}
+      diffValue={total - count}
+    />
+  );
+};
+
+interface DraftsNumberProps {
+  config: DashboardConfig;
+  refreshRate?: number | null;
+  dataSelection: WidgetDataSelection[];
+  parameters?: WidgetParameters;
+  entityType?: string;
+  popover?: ReactNode;
+  variant?: string;
+  height?: CSSProperties['height'];
+  host?: WidgetHost;
+}
+
 const DraftsNumber = ({
   config,
   refreshRate = null,
@@ -48,52 +112,18 @@ const DraftsNumber = ({
   variant,
   height,
   host,
-}: {
-  config: DashboardConfig;
-  refreshRate?: number | null;
-  dataSelection: WidgetDataSelection[];
-  parameters?: WidgetParameters;
-  entityType?: string;
-  popover?: ReactNode;
-  variant?: string;
-  height?: CSSProperties['height'];
-  host?: WidgetHost;
-}) => {
+}: DraftsNumberProps) => {
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
 
-  const title = parameters.title ?? t_i18n('Draft workspaces number');
-  const translatedTitle = translateEntityType(title);
-  const { startDate, endDate } = computeStartEndDates(config);
-
-  const refreshToken = useDashboardRefreshToken();
-  const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    setLocalRefreshKey((k) => k + 1);
-  }, [refreshToken]);
-  useEffect(() => {
-    if (!refreshRate || refreshToken !== null) return () => {};
-    const interval = setInterval(() => setLocalRefreshKey((k) => k + 1), refreshRate);
-    return () => clearInterval(interval);
-  }, [refreshRate, refreshToken]);
-
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsNumberQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: draftsNumberQuery,
+    config,
+    buildQueryVariables,
   });
-
-  const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
 
   return (
     <WidgetContainer
@@ -104,38 +134,18 @@ const DraftsNumber = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {isMissingHostEntity
-        ? <WidgetNoHostEntity host={host} />
-        : (
-            <QueryRenderer
-              key={localRefreshKey}
-              query={draftsNumberQuery}
-              variables={{
-                dateAttribute,
-                filters,
-                startDate,
-                endDate: dayAgo(),
-              }}
-              render={({ props }: { props: DraftsNumberQuery$data }) => {
-                if (props && props.draftWorkspacesNumber) {
-                  const { total, count } = props.draftWorkspacesNumber;
-                  return (
-                    <WidgetNumber
-                      entityType={entityType}
-                      label={translatedTitle}
-                      value={total}
-                      diffLabel={t_i18n('24 hours')}
-                      diffValue={total - count}
-                    />
-                  );
-                }
-                if (props) {
-                  return <WidgetNoData />;
-                }
-                return <Loader variant={LoaderVariant.inElement} />;
-              }}
-            />
-          )}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <DraftsNumberComponent
+          queryRef={queryRef!}
+          parameters={parameters}
+          entityType={entityType}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

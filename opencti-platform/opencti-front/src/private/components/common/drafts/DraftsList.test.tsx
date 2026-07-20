@@ -7,7 +7,6 @@ vi.mock('../../../../relay/environment', () => ({
   fileUri: (f: string) => f,
   MESSAGING$: { messages$: { subscribe: () => ({}) } },
   environment: {},
-  QueryRenderer: ({ render }: { render: (args: { props: null }) => React.ReactNode }) => render({ props: null }),
   fetchQuery: vi.fn(),
 }));
 
@@ -28,19 +27,23 @@ vi.mock('../../../../components/Loader', () => ({
   LoaderVariant: { inElement: 'inElement' },
 }));
 
-vi.mock('../../../../components/dashboard/DashboardRefreshContext', () => ({
-  useDashboardRefreshToken: () => null,
-}));
-
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
     resolvedDataSelection: dataSelection,
     isMissingHostEntity: false,
+    isMissingSavedFilters: false,
     isPreviewMode: false,
+    queryRef: null,
   }),
 }));
 
-vi.mock('../../../../components/dashboard/dashboard-viz-utils', () => ({
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
+  ),
+}));
+
+vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeStartEndDates: () => ({ startDate: null, endDate: null }),
 }));
 
@@ -49,12 +52,13 @@ vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
 }));
 
 import DraftsList from './DraftsList';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 describe('DraftsList', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       date_attribute: 'created_at',
       sort_by: 'created_at',
     }],
@@ -67,7 +71,7 @@ describe('DraftsList', () => {
     expect(container).toBeTruthy();
   });
 
-  it('shows loader while data is loading', () => {
+  it('shows loader while queryRef is null', () => {
     const { getByTestId } = testRender(<DraftsList {...minimalProps} />);
     expect(getByTestId('loader')).toBeTruthy();
   });

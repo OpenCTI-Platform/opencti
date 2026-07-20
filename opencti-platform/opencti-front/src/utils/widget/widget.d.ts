@@ -66,6 +66,9 @@ export interface WidgetDataSelection {
   filters?: FilterGroup | null;
   dynamicFrom?: FilterGroup | null;
   dynamicTo?: FilterGroup | null;
+  filters_id?: string | null;
+  dynamicFrom_id?: string | null;
+  dynamicTo_id?: string | null;
   columns?: readonly WidgetColumn[] | null;
   sort_by?: string | null;
   sort_mode?: string | null;

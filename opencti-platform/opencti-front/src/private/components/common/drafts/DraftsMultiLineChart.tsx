@@ -1,20 +1,17 @@
-import { useState, useMemo, useEffect, useRef, ReactNode, CSSProperties } from 'react';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import React, { ReactNode, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { DraftsMultiLineChartTimeSeriesQuery$data } from './__generated__/DraftsMultiLineChartTimeSeriesQuery.graphql';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsMultiLineChartTimeSeriesQuery } from './__generated__/DraftsMultiLineChartTimeSeriesQuery.graphql';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
 const draftsMultiLineChartTimeSeriesQuery = graphql`
@@ -42,99 +39,99 @@ const draftsMultiLineChartTimeSeriesQuery = graphql`
   }
 `;
 
-const DraftsMultiLineChart = ({
-  variant,
-  height,
-  config,
-  refreshRate = null,
+interface DraftsMultiLineChartComponentProps {
+  queryRef: PreloadedQuery<DraftsMultiLineChartTimeSeriesQuery>;
+  dataSelection: Widget['dataSelection'];
+  parameters: WidgetParameters;
+  setChart: (chart: ApexCharts) => void;
+}
+
+const DraftsMultiLineChartComponent = ({
+  queryRef,
   dataSelection,
-  parameters = {},
-  popover,
-  host,
-}: {
-  variant?: string;
-  height?: CSSProperties['height'];
-  config: DashboardConfig;
-  refreshRate?: number | null;
-  dataSelection: WidgetDataSelection[];
+  parameters,
+  setChart,
+}: DraftsMultiLineChartComponentProps) => {
+  const { t_i18n } = useFormatter();
+  const data = usePreloadedQuery(draftsMultiLineChartTimeSeriesQuery, queryRef);
+  const selection = dataSelection[0];
+
+  if (!data.draftWorkspacesTimeSeries) {
+    return <WidgetNoData />;
+  }
+
+  return (
+    <WidgetMultiLines
+      series={[{
+        name: selection?.label || t_i18n('Number of draft workspaces'),
+        data: data.draftWorkspacesTimeSeries.map((entry) => ({
+          x: new Date(entry?.date),
+          y: entry?.value,
+        })),
+      }]}
+      interval={parameters.interval}
+      hasLegend={parameters.legend ?? undefined}
+      onMounted={setChart}
+    />
+  );
+};
+
+interface DraftsMultiLineChartProps {
+  dataSelection: Widget['dataSelection'];
   parameters?: WidgetParameters;
   popover?: ReactNode;
+  variant?: string;
+  height?: number;
   host?: WidgetHost;
-}) => {
-  const { t_i18n } = useFormatter();
-  const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
-    perspective: 'entities',
-    dataSelection,
-    host,
-  });
+  config: DashboardConfig;
+  refreshRate?: number | null;
+}
 
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  parameters?: WidgetParameters,
+): DraftsMultiLineChartTimeSeriesQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
   const { startDate: rawStartDate, endDate: rawEndDate } = computeStartEndDates(config);
   const startDate = rawStartDate ?? monthsAgo(12);
   const endDate = rawEndDate ?? now();
-
-  const refreshToken = useDashboardRefreshToken();
-  const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    setLocalRefreshKey((k) => k + 1);
-  }, [refreshToken]);
-  useEffect(() => {
-    if (!refreshRate || refreshToken !== null) return () => {};
-    const interval = setInterval(() => setLocalRefreshKey((k) => k + 1), refreshRate);
-    return () => clearInterval(interval);
-  }, [refreshRate, refreshToken]);
-
-  const selection = resolvedDataSelection[0];
-  const { filters } = useMemo(() => buildFiltersAndOptionsForWidgets(selection?.filters), [selection]);
-
-  const variables = useMemo(() => ({
-    field: selection?.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at',
+  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
+  return {
+    field: dateAttribute,
     operation: 'count',
     startDate,
     endDate,
     interval: getWidgetInterval(parameters),
-    filters,
-  }), [startDate, endDate, parameters.interval, selection, filters]);
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    return (
-      <QueryRenderer
-        key={localRefreshKey}
-        query={draftsMultiLineChartTimeSeriesQuery}
-        variables={variables}
-        render={({ props }: { props: DraftsMultiLineChartTimeSeriesQuery$data }) => {
-          if (props && props.draftWorkspacesTimeSeries) {
-            return (
-              <WidgetMultiLines
-                series={[{
-                  name: selection?.label || t_i18n('Number of draft workspaces'),
-                  data: props.draftWorkspacesTimeSeries.map((entry) => ({
-                    x: new Date(entry?.date),
-                    y: entry?.value,
-                  })),
-                }]}
-                interval={parameters.interval}
-                hasLegend={parameters.legend ?? undefined}
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
+    filters: normalizeFilterGroupForBackend(filters),
   };
+};
+
+const DraftsMultiLineChart = ({
+  variant,
+  height,
+  dataSelection,
+  parameters = {},
+  popover,
+  config,
+  refreshRate = null,
+  host,
+}: DraftsMultiLineChartProps) => {
+  const { t_i18n } = useFormatter();
+  const [chart, setChart] = useState<ApexCharts>();
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsMultiLineChartTimeSeriesQuery>({
+    perspective: 'entities',
+    dataSelection,
+    host,
+    refreshRate,
+    query: draftsMultiLineChartTimeSeriesQuery,
+    config,
+    parameters,
+    buildQueryVariables,
+  });
 
   return (
     <WidgetContainer
@@ -146,7 +143,19 @@ const DraftsMultiLineChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <DraftsMultiLineChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          setChart={setChart}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };
