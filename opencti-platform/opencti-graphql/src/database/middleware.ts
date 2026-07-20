@@ -876,10 +876,11 @@ export const distributionEntities = async (
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
     const customFieldDef = getCustomFieldDefinitionByName(field);
-    let valueField = 'custom_field_values.string_value';
-    if (customFieldDef) {
-      valueField = `custom_field_values.${getCustomFieldValueField(customFieldDef.field_type)}`;
-    }
+    // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
+    // and date sub-fields are already aggregatable as-is.
+    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
+    const rawValueField = customFieldDef ? getCustomFieldValueField(customFieldDef.field_type) : 'string_value';
+    const valueField = `custom_field_values.${rawValueField}${NON_KEYWORD_VALUE_FIELDS.includes(rawValueField) ? '' : '.keyword'}`;
 
     distributionData = await elAggregationNestedTermsWithFilter(
       context,
