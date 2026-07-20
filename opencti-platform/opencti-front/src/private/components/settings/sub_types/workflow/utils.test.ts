@@ -10,14 +10,14 @@ describe('Workflow utils', () => {
     initialState: 'state-1',
   } as SubTypeWorkflowQuery$data['workflowDefinition'];
 
-  it('should transform an empty graph', () => {
+  it('should transform an empty graph without inheriting the server initialState', () => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
     const result = transformToWorkflowDefinition(nodes, edges, mockWorkflowDefinition);
     expect(result).toEqual({
       id: '1234',
       name: 'Test Workflow',
-      initialState: 'state-1',
+      initialState: '*',
       states: [],
       transitions: [],
     });
