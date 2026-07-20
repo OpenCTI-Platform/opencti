@@ -85,7 +85,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -952,7 +952,7 @@ class DataTableToolBar extends Component {
     }
   }
 
-  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, settings) {
+  renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin) {
     const { t, taskScope } = this.props;
     const { actionsInputs } = this.state;
 
@@ -961,7 +961,6 @@ class DataTableToolBar extends Component {
     const checkTypes = (typesList) => selectedTypes.every((type) => typesList.includes(type))
       && entityTypeFilterValues.every((type) => typesList.includes(type));
 
-    const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
     let options = [];
     if (isUserDatatable) {
       if (['ADD', 'REMOVE'].includes(actionsInputs[i]?.type)) {
@@ -975,7 +974,7 @@ class DataTableToolBar extends Component {
           ...options,
           { label: t('Account status'), value: 'account_status' },
           { label: t('Account expiration date'), value: 'account_lock_after_date' },
-          forcePasswordChangeEnabled && { label: t('Force password change date'), value: 'password_valid_until' },
+          { label: t('Force password change date'), value: 'password_valid_until' },
         ].filter(Boolean);
       }
     } else {
@@ -2872,7 +2871,7 @@ class DataTableToolBar extends Component {
                           <Grid item xs={3}>
                             <FormControl className={classes.formControl}>
                               <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin, settings)}
+                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
                             </FormControl>
                           </Grid>
                           <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
