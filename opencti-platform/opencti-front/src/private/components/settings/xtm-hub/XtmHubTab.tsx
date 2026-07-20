@@ -1,17 +1,13 @@
 import { graphql } from 'react-relay';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
-import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
-import { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from 'src/components/i18n';
 import ConfirmationDialog from './ConfirmationDialog';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { UserContext } from 'src/utils/hooks/useAuth';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useExternalTab from './useExternalTab';
 import ProcessInstructions from './ProcessInstructions';
 import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
-import type { Theme } from '../../../../components/Theme';
-import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -43,11 +39,11 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
 
 interface XtmHubTabProps {
   registrationStatus?: string;
+  renderTrigger?: (handleOpen: () => void) => React.ReactNode;
 }
 
-const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
+const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings, about } = useContext(UserContext);
@@ -65,7 +61,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
-      successMessage: t_i18n('Your OpenCTI platform is successfully registered'),
+      successMessage: t_i18n('Your OpenCTI platform is successfully connected'),
     },
   );
 
@@ -74,7 +70,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     undefined,
     {
       successMessage: t_i18n(
-        'Your OpenCTI platform is successfully unregistered',
+        'Your OpenCTI platform is successfully disconnected',
       ),
     },
   );
@@ -171,6 +167,8 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     onClosingTab: handleClosingTab,
   });
 
+  if (isDemo) return null;
+
   const handleOpenDialog = () => {
     setOperationType(
       isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
@@ -208,23 +206,23 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     const isUnregister = operationType === OperationType.UNREGISTER;
     const messages = {
       register: {
-        dialogTitle: t_i18n('Registering your platform...'),
+        dialogTitle: t_i18n('Connecting your platform...'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the registration process'),
-        loaderButtonText: t_i18n('Continue to register'),
-        confirmationTitle: t_i18n('Close registration process?'),
+        canceledMessage: t_i18n('You have canceled the connection process'),
+        loaderButtonText: t_i18n('Continue to connect'),
+        confirmationTitle: t_i18n('Close connection process?'),
         confirmationMessage: t_i18n('registration_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue registration'),
+        continueButtonText: t_i18n('Continue connection'),
         instructionKey: 'registration_instruction_paragraph',
       },
       unregister: {
-        dialogTitle: t_i18n('Unregistering your platform...'),
+        dialogTitle: t_i18n('Disconnecting your platform...'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the unregistration process'),
-        loaderButtonText: t_i18n('Continue to unregister'),
-        confirmationTitle: t_i18n('Close unregistration process?'),
+        canceledMessage: t_i18n('You have canceled the disconnection process'),
+        loaderButtonText: t_i18n('Continue to disconnect'),
+        confirmationTitle: t_i18n('Close disconnection process?'),
         confirmationMessage: t_i18n('unregistration_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue unregistration'),
+        continueButtonText: t_i18n('Continue disconnection'),
         instructionKey: 'unregistration_instruction_paragraph',
       },
     };
@@ -259,65 +257,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     return renderer && isDialogOpen ? renderer() : null;
   };
 
-  const getButtonText = () => {
-    if (isRegistered) {
-      return t_i18n('Unregister from XTM Hub');
-    }
-    return t_i18n('Register in XTM Hub');
-  };
-
-  if (isDemo) {
-    return null;
-  }
-
-  if (isRegistered) {
-    if (isEnterpriseEdition && eeSettings?.license_type === LICENSE_OPTION_TRIAL) {
-      return null;
-    }
-    return (
-      <>
-        <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
-          <Button
-            variant="secondary"
-            size="small"
-            intent="destructive"
-            onClick={handleOpenDialog}
-          >
-            {getButtonText()}
-          </Button>
-        </div>
-        <ProcessDialog
-          open={isDialogOpen}
-          title={config.dialogTitle}
-          onClose={handleAttemptClose}
-        >
-          {renderDialogContent()}
-        </ProcessDialog>
-        <ConfirmationDialog
-          open={showConfirmation}
-          title={config.confirmationTitle}
-          message={config.confirmationMessage}
-          confirmButtonText={t_i18n('Yes, close')}
-          cancelButtonText={config.continueButtonText}
-          onConfirm={handleCloseDialog}
-          onCancel={handleCancelClose}
-        />
-      </>
-    );
-  }
-
   return (
     <>
-      <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
-        <Button
-          gradient
-          variant="secondary"
-          style={{ marginTop: 10, marginBottom: 10 }}
-          onClick={handleOpenDialog}
-        >
-          {getButtonText()}
-        </Button>
-      </div>
+      {renderTrigger?.(handleOpenDialog)}
       <ProcessDialog
         open={isDialogOpen}
         title={config.dialogTitle}

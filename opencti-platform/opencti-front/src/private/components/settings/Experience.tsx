@@ -24,11 +24,11 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
-import { useFormatter } from '../../../components/i18n';
+import { useFormatter } from 'src/components/i18n';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import type { Theme } from '../../../components/Theme';
-import { FieldOption } from '../../../utils/field';
+import type { Theme } from 'src/components/Theme';
+import { FieldOption } from 'src/utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -172,7 +172,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   return (
     <div className={classes.container} data-testid="experience-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Filigran Experience'), current: true }]} />
-      <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
+      <Grid container={true} spacing={3} style={{ marginBottom: 23 }} alignItems="flex-start">
         {isEnterpriseEditionActivated ? (
           <Grid item xs={6}>
             <Card

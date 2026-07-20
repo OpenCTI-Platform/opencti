@@ -1,16 +1,17 @@
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import React, { useEffect, useState, useContext } from 'react';
-import { List, ListItem, ListItemText, Typography } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
-import { useFormatter } from '../../../../components/i18n';
+import XtmHubUnregisteredSection from '@components/settings/xtm-hub/XtmHubUnregisteredSection';
+import XtmHubRegisteredSection from '@components/settings/xtm-hub/XtmHubRegisteredSection';
+import { useFormatter } from 'src/components/i18n';
+import type { Theme } from 'src/components/Theme';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
-import Button from '@common/button/Button';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { UserContext } from 'src/utils/hooks/useAuth';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Card from '../../../../components/common/card/Card';
-import ItemBoolean from '../../../../components/ItemBoolean';
 
 export const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
@@ -36,7 +37,8 @@ export const checkHubConnectivity = graphql`
 `;
 
 const XtmHubSettingsComponent = () => {
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
     xtmHubSettingsQuery,
     {},
@@ -44,85 +46,50 @@ const XtmHubSettingsComponent = () => {
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { isXTMHubAccessible } = useContext(UserContext);
-  return (
-    <Card
-      title={t_i18n('XTM Hub')}
-      action={isGrantedToXtmHub
-        && isXTMHubAccessible
-        && xtmHubSettings.xtm_hub_backend_is_reachable
-        && (<XtmHubTab registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined} />)}
-    >
-      <Typography variant="h6">
-        {t_i18n('Experiment valuable threat management resources in the XTM Hub')}
-      </Typography>
-      <p>{t_i18n("XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.")}</p>
-      {xtmHubSettings.xtm_hub_registration_status !== 'registered' && xtmHubSettings.xtm_hub_registration_status !== 'lost_connectivity' && (
-        <>
-          <p>{t_i18n('By registering this platform into the hub, it will allow to:')}</p>
-          <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
-            <li>{t_i18n('deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.')}</li>
-            <li>{t_i18n('stay informed of our new custom dashboards and key threat events with an exclusive news feed')}</li>
-            <li>{t_i18n('monitor key metrics of the platform and health status')} <i>({t_i18n('coming soon')})</i></li>
-          </List>
 
-          <Button
-            gradient
-            variant="secondary"
-            component="a"
-            href="https://filigran.io/platforms/xtm-hub/"
-            target="_blank"
-            rel="noreferrer"
-            style={{ marginTop: 10, marginBottom: 10 }}
-          >
-            {t_i18n('Discover the Hub')}
-          </Button>
-        </>
+  const isConnected = xtmHubSettings.xtm_hub_registration_status === 'registered'
+    || xtmHubSettings.xtm_hub_registration_status === 'lost_connectivity';
+
+  const canManageXtmHub = isGrantedToXtmHub
+    && isXTMHubAccessible
+    && xtmHubSettings.xtm_hub_backend_is_reachable;
+
+  return (
+    <Card title={t_i18n('XTM Hub')} sx={{ border: `1px solid ${theme.palette.border.primary}` }}>
+      {isConnected && canManageXtmHub && (
+        <XtmHubTab
+          registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined}
+          renderTrigger={(handleOpen) => (
+            <XtmHubRegisteredSection
+              registrationStatus={xtmHubSettings.xtm_hub_registration_status ?? ''}
+              registrationDate={xtmHubSettings.xtm_hub_registration_date}
+              registrationUserName={xtmHubSettings.xtm_hub_registration_user_name}
+              onDisconnect={handleOpen}
+            />
+          )}
+        />
       )}
-      <List style={{ marginTop: -10 }}>
-        {xtmHubSettings.xtm_hub_registration_status === 'registered' && (
-          <>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Registration status')} />
-              <ItemBoolean
-                label={t_i18n('Registered')}
-                status={true}
-              />
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Registration date')} />
-              <ItemBoolean
-                neutralLabel={fd(xtmHubSettings.xtm_hub_registration_date)}
-                status={null}
-              />
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Registered by')} />
-              <ItemBoolean
-                neutralLabel={xtmHubSettings.xtm_hub_registration_user_name}
-                status={null}
-              />
-            </ListItem>
-          </>
-        )}
-        {xtmHubSettings.xtm_hub_registration_status === 'lost_connectivity' && (
-          <>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Registration status')} />
-              <ItemBoolean
-                label={t_i18n('Connectivity lost')}
-                status={false}
-              />
-            </ListItem>
-            <ListItem divider={true}>
-              <ListItemText primary={t_i18n('Last successful check')} />
-              <ItemBoolean
-                neutralLabel={fd(xtmHubSettings.xtm_hub_last_connectivity_check)}
-                status={null}
-              />
-            </ListItem>
-          </>
-        )}
-      </List>
+
+      {isConnected && !canManageXtmHub && (
+        <XtmHubRegisteredSection
+          registrationStatus={xtmHubSettings.xtm_hub_registration_status ?? ''}
+          registrationDate={xtmHubSettings.xtm_hub_registration_date}
+          registrationUserName={xtmHubSettings.xtm_hub_registration_user_name}
+        />
+      )}
+
+      {!isConnected && canManageXtmHub && (
+        <XtmHubTab
+          registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined}
+          renderTrigger={(handleOpen) => (
+            <XtmHubUnregisteredSection onConnect={handleOpen} />
+          )}
+        />
+      )}
+
+      {!isConnected && !canManageXtmHub && (
+        <XtmHubUnregisteredSection />
+      )}
     </Card>
   );
 };
@@ -132,10 +99,12 @@ const XtmHubSettings: React.FC = () => {
   const [isCheckDone, setIsCheckDone] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({ variables: {},
+    commitCheckConnectivity({
+      variables: {},
       onCompleted: () => {
         setIsCheckDone(true);
-      } });
+      },
+    });
   }, []);
 
   if (!isCheckDone) {
