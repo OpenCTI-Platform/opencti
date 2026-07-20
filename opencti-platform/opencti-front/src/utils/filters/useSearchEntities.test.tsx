@@ -37,7 +37,11 @@ vi.mock('../hooks/useAuth', () => ({
         { id: 'Kill-Chain-Phase' },
         { id: 'External-Reference' },
       ],
-      filterKeysSchema: new Map(),
+      filterKeysSchema: new Map([
+        ['Stix-Core-Object', new Map([
+          ['status_id', { type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
+        ])],
+      ]),
     },
   }),
 }));
@@ -317,12 +321,6 @@ describe('useSearchEntities', () => {
 
     expect(defaultOptions.setInputValues).not.toHaveBeenCalled();
   });
-});
-
-describe('useSearchEntities - StatusTemplate branch', () => {
-  beforeEach(() => {
-    mockFetchQuery.mockReset();
-  });
 
   it('should sort status templates alphabetically', async () => {
     const mockData = {
@@ -330,40 +328,61 @@ describe('useSearchEntities - StatusTemplate branch', () => {
         edges: [
           { node: { id: 'st-2', name: 'Zulu', color: '#ff0' } },
           { node: { id: 'st-1', name: 'Alpha', color: '#00f' } },
+          { node: { id: 'st-3', name: 'Mike', color: '#0f0' } },
         ],
       },
     };
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve(mockData) });
 
-    mockFetchQuery.mockReturnValue({
-      toPromise: () => Promise.resolve(mockData),
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('status_id', {}, vi.fn(), createEvent(''));
     });
 
-    // The StatusTemplate branch maps results to type: 'Vocabulary' and sorts by label
-    const edges = mockData.statusTemplates.edges;
-    const statusTemplateEntities = edges
-      .flatMap((n) => (!n ? [] : {
-        label: n.node.name,
-        color: n.node.color,
-        value: n.node.id,
-        type: 'Vocabulary',
-      }))
-      .sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
+    await waitFor(() => {
+      const [entities] = result.current;
+      expect((entities.status_id ?? []).length).toBeGreaterThan(0);
+    });
 
-    expect(statusTemplateEntities[0].label).toBe('Alpha');
-    expect(statusTemplateEntities[1].label).toBe('Zulu');
-    expect(statusTemplateEntities[0].type).toBe('Vocabulary');
-    expect(statusTemplateEntities[0].value).toBe('st-1');
+    const [entities] = result.current;
+    const statusOptions = entities.status_id ?? [];
+    expect(statusOptions[0].label).toBe('Alpha');
+    expect(statusOptions[1].label).toBe('Mike');
+    expect(statusOptions[2].label).toBe('Zulu');
+    expect(statusOptions.every((e) => e.type === 'Vocabulary')).toBe(true);
   });
 
-  it('maps StatusTemplate results to Vocabulary type', () => {
-    const node = { id: 'st-1', name: 'Test', color: '#abc' };
-    const mapped = {
-      label: node.name,
-      color: node.color,
-      value: node.id,
-      type: 'Vocabulary',
+  it('should map StatusTemplate results to Vocabulary type', async () => {
+    const mockData = {
+      statusTemplates: {
+        edges: [
+          { node: { id: 'st-1', name: 'In Progress', color: '#f39c12' } },
+        ],
+      },
     };
-    expect(mapped.type).toBe('Vocabulary');
-    expect(mapped.label).toBe('Test');
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve(mockData) });
+
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('status_id', {}, vi.fn(), createEvent(''));
+    });
+
+    await waitFor(() => {
+      const [entities] = result.current;
+      expect((entities.status_id ?? []).length).toBeGreaterThan(0);
+    });
+
+    const [entities] = result.current;
+    const statusOptions = entities.status_id ?? [];
+    expect(statusOptions[0]).toEqual({
+      label: 'In Progress',
+      color: '#f39c12',
+      value: 'st-1',
+      type: 'Vocabulary',
+    });
   });
 });
