@@ -5,12 +5,7 @@ import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import {
-  AddOutlined,
-  ArrowRightAlt,
-  DeleteOutline,
-  ExpandMore,
-} from '@mui/icons-material';
+import { AddOutlined, ArrowRightAlt, DeleteOutline, ExpandMore, FilterAltOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -55,10 +50,11 @@ class AccordionErrorBoundary extends React.Component<
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
+
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // eslint-disable-next-line no-console
     console.error('[AccordionErrorBoundary] Render crash:', error, info.componentStack);
   }
+
   render() {
     if (this.state.error) {
       return (
@@ -261,12 +257,12 @@ const buildRuleEntities = (
   return entities.length > 0
     ? entities
     : [{
-      key: 'Stix-Core-Object::',
-      label: 'Stix-Core-Object',
-      entityType: 'Stix-Core-Object',
-      resolvedEntityTypes: ['Stix-Core-Object'],
-      initialFilters: createEmptyFilterGroup(),
-    }];
+        key: 'Stix-Core-Object::',
+        label: 'Stix-Core-Object',
+        entityType: 'Stix-Core-Object',
+        resolvedEntityTypes: ['Stix-Core-Object'],
+        initialFilters: createEmptyFilterGroup(),
+      }];
 };
 
 const buildRuleTriplets = (
@@ -318,42 +314,6 @@ const mergeFiltersByKey = (input: FilterGroup, lockedFilters: Filter[]): FilterG
     filters: Array.from(byKey.values()),
   };
 };
-
-const humanJoin = (values: string[]) => {
-  if (values.length <= 1) return values[0] ?? '';
-  if (values.length === 2) return `${values[0]} or ${values[1]}`;
-  return `${values.slice(0, -1).join(', ')}, or ${values[values.length - 1]}`;
-};
-
-const extractFilterValuesByKey = (filterGroup: FilterGroup | undefined, key: string): string[] => {
-  if (!filterGroup) return [];
-  return (filterGroup.filters ?? [])
-    .filter((filter) => filter.key === key)
-    .flatMap((filter) => filter.values ?? [])
-    .filter((value): value is string => typeof value === 'string' && value.length > 0);
-};
-
-const resolveRelationTypesForTriplet = (
-  triplet: RuleTriplet,
-  filtersMap: Record<string, FilterGroup>,
-): string[] => {
-  if (triplet.relationType && !['any', 'stix-core-relationship'].includes(triplet.relationType.toLowerCase())) {
-    return [triplet.relationType.toLowerCase()];
-  }
-  const fromFilters = extractFilterValuesByKey(filtersMap[`relationship::${triplet.key}`], 'relationship_type');
-  return Array.from(new Set(fromFilters.map((value) => value.toLowerCase())));
-};
-
-const resolveSelectedEntityTypes = (
-  entity: RuleEntity | undefined,
-  filtersMap: Record<string, FilterGroup>,
-): string[] => {
-  if (!entity) return [];
-  const selectedTypes = extractFilterValuesByKey(filtersMap[entity.key], 'entity_type');
-  return selectedTypes.length > 0 ? selectedTypes : entity.resolvedEntityTypes;
-};
-
-const toLowerList = (values: string[]) => values.map((v) => v.toLowerCase());
 
 const LOCATION_TYPE_NAMES = new Set([
   'location',
@@ -589,12 +549,18 @@ const operatorLabel = (op?: string) => {
   }
 };
 
-const FilterSummaryChips = ({ filters }: { filters: FilterGroup }) => {
+const FilterSummaryChips = ({
+  filters,
+  onDelete,
+}: {
+  filters: FilterGroup;
+  onDelete?: (filter: Filter) => void;
+}) => {
   const theme = useTheme<Theme>();
   const activeFilters: Filter[] = filters.filters ?? [];
   if (activeFilters.length === 0) return null;
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 0.5, width: '100%' }}>
       {activeFilters.map((f) => {
         const op = operatorLabel(f.operator);
         const vals = f.values?.slice(0, 2).map(formatFilterValue).join(', ');
@@ -608,15 +574,24 @@ const FilterSummaryChips = ({ filters }: { filters: FilterGroup }) => {
             label={label}
             size="small"
             variant="outlined"
+            onDelete={onDelete
+              ? (event) => {
+                  event.stopPropagation();
+                  onDelete(f);
+                }
+              : undefined}
             sx={{
               fontSize: '0.75rem',
               height: 28,
               borderRadius: 1,
+              width: '100%',
+              justifyContent: 'flex-start',
               color: theme.palette.text.primary,
               backgroundColor: theme.palette.background.paper,
               borderColor: theme.palette.divider,
               '& .MuiChip-label': {
                 paddingInline: 1.25,
+                flex: 1,
               },
             }}
           />
@@ -635,6 +610,7 @@ interface ConfiguredRulePreviewProps {
   canManage?: boolean;
   editableEntityKeys?: Set<string>;
   onAddCondition?: (slot: PreviewConditionSlot) => void;
+  onRemoveCondition?: (slotKey: string, filter: Filter) => void;
   withTopDivider?: boolean;
 }
 
@@ -645,6 +621,7 @@ const ConfiguredRulePreview = ({
   canManage = false,
   editableEntityKeys,
   onAddCondition,
+  onRemoveCondition,
   withTopDivider = true,
 }: ConfiguredRulePreviewProps) => {
   const theme = useTheme<Theme>();
@@ -703,36 +680,47 @@ const ConfiguredRulePreview = ({
     disabled = false,
   ) => {
     if (!label) return null;
-    const canRenderAddButton = !!slot && canManage && !!onAddCondition;
+    const canRenderAddButton = !!slot && canManage && !!onAddCondition && !disabled;
     return (
-      <Box sx={{ position: 'relative', width: '100%' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 0.75, width: '100%' }}>
         <RuleTag color={color} label={label} />
         {canRenderAddButton && (
-          <Tooltip title="add condition">
-            <span>
-              <IconButton
-                size="small"
-                onClick={(event) => {
+          <Tooltip title={t_i18n('Add condition')}>
+            <Box
+              role="button"
+              tabIndex={0}
+              onClick={(event) => {
+                event.stopPropagation();
+                onAddCondition(slot);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
                   event.stopPropagation();
                   onAddCondition(slot);
-                }}
-                disabled={disabled}
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  width: 26,
-                  height: 26,
-                  backgroundColor: (t) => t.palette.background.paper,
-                  border: (t) => `1px solid ${t.palette.divider}`,
-                  '&:hover': {
-                    backgroundColor: (t) => t.palette.action.hover,
-                  },
-                }}
-              >
-                <AddOutlined sx={{ fontSize: 18 }} />
-              </IconButton>
-            </span>
+                }
+              }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: 0.75,
+                height: 30,
+                px: 1,
+                borderRadius: 1,
+                cursor: 'pointer',
+                color: 'primary.main',
+                border: (t) => `1px dashed ${t.palette.primary.main}`,
+                backgroundColor: 'transparent',
+                '&:hover': {
+                  backgroundColor: (t) => t.palette.action.hover,
+                },
+              }}
+            >
+              <FilterAltOutlined sx={{ fontSize: 16 }} />
+              <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                {t_i18n('Add Condition')}
+              </Typography>
+            </Box>
           </Tooltip>
         )}
       </Box>
@@ -805,7 +793,7 @@ const ConfiguredRulePreview = ({
       sx={{
         mt: withTopDivider ? 1 : 0,
         pt: withTopDivider ? 1 : 0,
-        borderTop: withTopDivider ? ((t) => `1px solid ${t.palette.divider}`) : 'none',
+        borderTop: withTopDivider ? (t) => `1px solid ${t.palette.divider}` : 'none',
         width: '100%',
       }}
       onClick={(e) => e.stopPropagation()}
@@ -827,53 +815,66 @@ const ConfiguredRulePreview = ({
                 : false;
               const relationshipSlot = !isPropertyStep
                 ? {
-                  key: `relationship::triplet-${relationshipTripletIndex}`,
-                  label: t_i18n(step?.relation ?? 'Relationship'),
-                  kind: 'relationship' as const,
-                }
+                    key: `relationship::triplet-${relationshipTripletIndex}`,
+                    label: t_i18n(step?.relation ?? 'Relationship'),
+                    kind: 'relationship' as const,
+                  }
                 : null;
               if (!isPropertyStep) {
                 relationshipTripletIndex += 1;
               }
               return (
                 <Box key={index}>
-              <Box sx={styleStepPrimaryRow}>
-                <Box sx={{ minWidth: 0 }}>
-                  {renderProgramToken(t_i18n('IF'))}
-                </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
-                  {renderEntityTagWithAddCondition(step?.source, step?.source_color, sourceSlot, !sourceEditable)}
-                </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
-                  {step?.relation && (
-                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                      {t_i18n(step.relation)}
-                    </Typography>
-                  )}
-                  {renderAddConditionButton(relationshipSlot)}
-                </Box>
-                <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
-                  {step?.target && step?.relation !== 'relationship_has'
-                    && renderEntityTagWithAddCondition(step.target, step.target_color, targetSlot, !targetEditable)}
-                </Box>
-              </Box>
+                  <Box sx={styleStepPrimaryRow}>
+                    <Box sx={{ minWidth: 0 }}>
+                      {renderProgramToken(t_i18n('IF'))}
+                    </Box>
+                    <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+                      {renderEntityTagWithAddCondition(step?.source, step?.source_color, sourceSlot, !sourceEditable)}
+                    </Box>
+                    <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+                      {step?.relation && (
+                        <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                          {t_i18n(step.relation)}
+                        </Typography>
+                      )}
+                      {renderAddConditionButton(relationshipSlot)}
+                    </Box>
+                    <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
+                      {step?.target && step?.relation !== 'relationship_has'
+                        && renderEntityTagWithAddCondition(step.target, step.target_color, targetSlot, !targetEditable)}
+                    </Box>
+                  </Box>
 
-              <Box sx={styleStepConditionsRow}>
-                <Box sx={{ minWidth: 0 }} />
-                <Box sx={{ minWidth: 0 }}>
-                  <FilterSummaryChips filters={getFilters(step?.source) ?? createEmptyFilterGroup()} />
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <FilterSummaryChips
-                    filters={relationshipSlot ? (filtersMap[relationshipSlot.key] ?? createEmptyFilterGroup()) : createEmptyFilterGroup()}
-                  />
-                </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  {step?.target && step?.relation !== 'relationship_has' && (
-                    <FilterSummaryChips filters={getFilters(step.target) ?? createEmptyFilterGroup()} />
-                  )}
-                </Box>
-              </Box>
+                  <Box sx={styleStepConditionsRow}>
+                    <Box sx={{ minWidth: 0 }} />
+                    <Box sx={{ minWidth: 0 }}>
+                      <FilterSummaryChips
+                        filters={getFilters(step?.source) ?? createEmptyFilterGroup()}
+                        onDelete={canManage && onRemoveCondition && sourceSlot && sourceEditable
+                          ? (filter) => onRemoveCondition(sourceSlot.key, filter)
+                          : undefined}
+                      />
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                      <FilterSummaryChips
+                        filters={relationshipSlot ? (filtersMap[relationshipSlot.key] ?? createEmptyFilterGroup()) : createEmptyFilterGroup()}
+                        onDelete={canManage && onRemoveCondition && relationshipSlot
+                          ? (filter) => onRemoveCondition(relationshipSlot.key, filter)
+                          : undefined}
+                      />
+                    </Box>
+                    <Box sx={{ minWidth: 0 }}>
+                      {step?.target && step?.relation !== 'relationship_has' && (
+                        <FilterSummaryChips
+                          filters={getFilters(step.target) ?? createEmptyFilterGroup()}
+                          onDelete={canManage && onRemoveCondition && targetSlot && targetEditable
+                            ? (filter) => onRemoveCondition(targetSlot.key, filter)
+                            : undefined}
+                        />
+                      )}
+                    </Box>
+                  </Box>
                 </Box>
               );
             });
@@ -919,7 +920,6 @@ interface ConfiguredRuleAccordionProps {
   configuredRule: ConfiguredRule;
   rule: NonNullable<Rule>;
   ruleEntities: RuleEntity[];
-  schemaRelationsTypesMapping: Map<string, readonly string[]>;
   schemaSdoTypes: string[];
   schemaScoTypes: string[];
   canManage: boolean;
@@ -933,7 +933,6 @@ const ConfiguredRuleAccordion = ({
   configuredRule,
   rule,
   ruleEntities,
-  schemaRelationsTypesMapping,
   schemaSdoTypes,
   schemaScoTypes,
   canManage,
@@ -966,111 +965,51 @@ const ConfiguredRuleAccordion = ({
   }, [ruleTriplets]);
 
   const filtersMap = configuredRule.filtersMap;
+  const hasAnyConditions = Object.values(filtersMap).some((fg) => (fg?.filters?.length ?? 0) > 0);
   const isSightingIncidentRule = rule.name === 'Raise incident based on sighting';
-  const isEntityTypeFirstRule = [
-    'Relation propagation testing rule',
-    'Generic relationship chain propagation (prototype)',
-  ].includes(rule.name);
   const genericEntityTypeOptions = useMemo(() => {
     const types = [...schemaSdoTypes, ...schemaScoTypes];
     return Array.from(new Set(types)).sort();
   }, [schemaSdoTypes, schemaScoTypes]);
-  const computeValidationErrors = () => {
-    const errors: string[] = [];
-    ruleTriplets.forEach((triplet) => {
-      const sourceEntity = entitiesByKey.get(triplet.sourceKey);
-      const targetEntity = entitiesByKey.get(triplet.targetKey);
-      const isSightingTriplet = isSightingIncidentRule && triplet.relationType.toLowerCase() === 'stix-sighting-relationship';
-      const sourceTypes = resolveSelectedEntityTypes(sourceEntity, filtersMap);
-      const targetTypes = resolveSelectedEntityTypes(targetEntity, filtersMap);
-      const relationTypes = resolveRelationTypesForTriplet(triplet, filtersMap);
-
-      if (isSightingTriplet) {
-        const selectedEntityCTypes = targetEntity
-          ? extractFilterValuesByKey(filtersMap[targetEntity.key], 'entity_type')
-          : [];
-        if (selectedEntityCTypes.length === 0) {
-          errors.push('Entity C type is required for sighted in/at filtering.');
-        }
-      }
-
-      relationTypes.forEach((relationType) => {
-        if (relationType === 'related-to') {
-          return;
-        }
-        if (sourceTypes.length > 0) {
-          const sourceTypesLower = toLowerList(sourceTypes);
-          const targetTypesLower = toLowerList(targetTypes);
-          const allowedTargets = Array.from(new Set(sourceTypes.flatMap((sourceType) => {
-            return resolveTypesForRelationship(
-              schemaRelationsTypesMapping,
-              relationType,
-              'to',
-              sourceType,
-            );
-          })));
-          const allowedTargetsLower = toLowerList(allowedTargets);
-          if (allowedTargets.length === 0 && sourceTypes.length > 0) {
-            const relationLabel = relationType || triplet.relationLabel;
-            const sourceLabel = sourceEntity?.label ?? 'Source entity';
-            errors.push(`${relationLabel} cannot be used from ${sourceLabel} with the selected type(s).`);
-          } else if (allowedTargets.length > 0 && targetTypes.length > 0 && !targetTypesLower.some((t) => allowedTargetsLower.includes(t))) {
-            const relationLabel = relationType || triplet.relationLabel;
-            const targetLabel = targetEntity?.label ?? 'Target entity';
-            errors.push(
-              `${targetLabel} must be of type ${humanJoin(allowedTargets)} for relationship ${relationLabel}.`,
-            );
-          }
-
-          if (targetTypes.length > 0) {
-            const allowedSources = Array.from(new Set(targetTypes.flatMap((targetType) => {
-              return resolveTypesForRelationship(
-                schemaRelationsTypesMapping,
-                relationType,
-                'from',
-                undefined,
-                targetType,
-              );
-            })));
-            const allowedSourcesLower = toLowerList(allowedSources);
-            if (allowedSources.length === 0) {
-              const relationLabel = relationType || triplet.relationLabel;
-              const targetLabel = targetEntity?.label ?? 'Target entity';
-              errors.push(`${relationLabel} cannot target ${targetLabel} with the selected type(s).`);
-            } else if (sourceTypes.length > 0 && !sourceTypesLower.some((t) => allowedSourcesLower.includes(t))) {
-              const relationLabel = relationType || triplet.relationLabel;
-              const sourceLabel = sourceEntity?.label ?? 'Source entity';
-              errors.push(
-                `${sourceLabel} must be of type ${humanJoin(allowedSources)} for relationship ${relationLabel}.`,
-              );
-            }
-          }
-        }
-      });
-    });
-
-    if (isEntityTypeFirstRule) {
-      ruleEntities.forEach((entity) => {
-        const selectedTypes = extractFilterValuesByKey(filtersMap[entity.key], 'entity_type');
-        if (selectedTypes.length === 0) {
-          errors.push(`${entity.label} type is required.`);
-        }
-      });
-    }
-    return Array.from(new Set(errors));
-  };
-
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  useEffect(() => {
-    // Deferred so the accordion renders immediately; validation runs after paint
-    const id = setTimeout(() => setValidationErrors(computeValidationErrors()), 0);
-    return () => clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ruleTriplets, entitiesByKey, filtersMap, schemaRelationsTypesMapping, isSightingIncidentRule, isEntityTypeFirstRule, ruleEntities]);
 
   const [conditionEditorSlot, setConditionEditorSlot] = useState<ConditionEditorSlot | null>(null);
   const [conditionEditorDraftFilters, setConditionEditorDraftFilters] = useState<FilterGroup>(createEmptyFilterGroup());
   const conditionBuilderRef = useRef<RuleConditionBuilderHandle | null>(null);
+
+  // Once a rule is activated it becomes read-only: no condition, name or description editing.
+  const isEditable = canManage && !configuredRule.active;
+
+  const [confirmAction, setConfirmAction] = useState<'activate' | 'deactivate' | 'delete' | null>(null);
+
+  const handleConfirmAction = () => {
+    if (confirmAction === 'activate') {
+      onChange(configuredRule.id, { active: true });
+    } else if (confirmAction === 'deactivate') {
+      onChange(configuredRule.id, { active: false });
+    } else if (confirmAction === 'delete') {
+      onDelete(configuredRule.id);
+    }
+    setConfirmAction(null);
+  };
+
+  const handleToggleActive = (checked: boolean) => {
+    setConfirmAction(checked ? 'activate' : 'deactivate');
+  };
+
+  const confirmActionMessage = (() => {
+    switch (confirmAction) {
+      case 'activate':
+        return t_i18n('Are you sure? Once the rule is activated all data in the platform will be processed by this rule and you will no longer be able to edit it.');
+      case 'deactivate':
+        return t_i18n('Are you sure you want to deactivate this rule? This will remove all relationships created by the rule.');
+      case 'delete':
+        return configuredRule.active
+          ? t_i18n('Are you sure you want to delete this rule? This will remove all relationships created by the rule.')
+          : t_i18n('Are you sure you want to delete this rule?');
+      default:
+        return '';
+    }
+  })();
 
   const editableEntityKeys = useMemo(
     () => new Set(Array.from(firstTripletForEntity.entries()).map(([entityKey]) => entityKey)),
@@ -1088,7 +1027,7 @@ const ConfiguredRuleAccordion = ({
   };
 
   const handleAddCondition = (slot: PreviewConditionSlot) => {
-    if (!canManage) return;
+    if (!isEditable) return;
     if (slot.kind === 'entity' && !editableEntityKeys.has(slot.key)) {
       return;
     }
@@ -1131,6 +1070,17 @@ const ConfiguredRuleAccordion = ({
         'relatedType',
       ],
     });
+  };
+
+  const handleRemoveCondition = (slotKey: string, filter: Filter) => {
+    if (!isEditable) return;
+    const currentGroup = filtersMap[slotKey] ?? createEmptyFilterGroup();
+    const nextGroup: FilterGroup = {
+      ...currentGroup,
+      filters: (currentGroup.filters ?? []).filter((candidate) => candidate.id !== filter.id),
+    };
+    const sanitized = sanitizeConditionEditorFiltersForPersistence(nextGroup);
+    onFiltersMapChange(configuredRule.id, slotKey, sanitized);
   };
 
   const ruleCapability = useMemo<RuleCapability | null>(() => {
@@ -1225,11 +1175,11 @@ const ConfiguredRuleAccordion = ({
 
     const lockedFilters: Filter[] = (conditionEditorSlot.kind === 'entity' && !isMultiTypeEntitySlot && effectiveLockedEntityTypes.length > 0)
       ? [{
-        key: 'entity_type',
-        values: effectiveLockedEntityTypes,
-        operator: 'eq',
-        mode: 'or',
-      }]
+          key: 'entity_type',
+          values: effectiveLockedEntityTypes,
+          operator: 'eq',
+          mode: 'or',
+        }]
       : [];
 
     return mergeFiltersByKey(sanitized, lockedFilters);
@@ -1287,8 +1237,8 @@ const ConfiguredRuleAccordion = ({
                   <Switch
                     color="secondary"
                     checked={configuredRule.active}
-                    onChange={(_, checked) => onChange(configuredRule.id, { active: checked })}
-                    disabled={!canManage || (!configuredRule.active && validationErrors.length > 0)}
+                    onChange={(_, checked) => handleToggleActive(checked)}
+                    disabled={!canManage}
                   />
                 )}
               />
@@ -1300,7 +1250,7 @@ const ConfiguredRuleAccordion = ({
                     color="error"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onDelete(configuredRule.id);
+                      setConfirmAction('delete');
                     }}
                   >
                     <DeleteOutline fontSize="small" />
@@ -1312,10 +1262,18 @@ const ConfiguredRuleAccordion = ({
 
           {/* Row 2: rule preview (visible when collapsed) */}
           {!configuredRule.expanded && (
-            <ConfiguredRulePreview
-              rule={rule}
-              filtersMap={filtersMap}
-            />
+            hasAnyConditions ? (
+              <ConfiguredRulePreview
+                rule={rule}
+                filtersMap={filtersMap}
+              />
+            ) : (
+              configuredRule.description && (
+                <Typography variant="body2" color="text.secondary">
+                  {configuredRule.description}
+                </Typography>
+              )
+            )
           )}
         </Box>
       </AccordionSummary>
@@ -1328,7 +1286,7 @@ const ConfiguredRuleAccordion = ({
             value={configuredRule.name}
             onChange={(event) => onChange(configuredRule.id, { name: event.target.value })}
             size="small"
-            disabled={!canManage}
+            disabled={!isEditable}
           />
 
           <TextField
@@ -1339,7 +1297,7 @@ const ConfiguredRuleAccordion = ({
             value={configuredRule.description}
             onChange={(event) => onChange(configuredRule.id, { description: event.target.value })}
             size="small"
-            disabled={!canManage}
+            disabled={!isEditable}
           />
 
           <Box>
@@ -1355,9 +1313,10 @@ const ConfiguredRuleAccordion = ({
                 rule={rule}
                 filtersMap={filtersMap}
                 showWhenEmpty
-                canManage={canManage}
+                canManage={isEditable}
                 editableEntityKeys={editableEntityKeys}
                 onAddCondition={handleAddCondition}
+                onRemoveCondition={handleRemoveCondition}
                 withTopDivider={false}
               />
             </Box>
@@ -1380,26 +1339,26 @@ const ConfiguredRuleAccordion = ({
               <>
                 <RuleConditionBuilder
                   ref={conditionBuilderRef}
-                    key={conditionEditorSlot.key}
-                    slotKind={conditionEditorSlot.kind}
-                    allowedEntityTypes={effectiveLockedEntityTypes.length > 0
-                      ? effectiveLockedEntityTypes
-                      : conditionEditorSlot.resolvedEntityTypes}
-                    isMultiType={isMultiTypeEntitySlot}
-                    showEntityTypeRow={conditionEditorSlot.kind === 'entity' && isMultiTypeEntitySlot}
-                    availablePropertyKeys={effectiveForcedAvailableFilterKeys ?? editorAvailableFilterKeys}
-                    entitySearchTypes={conditionEditorSearchTypes}
-                    initialFilters={conditionEditorDraftFilters}
-                    disabled={!canManage}
-                    onFiltersChange={(filters) => {
-                      setConditionEditorDraftFilters((previous) => {
-                        if (getFilterGroupSignature(previous) === getFilterGroupSignature(filters)) {
-                          return previous;
-                        }
-                        return cloneFilterGroup(filters);
-                      });
-                    }}
-                  />
+                  key={conditionEditorSlot.key}
+                  slotKind={conditionEditorSlot.kind}
+                  allowedEntityTypes={effectiveLockedEntityTypes.length > 0
+                    ? effectiveLockedEntityTypes
+                    : conditionEditorSlot.resolvedEntityTypes}
+                  isMultiType={isMultiTypeEntitySlot}
+                  showEntityTypeRow={conditionEditorSlot.kind === 'entity' && isMultiTypeEntitySlot}
+                  availablePropertyKeys={effectiveForcedAvailableFilterKeys ?? editorAvailableFilterKeys}
+                  entitySearchTypes={conditionEditorSearchTypes}
+                  initialFilters={conditionEditorDraftFilters}
+                  disabled={!isEditable}
+                  onFiltersChange={(filters) => {
+                    setConditionEditorDraftFilters((previous) => {
+                      if (getFilterGroupSignature(previous) === getFilterGroupSignature(filters)) {
+                        return previous;
+                      }
+                      return cloneFilterGroup(filters);
+                    });
+                  }}
+                />
               </>
             )}
           </Stack>
@@ -1416,6 +1375,31 @@ const ConfiguredRuleAccordion = ({
               }}
             >
               {t_i18n('Done')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={Boolean(confirmAction)}
+          onClose={() => setConfirmAction(null)}
+          title={confirmAction === 'delete'
+            ? t_i18n('Delete rule configuration')
+            : confirmAction === 'deactivate'
+              ? t_i18n('Deactivate rule configuration')
+              : t_i18n('Activate rule configuration')}
+        >
+          <Typography variant="body2" sx={{ pt: 0.5 }}>
+            {confirmActionMessage}
+          </Typography>
+          <DialogActions>
+            <Button variant="secondary" onClick={() => setConfirmAction(null)}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              color={confirmAction === 'activate' ? 'secondary' : 'error'}
+              onClick={handleConfirmAction}
+            >
+              {confirmAction === 'activate' ? t_i18n('Proceed') : t_i18n('Confirm')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1446,7 +1430,6 @@ const RulesListItem = ({
 
   const [cardExpanded, setCardExpanded] = useState(true);
   const [configuredRules, setConfiguredRules] = useState<ConfiguredRule[]>([]);
-  const [configuredRuleToDelete, setConfiguredRuleToDelete] = useState<string | null>(null);
   const [configuredRulesLoaded, setConfiguredRulesLoaded] = useState(false);
 
   const ruleEntities = useMemo(
@@ -1473,15 +1456,12 @@ const RulesListItem = ({
     return initial;
   }, [ruleEntities, ruleTriplets]);
 
-  const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
   const taskWork = task?.work;
   const activeConfiguredRulesCount = configuredRules.filter((r) => r.active).length;
   const totalRuleCount = configuredRules.length > 0 ? configuredRules.length : 1;
   const activeRuleCount = configuredRules.length > 0
     ? activeConfiguredRulesCount
     : (rule.activated ? 1 : 0);
-
-  const configuredRulePendingDeletion = configuredRules.find((r) => r.id === configuredRuleToDelete);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -1528,13 +1508,17 @@ const RulesListItem = ({
   }, [onConfiguredRuleCountsChange, activeRuleCount, totalRuleCount]);
 
   const handleAddConfiguredRule = () => {
+    // Adding a configured rule takes over activation, so deactivate the parent rule if it was on.
+    if (rule.activated) {
+      toggle();
+    }
     setConfiguredRules((previous) => [
       ...previous,
       {
         id: createId(),
         name: `${t_i18n('Configuration')} ${previous.length + 1}`,
         description: '',
-        active: true,
+        active: false,
         expanded: true,
         filtersMap: Object.entries(defaultFiltersMap).reduce<Record<string, FilterGroup>>((acc, [key, filterGroup]) => {
           acc[key] = cloneFilterGroup(filterGroup);
@@ -1594,12 +1578,11 @@ const RulesListItem = ({
     });
   };
 
-  const handleDeleteConfiguredRule = () => {
-    if (!configuredRuleToDelete) {
+  const handleDeleteConfiguredRule = (id: string) => {
+    if (!id) {
       return;
     }
-    setConfiguredRules((previous) => previous.filter((configuredRule) => configuredRule.id !== configuredRuleToDelete));
-    setConfiguredRuleToDelete(null);
+    setConfiguredRules((previous) => previous.filter((configuredRule) => configuredRule.id !== id));
   };
 
   const styleRuleTitle: CSSProperties = {
@@ -1673,41 +1656,37 @@ const RulesListItem = ({
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                   {title}
                   {configuredRules.length === 0 ? (
-                    <Tooltip title={ruleStatus}>
-                      <FormGroup sx={{ m: 0 }}>
-                        <FormControlLabel
-                          sx={{ m: 0 }}
-                          label=""
-                          control={(
-                            <Switch
-                              color="secondary"
-                              disabled={!isEngineEnabled || disabled}
-                              checked={isEngineEnabled && rule.activated}
-                              onChange={toggle}
-                            />
-                          )}
-                        />
-                      </FormGroup>
-                    </Tooltip>
+                    <FormGroup sx={{ m: 0 }}>
+                      <FormControlLabel
+                        sx={{ m: 0 }}
+                        label=""
+                        control={(
+                          <Switch
+                            color="secondary"
+                            disabled={!isEngineEnabled || disabled}
+                            checked={isEngineEnabled && rule.activated}
+                            onChange={toggle}
+                          />
+                        )}
+                      />
+                    </FormGroup>
                   ) : (
-                    <Tooltip title={activeConfiguredRulesCount === 0 ? t_i18n('All disabled') : t_i18n('All active')}>
-                      <FormGroup sx={{ m: 0 }}>
-                        <FormControlLabel
-                          sx={{ m: 0 }}
-                          label=""
-                          control={(
-                            <Switch
-                              color="secondary"
-                              disabled={!isEngineEnabled || disabled}
-                              checked={isEngineEnabled && activeConfiguredRulesCount > 0}
-                              onChange={() => {
-                                const allDisabled = activeConfiguredRulesCount === 0;
-                                setConfiguredRules((prev) => prev.map((r) => ({ ...r, active: allDisabled })));
-                              }}
-                            />
-                          )}
-                        />
-                      </FormGroup>
+                    <Tooltip title={t_i18n('This rule cannot be activated at the rule level because it has configured rules. Activate the individual configured rules instead.')}>
+                      <span style={{ display: 'inline-flex' }}>
+                        <FormGroup sx={{ m: 0 }}>
+                          <FormControlLabel
+                            sx={{ m: 0 }}
+                            label=""
+                            control={(
+                              <Switch
+                                color="secondary"
+                                disabled
+                                checked={false}
+                              />
+                            )}
+                          />
+                        </FormGroup>
+                      </span>
                     </Tooltip>
                   )}
                   {configuredRules.length > 0 && (
@@ -1716,7 +1695,7 @@ const RulesListItem = ({
                       /
                       {configuredRules.length}
                       {' '}
-                      {t_i18n('active')}
+                      {t_i18n('Configured Rules active')}
                     </Typography>
                   )}
                 </Box>
@@ -1811,14 +1790,13 @@ const RulesListItem = ({
                           configuredRule={configuredRule}
                           rule={rule}
                           ruleEntities={ruleEntities}
-                          schemaRelationsTypesMapping={schema.schemaRelationsTypesMapping}
                           schemaSdoTypes={schemaSdoTypes}
                           schemaScoTypes={schemaScoTypes}
                           canManage={canManageConfiguredRules}
                           onChange={handleConfiguredRuleChange}
                           onFiltersMapChange={handleConfiguredRuleFiltersMapChange}
                           onToggleExpand={handleConfiguredRuleToggleExpanded}
-                          onDelete={(id) => setConfiguredRuleToDelete(id)}
+                          onDelete={handleDeleteConfiguredRule}
                         />
                       </AccordionErrorBoundary>
                     ))}
@@ -1829,31 +1807,6 @@ const RulesListItem = ({
           </Card>
         )}
       />
-
-      <Dialog
-        open={Boolean(configuredRulePendingDeletion)}
-        onClose={() => setConfiguredRuleToDelete(null)}
-        title={t_i18n('Delete configuration')}
-        size="small"
-      >
-        <Typography>
-          {t_i18n('Are you sure you want to delete this configured rule?')}
-          {configuredRulePendingDeletion && (
-            <>
-              {' '}
-              <strong>{configuredRulePendingDeletion.name}</strong>
-            </>
-          )}
-        </Typography>
-        <DialogActions>
-          <Button variant="secondary" onClick={() => setConfiguredRuleToDelete(null)}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button intent="destructive" onClick={handleDeleteConfiguredRule}>
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

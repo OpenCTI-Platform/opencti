@@ -17,6 +17,7 @@ export type Task = NonNullable<NonNullable<NonNullable<RulesList_data$data['back
 export type Work = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node']['work'];
 
 const PROTOTYPE_GENERIC_RULE_ID = 'prototype_generic_relation_chain';
+const GENERAL_PROPAGATION_CATEGORY = 'Testing Concept - General Propagation';
 
 const fragmentData = graphql`
   fragment RulesList_data on Query {
@@ -132,7 +133,7 @@ const RulesList = ({
     name: 'Generic relationship chain propagation (prototype)',
     description: 'If A - rel -> B and B - rel -> C, then create A - rel -> C with configurable filters and output relation settings.',
     activated: false,
-    category: 'General propagation',
+    category: GENERAL_PROPAGATION_CATEGORY,
     display: {
       if: [
         {
@@ -173,9 +174,11 @@ const RulesList = ({
 
   const filteredRules = useMemo(() => {
     const backendRules: Rule[] = (rules ?? []).flatMap((r) => (r ? [r] : []));
-    const rulesWithPrototype = backendRules.some((r) => r.id === PROTOTYPE_GENERIC_RULE_ID)
-      ? backendRules
-      : [...backendRules, prototypeGenericRule];
+    // Hide the backend "Testing" rule set from the prototype UI.
+    const visibleBackendRules = backendRules.filter((r) => r.category !== 'Testing');
+    const rulesWithPrototype = visibleBackendRules.some((r) => r.id === PROTOTYPE_GENERIC_RULE_ID)
+      ? visibleBackendRules
+      : [...visibleBackendRules, prototypeGenericRule];
     const filterByKeyword = (p: Rule) => keyword === ''
       || p?.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
@@ -185,7 +188,12 @@ const RulesList = ({
 
   const categories = useMemo(() => {
     const setOfCategories = new Set(filteredRules.flatMap((r) => r.category ?? []));
-    return Array.from(setOfCategories).sort();
+    // Keep the General Propagation testing concept as the final tab.
+    return Array.from(setOfCategories).sort((a, b) => {
+      if (a === GENERAL_PROPAGATION_CATEGORY) return 1;
+      if (b === GENERAL_PROPAGATION_CATEGORY) return -1;
+      return a.localeCompare(b);
+    });
   }, [filteredRules]);
 
   useEffect(() => {

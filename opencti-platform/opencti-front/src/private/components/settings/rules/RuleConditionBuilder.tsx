@@ -14,10 +14,12 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
 import Divider from '@mui/material/Divider';
+import DialogActions from '@mui/material/DialogActions';
 import { DeleteOutline } from '@mui/icons-material';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
 import type { Theme } from '../../../../components/Theme';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import {
@@ -287,6 +289,7 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
   const initial = useMemo(() => parseInitialFilters(initialFilters), []);
   const [entityTypeValues, setEntityTypeValues] = useState<string[]>(initial.entityTypeValues);
   const [propertyRows, setPropertyRows] = useState<ConditionRowState[]>(initial.rows);
+  const [rowPendingDeletion, setRowPendingDeletion] = useState<string | null>(null);
   const lastEmittedSignatureRef = useRef<string>('');
 
   const effectiveScopeEntityTypes = useMemo(() => {
@@ -410,6 +413,21 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
   const deleteRow = (id: string) => {
     setPropertyRows((prev) => prev.filter((row) => row.id !== id));
   };
+
+  const requestDeleteRow = (id: string) => {
+    const row = propertyRows.find((r) => r.id === id);
+    // Only warn if the row actually holds a condition; empty rows can be removed directly.
+    const hasContent = !!row && (VALUE_FREE_OPERATORS.has(row.operator) || row.values.length > 0);
+    if (hasContent) {
+      setRowPendingDeletion(id);
+    } else {
+      deleteRow(id);
+    }
+  };
+
+  const rowPendingDeletionDef = rowPendingDeletion
+    ? propertyRows.find((r) => r.id === rowPendingDeletion)
+    : undefined;
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -552,7 +570,7 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
         <IconButton
           size="small"
           disabled={disabled}
-          onClick={() => deleteRow(row.id)}
+          onClick={() => requestDeleteRow(row.id)}
           sx={{
             width: 36,
             height: 36,
@@ -638,6 +656,39 @@ const RuleConditionBuilder = forwardRef<RuleConditionBuilderHandle, RuleConditio
           )}
         </>
       )}
+
+      <Dialog
+        open={Boolean(rowPendingDeletion)}
+        onClose={() => setRowPendingDeletion(null)}
+        title={t_i18n('Delete condition')}
+        size="small"
+      >
+        <Typography>
+          {t_i18n('Are you sure you want to delete this property condition?')}
+          {rowPendingDeletionDef?.key && (
+            <>
+              {' '}
+              <strong>{filterKeysMap.get(rowPendingDeletionDef.key)?.label ?? rowPendingDeletionDef.key}</strong>
+            </>
+          )}
+        </Typography>
+        <DialogActions>
+          <Button variant="secondary" onClick={() => setRowPendingDeletion(null)}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            intent="destructive"
+            onClick={() => {
+              if (rowPendingDeletion) {
+                deleteRow(rowPendingDeletion);
+              }
+              setRowPendingDeletion(null);
+            }}
+          >
+            {t_i18n('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 });
