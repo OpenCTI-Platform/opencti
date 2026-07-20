@@ -45,12 +45,14 @@ import StixRelationshipsMultiVerticalBars from './StixRelationshipsMultiVertical
 
 describe('StixRelationshipsMultiVerticalBars', () => {
   const minimalProps = {
-    config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
       filters: emptyFilterGroup,
       date_attribute: 'created_at',
     }],
-    parameters: {},
+    config: {
+      startDate: '2025-01-01T00:00:00Z',
+      endDate: '2025-12-31T23:59:59Z',
+    },
   };
 
   beforeEach(() => {
@@ -58,8 +60,13 @@ describe('StixRelationshipsMultiVerticalBars', () => {
   });
 
   it('renders without crashing', () => {
-    const { container } = testRender(<StixRelationshipsMultiVerticalBars {...minimalProps} />);
-    expect(container).toBeTruthy();
+    const { getByTestId } = testRender(
+      <StixRelationshipsMultiVerticalBars
+        {...minimalProps}
+        parameters={{}}
+      />,
+    );
+    expect(getByTestId('widget-container')).toBeDefined();
   });
 
   it('passes configured interval to query variables', () => {
@@ -71,19 +78,24 @@ describe('StixRelationshipsMultiVerticalBars', () => {
     );
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       { interval: 'month' },
     );
     expect(variables.interval).toBe('month');
   });
 
   it('defaults interval to day when not specified', () => {
-    testRender(<StixRelationshipsMultiVerticalBars {...minimalProps} />);
+    testRender(
+      <StixRelationshipsMultiVerticalBars
+        {...minimalProps}
+        parameters={{}}
+      />,
+    );
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       {},
     );
     expect(variables.interval).toBe('day');

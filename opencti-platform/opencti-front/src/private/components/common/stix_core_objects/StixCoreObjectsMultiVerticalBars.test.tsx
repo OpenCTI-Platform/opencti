@@ -73,8 +73,8 @@ describe('StixCoreObjectsMultiVerticalBars', () => {
     );
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       { interval: 'month' },
     );
     expect(variables.interval).toBe('month');
@@ -84,8 +84,8 @@ describe('StixCoreObjectsMultiVerticalBars', () => {
     testRender(<StixCoreObjectsMultiVerticalBars {...minimalProps} />);
     expect(lastBuildQueryVariables).toBeDefined();
     const variables = lastBuildQueryVariables!(
-      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
-      { relativeDate: null, startDate: null, endDate: null },
+      minimalProps.dataSelection,
+      minimalProps.config,
       {},
     );
     expect(variables.interval).toBe('day');
