@@ -330,7 +330,7 @@ const useSearchEntities = ({
   };
   const labelRelationshipType = {
     label: t_i18n('relationship_object-label'),
-    value: 'objectLabel',
+    value: 'object-label',
     type: 'stix-meta-relationship',
   };
 
