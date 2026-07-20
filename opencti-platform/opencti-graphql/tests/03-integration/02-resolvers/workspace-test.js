@@ -254,7 +254,7 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can duplicate workspace', async () => {
-    const manifestWithFiltersId = toB64(JSON.stringify({
+    const manifestWithFiltersId = toB64({
       widgets: {
         'widget-1': {
           id: 'widget-1',
@@ -271,7 +271,7 @@ describe('Workspace resolver standard behavior', () => {
         },
       },
       config: {},
-    }));
+    });
 
     const queryResult = await queryAsAdmin({
       query: gql`
