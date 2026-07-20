@@ -35,6 +35,17 @@ const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
+const graphqlMethodRestriction = (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'OPTIONS') {
+    return next();
+  }
+  res.set('Allow', 'POST, OPTIONS');
+  return res.status(405).json({
+    name: 'MethodNotAllowedError',
+    message: 'Method Not Allowed. Use POST for GraphQL requests.',
+  });
+};
+
 export const extractWsSessionContext = async (context) => {
   const req = context.extra.request;
   const webSocket = context.extra.socket;
@@ -141,6 +152,7 @@ const createHttpServer = async () => {
   app.use(express.json({ limit: requestSizeLimit }));
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
+  app.use(`${basePath}/graphql`, graphqlMethodRestriction);
   app.use((req, res, next) => {
     // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
     if (req.path.startsWith(`${basePath}/chatbot/`)) {

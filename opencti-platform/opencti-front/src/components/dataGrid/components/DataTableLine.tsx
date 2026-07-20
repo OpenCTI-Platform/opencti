@@ -26,7 +26,7 @@ const DataTableLineDummy = () => {
   const { columns, tableWidthState: [tableWidth] } = useDataTableContext();
   return (
     <div style={{ display: 'flex' }}>
-      {columns.map((column) => (
+      {columns.filter((c) => c.visible).map((column) => (
         <div
           key={column.id}
           style={{
@@ -231,7 +231,7 @@ const DataTableLine = ({
           </div>
         )}
 
-        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        {columns.filter((c) => c.visible).slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
           <DataTableCell
             key={column.id}
             cell={column}

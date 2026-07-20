@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import WidgetFilters from './WidgetFilters';
 
 vi.mock('@components/common/lists/Filters', () => ({
   default: () => <div data-testid="filters" />,
@@ -39,8 +40,6 @@ vi.mock('../../../utils/filters/filtersUtils', () => ({
     return ['name', 'created_at'];
   },
 }));
-
-import WidgetFilters from './WidgetFilters';
 
 describe('WidgetFilters', () => {
   const baseDataSelection = {

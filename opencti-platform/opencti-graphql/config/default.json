@@ -15,6 +15,7 @@
       "cookie_secure": false
     },
     "allow_unsecure_http_resources": true,
+    "uri_deny_list": [],
     "public_dashboard_authorized_domains": "",
     "app_logs": {
       "logs_level": "info",
@@ -313,18 +314,19 @@
     "lock_key": "publisher_manager_lock",
     "interval": 10000,
     "enable_buffering": true,
-    "buffering_seconds": 60
+    "buffering_seconds": 60,
+    "webhook_timeout": 300000
   },
   "sync_manager": {
     "enabled": true,
     "lock_key": "sync_manager_lock",
-    "interval": 10000
+    "interval": 10000,
+    "file_fetch_timeout": 300000
   },
   "ingestion_manager": {
     "enabled": true,
     "lock_key": "ingestion_manager_lock",
-    "interval": 30000,
-    "uri_deny_list": [],
+    "interval": 30000,   
     "feed": {
       "request_timeout": 300000
     },

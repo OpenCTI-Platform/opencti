@@ -6,6 +6,7 @@ import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -39,6 +40,31 @@ const artifactMutation = graphql`
   }
 `;
 
+const artifactAddObservableMutation = graphql`
+  mutation ArtifactCreationObservableMutation(
+    $type: String!
+    $x_opencti_description: String
+    $createdBy: String
+    $objectMarking: [String]
+    $objectLabel: [String]
+    $Artifact: ArtifactAddInput
+  ) {
+    stixCyberObservableAdd(
+      type: $type
+      x_opencti_description: $x_opencti_description
+      createdBy: $createdBy
+      objectMarking: $objectMarking
+      objectLabel: $objectLabel
+      Artifact: $Artifact
+    ) {
+      id
+      ... on Artifact {
+        ...ArtifactsLine_node
+      }
+    }
+  }
+`;
+
 const artifactDescriptionPatchMutation = graphql`
   mutation ArtifactCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
     stixCyberObservableEdit(id: $id) {
@@ -50,8 +76,14 @@ const artifactDescriptionPatchMutation = graphql`
 `;
 
 const artifactValidation = (t) => Yup.object().shape({
-  file: Yup.mixed().required(t('This field is required')),
+  file: Yup.mixed().nullable(),
+  url: Yup.string().url(t('The value must be an URL')).nullable(),
   x_opencti_description: Yup.string().nullable(),
+}).test('file-or-url', t('A file or a URL must be provided'), function (values) {
+  if (!values.file && !values.url) {
+    return this.createError({ path: 'file', message: t('A file or a URL must be provided') });
+  }
+  return true;
 });
 
 const ArtifactCreation = ({
@@ -61,6 +93,11 @@ const ArtifactCreation = ({
   const [open, setOpen] = useState(false);
   const [commit] = useApiMutation(
     artifactMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
+  );
+  const [commitObservable] = useApiMutation(
+    artifactAddObservableMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
   );
@@ -84,48 +121,79 @@ const ArtifactCreation = ({
       },
       values,
     );
-    commit({
-      variables: {
-        file: values.file,
-        ...adaptedValues,
-      },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_stixCyberObservables',
-        paginationOptions,
-        'artifactImport',
-      ),
-      onError: (error) => {
-        handleErrorInForm(error, setErrors);
-        setSubmitting(false);
-      },
-      onCompleted: async (response) => {
-        try {
-          const artifactId = response?.artifactImport?.id;
-          const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
 
-          if (artifactId && hasPendingMarkdownImages) {
-            const finalizedDescription = await markdownControllerRef.current?.persistTempImages(artifactId);
-            if (typeof finalizedDescription === 'string' && finalizedDescription !== values.x_opencti_description) {
-              await new Promise((resolve, reject) => {
-                commitDescriptionPatch({
-                  variables: {
-                    id: artifactId,
-                    input: [{ key: 'x_opencti_description', value: finalizedDescription }],
-                  },
-                  onCompleted: resolve,
-                  onError: reject,
+    if (values.file) {
+      // File provided → use artifactImport
+      commit({
+        variables: {
+          file: values.file,
+          ...adaptedValues,
+        },
+        updater: (store) => insertNode(
+          store,
+          'Pagination_stixCyberObservables',
+          paginationOptions,
+          'artifactImport',
+        ),
+        onError: (error) => {
+          handleErrorInForm(error, setErrors);
+          setSubmitting(false);
+        },
+        onCompleted: async (response) => {
+          try {
+            const artifactId = response?.artifactImport?.id;
+            const hasPendingMarkdownImages = (markdownControllerRef.current?.getPendingImageFiles().length ?? 0) > 0;
+
+            if (artifactId && hasPendingMarkdownImages) {
+              const finalizedDescription = await markdownControllerRef.current?.persistTempImages(artifactId);
+              if (typeof finalizedDescription === 'string' && finalizedDescription !== values.x_opencti_description) {
+                await new Promise((resolve, reject) => {
+                  commitDescriptionPatch({
+                    variables: {
+                      id: artifactId,
+                      input: [{ key: 'x_opencti_description', value: finalizedDescription }],
+                    },
+                    onCompleted: resolve,
+                    onError: reject,
+                  });
                 });
-              });
+              }
             }
+          } finally {
+            setSubmitting(false);
+            resetForm();
+            handleClose();
           }
-        } finally {
+        },
+      });
+    } else {
+      // No file, only URL → use stixCyberObservableAdd
+      commitObservable({
+        variables: {
+          type: 'Artifact',
+          x_opencti_description: adaptedValues.x_opencti_description || null,
+          createdBy: adaptedValues.createdBy || null,
+          objectMarking: adaptedValues.objectMarking,
+          objectLabel: adaptedValues.objectLabel,
+          Artifact: { url: values.url },
+        },
+        updater: (store) => insertNode(
+          store,
+          'Pagination_stixCyberObservables',
+          paginationOptions,
+          'stixCyberObservableAdd',
+        ),
+        onError: (error) => {
+          handleErrorInForm(error, setErrors);
+          setSubmitting(false);
+        },
+        onCompleted: () => {
           setSubmitting(false);
           resetForm();
           handleClose();
-        }
-      },
-    });
+        },
+      });
+    }
   };
 
   const onReset = () => {
@@ -147,6 +215,7 @@ const ArtifactCreation = ({
           initialValues={{
             x_opencti_description: '',
             file: '',
+            url: '',
             createdBy: '',
             objectMarking: [],
             objectLabel: [],
@@ -168,7 +237,14 @@ const ArtifactCreation = ({
                 setFieldValue={setFieldValue}
                 formikErrors={errors}
                 noMargin
-                required
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="url"
+                label={t_i18n('URL')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
               />
               <Field
                 component={MarkdownField}

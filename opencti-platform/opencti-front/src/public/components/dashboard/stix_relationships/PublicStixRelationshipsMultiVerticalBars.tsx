@@ -4,10 +4,10 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
+import usePublicWidgetDefaultDates from '../usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiVerticalBarsQuery } from './__generated__/PublicStixRelationshipsMultiVerticalBarsQuery.graphql';
-import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
 
@@ -77,13 +77,13 @@ const PublicStixRelationshipsMultiVerticalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsMultiVerticalBarsQuery>(
+  const dates = usePublicWidgetDefaultDates(startDate, endDate);
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsMultiVerticalBarsQuery>(
     publicStixRelationshipsMultiVerticalBarsQuery,
     {
       uriKey,
       widgetId: id,
-      startDate: startDate ?? monthsAgo(12),
-      endDate: endDate ?? now(),
+      ...dates,
     },
   );
 

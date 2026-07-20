@@ -138,7 +138,7 @@ const areSameByFields = <T extends Record<string, unknown>>(
   fields.every((f) => JSON.stringify(a[f]) === JSON.stringify(b[f]));
 
 /** Deduplicate an array by keeping only the first occurrence of each unique combination of the given fields. */
-export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (keyof T)[]) => (data: T[]): T[] => {
+export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (keyof T)[], data: T[]): T[] => {
   return data.filter((item, index) =>
     data.findIndex((other) =>
       areSameByFields(fields as string[], item, other),

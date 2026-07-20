@@ -1,6 +1,6 @@
 import { useFragment } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
-import type { KeyType } from 'react-relay/relay-hooks/helpers';
+import type { KeyType } from 'react-relay/ReactRelayTypes';
 import { DataTableColumn, DataTableVariant, UseDataTable } from './dataTableTypes';
 import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../i18n';

@@ -58,6 +58,7 @@ WORKDIR /opt/opencti/opencti-front
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 COPY opencti-front/packages/ ./packages/
+COPY opencti-front/patch/ ./patch/
 
 RUN yarn install --immutable
 

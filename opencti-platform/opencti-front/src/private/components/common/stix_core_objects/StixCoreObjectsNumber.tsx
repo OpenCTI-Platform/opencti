@@ -4,16 +4,15 @@ import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCoreObjectsNumberNumberSeriesQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { ReactNode, Suspense } from 'react';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { ReactNode } from 'react';
+import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
     query StixCoreObjectsNumberNumberSeriesQuery(
@@ -116,12 +115,11 @@ const StixCoreObjectsNumber = ({
   host,
 }: StixCoreObjectsNumberProps) => {
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
+  const DEFAULT_TITLE = t_i18n('Entities number');
 
-  const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(title);
+  const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -131,35 +129,28 @@ const StixCoreObjectsNumber = ({
     config,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsNumberComponent
-          queryRef={queryRef}
-          entityType={entityType}
-          label={translatedTitle}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Entities number')}
+      title={DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsNumberComponent
+            queryRef={queryRef!}
+            entityType={entityType}
+            label={translatedNumberLabel}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

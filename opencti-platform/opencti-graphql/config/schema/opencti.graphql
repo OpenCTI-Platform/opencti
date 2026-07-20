@@ -259,6 +259,7 @@ type AppMemory {
 input ExportContext {
   entity_id: String
   entity_type: String!
+  visible_columns: [String]
 }
 
 type AppDebugDistribution {
@@ -705,8 +706,8 @@ input SynchronizerAddInput {
 
 
 input SynchronizerAddAutoUserInput {
-    user_name: String!
-    confidence_level: Int!
+  user_name: String!
+  confidence_level: Int!
 }
 
 input SynchronizerFetchInput {
@@ -832,6 +833,9 @@ type WidgetDataSelection {
   filters: String
   dynamicFrom: String
   dynamicTo: String
+  filters_id: String
+  dynamicFrom_id: String
+  dynamicTo_id: String
   columns: [WidgetColumn!]
   instance_id: String
   sort_by: String
@@ -1195,15 +1199,15 @@ enum CGUStatus {
 }
 
 type PublicProvider {
-    name: String!
-    type: String!
-    provider: String!
-    button_label_override: String
+  name: String!
+  type: String!
+  provider: String!
+  button_label_override: String
 }
 
 interface IntlSettings {
-    platform_language: String
-    platform_translations: String
+  platform_language: String
+  platform_translations: String
 }
 
 interface ThemeSettings {
@@ -1213,48 +1217,48 @@ interface ThemeSettings {
 }
 
 type PublicSettings implements IntlSettings & ThemeSettings {
-    id: ID!
-    platform_title: String
-    platform_favicon: String
-    platform_login_message: String
-    platform_consent_message: String
-    platform_consent_confirm_text: String
-    platform_banner_text: String
-    platform_banner_level: String
-    platform_theme: Theme
-    platform_map_tile_server_dark: String
-    platform_map_tile_server_light: String
-    platform_whitemark: Boolean
-    platform_language: String
-    platform_translations: String
-    platform_providers: [PublicProvider!]!
-    platform_enterprise_edition_license_validated: Boolean!
-    playground_enabled: Boolean!
-    metrics_definition: [MetricDefinition!]
-    password_policy_min_length: Int
-    password_policy_max_length: Int
-    password_policy_min_symbols: Int
-    password_policy_min_numbers: Int
-    password_policy_min_words: Int
-    password_policy_min_lowercase: Int
-    password_policy_min_uppercase: Int
-    password_policy_validity_days: Int
+  id: ID!
+  platform_title: String
+  platform_favicon: String
+  platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_theme: Theme
+  platform_map_tile_server_dark: String
+  platform_map_tile_server_light: String
+  platform_whitemark: Boolean
+  platform_language: String
+  platform_translations: String
+  platform_providers: [PublicProvider!]!
+  platform_enterprise_edition_license_validated: Boolean!
+  playground_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
+  password_policy_min_length: Int
+  password_policy_max_length: Int
+  password_policy_min_symbols: Int
+  password_policy_min_numbers: Int
+  password_policy_min_words: Int
+  password_policy_min_lowercase: Int
+  password_policy_min_uppercase: Int
+  password_policy_validity_days: Int
 }
 
 type MetricAttributes {
-    attribute: String!
-    name: String!
-    description: String
+  attribute: String!
+  name: String!
+  description: String
 }
 
 type MetricDefinition {
-    entity_type: String!
-    metrics: [MetricAttributes!]
+  entity_type: String!
+  metrics: [MetricAttributes!]
 }
 
 enum PlatformType {
-    LTS
-    STANDARD
+  LTS
+  STANDARD
 }
 
 type LocalAuthConfig {
@@ -1821,8 +1825,8 @@ input UserOTPLoginInput {
 }
 
 input LicenseActivationInput {
-    settingId: ID!
-    license: String! @constraint(minLength: 2, format: "not-blank")
+  settingId: ID!
+  license: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 input UserOTPActivationInput {
@@ -2917,7 +2921,7 @@ enum StixDomainObjectsOrdering {
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
-  edges: [StixDomainObjectEdge]
+  edges: [StixDomainObjectEdge!]!
 }
 type StixDomainObjectEdge {
   cursor: String!
@@ -14088,6 +14092,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | IMSI
   | SavedFilter
   | Vocabulary
+  | DraftWorkspace
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -14712,14 +14717,14 @@ input StixRefRelationshipsAddInput {
 }
 
 type SynchronizerAddInputFromImport {
-    name: String!
-    uri: String!
-    stream_id: String!
-    current_state_date: DateTime
-    listen_deletion: Boolean!
-    ssl_verify: Boolean!
-    no_dependencies: Boolean!
-    synchronized: Boolean!
+  name: String!
+  uri: String!
+  stream_id: String!
+  current_state_date: DateTime
+  listen_deletion: Boolean!
+  ssl_verify: Boolean!
+  no_dependencies: Boolean!
+  synchronized: Boolean!
 }
 
 ### QUERIES
@@ -14931,9 +14936,9 @@ type Query {
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
-    synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
+  synchronizerAddInputFromImport(file: Upload!): SynchronizerAddInputFromImport! @auth(for: [CONNECTORAPI])
 
-    synchronizers(
+  synchronizers(
     first: Int
     after: ID
     orderBy: SynchronizersOrdering
@@ -15113,7 +15118,14 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
+  bookmarks(
+    first: Int,
+    after: ID,
+    types: [String],
+    orderBy: StixDomainObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+  ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     authorId: String

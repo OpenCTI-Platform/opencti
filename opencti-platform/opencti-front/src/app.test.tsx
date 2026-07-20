@@ -1,6 +1,7 @@
 import React from 'react';
 import { act, cleanup, render } from '@testing-library/react';
-import { OperationDescriptor, RelayEnvironmentProvider } from 'react-relay/hooks';
+import { RelayEnvironmentProvider } from 'react-relay';
+import type { OperationDescriptor } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator as MockGen } from 'relay-test-utils';
 import { ThemeOptions, ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';

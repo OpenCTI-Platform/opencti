@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen } from '@testing-library/react';
-import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import testRender from '../../../../../utils/tests/test-render';
 import UserEditionPassword from '../edition/UserEditionPassword';
 import { commitMutation, MESSAGING$ } from '../../../../../relay/environment';
 
@@ -42,38 +42,27 @@ describe('UserEditionPassword', () => {
     password_valid_until: null,
   };
 
-  const ffEnabled = {
-    userContext: createMockUserContext({
-      settings: { platform_feature_flags: [{ id: 'FORCE_PASSWORD_CHANGE', enable: true }] },
-    }),
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders force password change button for internal active users', () => {
-    testRender(<UserEditionPassword user={baseUser} />, ffEnabled);
+    testRender(<UserEditionPassword user={baseUser} />);
     expect(screen.getByRole('button', { name: 'Force password change' })).toBeDefined();
   });
 
-  it('hides force password change button when FF is disabled', () => {
-    testRender(<UserEditionPassword user={baseUser} />);
-    expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
-  });
-
   it('hides force password change button for external users', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, external: true }} />, ffEnabled);
+    testRender(<UserEditionPassword user={{ ...baseUser, external: true }} />);
     expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
   });
 
   it('hides force password change button for locked users', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, account_status: 'Locked' }} />, ffEnabled);
+    testRender(<UserEditionPassword user={{ ...baseUser, account_status: 'Locked' }} />);
     expect(screen.queryByRole('button', { name: 'Force password change' })).toBeNull();
   });
 
   it('commits force password change mutation with password_valid_until', async () => {
-    const { user } = testRender(<UserEditionPassword user={baseUser} />, ffEnabled);
+    const { user } = testRender(<UserEditionPassword user={baseUser} />);
 
     await user.click(screen.getByRole('button', { name: 'Force password change' }));
 
@@ -114,7 +103,7 @@ describe('UserEditionPassword', () => {
 
   it('renders formatted expiry date when provided', () => {
     const expiry = '2026-01-02T00:00:00.000Z';
-    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />, ffEnabled);
+    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />);
 
     const formatted = new Intl.DateTimeFormat(undefined, {
       year: 'numeric',
@@ -126,13 +115,7 @@ describe('UserEditionPassword', () => {
   });
 
   it('does not render expiry for invalid date', () => {
-    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: 'not-a-date' }} />, ffEnabled);
-    expect(screen.queryByText(/^Expiry:/)).toBeNull();
-  });
-
-  it('does not render expiry when FF is disabled even with valid date', () => {
-    const expiry = '2026-01-02T00:00:00.000Z';
-    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: expiry }} />);
+    testRender(<UserEditionPassword user={{ ...baseUser, password_valid_until: 'not-a-date' }} />);
     expect(screen.queryByText(/^Expiry:/)).toBeNull();
   });
 });

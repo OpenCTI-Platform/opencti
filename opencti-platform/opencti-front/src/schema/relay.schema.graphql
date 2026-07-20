@@ -271,6 +271,7 @@ type AppMemory {
 input ExportContext {
   entity_id: String
   entity_type: String!
+  visible_columns: [String]
 }
 
 type AppDebugDistribution {
@@ -891,6 +892,9 @@ type WidgetDataSelection {
   filters: String
   dynamicFrom: String
   dynamicTo: String
+  filters_id: String
+  dynamicFrom_id: String
+  dynamicTo_id: String
   columns: [WidgetColumn!]
   instance_id: String
   sort_by: String
@@ -2898,7 +2902,7 @@ enum StixDomainObjectsOrdering {
 
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
-  edges: [StixDomainObjectEdge]
+  edges: [StixDomainObjectEdge!]!
 }
 
 type StixDomainObjectEdge {
@@ -8969,7 +8973,7 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
@@ -9504,7 +9508,7 @@ type Query {
   filtersRepresentatives(filters: FilterGroup!, isMeValueForbidden: Boolean): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
   stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
-  bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection
+  bookmarks(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
   stixDomainObjectsNumber(dateAttribute: String, types: [String], endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
@@ -9775,6 +9779,7 @@ type Query {
   fintelTemplate(id: ID!): FintelTemplate
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
+  savedFilter(id: ID!): SavedFilter
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection

@@ -383,9 +383,21 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean; startDate?: string | null; endDate?: string | null; dateAttribute?: string; isKnowledgeRelationshipWidget?: boolean } = {},
+  opts: {
+    removeTypeAll?: boolean;
+    startDate?: string | null;
+    endDate?: string | null;
+    dateAttribute?: string;
+    isKnowledgeRelationshipWidget?: boolean;
+  } = {},
 ) => {
-  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
+  const {
+    removeTypeAll = false,
+    startDate = null,
+    endDate = null,
+    dateAttribute = 'created_at',
+    isKnowledgeRelationshipWidget = false,
+  } = opts;
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
@@ -524,7 +536,7 @@ export function normalizeFilterGroupForBackend(filterGroup?: FilterGroup | null)
 export function normalizeFilterGroupForBackend(
   filterGroup?: FilterGroup | null,
 ): GqlFilterGroup | undefined {
-  if (!filterGroup || !isFilterGroupNotEmpty(filterGroup)) {
+  if (!filterGroup) {
     return undefined;
   }
   return {
@@ -914,7 +926,10 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   };
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (
+  filters?: FilterGroup | null,
+  entityTypes = ['Stix-Core-Object'],
+): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(NOT_CLEANABLE_FILTER_KEYS);
   return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };

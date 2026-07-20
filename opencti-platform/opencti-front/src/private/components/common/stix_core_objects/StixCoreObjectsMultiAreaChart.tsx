@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -6,13 +6,13 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiAreaChartTimeSeriesQuery.graphql';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiAreaChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiAreaChartTimeSeriesQuery(
@@ -99,6 +99,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiAreaChartTimeSeriesQuery['variables'] => {
   const computed = computeStartEndDates(config);
   const startDate = computed.startDate ?? monthsAgo(12);
@@ -121,7 +122,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -137,33 +138,16 @@ const StixCoreObjectsMultiAreaChart = ({
   host,
 }: StixCoreObjectsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiAreaChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
     refreshRate,
     query: stixCoreObjectsMultiAreaChartTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsMultiAreaChartComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -174,7 +158,18 @@ const StixCoreObjectsMultiAreaChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsMultiAreaChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

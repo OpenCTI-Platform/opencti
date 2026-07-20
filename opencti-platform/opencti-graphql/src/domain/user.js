@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -13,7 +12,6 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
-  isFeatureEnabled,
   logApp,
 } from '../config/conf';
 import {
@@ -28,7 +26,7 @@ import {
 } from '../config/errors';
 import { ipMatchesWhitelist, isUserExcluded } from '../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { elLoadBy, elRawDeleteByQuery, ES_MAX_CONCURRENCY } from '../database/engine';
+import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -41,7 +39,7 @@ import {
   pageRegardingEntitiesConnection,
   storeLoadById,
 } from '../database/middleware-loader';
-import { delEditContext, notify, setEditContext } from '../database/redis';
+import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../database/redis';
 import { findUserSessions, killSessions, killUserSessions } from '../database/session';
 import {
   buildPagination,
@@ -655,12 +653,7 @@ export const checkPasswordFromPolicy = async (context, password) => {
   }
 };
 
-export const FEATURE_FORCE_PASSWORD_CHANGE = 'FORCE_PASSWORD_CHANGE';
-
 export const computePasswordValidUntilFromPolicy = async (context) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return null;
-  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validityDays = Number(settings.password_policy_validity_days ?? 0);
   if (!Number.isFinite(validityDays) || validityDays <= 0) {
@@ -673,13 +666,29 @@ export const computePasswordValidUntilFromPolicy = async (context) => {
  * Clears `password_valid_until` on all internal users.
  * Called when the admin disables the password validity policy (sets validity days to 0).
  */
-export const clearAllUsersPasswordValidUntil = async (context) => {
-  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
-  const usersWithExpiry = allUsers.filter((u) => u.password_valid_until != null && !u.external);
-  await BluePromise.map(usersWithExpiry, (user) => {
-    const inputs = [{ key: 'password_valid_until', value: [null] }];
-    return updateAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, inputs);
-  }, { concurrency: ES_MAX_CONCURRENCY });
+export const clearAllUsersPasswordValidUntil = async (_context) => {
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_INTERNAL_OBJECTS],
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: 'ctx._source.password_valid_until = null;' },
+      query: {
+        bool: {
+          must: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+          ],
+          must_not: [
+            { term: { external: true } },
+          ],
+          filter: [
+            { exists: { field: 'password_valid_until' } },
+          ],
+        },
+      },
+    },
+  });
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 /**
@@ -691,27 +700,98 @@ export const clearAllUsersPasswordValidUntil = async (context) => {
  * @param {number} oldDays - Previous validity duration in days
  * @param {number} newDays - New validity duration in days
  */
-export const adjustAllUsersPasswordValidUntil = async (context, oldDays, newDays) => {
+export const adjustAllUsersPasswordValidUntil = async (_context, oldDays, newDays) => {
   const diffDays = newDays - oldDays;
   if (diffDays === 0) return;
-  const allUsers = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
-  const internalUsers = allUsers.filter((u) => !u.external);
-  await BluePromise.map(internalUsers, (currentUser) => {
-    if (oldDays <= 0 || currentUser.password_valid_until == null) {
-      // Coming from disabled state OR user has no expiry: set fresh now + newDays
-      const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
-      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-    }
-    // Active policy shift: move existing expiry by the diff
-    const currentExpiry = DateTime.fromISO(currentUser.password_valid_until);
-    if (currentExpiry.isValid) {
-      const newExpiry = currentExpiry.plus({ days: diffDays }).toUTC().toString();
-      const inputs = [{ key: 'password_valid_until', value: [newExpiry] }];
-      return updateAttribute(context, SYSTEM_USER, currentUser.id, ENTITY_TYPE_USER, inputs);
-    }
-    return undefined;
-  }, { concurrency: ES_MAX_CONCURRENCY });
+
+  if (oldDays <= 0) {
+    // Coming from disabled state: set fresh now + newDays for all internal users
+    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: 'ctx._source.password_valid_until = params.expiry;',
+          params: { expiry: newExpiry },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+            ],
+          },
+        },
+      },
+    });
+  } else {
+    // Active policy shift: move existing expiry by the diff (in milliseconds)
+    const diffMs = diffDays * 24 * 60 * 60 * 1000;
+    const newExpiry = DateTime.now().plus({ days: newDays }).toUTC().toString();
+    // Shift existing dates
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: `
+            if (ctx._source.password_valid_until != null) {
+              try {
+                def current = ZonedDateTime.parse(ctx._source.password_valid_until);
+                def newDate = current.plusNanos(params.diffMs * 1000000L);
+                ctx._source.password_valid_until = newDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+              } catch (Exception e) {
+                // Skip documents with unparseable dates rather than failing the whole batch
+              }
+            }
+          `,
+          params: { diffMs },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+            ],
+            filter: [
+              { exists: { field: 'password_valid_until' } },
+            ],
+          },
+        },
+      },
+    });
+    // Set fresh expiry for users who don't have one yet
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: 'ctx._source.password_valid_until = params.expiry;',
+          params: { expiry: newExpiry },
+        },
+        query: {
+          bool: {
+            must: [
+              { term: { 'entity_type.keyword': ENTITY_TYPE_USER } },
+            ],
+            must_not: [
+              { term: { external: true } },
+              { exists: { field: 'password_valid_until' } },
+            ],
+          },
+        },
+      },
+    });
+  }
+  await publishCacheResetEvent(ENTITY_TYPE_USER);
 };
 
 export const sendEmailToUser = async (context, user, input) => {
@@ -1111,7 +1191,7 @@ export const deleteBookmark = async (context, user, id) => {
 };
 
 export const bookmarks = async (context, user, args) => {
-  const { types = [], filters = null } = args;
+  const { first = 10, after, types = [], filters = null, orderBy = null, orderMode = 'asc' } = args;
   const currentUser = await storeLoadById(context, user, user.id, ENTITY_TYPE_USER);
   // handle types
   let bookmarkList = types && types.length > 0
@@ -1133,8 +1213,8 @@ export const bookmarks = async (context, user, args) => {
     };
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
-  const filteredBookmarks = [];
-
+  let filteredBookmarks = [];
+  // Clean up bookmarks that no longer exist
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
@@ -1143,12 +1223,20 @@ export const bookmarks = async (context, user, args) => {
       await deleteBookmark(context, user, bookmark.id);
     }
   }
-  return buildPagination(
-    0,
-    null,
-    filteredBookmarks.map((n) => ({ node: n })),
-    filteredBookmarks.length,
-  );
+  // No bookmarks to fetch
+  if (filteredBookmarks.length === 0) {
+    return buildPagination(0, null, [], 0);
+  }
+  const bookmarkIds = filteredBookmarks.map((b) => b.id);
+  // Fetch all bookmarks in a single ES query with ordering and pagination
+  const connection = await pageEntitiesConnection(context, user, [ABSTRACT_STIX_DOMAIN_OBJECT], {
+    ids: bookmarkIds,
+    first: first ?? bookmarkIds.length,
+    after: after || undefined,
+    orderBy: orderBy || undefined,
+    orderMode: orderBy ? (orderMode ?? 'asc') : undefined,
+  });
+  return connection;
 };
 
 export const addBookmark = async (context, user, id, type) => {
@@ -1575,8 +1663,7 @@ export const otpUserActivation = async (context, user, { secret, code }) => {
   }
   const { valid } = await totp.verify({ secret, token: code });
   if (valid) {
-    const uri = totp.generateURI({ label: user.user_email, issuer: 'OpenCTI', secret });
-    const patch = { otp_activated: true, otp_secret: secret, otp_qr: uri };
+    const patch = { otp_activated: true, otp_secret: secret, otp_qr: '' };
     const { element } = await patchAttribute(context, user, user.id, ENTITY_TYPE_USER, patch);
     context.req.session.user.otp_validated = valid;
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -1588,7 +1675,7 @@ export const otpUserDeactivation = async (context, user, id) => {
   if (!context.user_with_session) {
     throw UnsupportedError('You need to deactivate your current 2FA in a valid user session');
   }
-  const patch = { otp_activated: false, otp_secret: '', otp_qr: '' };
+  const patch = { otp_activated: false, otp_secret: '' };
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
@@ -2022,9 +2109,6 @@ const internalAuthenticateUser = async (context, req, user) => {
  * @returns {boolean}
  */
 export const isPasswordExpired = (user) => {
-  if (!isFeatureEnabled(FEATURE_FORCE_PASSWORD_CHANGE)) {
-    return false;
-  }
   if (user.password_valid_until == null) {
     return false;
   }

@@ -2,12 +2,12 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
+import usePublicWidgetDefaultDates from '../usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
 import { PublicStixCoreObjectsMultiVerticalBarsQuery } from './__generated__/PublicStixCoreObjectsMultiVerticalBarsQuery.graphql';
-import { monthsAgo, now } from '../../../../utils/Time';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
 
@@ -77,13 +77,13 @@ const PublicStixCoreObjectsMultiVerticalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsMultiVerticalBarsQuery>(
+  const dates = usePublicWidgetDefaultDates(startDate, endDate);
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsMultiVerticalBarsQuery>(
     publicStixCoreObjectsMultiVerticalBarsQuery,
     {
       uriKey,
       widgetId: id,
-      startDate: startDate ?? monthsAgo(12),
-      endDate: endDate ?? now(),
+      ...dates,
     },
   );
 

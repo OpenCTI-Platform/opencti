@@ -3,7 +3,7 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
@@ -105,7 +105,7 @@ const PublicStixRelationshipsWordCloud = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsWordCloudQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsWordCloudQuery>(
     publicStixRelationshipsWordCloudQuery,
     {
       uriKey,

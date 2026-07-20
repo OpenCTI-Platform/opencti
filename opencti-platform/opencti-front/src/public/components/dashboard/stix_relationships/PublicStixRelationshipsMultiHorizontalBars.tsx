@@ -6,7 +6,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMultiHorizontalBarsQuery } from './__generated__/PublicStixRelationshipsMultiHorizontalBarsQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -267,7 +267,7 @@ const PublicStixRelationshipsMultiHorizontalBars = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsMultiHorizontalBarsQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsMultiHorizontalBarsQuery>(
     publicStixRelationshipsMultiHorizontalBarsQuery,
     {
       uriKey,

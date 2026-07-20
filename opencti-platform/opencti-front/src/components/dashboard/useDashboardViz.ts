@@ -1,42 +1,16 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective, WidgetParameters } from '../../utils/widget/widget';
-import useAuth from '../../utils/hooks/useAuth';
-import { resolveDataSelection } from './dashboard-viz-utils';
-import { useCallback, useEffect, useMemo, useRef, useTransition } from 'react';
-import { useDashboardRefreshToken } from './DashboardRefreshContext';
+import type { WidgetDataSelection, WidgetPerspective, WidgetHost, WidgetParameters } from '../../utils/widget/widget';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useDashboardRefreshToken, useDashboardSetQueryPending } from './DashboardRefreshContext';
 import { DashboardConfig } from './dashboard-types';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
-import { OperationType } from 'relay-runtime';
-
-const useWidgetAutoRefresh = (reloadData: () => void, refreshInterval?: number | null) => {
-  useEffect(() => {
-    if (typeof refreshInterval !== 'number' || refreshInterval <= 0) {
-      return () => {};
-    }
-
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const msUntilNextTick = refreshInterval - (Date.now() % refreshInterval);
-    const timeout = setTimeout(() => {
-      reloadData();
-      interval = setInterval(() => {
-        reloadData();
-      }, refreshInterval);
-    }, msUntilNextTick);
-
-    return () => {
-      clearTimeout(timeout);
-      if (interval !== null) {
-        clearInterval(interval);
-      }
-    };
-  }, [reloadData, refreshInterval]);
-};
+import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
+import useAuth from '../../utils/hooks/useAuth';
+import { resolveDataSelection } from './dashboardVizUtils';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
   perspective,
   host,
-  refreshRate,
   query,
   buildQueryVariables,
   parameters,
@@ -45,25 +19,53 @@ const useDashboardViz = <TQuery extends OperationType>({
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
   host?: WidgetHost;
+  // Accepted for backward compatibility with widget props; no longer used for
+  // scheduling (refresh is driven centrally by the refreshToken context).
   refreshRate?: number | null;
-  query?: GraphQLTaggedNode;
+  query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
   buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
-  const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query as GraphQLTaggedNode);
-  const [, startTransition] = useTransition();
+  const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
+  const [isPending, startTransition] = useTransition();
   const lastLoadedVariablesSignatureRef = useRef<string | null>(null);
+  const setQueryPending = useDashboardSetQueryPending();
+  const queryIdRef = useRef(`dashboard-viz-${Math.random().toString(36).slice(2)}`);
+
+  // Resolve data selection
   const { filterKeysSchema } = useAuth().schema;
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
-    filterKeysSchema,
-    dataSelection,
-    perspective,
-    host,
-  }), [filterKeysSchema, dataSelection, perspective, host]);
+  const [resolvedDataSelection, setResolvedDataSelection] = useState<WidgetDataSelection[]>([]);
+  const [isMissingHostEntity, setIsMissingHostEntity] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
+
+  // Stabilize the dataSelection dependency to avoid re-triggering the effect
+  // on every render when the parent passes a new array reference with the same content.
+  const dataSelectionSignature = useMemo(() => JSON.stringify(dataSelection), [dataSelection]);
+
+  useEffect(() => {
+    let cancelled = false;
+    resolveDataSelection({
+      filterKeysSchema,
+      dataSelection,
+      perspective,
+      host,
+    }).then((result) => {
+      if (!cancelled) {
+        setResolvedDataSelection(result.resolvedDataSelection);
+        setIsMissingHostEntity(result.isMissingHostEntity);
+        setIsPreviewMode(result.isPreviewMode);
+        setIsMissingSavedFilters(result.isMissingSavedFilters);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [filterKeysSchema, dataSelectionSignature, perspective, host]);
 
   const queryVariables = useMemo(
-    () => (buildQueryVariables && config
+    () => (buildQueryVariables && config && resolvedDataSelection.length > 0
       ? buildQueryVariables(resolvedDataSelection, config, parameters)
       : null),
     [buildQueryVariables, resolvedDataSelection, config, parameters],
@@ -88,6 +90,10 @@ const useDashboardViz = <TQuery extends OperationType>({
       return;
     }
 
+    if (isMissingSavedFilters) {
+      return;
+    }
+
     if (!queryVariables || !queryVariablesSignature) {
       return;
     }
@@ -97,29 +103,32 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     loadAndTrackSignature(queryVariables, queryVariablesSignature);
-  }, [isMissingHostEntity, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
+  }, [isMissingHostEntity, isMissingSavedFilters, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
 
   useEffect(() => {
-    if (!isMissingHostEntity) {
+    if (!isMissingHostEntity || !isMissingSavedFilters) {
       return;
     }
     lastLoadedVariablesSignatureRef.current = null;
     disposeQuery();
-  }, [disposeQuery, isMissingHostEntity]);
+  }, [disposeQuery, isMissingHostEntity, isMissingSavedFilters]);
 
   useEffect(() => {
     reloadData(false);
   }, [reloadData]);
 
-  // Used by interval fallback when no dashboard refresh provider is present.
-  const forceReloadWithCurrentVariables = useCallback(() => {
-    reloadData(true);
-  }, [reloadData]);
+  // Expose this widget's in-flight status so the dashboard can lock the manual
+  // refresh button until every widget has finished refreshing.
+  useEffect(() => {
+    const queryId = queryIdRef.current;
+    setQueryPending(queryId, isPending);
+    return () => setQueryPending(queryId, false);
+  }, [isPending, setQueryPending]);
 
   // Used by dashboard token refresh to rebuild variables from latest inputs
   // before forcing the load.
   const forceReloadWithFreshVariables = useCallback(() => {
-    if (!buildQueryVariables || !config) {
+    if (!buildQueryVariables || !config || resolvedDataSelection.length === 0) {
       reloadData(true);
       return;
     }
@@ -132,7 +141,6 @@ const useDashboardViz = <TQuery extends OperationType>({
   // refreshToken is an integer provided via context by DashboardContent and incremented
   // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
   // regardless of whether query variables changed, so fresh data is always fetched.
-  // Outside DashboardContent, token is null and widget-level interval refresh is used instead.
   // prevRefreshTokenRef guards against triggering on the initial mount.
   const refreshToken = useDashboardRefreshToken();
   const prevRefreshTokenRef = useRef(refreshToken);
@@ -141,20 +149,19 @@ const useDashboardViz = <TQuery extends OperationType>({
     if (prevRefreshTokenRef.current === refreshToken) return;
     prevRefreshTokenRef.current = refreshToken;
 
-    if (isMissingHostEntity) {
+    if (isMissingHostEntity || isMissingSavedFilters) {
       return;
     }
 
     forceReloadWithFreshVariables();
-  }, [refreshToken, isMissingHostEntity, forceReloadWithFreshVariables]);
-
-  useWidgetAutoRefresh(forceReloadWithCurrentVariables, refreshToken === null ? refreshRate : null);
+  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables]);
 
   return {
     queryRef,
     isPreviewMode,
     resolvedDataSelection,
     isMissingHostEntity,
+    isMissingSavedFilters,
   };
 };
 

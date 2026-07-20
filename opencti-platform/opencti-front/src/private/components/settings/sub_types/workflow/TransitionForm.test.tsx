@@ -6,8 +6,8 @@ import TransitionForm from './TransitionForm';
 import testRender from '../../../../../utils/tests/test-render';
 import { WorkflowActionType, CommentMode } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 // ---------------------------------------------------------------------------
 // Mock heavy sub-components with no relevance to the tested logic
@@ -311,7 +311,6 @@ describe('TransitionForm – rendering', () => {
   });
 
   it('renders WorkflowConditionFilters when conditions are defined', () => {
-    const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
@@ -331,7 +330,6 @@ describe('TransitionForm – rendering', () => {
 // EE / CE gating
 // ---------------------------------------------------------------------------
 describe('TransitionForm – EE / CE gating', () => {
-  const emptyFilterGroup: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
   const eeActions = [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }];
 
   it('disables EE-only switches in CE', () => {

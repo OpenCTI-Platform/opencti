@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as middleware from '../../../../src/database/middleware';
 import * as redis from '../../../../src/database/redis';
 import * as userActionListener from '../../../../src/listener/UserActionListener';
+import * as uriDenyListConfig from '../../../../src/config/uriDenyList';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import type { EditInput } from '../../../../src/generated/graphql';
 import { notifierEdit } from '../../../../src/modules/notifier/notifier-domain';
@@ -84,5 +85,23 @@ describe('notifierEdit', () => {
       { id: 'user-a', access_right: 'view' },
       { id: 'user-b', access_right: 'view' },
     ]);
+  });
+
+  it('should throw when webhook url is in the deny list', async () => {
+    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['blocked.com']);
+    const inputWithBlockedUrl: EditInput[] = [
+      ...baseInput.filter((i) => i.key !== 'notifier_configuration'),
+      { key: 'notifier_configuration', value: [JSON.stringify({ url: 'https://blocked.com/hook', verb: 'POST', template: '{}' })] },
+    ];
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithBlockedUrl))
+      .rejects.toThrow('This URI is not allowed.');
+  });
+
+  it('should not throw when webhook url is not in the deny list', async () => {
+    vi.spyOn(uriDenyListConfig, 'uriDenyList').mockReturnValue(['blocked.com']);
+
+    await expect(notifierEdit(mockContext, mockUser, notifierId, baseInput))
+      .resolves.not.toThrow();
   });
 });

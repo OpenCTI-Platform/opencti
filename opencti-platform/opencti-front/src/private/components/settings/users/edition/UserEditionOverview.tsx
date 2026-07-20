@@ -343,7 +343,6 @@ const UserEditionOverview = createFragmentContainer(
         language
         theme
         otp_activated
-        otp_qr
         password_valid_until
         account_status
         account_lock_after_date

@@ -8,7 +8,7 @@ import cacheManager from '../src/manager/cacheManager';
 import { initExclusionListCache } from '../src/database/exclusionListCache';
 
 const ADMIN_USER = { id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' };
-const API_URI = `http://localhost:${conf.get('app:port')}`;
+const API_URI = `http://localhost:${conf.get('app:port')}${conf.get('app:base_path') ?? ''}`;
 const API_TOKEN = conf.get('app:admin:token');
 const PYTHON_PATH = './src/python/testing';
 

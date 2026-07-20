@@ -16,7 +16,6 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPdf';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import PdfViewer from '../../../../components/PdfViewer';
 import PopoverMenu from '../../../../components/PopoverMenu';
@@ -56,8 +55,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const { isOldEditorEnable } = useHelper();
-  const tiptapEnabled = !isOldEditorEnable();
   const [openDelete, setOpenDelete] = useState(false);
 
   const [pdf, setPdf] = useState<File>();
@@ -82,7 +79,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
       instance_filters: null,
     };
     const htmlTemplate = await buildFileFromTemplate('', [], undefined, template);
-    const PDF = await htmlToPdfReport('', htmlTemplate, 'Preview', [], fintelDesign, tiptapEnabled);
+    const PDF = await htmlToPdfReport('', htmlTemplate, 'Preview', [], fintelDesign);
     const blob = await PDF.getBlob();
     const file = new File([blob], 'Preview.pdf', { type: blob.type });
     setPdf(file);

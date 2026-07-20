@@ -3,7 +3,7 @@ import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptio
 import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { mergeDeepRightAll, now } from '../utils/format';
@@ -324,6 +324,12 @@ export const getRedisVersion = async () => {
   const serverInfo = await getClientBase().call('INFO') as string;
   const versionString = serverInfo.split('\r\n')[1];
   return versionString.split(':')[1];
+};
+
+export const CACHE_RESET_TOPIC = `${TOPIC_PREFIX}CACHE_RESET_TOPIC`;
+
+export const publishCacheResetEvent = async (entityType: string) => {
+  await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
 };
 
 /* v8 ignore next */
@@ -772,6 +778,13 @@ export const redisGetManagerEventState = async (managerName: string) => {
 // endregion
 
 // region connector logs
+export interface FeedLog {
+  timestamp: string;
+  status: 'success' | 'error';
+  messages: string[];
+  count?: number;
+}
+
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
   await getClientBase().set(`connector-${connectorId}-logs`, data);
@@ -779,6 +792,64 @@ export const redisSetConnectorLogs = async (connectorId: string, logs: string[])
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
   return rawLogs ? JSON.parse(rawLogs) : [];
+};
+
+const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
+
+const INGESTION_DEDUP_MAX_COUNT = 100;
+const INGESTION_HISTORY_MAX_LENGTH = 20;
+const INGESTION_HISTORY_UPDATE_RETRIES = 5;
+
+export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => {
+  const clientBase = getClientBase();
+  const key = getIngestionLogKey(feedId);
+  const incomingMessages = JSON.stringify(log.messages);
+
+  for (let attempt = 0; attempt < INGESTION_HISTORY_UPDATE_RETRIES; attempt += 1) {
+    await clientBase.watch(key);
+    try {
+      const latestLogData = await clientBase.lindex(key, 0);
+      const tx = clientBase.multi();
+
+      if (latestLogData) {
+        const latestLog: FeedLog = JSON.parse(latestLogData);
+        const isSameStatus = latestLog.status === log.status;
+        const isSameMessage = JSON.stringify(latestLog.messages) === incomingMessages;
+        const count = latestLog.count ?? 1;
+
+        if (isSameStatus && isSameMessage && count < INGESTION_DEDUP_MAX_COUNT) {
+          const updatedLog: FeedLog = {
+            ...latestLog,
+            count: count + 1,
+            timestamp: log.timestamp,
+          };
+          tx.lset(key, 0, JSON.stringify(updatedLog));
+        } else {
+          tx.lpush(key, JSON.stringify(log));
+          tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
+        }
+      } else {
+        tx.lpush(key, JSON.stringify(log));
+        tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
+      }
+
+      const result = await tx.exec();
+      if (result !== null) {
+        return;
+      }
+    } finally {
+      await clientBase.unwatch();
+    }
+  }
+
+  throw DatabaseError('Redis transaction conflict while updating ingestion history', {
+    feedId,
+  });
+};
+
+export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
+  const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
+  return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
 };
 // endregion
 
