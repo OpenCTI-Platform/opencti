@@ -41,6 +41,7 @@ vi.mock('../hooks/useAuth', () => ({
       filterKeysSchema: new Map([
         ['Stix-Core-Object', new Map([
           ['status_id', { type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
+          ['objectLabel', { type: 'id', elementsForFilterValuesSearch: ['Label'] }],
         ])],
       ]),
     },
