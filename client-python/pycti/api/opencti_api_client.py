@@ -249,7 +249,8 @@ class OpenCTIApiClient:
 
         # Define API
         self.api_token = token
-        self.api_url = url.rstrip("/") + "/graphql"
+        self.base_url = url.rstrip("/")
+        self.api_url = self.base_url + "/graphql"
         if provider is not None:
             provider_pattern_checker = re.compile(
                 r"^[A-Za-z]+\/\d+(?:\.[a-z]*\d+){0,}$"
@@ -792,6 +793,24 @@ class OpenCTIApiClient:
                 "Error fetching file", {"uri": fetch_uri, "error": str(e)}
             )
             return None
+
+    def fetch_opencti_file_by_id(self, file_id, binary=False, serialize=False):
+        """Get file from the OpenCTI API using its file id.
+
+        Builds the download URL from the platform base URL, avoiding the need
+        for callers to craft the storage URL themselves.
+
+        :param file_id: id of the file to fetch (e.g. an importFiles entry id)
+        :type file_id: str
+        :param binary: if True, returns raw bytes; if False, returns text, defaults to False
+        :type binary: bool, optional
+        :param serialize: if True, returns base64-encoded content, defaults to False
+        :type serialize: bool, optional
+        :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
+        :rtype: str, bytes, or None
+        """
+        fetch_uri = f"{self.base_url}/storage/get/{file_id}"
+        return self.fetch_opencti_file(fetch_uri, binary=binary, serialize=serialize)
 
     def health_check(self):
         """Submit an example request to the OpenCTI API.

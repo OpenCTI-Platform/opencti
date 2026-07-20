@@ -532,3 +532,158 @@ def test_prepare_export_keeps_non_embedded_markdown_image_uri(
     assert len(result) == 1
     assert result[0]["description"] == "desc ![img](/storage/get/import/global/a.png)"
     assert len(fetch_calls) == 0
+
+
+def test_generate_export_fetches_external_reference_files_by_id(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    """External reference importFiles must be fetched via fetch_opencti_file_by_id,
+    passing the raw file id rather than a manually crafted storage URL."""
+    fetch_by_id_calls = []
+
+    def fake_fetch_by_id(file_id, binary=False, serialize=False):
+        fetch_by_id_calls.append((file_id, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti, "fetch_opencti_file_by_id", fake_fetch_by_id
+    )
+
+    entity = {
+        "id": "internal-report-id-ext-ref",
+        "standard_id": "report--33333333-3333-4333-8333-333333333333",
+        "entity_type": "Report",
+        "parent_types": ["Stix-Domain-Object"],
+        "externalReferencesIds": ["ext-ref-id"],
+        "externalReferences": [
+            {
+                "source_name": "acme-source",
+                "description": "",
+                "url": "https://example.com/report",
+                "hash": "",
+                "external_id": "",
+                "importFiles": [
+                    {
+                        "id": "import/External-Reference/ext-ref-id/report.pdf",
+                        "name": "report.pdf",
+                        "metaData": {"mimetype": "application/pdf", "version": "v1"},
+                    }
+                ],
+            }
+        ],
+    }
+
+    result = opencti_stix2.generate_export(entity=entity)
+
+    assert len(fetch_by_id_calls) == 1
+    assert fetch_by_id_calls[0] == (
+        "import/External-Reference/ext-ref-id/report.pdf",
+        True,
+        True,
+    )
+    x_opencti_files = result["external_references"][0]["x_opencti_files"]
+    assert x_opencti_files == [
+        {
+            "name": "report.pdf",
+            "data": "Zm9v",
+            "mime_type": "application/pdf",
+            "version": "v1",
+        }
+    ]
+
+
+def test_prepare_export_fetches_artifact_payload_bin_by_id(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    """Artifact payload_bin must be fetched via fetch_opencti_file_by_id using the
+    first importFiles entry's id, not a manually crafted storage URL."""
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_by_id_calls = []
+
+    def fake_fetch_by_id(file_id, binary=False, serialize=False):
+        fetch_by_id_calls.append((file_id, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti, "fetch_opencti_file_by_id", fake_fetch_by_id
+    )
+
+    entity = {
+        "id": "artifact--44444444-4444-4444-8444-444444444444",
+        "type": "artifact",
+        "x_opencti_id": "internal-artifact-id",
+        "importFilesIds": ["import/Artifact/internal-artifact-id/sample.bin"],
+        "importFiles": [
+            {
+                "id": "import/Artifact/internal-artifact-id/sample.bin",
+                "name": "sample.bin",
+                "metaData": {"mimetype": "application/octet-stream", "version": None},
+            }
+        ],
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert result[0]["payload_bin"] == "Zm9v"
+    # An artifact entity with importFiles goes through both the "Artifact"
+    # (payload_bin) and generic "Files" (x_opencti_files) branches. Assert on
+    # the fetched file id/flags rather than the exact call count, so this
+    # test doesn't lock in that implementation detail.
+    assert len(fetch_by_id_calls) >= 1
+    for call in fetch_by_id_calls:
+        assert call == ("import/Artifact/internal-artifact-id/sample.bin", True, True)
+
+
+def test_prepare_export_fetches_generic_import_files_by_id(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    """Generic entity importFiles (x_opencti_files) must be fetched via
+    fetch_opencti_file_by_id, not a manually crafted storage URL."""
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_by_id_calls = []
+
+    def fake_fetch_by_id(file_id, binary=False, serialize=False):
+        fetch_by_id_calls.append((file_id, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(
+        opencti_stix2.opencti, "fetch_opencti_file_by_id", fake_fetch_by_id
+    )
+
+    entity = {
+        "id": "intrusion-set--55555555-5555-4555-8555-555555555555",
+        "type": "intrusion-set",
+        "x_opencti_id": "internal-intrusion-set-id",
+        "importFilesIds": ["import/Intrusion-Set/internal-intrusion-set-id/notes.txt"],
+        "importFiles": [
+            {
+                "id": "import/Intrusion-Set/internal-intrusion-set-id/notes.txt",
+                "name": "notes.txt",
+                "metaData": {"mimetype": "text/plain", "version": "v2"},
+            }
+        ],
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    x_opencti_files = result[0]["x_opencti_files"]
+    assert len(x_opencti_files) == 1
+    assert x_opencti_files[0]["name"] == "notes.txt"
+    assert x_opencti_files[0]["data"] == "Zm9v"
+    assert x_opencti_files[0]["mime_type"] == "text/plain"
+    assert x_opencti_files[0]["version"] == "v2"
+    assert fetch_by_id_calls == [
+        ("import/Intrusion-Set/internal-intrusion-set-id/notes.txt", True, True)
+    ]
