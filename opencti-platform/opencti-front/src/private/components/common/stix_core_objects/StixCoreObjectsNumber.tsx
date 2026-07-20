@@ -4,7 +4,6 @@ import { dayAgo } from '../../../../utils/Time';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
@@ -13,6 +12,7 @@ import { StixCoreObjectsNumberNumberSeriesQuery } from './__generated__/StixCore
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { ReactNode } from 'react';
+import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
     query StixCoreObjectsNumberNumberSeriesQuery(
@@ -115,10 +115,9 @@ const StixCoreObjectsNumber = ({
   host,
 }: StixCoreObjectsNumberProps) => {
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
+  const DEFAULT_TITLE = t_i18n('Entities number');
 
-  const title = parameters.title ?? t_i18n('Entities number');
-  const translatedTitle = translateEntityType(title);
+  const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
   const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
@@ -134,7 +133,7 @@ const StixCoreObjectsNumber = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Entities number')}
+      title={DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
@@ -149,7 +148,7 @@ const StixCoreObjectsNumber = ({
           <StixCoreObjectsNumberComponent
             queryRef={queryRef!}
             entityType={entityType}
-            label={translatedTitle}
+            label={translatedNumberLabel}
           />
         </WidgetRenderContent>
       </div>

@@ -19,6 +19,8 @@ import {
 import React from 'react';
 
 import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+import { isNotEmptyField } from '../utils';
+import useEntityTranslation from 'src/utils/hooks/useEntityTranslation';
 
 const widgetVisualizationTypes = [
   {
@@ -262,6 +264,15 @@ export const isWidgetListOrTimeline = (type: string) => {
  * Returns the time interval to use in a widget.
  */
 export const getWidgetInterval = (params?: WidgetParameters) => params?.interval ?? 'day';
+
+/**
+ * Construct the label title for a number widget.
+ */
+export const useGetNumberWidgetTitle = (parameters: WidgetParameters, defaultTitle: string) => {
+  const { translateEntityType } = useEntityTranslation();
+  const numberLabel = isNotEmptyField(parameters.title) ? parameters.title : defaultTitle;
+  return translateEntityType(numberLabel);
+};
 
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {

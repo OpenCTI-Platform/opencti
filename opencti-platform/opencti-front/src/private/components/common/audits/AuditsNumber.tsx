@@ -20,10 +20,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
+import { UNIQUE_COUNT_ESTIMATION_THRESHOLD, UNIQUE_COUNT_ESTIMATION_WARNING, useGetNumberWidgetTitle } from '../../../../utils/widget/widgetUtils';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -126,7 +125,6 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
 }) => {
   const [showWarning, setShowWarning] = useState(false);
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
 
   const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsNumberNumberSeriesQuery['variables'] => {
     const selection = resolvedDataSelection[0];
@@ -158,9 +156,8 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     parameters,
     buildQueryVariables,
   });
-
-  const title = parameters.title ?? t_i18n('Audits number');
-  const translatedTitle = translateEntityType(title);
+  const DEFAULT_TITLE = t_i18n('Audits number');
+  const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
   const selection = resolvedDataSelection[0];
   const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
@@ -169,7 +166,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Entities number')}
+      title={DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
@@ -184,7 +181,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
         <AuditsNumberComponent
           queryRef={queryRef!}
           entityType={entityType}
-          label={translatedTitle}
+          label={translatedNumberLabel}
           isUnique={Boolean(selection.unique)}
           onShowWarning={setShowWarning}
         />

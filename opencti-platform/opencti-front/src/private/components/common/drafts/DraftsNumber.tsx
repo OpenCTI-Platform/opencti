@@ -7,12 +7,12 @@ import { computeStartEndDates } from '../../../../components/dashboard/dashboard
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsNumberQuery } from './__generated__/DraftsNumberQuery.graphql';
+import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
 const draftsNumberQuery = graphql`
   query DraftsNumberQuery(
@@ -58,17 +58,16 @@ const buildQueryVariables = (
 
 interface DraftsNumberComponentProps {
   queryRef: PreloadedQuery<DraftsNumberQuery>;
-  parameters?: WidgetParameters;
   entityType?: string;
+  label: string;
 }
 
 const DraftsNumberComponent = ({
   queryRef,
-  parameters,
   entityType,
+  label,
 }: DraftsNumberComponentProps) => {
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
   const data = usePreloadedQuery(draftsNumberQuery, queryRef);
 
   if (!data?.draftWorkspacesNumber) {
@@ -76,13 +75,11 @@ const DraftsNumberComponent = ({
   }
 
   const { total, count } = data.draftWorkspacesNumber;
-  const title = parameters?.title ?? t_i18n('Draft workspaces number');
-  const translatedTitle = translateEntityType(title);
 
   return (
     <WidgetNumber
       entityType={entityType}
-      label={translatedTitle}
+      label={label}
       value={total}
       diffLabel={t_i18n('24 hours')}
       diffValue={total - count}
@@ -115,6 +112,9 @@ const DraftsNumber = ({
 }: DraftsNumberProps) => {
   const { t_i18n } = useFormatter();
 
+  const DEFAULT_TITLE = t_i18n('Draft workspaces number');
+  const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
+
   const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsNumberQuery>({
     perspective: 'entities',
     dataSelection,
@@ -129,7 +129,7 @@ const DraftsNumber = ({
     <WidgetContainer
       padding="medium"
       height={height}
-      title={t_i18n('Draft workspaces number')}
+      title={DEFAULT_TITLE}
       variant={variant}
       action={popover}
       showPreviewTag={isPreviewMode}
@@ -142,8 +142,8 @@ const DraftsNumber = ({
       >
         <DraftsNumberComponent
           queryRef={queryRef!}
-          parameters={parameters}
           entityType={entityType}
+          label={translatedNumberLabel}
         />
       </WidgetRenderContent>
     </WidgetContainer>
