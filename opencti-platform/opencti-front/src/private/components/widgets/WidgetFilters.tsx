@@ -181,9 +181,11 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 helpers={helpers}
                 searchContext={type === 'bookmark' ? undefined : searchContext}
               />
-              <Divider orientation="vertical" flexItem />
               {isSavedFiltersAccessible && (
-                <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} />
+                <>
+                  <Divider orientation="vertical" flexItem />
+                  <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} />
+                </>
               )}
             </>
           )}
