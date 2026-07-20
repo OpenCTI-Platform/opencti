@@ -30482,6 +30482,7 @@ export enum SmtpAuthType {
 export type SmtpConfiguration = {
   __typename?: 'SmtpConfiguration';
   auth_type?: Maybe<SmtpAuthType>;
+  forced_sender_email: Scalars['Boolean']['output'];
   hostname?: Maybe<Scalars['String']['output']>;
   oauth_client_id?: Maybe<Scalars['String']['output']>;
   oauth_issuer?: Maybe<Scalars['String']['output']>;
@@ -50676,6 +50677,7 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
 
 export type SmtpConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['SmtpConfiguration'] = ResolversParentTypes['SmtpConfiguration']> = ResolversObject<{
   auth_type?: Resolver<Maybe<ResolversTypes['SmtpAuthType']>, ParentType, ContextType>;
+  forced_sender_email?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hostname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oauth_client_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oauth_issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -5,7 +5,7 @@ import { SmtpAuthType, type SmtpConfigurationAddInput } from '../../generated/gr
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { smtpTest } from '../../database/smtp';
+import { ALLOW_EMAIL_REWRITE, smtpTest } from '../../database/smtp';
 import { encryptSmtpSecret } from './smtpConfiguration-crypto';
 import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
 import { getEntityFromCache } from '../../database/cache';
@@ -60,7 +60,9 @@ export const getSmtpConfiguration = async (
   user: AuthUser,
 ): Promise<SmtpConfiguration | null> => {
   const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
-  return settings.smtp_configuration ?? null;
+  const stored = settings.smtp_configuration ?? null;
+  if (!stored) return null;
+  return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
 };
 
 export const getSmtpConfigurationForAdmin = async (

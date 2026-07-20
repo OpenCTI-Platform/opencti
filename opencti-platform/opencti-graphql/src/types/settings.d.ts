@@ -39,6 +39,7 @@ export type HeadersAuthConfig = {
 export type SmtpConfiguration = {
   smtp_enabled: boolean;
   use_db_config: boolean;
+  forced_sender_email: boolean;
   sender_email_address: string;
   hostname: string;
   port: number;

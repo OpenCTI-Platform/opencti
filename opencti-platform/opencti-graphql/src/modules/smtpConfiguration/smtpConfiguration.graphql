@@ -1,6 +1,7 @@
 type SmtpConfiguration {
   smtp_enabled: Boolean!
   use_db_config: Boolean!
+  forced_sender_email: Boolean!
   sender_email_address: String
   hostname: String
   port: Int
