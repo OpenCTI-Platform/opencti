@@ -5,6 +5,7 @@ import * as Conf from '../../../../src/config/conf';
 import {
   getSmtpConfiguration,
   getSmtpConfigurationForAdmin,
+  smtpConfigurationDelete,
   smtpConfigurationEdit,
   smtpConfigurationTest,
 } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
@@ -228,6 +229,41 @@ describe('smtpConfigurationEdit', () => {
     expect(contextData.input).not.toHaveProperty('password_encrypted');
     expect(contextData.input).not.toHaveProperty('oauth_client_secret');
     expect(contextData.input).not.toHaveProperty('oauth_client_secret_encrypted');
+  });
+});
+
+// ---------- smtpConfigurationDelete ----------
+
+describe('smtpConfigurationDelete', () => {
+  beforeEach(() => {
+    vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: MOCK_SETTINGS } as any);
+  });
+
+  it('should patch smtp_configuration to null and return true', async () => {
+    const result = await smtpConfigurationDelete(mockContext, mockUser);
+    expect(result).toBe(true);
+    expect(Middleware.patchAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      MOCK_SETTINGS.id,
+      'Settings',
+      { smtp_configuration: null },
+    );
+  });
+
+  it('should publish a delete audit log', async () => {
+    const { publishUserAction } = await import('../../../../src/listener/UserActionListener');
+    await smtpConfigurationDelete(mockContext, mockUser);
+    expect(vi.mocked(publishUserAction)).toHaveBeenCalledWith(
+      expect.objectContaining({ event_scope: 'delete', event_access: 'administration' }),
+    );
+  });
+
+  it('should throw ForbiddenAccess when feature flag is disabled', async () => {
+    vi.mocked(Conf.isFeatureEnabled).mockReturnValue(false);
+    await expect(smtpConfigurationDelete(mockContext, mockUser))
+      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
   });
 });
 
