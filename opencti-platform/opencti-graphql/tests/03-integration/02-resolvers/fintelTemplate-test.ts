@@ -55,8 +55,8 @@ const SDO_RESOLVERS_QUERY = gql`
 `;
 
 const SET_DEFAULT_QUERY = gql`
-  mutation fintelTemplateSetDefault($id: ID!, $settingsType: String!) {
-    fintelTemplateSetDefault(id: $id, settingsType: $settingsType) {
+  mutation fintelTemplateFieldPatchSetDefault($id: ID!, $input: [EditInput!]!) {
+    fintelTemplateFieldPatch(id: $id, input: $input) {
       id
       default
     }
@@ -369,7 +369,7 @@ describe('Fintel template resolver standard behavior', () => {
     // First set template 1 as current default
     await queryAsAdmin({
       query: SET_DEFAULT_QUERY,
-      variables: { id: fintelTemplateInternalId, settingsType: 'Report' },
+      variables: { id: fintelTemplateInternalId, input: [{ key: 'default', value: ['true'] }] },
     });
     const beforeRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(beforeRead.data?.fintelTemplate.default).toBe(true);
@@ -409,10 +409,10 @@ describe('Fintel template resolver standard behavior', () => {
   it('should set fintel template as default', async () => {
     const queryResult = await queryAsAdmin({
       query: SET_DEFAULT_QUERY,
-      variables: { id: fintelTemplateInternalId, settingsType: 'Report' },
+      variables: { id: fintelTemplateInternalId, input: [{ key: 'default', value: ['true'] }] },
     });
-    expect(queryResult.data?.fintelTemplateSetDefault.id).toEqual(fintelTemplateInternalId);
-    expect(queryResult.data?.fintelTemplateSetDefault.default).toBe(true);
+    expect(queryResult.data?.fintelTemplateFieldPatch.id).toEqual(fintelTemplateInternalId);
+    expect(queryResult.data?.fintelTemplateFieldPatch.default).toBe(true);
     const readResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(readResult.data?.fintelTemplate.default).toBe(true);
   });
@@ -434,7 +434,7 @@ describe('Fintel template resolver standard behavior', () => {
     // Set the second template as default
     await queryAsAdmin({
       query: SET_DEFAULT_QUERY,
-      variables: { id: secondTemplateId, settingsType: 'Report' },
+      variables: { id: secondTemplateId, input: [{ key: 'default', value: ['true'] }] },
     });
     // First template should no longer be default
     const firstRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });

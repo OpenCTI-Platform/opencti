@@ -105,7 +105,6 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
             onUpdate={() => setFormOpen(true)}
             entitySettingId={entitySettingId}
             templateId={template.id}
-            settingsType={subTypeId}
             isDefault={!!template.default}
             inline={false}
             onDeleteComplete={() => navigate(subTypeLink)}

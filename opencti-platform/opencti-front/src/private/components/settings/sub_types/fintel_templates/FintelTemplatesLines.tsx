@@ -54,7 +54,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
       render: ({ default: isDefault }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
-          label={isDefault ? t_i18n('Default') : ''}
+          label={t_i18n('Default')}
         />
       ) : EMPTY_VALUE,
     },
@@ -89,7 +89,6 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
           onUpdate={() => onUpdate(template)}
           entitySettingId={entitySettingId}
           templateId={template.id}
-          settingsType={targetType}
           isDefault={!!template.default}
           currentDefaultName={template.default ? undefined : currentDefaultName}
         />

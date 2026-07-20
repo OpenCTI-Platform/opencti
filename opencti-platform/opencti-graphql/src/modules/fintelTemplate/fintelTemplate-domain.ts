@@ -133,31 +133,6 @@ const applyUniqueDefaultTemplateConstraint = async (
   return results.map(({ element }) => element);
 };
 
-export const setTemplateAsDefault = async (
-  context: AuthContext,
-  user: AuthUser,
-  settingsType: string,
-  templateId: string,
-) => {
-  await canCustomizeTemplate(context);
-  const template = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
-  if (!(template.settings_types ?? []).includes(settingsType)) {
-    throw FunctionalError('Invalid settingsType for fintel template', { templateId, settingsType });
-  }
-  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
-    context,
-    user,
-    templateId,
-    ENTITY_TYPE_FINTEL_TEMPLATE,
-    [{
-      key: 'default',
-      value: ['true'],
-    }],
-  );
-  const deDefaulted = await applyUniqueDefaultTemplateConstraint(context, user, settingsType, templateId);
-  return [element, ...deDefaulted];
-};
-
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
@@ -229,7 +204,7 @@ export const addFintelTemplate = async (
     ENTITY_TYPE_FINTEL_TEMPLATE,
   );
   if (input.default) {
-    await setTemplateAsDefault(context, user, settings_type, created.id);
+    await applyUniqueDefaultTemplateConstraint(context, user, settings_type, created.id);
   }
 
   await publishUserAction({
@@ -279,6 +254,18 @@ export const fintelTemplateEditField = async (
     ENTITY_TYPE_FINTEL_TEMPLATE,
     formattedInput,
   );
+
+  const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
+  if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+    await applyUniqueDefaultTemplateConstraint(
+      context,
+      user,
+      element.settings_types[0],
+      element.id,
+    );
+  }
 
   await publishUserAction({
     user,

@@ -63,6 +63,5 @@ type Mutation {
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  fintelTemplateSetDefault(id: ID!, settingsType: String!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
   fintelTemplateConfigurationImport(file: Upload!): FintelTemplate @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

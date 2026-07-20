@@ -5,7 +5,6 @@ import IconButton from '@common/button/IconButton';
 import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import useFintelTemplateExport from './useFintelTemplateExport';
 import useFintelTemplateDelete from './useFintelTemplateDelete';
-import useFintelTemplateSetDefault from './useFintelTemplateSetDefault';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import stopEvent from '../../../../../utils/domEvent';
 import { useFormatter } from '../../../../../components/i18n';
@@ -19,7 +18,6 @@ interface FintelTemplatePopoverProps {
   onDeleteComplete?: () => void;
   entitySettingId: string;
   templateId: string;
-  settingsType: string;
   inline?: boolean;
   isDefault: boolean;
   currentDefaultName?: string;
@@ -30,7 +28,6 @@ const FintelTemplatePopover = ({
   onDeleteComplete,
   entitySettingId,
   templateId,
-  settingsType,
   inline = true,
   isDefault,
   currentDefaultName,
@@ -40,7 +37,6 @@ const FintelTemplatePopover = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [setDefaultDialogOpen, setSetDefaultDialogOpen] = useState(false);
   const [commitDeleteMutation] = useFintelTemplateDelete(entitySettingId);
-  const [commitSetDefault] = useFintelTemplateSetDefault();
   const [commitEditMutation] = useFintelTemplateEdit();
 
   const fintelTemplatesRefetchQuery = graphql`
@@ -104,8 +100,11 @@ const FintelTemplatePopover = ({
   };
 
   const doSetDefault = () => {
-    commitSetDefault({
-      variables: { id: templateId, settingsType },
+    commitEditMutation({
+      variables: {
+        id: templateId,
+        input: [{ key: 'default', value: ['true'] }],
+      },
       onCompleted: () => {
         fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId }).toPromise().catch((err) => {
           handleError(err);
