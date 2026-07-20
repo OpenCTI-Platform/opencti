@@ -5,7 +5,7 @@ import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
+import React, { CSSProperties, forwardRef, isValidElement, useCallback, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -81,6 +81,7 @@ interface DrawerProps {
   size?: DrawerSize;
   sx?: SxProps;
   disableBackdropClose?: boolean;
+  containerRef?: React.Ref<HTMLDivElement>;
 }
 
 const getDrawerWidth = (size: DrawerSize) => {
@@ -90,6 +91,15 @@ const getDrawerWidth = (size: DrawerSize) => {
     case 'large': return '960px';
     case 'extraLarge': return '90vw';
   }
+};
+
+const assignRef = <T,>(targetRef: React.Ref<T> | undefined, value: T | null) => {
+  if (!targetRef) return;
+  if (typeof targetRef === 'function') {
+    targetRef(value);
+    return;
+  }
+  (targetRef as React.MutableRefObject<T | null>).current = value;
 };
 
 // eslint-disable-next-line react/display-name
@@ -107,6 +117,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   disabled = false,
   size = 'large',
   disableBackdropClose = false,
+  containerRef,
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -115,6 +126,21 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   const theme = useTheme<Theme>();
   const classes = useStyles({ bannerHeightNumber });
   const [open, setOpen] = useState(defaultOpen);
+
+  const mergedPaperRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      assignRef(ref, node);
+    },
+    [ref],
+  );
+
+  const containerDivRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      assignRef(containerRef, node);
+    },
+    [containerRef],
+  );
+
   useEffect(() => {
     if (open !== defaultOpen) {
       setOpen(defaultOpen);
@@ -228,7 +254,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         }}
         slotProps={{
           paper: {
-            ref,
+            ref: mergedPaperRef,
             sx: {
               minHeight: '100vh',
               width: getDrawerWidth(size),
@@ -256,6 +282,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         />
 
         <div
+          ref={containerDivRef}
           className={classes.container}
           style={{
             ...containerStyle,

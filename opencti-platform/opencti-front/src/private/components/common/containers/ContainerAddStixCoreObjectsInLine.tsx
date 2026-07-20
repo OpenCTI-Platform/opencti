@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import { IconButton, Stack, Tooltip } from '@mui/material';
-import { FunctionComponent, Suspense, useState } from 'react';
+import { FunctionComponent, Suspense, useRef, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -68,7 +68,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   handleSelect: (o: { id: string }) => void;
   handleDeselect: (o: { id: string }) => void;
   helpers: PaginationLocalStorage['helpers'];
-  containerRef: HTMLDivElement;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   enableReferences?: boolean;
 }
 
@@ -98,7 +98,7 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
       onAdd={handleSelect}
       onDelete={handleDeselect}
       setNumberOfElements={helpers.handleSetNumberOfElements}
-      containerRef={{ current: containerRef }}
+      containerRef={containerRef}
       enableReferences={enableReferences}
       onLabelClick={helpers.handleAddFilter}
     />
@@ -163,7 +163,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     filters,
     numberOfElements,
   } = viewStorage;
-  const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
   const handleSelect = (node: { id: string }) => {
     setSelectedElements([
@@ -284,7 +284,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
       title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-      ref={setRef}
+      containerRef={containerRef}
     >
       <ListLines
         helpers={helpers}
@@ -309,7 +309,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         entityTypes={targetStixCoreObjectTypes}
         createButton={buttons}
       >
-        {(containerRef && queryRef) && (
+        {(containerRef.current && queryRef) && (
           <Suspense>
             <ContainerAddStixCreObjectsInLineLoader
               queryRef={queryRef}

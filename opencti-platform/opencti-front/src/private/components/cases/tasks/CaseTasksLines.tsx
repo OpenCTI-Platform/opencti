@@ -2,7 +2,6 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Drawer from '@components/common/drawer/Drawer';
 import { AddOutlined, ContentPasteGoOutlined } from '@mui/icons-material';
-import { GridTypeMap } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
 import { Form, Formik } from 'formik';
 import { FunctionComponent, MutableRefObject, useState } from 'react';
@@ -78,7 +77,7 @@ interface CaseTasksLinesProps {
   sortBy: string | undefined;
   orderAsc: boolean | undefined;
   handleSort?: (field: string, order: boolean) => void;
-  containerRef: MutableRefObject<GridTypeMap | null>;
+  containerRef: MutableRefObject<HTMLDivElement | null>;
   enableReferences: boolean;
 }
 
@@ -172,6 +171,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         open={open}
         title={t_i18n('Create a task')}
         onClose={handleClose}
+        containerRef={containerRef}
       >
         <CaseTaskCreation
           caseId={caseId}

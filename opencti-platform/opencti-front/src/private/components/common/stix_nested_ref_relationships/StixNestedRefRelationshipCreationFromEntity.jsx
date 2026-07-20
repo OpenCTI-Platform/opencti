@@ -872,6 +872,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Create a relationship')}
+        containerRef={containerRef}
       >
         <>
           {step === 0
