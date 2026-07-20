@@ -524,6 +524,13 @@ enum LogsOrdering {
   created_at
   event_type
   event_scope
+  search
+  result_count
+  entity_type
+  user
+  organization
+  search_location
+  groups
   _score
 }
 
@@ -549,7 +556,7 @@ type ContextData {
   entity_type: String
   from_id: String
   to_id: String
-  message: String!
+  message: String
   commit: String
   external_references: [ExternalReference!]
   workspace_type: String
@@ -557,6 +564,11 @@ type ContextData {
   pir_score: Int
   pir_match_from: Boolean
   changes: [HistoryChange]
+  search: String
+  result_count: Int
+  organization: String
+  search_location: String
+  groups: String
 }
 
 type Log {
@@ -572,6 +584,27 @@ type Log {
   context_uri: String
   context_data(tz: String, locale: String, unit_system: String): ContextData
   user_metadata: JSON
+}
+
+type SearchAnalytics {
+  summary: SearchSummary!
+  locations: [TermCount]!
+  organizations: [TermCount]!
+  searchCounts: [TermCount]!
+  withResults: [TermCount]!
+  noResults: [TermCount]!
+}
+
+type SearchSummary {
+  total_searches: Int!
+  total_locations: Int!
+  total_organizations: Int!
+  total_users: Int!
+}
+
+type TermCount {
+  value: String!
+  count: Int!
 }
 
 type AttributesMap {
@@ -9425,6 +9458,8 @@ type Query {
   filesMetrics: FilesMetrics
   guessMimeType(fileId: String!): String
   askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity
+  searchLogs(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
+  searchAnalytics(first: Int, startDate: DateTime, endDate: DateTime, binSize: Int, minBin: Int, maxBin: Int): SearchAnalytics
   indexedFiles(first: Int, after: ID, search: String): IndexedFileConnection
   indexedFilesCount(search: String): Int
   indexedFilesMetrics: FilesMetrics
@@ -9495,6 +9530,7 @@ type Query {
   stixCoreObjectAskAiHistory(id: ID!, language: String, forceRefresh: Boolean): AiHistory
   stixCoreBackgroundActiveOperations(id: ID!): [BackgroundTask!]
   stixCoreObjects(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
+  localSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
   stixCoreObjectsRestricted(first: Int, after: ID, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixCoreObjectConnection
   globalSearch(first: Int, after: ID, search: String, types: [String], orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup): StixCoreObjectConnection
   unknownStixCoreObjects(values: [String!]!, orderBy: UnknownStixCoreObjectsOrdering, orderMode: OrderingMode): [String!]!

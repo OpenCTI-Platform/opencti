@@ -175,6 +175,7 @@ const RootGrouping = () => {
                         <ContainerStixCyberObservables
                           container={grouping}
                           enableReferences={enableReferences}
+                          disableLogging
                         />
                       ),
                       files: (

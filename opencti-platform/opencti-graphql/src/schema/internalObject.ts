@@ -37,6 +37,7 @@ export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_CONNECTOR_MANAGER = 'ConnectorManager';
 export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_PIR_HISTORY = 'PirHistory';
+export const ENTITY_TYPE_SEARCH = 'LogSearch';
 export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
@@ -97,6 +98,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_PIR_HISTORY,
+  ENTITY_TYPE_SEARCH,
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_INTERNAL_FILE,
   ENTITY_TYPE_WORK,
@@ -122,5 +124,6 @@ const HISTORY_OBJECTS = [
 export const isInternalObject = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type: string) => DATED_INTERNAL_OBJECTS.includes(type);
 export const isHistoryObject = (type: string) => HISTORY_OBJECTS.includes(type);
+export const isSearchObject = (type: string) => type === ENTITY_TYPE_SEARCH;
 
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);

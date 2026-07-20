@@ -212,6 +212,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
           />
         </Security>
       )}
+      disableLogging
     >
       {queryRef && (
         <React.Suspense

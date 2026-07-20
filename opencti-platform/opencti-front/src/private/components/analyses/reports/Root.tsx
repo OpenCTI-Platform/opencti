@@ -170,6 +170,7 @@ const RootReport = () => {
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
+                          disableLogging
                         />
                       ),
                       files: (

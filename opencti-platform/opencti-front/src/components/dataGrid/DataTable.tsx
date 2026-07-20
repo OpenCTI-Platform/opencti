@@ -32,6 +32,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
     additionalHeaderToggleButtons?: ReactNode[];
     currentView?: string;
     exportContext?: { entity_type: string; entity_id?: string };
+    disableLogging?:boolean;
   };
 
 const DataTableInternalFilters = ({
@@ -48,6 +49,7 @@ const DataTableInternalFilters = ({
   currentView,
   exportContext,
   hideSavedFilters,
+  disableLogging = false
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
   const {
@@ -89,7 +91,9 @@ const DataTableInternalFilters = ({
             <SearchInput
               variant="small"
               onSubmit={helpers.handleSearch}
+              searchContext={searchContextFinal}
               keyword={searchTerm}
+              disableLogging={disableLogging}
             />
           )}
 

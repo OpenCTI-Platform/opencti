@@ -47,6 +47,7 @@ import {
   stixCoreRelationshipsPaginated,
   findUnknownStixCoreObjects,
   cleanInconsistency,
+  localSearch,
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -70,6 +71,7 @@ const stixCoreObjectResolvers = {
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
+    localSearch: (_, args, context) => localSearch(context, context.user, args),
     stixCoreBackgroundActiveOperations: (_, { id }, context) => stixCoreBackgroundActiveOperations(context, context.user, id),
     stixCoreObjectsRestricted: (_, args, context) => findStixCoreObjectRestrictedPaginated(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {

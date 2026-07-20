@@ -209,6 +209,7 @@ class ListLines extends Component {
       inline,
       additionalFilterKeys,
       createButton,
+      disableLogging,
     } = this.props;
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
@@ -235,6 +236,7 @@ class ListLines extends Component {
                 variant={searchVariant || 'small'}
                 onSubmit={handleSearch.bind(this)}
                 keyword={keyword}
+                disableLogging={disableLogging}
               />
             )}
 
@@ -676,6 +678,7 @@ ListLines.propTypes = {
   additionalFilterKeys: PropTypes.object,
   entityTypes: PropTypes.array,
   createButton: PropTypes.object,
+  disableLogging: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

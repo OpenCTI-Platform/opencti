@@ -186,11 +186,12 @@ export const containerStixCyberObservablesLinesQuery = graphql`
 interface ContainerStixCyberObservablesComponentProps {
   container: ContainerStixCyberObservables_container$data;
   enableReferences?: boolean;
+  disableLogging?: boolean;
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
   ContainerStixCyberObservablesComponentProps
-> = ({ container, enableReferences }) => {
+> = ({ container, enableReferences, disableLogging=false }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
@@ -366,6 +367,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                 </div>
               );
             }}
+            disableLogging = {disableLogging}
           />
         )}
       </ExportContextProvider>

@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { estypes } from '@elastic/elasticsearch';
 import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { isHistoryObject, isInternalObject, isSearchObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -49,6 +49,8 @@ export const INDEX_FILES = `${ES_INDEX_PREFIX}_files`;
 export const READ_INDEX_FILES = `${INDEX_FILES}*`;
 export const INDEX_HISTORY = `${ES_INDEX_PREFIX}_history`;
 export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
+export const INDEX_SEARCH = `${ES_INDEX_PREFIX}_search`;
+export const READ_INDEX_SEARCH = `${INDEX_SEARCH}*`;
 export const INDEX_INTERNAL_OBJECTS = `${ES_INDEX_PREFIX}_internal_objects`;
 export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;
 const INDEX_STIX_META_OBJECTS = `${ES_INDEX_PREFIX}_stix_meta_objects`;
@@ -91,6 +93,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_DELETED_OBJECTS,
   INDEX_FILES,
   INDEX_HISTORY,
+  INDEX_SEARCH,
   INDEX_INTERNAL_OBJECTS,
   INDEX_STIX_META_OBJECTS,
   INDEX_STIX_DOMAIN_OBJECTS,
@@ -312,6 +315,7 @@ export const inferIndexFromConceptType = (conceptType: string, inferred = false)
   }
   // Entities
   if (isHistoryObject(conceptType)) return INDEX_HISTORY;
+  if (isSearchObject(conceptType)) return INDEX_SEARCH;
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;

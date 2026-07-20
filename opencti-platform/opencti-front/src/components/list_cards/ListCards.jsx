@@ -95,6 +95,9 @@ class ListCards extends Component {
                   variant="small"
                   onSubmit={handleSearch.bind(this)}
                   keyword={keyword}
+                  searchContext={{
+                    entityTypes: entityType ? [entityType] : [],
+                  }}
                 />
                 {availableFilterKeys.length > 0 && (
                   <Filters
@@ -196,10 +199,9 @@ class ListCards extends Component {
                       {typeof handleToggleExports === 'function'
                         && exportDisabled && (
                         <Tooltip
-                          title={`${
-                            t(
-                              'Export is disabled because too many entities are targeted (maximum number of entities is: ',
-                            ) + export_max_size
+                          title={`${t(
+                            'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                          ) + export_max_size
                           })`}
                         >
                           <span>
