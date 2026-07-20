@@ -12,6 +12,7 @@ import { SYSTEM_USER } from '../../../../src/utils/access';
 
 vi.mock('../../../../src/database/smtp', () => ({
   smtpTest: vi.fn(async () => true),
+  ALLOW_EMAIL_REWRITE: true,
 }));
 
 vi.mock('../../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () => ({
@@ -53,6 +54,14 @@ const mockUser = SYSTEM_USER;
 const MOCK_SMTP_CONFIG = {
   smtp_enabled: false,
   use_db_config: false,
+  forced_sender_email: false,
+  hostname: 'smtp.example.com',
+  port: 587,
+};
+
+const MOCK_SMTP_CONFIG_STORED = {
+  smtp_enabled: false,
+  use_db_config: false,
   hostname: 'smtp.example.com',
   port: 587,
 };
@@ -60,7 +69,7 @@ const MOCK_SMTP_CONFIG = {
 const MOCK_SETTINGS = {
   id: 'settings-id-123',
   entity_type: 'Settings',
-  smtp_configuration: MOCK_SMTP_CONFIG,
+  smtp_configuration: MOCK_SMTP_CONFIG_STORED,
 } as any;
 
 beforeEach(() => {

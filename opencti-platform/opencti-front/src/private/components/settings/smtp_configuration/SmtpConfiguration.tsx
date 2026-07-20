@@ -252,4 +252,3 @@ const SmtpConfiguration = () => {
   );
 };
 export default SmtpConfiguration;
-

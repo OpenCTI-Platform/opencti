@@ -5313,5 +5313,8 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.": "플랫폼 관리자가 이 기능을 비활성화했습니다. 인터페이스 내에서 새 SMTP 구성을 설정할 수 없습니다.",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "현재 SMTP는 백엔드 구성을 통해 설정되어 있습니다. 구성을 변경하려면 인터페이스 구성 사용을 활성화하고 이 화면에서 SMTP 구성을 정의하세요.",
+  "Use configuration in interface": "인터페이스 설정 사용"
 }

@@ -5313,5 +5313,8 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "ваш пользователь будет относиться к основной организации платформы в дополнение к любой организации, к которой принадлежит текущий пользователь",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб"
+  "Zoom out": "Уменьшить масштаб",
+  "Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.": "Администратор платформы отключил эту функцию. Вы не можете настроить новую конфигурацию SMTP в интерфейсе.",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "В настоящее время SMTP настроен через внутреннюю конфигурацию. Чтобы изменить конфигурацию, просто включите использование конфигурации интерфейса и определите конфигурацию SMTP на этом экране.",
+  "Use configuration in interface": "Использовать настройки в интерфейсе"
 }
