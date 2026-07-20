@@ -1277,7 +1277,7 @@
   "deploy in one-click Threat Intelligence Resources": "threat Intelligence-Ressourcen mit einem Mausklick bereitstellen",
   "deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.": "ressourcen für das Bedrohungsmanagement wie Feeds, Dashboards, Playbooks usw. mit einem Klick bereitstellen.",
   "Deployed": "Bereitgestellt",
-  "Deploying connectors from this catalog requires the installation of our": "Der Einsatz von Konnektoren aus diesem Katalog erfordert die Installation unserer",
+  "Deploying some connectors from this catalog requires the installation of our": "Der Einsatz einiger Konnektoren aus diesem Katalog erfordert die Installation unserer",
   "Deprecated": "Veraltet",
   "Desc": "Desc",
   "Description": "Beschreibung",
