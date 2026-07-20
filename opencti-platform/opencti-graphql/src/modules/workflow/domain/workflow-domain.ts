@@ -7,7 +7,7 @@ import { loadAssignees, loadParticipants } from '../../../database/members';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
-import { type EditInput, FilterMode } from '../../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
@@ -34,7 +34,7 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { validateWorkflowDefinitionData } from '../workflow-validation';
+import { validateWorkflowDefinitionData, extractAllStatesFromDefinition } from '../workflow-validation';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
@@ -569,6 +569,64 @@ export const publishWorkflowDefinition = async (
       entityType,
       errorCount: draftVersion.validation_errors.length,
     });
+  }
+
+  // Re-check at publish time: ensure the draft does not remove non-ending states that still have
+  // active workflow instances. The validation_errors on the draft were computed at save time and
+  // may be stale (instances may have moved into those states since the draft was saved).
+  if (workflowDefinitionEntity.published_version) {
+    let oldDef: any;
+    let newDef: any;
+    try {
+      const rawOld = workflowDefinitionEntity.published_version.content;
+      oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
+      const rawNew = draftVersion.content;
+      newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
+    } catch (_) {
+      oldDef = null;
+      newDef = null;
+    }
+
+    if (oldDef && newDef) {
+      const oldStates = extractAllStatesFromDefinition(oldDef);
+      const newStates = extractAllStatesFromDefinition(newDef);
+      const removedStates = [...oldStates].filter((s) => !newStates.has(s));
+
+      if (removedStates.length > 0) {
+        // Ending states (no outgoing transitions) are safe to remove even with active instances.
+        const statesWithOutgoingTransitions = new Set<string>();
+        for (const transition of (oldDef.transitions ?? [])) {
+          const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+          for (const s of fromStates) {
+            if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+          }
+        }
+        const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+
+        if (nonEndingRemovedStates.length > 0) {
+          // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
+          // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
+          // Instead, we filter by currentState in ES and post-filter by workflow_id.
+          const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+            filters: {
+              mode: FilterMode.And,
+              filters: [
+                { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
+              ],
+              filterGroups: [],
+            },
+          });
+          const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+
+          if (conflictingInstances.length > 0) {
+            throw FunctionalError(
+              'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
+              { removedStates: nonEndingRemovedStates, entityType },
+            );
+          }
+        }
+      }
+    }
   }
 
   // Validate consistency BEFORE publishing
