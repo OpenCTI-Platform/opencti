@@ -339,6 +339,11 @@ describe('Workspace resolver standard behavior', () => {
       filters: [{ key: 'entity_type', values: ['Threat-Actor-Group'], operator: 'eq', mode: 'or' }],
       filterGroups: [],
     };
+    const existingDynamicToFilters = {
+      mode: 'or',
+      filters: [{ key: 'entity_type', values: ['Identity'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
 
     beforeAll(async () => {
       const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
@@ -361,12 +366,6 @@ describe('Workspace resolver standard behavior', () => {
         'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
       );
       const internalId = malwareEntity.internal_id;
-
-      const existingDynamicToFilters = {
-        mode: 'or',
-        filters: [{ key: 'entity_type', values: ['Identity'], operator: 'eq', mode: 'or' }],
-        filterGroups: [],
-      };
 
       // Create a single dashboard with all widgets needed for export tests
       const manifest = toB64({
