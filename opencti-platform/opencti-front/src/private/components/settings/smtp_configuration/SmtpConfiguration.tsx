@@ -9,6 +9,10 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Alert from '@mui/material/Alert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import { MoreVertOutlined } from '@mui/icons-material';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
@@ -20,6 +24,10 @@ import Drawer from '@components/common/drawer/Drawer';
 import Security from 'src/utils/Security';
 import { SETTINGS_SETACCESSES } from 'src/utils/hooks/useGranted';
 import Card from 'src/components/common/card/Card';
+import Dialog from 'src/components/common/dialog/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
+import { MESSAGING$ } from 'src/relay/environment';
 
 const smtpConfigurationQuery = graphql`
   query SmtpConfigurationQuery{
@@ -42,6 +50,12 @@ const smtpConfigurationQuery = graphql`
   }
 `;
 
+const smtpConfigurationDeleteMutation = graphql`
+  mutation SmtpConfigurationDeleteMutation {
+    smtpConfigurationDelete
+  }
+`;
+
 interface SmtpConfigurationComponentProps {
   smtpConfigurationQueryRef: PreloadedQuery<SmtpConfigurationQuery>;
   refetch: () => void;
@@ -56,6 +70,9 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
 
   const [formOpen, setFormOpen] = useState(false);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [commitDelete, isDeleting] = useApiMutation(smtpConfigurationDeleteMutation);
 
   const smtpEnabled = !!smtpConfiguration?.smtp_enabled;
   const authType = smtpConfiguration?.auth_type;
@@ -75,6 +92,17 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   const handleFormCompleted = () => {
     setFormOpen(false);
     refetch();
+  };
+
+  const handleDelete = () => {
+    commitDelete({
+      variables: {},
+      onCompleted: () => {
+        MESSAGING$.notifySuccess(t_i18n('SMTP configuration deleted'));
+        setDeleteDialogOpen(false);
+        refetch();
+      },
+    });
   };
 
   return (
@@ -110,6 +138,23 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
       <Security needs={[SETTINGS_SETACCESSES]}>
         {!isForcedBySysAdmin ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+            {smtpConfiguration && (
+              <>
+                <IconButton size="small" onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
+                  <MoreVertOutlined fontSize="small" />
+                </IconButton>
+                <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={() => setMenuAnchorEl(null)}>
+                  <MenuItem
+                    onClick={() => {
+                      setMenuAnchorEl(null);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    {t_i18n('Remove configuration')}
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
             {smtpConfiguration && useDbConfig && (
               <Button variant="secondary" onClick={() => setTestDialogOpen(true)}>
                 {t_i18n('Test')}
@@ -230,6 +275,21 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
               onClose={() => setTestDialogOpen(false)}
             />
           )}
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={() => setDeleteDialogOpen(false)}
+            title={t_i18n('Delete SMTP configuration')}
+          >
+            <>{t_i18n('Are you sure you want to delete this SMTP configuration?')}</>
+            <DialogActions>
+              <Button variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button color="error" disabled={isDeleting} onClick={handleDelete}>
+                {t_i18n('Delete')}
+              </Button>
+            </DialogActions>
+          </Dialog>
         </>
       </Security>
     </div>

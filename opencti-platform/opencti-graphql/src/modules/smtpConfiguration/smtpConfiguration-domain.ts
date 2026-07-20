@@ -96,6 +96,26 @@ export const smtpConfigurationEdit = async (
   return (element as unknown as BasicStoreSettings).smtp_configuration!;
 };
 
+export const smtpConfigurationDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<boolean> => {
+  checkSmtpConfigurationFeatureEnabled();
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const patch = { smtp_configuration: null };
+  const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
+    message: 'deletes smtp configuration',
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+  return true;
+};
+
 export const smtpConfigurationTest = async (
   _context: AuthContext,
   _user: AuthUser,

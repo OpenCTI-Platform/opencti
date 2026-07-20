@@ -10702,6 +10702,7 @@ type Mutation {
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationDelete: Boolean
   smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit

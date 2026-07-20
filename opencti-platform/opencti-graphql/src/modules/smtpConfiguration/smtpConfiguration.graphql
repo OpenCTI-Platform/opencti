@@ -48,5 +48,6 @@ extend type Query {
 
 extend type Mutation {
   smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
+  smtpConfigurationDelete: Boolean @auth(for: [SETTINGS_SETACCESSES])
   smtpConfigurationTest(email: String!): Boolean @auth(for: [SETTINGS_SETACCESSES])
 }
