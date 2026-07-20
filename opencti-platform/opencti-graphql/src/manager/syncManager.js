@@ -9,14 +9,14 @@ import { patchSync } from '../domain/connector';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
-import { topEntitiesList, storeLoadById } from '../database/middleware-loader';
+import { storeLoadById, topEntitiesList } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
-import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
+import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
 import {
@@ -30,6 +30,7 @@ import {
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
 
 const waitLoopTimer = new InterruptibleTimer();
 
@@ -266,7 +267,12 @@ const syncManagerInstance = (syncId) => {
       const { ssl_verify: ssl = false } = sync;
       const token = await decryptSynchronizerCredential(sync.token);
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-      const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
+      const httpClientOptions = {
+        headers: headers,
+        rejectUnauthorized: ssl,
+        responseType: 'arraybuffer',
+        timeout: FILE_FETCH_TIMEOUT,
+      };
       const httpClient = getHttpClient(httpClientOptions);
       lastState = sync.current_state_date;
       lastEventDate = sync.current_state_date;
