@@ -108,7 +108,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
       )}
 
       <Security needs={[SETTINGS_SETACCESSES]}>
-        {!isForcedBySysAdmin && (
+        {!isForcedBySysAdmin ? (
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
             {smtpConfiguration && useDbConfig && (
               <Button variant="secondary" onClick={() => setTestDialogOpen(true)}>
@@ -119,7 +119,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
               {t_i18n('Update')}
             </Button>
           </div>
-        )}
+        ) : <></>}
       </Security>
 
       <div style={isForcedBySysAdmin ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>

@@ -1145,5 +1145,6 @@
   "XTM Hub Token": "Токен концентратора XTM",
   "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
-  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
+  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU",
+  "SMTP configuration": "Конфигурация SMTP"
 }

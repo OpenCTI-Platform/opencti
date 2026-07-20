@@ -5316,5 +5316,6 @@
   "Zoom out": "ズームアウト",
   "Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.": "プラットフォーム管理者がこの機能を無効にしています。インターフェース内で新しいSMTP設定を構成することはできません。",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "現在、SMTPはバックエンド設定で構成されています。設定を変更するには、インターフェース設定の使用を有効にして、この画面でSMTP設定を定義してください。",
-  "Use configuration in interface": "インターフェースの設定を使用"
+  "Use configuration in interface": "インターフェースの設定を使用",
+  "SMTP configuration saved": "SMTP設定が保存されました"
 }
