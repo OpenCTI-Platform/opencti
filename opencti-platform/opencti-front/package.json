@@ -25,7 +25,7 @@
     "auto-translation:all": "node script/auto-translate.js && yarn sort-translation",
     "verify-licenses": "yarn license-checker-rseidelsohn --production --summary --onlyAllow '0BSD;Apache-2.0;BlueOak-1.0.0;BSD-2-Clause;BSD-3-Clause;CC-BY-3.0;CC-BY-4.0;CC0-1.0;Hippocratic-2.1;ISC;LGPL-3.0;MIT;OFL-1.1;Python-2.0;Unlicense;UNLICENSED' --excludePackagesStartingWith 'opencti'",
     "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
-    "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
+    "test:e2e:ui": "APP__BASE_PATH=/e2e E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "yarn playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test",
     "knip": "knip"
