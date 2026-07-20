@@ -10,7 +10,7 @@ describe('GraphQL HTTP method restriction integration', () => {
     });
 
     expect(response.status).toBe(405);
-    expect(response.headers.allow?.split(',').map((m) => m.trim())).toContain('POST');
+    expect(response.headers.allow?.split(',').map((m: any) => m.trim())).toContain('POST');
     expect(response.data?.name).toBe('MethodNotAllowedError');
   });
 });
