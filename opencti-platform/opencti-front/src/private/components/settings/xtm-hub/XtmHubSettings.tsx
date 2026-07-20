@@ -44,7 +44,7 @@ const XtmHubSettingsComponent = () => {
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { isXTMHubAccessible } = useContext(UserContext);
-  console.log(isXTMHubAccessible);
+
   return (
     <Card
       title={t_i18n('XTM Hub')}
