@@ -20,6 +20,10 @@ inputs:
     description: 'Name of the GitHub artifact containing the docker image tar (required when source is "artifact")'
     required: false
     default: ""
+  sbom_name:
+    description: 'Name of the sbom file'
+    required: false
+    default: ""
   overwrite:
     description: "Overwrite existing artifacts if they already exist"
     required: false
@@ -89,7 +93,7 @@ runs:
     - name: Upload SBOM artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: sbom-${{ inputs.artifact_name || inputs.image_name }}
+        name: sbom-${{  inputs.sbom_name || inputs.artifact_name || inputs.image_name }}
         path: "*.cdx.json"
         overwrite: ${{ inputs.overwrite }}
         retention-days: 3

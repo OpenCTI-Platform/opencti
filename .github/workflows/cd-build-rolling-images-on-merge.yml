@@ -5,9 +5,122 @@ name: OpenCTI CD Rolling
 on:
   push:
     branches:
-      - master
+      # FIXME to move to master at the end
+      - issue/17219-node-sbom
 
 jobs:
+  # -----------------------
+  # Build builder image (shared base)
+  # -----------------------
+  build-builder:
+    name: Build builder image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/docker-build-builder
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+
+  app-sbom:
+    name: Build and generate app SBOM
+    runs-on: ubuntu-latest
+    needs: [build-builder]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download builder image
+        uses: actions/download-artifact@v8
+        with:
+          name: docker-image-opencti-builder
+          path: /tmp/
+
+      - name: Load builder image
+        run: docker load --input /tmp/opencti-builder.tar
+
+      - name: Build graphql production and prune devDependencies
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
+            -w /opt/opencti/opencti-graphql \
+            filigran/builder:${{ github.sha }} \
+            sh -c "yarn install --immutable && yarn install:python && yarn build:prod && yarn workspaces focus --production"
+
+      - name: Build front production and prune devDependencies
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/opencti-platform/opencti-front:/opt/opencti/opencti-front \
+            -w /opt/opencti/opencti-front \
+            filigran/builder:${{ github.sha }} \
+            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Generate graphql SBOM
+        working-directory: opencti-platform/opencti-graphql
+        run: |
+          syft dir:. \
+            --config ../../.syft.yaml \
+            --select-catalogers javascript \
+            --output cyclonedx-json@1.6=opencti-graphql.cdx.json
+
+      - name: Generate front SBOM
+        working-directory: opencti-platform/opencti-front
+        run: |
+          syft dir:. \
+            --config ../../.syft.yaml \
+            --select-catalogers javascript \
+            --output cyclonedx-json@1.6=opencti-front.cdx.json
+
+      - name: Install cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
+          chmod +x /usr/local/bin/cyclonedx-cli
+
+      - name: Create parent platform BOM
+        working-directory: opencti-platform
+        run: |
+          cat > platform-sbom.json <<'EOF'
+          {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.6",
+            "version": 1,
+            "metadata": {
+              "manufacturer": {
+                  "name": "Filigran SAS",
+                  "address": {
+                    "country": "FR"
+                  },
+                  "url": [
+                    "https://filigran.io"
+                  ]
+              },
+              "component": {
+                "type": "application",
+                "name": "opencti-platform",
+                "version": "${{ github.sha }}"
+              }
+            },
+            "components": []
+          }
+          EOF
+
+      - name: Merge graphql and front SBOMs into platform
+        working-directory: opencti-platform
+        run: |
+          cyclonedx-cli merge \
+            --input-files platform-sbom.json opencti-graphql/opencti-graphql.cdx.json opencti-front/opencti-front.cdx.json \
+            --output-file opencti-platform-app.cdx.json \
+            --hierarchical
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencti-platform-app-sbom
+          path: opencti-platform/opencti-platform-app.cdx.json
+          retention-days: 7
+
   # -----------------------
   # Build platform images
   # -----------------------
@@ -81,6 +194,7 @@ jobs:
           image_name: "filigran/platform"
           source: "artifact"
           artifact_name: "docker-image-opencti-platform${{ matrix.suffix }}"
+          sbom_name: "opencti-platform${{ matrix.suffix }}"
 
   generate-sbom-worker:
     name: Generate SBOM (worker ${{ matrix.variant }})
@@ -104,11 +218,63 @@ jobs:
           image_name: "filigran/worker"
           source: "artifact"
           artifact_name: "docker-image-opencti-worker${{ matrix.suffix }}"
+          sbom_name: "opencti-worker${{ matrix.suffix }}"
+
+  # -----------------------
+  # Merge app SBOM into platform SBOM
+  # -----------------------
+  merge-sbom-platform:
+    name: Merge SBOM (platform ${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    needs: [app-sbom, generate-sbom-platform]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: standard
+            suffix: ""
+          - variant: ubi9
+            suffix: "_ubi9"
+          - variant: fips
+            suffix: "_fips"
+    steps:
+      - name: Install cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
+          chmod +x /usr/local/bin/cyclonedx-cli
+
+      - name: Download platform docker SBOM
+        uses: actions/download-artifact@v8
+        with:
+          name: sbom-opencti-platform${{ matrix.suffix }}
+          path: sbom-work/
+
+      - name: Download app Node.js SBOM
+        uses: actions/download-artifact@v8
+        with:
+          name: opencti-platform-app-sbom
+          path: sbom-work/
+
+      - name: Merge SBOMs
+        working-directory: sbom-work
+        run: |
+          PLATFORM_SBOM=$(ls filigran-platform-*.cdx.json)
+          cyclonedx-cli merge \
+            --input-files "$PLATFORM_SBOM" opencti-platform-app.cdx.json \
+            --output-file "$PLATFORM_SBOM"
+
+      - name: Upload merged SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-opencti-platform${{ matrix.suffix }}
+          path: sbom-work/filigran-platform-*.cdx.json
+          overwrite: true
+          retention-days: 7
 
   upload-artifacts:
     name: Upload all artifacts
     runs-on: ubuntu-latest
-    needs: [generate-sbom-platform, generate-sbom-worker]
+    needs: [merge-sbom-platform, generate-sbom-worker]
     steps:
       - name: Download all SBOM artifacts
         uses: actions/download-artifact@v8
