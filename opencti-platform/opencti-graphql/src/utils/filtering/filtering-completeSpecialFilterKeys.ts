@@ -619,7 +619,7 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
  * Adapts a filter on a custom field key (x_opencti_cf_*) into a nested filter
  * on the custom_field_values array stored in Elasticsearch.
  */
-const adaptFilterToCustomFieldFilterKey = (filter: Filter) => {
+export const adaptFilterToCustomFieldFilterKey = (filter: Filter) => {
   const { key, values, operator } = filter;
   const op: string = operator ?? FilterOperator.Eq;
   const filterKey = Array.isArray(key) ? key[0] : key;
