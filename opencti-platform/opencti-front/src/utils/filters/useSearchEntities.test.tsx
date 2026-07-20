@@ -42,6 +42,7 @@ vi.mock('../hooks/useAuth', () => ({
         ['Stix-Core-Object', new Map([
           ['status_id', { type: 'id', elementsForFilterValuesSearch: ['StatusTemplate'] }],
           ['objectLabel', { type: 'id', elementsForFilterValuesSearch: ['Label'] }],
+          ['objectMarking', { type: 'id', elementsForFilterValuesSearch: ['Marking-Definition'] }],
         ])],
       ]),
     },
