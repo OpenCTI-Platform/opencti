@@ -1,13 +1,15 @@
 import { Readable } from 'node:stream';
-import { afterAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { type EditInput, IngestionAuthType, type IngestionJsonAddInput } from '../../../../src/generated/graphql';
+import { type EditInput, IngestionAuthType, type IngestionJsonAddInput, JsonMapperRepresentationType } from '../../../../src/generated/graphql';
 import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
+import * as httpClientModule from '../../../../src/utils/http-client';
 import type { BasicStoreEntityIngestionJson } from '../../../../src/modules/ingestion/ingestion-types';
 import { createJsonMapper, deleteJsonMapper, jsonMapperTest } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import type { FileUploadData } from '../../../../src/database/file-storage';
 import { regexpTestData, representationsFormulaMatrix, representationsRegExpr, stixBundleDataFormulaMatrix } from './ingestionManager-testData/ingestion-json-data';
+import { ENTITY_TYPE_TOOL } from '../../../../src/schema/stixDomainObject';
 
 describe('Ingestion Json domain - Deny list coverage', async () => {
   let myJsonFeed: BasicStoreEntityIngestionJson;
@@ -155,5 +157,271 @@ describe('Ingestion Json domain - complex path coverage', async () => {
 
     // "No reference available." -> no match, returns original description
     expect(sliver.description).toBe('Open-source adversary emulation framework. No reference available.');
+  });
+
+  it('should stop jsonMapperTest parsing at 50 objects when input contains more records', async () => {
+    const representations = [{
+      id: 'tool-representation-limit-50',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [{
+        mode: 'simple',
+        key: 'name',
+        attr_path: { path: '$.name' },
+      }],
+    }];
+
+    const toolObjects = Array.from({ length: 60 }, (_, index) => ({
+      type: 'tool',
+      name: `tool-${index + 1}`,
+    }));
+
+    const configuration = JSON.stringify({
+      name: 'Mapper test limit to 50',
+      representations,
+    });
+
+    const fileUpload: Promise<FileUploadData> = Promise.resolve({
+      createReadStream: () => Readable.from(Buffer.from(JSON.stringify({ objects: toolObjects }))),
+      filename: 'limit-50-test.json',
+      mimeType: 'application/json',
+    });
+
+    const result = await jsonMapperTest(testContext, ADMIN_USER, configuration, fileUpload);
+    const parsedObjects = JSON.parse(result.objects);
+
+    expect(toolObjects.length).toBeGreaterThan(50);
+    expect(parsedObjects).toHaveLength(50);
+    expect(result.nbEntities).toBe(50);
+    expect(result.nbRelationships).toBe(0);
+    expect(parsedObjects[0].name).toBe('tool-1');
+    expect(parsedObjects[49].name).toBe('tool-50');
+    expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
+  });
+});
+
+describe('Ingestion Json domain - pagination with sub-page coverage', async () => {
+  let mapperId: string;
+
+  const simpleToolRepresentations = [
+    {
+      id: 'tool-rep-pagination',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [
+        {
+          mode: 'simple',
+          key: 'name',
+          attr_path: { path: '$.name' },
+        },
+      ],
+    },
+  ];
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'Pagination Sub-Page Test Mapper',
+      representations: JSON.stringify(simpleToolRepresentations),
+    });
+    mapperId = mapper.id;
+  });
+
+  afterAll(async () => {
+    if (mapperId) {
+      await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    }
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should follow the next-page URL and combine results from multiple pages', async () => {
+    const page1Data = {
+      objects: Array.from({ length: 5 }, (_, i) => ({ type: 'tool', name: `tool-page1-${i + 1}` })),
+      next_url: 'https://example.com/feed?page=2',
+    };
+    const page2Data = {
+      objects: Array.from({ length: 5 }, (_, i) => ({ type: 'tool', name: `tool-page2-${i + 1}` })),
+      // no next_url → pagination stops
+    };
+
+    const callMock = vi.fn()
+      .mockResolvedValueOnce({ data: page1Data, headers: {} })
+      .mockResolvedValueOnce({ data: page2Data, headers: {} });
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Pagination sub-page feed',
+      uri: 'https://example.com/feed.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next_url',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Both pages were fetched
+    expect(callMock).toHaveBeenCalledTimes(2);
+    // 5 tools from page 1 + 5 tools from page 2 = 10 total
+    expect(result.nbEntities).toBe(10);
+    expect(result.nbRelationships).toBe(0);
+    expect(parsedObjects.some((o: any) => o.name === 'tool-page1-1')).toBe(true);
+    expect(parsedObjects.some((o: any) => o.name === 'tool-page2-5')).toBe(true);
+  });
+
+  it('should stop pagination at 50-object cap even when sub-pages would exceed it', async () => {
+    // Page 1: 40 tools + next_url
+    const page1Data = {
+      objects: Array.from({ length: 40 }, (_, i) => ({ type: 'tool', name: `tool-p1-${i + 1}` })),
+      next_url: 'https://example.com/feed?page=2',
+    };
+    // Page 2: 20 tools (would bring total to 60, but cap is 50)
+    const page2Data = {
+      objects: Array.from({ length: 20 }, (_, i) => ({ type: 'tool', name: `tool-p2-${i + 1}` })),
+    };
+
+    const callMock = vi.fn()
+      .mockResolvedValueOnce({ data: page1Data, headers: {} })
+      .mockResolvedValueOnce({ data: page2Data, headers: {} });
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue({ call: callMock } as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'Pagination cap-50 feed',
+      uri: 'https://example.com/feed-large.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+      pagination_with_sub_page: true,
+      pagination_with_sub_page_attribute_path: '$.next_url',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Result must be capped at 50 even though page1 (40) + page2 (20) = 60
+    expect(parsedObjects.length).toBeLessThanOrEqual(50);
+    expect(result.nbEntities).toBeLessThanOrEqual(50);
+    // tool-p1-1 is from page 1, must be present
+    expect(parsedObjects.some((o: any) => o.name === 'tool-p1-1')).toBe(true);
+    // tool-p2-11 would be the 51st object, must NOT be present
+    expect(parsedObjects.some((o: any) => o.name === 'tool-p2-11')).toBe(false);
+  });
+});
+
+describe('Ingestion Json domain - ingestionJsonTester mutation (testJsonIngestionMapping)', async () => {
+  let mapperId: string;
+
+  // A minimal tool-only representation used in the limit test below
+  const simpleToolRepresentations = [
+    {
+      id: 'tool-rep',
+      type: JsonMapperRepresentationType.Entity,
+      target: {
+        entity_type: ENTITY_TYPE_TOOL,
+        path: '$.objects[?(@.type == "tool")]',
+      },
+      attributes: [
+        {
+          mode: 'simple',
+          key: 'name',
+          attr_path: { path: '$.name' },
+        },
+      ],
+    },
+  ];
+
+  beforeAll(async () => {
+    const mapper = await createJsonMapper(testContext, ADMIN_USER, {
+      name: 'IngestionJsonTester Test Mapper',
+      representations: JSON.stringify(simpleToolRepresentations),
+    });
+    mapperId = mapper.id;
+  });
+
+  afterAll(async () => {
+    if (mapperId) {
+      await deleteJsonMapper(testContext, ADMIN_USER, mapperId);
+    }
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const buildMockHttpClient = (responseData: unknown) => ({
+    call: vi.fn().mockResolvedValue({ data: responseData, headers: {} }),
+  });
+
+  it('should testJsonIngestionMapping return parsed entities from the mocked HTTP response', async () => {
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue(buildMockHttpClient(JSON.parse(stixBundleDataFormulaMatrix)) as any);
+
+    // stixBundleDataFormulaMatrix contains 3 tools (7-Zip, 3proxy, 16Shop) with no orgs matched by the simple mapper
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'IngestionJsonTester happy-path feed',
+      uri: 'https://example.com/feed.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+
+    expect(result).toBeDefined();
+    // The simple mapper only picks up tools (3 tools in the bundle)
+    expect(result.nbEntities).toBe(3);
+    expect(result.nbRelationships).toBe(0);
+
+    const parsedObjects = JSON.parse(result.objects);
+    expect(parsedObjects.length).toBe(3);
+    const names = parsedObjects.map((o: any) => o.name);
+    expect(names).toContain('7-Zip');
+    expect(names).toContain('3proxy');
+    expect(names).toContain('16Shop');
+  });
+
+  it('should testJsonIngestionMapping cap results at 50 when the feed returns more than 50 objects', async () => {
+    const manyTools = Array.from({ length: 60 }, (_, i) => ({
+      type: 'tool',
+      name: `tool-${i + 1}`,
+    }));
+
+    vi.spyOn(httpClientModule, 'getHttpClient').mockReturnValue(buildMockHttpClient({ objects: manyTools }) as any);
+
+    const input: IngestionJsonAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'IngestionJsonTester limit-50 feed',
+      uri: 'https://example.com/feed-large.json',
+      user_id: ADMIN_USER.id,
+      json_mapper_id: mapperId,
+      verb: 'GET',
+      body: '',
+    };
+
+    const result = await testJsonIngestionMapping(testContext, ADMIN_USER, input);
+    const parsedObjects = JSON.parse(result.objects);
+
+    // Feed has 60 tools but the mutation limits execution to 50
+    expect(manyTools.length).toBeGreaterThan(50);
+    expect(parsedObjects.length).toBeLessThanOrEqual(50);
+    expect(result.nbEntities).toBeLessThanOrEqual(50);
+    expect(parsedObjects.some((o: any) => o.name === 'tool-51')).toBe(false);
   });
 });
