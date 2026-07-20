@@ -10,6 +10,7 @@ export type ComputeLinkNode = {
   from?: { entity_type: string; id: string };
   to?: { entity_type: string; id: string };
   type?: string;
+  resultOf?: { id: string };
 };
 
 export type AppDataProps = {
@@ -17,7 +18,7 @@ export type AppDataProps = {
   metricsDefinition: MetricsDefinition[];
 };
 
-const useComputeLinkFn = () => {
+export const useComputeLinkFn = () => {
   const { isRelationship } = useSchema();
   const computeLink = (node: ComputeLinkNode): string | undefined => {
     let redirectLink;
@@ -26,7 +27,7 @@ const useComputeLinkFn = () => {
         node.from.id
       }/knowledge/sightings/${node.id}`;
     } else if (node.relationship_type) {
-      if (node.from && !isRelationship(node.from.entity_type)) { // 'from' not restricted and not a relationship
+      if (node.from && !isRelationship(node.from.entity_type) && node.from.entity_type !== 'Security-Coverage-Result') { // 'from' not restricted and not a relationship and not SCR
         redirectLink = `${resolveLink(node.from.entity_type)}/${
           node.from.id
         }/knowledge/relations/${node.id}`;
@@ -39,6 +40,8 @@ const useComputeLinkFn = () => {
       }
     } else if (node.entity_type === 'Workspace') {
       redirectLink = `${resolveLink(node.type)}/${node.id}`;
+    } else if (node.entity_type === 'Security-Coverage-Result') {
+      redirectLink = `${resolveLink(node.entity_type)}/${node.resultOf?.id}/result`;
     } else {
       redirectLink = `${resolveLink(node.entity_type)}/${node.id}`;
     }

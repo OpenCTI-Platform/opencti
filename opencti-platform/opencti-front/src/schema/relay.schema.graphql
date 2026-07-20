@@ -16102,6 +16102,7 @@ type SecurityCoverageResult implements BasicObject & StixObject & StixCoreObject
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   external_uri: String
+  resultOf: SecurityCoverage
 }
 
 enum SecurityCoverageResultOrdering {
