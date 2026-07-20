@@ -11,6 +11,7 @@ import CustomViewDeletionDialog from './CustomViewDeletionDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import useCustomViewEdit from './useCustomViewEdit';
 import CustomViewReplaceDefaultDialog from './CustomViewReplaceDefaultDialog';
+import CustomViewFormDrawer from './CustomViewFormDrawer';
 import { fetchQuery, handleError } from 'src/relay/environment';
 import { customViewsLinesQuery } from './CustomViewsSettingsDataTable';
 import type { CustomViewsSettingsDataTablePaginationQuery$variables } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
@@ -19,6 +20,7 @@ const customViewPopoverFragment = graphql`
   fragment CustomViewPopover_customView on CustomView {
     id
     name
+    description
     enabled
     default
     targetEntityType
@@ -49,6 +51,7 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
   const customView = useFragment(customViewPopoverFragment, data);
 
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const [isFormOpen, setFormOpen] = useState(false);
   const [replaceDefaultDialogOpen, setReplaceDefaultDialogOpen] = useState(false);
   const [currentDefaultName, setCurrentDefaultName] = useState<string | undefined>(undefined);
 
@@ -66,6 +69,12 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
   const handleOpenDelete = (event: UIEvent) => {
     deletion.handleOpenDelete(event);
     setAnchorEl(null);
+  };
+
+  const onUpdate = (e: UIEvent) => {
+    stopEvent(e);
+    setAnchorEl(null);
+    setFormOpen(true);
   };
 
   const [commitCustomViewMutation] = useCustomViewEdit();
@@ -139,6 +148,9 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} aria-label="Custom view menu">
+        <MenuItem onClick={onUpdate}>
+          {t_i18n('Update')}
+        </MenuItem>
         <MenuItem onClick={handleToggleEnabled}>{customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
         {customView.default
           ? <MenuItem onClick={onRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
@@ -159,6 +171,12 @@ const CustomViewPopover = ({ data, paginationOptions }: CustomViewPopoverProps) 
           doSetDefault();
         }}
         currentDefaultName={currentDefaultName ?? ''}
+      />
+      <CustomViewFormDrawer
+        entityType={customView.targetEntityType}
+        isOpen={isFormOpen}
+        onClose={() => setFormOpen(false)}
+        customView={customView}
       />
     </div>
   );

@@ -89,13 +89,15 @@ const CustomViewForm = ({
                 rows="4"
                 onSubmit={handleFieldSubmit(setSubmitting)}
               />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="default"
-                label={t_i18n('Set as default custom view')}
-                onChange={handleFieldSubmit(setSubmitting)}
-              />
+              {!isEdition && (
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="default"
+                  label={t_i18n('Set as default custom view')}
+                  onChange={handleFieldSubmit(setSubmitting)}
+                />
+              )}
               {!isEdition && (
                 <FormButtonContainer>
                   <Button
