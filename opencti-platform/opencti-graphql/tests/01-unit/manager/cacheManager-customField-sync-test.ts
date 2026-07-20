@@ -23,7 +23,7 @@ const mockPubSubSubscription = vi.fn(async (topic: string, handler: any) => {
 });
 
 vi.mock('../../../src/modules/customField/custom-field-domain', () => ({
-  loadCustomFieldDefinitions: (...args: unknown[]) => mockLoadCustomFieldDefinitions(...args),
+  loadCustomFieldDefinitions: mockLoadCustomFieldDefinitions,
 }));
 
 vi.mock('../../../src/database/redis', () => ({
