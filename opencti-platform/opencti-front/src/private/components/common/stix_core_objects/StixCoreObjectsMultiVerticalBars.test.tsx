@@ -22,6 +22,15 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-render-content">{children}</div>,
 }));
 
+vi.mock('react-relay', async () => {
+  const actual = await vi.importActual('react-relay');
+  return {
+    ...actual,
+    usePreloadedQuery: () => ({ stixCoreObjectsMultiTimeSeries: null }),
+    graphql: (strings: TemplateStringsArray) => strings.join(''),
+  };
+});
+
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default: (opts: any) => {
