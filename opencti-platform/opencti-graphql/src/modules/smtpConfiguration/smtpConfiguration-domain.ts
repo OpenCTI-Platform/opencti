@@ -5,7 +5,7 @@ import { SmtpAuthType, type SmtpConfigurationAddInput } from '../../generated/gr
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { ALLOW_EMAIL_REWRITE, smtpTest } from '../../database/smtp';
+import { ALLOW_EMAIL_REWRITE, SMTP_JSON_CONFIG, smtpTest } from '../../database/smtp';
 import { encryptSmtpSecret } from './smtpConfiguration-crypto';
 import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
 import { getEntityFromCache } from '../../database/cache';
@@ -61,8 +61,12 @@ export const getSmtpConfiguration = async (
 ): Promise<SmtpConfiguration | null> => {
   const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
   const stored = settings.smtp_configuration ?? null;
+  // When forced_sender_email is set: show JSON config values (read-only in UI)
+  if (!ALLOW_EMAIL_REWRITE) {
+    return { ...(stored ?? {}), ...SMTP_JSON_CONFIG } as unknown as SmtpConfiguration;
+  }
   if (!stored) return null;
-  return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
+  return { ...stored, forced_sender_email: false };
 };
 
 export const getSmtpConfigurationForAdmin = async (
@@ -110,7 +114,7 @@ export const smtpConfigurationDelete = async (
     event_scope: 'delete',
     event_access: 'administration',
     message: 'deletes smtp configuration',
-    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS },
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: {} },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
   return true;

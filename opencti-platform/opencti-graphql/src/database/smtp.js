@@ -15,6 +15,23 @@ const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 
+export const SMTP_JSON_CONFIG = {
+  smtp_enabled: SMTP_ENABLE,
+  use_db_config: false,
+  forced_sender_email: !isEmptyField(SMTP_FORCED_EMAIL),
+  sender_email_address: SMTP_FORCED_EMAIL || null,
+  hostname: conf.get('smtp:hostname') || null,
+  port: conf.get('smtp:port') || null,
+  use_ssl: USE_SSL,
+  reject_unauthorized: REJECT_UNAUTHORIZED,
+  auth_type: conf.get('smtp:auth_type') || null,
+  username: conf.get('smtp:username') || null,
+  oauth_user: conf.get('smtp:oauth_user') || null,
+  oauth_client_id: conf.get('smtp:oauth_client_id') || null,
+  oauth_issuer: conf.get('smtp:oauth_issuer') || null,
+  oauth_refresh_token_expires_at: null,
+};
+
 const baseSmtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
   port: conf.get('smtp:port') || 25,

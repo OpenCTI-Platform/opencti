@@ -11,7 +11,7 @@ import TableRow from '@mui/material/TableRow';
 import Alert from '@mui/material/Alert';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
+import IconButton from '@common/button/IconButton';
 import { MoreVertOutlined } from '@mui/icons-material';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
@@ -119,7 +119,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
         <Alert
           severity="warning"
           variant="outlined"
-          style={{ marginTop: 20, padding: '0px 10px' }}
+          style={{ marginTop: 20, marginBottom: 16, padding: '0px 10px' }}
         >
           {t_i18n('Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.')}
         </Alert>
@@ -140,8 +140,8 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
             {smtpConfiguration && (
               <>
-                <IconButton size="small" onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
-                  <MoreVertOutlined fontSize="small" />
+                <IconButton variant="secondary" size="default" aria-label={t_i18n('Open menu')} aria-haspopup="true" onClick={(e) => setMenuAnchorEl(e.currentTarget)}>
+                  <MoreVertOutlined fontSize="medium" />
                 </IconButton>
                 <Menu anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={() => setMenuAnchorEl(null)}>
                   <MenuItem
