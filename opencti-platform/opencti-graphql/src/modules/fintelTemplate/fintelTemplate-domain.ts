@@ -193,6 +193,7 @@ export const addFintelTemplate = async (
 
   const finalInput: FintelTemplateAddInput = {
     ...input,
+    default: input.default ?? false,
     template_content: input.template_content ?? '',
     fintel_template_widgets: widgetsWithIds,
   };

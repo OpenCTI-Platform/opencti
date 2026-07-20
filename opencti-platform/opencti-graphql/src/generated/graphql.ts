@@ -9968,7 +9968,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
 };
 
 export type FintelTemplateAddInput = {
-  default: Scalars['Boolean']['input'];
+  default?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;

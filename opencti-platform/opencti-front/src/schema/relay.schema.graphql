@@ -15428,7 +15428,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
-  default: Boolean!
+  default: Boolean
 }
 
 type FintelTemplateEdge {
