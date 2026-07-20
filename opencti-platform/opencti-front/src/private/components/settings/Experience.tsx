@@ -15,7 +15,6 @@ import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -340,22 +339,22 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               )}
             </div>
             <div className="clearfix" />
-            <Paper
-              classes={{ root: classes.paper }}
-              className="paper-for-grid"
-              variant="outlined"
-            >
+            <Card>
               <Box>
                 <Typography variant="h6">
-                  {t_i18n('Enable powerful features with OpenCTI Enterprise Edition')}
+                  {t_i18n('Unlock powerful capabilities with OpenCTI Enterprise Edition')}
                 </Typography>
-                <p>{t_i18n('OpenCTI Enterprise Edition (EE) provides highly demanding organizations with a version that includes additional and powerful features, which require specific investments in research and development.')}</p>
-                <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
-                  <li>{t_i18n('Agentic AI capabilities')}</li>
-                  <li>{t_i18n('Playbooks and automation')}</li>
-                  <li>{t_i18n('Full text indexing')}</li>
-                  <li>{t_i18n('And many more features...')}</li>
-                </List>
+                <p>{t_i18n('Get enterprise-grade governance, automation, reporting, and sovereignty -trusted by governments, financial institutions, and global enterprises. Deployment flexibility with Saas, on-premise, and air-gapped deployments.')}</p>
+                <Stack direction="row" flexWrap="wrap" gap={2}>
+                  <Tag label={t_i18n('Agentic AI')} />
+                  <Tag label={t_i18n('One-click integrations')} />
+                  <Tag label={t_i18n('One-click playbooks')} />
+                  <Tag label={t_i18n('PIRs')} />
+                  <Tag label={t_i18n('SSO')} />
+                  <Tag label={t_i18n('Audit logging')} />
+                  <Tag label={t_i18n('Intelligence approval workflows')} />
+                  <Tag label={t_i18n('Dedicated support')} />
+                </Stack>
                 <Button
                 // color="ee"
                   variant="secondary"
@@ -365,10 +364,10 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   rel="noreferrer"
                   style={{ marginTop: 10, marginBottom: 10 }}
                 >
-                  {t_i18n('Discover OpenCTI EE')}
+                  {t_i18n('Try OpenCTI Enterprise Edition')}
                 </Button>
               </Box>
-            </Paper>
+            </Card>
           </Grid>
         )}
         <Grid item xs={6}>
