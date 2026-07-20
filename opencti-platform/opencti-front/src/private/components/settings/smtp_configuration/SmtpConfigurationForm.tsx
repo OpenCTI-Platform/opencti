@@ -14,34 +14,11 @@ import { useFormatter } from 'src/components/i18n';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
 import type { Theme } from 'src/components/Theme';
-import type { SmtpConfigurationFormAddMutation } from './__generated__/SmtpConfigurationFormAddMutation.graphql';
-import type { SmtpConfigurationFormUpdateMutation } from './__generated__/SmtpConfigurationFormUpdateMutation.graphql';
+import type { SmtpConfigurationFormEditMutation } from './__generated__/SmtpConfigurationFormEditMutation.graphql';
 
-export const smtpConfigurationAddMutation = graphql`
-  mutation SmtpConfigurationFormAddMutation($input: SmtpConfigurationAddInput!) {
-    smtpConfigurationAdd(input: $input) {
-      id
-      smtp_enabled
-      use_db_config
-      sender_email_address
-      hostname
-      port
-      use_ssl
-      reject_unauthorized
-      auth_type
-      username
-      oauth_user
-      oauth_client_id
-      oauth_issuer
-      oauth_refresh_token_expires_at
-    }
-  }
-`;
-
-export const smtpConfigurationUpdateMutation = graphql`
-  mutation SmtpConfigurationFormUpdateMutation($id: ID!, $input: SmtpConfigurationEditInput!) {
-    smtpConfigurationUpdate(id: $id, input: $input) {
-      id
+export const smtpConfigurationEditMutation = graphql`
+  mutation SmtpConfigurationFormEditMutation($input: SmtpConfigurationAddInput!) {
+    smtpConfigurationEdit(input: $input) {
       smtp_enabled
       use_db_config
       sender_email_address
@@ -60,7 +37,6 @@ export const smtpConfigurationUpdateMutation = graphql`
 `;
 
 export interface SmtpConfigurationData {
-  id: string;
   smtp_enabled?: boolean | null;
   use_db_config?: boolean | null;
   sender_email_address?: string | null;
@@ -77,7 +53,7 @@ export interface SmtpConfigurationData {
 }
 
 interface SmtpConfigurationFormProps {
-  smtpConfiguration: SmtpConfigurationData | null; // null => create mode, otherwise update mode
+  smtpConfiguration: SmtpConfigurationData | null;
   onCompleted: () => void;
   onCancel: () => void;
 }
@@ -102,8 +78,7 @@ interface SmtpConfigurationFormValues {
 }
 
 // Secrets (password, oauth_client_secret, oauth_refresh_token) are never returned by the API,
-// so they must be re-entered on every submit (create AND update), matching the backend
-// validation which requires them whenever auth_type is set. There is no "keep existing secret" mode.
+// so they must be re-entered on every submit, matching the backend validation.
 const validationSchema = Yup.object().shape({
   sender_email_address: Yup.string().email().nullable(),
   hostname: Yup.string().nullable(),
@@ -138,10 +113,8 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const isEditing = !!smtpConfiguration?.id;
 
-  const [commitAdd] = useApiMutation<SmtpConfigurationFormAddMutation>(smtpConfigurationAddMutation);
-  const [commitUpdate] = useApiMutation<SmtpConfigurationFormUpdateMutation>(smtpConfigurationUpdateMutation);
+  const [commitEdit] = useApiMutation<SmtpConfigurationFormEditMutation>(smtpConfigurationEditMutation);
 
   const initialValues: SmtpConfigurationFormValues = {
     smtp_enabled: smtpConfiguration?.smtp_enabled ?? false,
@@ -196,27 +169,15 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => {
     const input = buildInput(values);
-    if (!isEditing) {
-      commitAdd({
-        variables: { input: input as SmtpConfigurationFormAddMutation['variables']['input'] },
-        onCompleted: () => {
-          setSubmitting(false);
-          MESSAGING$.notifySuccess(t_i18n('SMTP configuration created'));
-          onCompleted();
-        },
-        onError: () => setSubmitting(false),
-      });
-    } else {
-      commitUpdate({
-        variables: { id: smtpConfiguration.id, input: input as SmtpConfigurationFormUpdateMutation['variables']['input'] },
-        onCompleted: () => {
-          setSubmitting(false);
-          MESSAGING$.notifySuccess(t_i18n('SMTP configuration updated'));
-          onCompleted();
-        },
-        onError: () => setSubmitting(false),
-      });
-    }
+    commitEdit({
+      variables: { input: input as SmtpConfigurationFormEditMutation['variables']['input'] },
+      onCompleted: () => {
+        setSubmitting(false);
+        MESSAGING$.notifySuccess(t_i18n('SMTP configuration saved'));
+        onCompleted();
+      },
+      onError: () => setSubmitting(false),
+    });
   };
 
   return (
@@ -383,7 +344,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
               disabled={isSubmitting}
               style={{ marginLeft: theme.spacing(1) }}
             >
-              {t_i18n(isEditing ? 'Update' : 'Create')}
+              {t_i18n('Save')}
             </Button>
           </div>
         </Form>

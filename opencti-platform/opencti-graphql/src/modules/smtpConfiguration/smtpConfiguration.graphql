@@ -1,5 +1,4 @@
 type SmtpConfiguration {
-  id: ID!
   smtp_enabled: Boolean!
   use_db_config: Boolean!
   sender_email_address: String
@@ -42,33 +41,11 @@ input SmtpConfigurationAddInput {
   oauth_refresh_token_expires_at: DateTime
 }
 
-input SmtpConfigurationEditInput {
-  smtp_enabled: Boolean
-  use_db_config: Boolean
-  sender_email_address: String
-  hostname: String
-  port: Int
-  use_ssl: Boolean
-  reject_unauthorized: Boolean
-  auth_type: SmtpAuthType
-  username: String
-  password: String
-  oauth_user: String
-  oauth_client_id: String
-  oauth_client_secret: String
-  oauth_issuer: String
-  oauth_access_token: String
-  oauth_refresh_token: String
-  oauth_refresh_token_expires_at: DateTime
-}
-
 extend type Query {
   smtpConfiguration: SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
 }
 
 extend type Mutation {
-  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
-  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
-  smtpConfigurationDelete(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration @auth(for: [SETTINGS_SETACCESSES])
   smtpConfigurationTest(email: String!): Boolean @auth(for: [SETTINGS_SETACCESSES])
 }

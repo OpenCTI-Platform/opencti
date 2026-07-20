@@ -119,9 +119,14 @@ const getConfAuthParams = () => ({
 // --- DB config helpers ---
 
 const getEffectiveDbConfig = async () => {
-  const context = executionContext('smtp');
-  const dbConfig = await getSmtpConfiguration(context, SYSTEM_USER);
-  return dbConfig?.use_db_config ? dbConfig : null;
+  try {
+    const context = executionContext('smtp');
+    const dbConfig = await getSmtpConfiguration(context, SYSTEM_USER);
+    return dbConfig?.use_db_config ? dbConfig : null;
+  } catch {
+    // Cache may not be initialized yet (e.g. during boot-time dependency check)
+    return null;
+  }
 };
 
 const buildSmtpOptionsFromDb = (dbConfig) => ({
