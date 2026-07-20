@@ -121,4 +121,78 @@ describe('catalog-domain decoupling fallback policy', () => {
     expect(info.status).toBe('loading');
     expect(info.revision).toBeNull();
   });
+
+  it('returns latest contract per slug from helper APIs when multiple versions exist', async () => {
+    const catalogDomain = await import('../../../../src/modules/catalog/catalog-domain');
+    catalogDomain.resetCatalogs();
+
+    const v140 = {
+      id: 'ipinfo-1.4.0',
+      integration_name: 'ipinfo-1.4.0',
+      title: 'IPinfo',
+      slug: 'ipinfo',
+      description: '',
+      short_description: '',
+      logo: '',
+      use_cases: [],
+      verified: false,
+      last_verified_date: '2026-01-01',
+      playbook_supported: false,
+      max_confidence_level: 80,
+      support_version: '>=7.2.0',
+      subscription_link: '',
+      source_code: '',
+      manager_supported: true,
+      container_version: '1.4.0',
+      container_image: 'opencti/connector-ipinfo',
+      container_type: 'EXTERNAL_IMPORT' as const,
+      config_schema: {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        $id: 'ipinfo-1.4.0-config',
+        type: 'object',
+        properties: {},
+        required: [],
+        additionalProperties: false,
+      },
+    };
+    const v152 = {
+      ...v140,
+      id: 'ipinfo-1.5.2',
+      integration_name: 'ipinfo-1.5.2',
+      support_version: '>=7.3.0',
+      container_version: '1.5.2',
+    };
+
+    const { buildInternalCatalog } = await import('../../../../src/modules/catalog/catalog-cache');
+    const internalCatalog = buildInternalCatalog([
+      {
+        id: 'stacked-catalog',
+        name: 'Stacked',
+        description: '',
+        contracts: [v152], // current query view: latest only
+      },
+    ], [v140, v152]); // full contracts retained
+
+    catalogDomain.updateCatalogManagerInternalCache(internalCatalog, 'ready', false, 'revision-stacked');
+
+    const allContracts = await catalogDomain.getAllConnectorContracts();
+    expect(allContracts).toHaveLength(2);
+
+    const grouped = await catalogDomain.getContractsBySlug();
+    expect(grouped.get('ipinfo')?.length).toBe(2);
+
+    const latest = await catalogDomain.getLatestContractsBySlug();
+    expect(latest.get('ipinfo')?.container_version).toBe('1.5.2');
+
+    const latestBySlug = await catalogDomain.findLatestContractBySlug('ipinfo');
+    expect(latestBySlug?.container_version).toBe('1.5.2');
+  });
+
+  it('findLatestContractBySlug returns undefined for unknown slug', async () => {
+    const catalogDomain = await import('../../../../src/modules/catalog/catalog-domain');
+    catalogDomain.resetCatalogs();
+
+    const found = await catalogDomain.findLatestContractBySlug('does-not-exist');
+    expect(found).toBeUndefined();
+  });
 });

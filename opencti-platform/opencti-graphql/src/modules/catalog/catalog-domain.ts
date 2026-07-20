@@ -513,3 +513,61 @@ export const findContractBySlug = (context: AuthContext, user: AuthUser, contrac
 export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
   return findContract(context, user, (contract) => contract.container_image === containerImage);
 };
+
+// region New multi-version helpers (additive, non-breaking)
+
+/**
+ * Returns all connector contracts from the active catalog snapshot.
+ * For manifest_schema_version 1 with stacked contracts, this includes all versions.
+ */
+export const getAllConnectorContracts = async (): Promise<CatalogContract[]> => {
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog?.allContracts) {
+    return managerInternalCatalog.allContracts;
+  }
+  const catalogs = await getCatalogs();
+  return Object.values(catalogs).flatMap((catalog) => catalog.definition.contracts);
+};
+
+/**
+ * Returns all contracts grouped by connector slug.
+ */
+export const getContractsBySlug = async (): Promise<Map<string, CatalogContract[]>> => {
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog?.contractsBySlug) {
+    return managerInternalCatalog.contractsBySlug;
+  }
+  const allContracts = await getAllConnectorContracts();
+  const grouped = new Map<string, CatalogContract[]>();
+  allContracts.forEach((contract) => {
+    const current = grouped.get(contract.slug) ?? [];
+    current.push(contract);
+    grouped.set(contract.slug, current);
+  });
+  return grouped;
+};
+
+/**
+ * Returns the latest contract per connector slug.
+ * Current strategy: last contract occurrence for a slug wins.
+ */
+export const getLatestContractsBySlug = async (): Promise<Map<string, CatalogContract>> => {
+  if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && managerInternalCatalog?.latestContractsBySlug) {
+    return managerInternalCatalog.latestContractsBySlug;
+  }
+  const grouped = await getContractsBySlug();
+  const latest = new Map<string, CatalogContract>();
+  grouped.forEach((contracts, slug) => {
+    const last = contracts[contracts.length - 1];
+    if (last) latest.set(slug, last);
+  });
+  return latest;
+};
+
+/**
+ * Finds the latest contract for a connector slug.
+ */
+export const findLatestContractBySlug = async (slug: string): Promise<CatalogContract | undefined> => {
+  const latestBySlug = await getLatestContractsBySlug();
+  return latestBySlug.get(slug);
+};
+
+// endregion

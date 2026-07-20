@@ -95,6 +95,8 @@ const normalizeContractFromNewManifest = (contract: Record<string, any>): Catalo
   const schema = contract.config_schema ?? defaultConfigSchema;
 
   return {
+    id: contract.id ?? null,
+    integration_name: contract.integration_name ?? undefined,
     title: contract.title ?? '',
     slug: contract.slug ?? '',
     description: contract.description ?? '',
@@ -137,6 +139,15 @@ const toCatalogDefinitionsFromNewManifest = (raw: Record<string, any>): CatalogD
   }];
 };
 
+const pickLatestContractsBySlug = (contracts: CatalogContract[]): CatalogContract[] => {
+  // Manifest order defines recency for now: last contract entry for a slug wins.
+  const latestBySlug = new Map<string, CatalogContract>();
+  contracts.forEach((contract) => {
+    latestBySlug.set(contract.slug, contract);
+  });
+  return Array.from(latestBySlug.values());
+};
+
 export class LegacyManifestAdapter implements CatalogSourceAdapter {
   async fetch(_source: CatalogSourceConfig): Promise<RawManifest> {
     const customCatalogs: string[] = conf.get('app:custom_catalogs') ?? [];
@@ -172,7 +183,18 @@ export class NewManifestAdapter implements CatalogSourceAdapter {
   }
 
   toInternalCatalog(raw: RawManifest): InternalCatalog {
-    const normalized = toCatalogDefinitionsFromNewManifest(raw as Record<string, any>);
-    return buildInternalCatalog(normalized);
+    const manifest = raw as Record<string, any>;
+    const normalized = toCatalogDefinitionsFromNewManifest(manifest);
+
+    // Keep all versions for future workflows, but expose latest contract per slug
+    // through current catalog query behavior.
+    const allContracts = normalized[0].contracts;
+    const latestContracts = pickLatestContractsBySlug(allContracts);
+    const latestDefinitions: CatalogDefinition[] = [{
+      ...normalized[0],
+      contracts: latestContracts,
+    }];
+
+    return buildInternalCatalog(latestDefinitions, allContracts);
   }
 }

@@ -104,4 +104,44 @@ describe('NewManifestAdapter', () => {
       expect(Object.keys(internal.catalogMap)).toEqual(['catalog-v2']);
     }
   });
+
+  it('keeps all contracts but exposes latest contract per slug for catalog queries', () => {
+    const adapter = new NewManifestAdapter();
+
+    const manifestWithTwoVersions = {
+      ...fixtureManifest,
+      contracts: [
+        {
+          ...fixtureManifest.contracts[0],
+          id: 'ipinfo-1.4.0',
+          integration_name: 'ipinfo-1.4.0',
+          version: '1.4.0',
+        },
+        {
+          ...fixtureManifest.contracts[0],
+          id: 'ipinfo-1.5.2',
+          integration_name: 'ipinfo-1.5.2',
+          version: '1.5.2',
+          support_version: '>=7.3.0',
+        },
+      ],
+    };
+
+    const internal = adapter.toInternalCatalog(manifestWithTwoVersions);
+    const catalog = internal.catalogMap['catalog-v2'];
+
+    // Latest by slug (last manifest occurrence) is exposed in catalog query view.
+    expect(catalog.definition.contracts).toHaveLength(1);
+    expect(catalog.definition.contracts[0].slug).toBe('ipinfo');
+    expect(catalog.definition.contracts[0].container_version).toBe('1.5.2');
+
+    // All contracts are retained for next workflows.
+    expect(internal.allContracts).toBeDefined();
+    expect(internal.allContracts).toHaveLength(2);
+    expect(internal.latestContractsBySlug?.get('ipinfo')?.container_version).toBe('1.5.2');
+
+    // Metadata from new manifest is preserved.
+    expect(internal.allContracts?.[0].id).toBe('ipinfo-1.4.0');
+    expect(internal.allContracts?.[1].integration_name).toBe('ipinfo-1.5.2');
+  });
 });

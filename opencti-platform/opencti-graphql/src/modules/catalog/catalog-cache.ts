@@ -7,6 +7,12 @@ import type { CatalogContract, CatalogDefinition, CatalogType } from './catalog-
 type InternalCatalog = {
   catalogMap: Record<string, CatalogType>;
   contractsByImage: Map<string, CatalogContract>;
+  /** Flat contracts as they appear in the manifest (all versions retained). */
+  allContracts?: CatalogContract[];
+  /** Grouped contracts by connector slug (all versions retained). */
+  contractsBySlug?: Map<string, CatalogContract[]>;
+  /** Latest contract per connector slug (currently selected as last manifest occurrence). */
+  latestContractsBySlug?: Map<string, CatalogContract>;
 };
 
 const ajv = new Ajv({ coerceTypes: true });
@@ -115,10 +121,42 @@ export const buildContractsByImageCache = (catalogMap: Record<string, CatalogTyp
   return new Map(contracts.map((contract) => [contract.container_image, contract]));
 };
 
-export const buildInternalCatalog = (catalogDefinitions: CatalogDefinition[]): InternalCatalog => {
+export const buildContractsBySlugCache = (allContracts: CatalogContract[]): Map<string, CatalogContract[]> => {
+  const grouped = new Map<string, CatalogContract[]>();
+  allContracts.forEach((contract) => {
+    const current = grouped.get(contract.slug) ?? [];
+    current.push(contract);
+    grouped.set(contract.slug, current);
+  });
+  return grouped;
+};
+
+export const buildLatestContractsBySlugCache = (allContracts: CatalogContract[]): Map<string, CatalogContract> => {
+  // Last contract occurrence for a given slug wins (manifest order driven).
+  const latest = new Map<string, CatalogContract>();
+  allContracts.forEach((contract) => {
+    latest.set(contract.slug, contract);
+  });
+  return latest;
+};
+
+export const buildInternalCatalog = (
+  catalogDefinitions: CatalogDefinition[],
+  allContracts?: CatalogContract[],
+): InternalCatalog => {
   const catalogMap = buildCatalogMapFromDefinitions(catalogDefinitions);
   const contractsByImage = buildContractsByImageCache(catalogMap);
-  return { catalogMap, contractsByImage };
+  const resolvedAllContracts = allContracts ?? Object.values(catalogMap)
+    .flatMap((catalog) => catalog.definition.contracts.map((contract) => sanitizeManagerConfigurationSchema(contract)));
+  const contractsBySlug = buildContractsBySlugCache(resolvedAllContracts);
+  const latestContractsBySlug = buildLatestContractsBySlugCache(resolvedAllContracts);
+  return {
+    catalogMap,
+    contractsByImage,
+    allContracts: resolvedAllContracts,
+    contractsBySlug,
+    latestContractsBySlug,
+  };
 };
 
 export type { InternalCatalog };
