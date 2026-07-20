@@ -310,6 +310,23 @@ describe('useSearchEntities', () => {
     expect(relOptions.some((e) => e.value === 'uses')).toBe(true);
   });
 
+  it('should include object-label relationship type when entityTypes include object-label', () => {
+    const options = {
+      ...defaultOptions,
+      searchContext: { entityTypes: ['stix-core-relationship', 'object-label'] } as { entityTypes: string[]; elementType?: string },
+    };
+    const { result } = renderHook(() => useSearchEntities(options));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('relationship_type', {}, vi.fn(), createEvent(''));
+    });
+
+    const [entities] = result.current;
+    const relOptions = entities.relationship_type ?? [];
+    expect(relOptions.some((e) => e.value === 'object-label')).toBe(true);
+  });
+
   it('should not execute search when event is falsy', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;
