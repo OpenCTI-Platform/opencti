@@ -42,6 +42,8 @@ const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
+const Preprocessing = lazy(() => import('./Preprocessing'));
+const RootPreprocessing = lazy(() => import('./preprocessing/Root'));
 
 const Root = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -239,6 +241,14 @@ const Root = () => {
               <Tasks />
             </Security>
           )}
+        />
+        <Route
+          path="/preprocessing"
+          element={boundaryWrapper(Preprocessing)}
+        />
+        <Route
+          path="/preprocessing/:ruleId/*"
+          element={boundaryWrapper(RootPreprocessing)}
         />
         <Route
           path="/restriction/*"
