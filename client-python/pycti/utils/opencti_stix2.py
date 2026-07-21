@@ -1260,6 +1260,8 @@ class OpenCTIStix2:
     ) -> List[Dict]:
         if vocabulary_definition_fields is None:
             vocabulary_definition_fields = self._ensure_vocabulary_definition_fields()
+        if not vocabulary_definition_fields:
+            return []
 
         stix_object_entity_type = (
             stix_object.get("x_opencti_type")
