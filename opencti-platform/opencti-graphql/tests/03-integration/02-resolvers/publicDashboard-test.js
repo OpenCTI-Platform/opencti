@@ -1,12 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getUserIdByEmail, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
-import { toB64 } from '../../../src/utils/base64';
+import { fromB64, toB64 } from '../../../src/utils/base64';
+import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -43,6 +44,7 @@ const READ_QUERY = gql`
       uri_key
       enabled
       dashboard_id
+      private_manifest
       dashboard {
         id
       }
@@ -1037,6 +1039,135 @@ describe('PublicDashboard resolver', () => {
         });
         expect(queryResult).not.toBeNull();
         expect(queryResult.data.publicDashboards.edges.length).toEqual(0);
+      });
+    });
+
+    describe('Saved filters resolution in private_manifest', () => {
+      let savedFilterDashboardId;
+      let savedFilterId;
+      let dynamicFromSavedFilterId;
+      let publicDashboardId;
+
+      const savedFilterContent = {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      };
+      const dynamicFromFilterContent = {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: ['Threat-Actor-Group'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      };
+
+      beforeAll(async () => {
+        // Create saved filters
+        const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+          name: 'public-dashboard-test-filter',
+          filters: JSON.stringify(savedFilterContent),
+          scope: 'Stix-Core-Object',
+        });
+        savedFilterId = savedFilter.id;
+
+        const dynamicFromSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+          name: 'public-dashboard-test-dynamic-from-filter',
+          filters: JSON.stringify(dynamicFromFilterContent),
+          scope: 'Stix-Core-Object',
+        });
+        dynamicFromSavedFilterId = dynamicFromSavedFilter.id;
+
+        // Build a manifest with saved filter references (filters_id and dynamicFrom_id)
+        const manifestWithSavedFilters = {
+          widgets: {
+            'widget-saved-filter-test': {
+              id: 'widget-saved-filter-test',
+              type: 'number',
+              perspective: 'relationships',
+              dataSelection: [
+                {
+                  filters_id: savedFilterId,
+                  dynamicFrom_id: dynamicFromSavedFilterId,
+                  date_attribute: 'created_at',
+                  label: 'Test widget with saved filters',
+                },
+              ],
+              parameters: { title: 'Saved filter resolution test' },
+              layout: { w: 4, h: 2, x: 0, y: 0, i: 'widget-saved-filter-test', moved: false, static: false },
+            },
+          },
+          config: {},
+        };
+
+        // Create a dedicated private dashboard with saved filter references in its manifest
+        const privateDashboard = await queryAsAdmin({
+          query: CREATE_PRIVATE_DASHBOARD_QUERY,
+          variables: {
+            input: {
+              type: 'dashboard',
+              name: 'private dashboard for saved filters test',
+            },
+          },
+        });
+        savedFilterDashboardId = privateDashboard.data.workspaceAdd.id;
+
+        await queryAsAdmin({
+          query: UPDATE_PRIVATE_DASHBOARD_QUERY,
+          variables: {
+            id: savedFilterDashboardId,
+            input: { key: 'manifest', value: toB64(manifestWithSavedFilters) },
+          },
+        });
+
+        // Create public dashboard from the dedicated private dashboard
+        const publicDashboard = await queryAsAdmin({
+          query: CREATE_QUERY,
+          variables: {
+            input: {
+              name: 'public dashboard saved filters test',
+              uri_key: 'public-dashboard-saved-filters-test',
+              dashboard_id: savedFilterDashboardId,
+              enabled: true,
+            },
+          },
+        });
+        expect(publicDashboard.data.publicDashboardAdd).not.toBeNull();
+        publicDashboardId = publicDashboard.data.publicDashboardAdd.id;
+      });
+
+      afterAll(async () => {
+        // Delete the public dashboard, private dashboard, and saved filters
+        await queryAsAdmin({
+          query: DELETE_QUERY,
+          variables: { id: publicDashboardId },
+        });
+        await queryAsAdmin({
+          query: DELETE_PRIVATE_DASHBOARD_QUERY,
+          variables: { id: savedFilterDashboardId },
+        });
+        await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId);
+        await deleteSavedFilter(testContext, ADMIN_USER, dynamicFromSavedFilterId);
+      });
+
+      it('should resolve saved filter references into inline filters in private_manifest', async () => {
+        // Read the public dashboard and check private_manifest
+        const queryResult = await queryAsAdmin({
+          query: READ_QUERY,
+          variables: { id: publicDashboardId },
+        });
+        expect(queryResult.data.publicDashboard.private_manifest).toBeDefined();
+
+        const privateManifest = fromB64(queryResult.data.publicDashboard.private_manifest);
+        const widget = privateManifest.widgets['widget-saved-filter-test'];
+        expect(widget).toBeDefined();
+
+        const selection = widget.dataSelection[0];
+
+        // filters_id should be resolved: cleared and replaced by inline filters
+        expect(selection.filters_id).toBeUndefined();
+        expect(selection.filters).toEqual(savedFilterContent);
+
+        // dynamicFrom_id should be resolved: cleared and replaced by inline dynamicFrom
+        expect(selection.dynamicFrom_id).toBeUndefined();
+        expect(selection.dynamicFrom).toEqual(dynamicFromFilterContent);
       });
     });
 
