@@ -37,7 +37,7 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
  * Resolves saved filter references in widget data selections:
  * Replaces saved filters ids with the actual inline filters and removes the saved filters references.
  */
-const resolveSavedFiltersInDataSelection = async (
+export const resolveSavedFiltersInDataSelection = async (
   context: AuthContext,
   user: AuthUser,
   widgetDefinition: any,

@@ -4750,7 +4750,9 @@ const prepareIndexing = async (context: AuthContext, user: AuthUser, elements: R
 const validateElementsToIndex = (context: AuthContext, user: AuthUser, elements: Record<string, any>[]) => {
   const draftContext = getDraftContext(context, user);
   // If any element to index is not supported in draft, raise exception
-  if (draftContext && elements.some((e) => !isDraftSupportedEntity(e))) throw UnsupportedError('Cannot index unsupported element in draft context');
+  if (draftContext && elements.some((e) => !isDraftSupportedEntity(e))) {
+    throw UnsupportedError('Cannot index unsupported element in draft context');
+  }
 };
 export const elIndexElements = async (
   context: AuthContext,
