@@ -1,7 +1,18 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
-import useGranted, { AUTOMATION_AUTMANAGE, BYPASS, CSVMAPPERS, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, TAXIIAPI } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  AUTOMATION_AUTMANAGE,
+  BYPASS,
+  CSVMAPPERS,
+  INGESTION,
+  INGESTION_SETINGESTIONS,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+  MODULES,
+  TAXIIAPI,
+} from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
 import Loader from '../../../components/Loader';
 
@@ -20,10 +31,11 @@ const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
 
-// Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations section.
+// Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations
+// section, preserving any query params of the deep link.
 const LegacyConnectorRedirect = () => {
   const { connectorId } = useParams();
-  return <Navigate to={`/dashboard/integrations/connectors/${connectorId}`} replace={true} />;
+  return <Navigate to={{ pathname: `/dashboard/integrations/connectors/${connectorId}`, search: window.location.search }} replace={true} />;
 };
 
 const LegacyCatalogConnectorRedirect = () => {
@@ -33,27 +45,34 @@ const LegacyCatalogConnectorRedirect = () => {
 
 const LegacyFormRedirect = () => {
   const { formId } = useParams();
-  return <Navigate to={`/dashboard/integrations/feeds/form/${formId}`} replace={true} />;
+  return <Navigate to={{ pathname: `/dashboard/integrations/feeds/form/${formId}`, search: window.location.search }} replace={true} />;
 };
 
 const Root = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
+  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, CSVMAPPERS, AUTOMATION_AUTMANAGE]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
 
-  let redirect: string | null = null;
+  let redirect: string;
   if (isGrantedToKnowledge) {
-    redirect = 'entities';
+    redirect = '/dashboard/data/entities';
   } else if (isGrantedToImport) {
-    redirect = 'import';
+    redirect = '/dashboard/data/import';
   } else if (isGrantedToProcessing) {
-    redirect = 'processing';
+    redirect = '/dashboard/data/processing';
   } else if (isGrantedToSharing) {
-    redirect = 'sharing';
+    redirect = '/dashboard/data/sharing';
   } else if (isGrantedToManage) {
-    redirect = 'restriction';
+    redirect = '/dashboard/data/restriction';
+  } else if (isGrantedToIngestion) {
+    // Ingestion-only users have no Data screen anymore: the ingestion section
+    // moved to the top-level Integrations menu.
+    redirect = '/dashboard/integrations';
+  } else {
+    redirect = '/dashboard';
   }
 
   const isGrantedToAutomation = useGranted([AUTOMATION_AUTMANAGE]);
@@ -64,7 +83,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/data/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/entities"

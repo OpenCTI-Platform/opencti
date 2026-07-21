@@ -157,7 +157,6 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
       return (
         <IngestionCatalogCard
           node={connector}
-          dataListId={catalogId}
           isEnterpriseEdition={isEnterpriseEdition}
           onClickDeploy={() => handleOpenDeployDialog(connector, catalogId, hasActiveManagers, item.deploymentCount)}
           deploymentCount={item.deploymentCount}

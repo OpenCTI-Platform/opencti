@@ -33,7 +33,6 @@
   "Do not insert dependencies": "No insertar dependencias",
   "Do you want to delete this integration instance?": "¿Desea eliminar esta instancia de integración?",
   "Do you want to remove this connector registration?": "¿Desea eliminar el registro de este conector?",
-  "Documentation": "Documentación",
   "Expose a TAXII collection endpoint so external systems can push STIX data into the platform.": "Exponga un punto de acceso de colección TAXII para que los sistemas externos puedan enviar datos STIX a la plataforma.",
   "Fetch a remote CSV file on a schedule and map its columns to entities with a CSV mapper.": "Obtenga un archivo CSV remoto de forma programada y asigne sus columnas a entidades con un mapeador CSV.",
   "Form intake": "Formulario de entrada",

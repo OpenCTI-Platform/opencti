@@ -19,7 +19,6 @@ import { LogoFiligranIcon } from 'filigran-icon';
 
 export interface IngestionCatalogCardProps {
   node: IngestionConnector;
-  dataListId: string;
   isEnterpriseEdition: boolean;
   onClickDeploy: () => void;
   deploymentCount?: number;

@@ -43,12 +43,15 @@ interface IngestionJsonPopoverProps {
   ingestionJsonId: string;
   running?: boolean | null;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
   ingestionJsonId,
   paginationOptions,
   running,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -118,6 +121,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
   };

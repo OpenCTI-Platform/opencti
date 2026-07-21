@@ -850,7 +850,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 href={contractDefinition.subscription_link}
                 target="_blank"
               >
-                {t_i18n('Documentation')}
+                {t_i18n('Vendor contact')}
               </Button>
             )}
           </Stack>

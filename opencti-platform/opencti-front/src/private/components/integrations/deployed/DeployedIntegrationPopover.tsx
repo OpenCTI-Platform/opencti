@@ -166,8 +166,10 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
     });
   };
 
-  const canManageConnector = isConnector
-    && isGrantedToModules
+  const canManageConnector = isConnector && isGrantedToModules;
+  // Deletion has extra conditions (e.g. built-in or active connectors cannot
+  // be deleted): like the legacy popover, it only disables the Delete item.
+  const canDeleteThisConnector = canManageConnector
     && canDeleteConnector(item.connector as unknown as Connector_connector$data);
   const canManageFeed = !isConnector && isGrantedToIngestion;
 
@@ -234,6 +236,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
               handleClose(event);
               setDisplayDelete(true);
             }}
+            disabled={isConnector && !canDeleteThisConnector}
           >
             {t_i18n('Delete')}
           </MenuItem>

@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
@@ -23,6 +23,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import PageContainer from '../../../../components/PageContainer';
 import Card from '../../../../components/common/card/Card';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import Security from '../../../../utils/Security';
+import { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -213,23 +215,26 @@ interface FeedActionsPopoverProps {
 }
 
 // Reuses the existing per-kind popovers: update drawer, start/stop, export
-// and delete, with all their store wiring.
+// and delete, with all their store wiring. After a deletion the detail page
+// no longer exists: navigate back to the deployed list.
 const FeedActionsPopover = ({ kind, node }: FeedActionsPopoverProps) => {
+  const navigate = useNavigate();
   const running = kind === 'sync' ? !!node.running : !!node.ingestion_running;
+  const onDeleteComplete = () => navigate('/dashboard/integrations/deployed');
   switch (kind) {
     case 'sync':
-      return <SyncPopover syncId={node.id} running={running} paginationOptions={{}} />;
+      return <SyncPopover syncId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'rss':
-      return <IngestionRssPopover ingestionRssId={node.id} running={running} paginationOptions={{}} />;
+      return <IngestionRssPopover ingestionRssId={node.id} running={running} paginationOptions={{}} onDeleteComplete={onDeleteComplete} />;
     case 'taxii':
-      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} setStateValue={noop} />;
+      return <IngestionTaxiiPopover ingestionTaxiiId={node.id} running={running} setStateValue={noop} onDeleteComplete={onDeleteComplete} />;
     case 'taxii-push':
-      return <IngestionTaxiiCollectionPopover ingestionTaxiiId={node.id} running={running} />;
+      return <IngestionTaxiiCollectionPopover ingestionTaxiiId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
     case 'csv':
-      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} setStateHash={noop} />;
+      return <IngestionCsvPopover ingestionCsvId={node.id} running={running} setStateHash={noop} onDeleteComplete={onDeleteComplete} />;
     case 'json':
     default:
-      return <IngestionJsonPopover ingestionJsonId={node.id} running={running} />;
+      return <IngestionJsonPopover ingestionJsonId={node.id} running={running} onDeleteComplete={onDeleteComplete} />;
   }
 };
 
@@ -348,7 +353,11 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
               </Typography>
             )}
           </Box>
-          <FeedActionsPopover kind={kind} node={node} />
+          {/* Same gate as the legacy feed list lines: read-only INGESTION
+              users do not get the mutation actions. */}
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <FeedActionsPopover kind={kind} node={node} />
+          </Security>
         </Stack>
       </Box>
 
@@ -519,7 +528,16 @@ const FeedDetail = () => {
   }
 
   if (feedKind === 'form') {
-    return <FormView formId={feedId} />;
+    // Same gate as the legacy /data/ingestion/forms/:formId route.
+    return (
+      <Security
+        needs={[KNOWLEDGE_KNUPDATE]}
+        capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+        placeholder={<Navigate to="/dashboard" />}
+      >
+        <FormView formId={feedId} />
+      </Security>
+    );
   }
 
   return <FeedDetailLoader key={`${feedKind}-${feedId}`} kind={feedKind} feedId={feedId} />;
