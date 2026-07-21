@@ -14,7 +14,7 @@ import { graphql } from 'relay-runtime';
 import { fetchQuery, handleError } from 'src/relay/environment';
 
 interface FintelTemplatePopoverProps {
-  onUpdate: () => void;
+  onUpdate?: () => void;
   onDeleteComplete?: () => void;
   entitySettingId: string;
   templateId: string;
@@ -73,7 +73,7 @@ const FintelTemplatePopover = ({
 
   const update = (e: UIEvent) => {
     stopEvent(e);
-    onUpdate();
+    onUpdate?.();
     onCloseMenu(e);
   };
 
@@ -159,7 +159,7 @@ const FintelTemplatePopover = ({
       )}
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
-        <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>
+        {onUpdate && <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>}
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
         {isDefault
           ? <MenuItem onClick={onSetRemoveDefault}>{t_i18n('Remove default')}</MenuItem>

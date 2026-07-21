@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { Typography } from '@mui/material';
@@ -102,7 +102,6 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
         }
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
           <FintelTemplatePopover
-            onUpdate={() => setFormOpen(true)}
             entitySettingId={entitySettingId}
             templateId={template.id}
             isDefault={!!template.default}
@@ -116,6 +115,9 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
             disabled={editorValue === template.template_content || editOnGoing}
           >
             {t_i18n('Save template')}
+          </Button>
+          <Button disableElevation onClick={() => setFormOpen(true)}>
+            {t_i18n('Update')}
           </Button>
         </div>
       </div>
