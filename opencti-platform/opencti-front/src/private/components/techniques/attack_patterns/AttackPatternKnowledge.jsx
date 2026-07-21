@@ -38,7 +38,7 @@ const AttackPatternKnowledgeComponent = ({
         <Route
           path="/relations/:relationId"
           element={
-            <StixCoreRelationship entityId={attackPattern.id} paddingRight />
+            <StixCoreRelationship />
           }
         />
         <Route

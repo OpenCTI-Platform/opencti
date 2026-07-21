@@ -156,9 +156,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   path="/knowledge/*"
                   element={(
                     <div>
-                      <SecurityCoverageKnowledge
-                        securityCoverageData={securityCoverage}
-                      />
+                      <SecurityCoverageKnowledge />
                     </div>
                   )}
                 />
@@ -166,9 +164,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <Route
                   path="/relations/:relationId"
                   element={(
-                    <StixCoreRelationship
-                      entityId={securityCoverageId}
-                    />
+                    <StixCoreRelationship />
                   )}
                 />
               </>
