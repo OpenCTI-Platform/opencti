@@ -13,7 +13,7 @@ import { removeAuthenticationCredentials } from './ingestion-common';
 import { IngestionLogLevel, type Resolvers } from '../../generated/graphql';
 import { decryptIngestionCredential } from './ingestion-common';
 import { loadCreator } from '../../database/members';
-import { type AuthLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
+import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
 import type { BasicStoreEntityIngestionTaxii } from './ingestion-types';
 import { DatabaseError } from '../../config/errors';
 
@@ -32,7 +32,7 @@ const levelToLevel = (level: string): IngestionLogLevel => {
   }
 };
 
-const logsToLogs = (logs: AuthLogEntry[]) => {
+const logsToLogs = (logs: IngestionLogEntry[]) => {
   return logs.map(({ timestamp, level, ...others }) => ({
     timestamp: new Date(timestamp),
     level: levelToLevel(level),
