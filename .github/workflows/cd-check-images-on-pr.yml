@@ -3,10 +3,9 @@ name: OpenCTI CD Check
 
 on:
   pull_request:
-    branches-ignore:
+    branches:
       - master
       - lts/*
-      - gh-pages
 
 jobs:
   # -----------------------
