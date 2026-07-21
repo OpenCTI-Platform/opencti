@@ -29,6 +29,7 @@ type WorkflowSchema {
     id: ID!
     name: String!
     published: Boolean!
+    hasPublishedVersion: Boolean!
     errors: [WorkflowValidationError!]
     initialState: String!
     states: [WorkflowSerializedState!]!
@@ -139,6 +140,7 @@ extend type Query {
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
     triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult! @auth(for: [KNOWLEDGE_KNUPDATE])
     clearWorkflowPendingState(entityId: String!): WorkflowInstance! @auth(for: [SETTINGS])

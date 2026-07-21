@@ -17487,6 +17487,7 @@ export type Mutation = {
   workEdit?: Maybe<WorkEditMutations>;
   workflowDefinitionDelete?: Maybe<EntitySetting>;
   workflowDefinitionPublish?: Maybe<WorkflowDefinitionMutationResult>;
+  workflowDefinitionRestorePublished?: Maybe<WorkflowDefinitionMutationResult>;
   workflowDefinitionSet?: Maybe<WorkflowDefinitionMutationResult>;
   workspaceAdd?: Maybe<Workspace>;
   workspaceConfigurationImport: Scalars['String']['output'];
@@ -20179,6 +20180,11 @@ export type MutationWorkflowDefinitionDeleteArgs = {
 
 
 export type MutationWorkflowDefinitionPublishArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type MutationWorkflowDefinitionRestorePublishedArgs = {
   entityType: Scalars['String']['input'];
 };
 
@@ -38247,6 +38253,7 @@ export type WorkflowPendingTransition = {
 export type WorkflowSchema = {
   __typename?: 'WorkflowSchema';
   errors?: Maybe<Array<WorkflowValidationError>>;
+  hasPublishedVersion: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
   initialState: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -47952,6 +47959,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
   workflowDefinitionPublish?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionPublishArgs, 'entityType'>>;
+  workflowDefinitionRestorePublished?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionRestorePublishedArgs, 'entityType'>>;
   workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['WorkflowDefinitionMutationResult']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
   workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
@@ -53212,6 +53220,7 @@ export type WorkflowPendingTransitionResolvers<ContextType = any, ParentType ext
 
 export type WorkflowSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSchema'] = ResolversParentTypes['WorkflowSchema']> = ResolversObject<{
   errors?: Resolver<Maybe<Array<ResolversTypes['WorkflowValidationError']>>, ParentType, ContextType>;
+  hasPublishedVersion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

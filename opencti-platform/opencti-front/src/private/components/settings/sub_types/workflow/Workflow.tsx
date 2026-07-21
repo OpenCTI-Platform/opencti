@@ -15,12 +15,14 @@ import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkfl
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
+import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestorePublishedMutation.graphql';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
+import RestoreConfirmDialog from './RestoreConfirmDialog';
 import { MESSAGING$ } from '../../../../../relay/environment';
 
 export interface WorkflowValidationError {
@@ -94,6 +96,23 @@ const workflowDefinitionPublishMutation = graphql`
   }
 `;
 
+const workflowDefinitionRestorePublishedMutation = graphql`
+  mutation WorkflowRestorePublishedMutation($entityType: String!) {
+    workflowDefinitionRestorePublished(entityType: $entityType) {
+      id
+      published
+      errors {
+        type
+        message
+        path {
+          id
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
@@ -105,7 +124,15 @@ const emptyElement = {
   position: { x: 0, y: 0 },
 };
 
-const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>; depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery> }) => {
+const Workflow = ({
+  queryRef,
+  depsQueryRef,
+  onRefetch,
+}: {
+  queryRef: PreloadedQuery<SubTypeWorkflowQuery>;
+  depsQueryRef: PreloadedQuery<SubTypeWorkflowDependenciesQuery>;
+  onRefetch: () => void;
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { fitView, getNode } = useReactFlow();
@@ -149,16 +176,46 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
     { successMessage: t_i18n('Workflow successfully published') },
   );
 
+  // Restore published workflow definition
+  const [restoreWorkflowDefinition] = useApiMutation<WorkflowRestorePublishedMutation>(
+    workflowDefinitionRestorePublishedMutation,
+  );
+
   const [workflowDefinitionStatus, setWorkflowDefinitionStatus] = useState<{
-    published: boolean;
+    hasUnpublishedChanges: boolean;
+    hasPublishedVersion: boolean;
     validationErrors: WorkflowValidationError[];
   }>({
-    published: workflowDefinition?.published ?? false,
+    hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
+    hasPublishedVersion: workflowDefinition?.hasPublishedVersion ?? false,
     validationErrors: workflowDefinition?.errors ? [...workflowDefinition.errors as WorkflowValidationError[]] : [],
   });
 
   // Store previous schema to avoid unnecessary mutations
   const previousSchemaRef = useRef<string | null>(null);
+
+  // 4. When Relay delivers fresh data after a parent refetch (e.g., after restore),
+  //    reset the React Flow state to reflect the new workflow definition.
+  const isInitialMountRef = useRef(true);
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+    previousSchemaRef.current = JSON.stringify(
+      transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
+    );
+    // Sync publish status with the freshly fetched definition (e.g. after restore)
+    setWorkflowDefinitionStatus({
+      hasUnpublishedChanges: !(workflowDefinition?.published ?? false),
+      hasPublishedVersion: workflowDefinition?.hasPublishedVersion ?? false,
+      validationErrors: workflowDefinition?.errors
+        ? [...workflowDefinition.errors as WorkflowValidationError[]]
+        : [],
+    });
+  }, [initialNodes, initialEdges]);
 
   // Initialize the previous schema ref on mount to prevent initial mutation
   useEffect(() => {
@@ -192,13 +249,10 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
                 message: e!.message,
                 path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
               }));
-            setWorkflowDefinitionStatus({
-              published: false,
-              validationErrors,
-            });
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
           } else {
             // No errors, but stay in draft mode until explicitly published
-            setWorkflowDefinitionStatus({ published: false, validationErrors: [] });
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
           }
         }
       },
@@ -226,12 +280,9 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
                 message: e!.message,
                 path: e!.path?.map((p) => ({ id: p.id, entity_type: p.entity_type })),
               }));
-            setWorkflowDefinitionStatus({
-              published: false,
-              validationErrors,
-            });
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors }));
           } else {
-            setWorkflowDefinitionStatus({ published: false, validationErrors: [] });
+            setWorkflowDefinitionStatus((prev) => ({ ...prev, hasUnpublishedChanges: true, validationErrors: [] }));
           }
         }
         setNodes([]);
@@ -253,15 +304,40 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
       onCompleted: () => {
         // Update status to published
         setWorkflowDefinitionStatus({
-          published: true,
+          hasUnpublishedChanges: false,
+          hasPublishedVersion: true,
           validationErrors: [],
         });
       },
     });
   };
 
-  // Edit status and trantions
+  // Handle restore action — reloads the published version into the draft
+  const handleRestore = () => {
+    restoreWorkflowDefinition({
+      variables: { entityType: 'DraftWorkspace' },
+      onCompleted: () => {
+        // Directly reset local state to `initialNodes`/`initialEdges`.
+        // The Relay store already holds the published states (only full queries update
+        // `states`/`transitions`; mutation responses don't). So after deletion of all
+        // nodes the store is unchanged → the sync useEffect won't fire on a refetch
+        // that returns identical data. Calling setNodes here is the reliable path.
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+        previousSchemaRef.current = JSON.stringify(
+          transformToWorkflowDefinition(initialNodes, initialEdges, workflowDefinition),
+        );
+        setWorkflowDefinitionStatus({ hasUnpublishedChanges: false, hasPublishedVersion: true, validationErrors: [] });
+        // Also refetch in case the store is stale (e.g. published version changed
+        // after the initial page load). The sync useEffect handles that case.
+        onRefetch();
+      },
+    });
+  };
+
+  // Edit status and transitions
   const [open, setOpen] = useState<boolean>(false);
+  const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -321,6 +397,8 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
               validationStatus={workflowDefinitionStatus}
               onPublish={handlePublish}
               onReset={handleReset}
+              onRestore={handleRestore}
+              hasPublishedVersion={workflowDefinitionStatus.hasPublishedVersion}
             />
             <Button
               onClick={() => {
@@ -363,6 +441,13 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
             >
               {t_i18n('Add Status')}
             </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setEmptyStateRestoreConfirmOpen(true)}
+              disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
+            >
+              {t_i18n('Restore published version')}
+            </Button>
           </Panel>
         )}
       </ReactFlow>
@@ -372,6 +457,14 @@ const Workflow = ({ queryRef, depsQueryRef }: { queryRef: PreloadedQuery<SubType
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);
+        }}
+      />
+      <RestoreConfirmDialog
+        open={emptyStateRestoreConfirmOpen}
+        onClose={() => setEmptyStateRestoreConfirmOpen(false)}
+        onConfirm={() => {
+          setEmptyStateRestoreConfirmOpen(false);
+          handleRestore();
         }}
       />
     </div>

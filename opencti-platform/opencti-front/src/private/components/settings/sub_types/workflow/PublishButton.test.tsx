@@ -28,6 +28,7 @@ const renderWithTheme = (component: React.ReactElement) => {
 describe('PublishButton', () => {
   const mockOnPublish = vi.fn();
   const mockOnReset = vi.fn();
+  const mockOnRestore = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -36,7 +37,13 @@ describe('PublishButton', () => {
   describe('Null validation status', () => {
     it('should return null when validationStatus is null', () => {
       const { container } = renderWithTheme(
-        <PublishButton validationStatus={null} onPublish={mockOnPublish} onReset={mockOnReset} />,
+        <PublishButton
+          validationStatus={null}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
       );
       expect(container.firstChild).toBeNull();
     });
@@ -46,9 +53,11 @@ describe('PublishButton', () => {
     it('should render published button when published and no errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: true, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: false, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -75,9 +84,11 @@ describe('PublishButton', () => {
     it('should render enabled button when not published and has errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -90,9 +101,11 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -105,9 +118,11 @@ describe('PublishButton', () => {
     it('should render enabled button when not published and no errors', () => {
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -120,9 +135,11 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -138,9 +155,11 @@ describe('PublishButton', () => {
       const user = userEvent.setup();
       renderWithTheme(
         <PublishButton
-          validationStatus={{ published: false, validationErrors: [] }}
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
           onPublish={mockOnPublish}
           onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
         />,
       );
 
@@ -149,6 +168,98 @@ describe('PublishButton', () => {
       await user.click(screen.getByRole('button', { name: /^Reset$/i }));
 
       expect(mockOnReset).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Restore flow', () => {
+    it('should open restore confirmation when "Restore published version" menu item is clicked', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Restore published version/i }));
+
+      expect(screen.getByRole('button', { name: /^Restore$/i })).toBeInTheDocument();
+    });
+
+    it('should call onRestore when restore is confirmed', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Restore published version/i }));
+      await user.click(screen.getByRole('button', { name: /^Restore$/i }));
+
+      expect(mockOnRestore).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onRestore when restore is cancelled', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      await user.click(screen.getByRole('menuitem', { name: /Restore published version/i }));
+      await user.click(screen.getByRole('button', { name: /Cancel/i }));
+
+      expect(mockOnRestore).not.toHaveBeenCalled();
+    });
+
+    it('should disable "Restore published version" menu item when already published', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: false, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={true}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      const restoreItem = screen.getByRole('menuitem', { name: /Restore published version/i });
+      expect(restoreItem).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('should disable "Restore published version" menu item when workflow has never been published', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(
+        <PublishButton
+          validationStatus={{ hasUnpublishedChanges: true, validationErrors: [] }}
+          onPublish={mockOnPublish}
+          onReset={mockOnReset}
+          onRestore={mockOnRestore}
+          hasPublishedVersion={false}
+        />,
+      );
+
+      await user.click(screen.getByRole('button', { name: /More workflow options/i }));
+      const restoreItem = screen.getByRole('menuitem', { name: /Restore published version/i });
+      expect(restoreItem).toHaveAttribute('aria-disabled', 'true');
     });
   });
 });
