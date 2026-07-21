@@ -2804,7 +2804,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self._publisher_lock = threading.RLock()
         self._publisher_connection = None
         self._publisher_channel = None
-        self._publisher_heartbeat = 10
+        # BlockingConnection only services heartbeats while Pika is processing I/O.
+        # A cached publisher can sit idle while a connector builds its next bundle,
+        # so broker heartbeats would make healthy idle connections look dead.
+        self._publisher_heartbeat = 0
+        self._publisher_idle_timeout = 10
         self._publisher_last_used_at = None
 
         # Initialize S3 config from backend, allow local overrides
@@ -3972,7 +3976,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             if (
                 self._publisher_last_used_at is not None
                 and time.monotonic() - self._publisher_last_used_at
-                >= self._publisher_heartbeat
+                >= self._publisher_idle_timeout
             ):
                 self._close_publisher_connection()
             else:

@@ -108,10 +108,29 @@ def _helper():
     helper._publisher_lock = threading.RLock()
     helper._publisher_connection = None
     helper._publisher_channel = None
-    helper._publisher_heartbeat = 10
+    helper._publisher_heartbeat = 0
+    helper._publisher_idle_timeout = 10
     helper._publisher_last_used_at = None
     helper.bundle_split_max_bytes = 1000000
     return helper
+
+
+def test_open_publisher_connection_disables_heartbeat_for_cached_blocking_connection(
+    monkeypatch,
+):
+    parameters = []
+
+    def create_connection(connection_parameters):
+        parameters.append(connection_parameters)
+        return _FakeConnection()
+
+    monkeypatch.setattr(pika, "BlockingConnection", create_connection)
+    helper = _helper()
+
+    helper._open_publisher_connection()
+
+    assert len(parameters) == 1
+    assert parameters[0].heartbeat == 0
 
 
 def test_send_stix2_bundle_reuses_publisher_connection(monkeypatch):

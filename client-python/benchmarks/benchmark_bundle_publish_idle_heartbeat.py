@@ -1,24 +1,25 @@
-"""Microbenchmark for AMQP bundle publisher connection churn.
+"""Regression benchmark for cached AMQP publisher heartbeats.
 
-The benchmark publishes small bundles to a local RabbitMQ broker through
-OpenCTIConnectorHelper.send_stix2_bundle(). It isolates the cost of creating a
-new AMQP connection and channel for every send.
+The cached publisher uses a synchronous pika.BlockingConnection. If it
+advertises a short RabbitMQ heartbeat and then sits idle while a connector does
+other work, RabbitMQ closes the connection before the next publish. This
+benchmark publishes once, leaves that cached connection idle, then probes it to
+measure whether the broker already closed it.
 """
 
 from __future__ import annotations
 
 import argparse
-import gc
 import json
 import os
 import statistics
 import threading
 import time
-import tracemalloc
 import uuid
 from types import SimpleNamespace
 
 import pika
+from pika.exceptions import AMQPError
 
 from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
@@ -50,9 +51,11 @@ def _connection_config() -> dict:
     }
 
 
-def _connection_parameters(connection_config: dict) -> pika.ConnectionParameters:
+def _connection_parameters(
+    connection_config: dict, heartbeat: int
+) -> pika.ConnectionParameters:
     return pika.ConnectionParameters(
-        heartbeat=10,
+        heartbeat=heartbeat,
         host=connection_config["host"],
         port=connection_config["port"],
         virtual_host=connection_config["vhost"],
@@ -100,12 +103,12 @@ def _build_helper(
 
 
 def _run_once(
-    iterations: int, heartbeat: int, connection_config: dict
-) -> tuple[float, int]:
-    exchange = f"benchmark-pycti-publish-{uuid.uuid4()}"
+    idle_seconds: float, heartbeat: int, connection_config: dict
+) -> tuple[bool, str | None, float]:
+    exchange = f"benchmark-pycti-heartbeat-{uuid.uuid4()}"
     routing_key = "bundle"
     control_connection = pika.BlockingConnection(
-        _connection_parameters(connection_config)
+        _connection_parameters(connection_config, heartbeat=0)
     )
     control_channel = control_connection.channel()
     control_channel.exchange_declare(
@@ -120,46 +123,47 @@ def _run_once(
     bundle = json.dumps(
         {"type": "bundle", "id": f"bundle--{uuid.uuid4()}", "objects": []}
     )
+    probe_error = None
     try:
-        gc.collect()
-        tracemalloc.start()
+        helper.send_stix2_bundle(bundle, no_split=True)
+        cached_connection = helper._publisher_connection
+        time.sleep(idle_seconds)
         started_at = time.perf_counter()
-        for _ in range(iterations):
-            helper.send_stix2_bundle(bundle, no_split=True)
-        elapsed_seconds = time.perf_counter() - started_at
-        _, peak_bytes = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
+        try:
+            cached_connection.process_data_events(time_limit=0)
+        except AMQPError as err:
+            probe_error = type(err).__name__
+        probe_seconds = time.perf_counter() - started_at
+        probe_failed = probe_error is not None or cached_connection.is_closed
     finally:
         helper._close_publisher_connection()
         control_connection.close()
 
-    return elapsed_seconds, peak_bytes
+    return probe_failed, probe_error, probe_seconds
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--iterations", type=int, default=100)
-    parser.add_argument("--repeat", type=int, default=5)
-    parser.add_argument("--heartbeat", type=int, default=0)
+    parser.add_argument("--heartbeat", type=int, default=10)
+    parser.add_argument("--idle-seconds", type=float, default=35.0)
+    parser.add_argument("--repeat", type=int, default=3)
     args = parser.parse_args()
 
     connection_config = _connection_config()
-    _run_once(min(args.iterations, 5), args.heartbeat, connection_config)
     samples = [
-        _run_once(args.iterations, args.heartbeat, connection_config)
+        _run_once(args.idle_seconds, args.heartbeat, connection_config)
         for _ in range(args.repeat)
     ]
-    elapsed_samples = [sample[0] for sample in samples]
-    peak_samples = [sample[1] for sample in samples]
-
+    failed_samples = [sample for sample in samples if sample[0]]
+    probe_samples = [sample[2] for sample in samples]
     result = {
-        "iterations": args.iterations,
-        "repeat": args.repeat,
         "heartbeat": args.heartbeat,
-        "median_runtime_ms": round(statistics.median(elapsed_samples) * 1000, 3),
-        "min_runtime_ms": round(min(elapsed_samples) * 1000, 3),
-        "max_runtime_ms": round(max(elapsed_samples) * 1000, 3),
-        "median_peak_kib": round(statistics.median(peak_samples) / 1024, 3),
+        "idle_seconds": args.idle_seconds,
+        "repeat": args.repeat,
+        "failed_idle_probes": len(failed_samples),
+        "successful_idle_probes": args.repeat - len(failed_samples),
+        "error_types": sorted({sample[1] for sample in failed_samples if sample[1]}),
+        "median_probe_ms": round(statistics.median(probe_samples) * 1000, 3),
     }
     print(json.dumps(result, sort_keys=True))
 
