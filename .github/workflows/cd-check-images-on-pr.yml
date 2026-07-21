@@ -6,7 +6,7 @@ on:
     branches:
       - master
       - lts/*
-      # FIXME tmp
+      # FIXME tmp ici
       - issue/17096-check-images-on-pr
 
 jobs:
