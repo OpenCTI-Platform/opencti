@@ -3,8 +3,11 @@ name: PR conventions checks
 # It avoids jobs that require elevated write permissions/secrets on fork PRs; PR-write operations should live in a separate workflow.
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, reopened, ready_for_review, synchronize]
+
+permissions: {}
+
 jobs:
   check-pr-title-convention:
     name: Check that PR title follows convention
@@ -24,14 +27,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
-      - name: Information about how to sign commits see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
-        # "with comment" below does not work for forks.
+      - name: Check signed commits in PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "If you need to sign commits, Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits"
-      - name: Check signed commits in PR on fail see above information.
-        uses: 1Password/check-signed-commits-action@v1
-        with:
-          comment: |
-            Thank you for your contribution, but we need you to sign your commits. Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+          UNSIGNED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits \
+            --jq '[.[] | select(.commit.verification.verified != true)] | length')
+          if [ "$UNSIGNED" -gt 0 ]; then
+            echo "::error::Found $UNSIGNED unsigned commit(s). Please sign your commits: https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits"
+            exit 1
+          fi
+          echo "All commits are signed."
