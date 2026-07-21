@@ -313,3 +313,69 @@ jobs:
       if: always()
       continue-on-error: true
       run: cat runner_resource_stat.log
+
+  run-opencti-integration-light-test:
+    name: Integration light tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.checkout_ref }}
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh
+
+    - name: Download image builder
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        name: docker-image-opencti-builder
+        path: /tmp
+
+    - name: Load image
+      run: |
+          set -eux
+          docker load --input /tmp/opencti-builder.tar
+          docker images
+
+    - name: Set up Docker Compose for backends
+      run: |
+         set -eux
+         cd scripts/ci
+         export TAG=${{ github.sha }}
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
+         docker network create runner-docker-network
+         docker compose --profile "backend" up -d
+         ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow 120 2
+
+    - name: Start integration light tests (aka yarn test:integration-light)
+      run: |
+        docker run --network runner-docker-network \
+          --name api-light-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1 \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
+            yarn install
+            yarn build
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:integration-light
+        '
+
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      if: always()
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
