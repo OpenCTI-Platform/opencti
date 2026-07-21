@@ -16,11 +16,17 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: Slashgear/action-check-pr-title@76166c63ec0b25cdbe693e5e972e83ca186313fb
-        with:
-          regexp: '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .+ \(#[0-9]+(, ?#[0-9]+)*\)$'
-          flags: "gm"
-          helpMessage: "Format: 'type(scope?): description (#issue)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+      - name: Check PR title matches convention
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .+ \(#[0-9]+(, ?#[0-9]+)*\)$'
+          if ! echo "$PR_TITLE" | grep -Pq "$PATTERN"; then
+            echo "::error::PR title does not match convention: '$PR_TITLE'"
+            echo "Format: 'type(scope?): description (#issue)' for example 'docs: updating a doc page (#1234)'. see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+            exit 1
+          fi
+          echo "PR title is valid: '$PR_TITLE'"
 
   check-signed-commits:
     name: Check signed commits in PR
