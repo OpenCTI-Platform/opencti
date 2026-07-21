@@ -55,7 +55,7 @@ export interface NodeData {
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
 }
-interface computeInitialComponentConfigValuesParams {
+interface ComputeInitialComponentConfigValuesParams {
   action: string | null;
   currentConfig: PlaybookConfig | null;
   configurationSchema: PlaybookComponentConfigSchema | null;
@@ -63,7 +63,7 @@ interface computeInitialComponentConfigValuesParams {
   selectedComponent?: PlaybookComponent | null;
 }
 
-export type PlaybookFlowFormValues = PlaybookFlowFormData & Record<string, unknown>;
+export type PlaybookFlowFormValues = PlaybookFlowFormData;
 
 export const computeInitialComponentConfigValues = ({
   action,
@@ -71,7 +71,7 @@ export const computeInitialComponentConfigValues = ({
   nodeData,
   configurationSchema,
   selectedComponent,
-}: computeInitialComponentConfigValuesParams): PlaybookFlowFormValues => {
+}: ComputeInitialComponentConfigValuesParams): PlaybookFlowFormValues => {
   const initialValues: PlaybookFlowFormValues = {
     name: '',
     description: '',
