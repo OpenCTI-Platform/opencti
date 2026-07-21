@@ -77,8 +77,8 @@ interface SmtpConfigurationFormValues {
   oauth_refresh_token_expires_at: string | null;
 }
 
-// Secrets (password, oauth_client_secret, oauth_refresh_token) are never returned by the API,
-// so they must be re-entered on every submit, matching the backend validation.
+// Secrets (password, oauth_client_id, oauth_client_secret, oauth_refresh_token) are never
+// pre-filled for security reasons and must be re-entered on every submit.
 const validationSchema = Yup.object().shape({
   sender_email_address: Yup.string().email().nullable(),
   hostname: Yup.string().nullable(),
@@ -128,7 +128,7 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
     username: smtpConfiguration?.username ?? '',
     password: '',
     oauth_user: smtpConfiguration?.oauth_user ?? '',
-    oauth_client_id: smtpConfiguration?.oauth_client_id ?? '',
+    oauth_client_id: '',
     oauth_client_secret: '',
     oauth_issuer: smtpConfiguration?.oauth_issuer ?? '',
     oauth_refresh_token: '',

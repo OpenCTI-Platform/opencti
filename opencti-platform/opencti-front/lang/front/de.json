@@ -5314,7 +5314,7 @@
   "Zoom": "Vergrößern",
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern",
-  "Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.": "Ihr Plattformadministrator hat diese Funktion deaktiviert. Sie können keine neue SMTP-Konfiguration in der Benutzeroberfläche konfigurieren.",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.\nOnce the new configuration is in place you would need to restart your platform.": "Sie können keine neue SMTP-Integration über diese Oberfläche konfigurieren. Kontaktieren Sie Ihren Administrator, wenn Sie sie aktualisieren möchten.\nSobald die neue Konfiguration eingerichtet ist, müssen Sie Ihre Plattform neu starten.",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "Derzeit wird SMTP über eine Backend-Konfiguration konfiguriert. Um Ihre Konfiguration zu ändern, aktivieren Sie einfach die Nutzung der Schnittstellenkonfiguration und definieren Sie Ihre SMTP-Konfiguration in diesem Bildschirm.",
   "Use configuration in interface": "Konfiguration in der Benutzeroberfläche verwenden",
   "SMTP configuration saved": "SMTP-Konfiguration gespeichert"

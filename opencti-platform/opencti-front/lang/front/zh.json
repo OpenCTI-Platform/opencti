@@ -5314,7 +5314,7 @@
   "Zoom": "放大",
   "Zoom in": "放大",
   "Zoom out": "缩小",
-  "Your platform administrator has disabled this feature. You cannot configure a new SMTP configuration within the interface.": "您的平台管理员已禁用此功能。您无法在界面中配置新的SMTP配置。",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.\nOnce the new configuration is in place you would need to restart your platform.": "您无法通过此界面配置新的SMTP集成。如果您需要更新，请联系您的管理员。\n新配置就位后，您需要重新启动平台。",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "目前，SMTP通过后端配置进行配置。要更改配置，只需启用界面配置的使用并在此屏幕中定义您的SMTP配置。",
   "Use configuration in interface": "使用界面配置",
   "SMTP configuration saved": "SMTP配置已保存"
