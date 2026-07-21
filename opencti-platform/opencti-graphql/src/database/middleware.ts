@@ -2005,7 +2005,7 @@ const prepareAttributesForUpdate = async (
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
         key: input.key,
-        value: input.value.map((v) => v.toLowerCase()),
+        value: input.value.map((v) => v.trim()),
       };
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
