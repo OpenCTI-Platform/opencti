@@ -20,7 +20,7 @@ const internalLoadThroughDenormalized = (context, user, element, inputName) => {
       return []; // Granted_refs are not part of all core entities
     }
   }
-  if (element[inputName] && inputName !== INPUT_CREATED_BY) {
+  if (element[inputName]) {
     // if element is already loaded, just send the data
     return element[inputName];
   }
