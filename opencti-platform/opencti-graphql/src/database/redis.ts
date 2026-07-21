@@ -938,9 +938,18 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
 const INGESTION_LOG_KEY_PREFIX = 'ingestion-';
 const INGESTION_LOG_MAX_SIZE = 20;
 
+export interface IngestionLogEntry {
+  timestamp: number;
+  level: 'success' | 'info' | 'warn' | 'error';
+  type: string;
+  identifier: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
 const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
 
-export const redisPushIngestionLog = async (feedId: string, entry: Omit<AuthLogEntry, 'timestamp'>) => {
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
   try {
     const key = ingestionLogListKey(feedId);
     const value = JSON.stringify({ timestamp: Date.now(), ...entry });
@@ -953,16 +962,16 @@ export const redisPushIngestionLog = async (feedId: string, entry: Omit<AuthLogE
   }
 };
 
-export const redisGetIngestionLogHistory = async (feedId: string): Promise<AuthLogEntry[]> => {
+export const redisGetIngestionLogHistory = async (feedId: string): Promise<IngestionLogEntry[]> => {
   const listKey = ingestionLogListKey(feedId);
   const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
   return rawList.map((s) => {
     try {
-      return JSON.parse(s) as AuthLogEntry;
+      return JSON.parse(s) as IngestionLogEntry;
     } catch {
       return null;
     }
-  }).filter((e): e is AuthLogEntry => e !== null);
+  }).filter((e): e is IngestionLogEntry => e !== null);
 };
 
 export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
