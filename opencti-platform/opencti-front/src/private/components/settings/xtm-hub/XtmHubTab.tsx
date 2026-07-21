@@ -50,7 +50,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
   const eeSettings = settings?.platform_enterprise_edition;
   const isEnterpriseEdition = eeSettings?.license_validated;
   const isDemo = settings?.platform_demo ?? false;
-  const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+  const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
   );
@@ -69,13 +69,11 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
-      successMessage: t_i18n(
-        'Your OpenCTI platform is successfully disconnected',
-      ),
+      successMessage: t_i18n('Your OpenCTI platform is successfully disconnected'),
     },
   );
 
-  const isRegistered = registrationStatus === 'registered';
+  const isRegistered = registrationStatus === 'registered' || registrationStatus === 'lost_connectivity';
 
   const OCTIInformations = {
     platform_url: window.location.origin,
