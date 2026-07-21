@@ -211,10 +211,10 @@ const IngestionCatalogFacetSidebar = ({
         flexShrink: 0,
         position: 'sticky',
         top: theme.spacing(2),
-        maxHeight: `calc(100vh - ${theme.spacing(20)})`,
-        overflowY: 'auto',
       }}
     >
+      {/* The scroll happens on an inner box: overflow on the sticky element
+          itself breaks sticky positioning in WebKit. */}
       <Box
         sx={{
           display: 'flex',
@@ -224,6 +224,8 @@ const IngestionCatalogFacetSidebar = ({
           borderRadius: 1,
           border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
           backgroundColor: theme.palette.background.paper,
+          maxHeight: `calc(100vh - ${theme.spacing(20)})`,
+          overflowY: 'auto',
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">

@@ -193,11 +193,32 @@ const IntegrationsHero = ({ deployedCount, availableCount, verifiedCount, builtI
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 640 }}>
             {t_i18n('Browse, deploy and monitor all the integrations feeding your platform with threat intelligence.')}
           </Typography>
+          {/* Each stat deep-links to the matching pre-filtered view. */}
           <Stack direction="row" flexWrap="wrap" gap={1} sx={{ marginTop: 2 }}>
-            <HeroStatChip icon={RocketLaunchOutlined} value={deployedCount} label={t_i18n('Deployed')} />
-            <HeroStatChip icon={ExtensionOutlined} value={availableCount} label={t_i18n('Available connectors')} />
-            <HeroStatChip icon={VerifiedOutlined} value={verifiedCount} label={t_i18n('Verified')} />
-            <HeroStatChip icon={WidgetsOutlined} value={builtInCount} label={t_i18n('Built-in methods')} />
+            <HeroStatChip
+              icon={RocketLaunchOutlined}
+              value={deployedCount}
+              label={t_i18n('Deployed')}
+              to="/dashboard/integrations/deployed"
+            />
+            <HeroStatChip
+              icon={ExtensionOutlined}
+              value={availableCount}
+              label={t_i18n('Available connectors')}
+              to="/dashboard/integrations/available?deployment=connector"
+            />
+            <HeroStatChip
+              icon={VerifiedOutlined}
+              value={verifiedCount}
+              label={t_i18n('Verified')}
+              to="/dashboard/integrations/available?status=filigran"
+            />
+            <HeroStatChip
+              icon={WidgetsOutlined}
+              value={builtInCount}
+              label={t_i18n('Built-in methods')}
+              to="/dashboard/integrations/available?deployment=built-in"
+            />
           </Stack>
         </Box>
         <BrowseMoreButton />

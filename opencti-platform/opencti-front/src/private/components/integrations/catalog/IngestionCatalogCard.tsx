@@ -120,6 +120,7 @@ const ConnectorActions = ({
           {isEnterpriseEdition ? (
             <IngestionCatalogCardDeployButton
               deploymentCount={deploymentCount}
+              deployedTo={`/dashboard/integrations/deployed?search=${encodeURIComponent(connector.title)}`}
               onClick={onClickDeploy}
             />
           ) : (

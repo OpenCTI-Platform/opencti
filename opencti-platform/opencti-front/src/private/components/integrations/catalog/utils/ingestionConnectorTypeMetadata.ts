@@ -1,8 +1,18 @@
-import { AutoAwesomeOutlined, CloudDownloadOutlined, ExtensionOutlined, FileDownloadOutlined, InputOutlined, StreamOutlined, UploadFileOutlined } from '@mui/icons-material';
+import {
+  AutoAwesomeOutlined,
+  CloudDownloadOutlined,
+  ExtensionOutlined,
+  FileDownloadOutlined,
+  InputOutlined,
+  StreamOutlined,
+  TroubleshootOutlined,
+  UploadFileOutlined,
+} from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 
 export type IngestionConnectorType
   = | 'INTERNAL_ENRICHMENT'
+    | 'INTERNAL_ANALYSIS'
     | 'INTERNAL_INGESTION'
     | 'EXTERNAL_IMPORT'
     | 'INTERNAL_EXPORT_FILE'
@@ -12,6 +22,7 @@ export type IngestionConnectorType
 const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   EXTERNAL_IMPORT: CloudDownloadOutlined,
   INTERNAL_ENRICHMENT: AutoAwesomeOutlined,
+  INTERNAL_ANALYSIS: TroubleshootOutlined,
   INTERNAL_EXPORT_FILE: FileDownloadOutlined,
   INTERNAL_IMPORT_FILE: UploadFileOutlined,
   INTERNAL_INGESTION: InputOutlined,
@@ -37,6 +48,11 @@ export const getConnectorMetadata = (
     case 'INTERNAL_ENRICHMENT':
       return {
         label: t_i18n('Internal enrichment'),
+        color: 'warning' as const,
+      };
+    case 'INTERNAL_ANALYSIS':
+      return {
+        label: t_i18n('Internal analysis'),
         color: 'warning' as const,
       };
     case 'INTERNAL_EXPORT_FILE':

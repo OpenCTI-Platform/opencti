@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
@@ -71,6 +71,7 @@ const CONNECTOR_TYPE_ORDER: string[] = [
   'EXTERNAL_IMPORT',
   'STREAM',
   'INTERNAL_ENRICHMENT',
+  'INTERNAL_ANALYSIS',
   'INTERNAL_IMPORT_FILE',
   'INTERNAL_EXPORT_FILE',
   'INTERNAL_INGESTION',
@@ -119,6 +120,20 @@ const matchesFilters = (
   return true;
 };
 
+const parseFiltersFromParams = (searchParams: URLSearchParams): CatalogFilterState => ({
+  search: searchParams.get('search') || '',
+  types: parseListParam(searchParams.get('type')),
+  useCases: parseListParam(searchParams.get('useCase')),
+  statuses: parseListParam(searchParams.get('status'))
+    .filter((s): s is CatalogStatusFacet => (CATALOG_STATUS_FACETS as string[]).includes(s)),
+  deployments: parseListParam(searchParams.get('deployment'))
+    .filter((d): d is CatalogDeploymentFacet => (CATALOG_DEPLOYMENT_FACETS as string[]).includes(d)),
+});
+
+const parseSortFromParams = (searchParams: URLSearchParams): CatalogSortMode => {
+  return (['name', 'deployed', 'verified'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name';
+};
+
 const useIngestionCatalogFilters = ({
   catalogs,
   deploymentCounts,
@@ -127,18 +142,21 @@ const useIngestionCatalogFilters = ({
 }: UseIngestionCatalogFiltersProps) => {
   const { t_i18n } = useFormatter();
 
-  const [filters, setFilters] = useState<CatalogFilterState>({
-    search: searchParams.get('search') || '',
-    types: parseListParam(searchParams.get('type')),
-    useCases: parseListParam(searchParams.get('useCase')),
-    statuses: parseListParam(searchParams.get('status'))
-      .filter((s): s is CatalogStatusFacet => (CATALOG_STATUS_FACETS as string[]).includes(s)),
-    deployments: parseListParam(searchParams.get('deployment'))
-      .filter((d): d is CatalogDeploymentFacet => (CATALOG_DEPLOYMENT_FACETS as string[]).includes(d)),
-  });
-  const [sort, setSort] = useState<CatalogSortMode>(
-    (['name', 'deployed', 'verified'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
-  );
+  const [filters, setFilters] = useState<CatalogFilterState>(() => parseFiltersFromParams(searchParams));
+  const [sort, setSort] = useState<CatalogSortMode>(() => parseSortFromParams(searchParams));
+
+  // In-page filter changes are persisted with history.replaceState, which does
+  // not go through the router: the router search params only change on real
+  // navigations (e.g. the hero stat chips linking to a pre-filtered view), in
+  // which case the filter state is re-initialized from the new params.
+  const searchParamsKey = searchParams.toString();
+  const lastSearchParamsKey = useRef(searchParamsKey);
+  useEffect(() => {
+    if (lastSearchParamsKey.current === searchParamsKey) return;
+    lastSearchParamsKey.current = searchParamsKey;
+    setFilters(parseFiltersFromParams(searchParams));
+    setSort(parseSortFromParams(searchParams));
+  }, [searchParamsKey]);
 
   useEffect(() => {
     const params = new URLSearchParams();

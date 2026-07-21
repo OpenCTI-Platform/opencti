@@ -6,7 +6,7 @@ import Button from '@common/button/Button';
 import { BuiltInIntegrationDefinition } from '@components/integrations/available/builtInIntegrations';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { useFormatter } from '../../../../components/i18n';
-import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import Card from '../../../../components/common/card/Card';
 
@@ -20,6 +20,9 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const Icon = definition.icon;
+  // The whole card triggers the creation, like the connector cards open their
+  // detail: only when the user is granted to create ingestion instances.
+  const canCreate = useGranted([INGESTION_SETINGESTIONS]);
 
   return (
     <Box
@@ -38,6 +41,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
       }}
     >
       <Card
+        onClick={canCreate ? onClickCreate : undefined}
         sx={{
           height: 280,
           borderRadius: 1,
@@ -45,6 +49,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
           flexDirection: 'column',
           gap: 2,
           alignItems: 'stretch',
+          cursor: canCreate ? 'pointer' : undefined,
         }}
       >
         <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
@@ -121,11 +126,17 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             alignItems: 'center',
           }}
         >
-          <DeployedCountChip count={deploymentCount} />
+          <DeployedCountChip
+            count={deploymentCount}
+            to={`/dashboard/integrations/deployed?type=${definition.kind}`}
+          />
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <Button
               size="small"
-              onClick={onClickCreate}
+              onClick={(event) => {
+                event.stopPropagation();
+                onClickCreate();
+              }}
               sx={{ marginLeft: 'auto' }}
             >
               {t_i18n('Create')}

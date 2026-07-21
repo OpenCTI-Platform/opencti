@@ -6,15 +6,16 @@ import { useFormatter } from '../../../../../../components/i18n';
 
 type IngestionCatalogCardDeployButtonProps = {
   deploymentCount?: number;
+  deployedTo?: string;
   onClick: () => void;
 };
 
-const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, onClick }: IngestionCatalogCardDeployButtonProps) => {
+const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onClick }: IngestionCatalogCardDeployButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (
     <Stack direction="row" alignItems="center" gap={1}>
-      <DeployedCountChip count={deploymentCount} />
+      <DeployedCountChip count={deploymentCount} to={deployedTo} />
       <Button
         size="small"
         onClick={onClick}

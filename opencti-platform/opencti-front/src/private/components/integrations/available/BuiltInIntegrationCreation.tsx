@@ -45,6 +45,7 @@ const BuiltInIntegrationCreation = ({ activeKind, onClose }: BuiltInIntegrationC
         handleClose={onClose}
       />
       <IngestionJsonCreationContainer
+        triggerButton={false}
         open={activeKind === 'json'}
         handleClose={onClose}
         isDuplicated={false}

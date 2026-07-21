@@ -3,6 +3,7 @@ import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
 import { CheckCircleOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
+import { Link, useNavigate } from 'react-router-dom';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';
@@ -31,18 +32,31 @@ export const BrowseMoreButton = () => {
 };
 
 // Deployed-instances indicator on catalog cards: a discreet success chip with
-// a tooltip (same design as the OpenAEV integrations catalog).
-export const DeployedCountChip = ({ count }: { count: number }) => {
+// a tooltip (same design as the OpenAEV integrations catalog). When a target
+// is provided, clicking the chip opens the deployed tab with matching filters.
+export const DeployedCountChip = ({ count, to }: { count: number; to?: string }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const navigate = useNavigate();
   if (count <= 0) return null;
   return (
-    <Tooltip title={t_i18n('This integration has {count} deployed instance(s). Manage them from the Deployed tab.', { values: { count } })}>
+    <Tooltip
+      title={t_i18n('This integration has {count} deployed instance(s). Manage them from the Deployed tab.', { values: { count } })}
+      // Neutralize the global tooltip lowercasing: this is a full sentence.
+      slotProps={{ popper: { sx: { textTransform: 'none' } } }}
+    >
       <Chip
         icon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
         label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
         size="small"
         variant="outlined"
+        onClick={to
+          ? (event) => {
+            // The chip may live inside a clickable card: do not trigger it.
+              event.stopPropagation();
+              navigate(to);
+            }
+          : undefined}
         sx={{
           height: 24,
           fontSize: 11,
@@ -52,6 +66,9 @@ export const DeployedCountChip = ({ count }: { count: number }) => {
           borderColor: alpha(theme.palette.success.main, 0.4),
           backgroundColor: alpha(theme.palette.success.main, 0.08),
           '& .MuiChip-icon': { color: theme.palette.success.main },
+          '&.MuiChip-clickable:hover': {
+            backgroundColor: alpha(theme.palette.success.main, 0.16),
+          },
         }}
       />
     </Tooltip>
@@ -62,23 +79,14 @@ interface HeroStatChipProps {
   icon: SvgIconComponent;
   value: number;
   label: string;
+  // Optional deep link to the matching pre-filtered view.
+  to?: string;
 }
 
-export const HeroStatChip = ({ icon: Icon, value, label }: HeroStatChipProps) => {
+export const HeroStatChip = ({ icon: Icon, value, label, to }: HeroStatChipProps) => {
   const theme = useTheme();
-  return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      gap={0.75}
-      sx={{
-        paddingInline: 1.25,
-        paddingBlock: 0.5,
-        borderRadius: 1,
-        border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
-        backgroundColor: alpha(theme.palette.text.primary, 0.04),
-      }}
-    >
+  const content = (
+    <>
       <Icon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
       <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
         {value}
@@ -86,6 +94,41 @@ export const HeroStatChip = ({ icon: Icon, value, label }: HeroStatChipProps) =>
       <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary }}>
         {label}
       </Typography>
+    </>
+  );
+  const baseSx = {
+    paddingInline: 1.25,
+    paddingBlock: 0.5,
+    borderRadius: 1,
+    border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
+    backgroundColor: alpha(theme.palette.text.primary, 0.04),
+  };
+  if (to) {
+    return (
+      <Stack
+        component={Link}
+        to={to}
+        direction="row"
+        alignItems="center"
+        gap={0.75}
+        sx={{
+          ...baseSx,
+          textDecoration: 'none',
+          color: 'inherit',
+          transition: 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out',
+          '&:hover': {
+            borderColor: alpha(theme.palette.primary.main, 0.4),
+            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+          },
+        }}
+      >
+        {content}
+      </Stack>
+    );
+  }
+  return (
+    <Stack direction="row" alignItems="center" gap={0.75} sx={baseSx}>
+      {content}
     </Stack>
   );
 };

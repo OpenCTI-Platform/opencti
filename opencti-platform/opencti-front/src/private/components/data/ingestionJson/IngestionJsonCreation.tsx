@@ -56,6 +56,7 @@ interface IngestionJsonCreationContainerProps {
   open: boolean;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
   isDuplicated: boolean;
+  triggerButton?: boolean;
 }
 
 export interface IngestionJsonHeader {
@@ -574,6 +575,7 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
   open,
   paginationOptions,
   isDuplicated,
+  triggerButton = true,
 }) => {
   const { t_i18n } = useFormatter();
 
@@ -585,7 +587,7 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
       title={isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed')}
       open={open}
       onClose={handleClose}
-      controlledDial={!isDuplicated ? CreateIngestionJsonControlledDial : undefined}
+      controlledDial={!isDuplicated && triggerButton ? CreateIngestionJsonControlledDial : undefined}
     >
       {({ onClose }) => (
         <IngestionJsonCreation

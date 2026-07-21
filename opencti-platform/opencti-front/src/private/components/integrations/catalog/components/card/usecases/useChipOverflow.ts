@@ -2,7 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import useDebounceCallback from '../../../../../../../utils/hooks/useDebounceCallback';
 
 const GAP = 8;
-const MIN_CHIP_WIDTH = 60;
+// Below this width a truncated chip is unreadable: show the +N chip instead.
+const MIN_CHIP_WIDTH = 110;
+// Approximate width of the "+N" overflow chip, reserved so it never gets
+// clipped by the container overflow.
+const OVERFLOW_CHIP_WIDTH = 48;
 
 const useChipOverflow = (items: string[]) => {
   const [visibleCount, setVisibleCount] = useState(items.length);
@@ -36,14 +40,17 @@ const useChipOverflow = (items: string[]) => {
       // Chip doesn't fit completely
       const spaceLeft = containerWidth - usedWidth - gapBeforeChip;
       const isLastChip = (i === items.length - 1);
-      const chipsStillHidden = items.length - visibleChips;
 
-      // Show with ellipsis if: last chip OR only 1 would be hidden
-      const shouldShowWithEllipsis
-        = (isLastChip || chipsStillHidden === 1) && spaceLeft >= MIN_CHIP_WIDTH;
+      // The last chip may shrink with an ellipsis while it stays readable;
+      // otherwise it is folded into the +N overflow chip (full values are
+      // exposed through its tooltip).
+      const shouldShowWithEllipsis = isLastChip && spaceLeft >= MIN_CHIP_WIDTH;
 
       if (shouldShowWithEllipsis) {
         visibleChips++;
+      } else if (spaceLeft < OVERFLOW_CHIP_WIDTH && visibleChips > 1) {
+        // Free up room so the +N chip itself is never clipped.
+        visibleChips--;
       }
 
       break;
