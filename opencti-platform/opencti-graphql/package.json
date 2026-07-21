@@ -35,6 +35,7 @@
     "test": "vitest --silent --bail 1 run --config vitest.config.integration.ts --coverage",
     "verify-licenses": "yarn license-checker-rseidelsohn --production --summary --onlyAllow '0BSD;Apache-2.0;BlueOak-1.0.0;BSD-2-Clause;BSD-3-Clause;CC-BY-3.0;CC-BY-4.0;CC0-1.0;Hippocratic-2.1;ISC;LGPL-3.0;MIT;OFL-1.1;Python-2.0;Unlicense;UNLICENSED' --excludePackagesStartingWith 'opencti'",
     "wait-api": "node build/script-wait-for-api.js",
+    "poc:user-footprint": "node build/script-user-footprint.js",
     "get-connectors-manifest": "node script/get-connectors-manifest.js"
   },
   "pkg": {
