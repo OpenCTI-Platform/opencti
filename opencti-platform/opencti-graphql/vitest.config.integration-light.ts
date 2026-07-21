@@ -10,6 +10,7 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
     include,
     testTimeout: 1200000,
     teardownTimeout: 5000,
+    globalSetup: ['./tests/setup/globalSetup-light.ts'],
     setupFiles: ['./tests/setup/testSetup-light.js'],
     coverage: {
       provider: 'v8',
