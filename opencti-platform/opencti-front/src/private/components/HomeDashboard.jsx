@@ -7,7 +7,6 @@ import { makeStyles } from '@mui/styles';
 import { assoc, head, last, map, pluck } from 'ramda';
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { PLATFORM_DASHBOARD } from './HomeDashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
 import StixRelationshipsPolarArea from './common/stix_relationships/StixRelationshipsPolarArea';
@@ -28,7 +27,7 @@ import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
-import { XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM } from './RedirectByPath';
+import { XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from './RedirectByPath';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -566,8 +565,6 @@ const LOCAL_STORAGE_KEY = 'dashboard';
 const HomeDashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const location = useLocation();
-  const navigate = useNavigate();
   const authContext = useAuth();
   const currentMe = authContext.me;
   const [isPermissionDialogOpen, setIsPermissionDialogOpen] = useState(false);
@@ -595,22 +592,12 @@ const HomeDashboardComponent = ({ queryRef }) => {
   );
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get(XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM) !== 'true') {
+    if (sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY) !== 'true') {
       return;
     }
-
     setIsPermissionDialogOpen(true);
-    searchParams.delete(XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM);
-    const targetSearch = searchParams.toString();
-    navigate(
-      {
-        pathname: location.pathname,
-        search: targetSearch ? `?${targetSearch}` : '',
-      },
-      { replace: true },
-    );
-  }, [location.pathname, location.search, navigate]);
+    sessionStorage.removeItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY);
+  }, []);
 
   return (
     <UserContext.Provider value={dashboardContextValue}>

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../utils/tests/test-render';
 import HomeDashboard from './HomeDashboard';
-import { XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM } from './RedirectByPath';
+import { XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from './RedirectByPath';
 
 vi.mock('react-relay', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-relay')>();
@@ -83,18 +83,20 @@ vi.mock('./common/stix_relationships/StixRelationshipsHorizontalBars', () => ({
 describe('HomeDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
   });
 
-  it('opens permission dialog and removes permission-required query param', async () => {
+  it('opens permission dialog and consumes session storage marker', async () => {
     const userContext = createMockUserContext({
       me: {
         ...createMockUserContext().me,
         default_dashboards: [{ id: 'platform-dashboard' }],
       },
     });
+    sessionStorage.setItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY, 'true');
 
     const { user } = testRender(<HomeDashboard />, {
-      route: `/dashboard?foo=bar&${XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM}=true`,
+      route: '/dashboard?foo=bar',
       userContext,
     });
 
@@ -102,7 +104,7 @@ describe('HomeDashboard', () => {
     expect(screen.getByText('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(window.location.search).toBe('?foo=bar');
+      expect(sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY)).toBeNull();
     });
 
     await user.click(screen.getByRole('button', { name: 'Close' }));
