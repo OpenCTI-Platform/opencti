@@ -172,7 +172,18 @@ describe('smtpConfigurationEdit', () => {
     expect(Object.keys(patch)).toEqual(['smtp_configuration']);
   });
 
-  it('should reject port 25', async () => {
+  it('should merge new fields over existing stored configuration (partial edit)', async () => {
+    await smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: true });
+    const patch = (vi.mocked(Middleware.patchAttribute).mock.calls[0] as any[])[4];
+    const storedConfig = patch.smtp_configuration;
+    // new field must be applied
+    expect(storedConfig.smtp_enabled).toBe(true);
+    // pre-existing fields from MOCK_SETTINGS must be preserved
+    expect(storedConfig.hostname).toBe(MOCK_SMTP_CONFIG_STORED.hostname);
+    expect(storedConfig.port).toBe(MOCK_SMTP_CONFIG_STORED.port);
+  });
+
+
     await expect(smtpConfigurationEdit(mockContext, mockUser, { port: 25 }))
       .rejects.toThrow('Port 25 is not allowed for SMTP configuration');
     expect(Middleware.patchAttribute).not.toHaveBeenCalled();

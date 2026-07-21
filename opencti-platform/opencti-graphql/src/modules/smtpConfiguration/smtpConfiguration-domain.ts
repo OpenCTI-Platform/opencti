@@ -89,7 +89,8 @@ export const smtpConfigurationEdit = async (
   validateSmtpConfigurationInput(input);
   const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const patch = { smtp_configuration: encryptedInput };
+  const existing = settings.smtp_configuration ?? {};
+  const patch = { smtp_configuration: { ...existing, ...encryptedInput } };
   const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({
     user,
