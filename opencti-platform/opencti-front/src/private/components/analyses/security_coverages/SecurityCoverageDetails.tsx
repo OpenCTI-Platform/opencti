@@ -12,7 +12,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
-import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
@@ -33,7 +32,6 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
-    ...SecurityCoverageSecurityPlatforms_securityCoverage
     ...SecurityCoverageVulnerabilities_securityCoverage
   }
 `;
@@ -90,9 +88,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                 )}
               </FieldOrEmpty>
             </List>
-          </Grid>
-          <Grid item xs={12}>
-            <SecurityCoverageSecurityPlatforms securityCoverage={data} />
           </Grid>
           <Grid item xs={12}>
             <SecurityCoverageVulnerabilities securityCoverage={data} />

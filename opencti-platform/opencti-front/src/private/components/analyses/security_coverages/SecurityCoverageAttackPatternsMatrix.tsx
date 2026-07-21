@@ -8,6 +8,7 @@ interface SecurityCoverageAttackPatternsMatrixProps {
   securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
   searchTerm: string;
   selectedKillChain: string;
+  isModeOnlyActive: boolean;
   relay: RelayRefetchProp;
 }
 
@@ -15,6 +16,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   securityCoverage,
   searchTerm,
   selectedKillChain,
+  isModeOnlyActive,
   relay,
 }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
@@ -62,7 +64,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
         handleAdd={handleAdd}
         selectedKillChain={selectedKillChain}
         attackPatternIdsToOverlap={[]}
-        isModeOnlyActive={false}
+        isModeOnlyActive={isModeOnlyActive}
         inPaper={true}
         isCoverage={true}
         coverageMap={attackPatternsCoverageMap}
