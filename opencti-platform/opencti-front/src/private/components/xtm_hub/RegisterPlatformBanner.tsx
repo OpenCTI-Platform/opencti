@@ -10,7 +10,7 @@ const RegisterPlatformBanner = () => {
 
   const text = (
     <>
-      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Connect your product to access and deploy them in one click.')}
+      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Connect your product to access and deploy these feeds in one click.')}
     </>
   );
 
