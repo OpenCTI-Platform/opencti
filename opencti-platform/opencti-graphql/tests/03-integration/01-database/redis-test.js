@@ -324,7 +324,7 @@ describe('Redis ingestion history', () => {
   });
 });
 
-describe('Redis ingestion logs (AuthLogEntry format)', () => {
+describe('Redis ingestion logs', () => {
   it('should add and read ingestion logs', async () => {
     const feedId = `ingestion-${uuid()}`;
     await redisDeleteIngestionLogHistory(feedId);
