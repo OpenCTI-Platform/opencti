@@ -57,6 +57,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_AD
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../database/redis/token_usage';
+import { resolveMergeUsersPocAliasId } from '../utils/merge-users-poc-alias';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -1988,14 +1989,18 @@ export const buildCompleteUser = async (context, client) => {
 };
 
 export const resolveUserByIdFromCache = async (context, id) => {
-  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
+  // PoC merge-users #2: alias redirection, no-op unless MERGE_POC_ALIAS_MAP is set.
+  const resolvedId = resolveMergeUsersPocAliasId(id);
+  if (INTERNAL_USERS[resolvedId]) return INTERNAL_USERS[resolvedId];
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return platformUsers.get(id);
+  return platformUsers.get(resolvedId);
 };
 
 export const resolveUserById = async (context, id) => {
-  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
-  const client = await storeLoadById(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
+  // PoC merge-users #2: alias redirection, no-op unless MERGE_POC_ALIAS_MAP is set.
+  const resolvedId = resolveMergeUsersPocAliasId(id);
+  if (INTERNAL_USERS[resolvedId]) return INTERNAL_USERS[resolvedId];
+  const client = await storeLoadById(context, SYSTEM_USER, resolvedId, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
 
