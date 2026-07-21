@@ -180,7 +180,9 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
 
   return (
     <div data-testid="catalog-page">
-      <Stack direction="row" gap={2} alignItems="flex-start">
+      {/* Below md the sidebar stacks full-width above the cards instead of
+          squeezing them against a fixed 250px column. */}
+      <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
         <IngestionCatalogFacetSidebar
           filters={filters}
           onFiltersChange={setFilters}
@@ -228,7 +230,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
                       {section.items.map((item) => (
                         <Grid
                           key={item.key}
-                          size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+                          size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
                         >
                           {renderItem(item)}
                         </Grid>

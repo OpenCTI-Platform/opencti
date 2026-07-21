@@ -134,8 +134,10 @@ const IntegrationsDeployedContent = ({
     return result;
   }, [sections, visibleCount]);
 
+  // Below md the sidebar stacks full-width above the cards instead of
+  // squeezing them against a fixed 250px column.
   return (
-    <Stack direction="row" gap={2} alignItems="flex-start">
+    <Stack direction={{ xs: 'column', md: 'row' }} gap={2} alignItems={{ xs: 'stretch', md: 'flex-start' }}>
       <DeployedFacetSidebar
         filters={filters}
         onFiltersChange={setFilters}
@@ -241,7 +243,7 @@ const IntegrationsDeployedContent = ({
                       {section.items.map((item) => (
                         <Grid
                           key={item.id}
-                          size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+                          size={{ xs: 12, sm: 6, lg: 4, xl: 3 }}
                         >
                           <DeployedIntegrationCard item={item} onChange={handleItemChange} />
                         </Grid>

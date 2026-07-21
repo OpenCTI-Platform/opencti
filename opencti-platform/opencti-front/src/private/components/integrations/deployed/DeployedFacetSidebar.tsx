@@ -90,12 +90,15 @@ const DeployedFacetSidebar = ({
   };
 
   return (
+    // Fixed sticky column on md+; below md the page stacks it full-width
+    // above the cards (sticky + max-height are disabled so the filters do
+    // not trap the whole viewport).
     <Box
       component="aside"
       sx={{
-        width: 250,
+        width: { xs: '100%', md: 250 },
         flexShrink: 0,
-        position: 'sticky',
+        position: { xs: 'static', md: 'sticky' },
         top: theme.spacing(2),
       }}
     >
@@ -110,8 +113,8 @@ const DeployedFacetSidebar = ({
           borderRadius: 1,
           border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
           backgroundColor: theme.palette.background.paper,
-          maxHeight: `calc(100vh - ${theme.spacing(20)})`,
-          overflowY: 'auto',
+          maxHeight: { xs: 'none', md: `calc(100vh - ${theme.spacing(20)})` },
+          overflowY: { xs: 'visible', md: 'auto' },
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">
