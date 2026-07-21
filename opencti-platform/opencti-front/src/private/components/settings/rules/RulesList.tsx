@@ -17,6 +17,7 @@ export type Task = NonNullable<NonNullable<NonNullable<RulesList_data$data['back
 export type Work = NonNullable<NonNullable<NonNullable<RulesList_data$data['backgroundTasks']>['edges']>[number]>['node']['work'];
 
 const PROTOTYPE_GENERIC_RULE_ID = 'prototype_generic_relation_chain';
+const PROTOTYPE_GENERIC_CREATE_RULE_ID = 'prototype_generic_relation_create';
 const GENERAL_PROPAGATION_CATEGORY = 'Testing Concept - General Propagation';
 
 const fragmentData = graphql`
@@ -131,7 +132,7 @@ const RulesList = ({
   const prototypeGenericRule = useMemo(() => ({
     id: PROTOTYPE_GENERIC_RULE_ID,
     name: 'Generic relationship chain propagation (prototype)',
-    description: 'If A - rel -> B and B - rel -> C, then create A - rel -> C with configurable filters and output relation settings.',
+    description: 'If A - rel -> B and B - rel -> C, then create A - related to -> C with configurable entity and relationship settings.',
     activated: false,
     category: GENERAL_PROPAGATION_CATEGORY,
     display: {
@@ -172,19 +173,67 @@ const RulesList = ({
     },
   }) as Rule, []);
 
+  const prototypeGenericCreateRule = useMemo(() => ({
+    id: PROTOTYPE_GENERIC_CREATE_RULE_ID,
+    name: 'Generic relationship propagation and creation (prototype)',
+    description: 'If A - rel -> B and B - rel -> C, then create A - [configurable relationship] -> C with configurable filters and a user-defined output relationship.',
+    activated: false,
+    category: GENERAL_PROPAGATION_CATEGORY,
+    display: {
+      if: [
+        {
+          action: null,
+          source: 'Entity A',
+          source_color: '#ff9800',
+          relation: 'Any relationship',
+          target: 'Entity B',
+          target_color: '#4caf50',
+          identifier: null,
+          identifier_color: null,
+        },
+        {
+          action: null,
+          source: 'Entity B',
+          source_color: '#4caf50',
+          relation: 'Any relationship',
+          target: 'Entity C',
+          target_color: '#00bcd4',
+          identifier: null,
+          identifier_color: null,
+        },
+      ],
+      then: [
+        {
+          action: 'CREATE',
+          source: 'Entity A',
+          source_color: '#ff9800',
+          relation: 'Configurable relationship',
+          target: 'Entity C',
+          target_color: '#00bcd4',
+          identifier: null,
+          identifier_color: null,
+        },
+      ],
+    },
+  }) as Rule, []);
+
   const filteredRules = useMemo(() => {
     const backendRules: Rule[] = (rules ?? []).flatMap((r) => (r ? [r] : []));
     // Hide the backend "Testing" rule set from the prototype UI.
     const visibleBackendRules = backendRules.filter((r) => r.category !== 'Testing');
-    const rulesWithPrototype = visibleBackendRules.some((r) => r.id === PROTOTYPE_GENERIC_RULE_ID)
-      ? visibleBackendRules
-      : [...visibleBackendRules, prototypeGenericRule];
+    const withPrototypes = [...visibleBackendRules];
+    if (!withPrototypes.some((r) => r.id === PROTOTYPE_GENERIC_RULE_ID)) {
+      withPrototypes.push(prototypeGenericRule);
+    }
+    if (!withPrototypes.some((r) => r.id === PROTOTYPE_GENERIC_CREATE_RULE_ID)) {
+      withPrototypes.push(prototypeGenericCreateRule);
+    }
     const filterByKeyword = (p: Rule) => keyword === ''
       || p?.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || p?.category?.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-    return rulesWithPrototype.filter((r) => filterByKeyword(r));
-  }, [rules, keyword, prototypeGenericRule]);
+    return withPrototypes.filter((r) => filterByKeyword(r));
+  }, [rules, keyword, prototypeGenericRule, prototypeGenericCreateRule]);
 
   const categories = useMemo(() => {
     const setOfCategories = new Set(filteredRules.flatMap((r) => r.category ?? []));
@@ -258,7 +307,8 @@ const RulesList = ({
               task={getTasksByRuleId(catRule.id)[0]}
               onConfiguredRuleCountsChange={(counts) => onRuleConfiguredCountsChange?.(catRule.id, counts)}
               toggle={() => {
-                if (catRule.id === PROTOTYPE_GENERIC_RULE_ID) {
+                if (catRule.id === PROTOTYPE_GENERIC_RULE_ID
+                  || catRule.id === PROTOTYPE_GENERIC_CREATE_RULE_ID) {
                   return;
                 }
                 setSelectedRule(catRule.id);

@@ -18,6 +18,7 @@ import Collapse from '@mui/material/Collapse';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
+import Autocomplete from '@mui/material/Autocomplete';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -611,6 +612,9 @@ interface ConfiguredRulePreviewProps {
   editableEntityKeys?: Set<string>;
   onAddCondition?: (slot: PreviewConditionSlot) => void;
   onRemoveCondition?: (slotKey: string, filter: Filter) => void;
+  relationshipConfigurable?: boolean;
+  outputRelationType?: string;
+  onConfigureRelationship?: () => void;
   withTopDivider?: boolean;
 }
 
@@ -622,6 +626,9 @@ const ConfiguredRulePreview = ({
   editableEntityKeys,
   onAddCondition,
   onRemoveCondition,
+  relationshipConfigurable = false,
+  outputRelationType,
+  onConfigureRelationship,
   withTopDivider = true,
 }: ConfiguredRulePreviewProps) => {
   const theme = useTheme<Theme>();
@@ -898,9 +905,57 @@ const ConfiguredRulePreview = ({
               </Box>
               <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
                 {step?.relation && (
-                  <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-                    {t_i18n(step.relation)}
-                  </Typography>
+                  relationshipConfigurable ? (
+                    canManage && onConfigureRelationship ? (
+                      <Tooltip title={t_i18n('Configure relationship')}>
+                        <Box
+                          role="button"
+                          tabIndex={0}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onConfigureRelationship();
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.stopPropagation();
+                              onConfigureRelationship();
+                            }
+                          }}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 0.75,
+                            minHeight: 30,
+                            px: 1,
+                            borderRadius: 1,
+                            cursor: 'pointer',
+                            color: 'primary.main',
+                            border: (t) => `1px dashed ${t.palette.primary.main}`,
+                            backgroundColor: 'transparent',
+                            '&:hover': {
+                              backgroundColor: (t) => t.palette.action.hover,
+                            },
+                          }}
+                        >
+                          <FilterAltOutlined sx={{ fontSize: 16 }} />
+                          <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                            {outputRelationType
+                              ? t_i18n(outputRelationType)
+                              : t_i18n('Configure relationship')}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                        {outputRelationType ? t_i18n(outputRelationType) : t_i18n(step.relation)}
+                      </Typography>
+                    )
+                  ) : (
+                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+                      {t_i18n(step.relation)}
+                    </Typography>
+                  )
                 )}
               </Box>
               <Box sx={{ minWidth: 0, display: 'flex', justifyContent: 'center' }}>
@@ -922,8 +977,9 @@ interface ConfiguredRuleAccordionProps {
   ruleEntities: RuleEntity[];
   schemaSdoTypes: string[];
   schemaScoTypes: string[];
+  relationshipTypeOptions: string[];
   canManage: boolean;
-  onChange: (id: string, data: Partial<Pick<ConfiguredRule, 'name' | 'description' | 'active'>>) => void;
+  onChange: (id: string, data: Partial<Pick<ConfiguredRule, 'name' | 'description' | 'active' | 'outputRelationType'>>) => void;
   onFiltersMapChange: (id: string, slotKey: string, filters: FilterGroup) => void;
   onToggleExpand: (id: string, expanded: boolean) => void;
   onDelete: (id: string) => void;
@@ -935,6 +991,7 @@ const ConfiguredRuleAccordion = ({
   ruleEntities,
   schemaSdoTypes,
   schemaScoTypes,
+  relationshipTypeOptions,
   canManage,
   onChange,
   onFiltersMapChange,
@@ -967,6 +1024,9 @@ const ConfiguredRuleAccordion = ({
   const filtersMap = configuredRule.filtersMap;
   const hasAnyConditions = Object.values(filtersMap).some((fg) => (fg?.filters?.length ?? 0) > 0);
   const isSightingIncidentRule = rule.name === 'Raise incident based on sighting';
+  // The relationship-creation prototype lets the user pick the output relationship type.
+  const isRelationshipCreationRule = (rule.display?.then ?? [])
+    .some((step) => step?.relation === 'Configurable relationship');
   const genericEntityTypeOptions = useMemo(() => {
     const types = [...schemaSdoTypes, ...schemaScoTypes];
     return Array.from(new Set(types)).sort();
@@ -994,6 +1054,22 @@ const ConfiguredRuleAccordion = ({
 
   const handleToggleActive = (checked: boolean) => {
     setConfirmAction(checked ? 'activate' : 'deactivate');
+  };
+
+  // Output relationship configuration (relationship-creation prototype only).
+  const [relationshipEditorOpen, setRelationshipEditorOpen] = useState(false);
+  const [relationshipDraft, setRelationshipDraft] = useState<string>(configuredRule.outputRelationType ?? '');
+
+  const openRelationshipEditor = () => {
+    setRelationshipDraft(configuredRule.outputRelationType ?? '');
+    setRelationshipEditorOpen(true);
+  };
+
+  const closeRelationshipEditor = () => setRelationshipEditorOpen(false);
+
+  const handleConfirmRelationship = () => {
+    onChange(configuredRule.id, { outputRelationType: relationshipDraft });
+    setRelationshipEditorOpen(false);
   };
 
   const confirmActionMessage = (() => {
@@ -1266,6 +1342,8 @@ const ConfiguredRuleAccordion = ({
               <ConfiguredRulePreview
                 rule={rule}
                 filtersMap={filtersMap}
+                relationshipConfigurable={isRelationshipCreationRule}
+                outputRelationType={configuredRule.outputRelationType}
               />
             ) : (
               configuredRule.description && (
@@ -1317,6 +1395,9 @@ const ConfiguredRuleAccordion = ({
                 editableEntityKeys={editableEntityKeys}
                 onAddCondition={handleAddCondition}
                 onRemoveCondition={handleRemoveCondition}
+                relationshipConfigurable={isRelationshipCreationRule}
+                outputRelationType={configuredRule.outputRelationType}
+                onConfigureRelationship={openRelationshipEditor}
                 withTopDivider={false}
               />
             </Box>
@@ -1403,6 +1484,42 @@ const ConfiguredRuleAccordion = ({
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Dialog
+          open={relationshipEditorOpen}
+          onClose={closeRelationshipEditor}
+          title={t_i18n('Configure relationship')}
+        >
+          <Stack spacing={2} sx={{ pt: 0.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              {t_i18n('Select the relationship type to create between the source and target entities.')}
+            </Typography>
+            <Autocomplete
+              fullWidth
+              options={relationshipTypeOptions}
+              value={relationshipDraft || null}
+              onChange={(_, value) => setRelationshipDraft(value ?? '')}
+              getOptionLabel={(option) => t_i18n(option)}
+              disabled={!isEditable}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t_i18n('Relationship type')}
+                  size="small"
+                  placeholder={t_i18n('Select relationship type...')}
+                />
+              )}
+            />
+          </Stack>
+          <DialogActions>
+            <Button variant="secondary" onClick={closeRelationshipEditor}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button onClick={handleConfirmRelationship} disabled={!isEditable || !relationshipDraft}>
+              {t_i18n('Done')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </AccordionDetails>
     </Accordion>
   );
@@ -1444,6 +1561,14 @@ const RulesListItem = ({
     () => (schema?.scos ?? []).map((sco) => sco.id),
     [schema?.scos],
   );
+  // All distinct relationship types available for the configurable output relationship.
+  const relationshipTypeOptions = useMemo(() => {
+    const types = new Set<string>();
+    schema.schemaRelationsTypesMapping.forEach((values) => {
+      values.forEach((value) => types.add(value));
+    });
+    return Array.from(types).sort((a, b) => a.localeCompare(b));
+  }, [schema.schemaRelationsTypesMapping]);
   const ruleTriplets = useMemo(() => buildRuleTriplets(rule), [rule]);
   const defaultFiltersMap = useMemo(() => {
     const initial: Record<string, FilterGroup> = {};
@@ -1541,7 +1666,7 @@ const RulesListItem = ({
 
   const handleConfiguredRuleChange = (
     id: string,
-    data: Partial<Pick<ConfiguredRule, 'name' | 'description' | 'active'>>,
+    data: Partial<Pick<ConfiguredRule, 'name' | 'description' | 'active' | 'outputRelationType'>>,
   ) => {
     setConfiguredRules((previous) => previous.map((configuredRule) => (
       configuredRule.id === id
@@ -1792,6 +1917,7 @@ const RulesListItem = ({
                           ruleEntities={ruleEntities}
                           schemaSdoTypes={schemaSdoTypes}
                           schemaScoTypes={schemaScoTypes}
+                          relationshipTypeOptions={relationshipTypeOptions}
                           canManage={canManageConfiguredRules}
                           onChange={handleConfiguredRuleChange}
                           onFiltersMapChange={handleConfiguredRuleFiltersMapChange}
