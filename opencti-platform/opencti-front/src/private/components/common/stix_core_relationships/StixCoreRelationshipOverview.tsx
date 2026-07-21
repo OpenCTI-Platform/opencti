@@ -7,28 +7,23 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
-import * as PropTypes from 'prop-types';
+import makeStyles from '@mui/styles/makeStyles';
 import * as R from 'ramda';
-import { Component } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Card from '../../../../components/common/card/Card';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import Label from '../../../../components/common/label/Label';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreators from '../../../../components/ItemCreators';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemStatus from '../../../../components/ItemStatus';
-import { commitMutation } from '../../../../relay/environment';
 import { itemColor } from '../../../../utils/Colors';
-import withRouter from '../../../../utils/compat_router/withRouter';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { resolveLink } from '../../../../utils/Entity';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
@@ -46,576 +41,12 @@ import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import useApiMutation from 'src/utils/hooks/useApiMutation';
+import { StixCoreRelationshipOverview_stixCoreRelationship$key } from './__generated__/StixCoreRelationshipOverview_stixCoreRelationship.graphql';
+import { useComputeLink } from 'src/utils/hooks/useAppData';
+import { Theme } from 'src/components/Theme';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-    position: 'relative',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  editButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 220,
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 8,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '0 10px 0 10px',
-    height: 40,
-    maxHeight: 40,
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-    wordBreak: 'break-word',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  middle: {
-    margin: '0 auto',
-    paddingTop: 20,
-    width: 200,
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-  paperWithoutPadding: {
-    marginTop: theme.spacing(1),
-    padding: 0,
-    borderRadius: 4,
-  },
-  paperRelationships: {
-    marginTop: theme.spacing(3),
-    position: 'relative',
-    padding: 0,
-    borderRadius: 4,
-  },
-  paperReports: {
-    minHeight: '100%',
-    marginTop: theme.spacing(1),
-    padding: '25px 15px 15px 15px',
-    borderRadius: 4,
-  },
-  buttonExpand: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    height: 25,
-    color: theme.palette.primary.main,
-    backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
-    },
-  },
-});
-
-const TRUNCATE_CHARS_COUNT = 40;
-
-// TODO : transform into modern React Component + TS
-class StixCoreRelationshipContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { openEdit: false, openDelete: false, expanded: false };
-  }
-
-  handleToggleExpand() {
-    this.setState({ expanded: !this.state.expanded });
-  }
-
-  handleOpenEdition() {
-    this.setState({ openEdit: true });
-  }
-
-  handleCloseEdition() {
-    const { stixCoreRelationship } = this.props;
-    commitMutation({
-      mutation: stixCoreRelationshipEditionFocus,
-      variables: {
-        id: stixCoreRelationship.id,
-        input: { focusOn: '' },
-      },
-    });
-    this.setState({ openEdit: false });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    const {
-      location,
-      stixCoreRelationship,
-    } = this.props;
-    commitMutation({
-      mutation: stixCoreRelationshipEditionDeleteMutation,
-      variables: {
-        id: stixCoreRelationship.id,
-      },
-      onCompleted: () => {
-        this.handleCloseEdition();
-        this.props.navigate(
-          location.pathname.replace(`/relations/${stixCoreRelationship.id}`, ''),
-        );
-      },
-    });
-  }
-
-  render() {
-    const { t, fldt, nsdt, classes, stixCoreRelationship } = this.props;
-    const { expanded } = this.state;
-    const { from, to, relationship_type, coverage_information } = stixCoreRelationship;
-    const fromRestricted = from === null;
-
-    const linkFrom = from
-      ? from.relationship_type
-        ? `${resolveLink(from.from.entity_type)}/${
-          from.from.id
-        }/knowledge/relations`
-        : resolveLink(from.entity_type)
-      : '';
-    const toRestricted = to === null;
-
-    const linkTo = to
-      ? to.relationship_type
-        ? `${resolveLink(to.from.entity_type)}/${
-          to.from.id
-        }/knowledge/relations`
-        : resolveLink(to.entity_type)
-      : '';
-    const expandable = stixCoreRelationship.x_opencti_inferences
-      && stixCoreRelationship.x_opencti_inferences.length > 1;
-
-    const fromText = getMainRepresentative(from) !== 'Unknown'
-      ? getMainRepresentative(from)
-      : t(`relationship_${from.entity_type}`);
-
-    const toText = getMainRepresentative(to) !== 'Unknown'
-      ? getMainRepresentative(to)
-      : t(`relationship_${to.entity_type}`);
-
-    return (
-      <div className={classes.container}>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item xs={6}>
-            <Card
-              title={<>{t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}</>}
-              action={!stixCoreRelationship.is_inferred && (
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <IconButton
-                    aria-label={t('edit')}
-                    color="primary"
-                    onClick={this.handleOpenEdition.bind(this)}
-                    size="small"
-                  >
-                    <EditOutlined fontSize="small" />
-                  </IconButton>
-                  <StixCoreRelationshipEdition
-                    open={this.state.openEdit}
-                    stixCoreRelationshipId={stixCoreRelationship.id}
-                    handleClose={this.handleCloseEdition.bind(this)}
-                    handleDelete={this.handleOpenDelete.bind(this)}
-                  />
-                </Security>
-              )}
-            >
-              <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `1px solid ${itemColor(
-                      !fromRestricted ? from.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    left: 20,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !fromRestricted ? from.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!fromRestricted ? from.entity_type : 'Restricted'}
-                        color={itemColor(
-                          !fromRestricted ? from.entity_type : 'Restricted',
-                        )}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      { }
-                      {!fromRestricted
-                        ? from.relationship_type
-                          ? t('Relationship')
-                          : t(`entity_${from.entity_type}`)
-                        : t('Restricted')}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      <Tooltip title={fromText}>
-                        {!fromRestricted
-                          ? truncate(fromText, TRUNCATE_CHARS_COUNT)
-                          : t('Restricted')}
-                      </Tooltip>
-                      {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip />)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <div className={classes.middle}>
-                <ArrowRightAlt fontSize="large" />
-                <Typography sx={{ fontSize: '14px', fontWeight: 400 }}>
-                  {capitalizeFirstLetter(t(`relationship_${stixCoreRelationship.relationship_type}`))}
-                </Typography>
-              </div>
-              <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `1px solid ${itemColor(
-                      !toRestricted ? to.entity_type : 'Restricted',
-                    )}`,
-                    top: 20,
-                    right: 20,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !toRestricted ? to.entity_type : 'Restricted',
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={!toRestricted ? to.entity_type : 'Unknown'}
-                        color={itemColor(
-                          !toRestricted ? to.entity_type : 'Restricted',
-                        )}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {
-                        !toRestricted
-                          ? to.relationship_type
-                            ? t('Relationship')
-                            : t(`entity_${to.entity_type}`)
-                          : t('Restricted')
-                      }
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      <Tooltip title={toText}>
-                        {!toRestricted
-                          ? truncate(toText, TRUNCATE_CHARS_COUNT)
-                          : t('Restricted')}
-                      </Tooltip>
-                      {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip />)}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-              <Divider style={{ marginTop: 30, marginBottom: 15 }} />
-              <Stack gap={2}>
-                <div>
-                  <Label>
-                    {t('Description')}
-                  </Label>
-                  <ExpandableMarkdown
-                    source={stixCoreRelationship.x_opencti_inferences !== null
-                      ? t('Inferred knowledge')
-                      : stixCoreRelationship.description
-                    }
-                    limit={400}
-                  />
-                </div>
-                <Divider />
-
-                <Grid container={true} spacing={2}>
-                  <Grid item xs={6}>
-                    <Label>
-                      {t('Marking')}
-                    </Label>
-                    <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []} />
-                    <Label
-                      sx={{ marginTop: 2 }}
-                    >
-                      {t('Start time')}
-                    </Label>
-                    {nsdt(stixCoreRelationship.start_time)}
-                    <Label sx={{ marginTop: 2 }}>
-                      {t('Stop time')}
-                    </Label>
-                    {nsdt(stixCoreRelationship.stop_time)}
-                  </Grid>
-                  <Grid item xs={6}>
-                    {relationship_type === 'has-covered'
-                      && (
-                        <Box sx={{ marginBottom: 2 }}>
-                          <SecurityCoverageInformation coverage_information={coverage_information} />
-                        </Box>
-                      )
-                    }
-                    <StixCoreRelationshipSharing
-                      elementId={stixCoreRelationship.id}
-                    />
-                    <StixCoreObjectKillChainPhasesView
-                      killChainPhases={stixCoreRelationship.killChainPhases}
-                      displayIcon
-                    />
-                  </Grid>
-                </Grid>
-              </Stack>
-            </Card>
-          </Grid>
-          <Grid item xs={6}>
-            <Card title={t('Details')}>
-              <Grid container={true} spacing={2}>
-                <Grid item xs={6}>
-                  <Label>
-                    {t('Confidence level')}
-                  </Label>
-                  <ItemConfidence
-                    confidence={stixCoreRelationship.confidence}
-                    entityType="stix-core-relationship"
-                  />
-                  {stixCoreRelationship.x_opencti_inferences === null && (
-                    <div>
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('Author')}
-                      </Label>
-                      <ItemAuthor
-                        createdBy={R.propOr(
-                          null,
-                          'createdBy',
-                          stixCoreRelationship,
-                        )}
-                      />
-                    </div>
-                  )}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Original creation date')}
-                  </Label>
-                  {nsdt(stixCoreRelationship.created)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Modification date')}
-                  </Label>
-                  {nsdt(stixCoreRelationship.updated_at)}
-                </Grid>
-                <Grid item xs={6}>
-                  <Label>
-                    {t('Processing status')}
-                  </Label>
-                  <ItemStatus
-                    status={stixCoreRelationship.status}
-                    disabled={!stixCoreRelationship.workflowEnabled}
-                  />
-                  <StixCoreRelationshipObjectLabelsView
-                    labels={stixCoreRelationship.objectLabel}
-                    id={stixCoreRelationship.id}
-                    sx={{ marginTop: 2 }}
-                  />
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Platform creation date')}
-                  </Label>
-                  {fldt(stixCoreRelationship.created_at)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Creators')}
-                  </Label>
-                  <ItemCreators
-                    creators={stixCoreRelationship.creators ?? []}
-                  />
-                </Grid>
-              </Grid>
-            </Card>
-          </Grid>
-          {stixCoreRelationship.x_opencti_inferences == null && (
-            <>
-              <Grid item xs={6}>
-                <StixCoreRelationshipStixCoreRelationships
-                  entityId={stixCoreRelationship.id}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <StixCoreObjectOrStixRelationshipLastContainers
-                  stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <StixCoreRelationshipExternalReferences
-                  stixCoreRelationshipId={stixCoreRelationship.id}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <StixCoreRelationshipLatestHistory
-                  stixCoreRelationshipId={stixCoreRelationship.id}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <StixCoreObjectOrStixCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-                  isRelationship={true}
-                  defaultMarkings={stixCoreRelationship.objectMarking ?? []}
-                />
-              </Grid>
-            </>
-          )}
-        </Grid>
-        <div>
-          {stixCoreRelationship.x_opencti_inferences !== null && (
-            <div style={{ margin: '50px 0 0 0' }}>
-              <CardTitle>
-                {t('Inference explanation')} (
-                {stixCoreRelationship.x_opencti_inferences.length})
-              </CardTitle>
-              {R.take(
-                expanded ? 200 : 1,
-                stixCoreRelationship.x_opencti_inferences,
-              ).map((inference) => (
-                <StixCoreRelationshipInference
-                  key={inference.rule.id}
-                  inference={inference}
-                  stixRelationship={stixCoreRelationship}
-                />
-              ))}
-              {expandable && (
-                <IconButton
-                  aria-label={expanded ? t('Collapse') : t('Expand')}
-                  variant="tertiary"
-                  size="small"
-                  onClick={this.handleToggleExpand.bind(this)}
-                  classes={{ root: classes.buttonExpand }}
-                >
-                  {expanded ? (
-                    <ExpandLessOutlined />
-                  ) : (
-                    <ExpandMoreOutlined />
-                  )}
-                </IconButton>
-              )}
-            </div>
-          )}
-        </div>
-        <Dialog
-          open={this.state.displayDelete}
-          onClose={this.handleCloseDelete.bind(this)}
-          title={t('Are you sure?')}
-          size="small"
-        >
-          <DialogContentText>
-            {t('Do you want to delete this relationship?')}
-          </DialogContentText>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Confirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
-  }
-}
-
-StixCoreRelationshipContainer.propTypes = {
-  entityId: PropTypes.string,
-  stixCoreRelationship: PropTypes.object,
-  paddingRight: PropTypes.bool,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  nsdt: PropTypes.func,
-  match: PropTypes.object,
-  navigate: PropTypes.func,
-  location: PropTypes.object,
-};
-
-const StixCoreRelationshipOverview = createFragmentContainer(
-  StixCoreRelationshipContainer,
-  {
-    stixCoreRelationship: graphql`
+const fragment = graphql`
       fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
         id
         draftVersion {
@@ -1571,6 +1002,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           objectMarking {
                             id
                             definition
+                            definition_type
                             x_opencti_order
                             x_opencti_color
                           }
@@ -1858,6 +1290,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               objectMarking {
                                 id
                                 definition
+                                definition_type
                                 x_opencti_order
                                 x_opencti_color
                               }
@@ -2139,6 +1572,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               objectMarking {
                                 id
                                 definition
+                                definition_type
                                 x_opencti_order
                                 x_opencti_color
                               }
@@ -2428,6 +1862,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           objectMarking {
                             id
                             definition
+                            definition_type
                             x_opencti_order
                             x_opencti_color
                           }
@@ -2813,6 +2248,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               objectMarking {
                                 id
                                 definition
+                                definition_type
                                 x_opencti_order
                                 x_opencti_color
                               }
@@ -3099,6 +2535,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           objectMarking {
                             id
                             definition
+                            definition_type
                             x_opencti_order
                             x_opencti_color
                           }
@@ -3386,6 +2823,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               objectMarking {
                                 id
                                 definition
+                                definition_type
                                 x_opencti_order
                                 x_opencti_color
                               }
@@ -3667,6 +3105,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               objectMarking {
                                 id
                                 definition
+                                definition_type
                                 x_opencti_order
                                 x_opencti_color
                               }
@@ -3838,6 +3277,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         objectMarking {
           id
           definition
+          definition_type
           x_opencti_order
           x_opencti_color
         }
@@ -3878,6 +3318,11 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             observable_value
             representative {
               main
+            }
+          }
+          ... on SecurityCoverageResult {
+            resultOf {
+              id
             }
           }
           ... on AttackPattern {
@@ -3989,6 +3434,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     objectMarking {
                       id
                       definition
+                      definition_type
                       x_opencti_order
                       x_opencti_color
                     }
@@ -4505,6 +3951,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     objectMarking {
                       id
                       definition
+                      definition_type
                       x_opencti_order
                       x_opencti_color
                     }
@@ -4865,13 +4312,509 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         toId
         toType
       }
-    `,
-  },
-);
+    `;
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withTheme,
-  withStyles(styles),
-)(StixCoreRelationshipOverview);
+const useStyles = makeStyles((theme: Theme) => ({
+  container: {
+    margin: 0,
+    position: 'relative',
+  },
+  gridContainer: {
+    marginBottom: 20,
+  },
+  item: {
+    position: 'absolute',
+    width: 180,
+    height: 80,
+    borderRadius: 8,
+  },
+  itemHeader: {
+    padding: '10px 0 10px 0',
+  },
+  icon: {
+    position: 'absolute',
+    top: 8,
+    left: 5,
+    fontSize: 8,
+  },
+  type: {
+    width: '100%',
+    textAlign: 'center',
+    color: theme.palette.text.primary,
+    fontSize: 11,
+  },
+  content: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '0 10px 0 10px',
+    height: 40,
+    maxHeight: 40,
+    color: theme.palette.text.primary,
+    textAlign: 'center',
+    wordBreak: 'break-word',
+  },
+  name: {
+    display: 'inline-block',
+    lineHeight: 1,
+    fontSize: 12,
+    verticalAlign: 'middle',
+  },
+  middle: {
+    margin: '0 auto',
+    paddingTop: 20,
+    width: 200,
+    textAlign: 'center',
+    color: theme.palette.text.primary,
+  },
+  buttonExpand: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: '100%',
+    height: 25,
+    color: theme.palette.primary.main,
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, .2)'
+          : 'rgba(0, 0, 0, .2)',
+    },
+  },
+}));
+
+const TRUNCATE_CHARS_COUNT = 40;
+
+interface StixCoreRelationshipOverviewProps {
+  data: StixCoreRelationshipOverview_stixCoreRelationship$key;
+}
+
+const StixCoreRelationshipOverview = ({
+  data,
+}: StixCoreRelationshipOverviewProps) => {
+  const [openEdit, setOpenEdit] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [commitFocusMutation] = useApiMutation(stixCoreRelationshipEditionFocus);
+  const [commitDeleteMutation] = useApiMutation(stixCoreRelationshipEditionDeleteMutation);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { t_i18n, nsdt, fldt } = useFormatter();
+  const classes = useStyles();
+  const stixCoreRelationship = useFragment(fragment, data);
+  const computeLink = useComputeLink();
+
+  const handleCloseEdition = () => {
+    commitFocusMutation({
+      variables: {
+        id: stixCoreRelationship.id,
+        input: { focusOn: '' },
+      },
+    });
+    setOpenEdit(false);
+  };
+
+  const submitDelete = () => {
+    setDeleting(true);
+    commitDeleteMutation({
+      variables: {
+        id: stixCoreRelationship.id,
+      },
+      onCompleted: () => {
+        handleCloseEdition();
+        navigate(
+          location.pathname.replace(`/relations/${stixCoreRelationship.id}`, ''),
+        );
+      },
+    });
+  };
+
+  const { from, to, relationship_type, coverage_information } = stixCoreRelationship;
+  const fromRestricted = from === null;
+
+  const linkFrom = from ? computeLink(from) : '';
+  const toRestricted = to === null;
+
+  const linkTo = to ? computeLink(to) : '';
+
+  const expandable = stixCoreRelationship.x_opencti_inferences
+    && stixCoreRelationship.x_opencti_inferences.length > 1;
+
+  const fromText = getMainRepresentative(from) !== 'Unknown'
+    ? getMainRepresentative(from)
+    : t_i18n(`relationship_${from?.entity_type}`);
+
+  const toText = getMainRepresentative(to) !== 'Unknown'
+    ? getMainRepresentative(to)
+    : t_i18n(`relationship_${to?.entity_type}`);
+
+  return (
+    <div className={classes.container}>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item xs={6}>
+          <Card
+            title={<>{t_i18n('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}</>}
+            action={!stixCoreRelationship.is_inferred && (
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <>
+                  <IconButton
+                    aria-label={t_i18n('edit')}
+                    color="primary"
+                    onClick={() => setOpenEdit(true)}
+                    size="small"
+                  >
+                    <EditOutlined fontSize="small" />
+                  </IconButton>
+                  <StixCoreRelationshipEdition
+                    open={openEdit}
+                    stixCoreRelationshipId={stixCoreRelationship.id}
+                    handleClose={handleCloseEdition}
+                    handleDelete={() => setOpenDelete(true)}
+                    noStoreUpdate={false}
+                  />
+                </>
+              </Security>
+            )}
+          >
+            <Link to={linkFrom ?? ''}>
+              <div
+                className={classes.item}
+                style={{
+                  border: `1px solid ${itemColor(
+                    !fromRestricted ? from?.entity_type : 'Restricted',
+                  )}`,
+                  top: 20,
+                  left: 20,
+                }}
+              >
+                <div
+                  className={classes.itemHeader}
+                  style={{
+                    borderBottom: `1px solid ${itemColor(
+                      !fromRestricted ? from?.entity_type : 'Restricted',
+                    )}`,
+                  }}
+                >
+                  <div className={classes.icon}>
+                    <ItemIcon
+                      type={!fromRestricted ? from?.entity_type : 'Restricted'}
+                      color={itemColor(
+                        !fromRestricted ? from?.entity_type : 'Restricted',
+                      )}
+                      size="small"
+                    />
+                  </div>
+                  <div className={classes.type}>
+                    { }
+                    {!fromRestricted
+                      ? from?.relationship_type
+                        ? t_i18n('Relationship')
+                        : t_i18n(`entity_${from?.entity_type}`)
+                      : t_i18n('Restricted')}
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>
+                    <Tooltip title={fromText}>
+                      <>
+                        {!fromRestricted
+                          ? truncate(fromText, TRUNCATE_CHARS_COUNT)
+                          : t_i18n('Restricted')}
+                      </>
+                    </Tooltip>
+                    {!fromRestricted && from?.draftVersion && (<DraftChip />)}
+                  </span>
+                </div>
+              </div>
+            </Link>
+            <div className={classes.middle}>
+              <ArrowRightAlt fontSize="large" />
+              <Typography sx={{ fontSize: '14px', fontWeight: 400 }}>
+                {capitalizeFirstLetter(t_i18n(`relationship_${stixCoreRelationship.relationship_type}`))}
+              </Typography>
+            </div>
+            <Link to={linkTo ?? ''}>
+              <div
+                className={classes.item}
+                style={{
+                  border: `1px solid ${itemColor(
+                    !toRestricted ? to?.entity_type : 'Restricted',
+                  )}`,
+                  top: 20,
+                  right: 20,
+                }}
+              >
+                <div
+                  className={classes.itemHeader}
+                  style={{
+                    borderBottom: `1px solid ${itemColor(
+                      !toRestricted ? to?.entity_type : 'Restricted',
+                    )}`,
+                  }}
+                >
+                  <div className={classes.icon}>
+                    <ItemIcon
+                      type={!toRestricted ? to?.entity_type : 'Unknown'}
+                      color={itemColor(
+                        !toRestricted ? to?.entity_type : 'Restricted',
+                      )}
+                      size="small"
+                    />
+                  </div>
+                  <div className={classes.type}>
+                    {
+                      !toRestricted
+                        ? to?.relationship_type
+                          ? t_i18n('Relationship')
+                          : t_i18n(`entity_${to?.entity_type}`)
+                        : t_i18n('Restricted')
+                    }
+                  </div>
+                </div>
+                <div className={classes.content}>
+                  <span className={classes.name}>
+                    <Tooltip title={toText}>
+                      <>
+                        {!toRestricted
+                          ? truncate(toText, TRUNCATE_CHARS_COUNT)
+                          : t_i18n('Restricted')}
+                      </>
+                    </Tooltip>
+                    {!toRestricted && to?.draftVersion && (<DraftChip />)}
+                  </span>
+                </div>
+              </div>
+            </Link>
+            <Divider style={{ marginTop: 30, marginBottom: 15 }} />
+            <Stack gap={2}>
+              <div>
+                <Label>
+                  {t_i18n('Description')}
+                </Label>
+                <ExpandableMarkdown
+                  source={stixCoreRelationship.x_opencti_inferences !== null
+                    ? t_i18n('Inferred knowledge')
+                    : stixCoreRelationship.description
+                  }
+                  limit={400}
+                />
+              </div>
+              <Divider />
+
+              <Grid container={true} spacing={2}>
+                <Grid item xs={6}>
+                  <Label>
+                    {t_i18n('Marking')}
+                  </Label>
+                  <ItemMarkings markingDefinitions={stixCoreRelationship.objectMarking ?? []} />
+                  <Label
+                    sx={{ marginTop: 2 }}
+                  >
+                    {t_i18n('Start time')}
+                  </Label>
+                  {nsdt(stixCoreRelationship.start_time)}
+                  <Label sx={{ marginTop: 2 }}>
+                    {t_i18n('Stop time')}
+                  </Label>
+                  {nsdt(stixCoreRelationship.stop_time)}
+                </Grid>
+                <Grid item xs={6}>
+                  {relationship_type === 'has-covered'
+                    && (
+                      <Box sx={{ marginBottom: 2 }}>
+                        <SecurityCoverageInformation coverage_information={coverage_information} />
+                      </Box>
+                    )
+                  }
+                  <StixCoreRelationshipSharing
+                    elementId={stixCoreRelationship.id}
+                  />
+                  <StixCoreObjectKillChainPhasesView
+                    killChainPhases={stixCoreRelationship.killChainPhases}
+                    displayIcon
+                  />
+                </Grid>
+              </Grid>
+            </Stack>
+          </Card>
+        </Grid>
+        <Grid item xs={6}>
+          <Card title={t_i18n('Details')}>
+            <Grid container={true} spacing={2}>
+              <Grid item xs={6}>
+                <Label>
+                  {t_i18n('Confidence level')}
+                </Label>
+                <ItemConfidence
+                  confidence={stixCoreRelationship.confidence}
+                  entityType="stix-core-relationship"
+                />
+                {stixCoreRelationship.x_opencti_inferences === null && (
+                  <div>
+                    <Label
+                      sx={{ marginTop: 2 }}
+                    >
+                      {t_i18n('Author')}
+                    </Label>
+                    <ItemAuthor
+                      createdBy={R.propOr(
+                        null,
+                        'createdBy',
+                        stixCoreRelationship,
+                      )}
+                    />
+                  </div>
+                )}
+                <Label
+                  sx={{ marginTop: 2 }}
+                >
+                  {t_i18n('Original creation date')}
+                </Label>
+                {nsdt(stixCoreRelationship.created)}
+                <Label
+                  sx={{ marginTop: 2 }}
+                >
+                  {t_i18n('Modification date')}
+                </Label>
+                {nsdt(stixCoreRelationship.updated_at)}
+              </Grid>
+              <Grid item xs={6}>
+                <Label>
+                  {t_i18n('Processing status')}
+                </Label>
+                <ItemStatus
+                  status={stixCoreRelationship.status}
+                  disabled={!stixCoreRelationship.workflowEnabled}
+                />
+                <StixCoreRelationshipObjectLabelsView
+                  labels={stixCoreRelationship.objectLabel}
+                  id={stixCoreRelationship.id}
+                  sx={{ marginTop: 2 }}
+                />
+                <Label
+                  sx={{ marginTop: 2 }}
+                >
+                  {t_i18n('Platform creation date')}
+                </Label>
+                {fldt(stixCoreRelationship.created_at)}
+                <Label
+                  sx={{ marginTop: 2 }}
+                >
+                  {t_i18n('Creators')}
+                </Label>
+                <ItemCreators
+                  creators={stixCoreRelationship.creators ?? []}
+                />
+              </Grid>
+            </Grid>
+          </Card>
+        </Grid>
+        {stixCoreRelationship.x_opencti_inferences == null && (
+          <>
+            <Grid item xs={6}>
+              <StixCoreRelationshipStixCoreRelationships
+                entityId={stixCoreRelationship.id}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StixCoreObjectOrStixRelationshipLastContainers
+                stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StixCoreRelationshipExternalReferences
+                stixCoreRelationshipId={stixCoreRelationship.id}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <StixCoreRelationshipLatestHistory
+                stixCoreRelationshipId={stixCoreRelationship.id}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <StixCoreObjectOrStixCoreRelationshipNotes
+                stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+                isRelationship={true}
+                defaultMarkings={stixCoreRelationship.objectMarking ?? []}
+              />
+            </Grid>
+          </>
+        )}
+      </Grid>
+      <div>
+        {stixCoreRelationship.x_opencti_inferences !== null && (
+          <div style={{ margin: '50px 0 0 0' }}>
+            <CardTitle>
+              {t_i18n('Inference explanation')} (
+              {stixCoreRelationship.x_opencti_inferences?.length})
+            </CardTitle>
+            {R.take(
+              expanded ? 200 : 1,
+              stixCoreRelationship.x_opencti_inferences ?? [],
+            ).map((inference) => (
+              <StixCoreRelationshipInference
+                key={inference?.rule.id}
+                inference={inference}
+                stixRelationship={stixCoreRelationship}
+              />
+            ))}
+            {expandable && (
+              <IconButton
+                aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+                variant="tertiary"
+                size="small"
+                onClick={() => setExpanded(true)}
+                classes={{ root: classes.buttonExpand }}
+              >
+                {expanded ? (
+                  <ExpandLessOutlined />
+                ) : (
+                  <ExpandMoreOutlined />
+                )}
+              </IconButton>
+            )}
+          </div>
+        )}
+      </div>
+      <Dialog
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        title={t_i18n('Are you sure?')}
+        size="small"
+      >
+        <DialogContentText>
+          {t_i18n('Do you want to delete this relationship?')}
+        </DialogContentText>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenDelete(false)}
+            disabled={deleting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t_i18n('Confirm')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
+
+export default StixCoreRelationshipOverview;

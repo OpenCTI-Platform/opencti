@@ -23,14 +23,10 @@ const stixCoreRelationshipQuery = graphql`
   }
 `;
 
-// TODO : transform into modern React Component + TS
-
 class StixCoreRelationship extends Component {
   render() {
     const {
       classes,
-      entityId,
-      paddingRight,
       params: { relationId },
     } = this.props;
     return (
@@ -42,9 +38,7 @@ class StixCoreRelationship extends Component {
             if (props && props.stixCoreRelationship) {
               return (
                 <StixCoreRelationshipOverview
-                  entityId={entityId}
-                  stixCoreRelationship={props.stixCoreRelationship}
-                  paddingRight={paddingRight}
+                  data={props.stixCoreRelationship}
                 />
               );
             }

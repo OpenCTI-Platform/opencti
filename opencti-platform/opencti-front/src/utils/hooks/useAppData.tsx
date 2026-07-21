@@ -4,13 +4,13 @@ import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
 export type ComputeLinkNode = {
-  id: string;
-  entity_type: string;
+  id?: string;
+  entity_type?: string;
   relationship_type?: string;
-  from?: { entity_type: string; id: string };
-  to?: { entity_type: string; id: string };
+  from?: { entity_type?: string; id?: string } | null;
+  to?: { entity_type?: string; id?: string } | null;
   type?: string;
-  resultOf?: { id: string };
+  resultOf?: { id: string } | null;
 };
 
 export type AppDataProps = {
@@ -27,11 +27,22 @@ export const useComputeLinkFn = () => {
         node.from.id
       }/knowledge/sightings/${node.id}`;
     } else if (node.relationship_type) {
-      if (node.from && !isRelationship(node.from.entity_type) && node.from.entity_type !== 'Security-Coverage-Result') { // 'from' not restricted and not a relationship and not SCR
+      if (
+        node.from
+        && node.from.entity_type
+        && !isRelationship(node.from.entity_type)
+        && node.from.entity_type !== 'Security-Coverage-Result'
+      ) {
+        // 'from' not restricted and not a relationship and not SCR
         redirectLink = `${resolveLink(node.from.entity_type)}/${
           node.from.id
         }/knowledge/relations/${node.id}`;
-      } else if (node.to && !isRelationship(node.to.entity_type)) { // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
+      } else if (
+        node.to
+        && node.to.entity_type
+        && !isRelationship(node.to.entity_type)
+      ) {
+        // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
         redirectLink = `${resolveLink(node.to.entity_type)}/${
           node.to.id
         }/knowledge/relations/${node.id}`;
