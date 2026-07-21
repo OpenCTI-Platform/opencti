@@ -31,6 +31,9 @@ To enable it, go to **Settings > Entity customization** and select the **Draft**
 
 **A single workflow definition applies to all drafts on the platform**: you cannot define multiple workflows based on specific draft values.
 
+![Workflow](assets/workflow-image.png)
+
+
 ## Creating and applying a workflow definition
 
 Add as many statuses and transitions as needed within your workflow definition.
@@ -88,6 +91,8 @@ To maintain data consistency, some safeguards are in place to preserve workflow 
     Workflow actions and conditions are available in the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
 ### Transitions
+
+![Transition](assets/workflow-transition.png)
 
 #### Conditions on transitions
 
@@ -152,6 +157,8 @@ This action is needed to publish your workflow. When enabled, it triggers the dr
 
 ### Actions on status
 
+![Status](assets/workflow-status.png)
+
 When triggering an action on a status, you can decide whether to apply it when entering or exiting the status.
 
 #### On enter: apply authorized members
@@ -161,6 +168,27 @@ Like transitions, you can apply authorized members when entering a status.
 #### On exit: apply authorized members
 
 Like transitions, you can apply authorized members when exiting a status.
+
+## Editing a workflow: ease of use capabilities 
+
+### Restore published worfklow 
+
+When working on a worfklow definition, you might have deleted a workflow status that is already exsiting and used by some specific draft instance, preventing you to publish this version.
+As a result, you might need to go back to the published version, so that you can restart the worfklow edition, with a version that is currently working.
+
+Simply click on Restore the current version & validate on the pop up to go back to this version
+
+![restore](assets/workflow-restore.png)
+
+### Reset workflow
+
+When working on a worfklow definition, you might want to restart form scratch. Therefore, click on reset worfklow: it will remove all the worfklow definition.
+
+**Reseting a worfklow does not publish it: it is simply a shortcut to restart your definition from scratch, but the published version is still the one you published before**.
+
+As a reminder, you canot publish a workflow that does not contain some statuses that are used in some draft instances. 
+
+![Status](assets/workflow-reset.png)
 
 ## Issues and troubleshooting
 
