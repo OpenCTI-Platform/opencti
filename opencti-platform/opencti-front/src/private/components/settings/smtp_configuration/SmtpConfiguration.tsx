@@ -121,7 +121,9 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
           variant="outlined"
           style={{ marginTop: 20, marginBottom: 16, padding: '0px 10px' }}
         >
-          {t_i18n('You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.\nOnce the new configuration is in place you would need to restart your platform.')}
+          {t_i18n('You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.')}
+          <br />
+          {t_i18n('Once the new configuration is in place you would need to restart your platform.')}
         </Alert>
       )}
 

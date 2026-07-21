@@ -5314,7 +5314,8 @@
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб",
-  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.\nOnce the new configuration is in place you would need to restart your platform.": "Вы не можете настроить новую интеграцию SMTP через этот интерфейс. Обратитесь к администратору, если вам нужно её обновить.\nПосле того как новая конфигурация будет установлена, вам потребуется перезапустить платформу.",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "Вы не можете настроить новую интеграцию SMTP через этот интерфейс. Обратитесь к администратору, если вам нужно её обновить.",
+  "Once the new configuration is in place you would need to restart your platform.": "После того как новая конфигурация будет установлена, вам потребуется перезапустить платформу.",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "В настоящее время SMTP настроен через внутреннюю конфигурацию. Чтобы изменить конфигурацию, просто включите использование конфигурации интерфейса и определите конфигурацию SMTP на этом экране.",
   "Use configuration in interface": "Использовать настройки в интерфейсе",
   "SMTP configuration saved": "Конфигурация SMTP сохранена"
