@@ -424,11 +424,22 @@ describe('Workspace resolver standard behavior', () => {
           input: {
             type: 'dashboard',
             name: 'Dashboard for widget export tests',
-            manifest,
           },
         },
       });
+      expect(workspace).not.toBeNull();
+      expect(workspace.data.workspaceAdd).not.toBeNull();
       exportTestWorkspaceId = workspace.data.workspaceAdd.id;
+
+      // Set the manifest separately since it's not part of WorkspaceAddInput
+      const updateResult = await queryAsAdmin({
+        query: UPDATE_QUERY,
+        variables: {
+          id: exportTestWorkspaceId,
+          input: { key: 'manifest', value: manifest },
+        },
+      });
+      expect(updateResult.data.workspaceFieldPatch).not.toBeNull();
     });
 
     afterAll(async () => {
