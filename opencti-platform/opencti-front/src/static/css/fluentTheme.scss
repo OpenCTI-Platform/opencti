@@ -426,6 +426,10 @@ html[dir='rtl'] {
     left: 0;
     right: auto;
   }
+
+  .apexcharts-xaxistooltip-text,.apexcharts-tooltip-title{
+    direction: rtl;
+  }
 }
 @font-face {
   font-family: 'IranYekan';

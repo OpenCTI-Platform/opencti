@@ -4,7 +4,11 @@ import { ApexOptions } from 'apexcharts';
 import moment from 'moment';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import { format as formatJalali } from 'date-fns-jalali';
+import { faIR as faIRJalali } from 'date-fns-jalali/locale';
 import { useFormatter } from '../../../../components/i18n';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { isJalaliLocale } from '../../../../utils/datePickerConfig';
 
 export interface DecayHistory {
   score: number;
@@ -19,9 +23,26 @@ interface DecayChartProps {
   reactionPoints?: number[];
 }
 
+const toPersianDigits = (value: number | string): string => {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return String(value).replace(/\d/g, (digit) => persianDigits[Number(digit)]);
+};
+
+const formatChartDate = (timestamp: number, isJalali: boolean): string => {
+  if (isJalali) {
+    return toPersianDigits(formatJalali(timestamp, 'd MMMM yyyy', { locale: faIRJalali }));
+  }
+  return moment(timestamp).format('DD MMMM yyyy');
+};
+
 const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { locale } = useAuth();
+  const isJalali = isJalaliLocale(locale);
+  const isRTL = theme.direction === 'rtl';
+
+  const formatNumberLabel = (value: number) => (isJalali ? toPersianDigits(value) : String(value));
 
   const decayCurveColor = theme.palette.primary.main;
   const reactionPointColor = theme.palette.text.primary;
@@ -60,11 +81,13 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
         label: {
           borderColor: index === currentScoreIndex ? scoreColor : reactionPointColor,
           offsetY: 0,
+          offsetX: 0,
+          position: 'right',
           style: {
             color: index === currentScoreIndex ? scoreColor : chartInfoTextColor,
             background: chartLabelBackgroundColor,
           },
-          text: `${reactionPoint}`,
+          text: `${formatNumberLabel(reactionPoint)}`,
         },
       };
       graphLinesAnnotations.push(lineReactionValue);
@@ -77,8 +100,10 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
       borderColor: revokeColor,
       fillColor: revokeColor,
       label: {
-        text: `${t_i18n('Revoke score:')} ${revokeScore}`,
+        text: `${t_i18n('Revoke score:')} ${formatNumberLabel(revokeScore)}`,
         borderColor: revokeColor,
+        offsetX:  0,
+        position:  'right',
         style: {
           color: revokeColor,
           background: chartLabelBackgroundColor,
@@ -118,7 +143,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
           radius: graphLineThickness,
         },
         label: {
-          text: `${t_i18n('Score:')} ${currentScoreData.score}`,
+          text: `${t_i18n('Score:')} ${formatNumberLabel(currentScoreData.score)}`,
           position: 'right',
           borderColor: scoreColor,
           borderWidth: 2,
@@ -151,16 +176,14 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
         style: {
           colors: chartInfoTextColor,
         },
-        datetimeFormatter: {
-          year: 'yyyy',
-          month: 'MMM yyyy',
-          day: 'dd MMM yyyy',
-        },
+        datetimeUTC: false,
+        formatter: (_value: string, timestamp?: number) => (timestamp ? formatChartDate(timestamp, isJalali) : ''),
       },
     },
     yaxis: {
       min: 0,
       max: 100,
+      // opposite: isRTL,
       title: {
         text: t_i18n('Score'),
         style: {
@@ -171,6 +194,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
         style: {
           colors: chartInfoTextColor,
         },
+        formatter: (val: number) => formatNumberLabel(val),
       },
     },
     annotations: {
@@ -185,7 +209,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
       theme: theme.palette.mode, // ApexChart uses 'dark'/'light', exactly the same values as we use in OpenCTI.
       x: {
         show: true,
-        format: 'dd MMM yyyy',
+        formatter: (val: number) => formatChartDate(val, isJalali),
       },
     },
     forecastDataPoints: {
