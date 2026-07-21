@@ -5,8 +5,13 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
+import * as Middleware from '../../../../src/database/middleware';
 import * as Conf from '../../../../src/config/conf';
-import { getSmtpConfiguration } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
+import {
+  getSmtpConfiguration,
+  smtpConfigurationEdit,
+  smtpConfigurationDelete,
+} from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const MOCK_JSON_CONFIG = {
@@ -113,5 +118,25 @@ describe('getSmtpConfiguration (forced mode — ALLOW_EMAIL_REWRITE=false)', () 
     const result = await getSmtpConfiguration(mockContext, mockUser);
     expect(result).toMatchObject(MOCK_JSON_CONFIG);
     expect(result?.forced_sender_email).toBe(true);
+  });
+});
+
+// ---------- smtpConfigurationEdit (forced mode) ----------
+
+describe('smtpConfigurationEdit (forced mode — ALLOW_EMAIL_REWRITE=false)', () => {
+  it('should throw ForbiddenAccess and never write to settings', async () => {
+    await expect(smtpConfigurationEdit(mockContext, mockUser, { smtp_enabled: true, use_db_config: false }))
+      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
+  });
+});
+
+// ---------- smtpConfigurationDelete (forced mode) ----------
+
+describe('smtpConfigurationDelete (forced mode — ALLOW_EMAIL_REWRITE=false)', () => {
+  it('should throw ForbiddenAccess and never write to settings', async () => {
+    await expect(smtpConfigurationDelete(mockContext, mockUser))
+      .rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS' } });
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
   });
 });

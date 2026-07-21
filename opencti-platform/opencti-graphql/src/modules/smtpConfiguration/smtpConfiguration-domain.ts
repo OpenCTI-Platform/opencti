@@ -83,6 +83,9 @@ export const smtpConfigurationEdit = async (
   input: SmtpConfigurationAddInput,
 ): Promise<SmtpConfiguration> => {
   checkSmtpConfigurationFeatureEnabled();
+  if (!ALLOW_EMAIL_REWRITE) {
+    throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
+  }
   validateSmtpConfigurationInput(input);
   const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -105,6 +108,9 @@ export const smtpConfigurationDelete = async (
   user: AuthUser,
 ): Promise<boolean> => {
   checkSmtpConfigurationFeatureEnabled();
+  if (!ALLOW_EMAIL_REWRITE) {
+    throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
+  }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const patch = { smtp_configuration: null };
   const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
