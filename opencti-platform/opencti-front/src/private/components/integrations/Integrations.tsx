@@ -210,7 +210,7 @@ const IntegrationsHero = ({ deployedCount, availableCount, verifiedCount, builtI
             <HeroStatChip
               icon={VerifiedOutlined}
               value={verifiedCount}
-              label={t_i18n('Verified')}
+              label={t_i18n('Supported by Filigran')}
               to="/dashboard/integrations/available?status=filigran"
             />
             <HeroStatChip

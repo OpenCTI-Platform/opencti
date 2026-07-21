@@ -38,7 +38,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
-import { resolveLink } from '../../../../utils/Entity';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
@@ -243,13 +242,12 @@ const IngestionCatalogConnectorCreation = ({
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;
 
   const buildConnectorsUrl = () => {
-    const { slug } = connector;
-
+    // The deployed tab pre-filtered on the connector name (the legacy slug
+    // filter belonged to the removed monitoring screen).
     const params = new URLSearchParams({
-      slug,
+      search: connector.title,
     });
-
-    return `${resolveLink('Connectors')}?${params.toString()}`;
+    return `/dashboard/integrations/deployed?${params.toString()}`;
   };
 
   return (

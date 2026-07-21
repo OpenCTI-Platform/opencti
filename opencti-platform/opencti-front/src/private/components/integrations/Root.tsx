@@ -16,6 +16,12 @@ const Root = () => {
           path="/"
           element={<Navigate to="/dashboard/integrations/deployed" replace={true} />}
         />
+        {/* Generic entity links (resolveLink) target the connectors base URL:
+            the deployed tab is the connectors landing view. */}
+        <Route
+          path="/connectors"
+          element={<Navigate to="/dashboard/integrations/deployed" replace={true} />}
+        />
         <Route
           path="/connectors/:connectorId/*"
           element={<RootConnector />}
