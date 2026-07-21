@@ -53,7 +53,7 @@
     "@rjsf/utils": "6.6.2",
     "@rjsf/validator-ajv8": "6.6.2",
     "analytics": "0.8.19",
-    "apexcharts": "4.4.0",
+    "apexcharts": "4.7.0",
     "axios": "1.18.1",
     "classnames": "2.5.1",
     "convert": "7.0.0",
