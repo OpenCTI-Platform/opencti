@@ -160,12 +160,12 @@ We support the following field types:
 |Toggle	|Boolean| on/off switch (respects defaultValue — e.g., Malware is_family)|
 |Select	|Single-value| dropdown with predefined options|
 |Multi-select|	Multi-value dropdown|
-|Open Vocabulary|	|Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)
-|Created By|	|Set the author/creator identity
-|Object Marking	||Apply marking definitions (TLP, PAP)
-|Object Label	||Apply labels to created entities
-|External References|	|Add external references
-|Files	| |Attach files
+|Open Vocabulary|	|Vocabulary-based field with predefined values from OpenCTI vocabularies (auto-detected based on entity type and attribute)|
+|Created By|	|Set the author/creator identity|
+|Object Marking	||Apply marking definitions (TLP, PAP)|
+|Object Label	||Apply labels to created entities|
+|External References|	|Add external references|
+|Files	| |Attach files|
 
 **Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
 
@@ -212,15 +212,13 @@ Note: The form intake button is hidden if the user does not have Create/update c
 ## Submission process
 When a form is submitted, the following 7-step pipeline executes:
 
-Step	Action	Details
-
-1.	Validate required fields	
-2.	Validate observable syntax	Backend checks format for observable entities (IPv4, IPv6, Domain, URL, Email, hashes). Invalid values throw INCORRECT_OBSERVABLE_FORMAT error.
-3.	De-sanitize/defang observables	Converts defanged IOCs: hxxp:// → http://, test[.]com → test.com
-4.	Map identity classes	Ensures correct STIX identity_class for Identity types: Individual → individual, Sector → class, System → system
-5.	Generate STIX bundle	
-6.	Auto-create indicators/observables	
-7.	Import bundle	Imports into OpenCTI directly, or into a draft workspace if draft mode is enabled
+- Validate required fields
+- 	Validate observable syntax	Backend checks format for observable entities (IPv4, IPv6, Domain, URL, Email, hashes). Invalid values throw INCORRECT_OBSERVABLE_FORMAT error.
+- 	De-sanitize/defang observables	Converts defanged IOCs: hxxp:// → http://, test[.]com → test.com
+- 	Map identity classes	Ensures correct STIX identity_class for Identity types: Individual → individual, Sector → class, System → system
+- 	Generate STIX bundle
+- 	Auto-create indicators/observables
+- 	Import bundle	Imports into OpenCTI directly, or into a draft workspace if draft mode is enabled
 
 ## Export
 Export a form definition as a JSON file via the options (kebab) menu → Export.
