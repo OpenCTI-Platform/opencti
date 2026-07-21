@@ -63,16 +63,14 @@ interface ComputeInitialComponentConfigValuesParams {
   selectedComponent?: PlaybookComponent | null;
 }
 
-export type PlaybookFlowFormValues = PlaybookFlowFormData;
-
 export const computeInitialComponentConfigValues = ({
   action,
   currentConfig,
   nodeData,
   configurationSchema,
   selectedComponent,
-}: ComputeInitialComponentConfigValuesParams): PlaybookFlowFormValues => {
-  const initialValues: PlaybookFlowFormValues = {
+}: ComputeInitialComponentConfigValuesParams): PlaybookFlowFormData => {
+  const initialValues: PlaybookFlowFormData = {
     name: '',
     description: '',
   };

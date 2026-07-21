@@ -44,22 +44,26 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
-import { computeInitialComponentConfigValues, PlaybookFlowFormValues } from './playbookComponents-utils';
+import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
   = PlaybookUpdateActionsForm
     & {
-    // Common for every component
+    // Common for several components
       name: string;
       description?: string;
+      applyToElements?: PlaybookBundleElementsToApply;
+      filters?: string;
       // Component: CRON
       time?: string;
       period?: string;
       day?: string;
+      triggerTime?: string;
       // Component: Container wrapper
-      all?: boolean;
-      applyToElements?: PlaybookBundleElementsToApply;
+      newContainer?: boolean;
+      // Component : create indicator and create observable
+      wrap_in_container?: boolean;
     };
 
 interface PlaybookFlowFormProps {
@@ -101,7 +105,7 @@ const PlaybookFlowForm = ({
     : null;
 
   // Submit function that formats correctly the data for the backend.
-  const onSubmit: FormikConfig<PlaybookFlowFormValues>['onSubmit'] = (values, { resetForm }) => {
+  const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
     const { name, description, actionsFormValues, ...config } = values;
     let finalConfig: PlaybookConfig = config;
 
