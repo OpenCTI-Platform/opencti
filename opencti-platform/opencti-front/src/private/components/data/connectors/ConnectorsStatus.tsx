@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { getConnectorMetadata, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
 import ConnectorsLogos, { connectorsLogosQuery } from '@components/data/connectors/ConnectorsLogos';
@@ -240,7 +240,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector has been cleared');
-        navigate('/dashboard/data/ingestion/connectors');
+        navigate('/dashboard/integrations/deployed');
       },
       updater: undefined,
       optimisticResponse: undefined,
@@ -399,7 +399,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                     <ListItemButton
                       component={Link}
                       classes={{ root: classes.item }}
-                      to={`/dashboard/data/ingestion/connectors/${connector.id}`}
+                      to={`/dashboard/integrations/connectors/${connector.id}`}
                     >
                       <ListItemIcon>
                         {connectorLogoSrc

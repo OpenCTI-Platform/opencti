@@ -467,7 +467,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         setTimeout(() => {
           if (onSuccess) onSuccess(); // Close dialog before navigating
           const fallbackPath = isConnectorReader
-            ? '/dashboard/data/ingestion/connectors'
+            ? '/dashboard/integrations/deployed'
             : '/dashboard';
           navigate(fallbackPath);
         }, 2000); // Give user time to see the timeout message
@@ -549,9 +549,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       {!embedded && (
         <Breadcrumbs
           elements={[
-            { label: t_i18n('Data') },
-            { label: t_i18n('Ingestion'), link: isConnectorReader ? '/dashboard/data/ingestion' : undefined },
-            { label: t_i18n('Form intakes'), link: isGrantedIngestion ? '/dashboard/data/ingestion/forms' : undefined },
+            { label: t_i18n('Integrations') },
+            { label: t_i18n('Deployed'), link: isGrantedIngestion ? '/dashboard/integrations/deployed?kind=form' : undefined },
             { label: form.name, current: true },
           ]}
         />

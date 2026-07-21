@@ -63,7 +63,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
   };
 
   const handleDownloadError = () => {
-    navigate('/dashboard/data/ingestion/rss');
+    navigate('/dashboard/integrations/deployed?kind=rss');
     MESSAGING$.notifyError(t_i18n('An error occurred while importing RSS Feed configuration.'));
   };
 

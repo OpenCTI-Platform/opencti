@@ -26,7 +26,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import { IngestionConnector, IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import { IngestionConnector, IngestionTypedProperty } from '@components/integrations/catalog/types';
 import {
   computeConnectorStatus,
   getConnectorOnlyContextualStatus,
@@ -54,7 +54,8 @@ import { graphql } from 'relay-runtime';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
-import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '../IngestionCatalog/utils/deprecatedFields';
+import { getDeprecatedDescriptorsForEdition, shouldShowDeprecatedAlert } from '@components/integrations/catalog/utils/deprecatedFields';
+import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -750,6 +751,19 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return `${excerptTitle} - ${connectorTitle}`;
   })();
 
+  // Parsed catalog contract, used to surface the marketplace overview
+  // (description, links, use cases) next to the monitoring data.
+  const contractDefinition = useMemo(() => {
+    if (!connector.is_managed || !connector.manager_contract_definition) {
+      return null;
+    }
+    try {
+      return JSON.parse(connector.manager_contract_definition) as IngestionConnector;
+    } catch {
+      return null;
+    }
+  }, [connector.is_managed, connector.manager_contract_definition]);
+
   const hasDeprecatedConfiguredFields = useMemo(() => {
     if (!connector.is_managed || !connector.manager_contract_definition) {
       return false;
@@ -786,6 +800,78 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     }
   }, [connector.is_managed, connector.manager_contract_definition, connector.manager_contract_configuration]);
 
+  const TypeIcon = getConnectorTypeIcon(connector.connector_type ?? '');
+  const typeLabel = connector.connector_type
+    ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
+    : '';
+  const contractLogo = connector.manager_contract_excerpt?.logo;
+
+  // Marketplace overview of the underlying catalog contract, merged with the
+  // monitoring view for managed connectors.
+  const aboutContent = contractDefinition && (
+    <Box sx={{ marginBottom: '20px' }}>
+      <Card title={t_i18n('About this connector')}>
+        <Stack gap={1.5}>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+            {contractDefinition.short_description || contractDefinition.description}
+          </Typography>
+          {(contractDefinition.use_cases ?? []).length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {(contractDefinition.use_cases ?? []).map((useCase) => (
+                <Tag key={useCase} label={useCase} />
+              ))}
+            </Box>
+          )}
+          <Stack direction="row" gap={1} flexWrap="wrap">
+            {contractDefinition.slug && (
+              <Button
+                variant="secondary"
+                size="small"
+                component={Link}
+                to={`/dashboard/integrations/catalog/${contractDefinition.slug}`}
+              >
+                {t_i18n('View in catalog')}
+              </Button>
+            )}
+            {contractDefinition.source_code && (
+              <Button
+                variant="secondary"
+                size="small"
+                href={contractDefinition.source_code}
+                target="_blank"
+              >
+                {t_i18n('Source code')}
+              </Button>
+            )}
+            {contractDefinition.subscription_link && (
+              <Button
+                variant="secondary"
+                size="small"
+                href={contractDefinition.subscription_link}
+                target="_blank"
+              >
+                {t_i18n('Vendor contact')}
+              </Button>
+            )}
+          </Stack>
+        </Stack>
+      </Card>
+    </Box>
+  );
+
+  const overviewTabContent = (
+    <>
+      <DeprecatedConfigurationAlert
+        open={hasDeprecatedConfiguredFields}
+        message={t_i18n('This connector has deprecated configuration fields still set. Open the configuration to review and remove them.')}
+        actionLabel={t_i18n('Edit configuration')}
+        onAction={() => setEditionOpen(true)}
+      />
+      {aboutContent}
+      {connectorOverviewContent}
+    </>
+  );
+
   return (
     <>
       <div
@@ -794,20 +880,80 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           justifyContent: 'space-between',
           width: '100%',
           marginBottom: theme.spacing(3),
+          gap: theme.spacing(2),
         }}
       >
-        <TitleMainEntity
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-          }}
-        >
-          {managedConnectorDisplayName}
-          <div style={{ display: 'inline-block' }}>
-            <ConnectorStatusChip connector={connector} />
-          </div>
-        </TitleMainEntity>
+        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
+          <Box
+            sx={{
+              height: 56,
+              width: 56,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 1,
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.background.paper,
+            }}
+          >
+            {contractLogo ? (
+              <img
+                style={{
+                  height: 44,
+                  width: 44,
+                  objectFit: 'contain',
+                  borderRadius: 4,
+                }}
+                src={contractLogo}
+                alt={managedConnectorDisplayName}
+              />
+            ) : (
+              <TypeIcon sx={{ fontSize: 28, color: theme.palette.primary.main }} />
+            )}
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            {typeLabel && (
+              // Sentence case: the V7 design language avoids all-caps text.
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
+                {typeLabel}
+              </Typography>
+            )}
+            <TitleMainEntity
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: 0,
+                minWidth: 0,
+              }}
+            >
+              {/* Long names are cropped on one line (full value in the
+                  tooltip) so the status chip stays aligned with the actions. */}
+              <Tooltip title={managedConnectorDisplayName} placement="bottom-start">
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {managedConnectorDisplayName}
+                </span>
+              </Tooltip>
+              <div style={{ display: 'inline-block', flexShrink: 0 }}>
+                <ConnectorStatusChip connector={connector} />
+              </div>
+            </TitleMainEntity>
+          </Box>
+        </Stack>
         <div style={{
           float: 'right',
           display: 'flex',
@@ -843,42 +989,24 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
         </div>
       </div>
 
-      {connector.is_managed ? (
-        <>
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-            }}
-          >
-            <Tabs value={tabValue} onChange={handleTabChange}>
-              <Tab label={t_i18n('Overview')} />
-              <Tab label={t_i18n('Logs')} />
-            </Tabs>
-          </Box>
-          <Box>
-            {tabValue === 0 && (
-              <>
-                <DeprecatedConfigurationAlert
-                  open={hasDeprecatedConfiguredFields}
-                  message={t_i18n('This connector has deprecated configuration fields still set. Open the configuration to review and remove them.')}
-                  actionLabel={t_i18n('Edit configuration')}
-                  onAction={() => setEditionOpen(true)}
-                />
-                {connectorOverviewContent}
-                <ConnectorWorksSection connectorId={connector.id} />
-              </>
-            )}
-            {tabValue === 1 && connectorLogsContent}
-          </Box>
-        </>
-      ) : (
-        <>
-          {connectorOverviewContent}
-          <ConnectorWorksSection connectorId={connector.id} />
-        </>
-      )}
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+        }}
+      >
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tab label={t_i18n('Overview')} />
+          <Tab label={t_i18n('Works')} />
+          {connector.is_managed && <Tab label={t_i18n('Logs')} />}
+        </Tabs>
+      </Box>
+      <Box>
+        {tabValue === 0 && overviewTabContent}
+        {tabValue === 1 && <ConnectorWorksSection connectorId={connector.id} />}
+        {tabValue === 2 && connector.is_managed && connectorLogsContent}
+      </Box>
 
       {connector.is_managed && connector.manager_contract_definition && (
         <ManagedConnectorEdition
@@ -925,6 +1053,8 @@ const Connector = createRefetchContainer(
         }
         manager_contract_excerpt {
             title
+            slug
+            logo
         }
         manager_contract_definition
         manager_current_status

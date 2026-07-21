@@ -120,7 +120,7 @@ export const IngestionJsonLineComponent: FunctionComponent<IngestionJsonLineProp
             <div
               className={classes.bodyItem}
             >
-              <Link to={`/dashboard/data/ingestion/connectors/${data.connector_id}`}>VIEW</Link>
+              <Link to={`/dashboard/integrations/connectors/${data.connector_id}`}>VIEW</Link>
             </div>
           </div>
         )}

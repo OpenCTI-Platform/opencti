@@ -9,7 +9,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
-import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Button from '../../../components/common/button/Button';
 import Security from '../../../utils/Security';
@@ -34,7 +33,7 @@ const LOCAL_STORAGE_KEY = 'ingestionRss';
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    padding: '0 0 50px 0',
   },
 }));
 
@@ -118,14 +117,12 @@ const IngestionRss = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu />
       </div>
     );
   }
   return (
     <div className={classes.container} data-testid="rss-feeds-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
-      <IngestionMenu />
+      <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=rss' }, { label: t_i18n('RSS feeds'), current: true }]} />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}

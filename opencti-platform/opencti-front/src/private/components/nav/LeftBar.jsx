@@ -7,12 +7,12 @@ import {
   CasesOutlined,
   ChevronLeft,
   ConstructionOutlined,
-  DeleteOutlined,
   DescriptionOutlined,
   DiamondOutlined,
   DomainOutlined,
   EventOutlined,
   ExploreOutlined,
+  ExtensionOutlined,
   FlagOutlined,
   Home,
   InsertChartOutlinedOutlined,
@@ -246,7 +246,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
-  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
+  const isGrantedToDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH]);
@@ -709,6 +709,18 @@ const LeftBarComponent = ({ queryRef }) => {
           <Separator />
 
           <MenuList component="nav">
+            <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
+              {!draftContext && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="integrations"
+                  icon={<ExtensionOutlined />}
+                  label={t_i18n('Integrations')}
+                  link="/dashboard/integrations"
+                />
+              )}
+            </Security>
+
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <LeftBarItem
                 {...itemProps}
@@ -719,31 +731,15 @@ const LeftBarComponent = ({ queryRef }) => {
                 subItems={[
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-                  { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: t_i18n('Ingestion') },
                   { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
                   { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
                   { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
+                  { granted: isTrashEnable() && isGrantedToDelete && !draftContext, link: '/dashboard/trash', label: t_i18n('Trash') },
                 ]}
               />
             </Security>
-
-            {
-              isTrashEnable() && (
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  {!draftContext && (
-                    <LeftBarItem
-                      {...itemProps}
-                      id="trash"
-                      icon={<DeleteOutlined />}
-                      label={t_i18n('Trash')}
-                      link="/dashboard/trash"
-                    />
-                  )}
-                </Security>
-              )
-            }
           </MenuList>
         </Security>
 

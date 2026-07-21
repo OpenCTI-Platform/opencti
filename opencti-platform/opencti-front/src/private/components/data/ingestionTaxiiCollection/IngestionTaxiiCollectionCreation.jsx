@@ -52,7 +52,7 @@ const CreateIngestionTaxiiCollectionControlledDial = (props) => (
 );
 
 const IngestionTaxiiCollectionCreation = (props) => {
-  const { t } = props;
+  const { t, open, handleClose } = props;
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -90,7 +90,9 @@ const IngestionTaxiiCollectionCreation = (props) => {
   return (
     <Drawer
       title={t('Create a TAXII Push ingester')}
-      controlledDial={CreateIngestionTaxiiCollectionControlledDial}
+      open={open}
+      onClose={handleClose}
+      controlledDial={open === undefined ? CreateIngestionTaxiiCollectionControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
@@ -169,6 +171,8 @@ IngestionTaxiiCollectionCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
 };
 
 export default R.compose(

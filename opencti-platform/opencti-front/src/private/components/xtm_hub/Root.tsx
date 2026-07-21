@@ -8,7 +8,7 @@ const DeployPlaybook = lazy(() => import('./DeployPlaybook'));
 const IngestionCsv = lazy(() => import('../data/IngestionCsv'));
 const IngestionTaxii = lazy(() => import('../data/IngestionTaxiis'));
 const IngestionRss = lazy(() => import('../data/IngestionRss'));
-const IngestionCatalogConnector = lazy(() => import('../data/IngestionCatalog/IngestionCatalogConnector'));
+const IngestionCatalogConnector = lazy(() => import('../integrations/catalog/IngestionCatalogConnector'));
 const IngestionSync = lazy(() => import('../data/Sync'));
 
 const Root = () => {
