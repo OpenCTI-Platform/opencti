@@ -5,6 +5,7 @@ import Dialog from '@common/dialog/Dialog';
 import CircleIcon from '@mui/icons-material/Circle';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useFormatter } from '../../../../../components/i18n';
+import RestoreConfirmDialog from './RestoreConfirmDialog';
 
 interface ValidationError {
   type: string;
@@ -167,22 +168,11 @@ const PublishButton = ({
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
+      <RestoreConfirmDialog
         open={restoreConfirmOpen}
         onClose={() => setRestoreConfirmOpen(false)}
-        title={t_i18n('Restore published version')}
-        size="small"
-      >
-        {t_i18n('This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?')}
-        <DialogActions>
-          <Button variant="secondary" onClick={() => setRestoreConfirmOpen(false)}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button intent="destructive" onClick={handleConfirmRestore}>
-            {t_i18n('Restore')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmRestore}
+      />
     </>
   );
 };

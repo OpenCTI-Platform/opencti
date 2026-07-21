@@ -22,6 +22,7 @@ import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import PublishButton from './PublishButton';
+import RestoreConfirmDialog from './RestoreConfirmDialog';
 import { MESSAGING$ } from '../../../../../relay/environment';
 
 export interface WorkflowValidationError {
@@ -336,6 +337,7 @@ const Workflow = ({
 
   // Edit status and transitions
   const [open, setOpen] = useState<boolean>(false);
+  const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -441,7 +443,8 @@ const Workflow = ({
             </Button>
             <Button
               variant="secondary"
-              onClick={handleRestore}
+              onClick={() => setEmptyStateRestoreConfirmOpen(true)}
+              disabled={!workflowDefinitionStatus.hasPublishedVersion || !workflowDefinitionStatus.hasUnpublishedChanges}
             >
               {t_i18n('Restore published version')}
             </Button>
@@ -454,6 +457,14 @@ const Workflow = ({
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);
+        }}
+      />
+      <RestoreConfirmDialog
+        open={emptyStateRestoreConfirmOpen}
+        onClose={() => setEmptyStateRestoreConfirmOpen(false)}
+        onConfirm={() => {
+          setEmptyStateRestoreConfirmOpen(false);
+          handleRestore();
         }}
       />
     </div>
