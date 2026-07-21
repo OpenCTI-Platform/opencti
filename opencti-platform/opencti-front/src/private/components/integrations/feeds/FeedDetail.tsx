@@ -22,6 +22,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import PageContainer from '../../../../components/PageContainer';
 import Card from '../../../../components/common/card/Card';
+import Label from '../../../../components/common/label/Label';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
@@ -245,21 +246,10 @@ interface DetailFieldProps {
 }
 
 const DetailField = ({ label, children }: DetailFieldProps) => {
-  const theme = useTheme();
   return (
     <Grid size={{ xs: 6, md: 4 }}>
-      {/* Sentence case: the V7 design language avoids all-caps text. */}
-      <Typography
-        sx={{
-          fontFamily: theme.typography.h1.fontFamily,
-          fontSize: 12,
-          fontWeight: 600,
-          color: theme.palette.text.secondary,
-          marginBottom: 0.5,
-        }}
-      >
-        {label}
-      </Typography>
+      {/* Same field label component as the connector overview cards. */}
+      <Label>{label}</Label>
       <Typography component="div" variant="body2" sx={{ wordBreak: 'break-all' }}>
         {children}
       </Typography>
@@ -335,10 +325,23 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                 alignItems: 'center',
                 gap: theme.spacing(1),
                 marginBottom: 0,
+                minWidth: 0,
               }}
             >
-              {node.name}
-              <div style={{ display: 'inline-block' }}>
+              {/* Long names are cropped on one line (full value in the
+                  tooltip) so the status chip stays aligned with the actions. */}
+              <Tooltip title={node.name} placement="bottom-start">
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {node.name}
+                </span>
+              </Tooltip>
+              <div style={{ display: 'inline-block', flexShrink: 0 }}>
                 <ItemBoolean
                   status={running}
                   label={running ? t_i18n('Active') : t_i18n('Inactive')}

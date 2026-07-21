@@ -86,6 +86,12 @@ const IntegrationsDeployedContent = ({
     setView(value);
   };
 
+  // Sections are collapsible to keep large fleets scannable.
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const toggleSection = (key: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const handleSearchInputSubmit = (value: string) => {
     setSearchInput(value);
     setFilters((prev) => ({ ...prev, search: value }));
@@ -196,12 +202,26 @@ const IntegrationsDeployedContent = ({
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
             {visibleSections.map((section) => {
               const { label, icon } = typeMetadata(section.key);
+              if (collapsedSections[section.key]) {
+                return (
+                  <Box component="section" key={section.key}>
+                    <MarketplaceSectionHeader
+                      icon={icon}
+                      label={label}
+                      count={section.totalCount}
+                      collapsed
+                      onToggleCollapse={() => toggleSection(section.key)}
+                    />
+                  </Box>
+                );
+              }
               return (
                 <Box component="section" key={section.key}>
                   <MarketplaceSectionHeader
                     icon={icon}
                     label={label}
                     count={section.totalCount}
+                    onToggleCollapse={() => toggleSection(section.key)}
                   />
                   {view === 'lines' ? (
                     <Box

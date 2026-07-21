@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
-import { CheckCircleOutlined, Search } from '@mui/icons-material';
+import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
@@ -137,12 +137,27 @@ interface MarketplaceSectionHeaderProps {
   icon: SvgIconComponent;
   label: string;
   count: number;
+  // When provided, the section can be collapsed from its header.
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export const MarketplaceSectionHeader = ({ icon: Icon, label, count }: MarketplaceSectionHeaderProps) => {
+export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed = false, onToggleCollapse }: MarketplaceSectionHeaderProps) => {
   const theme = useTheme();
   return (
-    <Stack direction="row" alignItems="center" gap={1.25} sx={{ marginBottom: 1.5 }}>
+    <Stack
+      direction="row"
+      alignItems="center"
+      gap={1.25}
+      onClick={onToggleCollapse}
+      sx={{
+        marginBottom: collapsed ? 0 : 1.5,
+        ...(onToggleCollapse && {
+          cursor: 'pointer',
+          userSelect: 'none',
+        }),
+      }}
+    >
       <Box
         sx={{
           width: 28,
@@ -183,6 +198,21 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count }: Marketpla
         {count}
       </Box>
       <Box sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }} />
+      {onToggleCollapse && (
+        <IconButton
+          size="small"
+          aria-expanded={!collapsed}
+          aria-label={label}
+        >
+          <ExpandMoreOutlined
+            fontSize="small"
+            sx={{
+              transition: 'transform 0.2s ease-in-out',
+              transform: collapsed ? 'rotate(-90deg)' : 'none',
+            }}
+          />
+        </IconButton>
+      )}
     </Stack>
   );
 };

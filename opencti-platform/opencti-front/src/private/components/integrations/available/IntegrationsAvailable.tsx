@@ -43,6 +43,12 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   const { catalogState, handleOpenDeployDialog, handleCloseDeployDialog, handleCreate } = useConnectorDeployDialog();
   const [builtInCreationKind, setBuiltInCreationKind] = useState<BuiltInIntegrationKind | null>(null);
 
+  // Sections are collapsible to keep large catalogs scannable.
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const toggleSection = (key: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   const catalogs = catalogsData?.catalogs ?? [];
   const connectors = deploymentData?.connectors ?? null;
 
@@ -124,12 +130,17 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
   }, [sections, visibleCount]);
 
   const renderSectionHeader = (section: CatalogSection & { totalCount: number }) => {
+    const collapseProps = {
+      collapsed: !!collapsedSections[section.key],
+      onToggleCollapse: () => toggleSection(section.key),
+    };
     if (section.key === BUILT_IN_SECTION_KEY) {
       return (
         <MarketplaceSectionHeader
           icon={WidgetsOutlined}
           label={t_i18n('Built-in ingestion')}
           count={section.totalCount}
+          {...collapseProps}
         />
       );
     }
@@ -138,6 +149,7 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
         icon={getConnectorTypeIcon(section.key)}
         label={getConnectorMetadata(section.key as IngestionConnectorType, t_i18n).label}
         count={section.totalCount}
+        {...collapseProps}
       />
     );
   };
@@ -211,16 +223,18 @@ const IntegrationsAvailable = ({ data }: IntegrationsAvailableProps) => {
               {visibleSections.map((section) => (
                 <Box component="section" key={section.key}>
                   {renderSectionHeader(section)}
-                  <Grid container spacing={2}>
-                    {section.items.map((item) => (
-                      <Grid
-                        key={item.key}
-                        size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
-                      >
-                        {renderItem(item)}
-                      </Grid>
-                    ))}
-                  </Grid>
+                  {!collapsedSections[section.key] && (
+                    <Grid container spacing={2}>
+                      {section.items.map((item) => (
+                        <Grid
+                          key={item.key}
+                          size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+                        >
+                          {renderItem(item)}
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
                 </Box>
               ))}
               {hasMore && <Box ref={sentinelRef} sx={{ height: 1 }} />}

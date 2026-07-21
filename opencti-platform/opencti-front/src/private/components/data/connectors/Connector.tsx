@@ -932,10 +932,23 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 alignItems: 'center',
                 gap: theme.spacing(1),
                 marginBottom: 0,
+                minWidth: 0,
               }}
             >
-              {managedConnectorDisplayName}
-              <div style={{ display: 'inline-block' }}>
+              {/* Long names are cropped on one line (full value in the
+                  tooltip) so the status chip stays aligned with the actions. */}
+              <Tooltip title={managedConnectorDisplayName} placement="bottom-start">
+                <span
+                  style={{
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {managedConnectorDisplayName}
+                </span>
+              </Tooltip>
+              <div style={{ display: 'inline-block', flexShrink: 0 }}>
                 <ConnectorStatusChip connector={connector} />
               </div>
             </TitleMainEntity>

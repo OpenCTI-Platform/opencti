@@ -2,8 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import useDebounceCallback from '../../../../../../../utils/hooks/useDebounceCallback';
 
 const GAP = 8;
-// Below this width a truncated chip is unreadable: show the +N chip instead.
-const MIN_CHIP_WIDTH = 110;
 // Approximate width of the "+N" overflow chip, reserved so it never gets
 // clipped by the container overflow.
 const OVERFLOW_CHIP_WIDTH = 48;
@@ -18,44 +16,31 @@ const useChipOverflow = (items: string[]) => {
     if (!containerRef.current) return;
 
     const containerWidth = containerRef.current.offsetWidth;
+    const widths = chipRefs.current
+      .slice(0, items.length)
+      .map((chip) => chip?.offsetWidth ?? 0);
+    const totalWidth = widths.reduce((acc, width, index) => acc + width + (index > 0 ? GAP : 0), 0);
 
-    let usedWidth = 0;
-    let visibleChips = 0;
-
-    for (let i = 0; i < chipRefs.current.length; i++) {
-      const chip = chipRefs.current[i];
-      if (!chip) continue;
-
-      const chipWidth = chip.offsetWidth;
-      const gapBeforeChip = i > 0 ? GAP : 0;
-      const widthNeeded = usedWidth + gapBeforeChip + chipWidth;
-
-      // Does this chip fit completely?
-      if (widthNeeded <= containerWidth) {
-        usedWidth = widthNeeded;
-        visibleChips++;
-        continue;
-      }
-
-      // Chip doesn't fit completely
-      const spaceLeft = containerWidth - usedWidth - gapBeforeChip;
-      const isLastChip = (i === items.length - 1);
-
-      // The last chip may shrink with an ellipsis while it stays readable;
-      // otherwise it is folded into the +N overflow chip (full values are
-      // exposed through its tooltip).
-      const shouldShowWithEllipsis = isLastChip && spaceLeft >= MIN_CHIP_WIDTH;
-
-      if (shouldShowWithEllipsis) {
-        visibleChips++;
-      } else if (spaceLeft < OVERFLOW_CHIP_WIDTH && visibleChips > 1) {
-        // Free up room so the +N chip itself is never clipped.
-        visibleChips--;
-      }
-
-      break;
+    // Everything fits: no overflow chip needed.
+    if (totalWidth <= containerWidth) {
+      setVisibleCount(items.length);
+      return;
     }
 
+    // Otherwise the +N chip is displayed: reserve its room first so it can
+    // never be clipped, then fit as many full chips as possible before it.
+    const available = containerWidth - GAP - OVERFLOW_CHIP_WIDTH;
+    let usedWidth = 0;
+    let visibleChips = 0;
+    for (let i = 0; i < widths.length; i++) {
+      const widthNeeded = usedWidth + (i > 0 ? GAP : 0) + widths[i];
+      if (widthNeeded > available) break;
+      usedWidth = widthNeeded;
+      visibleChips++;
+    }
+
+    // Always keep the first chip: when even the reserved space is too narrow
+    // it shrinks with an ellipsis (full values stay in the tooltips).
     setVisibleCount(Math.max(1, visibleChips));
   }, [items.length]);
 
