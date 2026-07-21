@@ -12,10 +12,12 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
 import SimpleTextField from '../../../../components/SimpleTextField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { commitMutation, defaultCommitMutation, fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
+import { labelsSearchQuery } from '../LabelsQuery';
+import { LabelsQuerySearchQuery$data } from '../__generated__/LabelsQuerySearchQuery.graphql';
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -76,69 +78,44 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     value: contextual ? inputValueContextual : '',
     color: '',
   };
-  const onSubmit = (
-    values: typeof initialValues,
-    { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void;
-      resetForm: () => void;
-    },
-  ) => {
-    const finalValues = {
-      ...values,
-    };
-    commitMutation({
-      ...defaultCommitMutation,
-      mutation: contextual
-        ? labelContextualMutation
-        : labelMutation,
-      variables: { input: finalValues },
-      updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_labels',
-          paginationOptions,
-          'labelAdd',
-        );
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-      },
-    });
-  };
-
-  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = {
-      ...values,
-    };
+  const onSubmit: FormikConfig<LabelAddInput>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
     if (dryrun && contextual) {
-      creationCallback({
-        labelAdd: values,
-      } as LabelCreationContextualMutation$data);
+      creationCallback({ labelAdd: values } as LabelCreationContextualMutation$data);
       handleClose();
+      return;
+    }
+    const data = await fetchQuery(labelsSearchQuery, { search: values.value, orderBy: 'value', orderMode: 'asc' }).toPromise();
+    const edges = (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? [];
+    const exists = edges.some((e) => (e.node.value ?? '') === values.value.trim());
+    if (exists) {
+      setErrors({ value: t_i18n('This label already exists') });
+      setSubmitting(false);
       return;
     }
     commitMutation({
       ...defaultCommitMutation,
-      mutation: labelContextualMutation,
-      variables: { input: finalValues },
+      mutation: contextual ? labelContextualMutation : labelMutation,
+      variables: { input: values },
+      updater: contextual ? undefined : (store: RecordSourceSelectorProxy) => {
+        insertNode(store, 'Pagination_labels', paginationOptions, 'labelAdd');
+      },
+      setSubmitting,
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (
-        response: LabelCreationContextualMutation$data,
-      ) => {
+      onCompleted: (response: LabelCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
-        creationCallback(response);
-        handleClose();
+        if (contextual) {
+          creationCallback(response);
+          handleClose();
+        }
       },
     });
   };
 
-  const onResetContextual = () => handleClose();
+  const onReset = () => handleClose();
 
   const renderClassic = () => {
     return (
@@ -200,8 +177,8 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
           initialValues={initialValues}
           required={required}
           validationSchema={labelValidation}
-          onSubmit={onSubmitContextual}
-          onReset={onResetContextual}
+          onSubmit={onSubmit}
+          onReset={onReset}
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
