@@ -27,6 +27,9 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
@@ -50,6 +53,9 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
