@@ -57,7 +57,7 @@ When the interface configuration is active, the table displays all current SMTP 
 | Username | SMTP username — Basic auth only |
 | Password | SMTP password — Basic auth only (stored encrypted) |
 | OAuth user | Email address of the SMTP mailbox — OAuth2 only |
-| OAuth client ID | OAuth2 client ID — stored encrypted |
+| OAuth client ID | OAuth2 client ID |
 | OAuth issuer | OIDC issuer URL used for token discovery and refresh |
 | Refresh token expiration date | Expiry date of the OAuth2 refresh token |
 
