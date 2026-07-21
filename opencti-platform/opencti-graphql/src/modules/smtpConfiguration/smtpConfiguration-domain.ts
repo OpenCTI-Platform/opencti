@@ -101,7 +101,8 @@ export const smtpConfigurationEdit = async (
     context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: sanitizeInputForAudit(input as unknown as Record<string, unknown>) },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
-  return (element as unknown as BasicStoreSettings).smtp_configuration!;
+  const stored = (element as unknown as BasicStoreSettings).smtp_configuration!;
+  return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
 };
 
 export const smtpConfigurationDelete = async (
