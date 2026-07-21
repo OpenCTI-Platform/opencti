@@ -17,8 +17,9 @@ const Connectors = () => {
 
   return (
     <div data-testid="connectors-page">
-      <IngestionMenu />
-      <PageContainer withRightMenu withGap>
+      {/* <IngestionMenu />
+      <PageContainer withRightMenu withGap> */}
+      <PageContainer withGap>
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Monitoring'), current: true }]}
           noMargin
