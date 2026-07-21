@@ -292,7 +292,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay, containerRef, enableReferences, containerId } = this.props;
+    const { initialLoading, dataColumns, relay, enableReferences, containerId } = this.props;
     const { addedStixCoreObjects, referenceDialogOpened } = this.state;
     const dataList = R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data);
     const computedAddedStixCoreObjects = {};
@@ -325,7 +325,6 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           addedElements={computedAddedStixCoreObjects}
           onToggleEntity={this.stixCoreObjectToggled.bind(this)}
           disableExport={true}
-          containerRef={containerRef}
         />
         {enableReferences && (
           <Formik
@@ -371,7 +370,6 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
   mapping: PropTypes.bool,
-  containerRef: PropTypes.object,
   enableReferences: PropTypes.bool,
   onLabelClick: PropTypes.func,
 };
