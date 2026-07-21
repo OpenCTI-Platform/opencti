@@ -157,6 +157,7 @@ const styles = (theme) => ({
 
 const TRUNCATE_CHARS_COUNT = 40;
 
+// TODO : transform into modern React Component + TS
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
     super(props);

@@ -23,6 +23,8 @@ const stixCoreRelationshipQuery = graphql`
   }
 `;
 
+// TODO : transform into modern React Component + TS
+
 class StixCoreRelationship extends Component {
   render() {
     const {
