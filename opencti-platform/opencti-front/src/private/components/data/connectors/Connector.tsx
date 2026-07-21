@@ -289,8 +289,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
       ).toPromise() as ConnectorTaxiiIngestionLookupQuery['response'] | null;
       const edges = data?.ingestionTaxiis?.edges ?? [];
       const exactMatch = edges.find((edge) => edge?.node?.name?.toLowerCase() === normalizedFeedName.toLowerCase());
-      const firstNode = edges.find((edge) => edge?.node?.id)?.node;
-      const ingestionId = exactMatch?.node?.id ?? firstNode?.id ?? null;
+      const ingestionId = exactMatch?.node?.id ?? null;
       if (!ingestionId) {
         MESSAGING$.notifyError(t_i18n('No TAXII feed found for this connector.'));
         return;
