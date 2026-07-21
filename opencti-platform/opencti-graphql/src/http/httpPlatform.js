@@ -585,8 +585,7 @@ const createApp = async (app, schema) => {
           : 'OpenCTI - Cyber Threat Intelligence Platform')
         .replace(/%APP_DESCRIPTION%/g, validator.escape(description))
         .replace(/%APP_FAVICON%/g, isNotEmptyField(settingFavicon) ? validator.escape(settingFavicon)
-          : `${basePath}/static/ext/favicon.png`)
-        .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
+          : './assets/static/favicon.png');
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
       res.set('Expires', '-1');
       res.set('Pragma', 'no-cache');
