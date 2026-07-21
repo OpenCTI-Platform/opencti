@@ -27,7 +27,6 @@ const ItemBoolean = ({
   const { t_i18n } = useFormatter();
 
   const renderTag = () => {
-    debugger;
     if (status === true) {
       return (
         <Tag
