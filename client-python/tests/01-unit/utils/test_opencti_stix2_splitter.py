@@ -172,7 +172,7 @@ def test_split_bundle_deduplicates_refs_preserving_order():
     assert root["object_refs"] == ["indicator--2", "indicator--1"]
 
 
-def test_split_bundle_groups_only_same_dependency_levels():
+def test_split_bundle_keeps_non_terminal_dependency_levels_as_singletons():
     stix_splitter = OpenCTIStix2Splitter()
     bundle = {
         "type": "bundle",
@@ -195,8 +195,30 @@ def test_split_bundle_groups_only_same_dependency_levels():
     assert expectations == 3
     assert [
         [item["id"] for item in split_bundle["objects"]] for split_bundle in bundles
-    ] == [["indicator--1", "indicator--2"], ["report--root"]]
-    assert [split_bundle["x_opencti_seq"] for split_bundle in bundles] == [1, 2]
+    ] == [["indicator--1"], ["indicator--2"], ["report--root"]]
+    assert [split_bundle["x_opencti_seq"] for split_bundle in bundles] == [1, 1, 2]
+
+
+def test_split_bundle_groups_terminal_dependency_level():
+    stix_splitter = OpenCTIStix2Splitter()
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--terminal-chunked",
+        "objects": [
+            {"id": "indicator--1", "type": "indicator"},
+            {"id": "indicator--2", "type": "indicator"},
+        ],
+    }
+
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle, use_json=False, max_bundle_objects=2
+    )
+
+    assert expectations == 2
+    assert [
+        [item["id"] for item in split_bundle["objects"]] for split_bundle in bundles
+    ] == [["indicator--1", "indicator--2"]]
+    assert [split_bundle["x_opencti_seq"] for split_bundle in bundles] == [1]
 
 
 def test_split_bundle_respects_max_serialized_bytes_for_grouped_objects():

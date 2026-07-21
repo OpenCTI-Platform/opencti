@@ -290,7 +290,10 @@ class OpenCTIStix2Splitter:
         :type event_version: str or None
         :param cleanup_inconsistent_bundle: whether to cleanup inconsistent references
         :type cleanup_inconsistent_bundle: bool
-        :param max_bundle_objects: maximum same-dependency-level objects per bundle
+        :param max_bundle_objects: maximum terminal same-dependency-level objects
+            per bundle; earlier dependency levels remain singleton bundles so
+            multiple queue consumers cannot start a dependent level before its
+            prerequisites have drained
         :type max_bundle_objects: int
         :param max_bundle_bytes: maximum serialized bytes per bundle when more than
             one object can be grouped; a single oversized object is emitted as-is
@@ -354,6 +357,8 @@ class OpenCTIStix2Splitter:
         number_expectations = 0
         chunk_items = []
         chunk_dep_size = None
+        chunk_max_bundle_objects = 1
+        terminal_dep_size = self.elements[-1]["nb_deps"] if self.elements else None
 
         def append_chunk(bundle_seq, items):
             if max_bundle_bytes is None:
@@ -429,14 +434,18 @@ class OpenCTIStix2Splitter:
 
         for element in self.elements:
             number_expectations += 1
+            element_max_bundle_objects = (
+                max_bundle_objects if element["nb_deps"] == terminal_dep_size else 1
+            )
             if chunk_items and (
                 element["nb_deps"] != chunk_dep_size
-                or len(chunk_items) >= max_bundle_objects
+                or len(chunk_items) >= chunk_max_bundle_objects
             ):
                 append_chunk(chunk_dep_size, chunk_items)
                 chunk_items = []
             if not chunk_items:
                 chunk_dep_size = element["nb_deps"]
+                chunk_max_bundle_objects = element_max_bundle_objects
             chunk_items.append(element)
 
         if chunk_items:
