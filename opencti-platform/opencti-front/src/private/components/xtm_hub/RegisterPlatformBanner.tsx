@@ -10,7 +10,7 @@ const RegisterPlatformBanner = () => {
 
   const text = (
     <>
-      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Register your platform to access and deploy them in one click.')}
+      <strong>{t_i18n('New feeds are available.')}</strong> {t_i18n('Connect your product to access and deploy them in one click.')}
     </>
   );
 
@@ -18,7 +18,7 @@ const RegisterPlatformBanner = () => {
     <TopBanner
       bannerColor="gradient_blue"
       bannerText={text}
-      buttonText={t_i18n('Register Platform')}
+      buttonText={t_i18n('Connect Product')}
       onButtonClick={() => navigate('/dashboard/settings/experience')}
       buttonSx={{ backgroundColor: '#007399', color: '#ffffff', fontWeight: 'bold' }}
       dismissible
