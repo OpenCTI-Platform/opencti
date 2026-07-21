@@ -59,10 +59,11 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   const [labelInput, setLabelInput] = useState('');
 
   const searchLabels = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLabelInput(event?.target?.value ? event.target.value : '');
+    const inputValue = event?.target?.value ?? '';
+    setLabelInput(inputValue);
 
     const data = await fetchQuery(labelsSearchQuery, {
-      search: event?.target?.value ? event.target.value : '',
+      search: inputValue.toLowerCase(),
       orderBy: 'value',
       orderMode: 'asc',
     }).toPromise();
