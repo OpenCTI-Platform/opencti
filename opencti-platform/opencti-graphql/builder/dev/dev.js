@@ -32,6 +32,7 @@ esbuild.build({
         'script/script-clean-relations.js',
         'script/script-insert-dataset.js',
         'script/script-wait-for-api.js',
+        'script/script-merge-user-plan.js',
         'src/utils/safeEjs.worker.ts'
     ],
     entryNames: '[name]',

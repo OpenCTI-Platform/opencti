@@ -30,6 +30,7 @@ esbuild.build({
         'src/back.js',
         'src/lock/child-lock.manager.ts',
         'script/script-clean-relations.js',
+        'script/script-merge-user-plan.js',
         'src/utils/safeEjs.worker.ts'
     ],
     entryNames: '[name]',
