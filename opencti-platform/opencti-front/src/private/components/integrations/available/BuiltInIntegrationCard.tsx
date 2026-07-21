@@ -69,14 +69,13 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             <Icon sx={{ fontSize: 28, color: theme.palette.primary.main }} />
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Sentence case: the V7 design language avoids all-caps text. */}
             <Typography
               variant="body2"
               sx={{
                 color: theme.palette.primary.main,
                 fontSize: 12,
                 fontWeight: 500,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
                 marginBottom: 0.5,
               }}
             >

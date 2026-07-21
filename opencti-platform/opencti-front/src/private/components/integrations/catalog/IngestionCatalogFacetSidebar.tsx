@@ -142,6 +142,7 @@ export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: F
   );
 };
 
+// Sentence case: the V7 design language avoids all-caps text.
 export const FacetGroupLabel = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
   return (
@@ -151,8 +152,6 @@ export const FacetGroupLabel = ({ children }: { children: React.ReactNode }) => 
         fontFamily: theme.typography.h1.fontFamily,
         fontSize: 12,
         fontWeight: 600,
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
         color: theme.palette.text.secondary,
       }}
     >

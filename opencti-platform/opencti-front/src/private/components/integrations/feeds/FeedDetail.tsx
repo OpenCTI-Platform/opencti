@@ -4,7 +4,7 @@ import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
 import { Box, Grid2 as Grid, Stack, Tooltip, Typography } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
 import IngestionTaxiiPopover from '@components/data/ingestionTaxii/IngestionTaxiiPopover';
@@ -22,6 +22,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import PageContainer from '../../../../components/PageContainer';
 import Card from '../../../../components/common/card/Card';
+import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -247,13 +248,12 @@ const DetailField = ({ label, children }: DetailFieldProps) => {
   const theme = useTheme();
   return (
     <Grid size={{ xs: 6, md: 4 }}>
+      {/* Sentence case: the V7 design language avoids all-caps text. */}
       <Typography
         sx={{
           fontFamily: theme.typography.h1.fontFamily,
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 600,
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
           color: theme.palette.text.secondary,
           marginBottom: 0.5,
         }}
@@ -299,67 +299,67 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
         noMargin
       />
 
-      <Box
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: 1,
-          border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          backgroundColor: theme.palette.background.paper,
-          padding: 3,
-        }}
-      >
-        <Stack direction="row" gap={2} alignItems="flex-start">
+      {/* Same flat header layout as the connector detail page. */}
+      <Stack direction="row" justifyContent="space-between" gap={2} sx={{ width: '100%' }}>
+        <Stack direction="row" gap={2} alignItems="center" sx={{ minWidth: 0 }}>
           <Box
             sx={{
-              height: 64,
-              width: 64,
+              height: 56,
+              width: 56,
               flexShrink: 0,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 1,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              border: `1px solid ${theme.palette.divider}`,
+              backgroundColor: theme.palette.background.paper,
             }}
           >
-            <Icon sx={{ fontSize: 32, color: theme.palette.primary.main }} />
+            <Icon sx={{ fontSize: 28, color: theme.palette.primary.main }} />
           </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ minWidth: 0 }}>
+            {/* Sentence case: the V7 design language avoids all-caps text. */}
             <Typography
               variant="body2"
               sx={{
                 color: theme.palette.primary.main,
                 fontSize: 12,
                 fontWeight: 500,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
               }}
             >
               {`${t_i18n('Built-in')} - ${t_i18n(definition.label)}`}
             </Typography>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Typography variant="h1" sx={{ fontSize: 22, fontWeight: 700 }}>
-                {node.name}
-              </Typography>
-              <ItemBoolean
-                status={running}
-                label={running ? t_i18n('Active') : t_i18n('Inactive')}
-              />
-            </Stack>
+            <TitleMainEntity
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: theme.spacing(1),
+                marginBottom: 0,
+              }}
+            >
+              {node.name}
+              <div style={{ display: 'inline-block' }}>
+                <ItemBoolean
+                  status={running}
+                  label={running ? t_i18n('Active') : t_i18n('Inactive')}
+                />
+              </div>
+            </TitleMainEntity>
             {node.description && (
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, maxWidth: 720 }}>
                 {node.description}
               </Typography>
             )}
           </Box>
+        </Stack>
+        <Stack direction="row" alignItems="center" gap={1}>
           {/* Same gate as the legacy feed list lines: read-only INGESTION
               users do not get the mutation actions. */}
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <FeedActionsPopover kind={kind} node={node} />
           </Security>
         </Stack>
-      </Box>
+      </Stack>
 
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 7 }}>

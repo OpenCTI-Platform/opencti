@@ -48,10 +48,8 @@ const Metric = ({ label, value }: MetricProps) => {
     <Box sx={{ minWidth: 0 }}>
       <Typography
         sx={{
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: 600,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
           color: theme.palette.text.disabled,
           whiteSpace: 'nowrap',
         }}
@@ -156,14 +154,13 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Stack direction="row" alignItems="center" gap={1}>
+              {/* Sentence case: the V7 design language avoids all-caps text. */}
               <Typography
                 variant="body2"
                 sx={{
                   color: theme.palette.primary.main,
                   fontSize: 11,
                   fontWeight: 500,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',

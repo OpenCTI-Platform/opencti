@@ -46,6 +46,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
 
         <Stack gap={1}>
           <Stack direction="row" gap={2} alignItems="center">
+            {/* Sentence case: the V7 design language avoids all-caps text. */}
             <Typography
               variant="h1"
               sx={{
@@ -53,7 +54,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
                 fontSize: 30,
                 opacity: 0.9,
                 marginBottom: 0,
-                textTransform: 'uppercase',
+                textTransform: 'none',
               }}
             >
               {connector.title}

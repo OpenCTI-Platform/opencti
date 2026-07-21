@@ -914,14 +914,13 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           </Box>
           <Box sx={{ minWidth: 0 }}>
             {typeLabel && (
+              // Sentence case: the V7 design language avoids all-caps text.
               <Typography
                 variant="body2"
                 sx={{
                   color: theme.palette.primary.main,
                   fontSize: 12,
                   fontWeight: 500,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
                 }}
               >
                 {typeLabel}

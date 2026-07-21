@@ -1,8 +1,9 @@
 import React, { ChangeEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Box, MenuItem, Stack, TextField } from '@mui/material';
+import { Box, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
 import Button from '@common/button/Button';
@@ -14,6 +15,7 @@ import { ConnectorsLogosQuery } from '@components/data/connectors/__generated__/
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import DeployedFacetSidebar, { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import DeployedIntegrationCard from '@components/integrations/deployed/DeployedIntegrationCard';
+import DeployedIntegrationLine from '@components/integrations/deployed/DeployedIntegrationLine';
 import useDeployedIntegrations from '@components/integrations/deployed/useDeployedIntegrations';
 import useDeployedIntegrationsFilters, { DeployedSection, DeployedSortMode } from '@components/integrations/deployed/useDeployedIntegrationsFilters';
 import { MarketplaceEmptyState, MarketplaceSectionHeader, ResultCountChip } from '@components/integrations/components/MarketplaceUi';
@@ -26,6 +28,11 @@ import useGranted, { MODULES } from '../../../../utils/hooks/useGranted';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(FIVE_SECONDS);
+
+type DeployedViewMode = 'cards' | 'lines';
+
+// Persisted so dense fleets keep the compact view across navigations.
+const VIEW_STORAGE_KEY = 'integrations_deployed_view';
 
 interface IntegrationsDeployedContentProps {
   data: IntegrationsData;
@@ -69,6 +76,15 @@ const IntegrationsDeployedContent = ({
   } = useDeployedIntegrationsFilters({ items, searchParams });
 
   const [searchInput, setSearchInput] = useState(filters.search);
+
+  const [view, setView] = useState<DeployedViewMode>(
+    () => (localStorage.getItem(VIEW_STORAGE_KEY) === 'lines' ? 'lines' : 'cards'),
+  );
+  const handleViewChange = (_: React.MouseEvent, value: DeployedViewMode | null) => {
+    if (!value) return;
+    localStorage.setItem(VIEW_STORAGE_KEY, value);
+    setView(value);
+  };
 
   const handleSearchInputSubmit = (value: string) => {
     setSearchInput(value);
@@ -143,6 +159,24 @@ const IntegrationsDeployedContent = ({
             <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
           </TextField>
           <ResultCountChip count={filteredItems.length} />
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={view}
+            onChange={handleViewChange}
+            sx={{ backgroundColor: theme.palette.background.paper }}
+          >
+            <ToggleButton value="cards" aria-label="cards" data-testid="integrations-view-cards">
+              <Tooltip title={t_i18n('Cards view')}>
+                <ViewModuleOutlined fontSize="small" />
+              </Tooltip>
+            </ToggleButton>
+            <ToggleButton value="lines" aria-label="lines" data-testid="integrations-view-lines">
+              <Tooltip title={t_i18n('Lines view')}>
+                <ViewListOutlined fontSize="small" />
+              </Tooltip>
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Stack>
 
         {sections.length === 0 ? (
@@ -159,7 +193,7 @@ const IntegrationsDeployedContent = ({
             )}
           />
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: view === 'lines' ? 3 : 4 }}>
             {visibleSections.map((section) => {
               const { label, icon } = typeMetadata(section.key);
               return (
@@ -169,16 +203,31 @@ const IntegrationsDeployedContent = ({
                     label={label}
                     count={section.totalCount}
                   />
-                  <Grid container spacing={2}>
-                    {section.items.map((item) => (
-                      <Grid
-                        key={item.id}
-                        size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
-                      >
-                        <DeployedIntegrationCard item={item} onChange={handleItemChange} />
-                      </Grid>
-                    ))}
-                  </Grid>
+                  {view === 'lines' ? (
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+                        backgroundColor: theme.palette.background.paper,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {section.items.map((item) => (
+                        <DeployedIntegrationLine key={item.id} item={item} onChange={handleItemChange} />
+                      ))}
+                    </Box>
+                  ) : (
+                    <Grid container spacing={2}>
+                      {section.items.map((item) => (
+                        <Grid
+                          key={item.id}
+                          size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+                        >
+                          <DeployedIntegrationCard item={item} onChange={handleItemChange} />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
                 </Box>
               );
             })}
