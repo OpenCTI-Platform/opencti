@@ -6,7 +6,6 @@ import { BYPASS, SETTINGS_SETMANAGEXTMHUB, getCapabilitiesName } from '../../uti
 import type { RedirectByPathQuery as RedirectByPathQueryType } from './__generated__/RedirectByPathQuery.graphql';
 
 export const XTM_HUB_AUTO_REGISTER_QUERY_PARAM = 'xtmHubAutoRegister';
-export const XTM_HUB_PRODUCT_NAME_QUERY_PARAM = 'productName';
 export const XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM = 'xtmHubPermissionRequired';
 
 const redirectByPathQuery = graphql`

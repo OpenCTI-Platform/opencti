@@ -94,7 +94,7 @@ describe('HomeDashboard', () => {
     });
 
     const { user } = testRender(<HomeDashboard />, {
-      route: `/dashboard?productName=toto&${XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM}=true`,
+      route: `/dashboard?foo=bar&${XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM}=true`,
       userContext,
     });
 
@@ -102,7 +102,7 @@ describe('HomeDashboard', () => {
     expect(screen.getByText('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(window.location.search).toBe('?productName=toto');
+      expect(window.location.search).toBe('?foo=bar');
     });
 
     await user.click(screen.getByRole('button', { name: 'Close' }));

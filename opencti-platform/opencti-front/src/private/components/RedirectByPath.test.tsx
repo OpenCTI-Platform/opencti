@@ -5,7 +5,7 @@ import { screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender from '../../utils/tests/test-render';
 import { SETTINGS_SETMANAGEXTMHUB } from '../../utils/hooks/useGranted';
-import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM, XTM_HUB_PRODUCT_NAME_QUERY_PARAM } from './RedirectByPath';
+import RedirectByPath, { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM } from './RedirectByPath';
 
 const LocationProbe = () => {
   const location = useLocation();
@@ -41,12 +41,12 @@ describe('RedirectByPath', () => {
         <Route path="/redirect/*" element={withSuspense(<RedirectByPath />)} />
         <Route path="/dashboard/settings/experience" element={<LocationProbe />} />
       </Routes>,
-      { route: '/redirect/connect-xtm-hub?productName=toto' },
+      { route: '/redirect/connect-xtm-hub?foo=bar' },
     );
     mockAuthorizedCapabilities(relayEnv);
 
     expect(await screen.findByTestId('location')).toHaveTextContent(
-      `/dashboard/settings/experience?${XTM_HUB_PRODUCT_NAME_QUERY_PARAM}=toto&${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`,
+      `/dashboard/settings/experience?foo=bar&${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true`,
     );
   });
 
@@ -69,12 +69,12 @@ describe('RedirectByPath', () => {
         <Route path="/redirect/*" element={withSuspense(<RedirectByPath />)} />
         <Route path="/dashboard" element={<LocationProbe />} />
       </Routes>,
-      { route: '/redirect/connect-xtm-hub?productName=toto' },
+      { route: '/redirect/connect-xtm-hub?foo=bar' },
     );
     mockUnauthorizedCapabilities(relayEnv);
 
     expect(await screen.findByTestId('location')).toHaveTextContent(
-      `/dashboard?${XTM_HUB_PRODUCT_NAME_QUERY_PARAM}=toto&${XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM}=true`,
+      `/dashboard?foo=bar&${XTM_HUB_PERMISSION_REQUIRED_QUERY_PARAM}=true`,
     );
   });
 
