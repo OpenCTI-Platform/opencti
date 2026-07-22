@@ -3855,6 +3855,13 @@ export type CatalogEdge = {
   node: Catalog;
 };
 
+export type CatalogVersionInfo = {
+  __typename?: 'CatalogVersionInfo';
+  revision?: Maybe<Scalars['String']['output']>;
+  status: Scalars['String']['output'];
+  updated_at?: Maybe<Scalars['String']['output']>;
+};
+
 export enum CatalogsOrdering {
   Score = '_score',
   Name = 'name'
@@ -17347,6 +17354,7 @@ export type Mutation = {
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
   queryTaskAdd: BackgroundTask;
+  refreshCatalog: Scalars['Boolean']['output'];
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
   registerConnector?: Maybe<Connector>;
@@ -24460,6 +24468,7 @@ export type Query = {
   caseTemplates?: Maybe<CaseTemplateConnection>;
   cases?: Maybe<CaseConnection>;
   catalog?: Maybe<Catalog>;
+  catalogVersionInfo: CatalogVersionInfo;
   catalogs: Array<Catalog>;
   channel?: Maybe<Channel>;
   channels?: Maybe<ChannelConnection>;
@@ -39698,6 +39707,7 @@ export type ResolversTypes = ResolversObject<{
   Catalog: ResolverTypeWrapper<GraphqlCatalog>;
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
+  CatalogVersionInfo: ResolverTypeWrapper<CatalogVersionInfo>;
   CatalogsOrdering: CatalogsOrdering;
   CertAuthConfig: ResolverTypeWrapper<CertAuthConfig>;
   CertAuthConfigInput: CertAuthConfigInput;
@@ -40833,6 +40843,7 @@ export type ResolversParentTypes = ResolversObject<{
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
+  CatalogVersionInfo: CatalogVersionInfo;
   CertAuthConfig: CertAuthConfig;
   CertAuthConfigInput: CertAuthConfigInput;
   ChangePasswordInput: ChangePasswordInput;
@@ -42952,6 +42963,12 @@ export type CatalogConnectionResolvers<ContextType = any, ParentType extends Res
 export type CatalogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogEdge'] = ResolversParentTypes['CatalogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
+}>;
+
+export type CatalogVersionInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogVersionInfo'] = ResolversParentTypes['CatalogVersionInfo']> = ResolversObject<{
+  revision?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
@@ -47840,6 +47857,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
+  refreshCatalog?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
@@ -49457,6 +49475,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   caseTemplates?: Resolver<Maybe<ResolversTypes['CaseTemplateConnection']>, ParentType, ContextType, Partial<QueryCaseTemplatesArgs>>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<QueryCasesArgs>>;
   catalog?: Resolver<Maybe<ResolversTypes['Catalog']>, ParentType, ContextType, RequireFields<QueryCatalogArgs, 'id'>>;
+  catalogVersionInfo?: Resolver<ResolversTypes['CatalogVersionInfo'], ParentType, ContextType>;
   catalogs?: Resolver<Array<ResolversTypes['Catalog']>, ParentType, ContextType>;
   channel?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<QueryChannelArgs, 'id'>>;
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
@@ -53517,6 +53536,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
+  CatalogVersionInfo?: CatalogVersionInfoResolvers<ContextType>;
   CertAuthConfig?: CertAuthConfigResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;

@@ -148,6 +148,13 @@
     },
     "forgot_password": {
       "otp_ttl_second": 600
+    },
+    "catalog_manager": {
+      "enabled": true,
+      "lock_key": "catalog_manager_lock",
+      "interval": null,
+      "request_timeout": 15000,
+      "custom_catalog_refresh_endpoint_uri": "./connector-catalog.local.json"
     }
   },
   "demo_mode": false,
