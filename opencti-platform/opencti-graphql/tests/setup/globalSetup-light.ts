@@ -13,12 +13,10 @@ import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
-import { createTestUsers, isPlatformAlive } from '../utils/testQuery';
 import { initializeStreamStack } from '../../src/database/stream/stream-handler';
 import { initializeAuthenticationProviders } from '../../src/modules/authenticationProvider/providers';
 import { initializeAdminUser } from '../../src/domain/user';
 import { checkSystemDependencies } from '../../src/boot-utils';
-import { wait } from '../../src/database/utils';
 
 /**
  * Light global setup for the integration-light test suite.
@@ -46,18 +44,6 @@ const initializePlatform = async () => {
   logApp.info(`[vitest-global-setup-light] Platform initialized in ${new Date().getTime() - stopTime} ms`);
 };
 
-const waitPlatformIsAlive = async (): Promise<true> => {
-  const startTime = new Date().getTime();
-  const isAlive = await isPlatformAlive();
-  if (!isAlive) {
-    logApp.info('[vitest-global-setup-light] ping platform ...');
-    await wait(1000);
-    return waitPlatformIsAlive();
-  }
-  logApp.info(`[vitest-global-setup-light] platform is alive in ${new Date().getTime() - startTime} ms`);
-  return true;
-};
-
 export async function setup() {
   const stopTime = new Date().getTime();
   await checkSystemDependencies();
@@ -67,13 +53,8 @@ export async function setup() {
   await cacheManager.start();
   await initExclusionListCache();
 
-  // Initialize platform data (Settings, markings, admin user) — no cleanup
+  // Initialize platform data (Settings, markings, admin user) — no cleanup, no HTTP server
   await initializePlatform();
-
-  // Wait for platform to be alive and create test users
-  await waitPlatformIsAlive();
-  logApp.info('[vitest-global-setup-light] Creating test users...');
-  await createTestUsers();
 
   logApp.info(`[vitest-global-setup-light] Setup done in ${new Date().getTime() - stopTime} ms`);
 }
