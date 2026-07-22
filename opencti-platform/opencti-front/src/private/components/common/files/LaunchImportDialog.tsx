@@ -251,7 +251,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       enableReinitialize={true}
       initialValues={{
         connector_id: '',
-        validation_mode: isDraftContext ? 'draft' : 'workbench',
+        validation_mode: 'draft',
         configuration: '',
         objectMarking: [],
         ...draftInitialValues,
@@ -332,8 +332,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
                 >
-                  <MenuItem value="workbench">Workbench</MenuItem>
                   <MenuItem value="draft">Draft</MenuItem>
+                  <MenuItem value="workbench">Workbench</MenuItem>
                 </Field>
               )}
               {values.validation_mode === 'draft' && (

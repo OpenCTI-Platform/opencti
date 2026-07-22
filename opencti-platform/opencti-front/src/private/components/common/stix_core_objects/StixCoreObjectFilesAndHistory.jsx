@@ -338,7 +338,7 @@ const StixCoreObjectFilesAndHistory = ({
       </Grid>
       <Formik
         enableReinitialize={true}
-        initialValues={{ connector_id: '', validation_mode: draftContext ? 'draft' : 'workbench', configuration: '', objectMarking: [], ...draftInitialValues }}
+        initialValues={{ connector_id: '', validation_mode: 'draft', configuration: '', objectMarking: [], ...draftInitialValues }}
         validationSchema={importValidation(t_i18n, selectedConnector?.configurations?.length > 0)}
         onSubmit={onSubmitImport}
         onReset={handleCloseImport}
@@ -388,16 +388,16 @@ const StixCoreObjectFilesAndHistory = ({
                   setFieldValue={setFieldValue}
                 >
                   <MenuItem
-                    key="workbench"
-                    value="workbench"
-                  >
-                    Workbench
-                  </MenuItem>
-                  <MenuItem
                     key="draft"
                     value="draft"
                   >
                     Draft
+                  </MenuItem>
+                  <MenuItem
+                    key="workbench"
+                    value="workbench"
+                  >
+                    Workbench
                   </MenuItem>
                 </Field>
               )}

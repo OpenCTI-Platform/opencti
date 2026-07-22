@@ -141,7 +141,7 @@
     "csv_ingestion": {
       "max_bundle_size": 1000
     },
-    "validation_mode": "workbench",
+    "validation_mode": "draft",
     "dissemination_list": {
       "to_email": "no-reply@filigran.io",
       "max_list_size": 500
