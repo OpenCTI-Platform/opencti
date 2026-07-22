@@ -2,6 +2,7 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { UnsupportedError } from '../../config/errors';
 import { logApp } from '../../config/conf';
+import { idGenFromData } from '../../schema/identifier';
 import type { CatalogContract, CatalogDefinition, CatalogType } from './catalog-types';
 
 type InternalCatalog = {
@@ -103,7 +104,7 @@ export const buildCatalogMapFromDefinitions = (catalogDefinitions: CatalogDefini
         id: catalog.id,
         entity_type: 'Catalog',
         parent_types: ['Internal'],
-        standard_id: `catalog--${catalog.id}`,
+        standard_id: idGenFromData('Catalog', { id: catalog.id }),
         name: catalog.name,
         description: catalog.description,
         contracts: catalog.contracts.map((contract) => JSON.stringify(sanitizeManagerConfigurationSchema(contract))),

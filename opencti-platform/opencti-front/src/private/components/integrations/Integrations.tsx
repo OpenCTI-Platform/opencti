@@ -338,17 +338,12 @@ const Integrations = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Integrations'));
 
-  const lastSeenCatalogRevision = useRef<string | null | undefined>(undefined);
+  const lastSeenCatalogRevision = useRef<string | null>(null);
   const [catalogFetchKey, setCatalogFetchKey] = useState(0);
 
   const handleCatalogVersionChange = useCallback((revision: string | null) => {
-    const prev = lastSeenCatalogRevision.current;
     if (!revision) return;
-    if (prev === undefined) {
-      lastSeenCatalogRevision.current = revision;
-      return;
-    }
-    if (prev !== revision) {
+    if (lastSeenCatalogRevision.current !== revision) {
       lastSeenCatalogRevision.current = revision;
       setCatalogFetchKey((k) => k + 1);
     }
