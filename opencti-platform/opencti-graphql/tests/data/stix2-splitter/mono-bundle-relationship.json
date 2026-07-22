@@ -1,0 +1,16 @@
+{
+  "id": "bundle--1f126d0c-356c-43af-88f8-7a3b695dee83",
+  "objects": [
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
+      "type": "relationship",
+      "relationship_type": "part-of",
+      "created_by_ref": "identity--not-available",
+      "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3d"
+    }
+  ],
+  "spec_version": "2.1",
+  "type": "bundle",
+  "x_opencti_seq": 1
+}

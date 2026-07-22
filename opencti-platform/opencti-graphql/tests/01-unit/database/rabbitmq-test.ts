@@ -30,6 +30,12 @@ vi.mock('../../../src/database/utils', () => ({
   isEmptyField: vi.fn((v: unknown) => !v),
   RABBIT_QUEUE_PREFIX: 'opencti_',
   wait: vi.fn(),
+  toBase64: vi.fn((v: string) => Buffer.from(v, 'utf-8').toString('base64')),
+  fromBase64: vi.fn((v: string) => Buffer.from(v, 'base64').toString('utf-8')),
+}));
+
+vi.mock('../../../src/domain/work', () => ({
+  updateExpectationsNumber: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -66,7 +72,7 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
-import { getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
+import { buildSplitMessages, getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -257,5 +263,54 @@ describe('rabbitmq: getConnectorQueueSize', () => {
 
     const result = await getConnectorQueueSize(context, user, 'connector-abc');
     expect(result).toBe(15);
+  });
+});
+
+describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)', () => {
+  const toBundle = (objects: unknown[]) => Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects }), 'utf-8').toString('base64');
+  const decode = (base64Content: string) => JSON.parse(Buffer.from(base64Content, 'base64').toString('utf-8'));
+
+  it('returns null for non-bundle messages', () => {
+    const message = { type: 'event', content: 'irrelevant' };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('returns null for messages explicitly marked no_split', () => {
+    const message = {
+      type: 'bundle',
+      no_split: true,
+      content: toBundle([{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }]),
+    };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('returns null for single-object bundles', () => {
+    const message = { type: 'bundle', content: toBundle([{ id: 'malware--only', type: 'malware', name: 'Only' }]) };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('splits a multi-object bundle into one message per object, preserving other fields', () => {
+    const objects = [
+      { id: 'marking-definition--m1', type: 'marking-definition', definition_type: 'tlp', name: 'TLP:RED' },
+      { id: 'malware--m', type: 'malware', name: 'Mal', object_marking_refs: ['marking-definition--m1'] },
+      { id: 'indicator--i', type: 'indicator', name: 'Ind', pattern: "[file:hashes.MD5 = 'x']", object_marking_refs: ['marking-definition--m1'] },
+      { id: 'relationship--r', type: 'relationship', relationship_type: 'based-on', source_ref: 'indicator--i', target_ref: 'malware--m' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', applicant_id: 'user-1', update: true };
+
+    const splitMessages = buildSplitMessages(message);
+
+    expect(splitMessages).not.toBeNull();
+    expect(splitMessages).toHaveLength(objects.length);
+    const ids = (splitMessages as { content: string; no_split: boolean; work_id: string; applicant_id: string; update: boolean }[]).map((msg) => {
+      expect(msg.no_split).toBe(true);
+      expect(msg.work_id).toBe('work-1');
+      expect(msg.applicant_id).toBe('user-1');
+      expect(msg.update).toBe(true);
+      const decoded = decode(msg.content);
+      expect(decoded.objects).toHaveLength(1);
+      return decoded.objects[0].id;
+    });
+    expect(new Set(ids)).toEqual(new Set(objects.map((o) => o.id)));
   });
 });

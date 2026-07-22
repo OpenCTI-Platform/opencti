@@ -83,7 +83,7 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
       content,
       work_id: target_work_id,
       update: true,
-    });
+    }, context, user);
     return true;
   } catch (err) {
     throw UnsupportedError('Invalid bundle', { cause: err });

@@ -6,12 +6,14 @@ import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf
 import { DatabaseError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { isEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
+import { isEmptyField, RABBIT_QUEUE_PREFIX, wait, toBase64, fromBase64 } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { s3ConnectionConfig } from './raw-file-storage';
+import { Stix2Splitter } from '../utils/stix2-splitter';
+import { updateExpectationsNumber } from '../domain/work';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
@@ -695,8 +697,37 @@ export const rabbitMQIsAlive = async () => {
   return assertExchangeResult;
 };
 
-export const pushToWorkerForConnector = (connectorId, message) => {
+/**
+ * Pure splitting decision for an outgoing worker message.
+ * Returns null when the message shouldn't be split (not a bundle, already flagged
+ * no_split, or the bundle only has a single object) - in that case the caller must
+ * fall back to sending the original message unchanged.
+ * Returns the array of one-object-per-message replacements otherwise.
+ */
+export const buildSplitMessages = (message) => {
+  if (message.type !== 'bundle' || message.no_split) {
+    return null;
+  }
+  const splitter = new Stix2Splitter();
+  const { bundles } = splitter.splitBundleWithExpectations(fromBase64(message.content));
+  if (bundles.length <= 1) {
+    return null;
+  }
+  return bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
+};
+
+export const pushToWorkerForConnector = async (connectorId, message, context, user) => {
   const routingKey = pushRouting(connectorId);
+  const splitMessages = buildSplitMessages(message);
+  if (splitMessages) {
+    if (message.work_id && context && user) {
+      await updateExpectationsNumber(context, user, message.work_id, splitMessages.length);
+    }
+    for (let i = 0; i < splitMessages.length; i += 1) {
+      await send(WORKER_EXCHANGE, routingKey, JSON.stringify(splitMessages[i]));
+    }
+    return undefined;
+  }
   return send(WORKER_EXCHANGE, routingKey, JSON.stringify(message));
 };
 
