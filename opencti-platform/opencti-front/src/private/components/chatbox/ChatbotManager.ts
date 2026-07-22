@@ -1,5 +1,5 @@
 import type { Theme } from '../../../components/Theme';
-import { APP_BASE_PATH, fileUri } from '../../../relay/environment';
+import { APP_BASE_PATH } from '../../../relay/environment';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -120,7 +120,7 @@ class ChatbotManager {
         showTitle: true,
         showAgentMessages: false,
         title: this.t_i18n('Ask Ariane'),
-        titleAvatarSrc: fileUri(embleme),
+        titleAvatarSrc: embleme,
         titleBackgroundColor: 'linear-gradient(90deg, #3C108C 0%, #5E1AD5 100%)',
         welcomeMessage: this.t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
         errorMessage: this.t_i18n('Sorry, an error has occurred, please try again later.'),

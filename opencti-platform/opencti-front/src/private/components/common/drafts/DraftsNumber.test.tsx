@@ -4,7 +4,6 @@ import testRender from '../../../../utils/tests/test-render';
 
 vi.mock('../../../../relay/environment', () => ({
   APP_BASE_PATH: '',
-  fileUri: (f: string) => f,
   MESSAGING$: { messages$: { subscribe: () => ({}) } },
   environment: {},
   fetchQuery: vi.fn(),

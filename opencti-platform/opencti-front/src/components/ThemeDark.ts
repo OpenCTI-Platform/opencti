@@ -1,6 +1,5 @@
 import { buttonClasses } from '@mui/material/Button';
 import type { ExtendedThemeOptions } from './Theme';
-import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_dark.svg';
 import LogoCollapsed from '../static/images/logo_dark.svg';
 import { hexToRGB } from '../utils/Colors';
@@ -36,8 +35,8 @@ const ThemeDark = (
   accent: string | null = null,
   text_color = THEME_DARK_DEFAULT_TEXT,
 ): ExtendedThemeOptions => ({
-  logo: logo || fileUri(LogoText),
-  logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
+  logo: logo || LogoText,
+  logo_collapsed: logo_collapsed || LogoCollapsed,
   borderRadius: 4,
   palette: {
     mode: 'dark',
