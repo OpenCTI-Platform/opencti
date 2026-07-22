@@ -718,6 +718,10 @@ describe('Drafts workspace resolver testing', () => {
     expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
     const updateLinkedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
 
+    // Ensure we are not already in a draft context left over from a previous test before
+    // creating the "live" report below.
+    await modifyAdminDraftContext('');
+
     // Create a report live (outside of any draft)
     const EXISTING_REPORT = {
       input: {
