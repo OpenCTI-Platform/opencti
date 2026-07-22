@@ -6,7 +6,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { ALLOW_EMAIL_REWRITE, SMTP_JSON_CONFIG, smtpTest } from '../../database/smtp';
-import { encryptSmtpSecret } from './smtpConfiguration-crypto';
+import { decryptSmtpSecret, encryptSmtpSecret } from './smtpConfiguration-crypto';
 import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -103,6 +103,29 @@ export const smtpConfigurationEdit = async (
   await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
   const stored = (element as unknown as BasicStoreSettings).smtp_configuration!;
   return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
+};
+
+export const smtpConfigurationRefreshTokenUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  previousRefreshToken: string,
+  newRefreshToken: string,
+): Promise<void> => {
+  if (newRefreshToken === previousRefreshToken) return;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const existing = settings.smtp_configuration;
+  if (!existing?.use_db_config || existing.auth_type !== SmtpAuthType.Oauth2) return;
+  const storedRefreshToken = await decryptSmtpSecret(existing.oauth_refresh_token_encrypted);
+  if (storedRefreshToken !== previousRefreshToken) return;
+  const oauthRefreshTokenEncrypted = await encryptSmtpSecret(newRefreshToken);
+  const patch = {
+    smtp_configuration: {
+      ...existing,
+      oauth_refresh_token_encrypted: oauthRefreshTokenEncrypted,
+    },
+  };
+  const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
+  await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
 export const smtpConfigurationDelete = async (
