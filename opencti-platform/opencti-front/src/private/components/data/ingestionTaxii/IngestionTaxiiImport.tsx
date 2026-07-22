@@ -61,7 +61,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
   };
 
   const handleDownloadError = () => {
-    navigate('/dashboard/data/ingestion/taxii');
+    navigate('/dashboard/integrations/deployed?kind=taxii');
     MESSAGING$.notifyError(t_i18n('An error occurred while importing Taxii Feed configuration.'));
   };
 

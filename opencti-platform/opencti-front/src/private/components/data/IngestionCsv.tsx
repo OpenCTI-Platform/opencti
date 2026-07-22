@@ -1,7 +1,6 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import React, { useContext } from 'react';
-import IngestionMenu from '@components/data/IngestionMenu';
 import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
 import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
@@ -27,7 +26,7 @@ const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 50px 0',
+    padding: '0 0 50px 0',
   },
 }));
 
@@ -163,15 +162,13 @@ const IngestionCsv = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu />
       </div>
     );
   }
 
   return (
     <div className={classes.container} data-testid="csv-feeds-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
-      <IngestionMenu />
+      <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=csv' }, { label: t_i18n('CSV feeds'), current: true }]} />
       {renderLines()}
     </div>
   );

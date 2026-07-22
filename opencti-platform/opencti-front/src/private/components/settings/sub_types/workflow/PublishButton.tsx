@@ -5,6 +5,7 @@ import Dialog from '@common/dialog/Dialog';
 import CircleIcon from '@mui/icons-material/Circle';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useFormatter } from '../../../../../components/i18n';
+import RestoreConfirmDialog from './RestoreConfirmDialog';
 
 interface ValidationError {
   type: string;
@@ -15,7 +16,7 @@ interface ValidationError {
 const BUTTON_WIDTH = 120;
 
 interface ValidationStatus {
-  published: boolean;
+  hasUnpublishedChanges: boolean;
   validationErrors: ValidationError[];
 }
 
@@ -23,14 +24,24 @@ interface PublishButtonProps {
   validationStatus: ValidationStatus | null;
   onPublish: () => void;
   onReset: () => void;
+  onRestore: () => void;
+  hasPublishedVersion: boolean;
   disabled?: boolean;
 }
 
-const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: PublishButtonProps) => {
+const PublishButton = ({
+  validationStatus,
+  onPublish,
+  onReset,
+  onRestore,
+  hasPublishedVersion,
+  disabled,
+}: PublishButtonProps) => {
   const { t_i18n } = useFormatter();
   const anchorRef = useRef<HTMLDivElement>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [restoreConfirmOpen, setRestoreConfirmOpen] = useState(false);
 
   const handleToggle = () => setDropdownOpen((prev) => !prev);
 
@@ -49,25 +60,33 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
     onReset();
   };
 
-  const menuWidth = anchorRef.current?.offsetWidth;
+  const handleRestoreClick = () => {
+    setDropdownOpen(false);
+    setRestoreConfirmOpen(true);
+  };
+
+  const handleConfirmRestore = () => {
+    setRestoreConfirmOpen(false);
+    onRestore();
+  };
 
   if (!validationStatus) {
     return null;
   }
 
-  const { published, validationErrors } = validationStatus;
+  const { hasUnpublishedChanges, validationErrors } = validationStatus;
 
   let mainButtonTooltip: string;
   let mainButtonIcon: React.ReactNode;
   let mainButtonDisabled: boolean;
   let mainButtonOnClick: (() => void) | undefined;
 
-  if (published && validationErrors.length === 0) {
+  if (!hasUnpublishedChanges && validationErrors.length === 0) {
     mainButtonTooltip = t_i18n('Workflow is published');
     mainButtonIcon = <CircleIcon color="success" />;
     mainButtonDisabled = true;
     mainButtonOnClick = undefined;
-  } else if (!published && validationErrors.length > 0) {
+  } else if (hasUnpublishedChanges && validationErrors.length > 0) {
     mainButtonTooltip = t_i18n('Click to see validation errors');
     mainButtonIcon = <CircleIcon color="error" />;
     mainButtonDisabled = disabled ?? false;
@@ -90,7 +109,7 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
             disabled={mainButtonDisabled}
             sx={{ width: BUTTON_WIDTH, borderRadius: '4px 0 0 4px' }}
           >
-            {published && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
+            {!hasUnpublishedChanges && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
           </Button>
           <Button
             variant="secondary"
@@ -118,9 +137,12 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
             {...TransitionProps}
             style={{ transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom' }}
           >
-            <Paper sx={{ width: menuWidth }}>
+            <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
+                  <MenuItem onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
+                    {t_i18n('Restore published version')}
+                  </MenuItem>
                   <MenuItem onClick={handleResetClick}>
                     {t_i18n('Reset workflow')}
                   </MenuItem>
@@ -146,6 +168,11 @@ const PublishButton = ({ validationStatus, onPublish, onReset, disabled }: Publi
           </Button>
         </DialogActions>
       </Dialog>
+      <RestoreConfirmDialog
+        open={restoreConfirmOpen}
+        onClose={() => setRestoreConfirmOpen(false)}
+        onConfirm={handleConfirmRestore}
+      />
     </>
   );
 };

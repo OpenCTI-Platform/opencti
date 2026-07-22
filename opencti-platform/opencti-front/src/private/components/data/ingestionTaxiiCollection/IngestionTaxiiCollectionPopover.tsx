@@ -44,12 +44,15 @@ interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables | null | undefined;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
   running,
   paginationOptions,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -114,6 +117,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
   };

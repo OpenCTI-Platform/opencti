@@ -2,6 +2,7 @@ import Button from '@common/button/Button';
 import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import { RocketLaunchOutlined } from '@mui/icons-material';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
@@ -23,11 +24,13 @@ const EnterpriseEditionButton = ({
   feature,
   inLine = false,
   disabled = false,
+  withEEChip = false,
   title = 'Manage your Enterprise Edition license',
 }: {
   feature?: string;
   inLine?: boolean;
   disabled?: boolean;
+  withEEChip?: boolean;
   title?: string;
 }) => {
   const { t_i18n } = useFormatter();
@@ -39,6 +42,12 @@ const EnterpriseEditionButton = ({
     settings: { id: settingsId },
   } = useAuth();
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  // Standard EE marker on the button; clicks pass through to the button.
+  const eeChip = withEEChip && (
+    <span style={{ pointerEvents: 'none', display: 'inline-flex' }}>
+      <EEChip feature={feature} clickable={false} />
+    </span>
+  );
   return (
     <>
       <EnterpriseEditionAgreement
@@ -61,6 +70,7 @@ const EnterpriseEditionButton = ({
           }}
         >
           {t_i18n(title)}
+          {eeChip}
         </Button>
       ) : (
         <Button
@@ -71,6 +81,7 @@ const EnterpriseEditionButton = ({
           classes={{ root: classes.button }}
         >
           {t_i18n('Create a feedback')}
+          {eeChip}
         </Button>
       )}
       <FeedbackCreation

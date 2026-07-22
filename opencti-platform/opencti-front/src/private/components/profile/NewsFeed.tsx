@@ -18,7 +18,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
-import useChipOverflow from '../data/IngestionCatalog/components/card/usecases/useChipOverflow';
+import useChipOverflow from '../integrations/catalog/components/card/usecases/useChipOverflow';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
 import { getNewsFeedIcon, isKnownNewsFeedType } from '../../../utils/NewsFeed';
 

@@ -26,7 +26,7 @@ const StixCoreObjectFormSelector: FunctionComponent<StixCoreObjectFormSelectorPr
     >
       {({ onClose }) => {
         const handleFormSelect = (formId: string) => {
-          navigate(`/dashboard/data/ingestion/forms/${formId}`);
+          navigate(`/dashboard/integrations/feeds/form/${formId}`);
           onClose();
         };
         return (

@@ -9,7 +9,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
-import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
@@ -86,23 +85,21 @@ const Sync = () => {
     return (
       <div style={{
         margin: 0,
-        padding: '0 200px 50px 0',
+        padding: '0 0 50px 0',
       }}
       >
         <MuiAlert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
         </MuiAlert>
-        <IngestionMenu />
       </div>
     );
   }
 
   return (
     <div data-testid="streams-page">
-      <IngestionMenu />
-      <PageContainer withRightMenu>
+      <PageContainer>
         <Breadcrumbs
-          elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
+          elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=sync' }, { label: t_i18n('OpenCTI Streams'), current: true }]}
         />
         <ListLines
           sortBy={viewStorage.sortBy}

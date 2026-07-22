@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { IngestionTypedProperty } from '@components/data/IngestionCatalog';
+import type { IngestionTypedProperty } from '@components/integrations/catalog/types';
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from './buildContractPropertyGroups';
 import { ManagerContractProperty } from './reconcileManagedConnectorContractDataWithSchema';
 
