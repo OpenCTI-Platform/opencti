@@ -5,7 +5,7 @@ name: OpenCTI CD Rolling
 on:
   push:
     branches:
-      # FIXME to move to master at the end
+      # FIXME to move to master & lts at the end
       - issue/17219-node-sbom
 
 jobs:
@@ -73,46 +73,45 @@ jobs:
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=opencti-front.cdx.json
 
-      - name: Install cyclonedx-cli
-        run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
-          chmod +x /usr/local/bin/cyclonedx-cli
-
-      - name: Create parent platform BOM
+      - name: Assemble hierarchical SBOM
         working-directory: opencti-platform
         run: |
-          cat > platform-sbom.json <<'EOF'
-          {
-            "bomFormat": "CycloneDX",
-            "specVersion": "1.6",
-            "version": 1,
-            "metadata": {
-              "manufacturer": {
+          APP_VERSION=$(jq -r '.version' opencti-graphql/package.json)
+          jq -n \
+            --arg version "$APP_VERSION" \
+            --slurpfile graphql opencti-graphql/opencti-graphql.cdx.json \
+            --slurpfile front opencti-front/opencti-front.cdx.json \
+            '{
+              "bomFormat": "CycloneDX",
+              "specVersion": "1.6",
+              "version": 1,
+              "metadata": {
+                "manufacturer": {
                   "name": "Filigran SAS",
-                  "address": {
-                    "country": "FR"
-                  },
-                  "url": [
-                    "https://filigran.io"
-                  ]
+                  "address": { "country": "FR" },
+                  "url": ["https://filigran.io"]
+                },
+                "component": {
+                  "type": "application",
+                  "name": "opencti-platform",
+                  "version": $version
+                }
               },
-              "component": {
-                "type": "application",
-                "name": "opencti-platform",
-                "version": "${{ github.sha }}"
-              }
-            },
-            "components": []
-          }
-          EOF
-
-      - name: Merge graphql and front SBOMs into platform
-        working-directory: opencti-platform
-        run: |
-          cyclonedx-cli merge \
-            --input-files platform-sbom.json opencti-graphql/opencti-graphql.cdx.json opencti-front/opencti-front.cdx.json \
-            --output-file opencti-platform-app.cdx.json \
-            --hierarchical
+              "components": [
+                {
+                  "type": "application",
+                  "name": "opencti-graphql",
+                  "version": $version,
+                  "components": $graphql[0].components
+                },
+                {
+                  "type": "application",
+                  "name": "opencti-front",
+                  "version": $version,
+                  "components": $front[0].components
+                }
+              ]
+            }' > opencti-platform-app.cdx.json
 
       - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
@@ -238,11 +237,6 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
-      - name: Install cyclonedx-cli
-        run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
-          chmod +x /usr/local/bin/cyclonedx-cli
-
       - name: Download platform docker SBOM
         uses: actions/download-artifact@v8
         with:
@@ -255,13 +249,29 @@ jobs:
           name: opencti-platform-app-sbom
           path: sbom-work/
 
-      - name: Merge SBOMs
+      - name: Merge docker SBOM into app SBOM
+        working-directory: sbom-work
+        run: |
+          DOCKER_SBOM=$(ls filigran-platform-*.cdx.json)
+          jq --slurpfile docker "$DOCKER_SBOM" \
+            '.components += [{
+              "type": "container",
+              "name": "opencti-docker",
+              "version": .metadata.component.version,
+              "components": $docker[0].components
+            }]' opencti-platform-app.cdx.json > merged.cdx.json
+          mv merged.cdx.json "$DOCKER_SBOM"
+
+      - name: Install cyclonedx-cli
+        run: |
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
+          chmod +x /usr/local/bin/cyclonedx-cli
+
+      - name: Validate merged SBOM
         working-directory: sbom-work
         run: |
           PLATFORM_SBOM=$(ls filigran-platform-*.cdx.json)
-          cyclonedx-cli merge \
-            --input-files "$PLATFORM_SBOM" opencti-platform-app.cdx.json \
-            --output-file "$PLATFORM_SBOM"
+          cyclonedx-cli validate --input-file "$PLATFORM_SBOM" --fail-on-errors
 
       - name: Upload merged SBOM
         uses: actions/upload-artifact@v4
