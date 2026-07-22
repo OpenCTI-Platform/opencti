@@ -51,7 +51,7 @@ import {
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
-import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
+import { updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
@@ -256,10 +256,6 @@ const buildAndSendBundle = async (context, user, task, objects, opts) => {
   // Send actions to queue
   const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
-  // Only add explicit expectation if the worker will not split anything
-  if (objects.length === 1 || opts.forceNoSplit) {
-    await updateExpectationsNumber(context, user, task.work_id, objects.length);
-  }
   await pushToWorkerForConnector(task.connector_id, {
     type: 'bundle',
     applicant_id: user.id,
