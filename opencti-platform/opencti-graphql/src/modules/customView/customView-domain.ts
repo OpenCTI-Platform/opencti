@@ -199,6 +199,13 @@ export const addCustomView = async (
     default: input.default ?? false,
   };
 
+  // The default status is stored on the object itself (customView) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing view)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
   const lock = input.default ? await lockResources([`custom-view-default:${input.targetEntityType}`]) : null;
   try {
     const element = await createInternalObject<StoreEntityCustomView>(
@@ -247,6 +254,13 @@ export const editCustomView = async (
   const existing = await storeLoadById<BasicStoreEntityCustomView>(context, user, customViewId, ENTITY_TYPE_CUSTOM_VIEW);
   const entity_type = existing.target_entity_type;
 
+  // The default status is stored on the object itself (customView) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing view)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
   const lock = defaultFieldValue ? await lockResources([`custom-view-default:${entity_type}`]) : null;
   try {
     const element = await editInternalObject<StoreEntityCustomView>(

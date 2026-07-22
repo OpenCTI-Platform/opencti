@@ -199,6 +199,13 @@ export const addFintelTemplate = async (
     fintel_template_widgets: widgetsWithIds,
   };
 
+  // The default status is stored on the object itself (fintelTemplate) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing template)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
   const lock = input.default ? await lockResources([`fintel-template-default:${settings_type}`]) : null;
   try {
     // create the fintel template
@@ -259,6 +266,13 @@ export const fintelTemplateEditField = async (
   const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
   const settingsType = existing.settings_types[0];
 
+  // The default status is stored on the object itself (fintelTemplate) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing template)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
   const lock = defaultFieldValue ? await lockResources([`fintel-template-default:${settingsType}`]) : null;
   try {
     // edit the fintel template
