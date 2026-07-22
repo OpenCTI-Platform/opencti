@@ -163,7 +163,7 @@ export const computeWidgetFiltersForSelection = (
       startDate,
       endDate,
       dateAttribute,
-      isKnowledgeRelationshipWidget: opts.isKnowledgeRelationshipWidget ?? false,
+      isKnowledgeRelationshipWidget: opts.isKnowledgeRelationshipWidget ?? undefined,
     },
   );
 
