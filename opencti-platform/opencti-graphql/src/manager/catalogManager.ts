@@ -114,7 +114,6 @@ const refreshCatalogInternal = async () => {
     }
 
     try {
-      logApp.info('[OPENCTI-MODULE] Catalog manager will fallback to embedded legacy manifest');
       logApp.info('[OPENCTI-MODULE] Catalog manager falling back to embedded legacy manifest');
       const legacyRaw = await legacyAdapter.fetch({ kind: 'local', uri: 'embedded' });
       const legacyInternal = legacyAdapter.toInternalCatalog(legacyRaw);
@@ -148,14 +147,36 @@ const refreshCatalog = async () => {
 const isDecouplingEnabled = () => CATALOG_MANAGER_ENABLED && isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS);
 
 const triggerRefreshInBackground = () => {
+  if (!isDecouplingEnabled()) return;
   void refreshCatalog().catch((error) => {
     logApp.warn('[OPENCTI-MODULE] Catalog manager background refresh failed', { cause: error });
   });
 };
 
+const loadEmbeddedFallback = async () => {
+  try {
+    logApp.info('[OPENCTI-MODULE] Catalog manager loading embedded legacy manifest as static baseline');
+    const legacyRaw = await legacyAdapter.fetch({ kind: 'local', uri: 'embedded' });
+    const legacyInternal = legacyAdapter.toInternalCatalog(legacyRaw);
+    const legacyRevision = computeCatalogRevision(legacyRaw);
+    updateCatalogManagerInternalCache(legacyInternal, 'ready', false, legacyRevision);
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Catalog manager failed to load embedded legacy manifest', { cause: error });
+    updateCatalogManagerInternalCache(undefined, 'error');
+  }
+};
+
 const start = async () => {
-  if (!isDecouplingEnabled()) {
-    logApp.info('[OPENCTI-MODULE] Catalog manager not started (disabled by configuration or feature flag)');
+  if (!isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+    logApp.info('[OPENCTI-MODULE] Catalog manager not started (feature flag disabled)');
+    return;
+  }
+
+  if (!CATALOG_MANAGER_ENABLED) {
+    // Manager is explicitly disabled: serve the embedded fallback so the catalog
+    // domain reaches 'ready' and the UI stops polling indefinitely.
+    logApp.info('[OPENCTI-MODULE] Catalog manager disabled by configuration; loading embedded fallback');
+    await loadEmbeddedFallback();
     return;
   }
 
