@@ -1,14 +1,18 @@
 import Drawer from '@components/common/drawer/Drawer';
 import { useState } from 'react';
-import { FormikConfig } from 'formik/dist/types';
+import { type FormikConfig } from 'formik';
 import { useNavigate } from 'react-router-dom';
-import useFintelTemplateAdd from '@components/settings/sub_types/fintel_templates/useFintelTemplateAdd';
+import useFintelTemplateAdd from './useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
+
+type PendingDefaultCreate = { kind: 'create'; values: FintelTemplateFormInputs };
+type PendingDefaultEdit = { kind: 'edit'; revert: () => void };
+type PendingDefault = PendingDefaultCreate | PendingDefaultEdit;
 
 interface FintelTemplateFormDrawerProps {
   isOpen: boolean;
@@ -34,7 +38,36 @@ const FintelTemplateFormDrawer = ({
 
   const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
-  const [pendingValues, setPendingValues] = useState<FintelTemplateFormInputs | null>(null);
+  const [pendingDefault, setPendingDefault] = useState<PendingDefault | null>(null);
+
+  const handleSetDefault = (revert: () => void) => {
+    if (currentDefaultName) {
+      setPendingDefault({ kind: 'edit', revert });
+    } else {
+      commitEditMutation({
+        variables: { id: template!.id, input: [{ key: 'default', value: ['true'] }] },
+        onError: (err) => {
+          handleError(err);
+          revert();
+        },
+      });
+    }
+  };
+
+  const handleUnsetDefault = (revert: () => void) => {
+    commitEditMutation({
+      variables: { id: template!.id, input: [{ key: 'default', value: ['false'] }] },
+      onError: (err) => {
+        handleError(err);
+        revert();
+      },
+    });
+  };
+
+  const handleDefaultToggle = (value: boolean, revert: () => void) => {
+    if (value) handleSetDefault(revert);
+    else handleUnsetDefault(revert);
+  };
 
   const doAdd = (values: FintelTemplateFormInputs, setSubmitting?: (isSubmitting: boolean) => void) => {
     if (!entityType) return;
@@ -71,7 +104,7 @@ const FintelTemplateFormDrawer = ({
   ) => {
     if (values.default && currentDefaultName) {
       setSubmitting(false);
-      setPendingValues(values);
+      setPendingDefault({ kind: 'create', values });
     } else {
       doAdd(values, setSubmitting);
     }
@@ -98,19 +131,26 @@ const FintelTemplateFormDrawer = ({
           onClose={onClose}
           onSubmit={onAdd}
           onSubmitField={onEdit}
-          isEdition={!!template}
+          editingProps={template ? { onDefaultToggle: handleDefaultToggle } : undefined}
           defaultValues={template}
         />
       </Drawer>
 
       <FintelTemplateReplaceDefaultDialog
-        open={!!pendingValues}
-        onClose={() => setPendingValues(null)}
+        open={!!pendingDefault}
+        onClose={() => {
+          if (pendingDefault?.kind === 'edit') pendingDefault.revert();
+          setPendingDefault(null);
+        }}
         onConfirm={() => {
-          if (pendingValues) {
-            setPendingValues(null);
-            doAdd(pendingValues);
+          if (pendingDefault?.kind === 'create') doAdd(pendingDefault.values);
+          else if (pendingDefault?.kind === 'edit') {
+            commitEditMutation({
+              variables: { id: template!.id, input: [{ key: 'default', value: ['true'] }] },
+              onError: handleError,
+            });
           }
+          setPendingDefault(null);
         }}
         currentDefaultName={currentDefaultName ?? ''}
       />

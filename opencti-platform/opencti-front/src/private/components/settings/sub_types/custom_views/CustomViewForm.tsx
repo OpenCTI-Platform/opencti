@@ -32,15 +32,17 @@ interface CustomViewFormProps {
     { setSubmitting }: { setSubmitting: (isSubmitting: boolean) => void },
   ) => void;
   values?: CustomViewFormInputs;
-  isEdition?: boolean;
+  editingProps?: {
+    onDefaultToggle: (value: boolean, revert: () => void) => void;
+  };
 }
 
 const CustomViewForm = ({
   onClose,
   onSubmit,
   onSubmitField,
+  editingProps,
   values,
-  isEdition = false,
 }: CustomViewFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -67,7 +69,7 @@ const CustomViewForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting, setSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, setSubmitting, setFieldValue }) => {
         return (
           <Form>
             <Stack gap={1}>
@@ -89,16 +91,21 @@ const CustomViewForm = ({
                 rows="4"
                 onSubmit={handleFieldSubmit(setSubmitting)}
               />
-              {!isEdition && (
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="default"
-                  label={t_i18n('Set as default custom view')}
-                  onChange={handleFieldSubmit(setSubmitting)}
-                />
-              )}
-              {!isEdition && (
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="default"
+                label={t_i18n('Set as default custom view')}
+                onChange={
+                  editingProps
+                    ? (_name: string, value: unknown) => {
+                        const next = value === true || value === 'true';
+                        editingProps.onDefaultToggle(next, () => setFieldValue('default', !next));
+                      }
+                    : handleFieldSubmit(setSubmitting)
+                }
+              />
+              {!editingProps && (
                 <FormButtonContainer>
                   <Button
                     variant="secondary"

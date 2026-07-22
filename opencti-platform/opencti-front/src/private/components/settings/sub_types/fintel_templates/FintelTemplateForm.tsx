@@ -25,15 +25,17 @@ interface FintelTemplateFormProps {
   onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit'];
   onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void;
   defaultValues?: FintelTemplateFormInputs;
-  isEdition?: boolean;
+  editingProps?: {
+    onDefaultToggle: (value: boolean, revert: () => void) => void;
+  };
 }
 
 const FintelTemplateForm = ({
   onClose,
   onSubmit,
   onSubmitField,
+  editingProps,
   defaultValues,
-  isEdition = false,
 }: FintelTemplateFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -56,7 +58,7 @@ const FintelTemplateForm = ({
       .catch(() => false);
   };
 
-  const onUpdate = isEdition ? updateField : undefined;
+  const onUpdate = editingProps ? updateField : undefined;
 
   return (
     <Formik<FintelTemplateFormInputs>
@@ -65,7 +67,7 @@ const FintelTemplateForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => {
         return (
           <Form>
             <Field
@@ -107,36 +109,41 @@ const FintelTemplateForm = ({
               onSubmit={onUpdate}
             />
 
-            {!isEdition && (
-              <>
-                <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="default"
-                  label={t_i18n('Set as default')}
-                  containerstyle={{ marginTop: 20 }}
-                  onChange={onUpdate}
-                />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="default"
+              label={t_i18n('Set as default')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={
+                editingProps
+                  ? (_name: string, value: unknown) => {
+                      const next = value === true || value === 'true';
+                      editingProps.onDefaultToggle(next, () => setFieldValue('default', !next));
+                    }
+                  : onUpdate
+              }
+            />
 
-                <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      handleReset();
-                      onClose();
-                    }}
-                  >
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t_i18n('Create')}
-                  </Button>
-                </FormButtonContainer>
-              </>
+            {!editingProps && (
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    handleReset();
+                    onClose();
+                  }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </FormButtonContainer>
             )}
           </Form>
         );
