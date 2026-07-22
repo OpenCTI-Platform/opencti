@@ -35,7 +35,7 @@ This configuration enables the requirement of a reference message on an entity c
 
 ### Workflow on Draft Entity 
 
-Draft is the first entity (object) in the platform supporting advanced worfklow configuration. Please navigate to [this page](../usage/draft-workflow.md) for more information.
+Draft is the first entity (object) in the platform supporting advanced workflow configuration. Please navigate to [this page](../usage/draft-workflow.md) for more information.
 
 
 ### Workflow on all other entities 
