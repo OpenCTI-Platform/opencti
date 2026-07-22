@@ -25,7 +25,7 @@ More details on our [Role-Based access control here](../administration/users.md)
 
 When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to skip draft mode per submission.
-The form intake button is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
+The form intake Authorize Members choice is hidden when the user does not have 'Authorized Members update' rights in draft context. See [Override of capabilities in draft](https://docs.opencti.io/latest/administration/users/?h=capab#override-of-capabilities-in-draft) for details on controlling users capabilities in draft mode.
 
 
 # Defining a Form Intake
@@ -48,8 +48,8 @@ This has been built to offer advanced users the option to directly submit their 
 
 ### Creation of a draft by default if user only has the capability to create data in draft
 
-However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not able to untick the box.
-By default, the form intake will be accessible to the user and the from intake output will result in a draft creation.
+However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (enterprise edition)](../administration/users.md) then the user will not be able to untick the box.
+By default, the form intake will be accessible to the user and the form intake output will result in a draft creation.
 
 ### Advanced draft settings
 
@@ -61,13 +61,13 @@ You can control fields default values & allow (or not) users to edit them:
 - Draft Assignee: you can define default assignees for your draft and allow users to edit them.
 - Draft Participant: you can define default participants and allow participants to edit them.
 - Draft author: Draft author is a bit specific, since it offers you 3 choices. You can either **reuse the main entity author**, **specify a specific author** or **do not apply default value**. Please be aware that when applying specific author, the user may not have access to this author due to RBAC (which should show as "restricted" on the main draft page).
-- Apply Authorize members: you can activate the restriction. Doing so, then you can apply some specific authorized members on the **draft itself**. Some authorized members are a bit specific, the ones indicated as "Dynamic form draft".
+- Apply Authorize Members: you can activate the restriction. Doing so, then you can apply some specific authorized members on the **draft itself**. Some authorized members are a bit specific, the ones indicated as "Dynamic form draft".
 
 ##### Authorized members dynamic from draft
 
 Some specific authorized members have been introduced, to allow you to have a dynamic approach: 
 
-- draft author (org) allows you to select the entity being the Author of the Draft. If this entity happens to be an organization, then you can also select an intersection with a group. **This allows you to perform the following use case: I want users part of the group analyst pertaning to the organisation that submitted the draft to be able to edit the draft, while users from the organisation that submitted the draft but are not analyst are in view only.** 
+- draft author (org) allows you to select the entity being the Author of the Draft. If this entity happens to be an organization, then you can also select an intersection with a group. **This allows you to perform the following use case: I want users part of the group analyst pertaining to the organisation that submitted the draft to be able to edit the draft, while users from the organisation that submitted the draft but are not analysts are in view only.** 
 - creator: allows you to directly apply some rights to the draft creator.
 - assignee: allows you to directly apply some rights to the draft assignees.
 - participant: allows you to directly apply some rights to the draft participants.
@@ -78,9 +78,9 @@ Some specific authorized members have been introduced, to allow you to have a dy
 
 Any default value or mandatory value set at the form intake level will override any default value or mandatory values set in entity/customization for drafts. 
 
-The rational vbehind this approach is that a form intake should provide an expected output which is decided by the admin. As a result, the conditions defined in the form intake will apply. 
+The rationale behind this approach is that a form intake should provide an expected output which is decided by the admin. As a result, the conditions defined in the form intake will apply. 
 
-### Provide "Can manage" to a user not having the "Manage Authorize members capability"
+### Provide "Can manage" to a user not having the "Manage Authorized Members capability"
 
 A user which is granted the "can manage" capability via authorized members but who does not have the capability "manage authorized members" provided via its role will not be able to manage the authorized members on a draft.
 
@@ -100,10 +100,10 @@ For each main entity, you can configure multiple fields:
 
 - **Entity Lookup** (disabled by default): if enabled, users will be forced to choose from existing entities. Another field will appear when you enable this field: **Disable on-the-fly entity creation**
 - **Disable on-the-fly entity creation** (disabled by default): Enable this If you want your users to only select an existing entity. 
-- **Allow multiple instances of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **Multiple instances mode** will appear. 
+- **Allow multiple instancess of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **multiple instancess mode** will appear. 
 
 #### Multiple Mode for Main Entity
-When enabled multiple instances of the same entity type can be created. 
+When enabled multiple instancess of the same entity type can be created. 
 You can choose between 'Multiple fields' or 'Parsed values'.
 
    - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
@@ -115,10 +115,10 @@ In parsed value mode, additional options are offered to you:
 - Parse mode: choose the delimiter between each value comma-separated (default) or one-per-line.
 - Map parsed values to attribute: choose the attribute the parsed text is mapped to.
 
-**Warning**: when creating multiple instance via parsed values, the other fields defined for that entity type will be applied consistently to all the instances you create. For example, when generating multiple reports from parsed values, the text is mapped to each report’s name attribute. If you also provide a description field, all generated reports will have the same description.
+**Warning**: when creating multiple instances via parsed values, the other fields defined for that entity type will be applied consistently to all the instances you create. For example, when generating multiple reports from parsed values, the text is mapped to each report’s name attribute. If you also provide a description field, all generated reports will have the same description.
 
-### Supported entity Types as main entity
-Any entity can be created as a main entity, whether it is a Stix Domain Object or a Stix Cyber Observable. 
+### Supported Entity Types as main entity
+Any entity can be created as a main entity, whether it is a STIX Domain Object or a STIX Cyber Observable. 
 
 By default, when selecting an entity type, the mandatory fields needed for [deduplication](deduplication.md) are automatically added. 
 
@@ -144,7 +144,7 @@ When you have added an entity type to be created in the form, you can then set t
 Options for each field: 
 
 - Map to attribute: choose the attribute of the entity that you need your users to provide (for instance, description).
-- Field label: name your field with a custom label so that if your users are not acquainted with stix 2.1 they will be able to understand what is expected for them.
+- Field label: name your field with a custom label so that if your users are not acquainted with STIX 2.1 they will be able to understand what is expected for them.
 - Required: make the field required. Enable this if the users need to enter this field. 
 - Field width: size of the field on the screen (Full/half/third)
 
@@ -179,8 +179,8 @@ Additional entities can be created of the same type.
 
 In addition to the various modes allowed to add additional entities, you have two other options: 
 
-- If you enable the option **"allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
-- If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
+- If you enable the option **"allow multiple instancess"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
+- If you disable the option **"allow multiple instancess"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
 
 The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
 
@@ -193,7 +193,7 @@ When you add a relation, you need to choose:
 - the Source entity (identified in the form by its label)
 - the Target entity (identified in the form by its label)
 - the relationship type (select as soon as Source & Target are provided)
-- Required: toggling the required switch will allow you to automatically create each relations. 
+- Required: toggling the required switch will allow you to automatically create each relation. 
 
 **Warning**: adding some relations in the form definition will not allow users to create the relation manually in the form. You need to toggle the **required** field to create the relation automatically at form submission. This means that any entities matching as source & targets will have a relation created between them.
 
