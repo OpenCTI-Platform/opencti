@@ -426,7 +426,7 @@ export const EXPIRATION_MANAGER_USER: AuthUser = {
   id: EXPIRATION_MANAGER_USER_UUID,
   internal_id: EXPIRATION_MANAGER_USER_UUID,
   individual_id: undefined,
-  name: 'EXPIRATION MANAGER',
+  name: 'EXPIRATION SCHEDULER',
   user_email: 'EXPIRATION MANAGER',
   origin: { user_id: EXPIRATION_MANAGER_USER_UUID, socket: 'internal' },
   roles: [ADMINISTRATOR_ROLE],
