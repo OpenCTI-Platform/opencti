@@ -86,7 +86,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     }
     const data = await fetchQuery(labelsSearchQuery, { search: values.value, orderBy: 'value', orderMode: 'asc' }).toPromise();
     const edges = (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? [];
-    const exists = edges.some((e) => (e.node.value ?? '') === values.value.trim());
+    const exists = edges.some((e) => (e.node.value ?? '').toLowerCase() === values.value.trim().toLowerCase());
     if (exists) {
       setErrors({ value: t_i18n('This label already exists') });
       setSubmitting(false);
