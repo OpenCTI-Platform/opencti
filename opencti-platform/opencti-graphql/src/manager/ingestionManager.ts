@@ -497,7 +497,7 @@ export const taxiiExecutor = async (context: AuthContext) => {
         const ingestionLogger = createIngestionLogger(ingestion.internal_id, ingestion.name, 'taxii');
         ingestionLogger.info('Feed execution started', { uri: ingestion.uri, collection: ingestion.collection });
         const ingestionPromise = taxiiHandler(context, ingestion)
-          .then(async ({ objectsCount, objects }: TaxiiExecutionResult) => {
+          .then(async ({ objectsCount }: TaxiiExecutionResult) => {
             logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler resolved', { count: objectsCount, name: ingestion.name });
             try {
               await patchTaxiiIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_status: 'success' });
