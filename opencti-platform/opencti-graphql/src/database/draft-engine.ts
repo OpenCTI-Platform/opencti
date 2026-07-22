@@ -107,7 +107,7 @@ const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUs
   await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
   await elDeleteInstances(context, [element, ...draftCreatedRelations]);
   // The relations we just removed may have been the only reason another element was kept as UPDATE_LINKED
-  await cascadeCleanupNowUnlinkedElements(context, user, relationToRemove, [element.internal_id, ...draftCreatedRelations.map((r) => r.internal_id)]);
+  await cascadeCleanupNowUnlinkedElements(context, user, relationToRemove, [element.internal_id]);
 };
 
 const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {

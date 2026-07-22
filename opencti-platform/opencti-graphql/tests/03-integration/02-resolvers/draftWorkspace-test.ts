@@ -780,6 +780,7 @@ describe('Drafts workspace resolver testing', () => {
 
     await modifyAdminDraftContext('');
     await queryInitPlatformAsAdmin(DELETE_REPORT_QUERY, { id: existingReportStandardId });
+    await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: updateLinkedDraftId } });
   });
 
   // ---- Tests for draftWorkspaceEditField ----
