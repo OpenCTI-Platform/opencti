@@ -1,11 +1,8 @@
 import Button from '@common/button/Button';
-import Dialog from '@common/dialog/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import { assoc, head, last, map, pluck } from 'ramda';
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import { PLATFORM_DASHBOARD } from './HomeDashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
@@ -27,7 +24,7 @@ import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
-import { XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from './RedirectByPath';
+import XtmHubPermissionRequiredDialog from './settings/xtm-hub/XtmHubPermissionRequiredDialog';
 
 // region styles
 // Deprecated - https://mui.com/system/styles/basics/
@@ -567,7 +564,6 @@ const HomeDashboardComponent = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const authContext = useAuth();
   const currentMe = authContext.me;
-  const [isPermissionDialogOpen, setIsPermissionDialogOpen] = useState(false);
   const data = usePreloadedQuery(dashboardQuery, queryRef);
   const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
@@ -591,31 +587,10 @@ const HomeDashboardComponent = ({ queryRef }) => {
     [authContext, currentMe, me],
   );
 
-  useEffect(() => {
-    if (sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY) !== 'true') {
-      return;
-    }
-    setIsPermissionDialogOpen(true);
-    sessionStorage.removeItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY);
-  }, []);
-
   return (
     <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
-        <Dialog
-          open={isPermissionDialogOpen}
-          onClose={() => setIsPermissionDialogOpen(false)}
-          title={t_i18n('Permission required')}
-        >
-          <DialogContentText>
-            {t_i18n('You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.')}
-          </DialogContentText>
-          <DialogActions>
-            <Button onClick={() => setIsPermissionDialogOpen(false)}>
-              {t_i18n('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <XtmHubPermissionRequiredDialog />
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomHomeDashboard
             dashboard={defaultDashboard}

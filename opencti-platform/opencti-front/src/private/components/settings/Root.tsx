@@ -31,7 +31,7 @@ const RootActivity = lazy(() => import('./activity/Root'));
 const RootCustomization = lazy(() => import('./customization/Root'));
 const RootVocabularies = lazy(() => import('./vocabularies/Root'));
 
-const ExperienceUnauthorizedRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => {
+const ExperienceUnauthorizedRedirect = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,8 +40,8 @@ const ExperienceUnauthorizedRedirect = ({ fallbackUrl }: { fallbackUrl: string }
     if (searchParams.get(XTM_HUB_AUTO_REGISTER_QUERY_PARAM) === 'true') {
       sessionStorage.setItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY, 'true');
     }
-    navigate(fallbackUrl, { replace: true });
-  }, [fallbackUrl, location.search, navigate]);
+    navigate('/dashboard', { replace: true });
+  }, [location.search, navigate]);
 
   return null;
 };
@@ -96,7 +96,7 @@ const Root = () => {
             element={(
               <Security
                 needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
-                placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}
+                placeholder={<ExperienceUnauthorizedRedirect />}
               >
                 <Experience />
               </Security>
