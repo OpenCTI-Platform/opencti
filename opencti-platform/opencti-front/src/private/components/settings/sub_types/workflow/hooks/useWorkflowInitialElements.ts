@@ -101,7 +101,7 @@ export const useWorkflowInitialElements = (
       .map(({ from, to, event, conditions = {}, comment, asyncActions = [], syncActions = [] }) => {
         const fromIds = (Array.isArray(from) ? from : [from]).join(',');
         return {
-          id: `${WorkflowNodeType.transition}-${fromIds}-${to ?? '_unlinked'}`,
+          id: `${WorkflowNodeType.transition}-${fromIds}-${event}-${to ?? '_unlinked'}`,
           type: WorkflowNodeType.transition,
           data: {
             event,
@@ -118,7 +118,7 @@ export const useWorkflowInitialElements = (
     const transitionEdges: Edge[] = workflowDefinition.transitions.flatMap((transition) => {
       const fromArray: string[] = Array.isArray(transition.from) ? [...transition.from] : [transition.from];
       const fromIds = fromArray.join(',');
-      const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.to ?? '_unlinked'}`;
+      const transitionId = `${WorkflowNodeType.transition}-${fromIds}-${transition.event}-${transition.to ?? '_unlinked'}`;
       return [
         ...fromArray.map((fromState) => ({
           id: `e-${fromState}->${transitionId}`,

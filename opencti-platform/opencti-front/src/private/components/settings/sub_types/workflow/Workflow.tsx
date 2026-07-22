@@ -315,8 +315,9 @@ const Workflow = ({
         });
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data } }> } })?.res?.errors?.[0];
-        const data = firstError?.extensions?.data as { removedStates?: string[]; entityType?: string } | undefined;
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+          ?.res?.errors?.[0];
+        const data = firstError?.extensions?.data;
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
