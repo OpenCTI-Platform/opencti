@@ -96,13 +96,8 @@ const City = ({
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
-            center={
-              city.latitude && city.longitude
-                ? [city.latitude, city.longitude]
-                : [48.8566969, 2.3514616]
-            }
-            city={city}
             zoom={5}
+            location={city}
           />
         </Grid>
         <Grid item xs={4}>

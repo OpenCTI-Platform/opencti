@@ -595,6 +595,7 @@
   "Manager ID": "Manager ID",
   "Manager running": "Gestionnaire en cours d'exécution",
   "Manifest": "Manifeste",
+  "Map tile server mode": "Mode serveur de tuiles cartographiques",
   "Mappings": "Mappages",
   "Marital status": "État civil",
   "Marking": "Marquage",
@@ -942,6 +943,7 @@
   "Size": "Taille",
   "Skip line character": "Caractère de saut de ligne",
   "Slug": "Limace",
+  "SMTP configuration": "Configuration SMTP",
   "SMTP enabled": "SMTP activé",
   "Sophistication": "Sophistication",
   "Source": "Source",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "Token XTM Hub",
   "XTM One intent": "XTM One intent",
   "XTM One registration manager": "Gestionnaire d'enregistrement XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Statut d'acceptation des CGU",
-  "SMTP configuration": "Configuration SMTP"
+  "XTM1 CGU acceptance status": "XTM1 Statut d'acceptation des CGU"
 }

@@ -595,6 +595,7 @@
   "Manager ID": "Manager ID",
   "Manager running": "Manager running",
   "Manifest": "Manifest",
+  "Map tile server mode": "Map tile server mode",
   "Mappings": "Mappings",
   "Marital status": "Marital status",
   "Marking": "Marking",
@@ -942,6 +943,7 @@
   "Size": "Size",
   "Skip line character": "Skip line character",
   "Slug": "Slug",
+  "SMTP configuration": "SMTP configuration",
   "SMTP enabled": "SMTP enabled",
   "Sophistication": "Sophistication",
   "Source": "Source",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "XTM Hub Token",
   "XTM One intent": "XTM One intent",
   "XTM One registration manager": "XTM One registration manager",
-  "XTM1 CGU acceptance status": "XTM1 CGU acceptance status",
-  "SMTP configuration": "SMTP configuration"
+  "XTM1 CGU acceptance status": "XTM1 CGU acceptance status"
 }

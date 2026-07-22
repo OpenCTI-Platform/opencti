@@ -595,6 +595,7 @@
   "Manager ID": "設定",
   "Manager running": "マネージャー実行中",
   "Manifest": "タグ",
+  "Map tile server mode": "マップタイルサーバーモード",
   "Mappings": "マッピング",
   "Marital status": "目の色",
   "Marking": "現在の状態",
@@ -942,6 +943,7 @@
   "Size": "サイズ",
   "Skip line character": "情報",
   "Slug": "スラッグ",
+  "SMTP configuration": "SMTP設定",
   "SMTP enabled": "SMTPを有効にする",
   "Sophistication": "個人的な動機",
   "Source": "有効",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "XTM ハブ・トークン",
   "XTM One intent": "XTMワンの意図",
   "XTM One registration manager": "XTM One登録マネージャー",
-  "XTM1 CGU acceptance status": "XTM1 CGU受入状況",
-  "SMTP configuration": "SMTP設定"
+  "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }

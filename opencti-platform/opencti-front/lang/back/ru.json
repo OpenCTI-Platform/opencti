@@ -595,6 +595,7 @@
   "Manager ID": "Идентификатор менеджера",
   "Manager running": "Менеджер работает",
   "Manifest": "Манифест",
+  "Map tile server mode": "Режим сервера картографических фрагментов",
   "Mappings": "Отображения",
   "Marital status": "Семейное положение",
   "Marking": "Маркировка",
@@ -942,6 +943,7 @@
   "Size": "Размер",
   "Skip line character": "Символ пропуска строки",
   "Slug": "Слизняк",
+  "SMTP configuration": "Конфигурация SMTP",
   "SMTP enabled": "SMTP включен",
   "Sophistication": "Изысканность",
   "Source": "Источник",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "Токен концентратора XTM",
   "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
-  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU",
-  "SMTP configuration": "Конфигурация SMTP"
+  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }

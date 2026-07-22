@@ -119,8 +119,7 @@
       "file_max_size": 10000000
     },
     "performance_logger": false,
-    "map_tile_server_dark": "https://map.opencti.io/styles/filigran-dark3/{z}/{x}/{y}.png",
-    "map_tile_server_light": "https://map.opencti.io/styles/filigran-light3/{z}/{x}/{y}.png",
+    "map_tile_server_bundled_path": "/opt/opencti/world.pmtiles",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",

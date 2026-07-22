@@ -595,6 +595,7 @@
   "Manager ID": "ID Gestor",
   "Manager running": "Gestor en funcionamiento",
   "Manifest": "Manifiesto",
+  "Map tile server mode": "Modo de servidor de mosaicos de mapa",
   "Mappings": "Asignaciones",
   "Marital status": "Estado civil",
   "Marking": "Marcado",
@@ -942,6 +943,7 @@
   "Size": "Tamaño",
   "Skip line character": "Carácter de salto de línea",
   "Slug": "Babosa",
+  "SMTP configuration": "Configuración SMTP",
   "SMTP enabled": "SMTP habilitado",
   "Sophistication": "Sofisticación",
   "Source": "Fuente",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "Token del concentrador XTM",
   "XTM One intent": "Intento de XTM One",
   "XTM One registration manager": "Gestor de inscripciones XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC",
-  "SMTP configuration": "Configuración SMTP"
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }

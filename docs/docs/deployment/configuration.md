@@ -117,11 +117,10 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 
 #### Maps & references
 
-| Parameter                 | Environment variable       | Default value                                                  | Description                                                      |
-|:--------------------------|:---------------------------|:---------------------------------------------------------------|------------------------------------------------------------------|
-| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | https://map.opencti.io/styles/filigran-dark2/{z}/{x}/{y}.png   | The address of the OpenStreetMap provider with dark theme style  |
-| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | https://map.opencti.io/styles/filigran-light2/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with light theme style |
-| app:reference_attachment  | APP__REFERENCE_ATTACHMENT  | `false`                                                        | External reference mandatory attachment                          |
+| Parameter                        | Environment variable                  | Default value                | Description                              |
+|:---------------------------------|:--------------------------------------|:-----------------------------|:-----------------------------------------|
+| app:map_tile_server_bundled_path | APP__MAP_TILE_SERVER_BUNDLED_PATH     | `/opt/opencti/world.pmtiles` | Path to the bundled PMTiles file on disk |
+| app:reference_attachment         | APP__REFERENCE_ATTACHMENT             | `false`                      | External reference mandatory attachment  |
 
 #### Functional customization
 

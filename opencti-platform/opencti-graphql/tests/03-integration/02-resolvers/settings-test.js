@@ -1,9 +1,10 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, createUploadFromTestDataFile } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+import { downloadFileRange } from '../../../src/database/raw-file-storage';
 
 const ABOUT_QUERY = gql`
   query about {
@@ -248,5 +249,155 @@ describe('Settings resolver messages behavior', () => {
     // -- ASSERT --
     const { platform_messages } = queryResult.data.settingsEdit.deleteMessage;
     expect(platform_messages.length).toEqual(0);
+  });
+});
+
+describe('Settings map tile management', () => {
+  const MAP_TILE_SETTINGS_QUERY = gql`
+    query settings {
+      settings {
+        id
+        platform_map_tile_server_mode
+        platform_map_tile_server_s3_file {
+          name
+          size
+          sha256
+        }
+      }
+    }
+  `;
+
+  const MAP_TILE_MODE_UPDATE = gql`
+    mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+      settingsEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+          platform_map_tile_server_mode
+        }
+      }
+    }
+  `;
+
+  const MAP_TILE_UPLOAD = gql`
+    mutation SettingsMapTileUpload($id: ID!, $file: Upload!) {
+      settingsEdit(id: $id) {
+        uploadMapTileData(file: $file) {
+          id
+          platform_map_tile_server_s3_file {
+            name
+            size
+            sha256
+          }
+        }
+      }
+    }
+  `;
+
+  const MAP_TILE_DELETE = gql`
+    mutation SettingsMapTileDelete($id: ID!) {
+      settingsEdit(id: $id) {
+        deleteMapTileData {
+          id
+          platform_map_tile_server_s3_file {
+            name
+            size
+            sha256
+          }
+        }
+      }
+    }
+  `;
+
+  const settingsId = async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_TILE_SETTINGS_QUERY });
+    return queryResult.data.settings.id;
+  };
+
+  it('should default to bundled mode', async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_TILE_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_tile_server_mode).toEqual('bundled');
+  });
+
+  it('should have no S3 file initially', async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_TILE_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_tile_server_s3_file).toBeNull();
+  });
+
+  it('should upload a PMTiles file to S3', async () => {
+    const id = await settingsId();
+    const upload = await createUploadFromTestDataFile('test-map-tiles.pmtiles', 'test-map-tiles.pmtiles', 'application/octet-stream');
+    const queryResult = await queryAsAdmin({
+      query: MAP_TILE_UPLOAD,
+      variables: { id, file: upload },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    const s3File = queryResult.data.settingsEdit.uploadMapTileData.platform_map_tile_server_s3_file;
+    expect(s3File).not.toBeNull();
+    expect(s3File.name).toEqual('test-map-tiles.pmtiles');
+    expect(s3File.size).toBeGreaterThan(0);
+    expect(s3File.sha256).toBeDefined();
+    expect(s3File.sha256).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('should download full file via downloadFileRange without range', async () => {
+    const result = await downloadFileRange('maps/world.pmtiles');
+    expect(result).not.toBeNull();
+    expect(result.totalSize).toBeGreaterThan(0);
+    expect(result.contentLength).toEqual(result.totalSize);
+    expect(result.contentRange).toBeUndefined();
+    expect(result.etag).toBeDefined();
+    result.stream.destroy();
+  });
+
+  it('should download partial content via downloadFileRange with range', async () => {
+    const result = await downloadFileRange('maps/world.pmtiles', 'bytes=0-9');
+    expect(result).not.toBeNull();
+    expect(result.contentLength).toEqual(10);
+    expect(result.contentRange).toMatch(/^bytes 0-9\//);
+    expect(result.totalSize).toBeGreaterThan(10);
+    expect(result.etag).toBeDefined();
+    result.stream.destroy();
+  });
+
+  it('should return null from downloadFileRange for non-existent key', async () => {
+    const result = await downloadFileRange('maps/non-existent.pmtiles');
+    expect(result).toBeNull();
+  });
+
+  it('should switch mode to s3', async () => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const queryResult = await queryAsAdmin({
+      query: MAP_TILE_MODE_UPDATE,
+      variables: { id, input: { key: 'platform_map_tile_server_mode', value: ['s3'] } },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_map_tile_server_mode).toEqual('s3');
+  });
+
+  it('should switch mode back to bundled', async () => {
+    const id = await settingsId();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const queryResult = await queryAsAdmin({
+      query: MAP_TILE_MODE_UPDATE,
+      variables: { id, input: { key: 'platform_map_tile_server_mode', value: ['bundled'] } },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_map_tile_server_mode).toEqual('bundled');
+  });
+
+  it('should delete the S3 PMTiles file', async () => {
+    const id = await settingsId();
+    const queryResult = await queryAsAdmin({
+      query: MAP_TILE_DELETE,
+      variables: { id },
+    });
+    expect(queryResult.errors).toBeUndefined();
+    expect(queryResult.data.settingsEdit.deleteMapTileData.platform_map_tile_server_s3_file).toBeNull();
+  });
+
+  it('should have no S3 file after deletion', async () => {
+    const queryResult = await queryAsAdmin({ query: MAP_TILE_SETTINGS_QUERY });
+    expect(queryResult.data.settings.platform_map_tile_server_s3_file).toBeNull();
   });
 });

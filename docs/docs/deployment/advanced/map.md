@@ -1,79 +1,76 @@
-# Deploy on-premise map server with OpenCTI styles
+# Map Configuration
 
 ## Introduction
 
-The OpenStreetMap tiles for the planet will take 80GB. Here are the instructions to deploy a local OpenStreetMap server with the OpenCTI styles.
+OpenCTI renders maps locally in the browser using vector tiles from a [PMTiles](https://pmtiles.io/) file. No external map server is required.
 
-## Create directory for the data and upload planet data
+## How it works
 
-When you will launch the map server container, it will be necessary to mount a volume with the planet tiles data. Just create the directory for the data.
+The platform serves map tiles from a backend endpoint (`/maps/world.pmtiles`) that supports HTTP Range requests. The browser fetches only the tile data it needs for the current viewport and zoom level.
+
+Two sources are available:
+
+- **Bundled** (default) — A PMTiles file shipped inside the Docker image.
+- **S3** — A custom PMTiles file uploaded by an administrator and stored in S3/MinIO.
+
+The active source is configured in **Settings > Parameters > Map tiles**.
+
+## Default behavior
+
+Out of the box, OpenCTI uses the bundled PMTiles file included in the Docker image. No configuration, no S3 upload, and no external network access is required. This works for all environments, including air-gapped deployments.
+
+The map adapts automatically to the platform theme (dark or light).
+
+## Custom map data
+
+Administrators can upload a custom `.pmtiles` file to replace the bundled map data with higher-resolution tiles or region-specific data.
+
+### Uploading a custom PMTiles file
+
+1. Obtain a `.pmtiles` file (see [PMTiles file sources](#pmtiles-file-sources) below).
+2. Go to **Settings > Parameters > Map tiles**.
+3. Click **Upload** to upload the file.
+4. Switch the source to **Custom (S3)**.
+
+The uploaded file is stored in S3/MinIO. Only one custom file can exist at a time — uploading a new file replaces the previous one.
+
+### Reverting to the bundled map
+
+Switch the source back to **Bundled** in **Settings > Parameters > Map tiles**. The custom S3 file is not deleted and can be re-activated later.
+
+To remove the custom file entirely, click **Delete** before switching back to Bundled mode.
+
+## Configuration
+
+| Parameter                        | Environment variable                  | Default value                | Description                              |
+|:---------------------------------|:--------------------------------------|:-----------------------------|:-----------------------------------------|
+| app:map_tile_server_bundled_path | APP__MAP_TILE_SERVER_BUNDLED_PATH     | `/opt/opencti/world.pmtiles` | Path to the bundled PMTiles file on disk |
+
+Maps work out of the box with no configuration needed.
+
+The `map_tile_server_bundled_path` parameter allows overriding the location of the bundled PMTiles file. This is mainly useful for development or custom Docker images.
+
+## PMTiles file sources
+
+The planet vector tile builds are available daily from [Protomaps](https://protomaps.com/):
+
+- **Daily builds**: `https://build.protomaps.com/YYYYMMDD.pmtiles` (full planet, ~137 GB)
+
+For OpenCTI, a **low-zoom extract** (zoom 0–6, ~30–80 MB) is sufficient. Generate one with the [go-pmtiles](https://github.com/protomaps/go-pmtiles) CLI:
 
 ```bash
-mkdir /var/YOUR_DATA_DIR
+pmtiles extract https://build.protomaps.com/20260722.pmtiles world.pmtiles --maxzoom=6
 ```
 
-We have hosted the free-to-use planet tiles, just download the [planet data](https://filigran-marketplace-assets.s3.eu-west-3.amazonaws.com/maptiler-osm-2020-02-10-v3.11-planet.mbtiles) from filigran.io.
+This uses HTTP Range requests — it does **not** download the full 137 GB file.
 
-```bash
-wget https://filigran-marketplace-assets.s3.eu-west-3.amazonaws.com/maptiler-osm-2020-02-10-v3.11-planet.mbtiles
-```
+Other options:
 
-Put the file `maptiler-osm-2020-12-14-v3.11-planet.mbtiles` in the data directory:
+- [Protomaps CLI](https://docs.protomaps.com/guide/getting-started) — Create regional extracts with `--bbox`.
+- [planetiler](https://github.com/onthegomap/planetiler) — Build tiles from raw OpenStreetMap data.
 
-```bash
-cp maptiler-osm-2020-12-14-v3.11-planet.mbtiles /var/YOUR_DATA_DIR/
-```
+## Migration from external tile server
 
-## Start Docker
+If you previously used the `map_tile_server_dark` / `map_tile_server_light` configuration to point to an external raster tile server (e.g., `klokantech/openmaptiles-server`), those settings are no longer used. The platform now renders maps locally. You can safely remove the external tile server from your deployment.
 
-Replace the port 80 by the port you would like to expose. Inside the Docker, the map server listen on the port 80.
-
-```bash
-docker run -d --restart always -v /var/YOUR_DATA_DIR:/data -p 80:80 klokantech/openmaptiles-server:latest 
-```
-
-## Configure
-
-Download on your computer the OpenCTI JSON styles (you will have to upload it through the web UI later).
-
-- [OpenCTI Map Dark mode style (filigran-dark2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-dark2.json)
-- [OpenCTI Map Light mode style (filigran-light2.json)](https://raw.githubusercontent.com/FiligranHQ/deployment-mapserver/main/styles/filigran-light2.json)
-
-Now, you can access to the map server, you should see the following page:
-
-![Install](../assets/install-map-server.png)
-
-On the next page, you should see the existing data:
-
-![Region](../assets/region-map-server.png)
-
-On the next page, click on "Advanced Options":
-
-![Options](../assets/options-map-server.png)
-
-Upload the `filigran-dark2.json` and `filigran-light2.json` files:
-
-![Styles](../assets/style-map-server.png)
-
-Save and run the server with default parameters:
-
-![Settings](../assets/settings-map-server.png)
-
-## OpenCTI Parameters
-
-Once the server is running, you should see the list of available styles:
-
-![Viewer](../assets/viewer-map-server.png)
-
-Click on "Viewer", and take the URL:
-
-> 👉 http:/YOUR_URL/styles/{ID}/....
-
-In the OpenCTI configuration, just put:
-
-| Parameter                 | Environment variable       | Value                                                      | Description                                                      |
-|:--------------------------|:---------------------------|:-----------------------------------------------------------|------------------------------------------------------------------|
-| app:map_tile_server_dark  | APP__MAP_TILE_SERVER_DARK  | http://{YOUR_MAP_SERVER}/styles/{ID_DARK}/{z}/{x}/{y}.png  | The address of the OpenStreetMap provider with dark theme style  |
-| app:map_tile_server_light | APP__MAP_TILE_SERVER_LIGHT | http://{YOUR_MAP_SERVER}/styles/{ID_LIGHT}/{z}/{x}/{y}.png | The address of the OpenStreetMap provider with light theme style |
-
-You're good to go!
+The deprecated configuration parameters (`APP__MAP_TILE_SERVER_DARK`, `APP__MAP_TILE_SERVER_LIGHT`) are ignored.

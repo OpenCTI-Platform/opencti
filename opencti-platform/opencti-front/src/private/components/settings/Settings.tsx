@@ -40,6 +40,7 @@ import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
 import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
+import SettingsMapTile from './settings_map_tile/SettingsMapTile';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 const AI_TYPE_MAP: Record<string, string> = {
@@ -74,8 +75,6 @@ const settingsQuery = graphql`
       platform_login_message
       platform_banner_text
       platform_banner_level
-      platform_map_tile_server_dark
-      platform_map_tile_server_light
       platform_ai_enabled
       platform_ai_type
       platform_ai_model
@@ -115,6 +114,12 @@ const settingsQuery = graphql`
       ...SettingsMessages_settingsMessages
       analytics_google_analytics_v4
       filigran_chatbot_ai_cgu_status
+      platform_map_tile_server_mode
+      platform_map_tile_server_s3_file {
+        name
+        size
+        sha256
+      }
     }
     about {
       version
@@ -163,9 +168,8 @@ export const settingsMutationFieldPatch = graphql`
         platform_login_message
         platform_banner_text
         platform_banner_level
-        platform_map_tile_server_dark
-        platform_map_tile_server_light
         analytics_google_analytics_v4
+        platform_map_tile_server_mode
       }
     }
   }
@@ -209,8 +213,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
-    platform_map_tile_server_dark: settings.platform_map_tile_server_dark,
-    platform_map_tile_server_light: settings.platform_map_tile_server_light,
   };
 
   const modules = settings.platform_modules;
@@ -253,6 +255,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     platform_banner_text: Yup.string().nullable(),
     platform_banner_level: Yup.string().nullable(),
     analytics_google_analytics_v4: Yup.string().nullable(),
+    platform_map_tile_server_mode: Yup.string().nullable(),
   });
 
   const handleRefetch = () => refetch(
@@ -694,6 +697,13 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           <ThemeManager
             handleRefetch={handleRefetch}
             defaultTheme={settings.platform_theme}
+          />
+        </Grid>
+
+        <Grid size={6}>
+          <SettingsMapTile
+            settings={settings}
+            handleSubmitField={handleSubmitField}
           />
         </Grid>
 
