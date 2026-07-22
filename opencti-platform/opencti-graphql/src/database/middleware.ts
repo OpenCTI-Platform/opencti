@@ -768,11 +768,17 @@ const convertAggregateDistributions = async (
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
-  // filter out unresolved data (like the SYSTEM user for instance)
-  const filteredData = data.filter((n) => isNotEmptyField(n.label === 'unknown' || allResolveLabels[n.label.toLowerCase()]));
+  // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
+  const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds: string[] = [];
   for (let i = 0; i < filteredData.length; i += 1) {
+    // The 'unknown' bucket has no real entity — skip resolution and access check
+    if (filteredData[i].label === 'unknown') {
+      grantedIds.push('unknown');
+      // eslint-disable-next-line no-continue
+      continue;
+    }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
@@ -781,6 +787,10 @@ const convertAggregateDistributions = async (
   }
   return filteredData
     .map((n) => {
+      // The 'unknown' bucket has no backing entity
+      if (n.label === 'unknown') {
+        return { ...n, entity: null as unknown as BasicStoreEntity };
+      }
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
         return {
