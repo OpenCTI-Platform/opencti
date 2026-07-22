@@ -10815,7 +10815,7 @@ type WorkflowSerializedState {
 
 type WorkflowSerializedTransition {
   from: [String!]!
-  to: String!
+  to: String
   event: String!
   asyncActions: [WorkflowActionConfig!]
   syncActions: [WorkflowActionConfig!]

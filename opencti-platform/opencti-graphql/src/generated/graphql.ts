@@ -38277,7 +38277,7 @@ export type WorkflowSerializedTransition = {
   event: Scalars['String']['output'];
   from: Array<Scalars['String']['output']>;
   syncActions?: Maybe<Array<WorkflowActionConfig>>;
-  to: Scalars['String']['output'];
+  to?: Maybe<Scalars['String']['output']>;
 };
 
 export type WorkflowTransition = {
@@ -53242,7 +53242,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   syncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
-  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
