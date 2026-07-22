@@ -125,6 +125,7 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
       <FintelTemplateFormDrawer
         entitySettingId={entitySettingId}
         isOpen={isFormOpen}
+        entityType={subTypeId}
         template={{
           id: template.id,
           name: template.name,

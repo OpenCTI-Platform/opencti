@@ -3,13 +3,13 @@ import { type FormikConfig } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
-import { fetchQuery as relayFetchQuery } from 'react-relay';
+import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';
 import { environment, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import useCustomViewEdit from './useCustomViewEdit';
 import useCustomViewAdd from './useCustomViewAdd';
 import CustomViewForm, { type CustomViewFormInputs } from './CustomViewForm';
 import CustomViewReplaceDefaultDialog from './CustomViewReplaceDefaultDialog';
-import { graphql } from 'react-relay';
+import { type CustomViewFormDrawerCurrentDefaultQuery$data } from './__generated__/CustomViewFormDrawerCurrentDefaultQuery.graphql';
 
 const customViewCurrentDefaultQuery = graphql`
   query CustomViewFormDrawerCurrentDefaultQuery($entityType: String!) {
@@ -25,8 +25,7 @@ const customViewCurrentDefaultQuery = graphql`
   }
 `;
 
-type PendingDefault =
-  | { kind: 'create'; values: CustomViewFormInputs }
+type PendingDefault = { kind: 'create'; values: CustomViewFormInputs }
   | { kind: 'edit'; revert: () => void };
 
 interface CustomViewFormDrawerProps {
@@ -56,7 +55,7 @@ const CustomViewFormDrawer = ({
   const fetchExistingDefault = (entityType_: string, excludeId?: string) => relayFetchQuery(environment, customViewCurrentDefaultQuery, { entityType: entityType_ }, { fetchPolicy: 'network-only' })
     .toPromise()
     .then((result: unknown) => {
-      const data = result as { customViews?: { edges: { node: { id: string; name: string; default: boolean } }[] } };
+      const data = result as CustomViewFormDrawerCurrentDefaultQuery$data;
       return data.customViews?.edges.map((e) => e.node).find((n) => n.default && n.id !== excludeId);
     });
 
@@ -69,17 +68,26 @@ const CustomViewFormDrawer = ({
         } else {
           commitEditMutation({
             variables: { id: customView!.id, input: [{ key: 'default', value: [true] }] },
-            onError: () => { MESSAGING$.notifyError(t_i18n('Failed to update custom view')); revert(); },
+            onError: () => {
+              MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
+              revert();
+            },
           });
         }
       })
-      .catch((err) => { handleError(err); revert(); });
+      .catch((err) => {
+        handleError(err);
+        revert();
+      });
   };
 
   const handleUnsetDefault = (revert: () => void) => {
     commitEditMutation({
       variables: { id: customView!.id, input: [{ key: 'default', value: [false] }] },
-      onError: () => { MESSAGING$.notifyError(t_i18n('Failed to update custom view')); revert(); },
+      onError: () => {
+        MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
+        revert();
+      },
     });
   };
 
@@ -154,7 +162,9 @@ const CustomViewFormDrawer = ({
     const input: { key: string; value: [unknown] } = { key: field, value: [value] };
     commitEditMutation({
       variables: { id: customView.id, input: [input] },
-      onCompleted: () => { setSubmitting(false); },
+      onCompleted: () => {
+        setSubmitting(false);
+      },
       onError: () => {
         setSubmitting(false);
         MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
@@ -175,7 +185,7 @@ const CustomViewFormDrawer = ({
           onClose={onClose}
           onSubmit={handleSubmitForm}
           onSubmitField={handleEditField}
-          editingProps={isEdition ? {onDefaultToggle: handleDefaultToggle}: undefined}
+          editingProps={isEdition ? { onDefaultToggle: handleDefaultToggle } : undefined}
           values={customView}
         />
       </Drawer>

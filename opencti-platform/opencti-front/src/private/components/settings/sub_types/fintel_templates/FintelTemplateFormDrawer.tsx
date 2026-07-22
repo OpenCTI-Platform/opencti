@@ -2,13 +2,31 @@ import Drawer from '@components/common/drawer/Drawer';
 import { useState } from 'react';
 import { type FormikConfig } from 'formik';
 import { useNavigate } from 'react-router-dom';
+import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';
 import useFintelTemplateAdd from './useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';
 import FintelTemplateReplaceDefaultDialog from './FintelTemplateReplaceDefaultDialog';
 import { useFormatter } from '../../../../../components/i18n';
-import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { environment, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
+import { type FintelTemplateFormDrawerCurrentDefaultQuery$data } from './__generated__/FintelTemplateFormDrawerCurrentDefaultQuery.graphql';
+
+const fintelTemplateCurrentDefaultQuery = graphql`
+  query FintelTemplateFormDrawerCurrentDefaultQuery($targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      fintelTemplates {
+        edges {
+          node {
+            id
+            name
+            default
+          }
+        }
+      }
+    }
+  }
+`;
 
 type PendingDefaultCreate = { kind: 'create'; values: FintelTemplateFormInputs };
 type PendingDefaultEdit = { kind: 'edit'; revert: () => void };
@@ -29,7 +47,6 @@ const FintelTemplateFormDrawer = ({
   entityType,
   entitySettingId,
   template,
-  currentDefaultName,
 }: FintelTemplateFormDrawerProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -38,20 +55,39 @@ const FintelTemplateFormDrawer = ({
 
   const [commitAddMutation] = useFintelTemplateAdd(entitySettingId);
   const [commitEditMutation] = useFintelTemplateEdit();
+  const [currentDefaultName, setCurrentDefaultName] = useState('');
   const [pendingDefault, setPendingDefault] = useState<PendingDefault | null>(null);
 
-  const handleSetDefault = (revert: () => void) => {
-    if (currentDefaultName) {
-      setPendingDefault({ kind: 'edit', revert });
-    } else {
-      commitEditMutation({
-        variables: { id: template!.id, input: [{ key: 'default', value: ['true'] }] },
-        onError: (err) => {
-          handleError(err);
-          revert();
-        },
+  const fetchExistingDefault = (excludeId?: string) => {
+    if (!entityType) return Promise.resolve(undefined);
+    return relayFetchQuery(environment, fintelTemplateCurrentDefaultQuery, { targetType: entityType }, { fetchPolicy: 'network-only' })
+      .toPromise()
+      .then((result: unknown) => {
+        const data = result as FintelTemplateFormDrawerCurrentDefaultQuery$data;
+        return data.entitySettingByType?.fintelTemplates?.edges.map((e) => e.node).find((n) => n.default && n.id !== excludeId);
       });
-    }
+  };
+
+  const handleSetDefault = (revert: () => void) => {
+    fetchExistingDefault(template?.id)
+      .then((existing) => {
+        if (existing) {
+          setCurrentDefaultName(existing.name);
+          setPendingDefault({ kind: 'edit', revert });
+        } else {
+          commitEditMutation({
+            variables: { id: template!.id, input: [{ key: 'default', value: ['true'] }] },
+            onError: (err) => {
+              handleError(err);
+              revert();
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        handleError(err);
+        revert();
+      });
   };
 
   const handleUnsetDefault = (revert: () => void) => {
@@ -102,9 +138,21 @@ const FintelTemplateFormDrawer = ({
     values,
     { setSubmitting },
   ) => {
-    if (values.default && currentDefaultName) {
-      setSubmitting(false);
-      setPendingDefault({ kind: 'create', values });
+    if (values.default) {
+      fetchExistingDefault()
+        .then((existing) => {
+          if (existing) {
+            setCurrentDefaultName(existing.name);
+            setSubmitting(false);
+            setPendingDefault({ kind: 'create', values });
+          } else {
+            doAdd(values, setSubmitting);
+          }
+        })
+        .catch((err) => {
+          setSubmitting(false);
+          handleError(err);
+        });
     } else {
       doAdd(values, setSubmitting);
     }
