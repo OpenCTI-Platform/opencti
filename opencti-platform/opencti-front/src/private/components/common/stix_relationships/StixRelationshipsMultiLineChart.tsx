@@ -13,6 +13,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsMultiLineChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiLineChartTimeSeriesQuery(
@@ -92,8 +93,9 @@ const buildQueryVariables = (
 ): StixRelationshipsMultiLineChartTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
-  const startDate = config.startDate ?? fallbackStart;
-  const endDate = config.endDate ?? fallbackEnd;
+  const computed = computeStartEndDates(config);
+  const startDate = computed.startDate ?? fallbackStart;
+  const endDate = computed.endDate ?? fallbackEnd;
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
     const dateAttribute
       = selection.date_attribute?.length ? selection.date_attribute : 'created_at';

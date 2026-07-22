@@ -12,6 +12,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { ReactNode } from 'react';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
+import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsNumberNumberQuery = graphql`
     query StixRelationshipsNumberNumberSeriesQuery(
@@ -96,15 +97,18 @@ const StixRelationshipsNumberComponent = ({
 
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
 ): StixRelationshipsNumberNumberSeriesQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
+  const dateAttribute = selection.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
   const { filters } = buildFiltersAndOptionsForWidgets(
     selection.filters,
     {
+      startDate,
+      endDate,
       dateAttribute,
       isKnowledgeRelationshipWidget: true,
     },

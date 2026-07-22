@@ -119,9 +119,7 @@ const buildQueryVariables = (
     = selection.date_attribute?.length
       ? selection.date_attribute
       : 'created_at';
-  const {
-    filters,
-  } = buildFiltersAndOptionsForWidgets(
+  const { filters } = buildFiltersAndOptionsForWidgets(
     selection.filters,
     { startDate, endDate, dateAttribute },
   );

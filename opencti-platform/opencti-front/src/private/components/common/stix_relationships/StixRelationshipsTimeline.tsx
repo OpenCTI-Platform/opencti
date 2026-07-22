@@ -1037,8 +1037,9 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsTimelineStixRelationshipQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
+  const dateAttribute = selection.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
   const { startDate, endDate } = computeStartEndDates(config);
   const { filters } = buildFiltersAndOptionsForWidgets(
     selection.filters,

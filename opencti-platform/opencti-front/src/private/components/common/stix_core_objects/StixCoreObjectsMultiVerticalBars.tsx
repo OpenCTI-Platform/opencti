@@ -104,10 +104,9 @@ const buildQueryVariables = (
   const startDate = computed.startDate ?? monthsAgo(12);
   const endDate = computed.endDate ?? now();
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute
-      = selection.date_attribute && selection.date_attribute.length > 0
-        ? selection.date_attribute
-        : 'created_at';
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(
       selection.filters,
       { startDate, endDate, dateAttribute },
