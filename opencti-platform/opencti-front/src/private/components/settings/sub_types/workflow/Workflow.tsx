@@ -8,13 +8,14 @@ import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
+import { WorkflowPublishMutation } from './__generated__/WorkflowPublishMutation.graphql';
 import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestorePublishedMutation.graphql';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
@@ -170,11 +171,7 @@ const Workflow = ({
   const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(workflowDefinitionSetMutation);
 
   // Publish workflow definition
-  const [publishWorkflowDefinition] = useApiMutation(
-    workflowDefinitionPublishMutation,
-    undefined,
-    { successMessage: t_i18n('Workflow successfully published') },
-  );
+  const [commitPublish] = useMutation<WorkflowPublishMutation>(workflowDefinitionPublishMutation);
 
   // Restore published workflow definition
   const [restoreWorkflowDefinition] = useApiMutation<WorkflowRestorePublishedMutation>(
@@ -299,15 +296,27 @@ const Workflow = ({
       );
       return;
     }
-    publishWorkflowDefinition({
+    commitPublish({
       variables: { entityType: 'DraftWorkspace' },
       onCompleted: () => {
-        // Update status to published
+        MESSAGING$.notifySuccess(t_i18n('Workflow successfully published'));
         setWorkflowDefinitionStatus({
           hasUnpublishedChanges: false,
           hasPublishedVersion: true,
           validationErrors: [],
         });
+      },
+      onError: (error) => {
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data } }> } })?.res?.errors?.[0];
+        const data = firstError?.extensions?.data as { removedStates?: string[]; entityType?: string } | undefined;
+        const publishErrors: WorkflowValidationError[] = [{
+          type: 'PUBLISH_ERROR',
+          message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
+          path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: data?.entityType ?? '' })) ?? [],
+        }];
+        MESSAGING$.notifyError(
+          <WorkflowValidationErrorsToastContent errors={publishErrors} t_i18n={t_i18n} />,
+        );
       },
     });
   };
