@@ -4470,7 +4470,7 @@ const StixCoreRelationshipOverview = ({
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <>
                   <IconButton
-                    aria-label={t_i18n('edit')}
+                    aria-label={t_i18n('Edit')}
                     color="primary"
                     onClick={() => setOpenEdit(true)}
                     size="small"
