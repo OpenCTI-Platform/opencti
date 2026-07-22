@@ -1,8 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { computeStartEndDates, computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -92,10 +91,11 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): DraftsMultiLineChartTimeSeriesQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate: rawStartDate, endDate: rawEndDate } = computeStartEndDates(config);
-  const startDate = rawStartDate ?? monthsAgo(12);
-  const endDate = rawEndDate ?? now();
-  const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+    { fallbackToDefaultDates: true },
+  );
   return {
     field: dateAttribute,
     operation: 'count',

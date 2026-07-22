@@ -116,7 +116,14 @@ export const resolveDataSelection = async ({
   };
 };
 
-export const computeStartEndDates = (config?: DashboardConfig) => {
+/**
+ * Computes the start and end dates from the dashboard config.
+ * Handles relative dates (e.g. "last 7 days") and absolute dates.
+ * If no dates are configured and `fallbackToDefaultDates` is true, falls back to the last 12 months.
+ */
+export const computeStartEndDates = (config?: DashboardConfig, fallbackToDefaultDates = false) => {
+  const fallbackStartDate = fallbackToDefaultDates ? monthsAgo(12) : undefined;
+  const fallbackEndDate = fallbackToDefaultDates ? now() : undefined;
   const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
@@ -125,7 +132,10 @@ export const computeStartEndDates = (config?: DashboardConfig) => {
     ? formatDate(dayStartDate(null, false))
     : config?.endDate;
 
-  return { startDate, endDate };
+  return {
+    startDate: startDate ?? fallbackStartDate,
+    endDate: endDate ?? fallbackEndDate,
+  };
 };
 
 /**
@@ -133,17 +143,20 @@ export const computeStartEndDates = (config?: DashboardConfig) => {
  * and builds the widget filters for a single data selection.
  *
  * This is the low-level building block used by higher-level helpers and by widgets
- * that need to customise the returned query variables beyond the common pattern.
+ * that need to customize the returned query variables beyond the common pattern.
  */
 export const computeWidgetFiltersForSelection = (
   selection?: WidgetDataSelection,
   config?: DashboardConfig,
-  opts: { isKnowledgeRelationshipWidget?: boolean } = {},
+  opts: {
+    isKnowledgeRelationshipWidget?: boolean;
+    fallbackToDefaultDates?: boolean;
+  } = {},
 ) => {
   const dateAttribute = selection?.date_attribute?.length
     ? selection.date_attribute
     : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
   const { filters } = buildFiltersAndOptionsForWidgets(
     selection?.filters,
     {
@@ -158,6 +171,31 @@ export const computeWidgetFiltersForSelection = (
 };
 
 /**
+ * Resolves the dateAttribute, computes start/end dates from the dashboard config,
+ * and builds the widget filters for a multiple data selection.
+ */
+export const computeWidgetFiltersForMultiSelection = (
+  dataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  opts: {
+    types?: string[];
+    isKnowledgeRelationshipWidget?: boolean;
+    fallbackToDefaultDates?: boolean;
+  } = {},
+) => {
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
+    return {
+      field: dateAttribute,
+      types: opts?.types,
+      filters,
+    };
+  });
+  return { startDate, endDate, timeSeriesParameters };
+};
+
+/**
  * Builds the common base query variables for relationship widgets supporting multiple data selection.
  * Computes start/end dates from config, resolves dateAttribute,
  * builds and normalizes filters (including dynamicFrom/dynamicTo).
@@ -169,14 +207,13 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ) => {
-  const fallbackStart = monthsAgo(12);
-  const fallbackEnd = now();
-  const { startDate: computedStart, endDate: computedEnd } = computeStartEndDates(config);
-  const startDate = computedStart ?? fallbackStart;
-  const endDate = computedEnd ?? fallbackEnd;
+  const opts = {
+    isKnowledgeRelationshipWidget: true,
+    fallbackToDefaultDates: true,
+  };
 
   const timeSeriesParameters = dataSelection.map((selection) => {
-    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, { isKnowledgeRelationshipWidget: true });
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
 
     return {
       field: dateAttribute,
@@ -185,6 +222,8 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
       dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
     };
   });
+
+  const { startDate, endDate } = computeWidgetFiltersForSelection(dataSelection[0], config, opts);
 
   return {
     operation: 'count',
