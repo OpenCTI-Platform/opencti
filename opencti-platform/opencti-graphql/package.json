@@ -136,6 +136,7 @@
     "json-to-plain-text": "1.2.0",
     "jsonpath-plus": "10.4.0",
     "jwt-decode": "4.0.0",
+    "kafkajs": "2.2.4",
     "license-checker-rseidelsohn": "5.0.1",
     "lru-cache": "11.5.2",
     "luxon": "3.7.2",

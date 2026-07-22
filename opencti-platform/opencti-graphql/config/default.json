@@ -383,6 +383,22 @@
     "host_ip_family": 4,
     "trimming": 2000000
   },
+  "kafka": {
+    "enabled": false,
+    "namespace": "",
+    "client_id": "opencti",
+    "brokers": ["localhost:9092"],
+    "use_ssl": false,
+    "sasl_enabled": false,
+    "sasl_mechanism": "plain",
+    "sasl_username": "",
+    "sasl_password": "",
+    "num_partitions": 1,
+    "replication_factor": 1,
+    "retention_ms": 604800000,
+    "connection_timeout": 10000,
+    "request_timeout": 30000
+  },
   "elasticsearch": {
     "index_prefix": "opencti",
     "url": "http://localhost:9200",
