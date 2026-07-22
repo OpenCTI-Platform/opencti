@@ -11,6 +11,7 @@ import { StixRelationshipsTreeMapDistributionQuery } from './__generated__/StixR
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
+import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsTreeMapsDistributionQuery = graphql`
   query StixRelationshipsTreeMapDistributionQuery(
@@ -129,7 +130,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsTreeMapDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = config;
+  const { startDate, endDate } = computeStartEndDates(config);
   const dateAttribute
     = selection.date_attribute?.length
       ? selection.date_attribute
