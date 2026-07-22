@@ -140,8 +140,8 @@ describe('TaskManager sendResultToQueue tests', () => {
       expect(bundle.objects[0].id).toBe(objects[i].id);
     }
 
-    // updateExpectationsNumber should be called for each single-object bundle
-    expect(updateExpectationsNumber).toHaveBeenCalledTimes(3);
+    // Expectations are now written inside pushToWorkerForConnector (mocked here), so taskManager must not call it directly
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
   });
 
   it('should send all objects in a single bundle when forceNoSplit is true', async () => {
@@ -169,9 +169,8 @@ describe('TaskManager sendResultToQueue tests', () => {
     expect(bundle.objects).toHaveLength(3);
     expect(bundle.objects.map((o: { id: string }) => o.id)).toEqual(['object-1', 'object-2', 'object-3']);
 
-    // updateExpectationsNumber should be called once with the total count
-    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
-    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-123', 3);
+    // Expectations are now written inside pushToWorkerForConnector (mocked here), so taskManager must not call it directly
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
   });
 
   it('should not call pushToWorkerForConnector when objects array is empty', async () => {

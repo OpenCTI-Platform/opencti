@@ -3,7 +3,7 @@ import util from 'util';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
-import { DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
 import { isEmptyField, isNotEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
@@ -732,7 +732,10 @@ export const pushToWorkerForConnector = async (connectorId, message) => {
     expectationsNumber = expectations;
   }
   if (bundles.length === 0) {
-    throw UnsupportedError('Nothing to import', { connectorId, work_id: message.work_id });
+    // Nothing to split/send (e.g. an empty bundle such as an empty draft validation).
+    // Keep the previous lenient behavior and simply skip instead of failing the caller.
+    logApp.debug('[RABBITMQ] Skipping push, bundle has nothing to import', { connectorId, work_id: message.work_id });
+    return true;
   }
   // Write the expectations to the work (like send_stix2_bundle)
   if (isNotEmptyField(message.work_id)) {

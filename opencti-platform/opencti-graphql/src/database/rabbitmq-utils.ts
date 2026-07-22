@@ -374,13 +374,12 @@ export class OpenCTIStix2Splitter {
     eventVersion?: string,
     cleanupInconsistentBundle: boolean = false,
   ): SplitBundleResult {
-    let bundleData: StixBundle;
-    if (useJson) {
-      bundleData = typeof bundle === 'string' ? JSON.parse(bundle) : bundle;
-    } else {
-      bundleData = bundle as StixBundle;
-    }
-
+    // Reset internal state to allow reusing the same splitter instance safely
+    this.cacheIndex = {};
+    this.cacheRefs = {};
+    this.elements = [];
+    this.incompatibleItems = [];
+    const bundleData: StixBundle = typeof bundle === 'string' ? JSON.parse(bundle) : bundle;
     if (!('objects' in bundleData)) {
       throw new Error('File data is not a valid bundle');
     }
