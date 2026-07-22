@@ -504,26 +504,11 @@ export const taxiiExecutor = async (context: AuthContext) => {
             } catch (patchErr) {
               logApp.warn('[OPENCTI-MODULE] Failed to patch taxii ingestion success status', { cause: patchErr });
             }
-            if (objectsCount === 0) {
-              await ingestionLogger.success('Feed fetched successfully', {
-                objects_count: 0,
-                collection: ingestion.collection,
-                uri: ingestion.uri,
-              });
-            } else {
-              for (let objectIndex = 0; objectIndex < objects.length; objectIndex += 1) {
-                const object = objects[objectIndex];
-                await ingestionLogger.success('Entity fetched successfully', {
-                  objects_count: objectsCount,
-                  object_index: objectIndex + 1,
-                  collection: ingestion.collection,
-                  uri: ingestion.uri,
-                  entity_type: object.type,
-                  entity_id: object.id,
-                  object,
-                });
-              }
-            }
+            await ingestionLogger.success('Feed fetched successfully', {
+              objects_count: objectsCount,
+              collection: ingestion.collection,
+              uri: ingestion.uri,
+            });
           })
           .catch(async (e: Error) => {
             logApp.info('[OPENCTI-MODULE] INGESTION - Taxii handler rejected', { error: e.message, name: ingestion.name });
