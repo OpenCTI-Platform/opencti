@@ -85,7 +85,11 @@ const cascadeCleanupNowUnlinkedElements = async (
   if (candidateIds.length === 0) {
     return;
   }
-  const candidates = await elFindByIds(context, user, candidateIds, { includeDeletedInDraft: true }) as BasicStoreCommon[];
+  const candidates = await elFindByIds(context, user, candidateIds, {
+    includeDeletedInDraft: true,
+    baseData: true,
+    baseFields: ['draft_change'],
+  }) as BasicStoreCommon[];
   const linkedCandidates = candidates.filter((c) => isDraftIndex(c._index) && c.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE_LINKED);
   for (let i = 0; i < linkedCandidates.length; i += 1) {
     await refreshUpdateLinkedElementFromDraft(context, user, linkedCandidates[i]);
