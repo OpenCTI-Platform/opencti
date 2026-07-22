@@ -3,7 +3,7 @@ import type { WidgetDataSelection } from '../../utils/widget/widget';
 import { removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes, buildFiltersForCustomView } from '../../utils/filters/filtersUtils';
 import type { SchemaType } from '../../utils/hooks/useAuth';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
-import { resolveDataSelection } from './dashboardVizUtils';
+import { resolveDataSelection, computeStartEndDates } from './dashboardVizUtils';
 
 vi.mock('src/relay/environment', () => ({
   fetchQuery: vi.fn(),
@@ -519,5 +519,53 @@ describe('resolvedDataSelection', () => {
       });
       expect(isMissingSavedFilters).toBe(false);
     });
+  });
+});
+
+describe('computeStartEndDates', () => {
+  it('returns undefined dates when no config is provided', () => {
+    const { startDate, endDate } = computeStartEndDates();
+    expect(startDate).toBeUndefined();
+    expect(endDate).toBeUndefined();
+  });
+
+  it('returns undefined dates when config has no date fields', () => {
+    const { startDate, endDate } = computeStartEndDates({});
+    expect(startDate).toBeUndefined();
+    expect(endDate).toBeUndefined();
+  });
+
+  it('returns absolute dates from config', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const { startDate, endDate } = computeStartEndDates(config);
+    expect(startDate).toBe('2025-01-01T00:00:00Z');
+    expect(endDate).toBe('2025-06-01T00:00:00Z');
+  });
+
+  it('computes relative dates when relativeDate is set, ignoring absolute dates', () => {
+    const config = {
+      relativeDate: 'days-7',
+      startDate: '2025-01-01T00:00:00Z',
+      endDate: '2025-06-01T00:00:00Z',
+    };
+    const { startDate, endDate } = computeStartEndDates(config);
+    // relativeDate should override absolute dates
+    expect(startDate).not.toBe('2025-01-01T00:00:00Z');
+    expect(endDate).not.toBe('2025-06-01T00:00:00Z');
+    expect(startDate).toBeDefined();
+    expect(endDate).toBeDefined();
+  });
+
+  it('falls back to default date range when fallbackToDefaultDates is true and no dates configured', () => {
+    const { startDate, endDate } = computeStartEndDates({}, true);
+    expect(startDate).toBeDefined();
+    expect(endDate).toBeDefined();
+  });
+
+  it('uses config dates over fallback defaults when both are available', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const { startDate, endDate } = computeStartEndDates(config, true);
+    expect(startDate).toBe('2025-01-01T00:00:00Z');
+    expect(endDate).toBe('2025-06-01T00:00:00Z');
   });
 });

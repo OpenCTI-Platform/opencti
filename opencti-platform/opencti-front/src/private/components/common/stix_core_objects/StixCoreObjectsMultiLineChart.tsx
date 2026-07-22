@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
@@ -10,7 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiLineChartTimeSeriesQuery } from './__generated__/StixCoreObjectsMultiLineChartTimeSeriesQuery.graphql';
-import { computeStartEndDates, computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForMultiSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiLineChartTimeSeriesQuery = graphql`
@@ -97,17 +96,11 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixCoreObjectsMultiLineChartTimeSeriesQuery['variables'] => {
-  const computed = computeStartEndDates(config);
-  const startDate = computed.startDate ?? monthsAgo(12);
-  const endDate = computed.endDate ?? now();
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
-    return {
-      field: dateAttribute,
-      types: DATA_SELECTION_TYPES,
-      filters,
-    };
-  });
+  const { startDate, endDate, timeSeriesParameters } = computeWidgetFiltersForMultiSelection(
+    resolvedDataSelection,
+    config,
+    { types: DATA_SELECTION_TYPES, fallbackToDefaultDates: true },
+  );
   return {
     startDate,
     endDate,
