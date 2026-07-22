@@ -10,14 +10,14 @@ import { Box, Typography } from '@mui/material';
 import { NEW_STATUS_NAME, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery } from '../SubTypeWorkflow';
-import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
+import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
 import { WorkflowPublishMutation } from './__generated__/WorkflowPublishMutation.graphql';
 import { WorkflowRestorePublishedMutation } from './__generated__/WorkflowRestorePublishedMutation.graphql';
-import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
+import { useWorkflowInitialElements, convertEdgesToObject } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
 import { useTheme } from '@mui/material/styles';
@@ -35,9 +35,12 @@ export interface WorkflowValidationError {
 interface WorkflowValidationErrorsToastContentProps {
   errors: WorkflowValidationError[];
   t_i18n: (key: string) => string;
+  statusTemplates?: SubTypeWorkflowQuery$data['statusTemplates'];
 }
 
-const WorkflowValidationErrorsToastContent = ({ errors, t_i18n }: WorkflowValidationErrorsToastContentProps) => {
+const WorkflowValidationErrorsToastContent = ({ errors, t_i18n, statusTemplates }: WorkflowValidationErrorsToastContentProps) => {
+  const statusTemplateMap = convertEdgesToObject(statusTemplates);
+
   const groupedErrors = errors.reduce((acc, error) => {
     if (!acc[error.type]) acc[error.type] = [];
     acc[error.type].push(error);
@@ -59,7 +62,12 @@ const WorkflowValidationErrorsToastContent = ({ errors, t_i18n }: WorkflowValida
               • {error.message}
               {error.path && error.path.length > 0 && (
                 <Typography variant="caption" component="span" sx={{ ml: 0.5, fontStyle: 'italic' }}>
-                  ({error.path.map((ref) => `${ref.entity_type} ${ref.id}`).join(', ')})
+                  ({error.path.map((ref) => {
+                    if (ref.entity_type === 'StatusTemplate') {
+                      return statusTemplateMap[ref.id]?.name ?? ref.id;
+                    }
+                    return `${ref.entity_type} ${ref.id}`;
+                  }).join(', ')})
                 </Typography>
               )}
             </Typography>
@@ -312,10 +320,10 @@ const Workflow = ({
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
-          path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: data?.entityType ?? '' })) ?? [],
+          path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: 'StatusTemplate' })) ?? [],
         }];
         MESSAGING$.notifyError(
-          <WorkflowValidationErrorsToastContent errors={publishErrors} t_i18n={t_i18n} />,
+          <WorkflowValidationErrorsToastContent errors={publishErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
         );
       },
     });

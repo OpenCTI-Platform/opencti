@@ -14,7 +14,7 @@ type ReadOnlyAction = NonNullable<NonNullable<SubTypeWorkflowQuery$data['workflo
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
-const convertEdgesToObject = <T extends { id: string }>(
+export const convertEdgesToObject = <T extends { id: string }>(
   connection: Connection<T | null | undefined>,
 ): Record<string, T> => {
   if (!connection) return {};
