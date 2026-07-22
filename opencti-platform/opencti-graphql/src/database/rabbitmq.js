@@ -719,9 +719,10 @@ export const pushToWorkerForConnector = async (connectorId, message) => {
   let bundles;
   let expectationsNumber;
   if (message.no_split) {
-    // Split is explicitly disabled, keep the bundle intact and count it as a single expectation
+    // Split is explicitly disabled, keep the bundle intact but keep expectations aligned with the number of objects
+    const bundleContent = JSON.parse(rawBundle);
     bundles = [rawBundle];
-    expectationsNumber = 1;
+    expectationsNumber = Array.isArray(bundleContent.objects) ? bundleContent.objects.length : 1;
   } else {
     const bundleContent = JSON.parse(rawBundle);
     const eventVersion = bundleContent.x_opencti_event_version;
