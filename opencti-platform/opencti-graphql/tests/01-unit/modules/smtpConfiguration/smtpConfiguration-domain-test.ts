@@ -183,7 +183,7 @@ describe('smtpConfigurationEdit', () => {
     expect(storedConfig.port).toBe(MOCK_SMTP_CONFIG_STORED.port);
   });
 
-
+  it('should reject port 25', async () => {
     await expect(smtpConfigurationEdit(mockContext, mockUser, { port: 25 }))
       .rejects.toThrow('Port 25 is not allowed for SMTP configuration');
     expect(Middleware.patchAttribute).not.toHaveBeenCalled();
