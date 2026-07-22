@@ -14,12 +14,10 @@ import { PopoverProps } from '@mui/material/Popover';
 import fileDownload from 'js-file-download';
 import React, { Dispatch, FunctionComponent, Suspense, UIEvent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
-import IngestionTaxiiLogsDrawer from './IngestionTaxiiLogsDrawer';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
@@ -49,7 +47,6 @@ const ingestionTaxiiPopoverExportQuery = graphql`
 `;
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
-  ingestionTaxiiName: string;
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined;
   setStateValue: Dispatch<string>;
@@ -59,15 +56,12 @@ interface IngestionTaxiiPopoverProps {
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
-  ingestionTaxiiName,
   running,
   paginationOptions,
   setStateValue,
   onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -75,7 +69,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   const [stopping, setStopping] = useState(false);
   const [displayResetState, setDisplayResetState] = useState(false);
   const [resettingState, setResettingState] = useState(false);
-  const [displayLogs, setDisplayLogs] = useState(false);
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -101,11 +94,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 
   const handleCloseResetState = () => {
     setDisplayResetState(false);
-  };
-
-  const handleOpenLogs = () => {
-    setDisplayLogs(true);
-    handleClose();
   };
 
   const handleOpenStart = () => {
@@ -247,11 +235,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         <MenuItem onClick={handleExport}>
           {t_i18n('Export')}
         </MenuItem>
-        {isIngestionFeedLogsEnabled && (
-          <MenuItem onClick={handleOpenLogs}>
-            {t_i18n('Logs')}
-          </MenuItem>
-        )}
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}
         </MenuItem>
@@ -267,14 +250,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
             open={displayUpdate}
           />
         </Suspense>
-      )}
-      {isIngestionFeedLogsEnabled && (
-        <IngestionTaxiiLogsDrawer
-          isOpen={displayLogs}
-          onClose={() => setDisplayLogs(false)}
-          feedId={ingestionTaxiiId}
-          feedName={ingestionTaxiiName}
-        />
       )}
       <DeleteDialog
         deletion={deletion}

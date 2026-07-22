@@ -81,7 +81,6 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiPopover
             ingestionTaxiiId={data.id}
-            ingestionTaxiiName={data.name}
             paginationOptions={paginationOptions}
             running={data.ingestion_running}
             setStateValue={setStateValue}
