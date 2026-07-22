@@ -1036,17 +1036,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fontsource/geologica@npm:5.2.8":
-  version: 5.2.8
-  resolution: "@fontsource/geologica@npm:5.2.8"
-  checksum: 10c0/a634af2509b3d6939cc4605c4db3dac5c0f990a367f9162e508c1dab02133325d82fda996c16e474c001c0448ccbacd9015fda1d4ae663f630de9f75048944c1
+"@fontsource/geologica@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/geologica@npm:5.3.0"
+  checksum: 10c0/05e2f55acbba39d358d25d391a6126eb5f7c78da5fdd3493d07943c98978e3c9e43ff6e72527bf4ce6a4fbaa455430b5a5e1121632e3d774ee3a7dd1e6371119
   languageName: node
   linkType: hard
 
-"@fontsource/ibm-plex-sans@npm:5.2.8":
-  version: 5.2.8
-  resolution: "@fontsource/ibm-plex-sans@npm:5.2.8"
-  checksum: 10c0/3cdb45d9dd54f9b4ec0d5912215bbc5ef5a89cea99cc28d46fa5cf6ebee457f94183f42be5994b61b6cdacec0fe67d697b6642678823dc0cc7e7b58180e86211
+"@fontsource/ibm-plex-sans@npm:5.3.0":
+  version: 5.3.0
+  resolution: "@fontsource/ibm-plex-sans@npm:5.3.0"
+  checksum: 10c0/8e4c7a849e8167c8de1905282a62ff312a4266e364e3c436fa6d89d650bbb30b3386157ae31af3783e00f85fa64fd7e26bee7ca232db7d22fdc082f6b531edb5
   languageName: node
   linkType: hard
 
@@ -11787,8 +11787,8 @@ __metadata:
     "@filigran/chatbot": "npm:3.7.4"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
     "@filigran/rich-text-editor": "npm:1.2.0"
-    "@fontsource/geologica": "npm:5.2.8"
-    "@fontsource/ibm-plex-sans": "npm:5.2.8"
+    "@fontsource/geologica": "npm:5.3.0"
+    "@fontsource/ibm-plex-sans": "npm:5.3.0"
     "@graphiql/toolkit": "npm:0.12.1"
     "@hello-pangea/dnd": "npm:18.0.1"
     "@jsonforms/core": "npm:3.8.0"
