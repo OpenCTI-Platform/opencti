@@ -1,7 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiHeatMap from '../../../../components/dashboard/WidgetMultiHeatMap';
@@ -10,9 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { StixRelationshipsMultiHeatMapTimeSeriesQuery } from './__generated__/StixRelationshipsMultiHeatMapTimeSeriesQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { monthsAgo, now } from '../../../../utils/Time';
-import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { buildRelationshipMultiWidgetBaseQueryVariables } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsMultiHeatMapTimeSeriesQuery = graphql`
   query StixRelationshipsMultiHeatMapTimeSeriesQuery(
@@ -100,29 +97,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiHeatMapTimeSeriesQuery['variables'] => {
-  const { startDate, endDate } = computeStartEndDates(config);
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute
-      = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { isKnowledgeRelationshipWidget: true },
-    );
-
-    return {
-      field: dateAttribute,
-      filters: normalizeFilterGroupForBackend(filters),
-      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-    };
-  });
-  return {
-    operation: 'count',
-    startDate: startDate ?? monthsAgo(12),
-    endDate: endDate ?? now(),
-    interval: getWidgetInterval(parameters),
-    timeSeriesParameters,
-  };
+  return buildRelationshipMultiWidgetBaseQueryVariables(
+    resolvedDataSelection, config, parameters) as StixRelationshipsMultiHeatMapTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiHeatMapProps {

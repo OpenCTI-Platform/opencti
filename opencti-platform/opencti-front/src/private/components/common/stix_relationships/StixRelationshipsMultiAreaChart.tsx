@@ -1,7 +1,5 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
@@ -11,7 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiAreaChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiAreaChartTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { buildRelationshipMultiWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -92,35 +90,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'] => {
-  const fallbackStart = monthsAgo(12);
-  const fallbackEnd = now();
-  const startDate = config.startDate ?? fallbackStart;
-  const endDate = config.endDate ?? fallbackEnd;
-
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { startDate, endDate, isKnowledgeRelationshipWidget: true },
-    );
-
-    return {
-      field: dateAttribute,
-      filters: normalizeFilterGroupForBackend(filters),
-      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-    };
-  });
-
-  return {
-    operation: 'count',
-    startDate,
-    endDate,
-    interval: getWidgetInterval(parameters),
-    timeSeriesParameters,
-  };
+  return buildRelationshipMultiWidgetBaseQueryVariables(
+    resolvedDataSelection, config, parameters) as StixRelationshipsMultiAreaChartTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiAreaChartProps {

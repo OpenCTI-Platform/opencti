@@ -1,11 +1,18 @@
-import type { WidgetHost, WidgetDataSelection, WidgetPerspective } from 'src/utils/widget/widget';
+import { WidgetDataSelection, WidgetHost, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
 import { graphql } from 'react-relay';
-import { buildFiltersForCustomView, removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes } from 'src/utils/filters/filtersUtils';
+import {
+  buildFiltersAndOptionsForWidgets,
+  buildFiltersForCustomView,
+  getAvailableFilterKeysForEntityTypes,
+  normalizeFilterGroupForBackend,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+} from 'src/utils/filters/filtersUtils';
 import { type FilterDefinition } from 'src/utils/hooks/useAuth';
-import { computeRelativeDate, dayStartDate, formatDate } from 'src/utils/Time';
+import { computeRelativeDate, dayStartDate, formatDate, monthsAgo, now } from 'src/utils/Time';
 import { fetchQuery } from 'src/relay/environment';
 import { DashboardConfig } from './dashboard-types';
 import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 export const savedFilterQuery = graphql`
   query dashboardVizUtilsSavedFilterQuery($id: ID!) {
@@ -119,4 +126,87 @@ export const computeStartEndDates = (config?: DashboardConfig) => {
     : config?.endDate;
 
   return { startDate, endDate };
+};
+
+/**
+ * Builds the common base query variables for relationship widgets supporting multiple data selection.
+ * Computes start/end dates from config, resolves dateAttribute,
+ * builds and normalizes filters (including dynamicFrom/dynamicTo).
+ *
+ * Each widget can destructure the result and add its own specific fields.
+ */
+export const buildRelationshipMultiWidgetBaseQueryVariables = (
+  dataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+  parameters?: WidgetParameters,
+) => {
+  const fallbackStart = monthsAgo(12);
+  const fallbackEnd = now();
+  const computed = computeStartEndDates(config);
+  const startDate = computed.startDate ?? fallbackStart;
+  const endDate = computed.endDate ?? fallbackEnd;
+
+  const timeSeriesParameters = dataSelection.map((selection) => {
+    const dateAttribute = selection.date_attribute?.length
+      ? selection.date_attribute
+      : 'created_at';
+    const { filters } = buildFiltersAndOptionsForWidgets(selection.filters,
+      {
+        startDate,
+        endDate,
+        dateAttribute,
+        isKnowledgeRelationshipWidget: true,
+      });
+
+    return {
+      field: dateAttribute,
+      filters: normalizeFilterGroupForBackend(filters),
+      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    };
+  });
+
+  return {
+    operation: 'count',
+    startDate,
+    endDate,
+    interval: getWidgetInterval(parameters),
+    timeSeriesParameters,
+  };
+};
+
+/**
+ * Builds the common base query variables for relationship widgets using a single data selection.
+ * Computes start/end dates from config, resolves dateAttribute,
+ * builds and normalizes filters (including dynamicFrom/dynamicTo),
+ * and provides default ordering and pagination.
+ *
+ * Used by widgets like Timeline, Number, etc. that operate on a single selection.
+ */
+export const buildRelationshipSingleWidgetBaseQueryVariables = (
+  selection: WidgetDataSelection,
+  config: DashboardConfig,
+) => {
+  const dateAttribute = selection.date_attribute?.length
+    ? selection.date_attribute
+    : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    {
+      startDate,
+      endDate,
+      dateAttribute,
+      isKnowledgeRelationshipWidget: true,
+    },
+  );
+
+  return {
+    startDate,
+    endDate,
+    dateAttribute,
+    filters: normalizeFilterGroupForBackend(filters),
+    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
+    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+  };
 };
