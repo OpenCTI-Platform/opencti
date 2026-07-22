@@ -56,6 +56,42 @@ const isCreateOrDraftDelete = (draftOp: string): boolean => {
   return draftOp === DRAFT_OPERATION_CREATE || draftOp === DRAFT_OPERATION_DELETE || draftOp === DRAFT_OPERATION_DELETE_LINKED;
 };
 
+// Re-evaluate whether an element still needs to be kept as UPDATE_LINKED (some draft-created/deleted
+// relations still target it) or can now be fully removed from draft (no more linked relations).
+// Used both when directly removing an already-linked element and to cascade the cleanup when one of
+// its linking relations gets removed from draft.
+const refreshUpdateLinkedElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
+  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
+  const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
+  if (draftCreatedOrDeletedRelations.length > 0) {
+    if (element.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED) {
+      const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
+      await elReplace(context, element._index, element._id, { doc: newDraftChange });
+    }
+  } else {
+    await completeDeleteElementsFromDraft(context, user, [element]);
+  }
+};
+
+// Given relations that were just removed from draft, look up their still-existing endpoints and
+// let any UPDATE_LINKED element among them be fully removed if it's no longer linked to anything.
+const cascadeCleanupNowUnlinkedElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  removedRelations: BasicStoreRelation[],
+  excludeIds: string[],
+): Promise<void> => {
+  const candidateIds = [...new Set(removedRelations.flatMap((r) => [r.fromId, r.toId]))].filter((id) => !excludeIds.includes(id));
+  if (candidateIds.length === 0) {
+    return;
+  }
+  const candidates = await elFindByIds(context, user, candidateIds, { includeDeletedInDraft: true }) as BasicStoreCommon[];
+  const linkedCandidates = candidates.filter((c) => isDraftIndex(c._index) && c.draft_change?.draft_operation === DRAFT_OPERATION_UPDATE_LINKED);
+  for (let i = 0; i < linkedCandidates.length; i += 1) {
+    await refreshUpdateLinkedElementFromDraft(context, user, linkedCandidates[i]);
+  }
+};
+
 const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_CREATE) {
     return;
@@ -68,9 +104,10 @@ const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUs
   const draftRelationsElementsImpact = await computeDeleteElementsImpacts(relationToRemove, [element.internal_id], relationsToRemoveMap);
 
   // Clean up all denormalized rel impact of relations deletion, then delete all relations
-  // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
   await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
   await elDeleteInstances(context, [element, ...draftCreatedRelations]);
+  // The relations we just removed may have been the only reason another element was kept as UPDATE_LINKED
+  await cascadeCleanupNowUnlinkedElements(context, user, relationToRemove, [element.internal_id, ...draftCreatedRelations.map((r) => r.internal_id)]);
 };
 
 const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
@@ -84,19 +121,21 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
     const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
     await updateAttributeFromLoadedWithRefs(context, user, elementWithRefs, reverseUpdateFieldPatch);
   }
-  // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
   // verify if element can be entirely removed from draft or if it needs to be kept as update_linked
   // We get all relations that were created or deleted/delete_linked in draft that target this element.
   // If there are still some, it means that we need to keep the element as an UPDATE_LINKED
-  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-  const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
-  if (draftCreatedOrDeletedRelations.length > 0) {
-    const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(context, element._index, element._id, { doc: newDraftChange });
-  } else {
-    await completeDeleteElementsFromDraft(context, user, [element]);
+  await refreshUpdateLinkedElementFromDraft(context, user, element);
+};
+
+// An UPDATE_LINKED element has already had its own field changes reverted; it was only kept in draft
+// because other draft-created/deleted relations still targeted it. Re-check that condition: if those
+// relations are gone (e.g. removed separately, in any order), the element can now be fully removed.
+const elRemoveUpdateLinkedElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
+  if (element.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED) {
+    return;
   }
+  await refreshUpdateLinkedElementFromDraft(context, user, element);
 };
 
 const removeDraftDeleteLinkedRelations = async (
@@ -223,6 +262,7 @@ export const elRemoveElementFromDraft = async (context: AuthContext, user: AuthU
     case DRAFT_OPERATION_DELETE:
       return elRemoveDeleteElementFromDraft(context, user, element);
     case DRAFT_OPERATION_UPDATE_LINKED:
+      return elRemoveUpdateLinkedElementFromDraft(context, user, element);
     case DRAFT_OPERATION_DELETE_LINKED:
       throw UnsupportedError('Cannot remove linked elements from draft', { id: element.id });
     default:
