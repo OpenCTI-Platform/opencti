@@ -2,8 +2,8 @@ import { CSSProperties, ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -40,17 +40,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsNumberQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate } = computeStartEndDates(config);
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     startDate,
     endDate: dayAgo(),
   };

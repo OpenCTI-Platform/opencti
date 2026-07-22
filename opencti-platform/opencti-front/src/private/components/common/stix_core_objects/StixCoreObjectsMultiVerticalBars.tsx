@@ -1,7 +1,6 @@
 import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
@@ -10,7 +9,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixCoreObjectsMultiVerticalBarsTimeSeriesQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeStartEndDates, computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import { monthsAgo, now } from '../../../../utils/Time';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
@@ -104,17 +103,11 @@ const buildQueryVariables = (
   const startDate = computed.startDate ?? monthsAgo(12);
   const endDate = computed.endDate ?? now();
   const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { startDate, endDate, dateAttribute },
-    );
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
     return {
       field: dateAttribute,
       types: DATA_SELECTION_TYPES,
-      filters: normalizeFilterGroupForBackend(filters),
+      filters,
     };
   });
   return {
