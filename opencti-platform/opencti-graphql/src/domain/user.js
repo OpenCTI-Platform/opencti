@@ -307,15 +307,26 @@ const buildCreatorUser = (user) => {
     [RELATION_PARTICIPATE_TO]: user[RELATION_PARTICIPATE_TO],
   };
 };
+const buildDisplayedCreator = (platformUsers, id) => {
+  const canonicalId = resolveMergeUsersPocAliasId(id);
+  const creator = INTERNAL_USERS[canonicalId] || buildCreatorUser(platformUsers.get(canonicalId));
+  if (!creator && canonicalId !== id) {
+    throw ConfigurationError('MERGE_POC_ALIAS_MAP target user cannot be resolved', { id: canonicalId });
+  }
+  return creator || SYSTEM_USER;
+};
 export const batchCreator = async (context, user, userIds) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER);
+  return userIds.map((id) => buildDisplayedCreator(platformUsers, id));
 };
 
 export const batchCreators = async (context, user, userListIds) => {
   const userIds = userListIds.map((u) => (Array.isArray(u) ? u : [u]));
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
+  return userIds.map((ids) => R.uniqBy(
+    (creator) => creator.id,
+    ids.map((id) => buildDisplayedCreator(platformUsers, id)),
+  ));
 };
 
 export const userOrganizationsPaginatedWithoutInferences = async (context, user, userId, opts) => {
@@ -1989,18 +2000,14 @@ export const buildCompleteUser = async (context, client) => {
 };
 
 export const resolveUserByIdFromCache = async (context, id) => {
-  // PoC merge-users #2: alias redirection, no-op unless MERGE_POC_ALIAS_MAP is set.
-  const resolvedId = resolveMergeUsersPocAliasId(id);
-  if (INTERNAL_USERS[resolvedId]) return INTERNAL_USERS[resolvedId];
+  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return platformUsers.get(resolvedId);
+  return platformUsers.get(id);
 };
 
 export const resolveUserById = async (context, id) => {
-  // PoC merge-users #2: alias redirection, no-op unless MERGE_POC_ALIAS_MAP is set.
-  const resolvedId = resolveMergeUsersPocAliasId(id);
-  if (INTERNAL_USERS[resolvedId]) return INTERNAL_USERS[resolvedId];
-  const client = await storeLoadById(context, SYSTEM_USER, resolvedId, ENTITY_TYPE_USER);
+  if (INTERNAL_USERS[id]) return INTERNAL_USERS[id];
+  const client = await storeLoadById(context, SYSTEM_USER, id, ENTITY_TYPE_USER);
   return buildCompleteUser(context, client);
 };
 

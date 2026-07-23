@@ -127,12 +127,15 @@ import {
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
+  ASSIGNEE_FILTER,
+  CREATOR_FILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   INSTANCE_REGARDING_OF_DIRECTION_FORCED,
   INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+  PARTICIPANT_FILTER,
   RELATION_INFERRED_SUBFILTER,
   RELATION_TYPE_SUBFILTER,
   TYPE_FILTER,
@@ -168,6 +171,7 @@ import { getDraftContext } from '../utils/draftContext';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
+import { coalesceMergeUsersPocAliasAggregationBuckets, getMergeUsersPocCanonicalAliasMap, isMergeUsersPocAliasEnabled } from '../utils/merge-users-poc-alias';
 import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
@@ -2390,6 +2394,30 @@ const buildFieldForQuery = (field: string) => {
     ? field
     : `${field}.keyword`;
 };
+const buildUserAliasAggregationSource = (field: string, aliasAware: boolean) => {
+  const queryField = field.endsWith('.keyword') ? field : buildFieldForQuery(field);
+  if (!aliasAware || !isMergeUsersPocAliasEnabled()) {
+    return { field: queryField };
+  }
+  return {
+    script: {
+      lang: 'painless',
+      source: `
+        if (doc[params.field].size() == 0) return [];
+        def ids = [];
+        for (def id : doc[params.field]) {
+          def canonicalId = params.aliases.containsKey(id) ? params.aliases[id] : id;
+          if (!ids.contains(canonicalId)) ids.add(canonicalId);
+        }
+        return ids;
+      `,
+      params: {
+        field: queryField,
+        aliases: getMergeUsersPocCanonicalAliasMap(),
+      },
+    },
+  };
+};
 const buildFieldForScriptQuery = (field: string) => {
   return buildFieldForQuery(field).replaceAll('*', 'internal_id');
 };
@@ -3577,21 +3605,35 @@ type AggregationCountOpts = QueryBodyBuilderOpts & {
   weightField?: string | null;
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
+  userAliasPolicy?: 'operational';
 };
+const USER_ALIAS_AGGREGATION_FIELDS = new Set([
+  'creator_id',
+  'rel_object-assignee.internal_id',
+  'rel_object-participant.internal_id',
+]);
 export const elAggregationCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: AggregationCountOpts = { field: '' },
 ): Promise<{ label: string; value: any; count: number }[]> => {
-  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
+  const {
+    field,
+    types = null,
+    weightField = 'i_inference_weight',
+    normalizeLabel = true,
+    convertEntityTypeLabel = false,
+    userAliasPolicy,
+  } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
+  const aliasAware = userAliasPolicy === 'operational' && USER_ALIAS_AGGREGATION_FIELDS.has(field);
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
       terms: {
-        field: buildFieldForQuery(field),
+        ...buildUserAliasAggregationSource(field, aliasAware),
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -3843,10 +3885,11 @@ export const elAggregationsList = async (
 ): Promise<{ name: string; values: any }[]> => {
   const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;
   const queryAggs: any = {};
+  const aliasAwareAggregations = new Set([CREATOR_FILTER, ASSIGNEE_FILTER, PARTICIPANT_FILTER]);
   aggregations.forEach((agg) => {
     queryAggs[agg.name] = {
       terms: {
-        field: agg.field,
+        ...buildUserAliasAggregationSource(agg.field, aliasAwareAggregations.has(agg.name)),
         size: 500, // Aggregate on top 500 should get all needed results
       },
     };
@@ -3873,7 +3916,17 @@ export const elAggregationsList = async (
     throw DatabaseError('Aggregations computing list fail', { cause: err, query });
   });
   const aggsMap = Object.keys(data.aggregations);
-  const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
+  const aggregationBuckets = new Map<string, any[]>();
+  aggsMap.forEach((agg) => {
+    const buckets = data.aggregations[agg].buckets ?? [];
+    const resolvedBuckets = aliasAwareAggregations.has(agg)
+      ? coalesceMergeUsersPocAliasAggregationBuckets(buckets)
+      : buckets;
+    aggregationBuckets.set(agg, resolvedBuckets);
+  });
+  const aggsValues = [...new Set(aggsMap.flatMap((agg) => {
+    return (aggregationBuckets.get(agg) ?? []).map((bucket: { key: string }) => bucket.key);
+  }))];
   if (resolveToRepresentative) {
     const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
     // If post filter is required, we need to retrieve all fields
@@ -3883,12 +3936,12 @@ export const elAggregationsList = async (
     }
     const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentativeName(element) })));
     return aggsMap.map((agg) => {
-      const values = data.aggregations[agg].buckets?.map((b: { key: string }) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v: { label: any }) => !!v.label);
+      const values = aggregationBuckets.get(agg)?.map((b: { key: string }) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v: { label: any }) => !!v.label);
       return { name: agg, values };
     });
   }
   return aggsMap.map((agg) => {
-    const values = data.aggregations[agg].buckets?.map((b: any) => ({ label: b.key, value: b.key }));
+    const values = aggregationBuckets.get(agg)?.map((b: any) => ({ label: b.key, value: b.key }));
     return { name: agg, values };
   });
 };

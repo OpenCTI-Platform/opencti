@@ -6,7 +6,7 @@ import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { inferIndexFromConceptType, isEmptyField, isNotEmptyField } from './utils';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { DatabaseError } from '../config/errors';
+import { ConfigurationError, DatabaseError } from '../config/errors';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -18,20 +18,34 @@ import {
 } from '../schema/stixRefRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_STATUS, isDatedInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isDatedInternalObject } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { getEntitiesListFromCache } from './cache';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from './cache';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
+import { resolveMergeUsersPocAliasId } from '../utils/merge-users-poc-alias';
+
+const resolveOperationalCreatorId = async (context, userId) => {
+  const targetId = resolveMergeUsersPocAliasId(userId);
+  if (targetId === userId) {
+    return userId;
+  }
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  if (!platformUsers.get(targetId)) {
+    throw ConfigurationError('MERGE_POC_ALIAS_MAP target user cannot be resolved', { id: targetId });
+  }
+  return targetId;
+};
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule, restore } = opts;
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
+  const creatorId = await resolveOperationalCreatorId(context, user.internal_id);
   // Complete with identifiers
   const today = now();
   const inferred = isNotEmptyField(fromRule);
@@ -41,7 +55,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.assoc(ID_INTERNAL, internalId),
     R.assoc(ID_STANDARD, standardId),
     R.assoc('entity_type', type),
-    R.assoc('creator_id', [user.internal_id]),
+    R.assoc('creator_id', [creatorId]),
     R.dissoc('update'),
     R.dissoc('upsertOperations'),
     R.dissoc('file'),
@@ -191,7 +205,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   data.standard_id = standardId;
   data.entity_type = relationshipType;
   data.relationship_type = relationshipType;
-  data.creator_id = [user.internal_id];
+  data.creator_id = [await resolveOperationalCreatorId(context, user.internal_id)];
   data.created_at = today;
   data.updated_at = today;
   data.refreshed_at = today;

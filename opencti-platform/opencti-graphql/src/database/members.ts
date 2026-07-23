@@ -4,6 +4,32 @@ import type { BasicStoreEntity } from '../types/store';
 import { loadThroughDenormalized } from '../resolvers/stix';
 import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../schema/general';
 import type { Creator } from '../generated/graphql';
+import { resolveMergeUsersPocAliasId } from '../utils/merge-users-poc-alias';
+import { getEntitiesMapFromCache } from './cache';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ConfigurationError } from '../config/errors';
+
+const canonicalizeDisplayedMembers = async (
+  context: AuthContext,
+  members: BasicStoreEntity[],
+): Promise<BasicStoreEntity[]> => {
+  const canonicalIds = members.map((member) => resolveMergeUsersPocAliasId(member.internal_id));
+  if (canonicalIds.every((id, index) => id === members[index].internal_id)) {
+    return members;
+  }
+  const platformUsers = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const displayedMembers = canonicalIds.map((id, index) => {
+    if (id === members[index].internal_id) {
+      return members[index];
+    }
+    const target = platformUsers.get(id);
+    if (!target) {
+      throw ConfigurationError('MERGE_POC_ALIAS_MAP target user cannot be resolved', { id });
+    }
+    return target;
+  });
+  return [...new Map(displayedMembers.map((member) => [member.internal_id, member])).values()];
+};
 
 export const loadCreators = async (
   context: AuthContext,
@@ -42,7 +68,8 @@ export const loadParticipants = async (
   if (!participants) {
     return [];
   }
-  return filterMembersUsersWithUsersOrgs(context, user, participants);
+  const canonicalParticipants = await canonicalizeDisplayedMembers(context, participants);
+  return filterMembersUsersWithUsersOrgs(context, user, canonicalParticipants);
 };
 
 export const loadAssignees = async (
@@ -54,5 +81,6 @@ export const loadAssignees = async (
   if (!assignees) {
     return [];
   }
-  return filterMembersUsersWithUsersOrgs(context, user, assignees);
+  const canonicalAssignees = await canonicalizeDisplayedMembers(context, assignees);
+  return filterMembersUsersWithUsersOrgs(context, user, canonicalAssignees);
 };
