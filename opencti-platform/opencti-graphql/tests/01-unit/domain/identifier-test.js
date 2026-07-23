@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateAliasesId, generateStandardId, normalizeName } from '../../../src/schema/identifier';
+import { generateAliasesId, generateHashedObservableStandardIds, generateStandardId, normalizeName } from '../../../src/schema/identifier';
 import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -46,7 +46,8 @@ import { RELATION_BASED_ON } from '../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types'; // Need to import registration files
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../src/modules/case/feedback/feedback-types';
+import { FUZZY_HASH_ALGORITHMS } from '../../../src/schema/fieldDataAdapter'; // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -379,5 +380,15 @@ describe('identifier', () => {
     const hostname = { type: 'hostname' };
     const hostnameType = generateInternalType(hostname);
     expect(hostnameType).toEqual('Hostname');
+  });
+});
+
+describe('Function generateHashedObservableStandardIds - all supported hashes', () => {
+  it.each(FUZZY_HASH_ALGORITHMS)('should generate an id for all fuzzy hashes | fail if not added in indentifier hashes list', (algo) => {
+    const ids = generateHashedObservableStandardIds({
+      hashes: { [algo]: 'dummyhashvalue' },
+      entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+    });
+    expect(ids.length).toBe(1);
   });
 });
