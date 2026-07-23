@@ -57,6 +57,19 @@ jobs:
           docker_image_suffix: ${{ matrix.suffix }}
 
   # -----------------------
+  # Build platform musl tar
+  # -----------------------
+  build-platform-musl:
+    name: Build platform (musl)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/build-platform-musl
+        with:
+          checkout_ref: ${{ github.sha }}
+          client_python_local: true
+
+  # -----------------------
   # Generate SBOMs
   # -----------------------
   generate-sbom-platform:
@@ -108,7 +121,7 @@ jobs:
   upload-artifacts:
     name: Upload all artifacts
     runs-on: ubuntu-latest
-    needs: [generate-sbom-platform, generate-sbom-worker]
+    needs: [generate-sbom-platform, generate-sbom-worker, build-platform-musl]
     steps:
       - name: Download all SBOM artifacts
         uses: actions/download-artifact@v8
@@ -120,6 +133,12 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           pattern: docker-image-*
+          path: artifacts/
+
+      - name: Download musl tar artifact
+        uses: actions/download-artifact@v8
+        with:
+          pattern: opencti-platform-musl
           path: artifacts/
 
       - name: Upload consolidated artifacts
