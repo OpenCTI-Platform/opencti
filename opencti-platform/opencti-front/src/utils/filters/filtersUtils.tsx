@@ -499,6 +499,11 @@ export const filterValue = (
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
   }
+
+  // Defensive check to prevent errors on string manipulation after this call
+  if (typeof value !== 'string') {
+    return null;
+  }
   return value;
 };
 
