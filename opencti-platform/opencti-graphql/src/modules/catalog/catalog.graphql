@@ -16,6 +16,36 @@ type ExtendedContract {
   contract: String!
 }
 
+type CatalogConnector {
+  slug: String!
+  title: String!
+  description: String
+  short_description: String
+  logo: String
+  use_cases: [String!]
+  verified: Boolean
+  last_verified_date: String
+  playbook_supported: Boolean
+  manager_supported: Boolean
+  subscription_link: String
+  source_code: String
+  is_deleted: Boolean!
+}
+
+type CatalogConnectorContract {
+  slug: String!
+  version: String!
+  config_schema: JSON
+  container_type: String
+  container_version: String
+  container_image: String
+  support_version: String
+  max_confidence_level: Int
+  is_latest: Boolean
+  format_version: String
+  is_deleted: Boolean!
+}
+
 type CatalogVersionInfo {
   status: String!
   revision: String
@@ -44,6 +74,9 @@ type Query {
   catalogs: [Catalog!]! @auth(for: [INGESTION])
   catalogVersionInfo: CatalogVersionInfo! @auth(for: [INGESTION])
   contract(slug: String!): ExtendedContract @auth(for: [INGESTION])
+  catalogConnectors: [CatalogConnector!]! @auth(for: [INGESTION])
+  catalogConnector(slug: String!): CatalogConnector @auth(for: [INGESTION])
+  catalogConnectorContract(slug: String!, version: String): CatalogConnectorContract @auth(for: [INGESTION])
 }
 
 # Mutations

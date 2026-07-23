@@ -11,10 +11,12 @@ import type { ConnectorContractConfiguration, ContractConfigInput } from '../../
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
 import { buildCatalogMapFromDefinitions, buildContractsByImageCache, clearCatalogCacheValidators, type InternalCatalog } from './catalog-cache';
+import { findAllCatalogs, findLatestContractsBySlug } from './catalog-persistence';
+import type { BasicStoreEntityCatalog, BasicStoreEntityCatalogContract } from './catalog-entity';
 
 const validatorCache = new Map<string, ValidateFunction>();
 const MAX_VALIDATOR_CACHE_SIZE = 500;
-const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
+export const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
 
 export type CatalogStatus = 'loading' | 'ready' | 'error';
 
@@ -484,6 +486,67 @@ export const findById = async (_context: AuthContext, _user: AuthUser, catalogId
 export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
   const catalogDefinitions = await getCatalogs();
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
+};
+
+/**
+ * Builds a legacy Catalog graphql shape from ES-persisted entities.
+ * Used when FF DECOUPLING_CONNECTOR_VERSIONS is ON so the `catalogs` query
+ * reads from ES instead of the embedded in-memory manifest.
+ */
+const buildContractStringFromES = (
+  catalog: BasicStoreEntityCatalog,
+  contract: BasicStoreEntityCatalogContract,
+): string => {
+  // config_schema is stored as a JSON string in ES (see catalog-persistence.ts)
+  const rawSchema = (contract as unknown as Record<string, unknown>).config_schema;
+  const configSchema = typeof rawSchema === 'string' ? JSON.parse(rawSchema) : (rawSchema ?? {});
+  return JSON.stringify({
+    title: catalog.title,
+    slug: catalog.slug,
+    description: catalog.description ?? '',
+    short_description: catalog.short_description ?? '',
+    logo: catalog.logo ?? '',
+    use_cases: catalog.use_cases ?? [],
+    verified: catalog.verified ?? false,
+    last_verified_date: catalog.last_verified_date ?? '',
+    playbook_supported: catalog.playbook_supported ?? false,
+    manager_supported: catalog.manager_supported ?? false,
+    subscription_link: catalog.subscription_link ?? '',
+    source_code: catalog.source_code ?? '',
+    container_version: contract.version,
+    container_image: (contract as unknown as Record<string, unknown>).container_image ?? '',
+    container_type: catalog.type ?? 'EXTERNAL_IMPORT',
+    class_name: (contract as unknown as Record<string, unknown>).class_name ?? '',
+    support_version: (contract as unknown as Record<string, unknown>).support_version ?? catalog.support_version ?? '',
+    max_confidence_level: (contract as unknown as Record<string, unknown>).max_confidence_level ?? catalog.max_confidence_level ?? 100,
+    config_schema: configSchema,
+  });
+};
+
+export const findCatalogFromES = async (context: AuthContext, user: AuthUser) => {
+  const [catalogEntities, latestContracts] = await Promise.all([
+    findAllCatalogs(context, user),
+    findLatestContractsBySlug(context, user),
+  ]);
+
+  const contractsBySlug = new Map<string, BasicStoreEntityCatalogContract>();
+  latestContracts.forEach((c) => contractsBySlug.set(c.slug, c));
+
+  return catalogEntities
+    .filter((catalog) => !catalog.is_deleted)
+    .map((catalog) => {
+      const contract = contractsBySlug.get(catalog.slug);
+      const contracts = contract ? [buildContractStringFromES(catalog, contract)] : [];
+      return {
+        id: catalog.id,
+        entity_type: catalog.entity_type,
+        parent_types: catalog.parent_types,
+        standard_id: catalog.standard_id,
+        name: catalog.title,
+        description: catalog.description ?? '',
+        contracts,
+      };
+    });
 };
 
 const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {

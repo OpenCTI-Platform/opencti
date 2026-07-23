@@ -4,9 +4,15 @@ import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { LegacyManifestAdapter, NewManifestAdapter, resolveCatalogSource } from '../modules/catalog/catalog-adapters';
-import { getCatalogManagerInternalCache, getCatalogStatus, type CatalogStatus, updateCatalogManagerInternalCache } from '../modules/catalog/catalog-domain';
-
-const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
+import {
+  DECOUPLING_CONNECTOR_VERSIONS,
+  getCatalogManagerInternalCache,
+  getCatalogStatus,
+  type CatalogStatus,
+  updateCatalogManagerInternalCache,
+} from '../modules/catalog/catalog-domain';
+import { persistCatalogSnapshot } from '../modules/catalog/catalog-persistence';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const CATALOG_MANAGER_ENABLED = booleanConf('app:catalog_manager:enabled', true);
 const CATALOG_MANAGER_LOCK_KEY = conf.get('app:catalog_manager:lock_key') || 'catalog_manager_lock';
@@ -92,6 +98,18 @@ const refreshCatalogInternal = async () => {
 
     const internalCatalog = newManifestAdapter.toInternalCatalog(rawManifest);
     const revision = computeCatalogRevision(rawManifest, nextEtag);
+
+    // NEW — persist before anything else observes this cycle as "done". If this
+    // throws, we fall into the catch block below with currentEtag/in-memory cache
+    // still at their last-good values, so the next tick naturally retries instead
+    // of silently treating a half-applied update as current.
+    try {
+      await persistCatalogSnapshot(executionContext('catalog_manager'), SYSTEM_USER, internalCatalog);
+    } catch (persistError) {
+      logApp.warn('[OPENCTI-MODULE] Catalog manager fetched manifest but failed to persist it to ES', { cause: persistError });
+      throw persistError;
+    }
+
     updateCatalogManagerInternalCache(internalCatalog, 'ready', false, revision);
 
     if (shouldCheckEtag && nextEtag) {
@@ -118,6 +136,8 @@ const refreshCatalogInternal = async () => {
       const legacyRaw = await legacyAdapter.fetch({ kind: 'local', uri: 'embedded' });
       const legacyInternal = legacyAdapter.toInternalCatalog(legacyRaw);
       const legacyRevision = computeCatalogRevision(legacyRaw);
+      // No persist here — embedded/legacy fallback is explicitly "legacy workflow",
+      // which never writes to ES, regardless of why we ended up here.
       updateCatalogManagerInternalCache(legacyInternal, 'ready', false, legacyRevision);
     } catch (legacyError) {
       logApp.warn('[OPENCTI-MODULE] Catalog manager failed to load embedded legacy manifest fallback', { cause: legacyError });
