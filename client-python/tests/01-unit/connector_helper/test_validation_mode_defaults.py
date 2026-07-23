@@ -4,7 +4,6 @@ Verifies that the default validation mode is 'draft' both at initialization
 and when receiving messages without an explicit validation_mode field.
 """
 
-import json
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
