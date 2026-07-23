@@ -26,7 +26,6 @@ import DraftsMultiAreaChart from '@components/common/drafts/DraftsMultiAreaChart
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
-import useHelper from '../../utils/hooks/useHelper';
 import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardEntitiesVizProps {
@@ -49,10 +48,7 @@ const DashboardEntitiesViz = ({
   host,
   refreshRate,
 }: DashboardEntitiesVizProps) => {
-  const { isFeatureEnable } = useHelper();
-  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and isDraftWidget flag check when flag is removed
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
-  const isDraftWidget = isDraftWorkflowEnabled && isDraftWorkspaceWidget(widget);
+  const isDraftWidget = isDraftWorkspaceWidget(widget);
 
   switch (widget.type) {
     case 'bookmark':

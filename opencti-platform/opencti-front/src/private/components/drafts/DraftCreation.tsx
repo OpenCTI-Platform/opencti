@@ -20,13 +20,11 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import useDefaultValues from '../../../utils/hooks/useDefaultValues';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/hooks/useGranted';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
-import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
+import MarkdownField, { MarkdownImagesController } from '../../../components/fields/markdownField/MarkdownField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../utils/hooks/useHelper';
-import { MarkdownImagesController } from '../../../components/fields/markdownField/MarkdownField';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -79,7 +77,6 @@ export interface DraftAddInput {
 }
 
 const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onReset }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
@@ -202,40 +199,36 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               fullWidth
               data-testid="draft-creation-form-name-input"
             />
-            {isFeatureEnable('DRAFT_WORKFLOW') && (
-              <>
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t_i18n('Description')}
-                  required={mandatoryAttributes.includes('description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={fieldSpacingContainerStyle}
-                  askAi={true}
-                  registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                    markdownControllerRef.current = controller;
-                  }}
-                />
-                <ObjectAssigneeField
-                  name="objectAssignee"
-                  style={fieldSpacingContainerStyle}
-                  required={mandatoryAttributes.includes('objectAssignee')}
-                />
-                <ObjectParticipantField
-                  name="objectParticipant"
-                  style={fieldSpacingContainerStyle}
-                  required={mandatoryAttributes.includes('objectParticipant')}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  required={mandatoryAttributes.includes('createdBy')}
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-              </>
-            )}
+            <Field
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              required={mandatoryAttributes.includes('description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={fieldSpacingContainerStyle}
+              askAi={true}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                markdownControllerRef.current = controller;
+              }}
+            />
+            <ObjectAssigneeField
+              name="objectAssignee"
+              style={fieldSpacingContainerStyle}
+              required={mandatoryAttributes.includes('objectAssignee')}
+            />
+            <ObjectParticipantField
+              name="objectParticipant"
+              style={fieldSpacingContainerStyle}
+              required={mandatoryAttributes.includes('objectParticipant')}
+            />
+            <CreatedByField
+              name="createdBy"
+              required={mandatoryAttributes.includes('createdBy')}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
             <Field
               name="authorized_members"
               component={AuthorizedMembersField}
@@ -264,7 +257,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
           </FormButtonContainer>
         </Form>
       )}
-
     </Formik>
   );
 };

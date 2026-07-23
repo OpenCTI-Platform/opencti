@@ -29,7 +29,6 @@ import useSwitchDraft from './useSwitchDraft';
 import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
-import useHelper from '../../../utils/hooks/useHelper';
 import Dialog from '@common/dialog/Dialog';
 import Button from '../../../components/common/button/Button';
 
@@ -121,7 +120,6 @@ interface RootDraftComponentProps {
 }
 
 const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
-  const { isFeatureEnable } = useHelper();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -236,16 +234,14 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           id="tabs-container"
           value={getCurrentTab(location.pathname, basePath)}
         >
-          {isFeatureEnable('DRAFT_WORKFLOW') && (
-            <Tab
-              component={Link}
-              to="overview"
-              value="overview"
-              label={
-                <span>{t_i18n('Overview')}</span>
-              }
-            />
-          )}
+          <Tab
+            component={Link}
+            to="overview"
+            value="overview"
+            label={
+              <span>{t_i18n('Overview')}</span>
+            }
+          />
           <Tab
             component={Link}
             to="entities"
@@ -307,12 +303,10 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
-        {isFeatureEnable('DRAFT_WORKFLOW') && (
-          <Route
-            path="/overview"
-            element={<DraftOverview draft={draft} />}
-          />
-        )}
+        <Route
+          path="/overview"
+          element={<DraftOverview draft={draft} />}
+        />
         <Route
           path="/entities"
           element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}

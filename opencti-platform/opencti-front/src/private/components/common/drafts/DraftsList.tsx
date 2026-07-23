@@ -11,7 +11,6 @@ import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { WidgetColumn, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DraftsListQuery } from './__generated__/DraftsListQuery.graphql';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const defaultDraftColumns: WidgetColumn[] = [
   { attribute: 'name', label: 'Name' },
@@ -117,7 +116,6 @@ interface DraftsListComponentProps {
   queryRef: PreloadedQuery<DraftsListQuery>;
   dataSelection: WidgetDataSelection[];
   widgetId: string;
-  isDraftWorkflowEnabled: boolean;
 }
 
 const DraftsListComponent = ({
@@ -125,12 +123,10 @@ const DraftsListComponent = ({
   queryRef,
   dataSelection,
   widgetId,
-  isDraftWorkflowEnabled,
 }: DraftsListComponentProps) => {
   const data = usePreloadedQuery(draftsListQuery, queryRef);
   const selection = dataSelection[0];
-  const rawColumns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
-  const columns = isDraftWorkflowEnabled ? rawColumns : rawColumns.filter((c) => c.attribute !== 'workflowInstance');
+  const columns: WidgetColumn[] = selection.columns ? [...selection.columns] : defaultDraftColumns;
   const edges = data?.draftWorkspaces?.edges ?? [];
 
   if (edges.length === 0) {
@@ -178,8 +174,6 @@ const DraftsList = ({
   host,
 }: DraftsListProps) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const rootRef = useRef<HTMLDivElement>(null);
 
   const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsListQuery>({
@@ -213,7 +207,6 @@ const DraftsList = ({
             rootRef={rootRef}
             dataSelection={resolvedDataSelection}
             widgetId={widgetId}
-            isDraftWorkflowEnabled={isDraftWorkflowEnabled}
           />
         </WidgetRenderContent>
       </div>

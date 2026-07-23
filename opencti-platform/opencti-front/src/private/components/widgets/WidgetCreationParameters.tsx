@@ -39,7 +39,6 @@ import {
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
@@ -52,9 +51,6 @@ const WidgetCreationParameters = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and related checks when flag is removed
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
@@ -91,7 +87,7 @@ const WidgetCreationParameters = () => {
     { value: 'objectParticipant', label: 'Participant' },
     { value: 'creator', label: 'Creator' },
     { value: 'createdBy', label: 'Author' },
-    ...(isDraftWorkflowEnabled ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
+    { value: 'workflowInstance', label: 'Workflow status' },
   ];
 
   const AUDIT_WIDGET_ATTRIBUTES = [
@@ -537,7 +533,7 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {(isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
                           ? draftWorkspaceSortByValues
                           : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
                         ).map(({ value, label }) => (
@@ -753,7 +749,7 @@ const WidgetCreationParameters = () => {
                           <InputLabel id="entities-attribute">
                             {t_i18n('Attribute')}
                           </InputLabel>
-                          {isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
+                          {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
                             <Select
                               labelId="entities-attribute"
                               fullWidth={true}
@@ -766,7 +762,7 @@ const WidgetCreationParameters = () => {
                                 { value: 'object-participant.internal_id', label: 'Participant' },
                                 { value: 'creator_id', label: 'Creator' },
                                 { value: 'created-by.internal_id', label: 'Author' },
-                                ...(isDraftWorkflowEnabled ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
+                                { value: 'workflowInstance', label: 'Workflow status' },
                               ].map(({ value, label }) => (
                                 <MenuItem key={value} value={value}>
                                   {t_i18n(label)}
