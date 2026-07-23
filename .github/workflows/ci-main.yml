@@ -62,7 +62,7 @@ jobs:
 
   wf-frontend-test:
       name: Frontend e2e
-      uses: ./.github/workflows/ci-test-frontend.yml
+      uses: ./.github/workflows/ci-test-end-to-end.yml
       needs: [wf-build-platform-image, wf-build-worker-image]
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
