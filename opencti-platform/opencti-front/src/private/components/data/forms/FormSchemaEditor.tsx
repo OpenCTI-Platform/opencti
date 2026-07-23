@@ -26,7 +26,6 @@ import type { Theme } from '../../../../components/Theme';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 import { FieldOption } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
@@ -204,8 +203,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const isFormIntakeDefaultsEnabled = isFeatureEnable('FORM_INTAKE_DEFAULT_VALUES');
   const [currentTab, setCurrentTab] = useState(0);
 
   const entityTypes = useMemo(() => {

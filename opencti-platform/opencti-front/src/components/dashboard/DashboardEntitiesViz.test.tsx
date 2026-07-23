@@ -2,13 +2,6 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
 
-// TODO(DRAFT_WORKFLOW): remove this mock when the flag is removed
-vi.mock('../../utils/hooks/useHelper', () => ({
-  default: () => ({
-    isFeatureEnable: () => true,
-  }),
-}));
-
 vi.mock('@components/common/drafts/DraftsNumber', () => ({
   default: () => <div data-testid="drafts-number" />,
 }));

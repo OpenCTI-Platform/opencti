@@ -20,7 +20,6 @@ import {
 } from './SubTypeOutletContext';
 import SubType from './SubType';
 import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
-import useHelper from '../../../../utils/hooks/useHelper';
 import SubTypeWorkflow from './SubTypeWorkflow';
 
 const SubTypeIndexRedirect = () => {
@@ -46,9 +45,7 @@ const RootSubType = () => {
 
   if (!subTypeId) return <ErrorNotFound />;
 
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
-  const isDraftWorkspaceType = subTypeId === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+  const isDraftWorkspaceType = subTypeId === 'DraftWorkspace';
 
   return (
     <Suspense fallback={<Loader />}>

@@ -26,8 +26,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
-  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and related checks when flag is removed
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
 
   const isDashboardSavedFiltersFeatureEnabled = isFeatureEnable('DASHBOARD_SAVED_FILTERS');
 
@@ -64,9 +62,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
     availableEntityTypes = [
       'Stix-Domain-Object',
       'Stix-Cyber-Observable',
-      ...(isDraftWorkflowEnabled ? ['DraftWorkspace'] : []),
+      'DraftWorkspace',
     ];
-    const isDraftWorkspaceOnly = isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(filters);
+    const isDraftWorkspaceOnly = isDraftWorkspaceFilterGroup(filters);
     searchContext = isDraftWorkspaceOnly
       ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
       : { entityTypes: ['Stix-Core-Object'] };
