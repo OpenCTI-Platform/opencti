@@ -99,7 +99,8 @@ const buildQueryVariables = (
   const { startDate, endDate, timeSeriesParameters } = computeWidgetFiltersForMultiSelection(
     resolvedDataSelection,
     config,
-    { types: DATA_SELECTION_TYPES, fallbackToDefaultDates: true },
+    DATA_SELECTION_TYPES,
+    { fallbackToDefaultDates: true },
   );
   return {
     startDate,

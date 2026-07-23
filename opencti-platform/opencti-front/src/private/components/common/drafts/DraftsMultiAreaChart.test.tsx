@@ -42,7 +42,7 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
-  computeStartEndDates: () => ({ startDate: null, endDate: null }),
+  computeWidgetFiltersForMultiSelection: () => ({ startDate: null, endDate: null, timeSeriesParameters: [] }),
 }));
 
 vi.mock('../../../../utils/hooks/useGranted', () => ({

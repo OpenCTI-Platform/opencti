@@ -167,18 +167,18 @@ export const computeWidgetFiltersForSelection = (
 export const computeWidgetFiltersForMultiSelection = (
   dataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  types: string[],
   opts: {
-    types?: string[];
     isKnowledgeRelationshipWidget?: boolean;
     fallbackToDefaultDates?: boolean;
   } = {},
 ) => {
   const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
   const timeSeriesParameters = dataSelection.map((selection) => {
-    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config);
+    const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
     return {
       field: dateAttribute,
-      types: opts?.types,
+      types,
       filters,
     };
   });
@@ -201,6 +201,7 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
     isKnowledgeRelationshipWidget: true,
     fallbackToDefaultDates: true,
   };
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
@@ -212,8 +213,6 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
       dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
     };
   });
-
-  const { startDate, endDate } = computeWidgetFiltersForSelection(dataSelection[0], config, opts);
 
   return {
     operation: 'count',
