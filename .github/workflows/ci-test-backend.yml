@@ -324,6 +324,7 @@ jobs:
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-graphql
+            yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
 
