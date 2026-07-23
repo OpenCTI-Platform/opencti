@@ -31,7 +31,7 @@ To enable it, go to **Settings > Entity customization** and select the **Draft**
 
 **A single workflow definition applies to all drafts on the platform**: you cannot define multiple workflows based on specific draft values.
 
-![Workflow](assets/workflow-image.png)
+![Workflow](assets/worfklow-image.png)
 
 
 ## Creating and applying a workflow definition
@@ -92,7 +92,7 @@ To maintain data consistency, some safeguards are in place to preserve workflow 
 
 ### Transitions
 
-![Transition](assets/workflow-transition.png)
+![Transition](assets/worfklow-transition.png)
 
 #### Conditions on transitions
 
@@ -157,7 +157,7 @@ This action is needed to publish your workflow. When enabled, it triggers the dr
 
 ### Actions on status
 
-![Status](assets/workflow-status.png)
+![Status](assets/worfklow-status.png)
 
 When triggering an action on a status, you can decide whether to apply it when entering or exiting the status.
 
@@ -178,7 +178,7 @@ As a result, you might need to go back to the published version, so that you can
 
 Simply click on Restore the current version & validate on the pop up to go back to this version
 
-![restore](assets/workflow-restore.png)
+![restore](assets/worfklow-restore.png)
 
 ### Reset workflow
 
@@ -188,7 +188,7 @@ When working on a worfklow definition, you might want to restart from scratch. T
 
 As a reminder, you cannot publish a workflow that does not contain some statuses that are used in some draft instances. 
 
-![Status](assets/workflow-reset.png)
+![Status](assets/worfklow-reset.png)
 
 ## Issues and troubleshooting
 
