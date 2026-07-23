@@ -791,13 +791,6 @@ export interface FeedLog {
   count?: number;
 }
 
-export interface FeedLog {
-  timestamp: string;
-  status: 'success' | 'error';
-  messages: string[];
-  count?: number;
-}
-
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
   await getClientBase().set(`connector-${connectorId}-logs`, data);
