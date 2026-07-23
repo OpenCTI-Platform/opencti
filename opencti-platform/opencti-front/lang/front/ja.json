@@ -5001,6 +5001,9 @@
   "Use case": "使用例",
   "Use cases": "ユースケース",
   "Use DB configuration": "DB設定を使用",
+  "use configuration in interface": "インターフェースの設定を使用",
+  "SMTP fields": "SMTPフィールド",
+  "SMTP value": "SMTP値",
   "Use default marking definitions of the user": "ユーザーのデフォルトマーキング定義を使う",
   "Use external secret": "外部シークレットを使用する",
   "Use file content as email body": "ファイルの内容をメール本文として使用する",
@@ -5325,5 +5328,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "現在のユーザーが所属している組織に加え、メインプラットフォームの組織にも所属することになります。",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト"
+  "Zoom out": "ズームアウト",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "このインターフェースから新しいSMTPインテグレーションを設定することはできません。更新が必要な場合は管理者に連絡してください。",
+  "Once the new configuration is in place you would need to restart your platform.": "新しい設定が完了したら、プラットフォームを再起動する必要があります。",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "現在、SMTPはバックエンド設定で構成されています。設定を変更するには、インターフェース設定の使用を有効にして、この画面でSMTP設定を定義してください。",
+  "Use configuration in interface": "インターフェースの設定を使用",
+  "SMTP configuration saved": "SMTP設定が保存されました",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

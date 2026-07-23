@@ -5001,6 +5001,9 @@
   "Use case": "Anwendungsfall",
   "Use cases": "Anwendungsfälle",
   "Use DB configuration": "DB-Konfiguration verwenden",
+  "use configuration in interface": "Konfiguration in der Benutzeroberfläche verwenden",
+  "SMTP fields": "SMTP-Felder",
+  "SMTP value": "SMTP-Wert",
   "Use default marking definitions of the user": "Standard-Markierungsdefinitionen des Benutzers verwenden",
   "Use external secret": "Externes Geheimnis verwenden",
   "Use file content as email body": "Dateiinhalt als E-Mail-Text verwenden",
@@ -5325,5 +5328,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "ihr Benutzer gehört zur Hauptplattform-Organisation, zusätzlich zu jeder Organisation, der der aktuelle Benutzer angehört",
   "Zoom": "Vergrößern",
   "Zoom in": "Vergrößern",
-  "Zoom out": "Verkleinern"
+  "Zoom out": "Verkleinern",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "Sie können keine neue SMTP-Integration über diese Oberfläche konfigurieren. Kontaktieren Sie Ihren Administrator, wenn Sie sie aktualisieren möchten.",
+  "Once the new configuration is in place you would need to restart your platform.": "Sobald die neue Konfiguration eingerichtet ist, müssen Sie Ihre Plattform neu starten.",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "Derzeit wird SMTP über eine Backend-Konfiguration konfiguriert. Um Ihre Konfiguration zu ändern, aktivieren Sie einfach die Nutzung der Schnittstellenkonfiguration und definieren Sie Ihre SMTP-Konfiguration in diesem Bildschirm.",
+  "Use configuration in interface": "Konfiguration in der Benutzeroberfläche verwenden",
+  "SMTP configuration saved": "SMTP-Konfiguration gespeichert",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

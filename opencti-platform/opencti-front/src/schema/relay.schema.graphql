@@ -10702,9 +10702,8 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
-  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
-  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
-  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationDelete: Boolean
   smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
@@ -15253,9 +15252,9 @@ input ExclusionListFileAddInput {
 }
 
 type SmtpConfiguration {
-  id: ID!
   smtp_enabled: Boolean!
   use_db_config: Boolean!
+  forced_sender_email: Boolean!
   sender_email_address: String
   hostname: String
   port: Int
@@ -15275,26 +15274,6 @@ enum SmtpAuthType {
 }
 
 input SmtpConfigurationAddInput {
-  smtp_enabled: Boolean
-  use_db_config: Boolean
-  sender_email_address: String
-  hostname: String
-  port: Int
-  use_ssl: Boolean
-  reject_unauthorized: Boolean
-  auth_type: SmtpAuthType
-  username: String
-  password: String
-  oauth_user: String
-  oauth_client_id: String
-  oauth_client_secret: String
-  oauth_issuer: String
-  oauth_access_token: String
-  oauth_refresh_token: String
-  oauth_refresh_token_expires_at: DateTime
-}
-
-input SmtpConfigurationEditInput {
   smtp_enabled: Boolean
   use_db_config: Boolean
   sender_email_address: String

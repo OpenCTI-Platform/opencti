@@ -17397,10 +17397,9 @@ export type Mutation = {
   sessionKill?: Maybe<Scalars['ID']['output']>;
   settingsEdit?: Maybe<SettingsEditMutations>;
   setupEnterpriseLicense?: Maybe<Settings>;
-  smtpConfigurationAdd?: Maybe<SmtpConfiguration>;
-  smtpConfigurationDelete?: Maybe<Scalars['ID']['output']>;
+  smtpConfigurationDelete?: Maybe<Scalars['Boolean']['output']>;
+  smtpConfigurationEdit?: Maybe<SmtpConfiguration>;
   smtpConfigurationTest?: Maybe<Scalars['Boolean']['output']>;
-  smtpConfigurationUpdate?: Maybe<SmtpConfiguration>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
   statusTemplateContextPatch: StatusTemplate;
@@ -19521,24 +19520,13 @@ export type MutationSetupEnterpriseLicenseArgs = {
 };
 
 
-export type MutationSmtpConfigurationAddArgs = {
+export type MutationSmtpConfigurationEditArgs = {
   input: SmtpConfigurationAddInput;
-};
-
-
-export type MutationSmtpConfigurationDeleteArgs = {
-  id: Scalars['ID']['input'];
 };
 
 
 export type MutationSmtpConfigurationTestArgs = {
   email: Scalars['String']['input'];
-};
-
-
-export type MutationSmtpConfigurationUpdateArgs = {
-  id: Scalars['ID']['input'];
-  input: SmtpConfigurationEditInput;
 };
 
 
@@ -30523,8 +30511,8 @@ export enum SmtpAuthType {
 export type SmtpConfiguration = {
   __typename?: 'SmtpConfiguration';
   auth_type?: Maybe<SmtpAuthType>;
+  forced_sender_email: Scalars['Boolean']['output'];
   hostname?: Maybe<Scalars['String']['output']>;
-  id: Scalars['ID']['output'];
   oauth_client_id?: Maybe<Scalars['String']['output']>;
   oauth_issuer?: Maybe<Scalars['String']['output']>;
   oauth_refresh_token_expires_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30539,26 +30527,6 @@ export type SmtpConfiguration = {
 };
 
 export type SmtpConfigurationAddInput = {
-  auth_type?: InputMaybe<SmtpAuthType>;
-  hostname?: InputMaybe<Scalars['String']['input']>;
-  oauth_access_token?: InputMaybe<Scalars['String']['input']>;
-  oauth_client_id?: InputMaybe<Scalars['String']['input']>;
-  oauth_client_secret?: InputMaybe<Scalars['String']['input']>;
-  oauth_issuer?: InputMaybe<Scalars['String']['input']>;
-  oauth_refresh_token?: InputMaybe<Scalars['String']['input']>;
-  oauth_refresh_token_expires_at?: InputMaybe<Scalars['DateTime']['input']>;
-  oauth_user?: InputMaybe<Scalars['String']['input']>;
-  password?: InputMaybe<Scalars['String']['input']>;
-  port?: InputMaybe<Scalars['Int']['input']>;
-  reject_unauthorized?: InputMaybe<Scalars['Boolean']['input']>;
-  sender_email_address?: InputMaybe<Scalars['String']['input']>;
-  smtp_enabled?: InputMaybe<Scalars['Boolean']['input']>;
-  use_db_config?: InputMaybe<Scalars['Boolean']['input']>;
-  use_ssl?: InputMaybe<Scalars['Boolean']['input']>;
-  username?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type SmtpConfigurationEditInput = {
   auth_type?: InputMaybe<SmtpAuthType>;
   hostname?: InputMaybe<Scalars['String']['input']>;
   oauth_access_token?: InputMaybe<Scalars['String']['input']>;
@@ -40445,7 +40413,6 @@ export type ResolversTypes = ResolversObject<{
   SmtpAuthType: SmtpAuthType;
   SmtpConfiguration: ResolverTypeWrapper<SmtpConfiguration>;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
-  SmtpConfigurationEditInput: SmtpConfigurationEditInput;
   Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
@@ -41476,7 +41443,6 @@ export type ResolversParentTypes = ResolversObject<{
   SettingsMessageInput: SettingsMessageInput;
   SmtpConfiguration: SmtpConfiguration;
   SmtpConfigurationAddInput: SmtpConfigurationAddInput;
-  SmtpConfigurationEditInput: SmtpConfigurationEditInput;
   Software: Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
@@ -47890,10 +47856,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
   setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
-  smtpConfigurationAdd?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationAddArgs, 'input'>>;
-  smtpConfigurationDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationDeleteArgs, 'id'>>;
+  smtpConfigurationDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  smtpConfigurationEdit?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationEditArgs, 'input'>>;
   smtpConfigurationTest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationTestArgs, 'email'>>;
-  smtpConfigurationUpdate?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationUpdateArgs, 'id' | 'input'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
@@ -50758,8 +50723,8 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
 
 export type SmtpConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['SmtpConfiguration'] = ResolversParentTypes['SmtpConfiguration']> = ResolversObject<{
   auth_type?: Resolver<Maybe<ResolversTypes['SmtpAuthType']>, ParentType, ContextType>;
+  forced_sender_email?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hostname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   oauth_client_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oauth_issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   oauth_refresh_token_expires_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;

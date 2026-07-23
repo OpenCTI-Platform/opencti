@@ -5001,6 +5001,9 @@
   "Use case": "用例",
   "Use cases": "使用场景",
   "Use DB configuration": "使用数据库配置",
+  "use configuration in interface": "使用界面配置",
+  "SMTP fields": "SMTP字段",
+  "SMTP value": "SMTP值",
   "Use default marking definitions of the user": "使用用户的默认标记定义",
   "Use external secret": "使用外部秘密",
   "Use file content as email body": "使用文件内容作为电子邮件正文",
@@ -5325,5 +5328,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "除了当前用户所属的任何组织外，您的用户还将与主平台组织有关",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小"
+  "Zoom out": "缩小",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "您无法通过此界面配置新的SMTP集成。如果您需要更新，请联系您的管理员。",
+  "Once the new configuration is in place you would need to restart your platform.": "新配置就位后，您需要重新启动平台。",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "目前，SMTP通过后端配置进行配置。要更改配置，只需启用界面配置的使用并在此屏幕中定义您的SMTP配置。",
+  "Use configuration in interface": "使用界面配置",
+  "SMTP configuration saved": "SMTP配置已保存",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

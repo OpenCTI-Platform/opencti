@@ -1,15 +1,15 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { patchAttribute } from '../../database/middleware';
-import { fullEntitiesList } from '../../database/middleware-loader';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { type BasicStoreEntitySmtpConfiguration, ENTITY_TYPE_SMTP_CONFIGURATION, type StoreEntitySmtpConfiguration } from './smtpConfiguration-types';
-import { SmtpAuthType, type SmtpConfigurationAddInput, type SmtpConfigurationEditInput } from '../../generated/graphql';
+import { SmtpAuthType, type SmtpConfigurationAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
-import { smtpTest } from '../../database/smtp';
-import { encryptSmtpSecret } from './smtpConfiguration-crypto';
+import { ALLOW_EMAIL_REWRITE, SMTP_JSON_CONFIG, smtpTest } from '../../database/smtp';
+import { decryptSmtpSecret, encryptSmtpSecret } from './smtpConfiguration-crypto';
+import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 
 const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
 
@@ -42,7 +42,7 @@ const sanitizeInputForAudit = (input: Record<string, unknown>): Record<string, u
   return sanitized;
 };
 
-const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput | SmtpConfigurationEditInput) => {
+const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput) => {
   if (input.port === 25) {
     throw FunctionalError('Port 25 is not allowed for SMTP configuration');
   }
@@ -54,81 +54,103 @@ const validateSmtpConfigurationInput = (input: SmtpConfigurationAddInput | SmtpC
   }
 };
 
-export const smtpConfigurationAdd = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: SmtpConfigurationAddInput,
-): Promise<BasicStoreEntitySmtpConfiguration> => {
-  checkSmtpConfigurationFeatureEnabled();
-  const existing = await getSmtpConfiguration(context, user);
-  if (existing) {
-    throw FunctionalError('An SMTP configuration already exists');
-  }
-  validateSmtpConfigurationInput(input);
-  const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
-  return createInternalObject<StoreEntitySmtpConfiguration>(
-    context,
-    user,
-    encryptedInput as unknown as SmtpConfigurationAddInput,
-    ENTITY_TYPE_SMTP_CONFIGURATION,
-  );
-};
-
-// No feature-flag guard here: this function is also used internally (e.g. database/smtp.js)
-// to send emails and by the boot-time system dependencies check, independently of the
-// admin-facing SMTP configuration management feature flag.
+// No feature-flag guard: also used internally by database/smtp.js and boot-time checks.
 export const getSmtpConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-): Promise<BasicStoreEntitySmtpConfiguration | null> => {
-  const configurations = await fullEntitiesList<BasicStoreEntitySmtpConfiguration>(
-    context,
-    user,
-    [ENTITY_TYPE_SMTP_CONFIGURATION],
-  );
-  if (configurations.length > 1) {
-    throw FunctionalError('Multiple SMTP configurations found in database, only one is allowed');
+): Promise<SmtpConfiguration | null> => {
+  const settings: BasicStoreSettings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+  const stored = settings.smtp_configuration ?? null;
+  // When forced_sender_email is set: show JSON config values (read-only in UI)
+  if (!ALLOW_EMAIL_REWRITE) {
+    return { ...(stored ?? {}), ...SMTP_JSON_CONFIG } as unknown as SmtpConfiguration;
   }
-  return configurations[0] ?? null;
+  if (!stored) return null;
+  return { ...stored, forced_sender_email: false };
 };
 
-// Used by the GraphQL Query only, to gate the admin-facing read access behind the feature flag.
 export const getSmtpConfigurationForAdmin = async (
   context: AuthContext,
   user: AuthUser,
-): Promise<BasicStoreEntitySmtpConfiguration | null> => {
+): Promise<SmtpConfiguration | null> => {
   checkSmtpConfigurationFeatureEnabled();
   return getSmtpConfiguration(context, user);
 };
 
-export const smtpConfigurationUpdate = async (
+export const smtpConfigurationEdit = async (
   context: AuthContext,
   user: AuthUser,
-  id: string,
-  input: SmtpConfigurationEditInput,
-): Promise<BasicStoreEntitySmtpConfiguration> => {
+  input: SmtpConfigurationAddInput,
+): Promise<SmtpConfiguration> => {
   checkSmtpConfigurationFeatureEnabled();
+  if (!ALLOW_EMAIL_REWRITE) {
+    throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
+  }
   validateSmtpConfigurationInput(input);
   const encryptedInput = await encryptSmtpInput(input as unknown as Record<string, unknown>);
-  const { element } = await patchAttribute<StoreEntitySmtpConfiguration>(
-    context,
-    user,
-    id,
-    ENTITY_TYPE_SMTP_CONFIGURATION,
-    encryptedInput,
-  );
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const existing = settings.smtp_configuration ?? {};
+  const patch = { smtp_configuration: { ...existing, ...encryptedInput } };
+  const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
     message: 'updates smtp configuration',
-    context_data: { id, entity_type: ENTITY_TYPE_SMTP_CONFIGURATION, input: sanitizeInputForAudit(input as unknown as Record<string, unknown>) },
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: sanitizeInputForAudit(input as unknown as Record<string, unknown>) },
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_SMTP_CONFIGURATION].EDIT_TOPIC, element, user);
+  await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+  const stored = (element as unknown as BasicStoreSettings).smtp_configuration!;
+  return { ...stored, forced_sender_email: !ALLOW_EMAIL_REWRITE };
 };
 
-// Implemented in Chunk 2 — delegates to smtp.js to use the effective config (DB or JSON).
+export const smtpConfigurationRefreshTokenUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  previousRefreshToken: string,
+  newRefreshToken: string,
+): Promise<void> => {
+  if (newRefreshToken === previousRefreshToken) return;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const existing = settings.smtp_configuration;
+  if (!existing?.use_db_config || existing.auth_type !== SmtpAuthType.Oauth2) return;
+  const storedRefreshToken = await decryptSmtpSecret(existing.oauth_refresh_token_encrypted);
+  if (storedRefreshToken !== previousRefreshToken) return;
+  const oauthRefreshTokenEncrypted = await encryptSmtpSecret(newRefreshToken);
+  const patch = {
+    smtp_configuration: {
+      ...existing,
+      oauth_refresh_token_encrypted: oauthRefreshTokenEncrypted,
+    },
+  };
+  const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
+  await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+export const smtpConfigurationDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<boolean> => {
+  checkSmtpConfigurationFeatureEnabled();
+  if (!ALLOW_EMAIL_REWRITE) {
+    throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
+  }
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  const patch = { smtp_configuration: null };
+  const { element } = await patchAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, patch);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
+    message: 'deletes smtp configuration',
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: {} },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+  return true;
+};
+
 export const smtpConfigurationTest = async (
   _context: AuthContext,
   _user: AuthUser,
@@ -136,13 +158,4 @@ export const smtpConfigurationTest = async (
 ): Promise<boolean> => {
   checkSmtpConfigurationFeatureEnabled();
   return smtpTest(email);
-};
-
-export const smtpConfigurationDelete = async (
-  context: AuthContext,
-  user: AuthUser,
-  id: string,
-): Promise<string> => {
-  checkSmtpConfigurationFeatureEnabled();
-  return deleteInternalObject(context, user, id, ENTITY_TYPE_SMTP_CONFIGURATION);
 };

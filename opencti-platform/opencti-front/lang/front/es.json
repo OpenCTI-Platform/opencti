@@ -5001,6 +5001,9 @@
   "Use case": "Caso práctico",
   "Use cases": "Casos de uso",
   "Use DB configuration": "Utilizar la configuración de la base de datos",
+  "use configuration in interface": "Utilizar la configuración en la interfaz",
+  "SMTP fields": "Campos SMTP",
+  "SMTP value": "Valor SMTP",
   "Use default marking definitions of the user": "Utilizar las definiciones de marcado por defecto del usuario",
   "Use external secret": "Usar secreto externo",
   "Use file content as email body": "Usar el contenido del archivo como cuerpo del email",
@@ -5325,5 +5328,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "su usuario pertenecerá a la organización de la plataforma principal, además de a cualquier organización a la que pertenezca el usuario actual",
   "Zoom": "Zoom",
   "Zoom in": "Ampliar",
-  "Zoom out": "Alejar"
+  "Zoom out": "Alejar",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "No puede configurar una nueva integración SMTP a través de esta interfaz. Contacte a su administrador si necesita actualizarla.",
+  "Once the new configuration is in place you would need to restart your platform.": "Una vez que la nueva configuración esté en su lugar, deberá reiniciar su plataforma.",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "Actualmente, el SMTP está configurado a través de una configuración de backend. Para cambiar su configuración, simplemente habilite el uso de la configuración de la interfaz y defina su configuración SMTP en esta pantalla.",
+  "Use configuration in interface": "Utilizar la configuración en la interfaz",
+  "SMTP configuration saved": "Configuración SMTP guardada",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

@@ -238,6 +238,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - SMTP configuration: administration/smtp-configuration.md
         - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:

@@ -1,14 +1,13 @@
 import type { Resolvers } from '../../generated/graphql';
-import { smtpConfigurationAdd, getSmtpConfigurationForAdmin, smtpConfigurationDelete, smtpConfigurationTest, smtpConfigurationUpdate } from './smtpConfiguration-domain';
+import { getSmtpConfigurationForAdmin, smtpConfigurationDelete, smtpConfigurationEdit, smtpConfigurationTest } from './smtpConfiguration-domain';
 
 const smtpConfigurationResolvers: Resolvers = {
   Query: {
     smtpConfiguration: (_, __, context) => getSmtpConfigurationForAdmin(context, context.user!),
   },
   Mutation: {
-    smtpConfigurationAdd: (_, { input }, context) => smtpConfigurationAdd(context, context.user!, input),
-    smtpConfigurationUpdate: (_, { id, input }, context) => smtpConfigurationUpdate(context, context.user!, id, input),
-    smtpConfigurationDelete: (_, { id }, context) => smtpConfigurationDelete(context, context.user!, id),
+    smtpConfigurationEdit: (_, { input }, context) => smtpConfigurationEdit(context, context.user!, input),
+    smtpConfigurationDelete: (_, __, context) => smtpConfigurationDelete(context, context.user!),
     smtpConfigurationTest: (_, { email }, context) => smtpConfigurationTest(context, context.user!, email),
   },
 };

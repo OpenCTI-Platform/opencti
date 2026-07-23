@@ -5001,6 +5001,9 @@
   "Use case": "Use case",
   "Use cases": "Use cases",
   "Use DB configuration": "Use DB configuration",
+  "use configuration in interface": "use configuration in interface",
+  "SMTP fields": "SMTP fields",
+  "SMTP value": "SMTP value",
   "Use default marking definitions of the user": "Use default marking definitions of the user",
   "Use external secret": "Use external secret",
   "Use file content as email body": "Use file content as email body",
@@ -5325,5 +5328,11 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
+  "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.": "You cannot configure a new SMTP integration via this interface. Contact your administrator if you need to update it.",
+  "Once the new configuration is in place you would need to restart your platform.": "Once the new configuration is in place you would need to restart your platform.",
+  "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.",
+  "Use configuration in interface": "Use configuration in interface",
+  "SMTP configuration saved": "SMTP configuration saved",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

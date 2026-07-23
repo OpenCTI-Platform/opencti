@@ -263,6 +263,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'local_auth', label: 'Local authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'headers_auth', label: 'Header authentication configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'smtp_configuration', label: 'SMTP configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', label: 'Last run', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
