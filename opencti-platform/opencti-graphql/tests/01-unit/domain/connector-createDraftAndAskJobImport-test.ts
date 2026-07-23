@@ -21,7 +21,7 @@ vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
 vi.mock('../../../src/database/file-storage', () => ({
   loadFile: vi.fn(),
   uploadJobImport: vi.fn(),
-  defaultValidationMode: 'workbench', // constant used as default for validationMode
+  defaultValidationMode: 'draft', // constant used as default for validationMode
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -232,7 +232,7 @@ describe('createDraftAndAskJobImport', () => {
       );
     });
 
-    it('should use defaultValidationMode when validationMode is not provided', async () => {
+    it('should use defaultValidationMode (draft) when validationMode is not provided', async () => {
       await createDraftAndAskJobImport(testContext, testUser, { fileName: 'report.pdf' });
 
       expect(uploadJobImport).toHaveBeenCalledWith(
@@ -240,7 +240,7 @@ describe('createDraftAndAskJobImport', () => {
         testUser,
         mockRegularFile,
         undefined,
-        expect.objectContaining({ validationMode: 'workbench' }),
+        expect.objectContaining({ validationMode: 'draft' }),
       );
     });
 
