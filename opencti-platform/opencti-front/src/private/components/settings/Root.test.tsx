@@ -7,11 +7,11 @@ import { SETTINGS_SETMANAGEXTMHUB, SETTINGS_SUPPORT } from '../../../utils/hooks
 import Root from './Root';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
 
-vi.mock('../../../../utils/hooks/useSettingsFallbackUrl', () => ({
-  default: () => '/dashboard',
+vi.mock('../../../utils/hooks/useSettingsFallbackUrl', () => ({
+  default: () => '/dashboard/settings',
 }));
 
-vi.mock('../../../../utils/Security', () => ({
+vi.mock('../../../utils/Security', () => ({
   default: ({
     needs,
     children,
@@ -56,7 +56,7 @@ describe('Settings Root permission redirect', () => {
     );
 
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/dashboard');
+      expect(window.location.pathname).toBe('/dashboard/settings');
     });
     expect(sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY)).toBeNull();
   });
