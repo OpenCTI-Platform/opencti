@@ -124,7 +124,7 @@ describe('useWorkflowInitialElements', () => {
     const transitionEdges = result.current.initialEdges;
 
     expect(transitionNodes).toHaveLength(1);
-    expect(transitionNodes[0].id).toBe(`${WorkflowNodeType.transition}-status-open-status-closed`);
+    expect(transitionNodes[0].id).toBe(`${WorkflowNodeType.transition}-status-open-close_event-status-closed`);
 
     expect(transitionEdges).toHaveLength(2);
     expect(transitionEdges[0].source).toBe('status-open');
@@ -294,5 +294,30 @@ describe('useWorkflowInitialElements', () => {
     );
     expect(result.current.initialNodes).toEqual([]);
     expect(result.current.initialEdges).toEqual([]);
+  });
+
+  it('should not create an outgoing edge when transition.to is null', () => {
+    const defWithNullTo: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      transitions: [{
+        from: ['status-open'],
+        to: null,
+        event: 'draft_event',
+        conditions: {},
+        comment: null,
+        asyncActions: [],
+        syncActions: [],
+      }],
+    };
+
+    const { result } = renderHook(() =>
+      useWorkflowInitialElements(defWithNullTo, mockStatusTemplates, mockMembers),
+    );
+
+    const transitionEdges = result.current.initialEdges;
+    // Only the incoming edge (from status-open → transition node), no outgoing edge
+    expect(transitionEdges).toHaveLength(1);
+    expect(transitionEdges[0].source).toBe('status-open');
+    expect(transitionEdges[0].target).toContain('_unlinked');
   });
 });
