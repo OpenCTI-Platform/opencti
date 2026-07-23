@@ -135,7 +135,7 @@ describe('resolvedDataSelection', () => {
       dataSelection,
       perspective: 'entities',
     });
-    const main = ['Stix-Core-Object'];
+    const main = ['Stix-Core-Object', 'DraftWorkspace'];
     expect(resolvedDataSelection[0].filters).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].filters,
@@ -148,7 +148,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -180,7 +180,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -212,7 +212,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -253,7 +253,7 @@ describe('resolvedDataSelection', () => {
           customViewTargetEntityId,
         },
       });
-      const main = ['Stix-Core-Object'];
+      const main = ['Stix-Core-Object', 'DraftWorkspace'];
       expect(resolvedDataSelection[0].filters).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].filters, customViewTargetEntityId),
@@ -263,13 +263,13 @@ describe('resolvedDataSelection', () => {
       expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].dynamicFrom, customViewTargetEntityId),
-          getAvailableFilterKeysForEntityTypes(filterKeysSchema, main, true),
+          getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
         ),
       );
       expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].dynamicTo, customViewTargetEntityId),
-          getAvailableFilterKeysForEntityTypes(filterKeysSchema, main, true),
+          getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
         ),
       );
       expect(isMissingHostEntity).toBe(false);
@@ -550,17 +550,21 @@ describe('computeStartEndDates', () => {
   });
 
   it('computes relative dates when relativeDate is set, ignoring absolute dates', () => {
-    const config = {
-      relativeDate: 'days-7',
-      startDate: '2025-01-01T00:00:00Z',
-      endDate: '2025-06-01T00:00:00Z',
-    };
-    const { startDate, endDate } = computeStartEndDates(config);
-    // relativeDate should override absolute dates
-    expect(startDate).not.toBe('2025-01-01T00:00:00Z');
-    expect(endDate).not.toBe('2025-06-01T00:00:00Z');
-    expect(startDate).toBeDefined();
-    expect(endDate).toBeDefined();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-03-15T10:30:00.000Z'));
+    try {
+      const config = {
+        relativeDate: 'days-7',
+        startDate: '2025-01-01T00:00:00Z',
+        endDate: '2025-06-01T00:00:00Z',
+      };
+      const { startDate, endDate } = computeStartEndDates(config);
+      // relativeDate should override absolute dates
+      expect(startDate).toBe('2025-03-08T10:30:00.000Z');
+      expect(endDate).toBe('2025-03-15T10:30:00.000Z');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('falls back to default date range when fallbackToDefaultDates is true and no dates configured', () => {
@@ -666,6 +670,7 @@ describe('computeWidgetFiltersForSelection', () => {
       filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
       filterGroups: [],
     });
+  });
 
   it('does not apply fallback dates by default', () => {
     const result = computeWidgetFiltersForSelection({}, {});
