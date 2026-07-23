@@ -2,7 +2,12 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import crypto from 'crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type CatalogContract, type CatalogDefinition, type CatalogType } from './catalog-types';
+import {
+  type CatalogContract,
+  type CatalogDefinition,
+  type CatalogType,
+  type ConnectorManagerContract,
+} from './catalog-types';
 import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
@@ -476,6 +481,33 @@ export const getSupportedContractsByImage = async (): Promise<Map<string, Catalo
     });
   }
   return contractsByImageCache;
+};
+
+export const getSupportedContractByImage = async (containerImage: string) => {
+  const contractsByImage = await getSupportedContractsByImage();
+  return contractsByImage.get(containerImage);
+};
+
+export const mapCatalogContractToConnectorManagerContract = (contract: CatalogContract): ConnectorManagerContract => {
+  return {
+    title: contract.title,
+    slug: contract.slug,
+    description: contract.description,
+    short_description: contract.short_description,
+    logo: contract.logo,
+    use_cases: contract.use_cases,
+    verified: contract.verified,
+    last_verified_date: contract.last_verified_date,
+    playbook_supported: contract.playbook_supported,
+    max_confidence_level: contract.max_confidence_level,
+    subscription_link: contract.subscription_link,
+    source_code: contract.source_code,
+    manager_supported: contract.manager_supported,
+    container_version: contract.container_version,
+    container_image: contract.container_image,
+    container_type: contract.container_type,
+    config_schema: contract.config_schema,
+  };
 };
 
 export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {

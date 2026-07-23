@@ -40,7 +40,9 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
 vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(),
+  computeConnectorTargetContract: vi.fn(),
+  getSupportedContractByImage: vi.fn(),
+  mapCatalogContractToConnectorManagerContract: vi.fn(),
 }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
