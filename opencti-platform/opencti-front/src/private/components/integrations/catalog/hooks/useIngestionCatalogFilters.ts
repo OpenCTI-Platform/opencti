@@ -301,6 +301,29 @@ const useIngestionCatalogFilters = ({
     return [...new Set(items.flatMap((item) => item.useCases))].sort();
   }, [items]);
 
+  useEffect(() => {
+    const validTypeSet = new Set(availableTypes);
+    const validUseCaseSet = new Set(availableUseCases);
+
+    setFilters((prev) => {
+      const nextTypes = prev.types.filter((type) => validTypeSet.has(type as IngestionConnectorType));
+      const nextUseCases = prev.useCases.filter((useCase) => validUseCaseSet.has(useCase));
+
+      if (nextTypes.length === prev.types.length && nextUseCases.length === prev.useCases.length) {
+        return prev;
+      }
+
+      // Catalog payload can change at runtime (fallback -> remote or manifest switch).
+      // Drop URL-carried facets that no longer exist in the current catalog to prevent
+      // the UI from getting stuck in an empty filtered state.
+      return {
+        ...prev,
+        types: nextTypes,
+        useCases: nextUseCases,
+      };
+    });
+  }, [availableTypes, availableUseCases]);
+
   const filteredItems = useMemo(
     () => items.filter((item) => matchesFilters(item, filters)),
     [items, filters],

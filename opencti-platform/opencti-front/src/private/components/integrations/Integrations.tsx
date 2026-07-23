@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { ExtensionOutlined, RocketLaunchOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
@@ -6,10 +6,10 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
-import IngestionConnectorsCatalogs, { ingestionConnectorsCatalogsQuery } from '@components/integrations/catalog/IngestionConnectorsCatalog';
+import IngestionConnectorsCatalogs from '@components/integrations/catalog/IngestionConnectorsCatalog';
 import IngestionConnectors, { ingestionConnectorsQuery } from '@components/integrations/catalog/IngestionConnectors';
-import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnectorsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsQuery.graphql';
+import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import {
   IngestionFeeds,
@@ -53,20 +53,21 @@ interface IntegrationsDataProviderProps {
 
 // Loads every data source the current user is granted to see, and passes them
 // down to the hero and both tabs. Ungranted sources stay null.
-const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) => {
+interface IntegrationsDataProviderExtraProps extends IntegrationsDataProviderProps {
+  catalogFetchKey: number;
+}
+
+const IntegrationsDataProvider = ({ children, catalogFetchKey }: IntegrationsDataProviderExtraProps) => {
   const isConnectorReader = useGranted([MODULES]);
   const isIngestionReader = useGranted([INGESTION]);
   const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT]);
 
-  const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
   const [feedsRef, loadFeeds] = useQueryLoader<IngestionFeedsQuery>(ingestionFeedsQuery);
   const [formsRef, loadForms] = useQueryLoader<IngestionFeedsFormsQuery>(ingestionFeedsFormsQuery);
 
   useEffect(() => {
     if (isConnectorReader) {
-      // fetch once the catalogs and use the cache during runtime
-      loadCatalogs({}, { fetchPolicy: 'store-or-network' });
       loadDeployment({}, { fetchPolicy: 'store-and-network' });
     }
     if (isIngestionReader) {
@@ -120,9 +121,9 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
   };
 
   const renderWithCatalogs = () => {
-    if (catalogsRef && deploymentRef) {
+    if (isConnectorReader && deploymentRef) {
       return (
-        <IngestionConnectorsCatalogs queryRef={catalogsRef}>
+        <IngestionConnectorsCatalogs fetchKey={catalogFetchKey}>
           {({ data: catalogsData }) => (
             <IngestionConnectors queryRef={deploymentRef}>
               {({ data: deploymentData }) => renderWithFeeds(catalogsData, deploymentData)}
@@ -134,7 +135,7 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     return renderWithFeeds(null, null);
   };
 
-  const isLoading = (isConnectorReader && (!catalogsRef || !deploymentRef))
+  const isLoading = (isConnectorReader && !deploymentRef)
     || (isIngestionReader && !feedsRef)
     || (isFormReader && !formsRef);
   if (isLoading) {
@@ -337,16 +338,32 @@ const Integrations = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Integrations'));
 
+  const lastSeenCatalogRevision = useRef<string | null>(null);
+  const [catalogFetchKey, setCatalogFetchKey] = useState(0);
+
+  const handleCatalogVersionChange = useCallback((revision: string | null) => {
+    if (!revision) return;
+    if (lastSeenCatalogRevision.current !== revision) {
+      lastSeenCatalogRevision.current = revision;
+      setCatalogFetchKey((k) => k + 1);
+    }
+  }, []);
+
   if (tab !== 'deployed' && tab !== 'available') {
     return <Navigate to="/dashboard/integrations/deployed" replace={true} />;
   }
 
   return (
+    // Outer Suspense catches the provider's own initial suspension.
+    // The provider must stay OUTSIDE the inner Suspense so that catalog
+    // data suspensions never unmount it (which would reset polling state).
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <ConnectorManagerStatusProvider>
-        <IntegrationsDataProvider>
-          {(data) => <IntegrationsComponent tab={tab} data={data} />}
-        </IntegrationsDataProvider>
+      <ConnectorManagerStatusProvider onCatalogVersionChange={handleCatalogVersionChange}>
+        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+          <IntegrationsDataProvider catalogFetchKey={catalogFetchKey}>
+            {(data) => <IntegrationsComponent tab={tab} data={data} />}
+          </IntegrationsDataProvider>
+        </Suspense>
       </ConnectorManagerStatusProvider>
     </Suspense>
   );

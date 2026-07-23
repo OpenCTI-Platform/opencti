@@ -16,6 +16,8 @@ type TypedProperty<K extends keyof TypeMap = keyof TypeMap> = {
 };
 
 export interface CatalogContract {
+  id?: string | null;
+  integration_name?: string;
   title: string;
   slug: string;
   description: string;
