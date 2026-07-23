@@ -17,6 +17,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -340,9 +341,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
     if (Array.isArray(instance)) {
-      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+      data = (instance as any[]).map(removeResolvedRefs);
     } else {
-      data = R.dissoc(INPUT_OBJECTS, instance);
+      data = removeResolvedRefs(instance);
     }
     // Direct refresh the current instance cache
     await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
@@ -350,6 +351,11 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
+};
+
+export const removeResolvedRefs = (instance: any) => {
+  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
 };
 
 // region user context (clientContext)

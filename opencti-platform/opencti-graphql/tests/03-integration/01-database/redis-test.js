@@ -433,3 +433,60 @@ describe('Redis publishCacheResetEvent', () => {
     }
   });
 });
+
+describe('Redis ingestion logs (AuthLogEntry format)', () => {
+  it('should add and read ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    await redisPushIngestionLog(feedId, {
+      level: 'error',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'an-error',
+      meta: { source: 'test' },
+    });
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(1);
+    expect(logs[0].level).toBe('error');
+    expect(logs[0].message).toBe('an-error');
+    expect(logs[0].meta).toEqual({ source: 'test' });
+  });
+
+  it('should keep only the latest 20 ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    for (let i = 0; i < 25; i += 1) {
+      await redisPushIngestionLog(feedId, {
+        level: i % 2 === 0 ? 'info' : 'error',
+        type: 'taxii',
+        identifier: feedId,
+        message: `log-${i}`,
+        meta: { i },
+      });
+    }
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(20);
+    expect(logs[0].message).toBe('log-24');
+    expect(logs[19].message).toBe('log-5');
+  });
+
+  it('should delete ingestion logs history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    await redisPushIngestionLog(feedId, {
+      level: 'warn',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'to-delete',
+      meta: {},
+    });
+
+    await redisDeleteIngestionLogHistory(feedId);
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(0);
+  });
+});
