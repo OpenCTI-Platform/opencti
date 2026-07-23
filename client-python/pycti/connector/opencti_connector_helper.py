@@ -64,6 +64,15 @@ FALSY: List[str] = ["no", "false", "False"]
 app = FastAPI()
 
 
+# Health endpoint for load balancer / orchestrator health checks. Registered once
+# at module import (not inside ListenQueue.run()) so it is defined exactly once
+# regardless of how many times a listener is started. It stays responsive even
+# while a callback is processing, because _data_handler runs off the event loop.
+@app.get("/health")
+async def _health() -> JSONResponse:
+    return JSONResponse(content={"status": "ok"}, status_code=200)
+
+
 def killProgramHook(etype, value, tb) -> None:
     """Exception hook to terminate the program on unhandled exceptions.
 
@@ -532,6 +541,9 @@ class ListenQueue(threading.Thread):
         self.queue_name = connector_config["listen"]
         self.exit_event = threading.Event()
         self.thread = None
+        # Serializes API-listen callback processing (see _http_process_callback).
+        # Created lazily inside the running event loop.
+        self._callback_lock = None
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body) -> None:
@@ -814,7 +826,14 @@ class ListenQueue(threading.Thread):
                 content={"error": "Invalid JSON payload"},
             )
         try:
-            self._data_handler(data)
+            # Serialize callback processing: _data_handler mutates shared connector
+            # state (work_id, draft/playbook context), so at most one may run at a
+            # time. It still runs in a worker thread so the event loop stays free to
+            # answer /health and accept (not concurrently execute) further callbacks.
+            if self._callback_lock is None:
+                self._callback_lock = asyncio.Lock()
+            async with self._callback_lock:
+                await asyncio.to_thread(self._data_handler, data)
         except Exception as e:
             self.helper.connector_logger.error(
                 "Error processing message", {"cause": str(e)}
