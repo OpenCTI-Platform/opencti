@@ -3,7 +3,14 @@ import type { WidgetDataSelection } from '../../utils/widget/widget';
 import { removeIdAndIncorrectKeysFromFilterGroupObject, getAvailableFilterKeysForEntityTypes, buildFiltersForCustomView } from '../../utils/filters/filtersUtils';
 import type { SchemaType } from '../../utils/hooks/useAuth';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
-import { resolveDataSelection } from './dashboardVizUtils';
+import {
+  resolveDataSelection,
+  computeStartEndDates,
+  computeWidgetFiltersForSelection,
+  computeWidgetFiltersForMultiSelection,
+  buildRelationshipMultiWidgetBaseQueryVariables,
+  buildRelationshipSingleWidgetBaseQueryVariables,
+} from './dashboardVizUtils';
 
 vi.mock('src/relay/environment', () => ({
   fetchQuery: vi.fn(),
@@ -128,7 +135,7 @@ describe('resolvedDataSelection', () => {
       dataSelection,
       perspective: 'entities',
     });
-    const main = ['Stix-Core-Object'];
+    const main = ['Stix-Core-Object', 'DraftWorkspace'];
     expect(resolvedDataSelection[0].filters).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].filters,
@@ -141,7 +148,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -173,7 +180,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -205,7 +212,7 @@ describe('resolvedDataSelection', () => {
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
       ),
     );
-    expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
+    expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
       removeIdAndIncorrectKeysFromFilterGroupObject(
         dataSelection[0].dynamicTo,
         getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
@@ -246,7 +253,7 @@ describe('resolvedDataSelection', () => {
           customViewTargetEntityId,
         },
       });
-      const main = ['Stix-Core-Object'];
+      const main = ['Stix-Core-Object', 'DraftWorkspace'];
       expect(resolvedDataSelection[0].filters).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].filters, customViewTargetEntityId),
@@ -256,13 +263,13 @@ describe('resolvedDataSelection', () => {
       expect(resolvedDataSelection[0].dynamicFrom).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].dynamicFrom, customViewTargetEntityId),
-          getAvailableFilterKeysForEntityTypes(filterKeysSchema, main, true),
+          getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
         ),
       );
       expect(resolvedDataSelection[0].dynamicTo).toStrictEqual(
         removeIdAndIncorrectKeysFromFilterGroupObject(
           buildFiltersForCustomView(dataSelection[0].dynamicTo, customViewTargetEntityId),
-          getAvailableFilterKeysForEntityTypes(filterKeysSchema, main, true),
+          getAvailableFilterKeysForEntityTypes(filterKeysSchema, secondary, true),
         ),
       );
       expect(isMissingHostEntity).toBe(false);
@@ -519,5 +526,402 @@ describe('resolvedDataSelection', () => {
       });
       expect(isMissingSavedFilters).toBe(false);
     });
+  });
+});
+
+describe('computeStartEndDates', () => {
+  it('returns undefined dates when no config is provided', () => {
+    const { startDate, endDate } = computeStartEndDates();
+    expect(startDate).toBeUndefined();
+    expect(endDate).toBeUndefined();
+  });
+
+  it('returns undefined dates when config has no date fields', () => {
+    const { startDate, endDate } = computeStartEndDates({});
+    expect(startDate).toBeUndefined();
+    expect(endDate).toBeUndefined();
+  });
+
+  it('returns absolute dates from config', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const { startDate, endDate } = computeStartEndDates(config);
+    expect(startDate).toBe('2025-01-01T00:00:00Z');
+    expect(endDate).toBe('2025-06-01T00:00:00Z');
+  });
+
+  it('computes relative dates when relativeDate is set, ignoring absolute dates', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-03-15T10:30:00.000Z'));
+    try {
+      const config = {
+        relativeDate: 'days-7',
+        startDate: '2025-01-01T00:00:00Z',
+        endDate: '2025-06-01T00:00:00Z',
+      };
+      const { startDate, endDate } = computeStartEndDates(config);
+      // relativeDate should override absolute dates
+      expect(startDate).toBe('2025-03-08T10:30:00.000Z');
+      expect(endDate).toBe('2025-03-15T10:30:00.000Z');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('falls back to default date range when fallbackToDefaultDates is true and no dates configured', () => {
+    const { startDate, endDate } = computeStartEndDates({}, true);
+    expect(startDate).toBeDefined();
+    expect(endDate).toBeDefined();
+  });
+
+  it('uses config dates over fallback defaults when both are available', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const { startDate, endDate } = computeStartEndDates(config, true);
+    expect(startDate).toBe('2025-01-01T00:00:00Z');
+    expect(endDate).toBe('2025-06-01T00:00:00Z');
+  });
+});
+
+describe('computeWidgetFiltersForSelection', () => {
+  it('returns default dateAttribute "created_at" when selection has no date_attribute', () => {
+    const result = computeWidgetFiltersForSelection({}, {});
+    expect(result.dateAttribute).toBe('created_at');
+  });
+
+  it('uses selection date_attribute when provided', () => {
+    const selection: WidgetDataSelection = { date_attribute: 'updated_at' };
+    const result = computeWidgetFiltersForSelection(selection, {});
+    expect(result.dateAttribute).toBe('updated_at');
+  });
+
+  it('falls back to "created_at" when date_attribute is empty string', () => {
+    const selection: WidgetDataSelection = { date_attribute: '' };
+    const result = computeWidgetFiltersForSelection(selection, {});
+    expect(result.dateAttribute).toBe('created_at');
+  });
+
+  it('passes config dates through to startDate/endDate', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const result = computeWidgetFiltersForSelection({}, config);
+    expect(result.startDate).toBe(config.startDate);
+    expect(result.endDate).toBe(config.endDate);
+  });
+
+  it('returns undefined dates when no config is provided', () => {
+    const result = computeWidgetFiltersForSelection({});
+    expect(result.startDate).toBeUndefined();
+    expect(result.endDate).toBeUndefined();
+  });
+
+  it('includes date filters in the result when config has dates', () => {
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const result = computeWidgetFiltersForSelection({}, config);
+    const allFilterKeys = result.filters?.filters.map((f) => f.key).flat();
+    expect(allFilterKeys).toContain('created_at');
+  });
+
+  it('uses custom date_attribute in date filters', () => {
+    const selectionFilters: FilterGroup = {
+      mode: 'and',
+      filters: [{
+        key: 'entity_type',
+        values: ['Malware'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const selection: WidgetDataSelection = { date_attribute: 'start_time', filters: selectionFilters };
+    const config = { startDate: '2025-03-01T00:00:00Z' };
+    const result = computeWidgetFiltersForSelection(selection, config);
+    expect(result.filters).toStrictEqual({
+      mode: 'and',
+      filters: [
+        {
+          key: ['entity_type'],
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        },
+        {
+          key: ['start_time'],
+          values: ['2025-03-01T00:00:00Z'],
+          operator: 'gt',
+          mode: 'or',
+        },
+      ],
+      filterGroups: [],
+    });
+  });
+
+  it('passes selection filters through to the result', () => {
+    const selectionFilters: FilterGroup = {
+      mode: 'and',
+      filters: [{
+        key: 'entity_type',
+        values: ['Malware'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    const result = computeWidgetFiltersForSelection({ filters: selectionFilters }, {});
+    expect(result.filters).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    });
+  });
+
+  it('does not apply fallback dates by default', () => {
+    const result = computeWidgetFiltersForSelection({}, {});
+    expect(result.startDate).toBeUndefined();
+    expect(result.endDate).toBeUndefined();
+  });
+});
+
+describe('computeWidgetFiltersForMultiSelection', () => {
+  it('returns timeSeriesParameters for each selection with correct filters and dates', () => {
+    const selectionA: WidgetDataSelection = {
+      date_attribute: 'created_at',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+    };
+    const selectionB: WidgetDataSelection = {
+      date_attribute: 'updated_at',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Report'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+    };
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+
+    const result = computeWidgetFiltersForMultiSelection([selectionA, selectionB], config, ['Stix-Core-Object']);
+
+    expect(result.startDate).toBe(config.startDate);
+    expect(result.endDate).toBe(config.endDate);
+    expect(result.timeSeriesParameters).toHaveLength(2);
+
+    // First selection: created_at + Malware filter + date filters
+    expect(result.timeSeriesParameters[0].field).toBe('created_at');
+    expect(result.timeSeriesParameters[0].types).toStrictEqual(['Stix-Core-Object']);
+    const firstFilterKeys = result.timeSeriesParameters[0].filters?.filters.map((f) => f.key).flat();
+    expect(firstFilterKeys).toContain('entity_type');
+    expect(firstFilterKeys).toContain('created_at');
+
+    // Second selection: updated_at + Report filter + date filters
+    expect(result.timeSeriesParameters[1].field).toBe('updated_at');
+    expect(result.timeSeriesParameters[1].types).toStrictEqual(['Stix-Core-Object']);
+    const secondFilterKeys = result.timeSeriesParameters[1].filters?.filters.map((f) => f.key).flat();
+    expect(secondFilterKeys).toContain('entity_type');
+    expect(secondFilterKeys).toContain('updated_at');
+  });
+});
+
+describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
+  it('returns correct structure with operation, dates, interval, and timeSeriesParameters', () => {
+    const selectionA: WidgetDataSelection = {
+      date_attribute: 'created_at',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+      dynamicFrom: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Indicator'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+    };
+    const selectionB: WidgetDataSelection = {
+      date_attribute: 'updated_at',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Report'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+      dynamicTo: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Campaign'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+    };
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+
+    const result = buildRelationshipMultiWidgetBaseQueryVariables([selectionA, selectionB], config);
+
+    expect(result.operation).toBe('count');
+    expect(result.startDate).toBe(config.startDate);
+    expect(result.endDate).toBe(config.endDate);
+    expect(result.interval).toBe('day');
+    expect(result.timeSeriesParameters).toHaveLength(2);
+
+    // First selection
+    expect(result.timeSeriesParameters[0]).toStrictEqual({
+      field: 'created_at',
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+          { key: ['created_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
+          { key: ['created_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
+      dynamicFrom: {
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['Indicator'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+      dynamicTo: undefined,
+    });
+
+    // Second selection
+    expect(result.timeSeriesParameters[1]).toStrictEqual({
+      field: 'updated_at',
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
+          { key: ['updated_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
+          { key: ['updated_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
+      dynamicFrom: undefined,
+      dynamicTo: {
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['Campaign'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    });
+  });
+
+  it('uses custom interval from parameters', () => {
+    const selection: WidgetDataSelection = { date_attribute: 'created_at' };
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+    const parameters = { interval: 'month' };
+
+    const result = buildRelationshipMultiWidgetBaseQueryVariables([selection], config, parameters);
+
+    expect(result.interval).toBe('month');
+  });
+});
+
+describe('buildRelationshipSingleWidgetBaseQueryVariables', () => {
+  it('returns correct structure with dates, filters, dynamicFrom and dynamicTo', () => {
+    const selection: WidgetDataSelection = {
+      date_attribute: 'created_at',
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+      dynamicFrom: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Indicator'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+      dynamicTo: {
+        mode: 'and',
+        filters: [{
+          key: 'entity_type',
+          values: ['Campaign'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
+      },
+    };
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+
+    const result = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+
+    expect(result).toStrictEqual({
+      startDate: '2025-01-01T00:00:00Z',
+      endDate: '2025-06-01T00:00:00Z',
+      dateAttribute: 'created_at',
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' },
+          { key: ['created_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
+          { key: ['created_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
+      dynamicFrom: {
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['Indicator'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+      dynamicTo: {
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['Campaign'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      },
+    });
+  });
+
+  it('returns undefined dynamicFrom and dynamicTo when not provided', () => {
+    const selection: WidgetDataSelection = { date_attribute: 'created_at' };
+    const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
+
+    const result = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+
+    expect(result.dynamicFrom).toBeUndefined();
+    expect(result.dynamicTo).toBeUndefined();
+  });
+
+  it('defaults dateAttribute to created_at when not specified', () => {
+    const selection: WidgetDataSelection = {};
+    const config = {};
+
+    const result = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+
+    expect(result.dateAttribute).toBe('created_at');
   });
 });

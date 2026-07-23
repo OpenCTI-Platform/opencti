@@ -1,9 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
@@ -94,20 +92,18 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): DraftsMultiAreaChartTimeSeriesQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
-  const { startDate: rawStartDate, endDate: rawEndDate } = computeStartEndDates(config);
-  const startDate = rawStartDate ?? monthsAgo(12);
-  const endDate = rawEndDate ?? now();
-  const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+    { fallbackToDefaultDates: true },
+  );
   return {
     field: dateAttribute,
     operation: 'count',
     startDate,
     endDate,
     interval: getWidgetInterval(parameters),
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
   };
 };
 

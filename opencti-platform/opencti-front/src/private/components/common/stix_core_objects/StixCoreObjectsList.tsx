@@ -2,7 +2,6 @@ import React, { ReactNode, useRef } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { getDefaultWidgetColumns } from '../../widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListCoreObjects from '../../../../components/dashboard/WidgetListCoreObjects';
@@ -11,7 +10,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { OrderingMode, StixCoreObjectsListQuery, StixCoreObjectsOrdering } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 export const stixCoreObjectsListQuery = graphql`
   query StixCoreObjectsListQuery(
@@ -468,22 +467,15 @@ const buildQueryVariables = (resolvedDataSelection: WidgetDataSelection[], confi
   const orderBy = (selection.sort_by && selection.sort_by.length > 0
     ? selection.sort_by
     : 'created_at') as StixCoreObjectsOrdering | null | undefined;
-  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-    ? selection.date_attribute
-    : 'created_at';
   const first = selection.number ?? 10;
   const orderMode = (selection.sort_mode ?? 'asc') as OrderingMode;
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { filters } = computeWidgetFiltersForSelection(selection, config);
   return {
     types: DATA_SELECTION_TYPES,
     first,
     orderBy,
     orderMode,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
   };
 };
 

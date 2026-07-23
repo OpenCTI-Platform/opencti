@@ -3,7 +3,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -12,7 +11,7 @@ import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderCo
 import { WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixRelationshipsDistributionListDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDistributionListDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { buildRelationshipSingleWidgetBaseQueryVariables } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsDistributionListDistributionQuery = graphql`
   query StixRelationshipsDistributionListDistributionQuery(
@@ -148,19 +147,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsDistributionListDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute = selection.date_attribute?.length
-    ? selection.date_attribute
-    : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    {
-      startDate,
-      endDate,
-      dateAttribute,
-      isKnowledgeRelationshipWidget: true,
-    },
-  );
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -169,9 +157,9 @@ const buildQueryVariables = (
     dateAttribute,
     limit: selection.number ?? 10,
     isTo: selection.isTo ?? undefined,
-    filters: normalizeFilterGroupForBackend(filters),
-    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
+    filters,
+    dynamicFrom,
+    dynamicTo,
   };
 };
 

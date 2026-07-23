@@ -11,8 +11,7 @@ import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsPolarAreaDistributionQuery = graphql`
   query StixCoreObjectsPolarAreaDistributionQuery(
@@ -128,16 +127,7 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsPolarAreaDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate } = computeStartEndDates(config);
-  const dateAttribute
-    = selection.date_attribute
-      && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    { startDate, endDate, dateAttribute },
-  );
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -146,7 +136,7 @@ const buildQueryVariables = (
     startDate,
     endDate,
     dateAttribute,
-    filters: normalizeFilterGroupForBackend(filters),
+    filters,
     limit: selection.number ?? 10,
   };
 };

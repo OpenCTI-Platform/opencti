@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
@@ -15,7 +14,7 @@ import {
   StixRelationshipsOrdering,
   StixRelationshipsTimelineStixRelationshipQuery,
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsTimelineStixRelationshipQuery.graphql';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { buildRelationshipSingleWidgetBaseQueryVariables } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   query StixRelationshipsTimelineStixRelationshipQuery(
@@ -1037,26 +1036,14 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsTimelineStixRelationshipQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-  const { startDate, endDate } = computeStartEndDates(config);
-  const { filters } = buildFiltersAndOptionsForWidgets(
-    selection.filters,
-    {
-      startDate,
-      endDate,
-      dateAttribute,
-      isKnowledgeRelationshipWidget: true,
-    },
-  );
-
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
   return {
+    filters,
+    dynamicFrom,
+    dynamicTo,
     first: selection.number ?? 10,
     orderBy: dateAttribute as StixRelationshipsOrdering,
     orderMode: (selection.sort_mode ?? 'desc') as OrderingMode,
-    filters: normalizeFilterGroupForBackend(filters),
-    dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-    dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
   };
 };
 

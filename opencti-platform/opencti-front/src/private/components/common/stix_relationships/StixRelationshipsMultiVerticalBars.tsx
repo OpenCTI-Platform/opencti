@@ -1,8 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
@@ -12,7 +10,7 @@ import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../u
 import { StixRelationshipsMultiVerticalBarsTimeSeriesQuery } from './__generated__/StixRelationshipsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
-import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { buildRelationshipMultiWidgetBaseQueryVariables } from 'src/components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
@@ -89,33 +87,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
-  const fallbackStart = monthsAgo(12);
-  const fallbackEnd = now();
-  const startDate = config.startDate ?? fallbackStart;
-  const endDate = config.endDate ?? fallbackEnd;
-  const timeSeriesParameters = resolvedDataSelection.map((selection) => {
-    const dateAttribute = selection.date_attribute?.length
-      ? selection.date_attribute
-      : 'created_at';
-    const { filters } = buildFiltersAndOptionsForWidgets(
-      selection.filters,
-      { startDate, endDate, isKnowledgeRelationshipWidget: true },
-    );
-
-    return {
-      field: dateAttribute,
-      filters: normalizeFilterGroupForBackend(filters),
-      dynamicFrom: normalizeFilterGroupForBackend(selection.dynamicFrom),
-      dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
-    };
-  });
-  return {
-    operation: 'count',
-    startDate,
-    endDate,
-    interval: getWidgetInterval(parameters),
-    timeSeriesParameters,
-  };
+  return buildRelationshipMultiWidgetBaseQueryVariables(
+    resolvedDataSelection, config, parameters) as StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiVerticalBarsProps {
