@@ -15,6 +15,7 @@ export interface FintelTemplateFormInputs {
   name: string;
   description: string | null;
   published: boolean;
+  default: boolean;
 }
 
 export type FintelTemplateFormInputKeys = keyof FintelTemplateFormInputs;
@@ -24,15 +25,17 @@ interface FintelTemplateFormProps {
   onSubmit: FormikConfig<FintelTemplateFormInputs>['onSubmit'];
   onSubmitField: (field: FintelTemplateFormInputKeys, value: unknown) => void;
   defaultValues?: FintelTemplateFormInputs;
-  isEdition?: boolean;
+  editingProps?: {
+    onDefaultToggle: (value: boolean, revert: () => void) => void;
+  };
 }
 
 const FintelTemplateForm = ({
   onClose,
   onSubmit,
   onSubmitField,
+  editingProps,
   defaultValues,
-  isEdition = false,
 }: FintelTemplateFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -46,6 +49,7 @@ const FintelTemplateForm = ({
     name: '',
     description: null,
     published: false,
+    default: false,
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
@@ -54,7 +58,7 @@ const FintelTemplateForm = ({
       .catch(() => false);
   };
 
-  const onUpdate = isEdition ? updateField : undefined;
+  const onUpdate = editingProps ? updateField : undefined;
 
   return (
     <Formik<FintelTemplateFormInputs>
@@ -63,7 +67,7 @@ const FintelTemplateForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, setFieldValue }) => {
         return (
           <Form>
             <Field
@@ -94,6 +98,7 @@ const FintelTemplateForm = ({
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
+
             <Field
               component={MarkdownField}
               name="description"
@@ -104,7 +109,23 @@ const FintelTemplateForm = ({
               onSubmit={onUpdate}
             />
 
-            {!isEdition && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="default"
+              label={t_i18n('Set as default')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={
+                editingProps
+                  ? (_name: string, value: unknown) => {
+                      const next = value === true || value === 'true';
+                      editingProps.onDefaultToggle(next, () => setFieldValue('default', !next));
+                    }
+                  : onUpdate
+              }
+            />
+
+            {!editingProps && (
               <FormButtonContainer>
                 <Button
                   variant="secondary"

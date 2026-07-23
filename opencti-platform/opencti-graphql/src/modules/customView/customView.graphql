@@ -33,6 +33,7 @@ type CustomViewsConnection {
 enum CustomViewsOrdering {
     name
     enabled
+    default
 }
 
 type CustomViewsSettings {

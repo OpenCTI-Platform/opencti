@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import React from 'react';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../../utils/tests/test-render';
 import FintelTemplateForm from './FintelTemplateForm';
@@ -41,6 +40,7 @@ describe('Component: FintelTemplateForm', () => {
         name: 'MyFintelTemplate',
         description: null,
         published: false,
+        default: false,
       },
       expect.anything(),
     );

@@ -6503,6 +6503,7 @@ export type CustomViewsEdge = {
 };
 
 export enum CustomViewsOrdering {
+  Default = 'default',
   Enabled = 'enabled',
   Name = 'name'
 }
@@ -9949,6 +9950,7 @@ export enum FintelDesignOrdering {
 
 export type FintelTemplate = BasicObject & InternalObject & {
   __typename?: 'FintelTemplate';
+  default?: Maybe<Scalars['Boolean']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   fintel_template_widgets: Array<FintelTemplateWidget>;
@@ -9966,6 +9968,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
 };
 
 export type FintelTemplateAddInput = {
+  default?: InputMaybe<Scalars['Boolean']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   fintel_template_widgets?: InputMaybe<Array<FintelTemplateWidgetAddInput>>;
   instance_filters?: InputMaybe<Scalars['String']['input']>;
@@ -45086,6 +45089,7 @@ export type FintelDesignEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
+  default?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;

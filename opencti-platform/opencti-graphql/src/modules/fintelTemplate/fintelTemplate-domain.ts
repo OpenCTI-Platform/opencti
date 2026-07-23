@@ -3,6 +3,8 @@ import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EditInput,
+  FilterMode,
+  FilterOperator,
   type FilterGroup,
   type FintelTemplateAddInput,
   type FintelTemplateWidget,
@@ -16,7 +18,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -35,6 +37,7 @@ import {
 } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
 import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { lockResources } from '../../lock/master-lock';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -80,6 +83,55 @@ export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: Fintel
   if (invalidVariableNames.length > 0) {
     throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
   }
+};
+
+const applyUniqueDefaultTemplateConstraint = async (
+  context: AuthContext,
+  user: AuthUser,
+  settingsType: string,
+  newDefaultTemplateId: string,
+): Promise<StoreEntityFintelTemplate[]> => {
+  const previousDefaultTemplates = await fullEntitiesList<BasicStoreEntityFintelTemplate>(
+    context,
+    user,
+    [ENTITY_TYPE_FINTEL_TEMPLATE],
+    {
+      baseData: true,
+      filters: {
+        filters: [{
+          key: ['settings_types'],
+          values: [settingsType],
+        }, {
+          key: ['default'],
+          values: ['true'],
+        }, {
+          key: ['id'],
+          values: [newDefaultTemplateId],
+          operator: FilterOperator.NotEq,
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+  if (previousDefaultTemplates.length === 0) {
+    return [];
+  }
+  // There should be only one but we never know as the constraint is not
+  // enforced at the DB level.
+  const results = await Promise.all(
+    previousDefaultTemplates.map((entity: BasicStoreEntityFintelTemplate) => updateAttribute<StoreEntityFintelTemplate>(
+      context,
+      user,
+      entity.id,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+      [{
+        key: 'default',
+        value: ['false'],
+      }],
+    )),
+  );
+  return results.map(({ element }) => element);
 };
 
 export const addFintelTemplate = async (
@@ -142,29 +194,47 @@ export const addFintelTemplate = async (
 
   const finalInput: FintelTemplateAddInput = {
     ...input,
+    default: input.default ?? false,
     template_content: input.template_content ?? '',
     fintel_template_widgets: widgetsWithIds,
   };
-  // create the fintel template
-  const created = await createEntity(
-    context,
-    user,
-    finalInput,
-    ENTITY_TYPE_FINTEL_TEMPLATE,
-  );
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'administration',
-    message: `creates fintel template \`${finalInput.name}\``,
-    context_data: {
-      id: created.id,
-      entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
-      input: finalInput,
-    },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
+
+  // The default status is stored on the object itself (fintelTemplate) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing template)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
+  const lock = input.default ? await lockResources([`fintel-template-default:${settings_type}`]) : null;
+  try {
+    // create the fintel template
+    const created = await createEntity(
+      context,
+      user,
+      finalInput,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+    );
+    if (input.default) {
+      await applyUniqueDefaultTemplateConstraint(context, user, settings_type, created.id);
+    }
+
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates fintel template \`${finalInput.name}\``,
+      context_data: {
+        id: created.id,
+        entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
+        input: finalInput,
+      },
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].ADDED_TOPIC, created, user);
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 export const fintelTemplateEditField = async (
@@ -191,25 +261,53 @@ export const fintelTemplateEditField = async (
     }
     return i;
   });
-  // edit the fintel template
-  const { element } = await updateAttribute<StoreEntityFintelTemplate>(
-    context,
-    user,
-    templateId,
-    ENTITY_TYPE_FINTEL_TEMPLATE,
-    formattedInput,
-  );
+  const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
 
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
-    context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
-  });
+  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
+  const settingsType = existing.settings_types[0];
 
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
+  // The default status is stored on the object itself (fintelTemplate) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing template)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
+  const lock = defaultFieldValue ? await lockResources([`fintel-template-default:${settingsType}`]) : null;
+  try {
+    // edit the fintel template
+    const { element } = await updateAttribute<StoreEntityFintelTemplate>(
+      context,
+      user,
+      templateId,
+      ENTITY_TYPE_FINTEL_TEMPLATE,
+      formattedInput,
+    );
+
+    if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultTemplateConstraint(
+        context,
+        user,
+        settingsType,
+        element.id,
+      );
+    }
+
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
+    });
+
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser, templateId: string) => {

@@ -1,11 +1,32 @@
+import { useState } from 'react';
 import { type FormikConfig } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
-import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { fetchQuery as relayFetchQuery, graphql } from 'react-relay';
+import { environment, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import useCustomViewEdit from './useCustomViewEdit';
 import useCustomViewAdd from './useCustomViewAdd';
 import CustomViewForm, { type CustomViewFormInputs } from './CustomViewForm';
+import CustomViewReplaceDefaultDialog from './CustomViewReplaceDefaultDialog';
+import { type CustomViewFormDrawerCurrentDefaultQuery$data } from './__generated__/CustomViewFormDrawerCurrentDefaultQuery.graphql';
+
+const customViewCurrentDefaultQuery = graphql`
+  query CustomViewFormDrawerCurrentDefaultQuery($entityType: String!) {
+    customViews(entityType: $entityType, first: 5, orderBy: default, orderMode: desc) {
+      edges {
+        node {
+          id
+          name
+          default
+        }
+      }
+    }
+  }
+`;
+
+type PendingDefault = { kind: 'create'; values: CustomViewFormInputs }
+  | { kind: 'edit'; revert: () => void };
 
 interface CustomViewFormDrawerProps {
   isOpen: boolean;
@@ -28,15 +49,54 @@ const CustomViewFormDrawer = ({
 
   const commitAddMutation = useCustomViewAdd();
   const [commitEditMutation] = useCustomViewEdit();
+  const [currentDefaultName, setCurrentDefaultName] = useState('');
+  const [pendingDefault, setPendingDefault] = useState<PendingDefault | null>(null);
 
-  const handleSubmitForm: FormikConfig<CustomViewFormInputs>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
-    if (isEdition) {
-      setSubmitting(false);
-      return;
-    }
+  const fetchExistingDefault = (entityType_: string, excludeId?: string) => relayFetchQuery(environment, customViewCurrentDefaultQuery, { entityType: entityType_ }, { fetchPolicy: 'network-only' })
+    .toPromise()
+    .then((result: unknown) => {
+      const data = result as CustomViewFormDrawerCurrentDefaultQuery$data;
+      return data.customViews?.edges.map((e) => e.node).find((n) => n.default && n.id !== excludeId);
+    });
+
+  const handleSetDefault = (revert: () => void) => {
+    fetchExistingDefault(entityType, customView?.id)
+      .then((existing) => {
+        if (existing) {
+          setCurrentDefaultName(existing.name);
+          setPendingDefault({ kind: 'edit', revert });
+        } else {
+          commitEditMutation({
+            variables: { id: customView!.id, input: [{ key: 'default', value: [true] }] },
+            onError: () => {
+              MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
+              revert();
+            },
+          });
+        }
+      })
+      .catch((err) => {
+        handleError(err);
+        revert();
+      });
+  };
+
+  const handleUnsetDefault = (revert: () => void) => {
+    commitEditMutation({
+      variables: { id: customView!.id, input: [{ key: 'default', value: [false] }] },
+      onError: () => {
+        MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
+        revert();
+      },
+    });
+  };
+
+  const handleDefaultToggle = (value: boolean, revert: () => void) => {
+    if (value) handleSetDefault(revert);
+    else handleUnsetDefault(revert);
+  };
+
+  const doAdd = (values: CustomViewFormInputs, setSubmitting?: (isSubmitting: boolean) => void) => {
     commitAddMutation({
       variables: {
         input: {
@@ -47,19 +107,47 @@ const CustomViewFormDrawer = ({
         },
       },
       onCompleted: (response) => {
-        resetForm();
+        setSubmitting?.(false);
         onClose();
         if (response.customViewAdd) {
           const { id } = response.customViewAdd;
           navigate(`/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`);
         }
-        setSubmitting(false);
       },
       onError: (error) => {
-        setSubmitting(false);
+        setSubmitting?.(false);
         handleError(error);
       },
     });
+  };
+
+  const handleSubmitForm: FormikConfig<CustomViewFormInputs>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
+    if (isEdition) {
+      setSubmitting(false);
+      return;
+    }
+
+    if (values.default) {
+      fetchExistingDefault(entityType)
+        .then((existing) => {
+          if (existing) {
+            setCurrentDefaultName(existing.name);
+            setSubmitting(false);
+            setPendingDefault({ kind: 'create', values });
+          } else {
+            doAdd(values, setSubmitting);
+          }
+        })
+        .catch((err) => {
+          setSubmitting(false);
+          handleError(err);
+        });
+    } else {
+      doAdd(values, setSubmitting);
+    }
   };
 
   const handleEditField = (
@@ -87,19 +175,40 @@ const CustomViewFormDrawer = ({
   const title = isEdition ? editionTitle : createTitle;
 
   return (
-    <Drawer
-      title={title}
-      open={isOpen}
-      onClose={onClose}
-    >
-      <CustomViewForm
+    <>
+      <Drawer
+        title={title}
+        open={isOpen}
         onClose={onClose}
-        onSubmit={handleSubmitForm}
-        onSubmitField={handleEditField}
-        isEdition={isEdition}
-        values={customView}
+      >
+        <CustomViewForm
+          onClose={onClose}
+          onSubmit={handleSubmitForm}
+          onSubmitField={handleEditField}
+          editingProps={isEdition ? { onDefaultToggle: handleDefaultToggle } : undefined}
+          values={customView}
+        />
+      </Drawer>
+
+      <CustomViewReplaceDefaultDialog
+        open={!!pendingDefault}
+        onClose={() => {
+          if (pendingDefault?.kind === 'edit') pendingDefault.revert();
+          setPendingDefault(null);
+        }}
+        onConfirm={() => {
+          if (pendingDefault?.kind === 'create') doAdd(pendingDefault.values);
+          else if (pendingDefault?.kind === 'edit') {
+            commitEditMutation({
+              variables: { id: customView!.id, input: [{ key: 'default', value: [true] }] },
+              onError: () => MESSAGING$.notifyError(t_i18n('Failed to update custom view')),
+            });
+          }
+          setPendingDefault(null);
+        }}
+        currentDefaultName={currentDefaultName}
       />
-    </Drawer>
+    </>
   );
 };
 

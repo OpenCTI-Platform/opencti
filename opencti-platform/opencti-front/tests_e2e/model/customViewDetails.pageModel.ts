@@ -13,7 +13,7 @@ export default class CustomViewDetailsPage {
   }
 
   getEditButton() {
-    return this.page.getByRole('button', { name: 'Update' });
+    return this.page.getByRole('menuitem', { name: 'Update' });
   }
 
   getActionsPopover() {
