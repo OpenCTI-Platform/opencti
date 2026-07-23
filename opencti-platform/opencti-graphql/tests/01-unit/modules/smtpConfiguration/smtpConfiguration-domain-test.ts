@@ -7,6 +7,7 @@ import {
   getSmtpConfigurationForAdmin,
   smtpConfigurationDelete,
   smtpConfigurationEdit,
+  smtpConfigurationRefreshTokenUpdate,
   smtpConfigurationTest,
 } from '../../../../src/modules/smtpConfiguration/smtpConfiguration-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
@@ -17,6 +18,7 @@ vi.mock('../../../../src/database/smtp', () => ({
 }));
 
 vi.mock('../../../../src/modules/smtpConfiguration/smtpConfiguration-crypto', () => ({
+  decryptSmtpSecret: vi.fn(async (v: string | null | undefined) => v),
   encryptSmtpSecret: vi.fn(async (v: string | null | undefined) => (v ? `encrypted:${v}` : v)),
 }));
 
@@ -103,7 +105,6 @@ describe('feature flag disabled', () => {
     expect(Cache.getEntityFromCache).not.toHaveBeenCalled();
   });
 });
-
 // ---------- getSmtpConfiguration ----------
 
 describe('getSmtpConfiguration', () => {
@@ -240,6 +241,43 @@ describe('smtpConfigurationEdit', () => {
     expect(contextData.input).not.toHaveProperty('password_encrypted');
     expect(contextData.input).not.toHaveProperty('oauth_client_secret');
     expect(contextData.input).not.toHaveProperty('oauth_client_secret_encrypted');
+  });
+});
+
+describe('smtpConfigurationRefreshTokenUpdate', () => {
+  it('should replace and encrypt the stored OAuth2 refresh token', async () => {
+    vi.mocked(Cache.getEntityFromCache).mockResolvedValue({
+      ...MOCK_SETTINGS,
+      smtp_configuration: {
+        ...MOCK_SMTP_CONFIG_STORED,
+        use_db_config: true,
+        auth_type: 'oauth2',
+        oauth_refresh_token_encrypted: 'old-refresh-token',
+      },
+    });
+    vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: MOCK_SETTINGS } as any);
+
+    await smtpConfigurationRefreshTokenUpdate(mockContext, mockUser, 'old-refresh-token', 'new-refresh-token');
+
+    const patch = (vi.mocked(Middleware.patchAttribute).mock.calls[0] as any[])[4];
+    expect(patch.smtp_configuration.oauth_refresh_token_encrypted).toBe('encrypted:new-refresh-token');
+    expect(patch.smtp_configuration).not.toHaveProperty('oauth_refresh_token');
+  });
+
+  it('should not overwrite a refresh token that was already rotated', async () => {
+    vi.mocked(Cache.getEntityFromCache).mockResolvedValue({
+      ...MOCK_SETTINGS,
+      smtp_configuration: {
+        ...MOCK_SMTP_CONFIG_STORED,
+        use_db_config: true,
+        auth_type: 'oauth2',
+        oauth_refresh_token_encrypted: 'already-rotated-token',
+      },
+    });
+
+    await smtpConfigurationRefreshTokenUpdate(mockContext, mockUser, 'old-refresh-token', 'new-refresh-token');
+
+    expect(Middleware.patchAttribute).not.toHaveBeenCalled();
   });
 });
 

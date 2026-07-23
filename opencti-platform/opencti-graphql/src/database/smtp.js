@@ -6,7 +6,7 @@ import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { isEmptyField } from './utils';
-import { getSmtpConfiguration } from '../modules/smtpConfiguration/smtpConfiguration-domain';
+import { getSmtpConfiguration, smtpConfigurationRefreshTokenUpdate } from '../modules/smtpConfiguration/smtpConfiguration-domain';
 import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguration-crypto';
 
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
@@ -52,7 +52,7 @@ let inFlightRefresh; // concurrent refresh attempts are coalesced via an in-flig
 
 const ACCESS_TOKEN_REFRESH_MARGIN_MS = 5 * 60 * 1000; // Refresh the token a bit before it actually expires
 
-const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken }) => {
+const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthIssuer, oauthRefreshToken, onRefreshToken }) => {
   if (cachedAccessToken && Date.now() < cachedAccessTokenExpiresAt - ACCESS_TOKEN_REFRESH_MARGIN_MS) {
     return cachedAccessToken;
   }
@@ -72,6 +72,9 @@ const refreshSmtpAccessToken = async ({ oauthClientId, oauthClientSecret, oauthI
     }
     if (!tokens?.access_token) {
       throw new Error('Unable to refresh SMTP OAuth2 access token: refresh token grant did not return an access_token');
+    }
+    if (tokens.refresh_token && tokens.refresh_token !== oauthRefreshToken && onRefreshToken) {
+      await onRefreshToken(tokens.refresh_token, oauthRefreshToken);
     }
     cachedAccessToken = tokens.access_token;
     const expiresInSeconds = typeof tokens.expires_in === 'number' ? tokens.expires_in : 3600;
@@ -93,6 +96,7 @@ export const buildSmtpAuth = async (authType, {
   oauthClientSecret,
   oauthIssuer,
   oauthRefreshToken,
+  onRefreshToken,
 } = {}) => {
   if (authType === 'oauth2') {
     if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthIssuer || !oauthRefreshToken) {
@@ -103,6 +107,7 @@ export const buildSmtpAuth = async (authType, {
       oauthClientSecret,
       oauthIssuer,
       oauthRefreshToken,
+      onRefreshToken,
     });
     return {
       type: 'OAuth2',
@@ -163,6 +168,10 @@ const getDbAuthParams = async (dbConfig) => ({
   oauthClientSecret: await decryptSmtpSecret(dbConfig.oauth_client_secret_encrypted),
   oauthIssuer: dbConfig.oauth_issuer,
   oauthRefreshToken: await decryptSmtpSecret(dbConfig.oauth_refresh_token_encrypted),
+  onRefreshToken: async (newRefreshToken, previousRefreshToken) => {
+    const context = executionContext('smtp-refresh-token');
+    await smtpConfigurationRefreshTokenUpdate(context, SYSTEM_USER, previousRefreshToken, newRefreshToken);
+  },
 });
 
 // Build a nodemailer transporter from the effective SMTP configuration.
