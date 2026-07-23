@@ -708,8 +708,22 @@ export const buildSplitMessages = (message) => {
   if (message.type !== 'bundle' || message.no_split) {
     return null;
   }
+  const bundleContent = fromBase64(message.content);
+  let parsedBundle;
+  try {
+    parsedBundle = JSON.parse(bundleContent);
+  } catch (e) {
+    throw DatabaseError('Invalid stix bundle content', { cause: e });
+  }
+  // Mirror the worker's own pre-check (push_handler.py): never attempt to split single-object
+  // bundles. This avoids needless work for the common case and sidesteps the splitter's
+  // dependency-walk on payloads it was never meant to touch (matching prior behavior exactly,
+  // since single-object bundles were never split by the worker either).
+  if (!Array.isArray(parsedBundle.objects) || parsedBundle.objects.length <= 1) {
+    return null;
+  }
   const splitter = new Stix2Splitter();
-  const { bundles } = splitter.splitBundleWithExpectations(fromBase64(message.content));
+  const { bundles } = splitter.splitBundleWithExpectations(bundleContent);
   if (bundles.length <= 1) {
     return null;
   }

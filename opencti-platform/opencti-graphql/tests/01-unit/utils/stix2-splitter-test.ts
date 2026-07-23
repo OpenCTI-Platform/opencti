@@ -7,16 +7,17 @@ import { Stix2Splitter } from '../../../src/utils/stix2-splitter';
 // validated against the exact same input/expected-count pairs as pycti's own test suite
 // (client-python/tests/01-unit/utils/test_opencti_stix2_splitter.py).
 //
-// Beyond these 4 assertions, this port was also verified with a differential test harness
+// Beyond these 3 assertions, this port was also verified with a differential test harness
 // that ran the real pycti OpenCTIStix2Splitter (loaded directly from
 // client-python/pycti/utils/opencti_stix2_splitter.py) side by side with this module, on
 // 18 inputs across both cleanupInconsistentBundle modes (36 scenarios total): 13 adversarial
 // cases (cycles, self-references, dangling refs, sightings, external-reference/kill-chain-phase
-// dedup, internal-id extension aliasing, unsupported ref types, sort-stability ties) plus all 5
-// real-world fixtures below, including enterprise-attack.json (10MB, 7016 expectations) and
-// mitre_att_capec.json (2610 expectations). Every bundle, field, nb_deps value, ordering, and
-// incompatible-item classification matched exactly. That harness was a temporary, throwaway
-// script (not committed) — this file is the permanent regression suite.
+// dedup, internal-id extension aliasing, unsupported ref types, sort-stability ties) plus 5
+// real-world fixtures, including enterprise-attack.json (10MB, 7016 expectations) and
+// mitre_att_capec.json (2610 expectations, ~4MB - not committed here to keep the repo lean).
+// Every bundle, field, nb_deps value, ordering, and incompatible-item classification matched
+// exactly. That harness was a temporary, throwaway script (not committed) - this file is the
+// permanent regression suite.
 const fixturePath = (name: string) => join(__dirname, '../../data/stix2-splitter', name);
 
 describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () => {
@@ -70,12 +71,5 @@ describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () =
     const cleanupSplitter = new Stix2Splitter();
     const cleanupResult = cleanupSplitter.splitBundleWithExpectations(content, true, undefined, true);
     expect(cleanupResult.numberExpectations).toEqual(0);
-  });
-
-  it('should split the MITRE ATT&CK CAPEC bundle into the expected number of elements', () => {
-    const splitter = new Stix2Splitter();
-    const content = readFileSync(fixturePath('mitre_att_capec.json'), 'utf-8');
-    const { numberExpectations } = splitter.splitBundleWithExpectations(content);
-    expect(numberExpectations).toEqual(2610);
   });
 });

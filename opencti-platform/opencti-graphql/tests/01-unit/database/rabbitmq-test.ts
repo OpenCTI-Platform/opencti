@@ -30,8 +30,8 @@ vi.mock('../../../src/database/utils', () => ({
   isEmptyField: vi.fn((v: unknown) => !v),
   RABBIT_QUEUE_PREFIX: 'opencti_',
   wait: vi.fn(),
-  toBase64: vi.fn((v: string) => Buffer.from(v, 'utf-8').toString('base64')),
-  fromBase64: vi.fn((v: string) => Buffer.from(v, 'base64').toString('utf-8')),
+  toBase64: vi.fn((v: string | null | undefined) => (v ? Buffer.from(v, 'utf-8').toString('base64') : undefined)),
+  fromBase64: vi.fn((v: string | null | undefined) => (v ? Buffer.from(v, 'base64').toString('utf-8') : undefined)),
 }));
 
 vi.mock('../../../src/domain/work', () => ({
@@ -289,6 +289,15 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(buildSplitMessages(message)).toBeNull();
   });
 
+  it('returns null for a single-object bundle even when the object has no id (malformed/partial STIX)', () => {
+    // Regression test: a real TAXII response can contain an object with no `id` field.
+    // The splitter's dependency walk cannot safely handle that, so single-object bundles
+    // must be short-circuited before ever invoking it - mirroring the worker's own
+    // `len(content['objects']) == 1` pre-check in push_handler.py.
+    const message = { type: 'bundle', content: toBundle([{ type: 'report', confidence: 100 }]) };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
   it('splits a multi-object bundle into one message per object, preserving other fields', () => {
     const objects = [
       { id: 'marking-definition--m1', type: 'marking-definition', definition_type: 'tlp', name: 'TLP:RED' },
@@ -311,6 +320,81 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
       expect(decoded.objects).toHaveLength(1);
       return decoded.objects[0].id;
     });
+    expect(new Set(ids)).toEqual(new Set(objects.map((o) => o.id)));
+  });
+
+  it('returns null when objects is an empty array', () => {
+    const message = { type: 'bundle', content: toBundle([]) };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('returns null when the bundle has no objects field at all', () => {
+    const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle' }), 'utf-8').toString('base64') };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('returns null when objects is not an array (malformed payload)', () => {
+    const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects: 'not-an-array' }), 'utf-8').toString('base64') };
+    expect(buildSplitMessages(message)).toBeNull();
+  });
+
+  it('throws a DatabaseError (not a raw crash) when content is missing entirely', () => {
+    const message = { type: 'bundle' };
+    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
+  });
+
+  it('throws a DatabaseError (not a raw crash) when content decodes to invalid JSON', () => {
+    const message = { type: 'bundle', content: Buffer.from('not valid json{{{', 'utf-8').toString('base64') };
+    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
+  });
+
+  it('treats no_split: false the same as no_split absent - still splits', () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
+    const message = { type: 'bundle', no_split: false, content: toBundle(objects) };
+    const splitMessages = buildSplitMessages(message);
+    expect(splitMessages).toHaveLength(2);
+  });
+
+  it('splits exactly at the boundary of 2 objects (smallest splittable size)', () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects) };
+    const splitMessages = buildSplitMessages(message);
+    expect(splitMessages).toHaveLength(2);
+  });
+
+  it('dedupes objects sharing the same id, producing fewer split messages than raw array length', () => {
+    // Two distinct array entries with the same id: pycti's raw_data is a dict keyed by id, so
+    // the second entry silently overwrites/collapses into the first. The Node.js port must
+    // preserve this exact dedup-by-id behavior rather than treating array length as authoritative.
+    const objects = [
+      { id: 'malware--dup', type: 'malware', name: 'First' },
+      { id: 'malware--dup', type: 'malware', name: 'Second' },
+      { id: 'malware--other', type: 'malware', name: 'Other' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects) };
+    const splitMessages = buildSplitMessages(message);
+    expect(splitMessages).toHaveLength(2);
+  });
+
+  it('throws when a multi-object bundle contains an object with no id (known pycti-parity limitation)', () => {
+    // Unlike the single-object case (short-circuited before the splitter runs), a multi-object
+    // bundle still reaches the dependency walk, which indexes objects by `id`. This matches
+    // pycti's own behavior: raw_data[item["id"]] would raise KeyError on the exact same input.
+    // Documented here as a known unsupported/malformed-bundle case, not a Node.js-specific bug.
+    const objects = [
+      { id: 'malware--a', type: 'malware' },
+      { type: 'report', confidence: 100 }, // no id
+    ];
+    const message = { type: 'bundle', content: toBundle(objects) };
+    expect(() => buildSplitMessages(message)).toThrow();
+  });
+
+  it('splits a larger bundle (20 objects) preserving every distinct id exactly once', () => {
+    const objects = Array.from({ length: 20 }, (_, i) => ({ id: `malware--${i}`, type: 'malware', name: `Malware ${i}` }));
+    const message = { type: 'bundle', content: toBundle(objects) };
+    const splitMessages = buildSplitMessages(message);
+    expect(splitMessages).toHaveLength(20);
+    const ids = (splitMessages as { content: string }[]).map((msg) => decode(msg.content).objects[0].id);
     expect(new Set(ids)).toEqual(new Set(objects.map((o) => o.id)));
   });
 });
