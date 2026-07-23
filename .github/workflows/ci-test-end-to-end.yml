@@ -1,4 +1,4 @@
-name: Run OpenCTI frontend tests
+name: Run OpenCTI end to end tests
 
 on:
   workflow_call:
@@ -13,54 +13,26 @@ on:
         type: string
 
 jobs:
-  opencti-frontend-test:
-    name: Unit tests
-    runs-on: ubuntu-latest
-    steps:
-    - name: OpenCTI checkout
-      uses: actions/checkout@v7
-      with:
-        ref: ${{ inputs.checkout_ref }}
-
-    - name: Runner information
-      continue-on-error: true
-      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: Frontend tests
-      run: |
-        docker run  \
-          --name frontend-tests \
-          -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
-          sh -c 'set -eux
-            npm install -g corepack
-            cd /home/workspace/opencti-platform/opencti-front
-            yarn install
-            yarn build
-            yarn check-ts
-            yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
-            '
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v7
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
-        flags: opencti-front
-        fail_ci_if_error: false
-        override_branch: ${{ github.head_ref || github.ref_name }}
-        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
-
-    - name: Print resources stats
-      if: always()
-      continue-on-error: true
-      run: cat runner_resource_stat.log
-
-
   opencti-frontend-e2e-test:
-    name: e2e tests
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "e2e group0 tests"
+            grep_args: '--grep-invert "@group1|@groupff"'
+            dev_features: '[]'
+            artifact_suffix: '-group0'
+          - name: "e2e ff tests"
+            grep_args: '--grep @groupff'
+            dev_features: '["*"]'
+            artifact_suffix: '-ff'
+          - name: "e2e group1 tests"
+            grep_args: '--grep @group1'
+            dev_features: '[]'
+            artifact_suffix: '-group1'
+
     steps:
     - name: OpenCTI checkout
       uses: actions/checkout@v7
@@ -71,6 +43,10 @@ jobs:
     - name: Runner information
       continue-on-error: true
       run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Fetch CI EE license
+      run: |
+        echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
 
     - name: Download image platform
       uses: actions/download-artifact@v8
@@ -95,7 +71,7 @@ jobs:
       run: |
          set -ex
          cd frontend-e2e-test/scripts/ci
-         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
@@ -119,7 +95,7 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
           -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
           -e APP__PORT=4100 \
-          -e APP__ENABLED_DEV_FEATURES='[]' \
+          -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
           -e APP__ADMIN__PASSWORD=admin \
           -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
@@ -128,7 +104,7 @@ jobs:
           -e APP__SESSION_TIMEOUT=3600000 \
           -e APP__HEALTH_ACCESS_KEY=cihealthkey \
           -e APP__GRAPHQL__ARMOR_PROTECTION__DISABLED=false \
-          -e "APP__ENTERPRISE_EDITION_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)" \
+          -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
           -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
@@ -174,7 +150,7 @@ jobs:
               npm install -g corepack
               yarn install
               yarn playwright install --with-deps chromium
-              yarn test:e2e
+              yarn test:e2e ${{ matrix.grep_args }}
             '
 
     - name: Upload front e2e test results
@@ -182,7 +158,7 @@ jobs:
       if: always()
       continue-on-error: true
       with:
-        name: frontend-test-results
+        name: frontend-test-results${{ matrix.artifact_suffix }}
         path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
         retention-days: 15
 
@@ -230,7 +206,7 @@ jobs:
         docker run  \
           --name frontend-verify-translation \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine3.23 \
+          node:22-alpine \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-front
             node script/verify-translation.js
