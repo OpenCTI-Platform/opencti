@@ -112,7 +112,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
   });
 
   const onConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const onCancel = () => {

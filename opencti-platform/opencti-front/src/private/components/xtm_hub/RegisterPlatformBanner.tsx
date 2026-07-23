@@ -19,7 +19,7 @@ const RegisterPlatformBanner = () => {
       bannerColor="gradient_blue"
       bannerText={text}
       buttonText={t_i18n('Connect Product')}
-      onButtonClick={() => navigate('/dashboard/settings/experience')}
+      onButtonClick={() => navigate('/redirect/connect-xtm-hub')}
       buttonSx={{ backgroundColor: '#007399', color: '#ffffff', fontWeight: 'bold' }}
       dismissible
       dismissKey={REGISTER_BANNER_DISMISSED_KEY}

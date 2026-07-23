@@ -44,6 +44,7 @@ const XtmHubSettingsComponent = () => {
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { isXTMHubAccessible } = useContext(UserContext);
+
   return (
     <Card
       title={t_i18n('XTM Hub')}
@@ -58,7 +59,7 @@ const XtmHubSettingsComponent = () => {
       <p>{t_i18n("XTM Hub is a central forum to access resources, share tradecraft, and optimize the use of Filigran's products, fostering collaboration and empowering the community.")}</p>
       {xtmHubSettings.xtm_hub_registration_status !== 'registered' && xtmHubSettings.xtm_hub_registration_status !== 'lost_connectivity' && (
         <>
-          <p>{t_i18n('By registering this platform into the hub, it will allow to:')}</p>
+          <p>{t_i18n('By connecting this platform into the hub, it will allow to:')}</p>
           <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
             <li>{t_i18n('deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.')}</li>
             <li>{t_i18n('stay informed of our new custom dashboards and key threat events with an exclusive news feed')}</li>

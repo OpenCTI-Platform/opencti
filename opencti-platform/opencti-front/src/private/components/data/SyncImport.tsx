@@ -73,7 +73,7 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
   });
 
   const handleConfirm = () => {
-    navigate('/dashboard/settings/experience');
+    navigate('/redirect/connect-xtm-hub');
   };
 
   const handleCancel = () => {

@@ -1,6 +1,8 @@
 import { graphql } from 'react-relay';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Button from '@common/button/Button';
+import Dialog from '@common/dialog/Dialog';
+import { DialogActions, DialogContentText } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ConfirmationDialog from './ConfirmationDialog';
@@ -12,6 +14,8 @@ import ProcessLoader from './ProcessLoader';
 import ProcessDialog from './ProcessDialog';
 import type { Theme } from '../../../../components/Theme';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '@components/RedirectByPath';
 
 enum ProcessSteps {
   INSTRUCTIONS = 'INSTRUCTIONS',
@@ -49,12 +53,16 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAutoRegistrationPromptOpen, setIsAutoRegistrationPromptOpen] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const { settings, about } = useContext(UserContext);
+  const location = useLocation();
+  const navigate = useNavigate();
   const eeSettings = settings?.platform_enterprise_edition;
   const isEnterpriseEdition = eeSettings?.license_validated;
   const isDemo = settings?.platform_demo ?? false;
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
+  const registrationPlatformTitle = settings?.platform_title ?? 'OpenCTI Platform';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
   );
@@ -65,7 +73,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     xtmHubTabSettingsFieldPatchMutation,
     undefined,
     {
-      successMessage: t_i18n('Your OpenCTI platform is successfully registered'),
+      successMessage: t_i18n('Your OpenCTI product is successfully connected'),
     },
   );
 
@@ -74,7 +82,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     undefined,
     {
       successMessage: t_i18n(
-        'Your OpenCTI platform is successfully unregistered',
+        'Your OpenCTI product is successfully disconnected',
       ),
     },
   );
@@ -83,7 +91,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const OCTIInformations = {
     platform_url: window.location.origin,
-    platform_title: settings?.platform_title ?? 'OpenCTI Platform',
+    platform_title: registrationPlatformTitle,
     platform_id: settings?.id ?? '',
     platform_contract: isEnterpriseEdition ? 'EE' : 'CE',
     platform_version: about?.version ?? '',
@@ -171,11 +179,33 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     onClosingTab: handleClosingTab,
   });
 
-  const handleOpenDialog = () => {
-    setOperationType(
-      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
+  const clearAutoRegisterQueryParam = useCallback(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (!searchParams.has(XTM_HUB_AUTO_REGISTER_QUERY_PARAM)) {
+      return;
+    }
+    searchParams.delete(XTM_HUB_AUTO_REGISTER_QUERY_PARAM);
+    const targetSearch = searchParams.toString();
+    navigate(
+      {
+        pathname: location.pathname,
+        search: targetSearch ? `?${targetSearch}` : '',
+      },
+      { replace: true },
     );
+  }, [location.pathname, location.search, navigate]);
+
+  const handleConfirmAutoRegistration = () => {
+    setIsAutoRegistrationPromptOpen(false);
+    setOperationType(OperationType.REGISTER);
     setIsDialogOpen(true);
+    handleWaitingHubStep();
+  };
+
+  const handleCancelAutoRegistration = () => {
+    setIsAutoRegistrationPromptOpen(false);
+    setProcessStep(ProcessSteps.INSTRUCTIONS);
+    setOperationType(null);
   };
 
   const handleCancelClose = () => {
@@ -204,28 +234,50 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     setProcessStep(ProcessSteps.WAITING_HUB);
   };
 
+  const handleOpenDialog = () => {
+    setOperationType(
+      isRegistered ? OperationType.UNREGISTER : OperationType.REGISTER,
+    );
+    setIsDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (isDemo || isRegistered) {
+      return;
+    }
+    const searchParams = new URLSearchParams(location.search);
+    const shouldAutoRegister = searchParams.get(XTM_HUB_AUTO_REGISTER_QUERY_PARAM) === 'true';
+    if (!shouldAutoRegister) {
+      return;
+    }
+    setOperationType(OperationType.REGISTER);
+    setProcessStep(ProcessSteps.INSTRUCTIONS);
+    setIsAutoRegistrationPromptOpen(true);
+    clearAutoRegisterQueryParam();
+  }, [clearAutoRegisterQueryParam, isDemo, isRegistered, location.search]);
+
   const config = useMemo(() => {
     const isUnregister = operationType === OperationType.UNREGISTER;
     const messages = {
       register: {
-        dialogTitle: t_i18n('Registering your platform...'),
+        dialogTitle: t_i18n('Connect your product to XTM Hub'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the registration process'),
-        loaderButtonText: t_i18n('Continue to register'),
-        confirmationTitle: t_i18n('Close registration process?'),
-        confirmationMessage: t_i18n('registration_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue registration'),
-        instructionKey: 'registration_instruction_paragraph',
+        canceledMessage: t_i18n('You have canceled the connection process'),
+        loaderButtonText: t_i18n('Continue to connect'),
+        confirmationTitle: t_i18n('Close connection process?'),
+        confirmationMessage: t_i18n('The connection process is still in progress. Closing this dialog will terminate the connection. Are you sure you want to close?'),
+        continueButtonText: t_i18n('Continue connection'),
+        instructionKey: 'You will be redirected to a new tab to complete the connection. Please complete all required steps. Your current session will remain active during the process.',
       },
       unregister: {
-        dialogTitle: t_i18n('Unregistering your platform...'),
+        dialogTitle: t_i18n('Disconnect your product from XTM Hub'),
         errorMessage: t_i18n('Sorry, we have an issue, please retry'),
-        canceledMessage: t_i18n('You have canceled the unregistration process'),
-        loaderButtonText: t_i18n('Continue to unregister'),
-        confirmationTitle: t_i18n('Close unregistration process?'),
-        confirmationMessage: t_i18n('unregistration_confirmation_dialog'),
-        continueButtonText: t_i18n('Continue unregistration'),
-        instructionKey: 'unregistration_instruction_paragraph',
+        canceledMessage: t_i18n('You have canceled the disconnection process'),
+        loaderButtonText: t_i18n('Continue to disconnect'),
+        confirmationTitle: t_i18n('Close disconnection process?'),
+        confirmationMessage: t_i18n('The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?'),
+        continueButtonText: t_i18n('Continue disconnection'),
+        instructionKey: 'You will be redirected to a new tab to complete the disconnection. Please complete all required steps. Your current session will remain active during the process.',
       },
     };
 
@@ -261,9 +313,9 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   const getButtonText = () => {
     if (isRegistered) {
-      return t_i18n('Unregister from XTM Hub');
+      return t_i18n('Disconnect from XTM Hub');
     }
-    return t_i18n('Register in XTM Hub');
+    return t_i18n('Connect to XTM Hub');
   };
 
   if (isDemo) {
@@ -318,6 +370,29 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
           {getButtonText()}
         </Button>
       </div>
+      <Dialog
+        open={isAutoRegistrationPromptOpen}
+        onClose={handleCancelAutoRegistration}
+        aria-labelledby="xtm-hub-auto-registration-title"
+        aria-describedby="xtm-hub-auto-registration-description"
+        title={(
+          <span id="xtm-hub-auto-registration-title">
+            {t_i18n('Authorize connection')}
+          </span>
+        )}
+      >
+        <DialogContentText id="xtm-hub-auto-registration-description">
+          {t_i18n('Allow OpenCTI to connect with XTM Hub')}
+        </DialogContentText>
+        <DialogActions>
+          <Button variant="secondary" onClick={handleCancelAutoRegistration} color="primary">
+            {t_i18n('Cancel')}
+          </Button>
+          <Button onClick={handleConfirmAutoRegistration} color="primary" autoFocus>
+            {t_i18n('Continue')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <ProcessDialog
         open={isDialogOpen}
         title={config.dialogTitle}
