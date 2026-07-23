@@ -10,14 +10,16 @@ const checkApiAvailability = async () => {
   try {
     await fetch(`${API_URI}/health`, {});
     return true;
-  } catch (e) {
+  } catch {
     logApp.info('[WAIT-FOR-API] API unavailable');
     return false;
   }
 };
 
 const waitForApi = async () => {
-  const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+  const delay = (ms) => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
   logApp.info('[WAIT-FOR-API] Start waiting for API');
 
   let available = false;
@@ -36,5 +38,4 @@ const waitForApi = async () => {
   logApp.info('[WAIT-FOR-API] Success - API reachable');
 };
 
-// noinspection JSIgnoredPromiseFromCall
-waitForApi();
+await waitForApi();

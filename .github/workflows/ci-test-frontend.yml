@@ -7,6 +7,10 @@ on:
         description: "Reference of the branch or commit sha"
         type: string
         default: ${{ github.sha }}
+      run-id:
+        description: "Run ID for artifact download"
+        required: false
+        type: string
 
 jobs:
   opencti-frontend-test:
@@ -27,7 +31,7 @@ jobs:
         docker run  \
           --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux
             npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
@@ -68,10 +72,24 @@ jobs:
       continue-on-error: true
       run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Duplicate workspace
+    - name: Download image platform
+      uses: actions/download-artifact@v8
+      with:
+        name: docker-image-opencti-platform
+        path: /tmp
+
+    - name: Download image worker
+      uses: actions/download-artifact@v8
+      with:
+        name: docker-image-opencti-worker
+        path: /tmp
+
+    - name: Load images
       run: |
-         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-start
-         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-worker
+        set -eux
+        docker load --input /tmp/opencti-platform.tar
+        docker load --input /tmp/opencti-worker.tar
+        docker images
 
     - name: Set up Docker Compose for backends
       run: |
@@ -81,13 +99,25 @@ jobs:
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
-    - name: Start e2e opencti and worker instance
+    - name: Wait for backend infrastructure to be ready
       run: |
-        set -ex;
+        set -ex
+        echo "Waiting for ElasticSearch..."
+        until curl -sf http://localhost:9200/_cluster/health > /dev/null 2>&1; do sleep 2; done
+        echo "Waiting for Redis..."
+        until docker exec redis redis-cli ping 2>/dev/null | grep -q PONG; do sleep 2; done
+        echo "Waiting for RabbitMQ..."
+        until curl -sf http://localhost:15672 > /dev/null 2>&1; do sleep 2; done
+        echo "All backend services are ready."
+
+    - name: Start e2e opencti instance
+      run: |
+        set -ex
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
+          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/tests:/opt/opencti/tests \
+          -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -98,6 +128,7 @@ jobs:
           -e APP__SESSION_TIMEOUT=3600000 \
           -e APP__HEALTH_ACCESS_KEY=cihealthkey \
           -e APP__GRAPHQL__ARMOR_PROTECTION__DISABLED=false \
+          -e "APP__ENTERPRISE_EDITION_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)" \
           -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
           -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
@@ -110,44 +141,24 @@ jobs:
           -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
           -e PUBLISHER_MANAGER__ENABLED=false \
           -e SMTP__ENABLED=false \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -eux
-            APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
-            export APP__ENTERPRISE_EDITION_LICENSE
-            apk add build-base git
-            cd /home/workspace/client-python
-            pip install -r requirements.txt
-            pip install -e .[dev,doc]
-            cd /home/workspace/opencti-platform/opencti-graphql
-            npm install -g corepack
-            yarn install
-            yarn install:python
-            yarn build:dev
-            yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
-            NODE_OPTIONS=--max_old_space_size=8192 yarn start
-            ';
+          filigran/platform:${{ github.sha }}
 
+    - name: Start e2e worker instance
+      run: |
         docker run -d --network runner-docker-network \
           --name opencti-e2e-worker \
-          -v ${{ github.workspace }}/frontend-e2e-worker:/home/workspace \
           -e OPENCTI_URL=http://opencti-e2e-start:4100 \
           -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e WORKER_LOG_LEVEL=info \
-          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -eux
-            apk add build-base git
-            cd /home/workspace/client-python
-            echo "[INFO] using client-python on branch $(git branch --show-current)"
-            pip install -r requirements.txt
-            pip install -e .[dev,doc]
-            while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
-            cd /home/workspace/opencti-worker
-            pip install -r requirements.txt
-            python3 src/worker.py
-        '
+          filigran/worker:${{ github.sha }}
 
     - name: Wait for OpenCTI e2e backend instances to start
       run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+
+    - name: Insert test datasets
+      run: |
+        docker exec opencti-e2e-start \
+          node build/script-insert-dataset.mjs --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy
 
     - name: e2e tests
       run: |
@@ -157,15 +168,12 @@ jobs:
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
           -e NODE_OPTIONS=--max_old_space_size=8192 \
-          node:22.21.0 \
+          node:22 \
           sh -c 'set -eux;
-              apt-get update
-              apt-get -y install netcat-traditional
               cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
               yarn install
               yarn playwright install --with-deps chromium
-              yarn build
               yarn test:e2e
             '
 
@@ -222,7 +230,7 @@ jobs:
         docker run  \
           --name frontend-verify-translation \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-front
             node script/verify-translation.js

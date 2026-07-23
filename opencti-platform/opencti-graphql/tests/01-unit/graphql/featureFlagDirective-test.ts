@@ -1,16 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { graphql, parse } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { makeFeatureFlagDirectiveTransformer } from '../../../src/graphql/featureFlagDirective';
-import { isFeatureEnabled } from '../../../src/config/conf';
 
-vi.mock('../../../src/config/conf', () => ({
-  isFeatureEnabled: vi.fn(),
-}));
+const loadTransformerWithFeatureFlagMock = async (impl: (flag: string) => boolean) => {
+  vi.resetModules();
+  vi.doMock('../../../src/config/conf', () => ({
+    isFeatureEnabled: vi.fn(impl),
+  }));
+  const { makeFeatureFlagDirectiveTransformer } = await import('../../../src/graphql/featureFlagDirective');
+  return makeFeatureFlagDirectiveTransformer;
+};
 
 describe('featureFlagDirective', () => {
   afterEach(() => {
     vi.resetAllMocks();
+    vi.doUnmock('../../../src/config/conf');
   });
 
   it('returns a Forbidden error when none of the flags are enabled', async () => {
@@ -25,7 +29,7 @@ describe('featureFlagDirective', () => {
         flaggedFeature: () => 'experimental content',
       },
     };
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    const makeFeatureFlagDirectiveTransformer = await loadTransformerWithFeatureFlagMock(() => false);
 
     let schema = makeExecutableSchema({ typeDefs, resolvers });
     schema = makeFeatureFlagDirectiveTransformer()(schema);
@@ -53,7 +57,7 @@ describe('featureFlagDirective', () => {
         flaggedFeature: () => 'experimental content',
       },
     };
-    vi.mocked(isFeatureEnabled).mockImplementation((flag: string) => {
+    const makeFeatureFlagDirectiveTransformer = await loadTransformerWithFeatureFlagMock((flag: string) => {
       return flag === 'SOME_FLAG';
     });
 
@@ -77,7 +81,7 @@ describe('featureFlagDirective', () => {
         flaggedFeature: () => 'experimental content',
       },
     };
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    const makeFeatureFlagDirectiveTransformer = await loadTransformerWithFeatureFlagMock(() => false);
 
     let schema = makeExecutableSchema({ typeDefs, resolvers });
     schema = makeFeatureFlagDirectiveTransformer()(schema);
@@ -100,7 +104,7 @@ describe('featureFlagDirective', () => {
         flaggedFeature: () => 'experimental content',
       },
     };
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    const makeFeatureFlagDirectiveTransformer = await loadTransformerWithFeatureFlagMock(() => false);
 
     let schema = makeExecutableSchema({ typeDefs, resolvers });
     schema = makeFeatureFlagDirectiveTransformer()(schema);

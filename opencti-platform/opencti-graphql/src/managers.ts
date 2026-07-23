@@ -1,4 +1,3 @@
-// region dynamic modules
 import conf, {
   ENABLED_API,
   ENABLED_CONNECTOR_MANAGER,
@@ -242,4 +241,3 @@ export const shutdownModules = async () => {
   // all managers will be shutdown only in this method
   await shutdownAllManagers();
 };
-// endregion

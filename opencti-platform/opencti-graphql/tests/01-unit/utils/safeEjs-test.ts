@@ -6,7 +6,7 @@ import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.clien
 import { customEscapeFunction } from '../../../src/utils/safeEjs.worker';
 import { safeName, safeRender, safeReservedPrefix, VerifierIllegalAccessError, VerifierParsingError, VerifierProcessingQuotaExceededError } from '../../../src/utils/safeEjs';
 
-const testFilename = fileURLToPath(import.meta.url);
+const testFilePath = fileURLToPath(import.meta.url);
 
 describe('check safeRender on invalid cases', () => {
   const data = {
@@ -536,7 +536,7 @@ describe('check safeRender on real files', () => {
   it.each(fileTestCases.map((name) => ({ name })))(
     'safeRender should succeed for template "$name"',
     async ({ name }) => {
-      const templateFile = `${testFilename.substring(0, testFilename.lastIndexOf('.'))}.${name}`;
+      const templateFile = `${testFilePath.substring(0, testFilePath.lastIndexOf('.'))}.${name}`;
       const template = await fs.readFile(templateFile, 'utf8');
       const escape = name.includes('.json') ? customEscapeFunction : undefined;
       const safeRendered = await safeRender(template, data, { useNotificationTool: true, escape });
