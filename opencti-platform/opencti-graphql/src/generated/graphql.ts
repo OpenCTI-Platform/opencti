@@ -13838,6 +13838,16 @@ export enum IngestionCsvOrdering {
   Uri = 'uri'
 }
 
+export type IngestionEntry = {
+  __typename?: 'IngestionEntry';
+  identifier: Scalars['String']['output'];
+  level: IngestionLogLevel;
+  message: Scalars['String']['output'];
+  meta?: Maybe<Scalars['JSON']['output']>;
+  timestamp: Scalars['DateTime']['output'];
+  type: Scalars['String']['output'];
+};
+
 export type IngestionHeader = {
   __typename?: 'IngestionHeader';
   name: Scalars['String']['output'];
@@ -13919,6 +13929,13 @@ export enum IngestionJsonOrdering {
   Name = 'name',
   UpdatedAt = 'updated_at',
   Uri = 'uri'
+}
+
+export enum IngestionLogLevel {
+  Error = 'error',
+  Info = 'info',
+  Success = 'success',
+  Warn = 'warn'
 }
 
 export type IngestionQueryAttribute = {
@@ -14022,8 +14039,10 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  ingestionLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  last_execution_status?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -24572,6 +24591,7 @@ export type Query = {
   ingestionTaxii?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollection?: Maybe<IngestionTaxiiCollection>;
   ingestionTaxiiCollections?: Maybe<IngestionTaxiiCollectionConnection>;
+  ingestionTaxiiLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
@@ -26007,6 +26027,11 @@ export type QueryIngestionTaxiiCollectionsArgs = {
   orderBy?: InputMaybe<IngestionTaxiiCollectionOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryIngestionTaxiiLogsArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -40025,12 +40050,14 @@ export type ResolversTypes = ResolversObject<{
   IngestionCsvEdge: ResolverTypeWrapper<Omit<IngestionCsvEdge, 'node'> & { node: ResolversTypes['IngestionCsv'] }>;
   IngestionCsvMapperType: IngestionCsvMapperType;
   IngestionCsvOrdering: IngestionCsvOrdering;
+  IngestionEntry: ResolverTypeWrapper<IngestionEntry>;
   IngestionHeader: ResolverTypeWrapper<IngestionHeader>;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonConnection: ResolverTypeWrapper<Omit<IngestionJsonConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionJsonEdge']> }>;
   IngestionJsonEdge: ResolverTypeWrapper<Omit<IngestionJsonEdge, 'node'> & { node: ResolversTypes['IngestionJson'] }>;
   IngestionJsonOrdering: IngestionJsonOrdering;
+  IngestionLogLevel: IngestionLogLevel;
   IngestionQueryAttribute: ResolverTypeWrapper<IngestionQueryAttribute>;
   IngestionRss: ResolverTypeWrapper<BasicStoreEntityIngestionRss>;
   IngestionRssAddAutoUserInput: IngestionRssAddAutoUserInput;
@@ -41103,6 +41130,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionCsvAddInput: IngestionCsvAddInput;
   IngestionCsvConnection: Omit<IngestionCsvConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionCsvEdge']> };
   IngestionCsvEdge: Omit<IngestionCsvEdge, 'node'> & { node: ResolversParentTypes['IngestionCsv'] };
+  IngestionEntry: IngestionEntry;
   IngestionHeader: IngestionHeader;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
@@ -46187,6 +46215,15 @@ export type IngestionCsvEdgeResolvers<ContextType = any, ParentType extends Reso
   node?: Resolver<ResolversTypes['IngestionCsv'], ParentType, ContextType>;
 }>;
 
+export type IngestionEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionEntry'] = ResolversParentTypes['IngestionEntry']> = ResolversObject<{
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  level?: Resolver<ResolversTypes['IngestionLogLevel'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  meta?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type IngestionHeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHeader'] = ResolversParentTypes['IngestionHeader']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46303,8 +46340,10 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  ingestionLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_execution_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -49547,6 +49586,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxii?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiArgs, 'id'>>;
   ingestionTaxiiCollection?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiCollectionArgs, 'id'>>;
   ingestionTaxiiCollections?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollectionConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiiCollectionsArgs>>;
+  ingestionTaxiiLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiLogsArgs, 'id'>>;
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
@@ -53690,6 +53730,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionCsv?: IngestionCsvResolvers<ContextType>;
   IngestionCsvConnection?: IngestionCsvConnectionResolvers<ContextType>;
   IngestionCsvEdge?: IngestionCsvEdgeResolvers<ContextType>;
+  IngestionEntry?: IngestionEntryResolvers<ContextType>;
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;
