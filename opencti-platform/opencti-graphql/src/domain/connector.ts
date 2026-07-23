@@ -234,7 +234,7 @@ export const managedConnectorEdit = async (
     manager_contract_configuration: contractConfigurations,
   };
   if (DECOUPLING_CONNECTOR_VERSIONS) {
-    patch.manager_contract = targetContract;
+    patch.manager_contract = mapCatalogContractToConnectorManagerContract(targetContract);
     patch.manager_upgrade_strategy = conn.manager_upgrade_strategy ?? 'latest';
   }
   const { element } = await patchAttribute(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
