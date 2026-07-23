@@ -50,6 +50,7 @@ const ADD_MANAGED_CONNECTOR_MUTATION = gql`
             name
             connector_user_id
             manager_contract_image
+            manager_upgrade_strategy
             manager_requested_status
             manager_contract_configuration {
                 key
@@ -66,6 +67,7 @@ const EDIT_MANAGED_CONNECTOR_MUTATION = gql`
             id
             name
             connector_user_id
+            manager_upgrade_strategy
             manager_contract_configuration {
                 key
                 value
@@ -1245,6 +1247,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd.name).toEqual('test-ipinfo-connector');
       expect(managedConnectorAdd.connector_user_id).toBeDefined();
       expect(managedConnectorAdd.manager_requested_status).toEqual('stopped');
+      expect(managedConnectorAdd.manager_upgrade_strategy).toEqual('latest');
       expect(managedConnectorAdd.manager_contract_hash).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration).toBeDefined();
       expect(managedConnectorAdd.manager_contract_configuration.length).toBeGreaterThan(0);
@@ -1285,6 +1288,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(result.data).toBeDefined();
       expect(result.data?.managedConnectorEdit.name).toEqual('Updated IpInfo Connector');
+      expect(result.data?.managedConnectorEdit.manager_upgrade_strategy).toEqual('latest');
       expect(result.data?.managedConnectorEdit.manager_contract_configuration).toBeDefined();
       const autoConfig = result.data?.managedConnectorEdit.manager_contract_configuration
         .find((c: any) => c.key === 'CONNECTOR_AUTO');

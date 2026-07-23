@@ -4605,6 +4605,7 @@ export type Connector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status?: Maybe<Scalars['String']['output']>;
+  manager_upgrade_strategy?: Maybe<ManagerUpgradeStrategy>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
@@ -16489,6 +16490,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status: Scalars['String']['output'];
+  manager_upgrade_strategy?: Maybe<ManagerUpgradeStrategy>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
@@ -16523,6 +16525,11 @@ export type ManagerContractExcerpt = {
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
 };
+
+export enum ManagerUpgradeStrategy {
+  Latest = 'latest',
+  Pinned = 'pinned'
+}
 
 export type MappedConfigKey = {
   __typename?: 'MappedConfigKey';
@@ -40240,6 +40247,7 @@ export type ResolversTypes = ResolversObject<{
   ManagerConfiguration: ResolverTypeWrapper<BasicStoreEntityManagerConfiguration>;
   ManagerContractConfiguration: ResolverTypeWrapper<ManagerContractConfiguration>;
   ManagerContractExcerpt: ResolverTypeWrapper<ManagerContractExcerpt>;
+  ManagerUpgradeStrategy: ManagerUpgradeStrategy;
   MappedConfigKey: ResolverTypeWrapper<MappedConfigKey>;
   MappedEntity: ResolverTypeWrapper<Omit<MappedEntity, 'matchedEntity'> & { matchedEntity: ResolversTypes['StixCoreObject'] }>;
   MappedEntityInput: MappedEntityInput;
@@ -43305,6 +43313,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  manager_upgrade_strategy?: Resolver<Maybe<ResolversTypes['ManagerUpgradeStrategy']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -47334,6 +47343,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  manager_upgrade_strategy?: Resolver<Maybe<ResolversTypes['ManagerUpgradeStrategy']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
