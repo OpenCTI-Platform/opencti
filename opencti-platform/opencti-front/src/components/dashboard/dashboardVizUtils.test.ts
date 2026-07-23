@@ -704,7 +704,7 @@ describe('computeWidgetFiltersForMultiSelection', () => {
     };
     const config = { startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-01T00:00:00Z' };
 
-    const result = computeWidgetFiltersForMultiSelection([selectionA, selectionB], config, { types: ['Stix-Core-Object'] });
+    const result = computeWidgetFiltersForMultiSelection([selectionA, selectionB], config, ['Stix-Core-Object']);
 
     expect(result.startDate).toBe(config.startDate);
     expect(result.endDate).toBe(config.endDate);
