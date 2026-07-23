@@ -1694,333 +1694,331 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             />
           )}
 
-          {isFormIntakeDefaultsEnabled && (
-            <Accordion variant="outlined" style={{ marginTop: 20 }}>
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                {/* Draft Name Section */}
-                <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+          <Accordion variant="outlined" style={{ marginTop: 20 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {/* Draft Name Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
+              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.draftDefaults?.name?.isEditable || false}
+                      onChange={(e) => handleFieldChange('draftDefaults.name.isEditable', e.target.checked)}
+                    />
+                  )}
+                  label={t_i18n('Editable by end user')}
+                  style={{ display: 'block' }}
+                />
+                {formData.draftDefaults?.name?.isEditable && (
                   <FormControlLabel
                     control={(
                       <Switch
-                        checked={formData.draftDefaults?.name?.isEditable || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.name.isEditable', e.target.checked)}
+                        checked={formData.draftDefaults?.name?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.name.isRequired', e.target.checked)}
                       />
                     )}
-                    label={t_i18n('Editable by end user')}
+                    label={t_i18n('Required')}
                     style={{ display: 'block' }}
                   />
-                  {formData.draftDefaults?.name?.isEditable && (
-                    <FormControlLabel
-                      control={(
-                        <Switch
-                          checked={formData.draftDefaults?.name?.isRequired || false}
-                          onChange={(e) => handleFieldChange('draftDefaults.name.isRequired', e.target.checked)}
-                        />
-                      )}
-                      label={t_i18n('Required')}
-                      style={{ display: 'block' }}
+                )}
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  label={t_i18n('Default name')}
+                  value={formData.draftDefaults?.name?.defaultValue || ''}
+                  onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
+                  style={{ marginBottom: 20 }}
+                />
+              </Box>
+
+              {/* Draft Description Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
+              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.draftDefaults?.description?.isEditable || false}
+                      onChange={(e) => handleFieldChange('draftDefaults.description.isEditable', e.target.checked)}
                     />
                   )}
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label={t_i18n('Default name')}
-                    value={formData.draftDefaults?.name?.defaultValue || ''}
-                    onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
-                    style={{ marginBottom: 20 }}
-                  />
-                </Box>
-
-                {/* Draft Description Section */}
-                <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                  label={t_i18n('Editable by end user')}
+                  style={{ display: 'block' }}
+                />
+                {formData.draftDefaults?.description?.isEditable && (
                   <FormControlLabel
                     control={(
                       <Switch
-                        checked={formData.draftDefaults?.description?.isEditable || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.description.isEditable', e.target.checked)}
+                        checked={formData.draftDefaults?.description?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.description.isRequired', e.target.checked)}
                       />
                     )}
-                    label={t_i18n('Editable by end user')}
+                    label={t_i18n('Required')}
                     style={{ display: 'block' }}
                   />
-                  {formData.draftDefaults?.description?.isEditable && (
-                    <FormControlLabel
-                      control={(
-                        <Switch
-                          checked={formData.draftDefaults?.description?.isRequired || false}
-                          onChange={(e) => handleFieldChange('draftDefaults.description.isRequired', e.target.checked)}
-                        />
-                      )}
-                      label={t_i18n('Required')}
-                      style={{ display: 'block' }}
-                    />
-                  )}
-                  <TextField
-                    fullWidth
-                    variant="standard"
-                    label={t_i18n('Default description')}
-                    multiline
-                    rows={3}
-                    value={formData.draftDefaults?.description?.defaultValue || ''}
-                    onChange={(e) => handleFieldChange('draftDefaults.description.defaultValue', e.target.value)}
-                    style={{ marginBottom: 20 }}
-                  />
-                </Box>
+                )}
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  label={t_i18n('Default description')}
+                  multiline
+                  rows={3}
+                  value={formData.draftDefaults?.description?.defaultValue || ''}
+                  onChange={(e) => handleFieldChange('draftDefaults.description.defaultValue', e.target.value)}
+                  style={{ marginBottom: 20 }}
+                />
+              </Box>
 
-                <Formik
-                  initialValues={{
-                    objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
-                    objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
-                    authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
-                      ? {
-                          value: formData.draftDefaults.author.defaultValue,
-                          label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
-                          type: formData.draftDefaults.author.defaultValueType,
-                        }
-                      : null,
-                  }}
-                  onSubmit={() => {}}
-                  enableReinitialize
-                >
-                  {({ setFieldValue }) => (
-                    <>
-                      {/* Draft Assignees Section */}
-                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Editable by end user')}
-                          style={{ display: 'block' }}
-                        />
-                        {formData.draftDefaults?.objectAssignee?.isEditable && (
-                          <FormControlLabel
-                            control={(
-                              <Switch
-                                checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
-                                onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
-                              />
-                            )}
-                            label={t_i18n('Required')}
-                            style={{ display: 'block' }}
-                          />
-                        )}
-                        <ObjectAssigneeField
-                          name="objectAssignee"
-                          label={t_i18n('Default assignee(s)')}
-                          style={{ marginBottom: 20 }}
-                        />
-                      </Box>
-
-                      {/* Draft Participants Section */}
-                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Editable by end user')}
-                          style={{ display: 'block' }}
-                        />
-                        {formData.draftDefaults?.objectParticipant?.isEditable && (
-                          <FormControlLabel
-                            control={(
-                              <Switch
-                                checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
-                                onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
-                              />
-                            )}
-                            label={t_i18n('Required')}
-                            style={{ display: 'block' }}
-                          />
-                        )}
-                        <ObjectParticipantField
-                          name="objectParticipant"
-                          label={t_i18n('Default participants')}
-                          style={{ marginBottom: 20 }}
-                        />
-                      </Box>
-
-                      {/* Draft Author Section */}
-                      <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                        <FormControlLabel
-                          control={(
-                            <Switch
-                              checked={formData.draftDefaults?.author?.isEditable || false}
-                              onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
-                            />
-                          )}
-                          label={t_i18n('Editable by end user')}
-                          style={{ display: 'block' }}
-                        />
-                        {formData.draftDefaults?.author?.isEditable && (
-                          <FormControlLabel
-                            control={(
-                              <Switch
-                                checked={formData.draftDefaults?.author?.isRequired || false}
-                                onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
-                              />
-                            )}
-                            label={t_i18n('Required')}
-                            style={{ display: 'block' }}
-                          />
-                        )}
-                        <Box
-                          style={formData.draftDefaults?.author?.type === 'static'
-                            ? {
-                                border: '1px solid rgba(255, 255, 255, 0.12)',
-                                borderRadius: 4,
-                                padding: '12px',
-                                marginBottom: 20,
-                              }
-                            : { marginBottom: 20 }}
-                        >
-                          <FormControl fullWidth variant="standard" style={{ marginBottom: formData.draftDefaults?.author?.type === 'static' ? 8 : 0 }}>
-                            <InputLabel>{t_i18n('Default author source')}</InputLabel>
-                            <Select
-                              value={formData.draftDefaults?.author?.type || 'none'}
-                              onChange={(e) => {
-                                const currentAuthorDefaults = formData.draftDefaults?.author;
-                                handleFieldChange('draftDefaults.author', {
-                                  type: e.target.value,
-                                  isEditable: currentAuthorDefaults?.isEditable ?? false,
-                                  isRequired: currentAuthorDefaults?.isRequired ?? false,
-                                });
-                              }}
-                              label={t_i18n('Default author source')}
-                            >
-                              <MenuItem value="none">{t_i18n('None (no author specified)')}</MenuItem>
-                              <MenuItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</MenuItem>
-                              <MenuItem value="static">{t_i18n('Specific Author')}</MenuItem>
-                            </Select>
-                          </FormControl>
-                          {formData.draftDefaults?.author?.type === 'static' && (
-                            <CreatedByField
-                              name="authorDefaultIdentity"
-                              label={t_i18n('Default author')}
-                              style={{ width: '100%', marginBottom: 0 }}
-                              setFieldValue={setFieldValue}
-                              onChange={(_name: string, value: { value: string; label: string; type?: string } | null) => {
-                                if (value) {
-                                  handleFieldChange('draftDefaults.author.defaultValue', value.value);
-                                  handleFieldChange('draftDefaults.author.defaultValueLabel', value.label);
-                                  handleFieldChange('draftDefaults.author.defaultValueType', value.type);
-                                } else {
-                                  handleFieldChange('draftDefaults.author.defaultValue', undefined);
-                                  handleFieldChange('draftDefaults.author.defaultValueLabel', undefined);
-                                  handleFieldChange('draftDefaults.author.defaultValueType', undefined);
-                                }
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </Box>
-
-                      {/* Authorized Members Section */}
-                      <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+              <Formik
+                initialValues={{
+                  objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
+                  objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                  authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
+                    ? {
+                        value: formData.draftDefaults.author.defaultValue,
+                        label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
+                        type: formData.draftDefaults.author.defaultValueType,
+                      }
+                    : null,
+                }}
+                onSubmit={() => {}}
+                enableReinitialize
+              >
+                {({ setFieldValue }) => (
+                  <>
+                    {/* Draft Assignees Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
                       <FormControlLabel
                         control={(
                           <Switch
-                            checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                            checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
+                      />
+                      {formData.draftDefaults?.objectAssignee?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        label={t_i18n('Default assignee(s)')}
+                        style={{ marginBottom: 20 }}
+                      />
+                    </Box>
+
+                    {/* Draft Participants Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
+                      />
+                      {formData.draftDefaults?.objectParticipant?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <ObjectParticipantField
+                        name="objectParticipant"
+                        label={t_i18n('Default participants')}
+                        style={{ marginBottom: 20 }}
+                      />
+                    </Box>
+
+                    {/* Draft Author Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.author?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
+                      />
+                      {formData.draftDefaults?.author?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.author?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <Box
+                        style={formData.draftDefaults?.author?.type === 'static'
+                          ? {
+                              border: '1px solid rgba(255, 255, 255, 0.12)',
+                              borderRadius: 4,
+                              padding: '12px',
+                              marginBottom: 20,
+                            }
+                          : { marginBottom: 20 }}
+                      >
+                        <FormControl fullWidth variant="standard" style={{ marginBottom: formData.draftDefaults?.author?.type === 'static' ? 8 : 0 }}>
+                          <InputLabel>{t_i18n('Default author source')}</InputLabel>
+                          <Select
+                            value={formData.draftDefaults?.author?.type || 'none'}
                             onChange={(e) => {
-                              const enabled = e.target.checked;
-                              handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
-                              if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
-                                handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
-                                  label: t_i18n('Creators'),
-                                  value: 'CREATORS',
-                                  type: t_i18n('Dynamic options'),
-                                  accessRight: 'admin',
-                                  groupsRestriction: [],
-                                }]);
+                              const currentAuthorDefaults = formData.draftDefaults?.author;
+                              handleFieldChange('draftDefaults.author', {
+                                type: e.target.value,
+                                isEditable: currentAuthorDefaults?.isEditable ?? false,
+                                isRequired: currentAuthorDefaults?.isRequired ?? false,
+                              });
+                            }}
+                            label={t_i18n('Default author source')}
+                          >
+                            <MenuItem value="none">{t_i18n('None (no author specified)')}</MenuItem>
+                            <MenuItem value="main_entity_author">{t_i18n('Main entity author (reuse the same author)')}</MenuItem>
+                            <MenuItem value="static">{t_i18n('Specific Author')}</MenuItem>
+                          </Select>
+                        </FormControl>
+                        {formData.draftDefaults?.author?.type === 'static' && (
+                          <CreatedByField
+                            name="authorDefaultIdentity"
+                            label={t_i18n('Default author')}
+                            style={{ width: '100%', marginBottom: 0 }}
+                            setFieldValue={setFieldValue}
+                            onChange={(_name: string, value: { value: string; label: string; type?: string } | null) => {
+                              if (value) {
+                                handleFieldChange('draftDefaults.author.defaultValue', value.value);
+                                handleFieldChange('draftDefaults.author.defaultValueLabel', value.label);
+                                handleFieldChange('draftDefaults.author.defaultValueType', value.type);
+                              } else {
+                                handleFieldChange('draftDefaults.author.defaultValue', undefined);
+                                handleFieldChange('draftDefaults.author.defaultValueLabel', undefined);
+                                handleFieldChange('draftDefaults.author.defaultValueType', undefined);
                               }
                             }}
                           />
                         )}
-                        label={t_i18n('Activate access restriction')}
-                        style={{ display: 'block' }}
-                      />
+                      </Box>
+                    </Box>
 
-                      {formData.draftDefaults?.authorizedMembers?.enabled && (
-                        <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                          <FormControlLabel
-                            control={(
-                              <Switch
-                                checked={formData.draftDefaults?.authorizedMembers?.isEditable || false}
-                                onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isEditable', e.target.checked)}
-                              />
-                            )}
-                            label={t_i18n('Editable by end user')}
-                            style={{ display: 'block', marginBottom: 15 }}
-                          />
-                          <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Default authorized members')}</Typography>
-                          <Formik
-                            initialValues={{
-                              authorized_members: normalizeDraftAuthorizedMembersDefaults(
-                                formData.draftDefaults?.authorizedMembers?.defaults || [],
-                                {
-                                  creatorsLabel: t_i18n('Creators'),
-                                  authorOrgLabel: t_i18n('Draft author (org)'),
-                                  dynamicOptionsLabel: t_i18n('Dynamic from draft'),
-                                },
-                              ),
-                            }}
-                            onSubmit={() => {}}
-                          >
-                            {() => (
-                              <>
-                                <Field
-                                  name="authorized_members"
-                                  component={AuthorizedMembersField}
-                                  withDynamicKeys={true}
-                                  allowDynamicGroupsRestriction={true}
-                                  dynamicContextTypeLabel="Dynamic from draft"
-                                  dynamicAuthorOrgLabel="Draft author (org)"
-                                  includeBundleOrganizationDynamicOption={false}
-                                  dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
-                                />
-                                <AuthorizedMembersSync
-                                  onChange={(vals) => {
-                                    if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
-                                      handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
-                                    }
-                                  }}
-                                />
-                              </>
-                            )}
-                          </Formik>
-                        </Box>
+                    {/* Authorized Members Section */}
+                    <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                          onChange={(e) => {
+                            const enabled = e.target.checked;
+                            handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                            if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                              handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
+                                label: t_i18n('Creators'),
+                                value: 'CREATORS',
+                                type: t_i18n('Dynamic options'),
+                                accessRight: 'admin',
+                                groupsRestriction: [],
+                              }]);
+                            }
+                          }}
+                        />
                       )}
+                      label={t_i18n('Activate access restriction')}
+                      style={{ display: 'block' }}
+                    />
 
-                      <DraftAdvancedDefaultsSync
-                        onChange={(vals) => {
-                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
-                            handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
-                          }
-                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
-                            handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
-                          }
-                        }}
-                      />
-                    </>
-                  )}
-                </Formik>
-              </AccordionDetails>
-            </Accordion>
-          )}
+                    {formData.draftDefaults?.authorizedMembers?.enabled && (
+                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.authorizedMembers?.isEditable || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isEditable', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Editable by end user')}
+                          style={{ display: 'block', marginBottom: 15 }}
+                        />
+                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Default authorized members')}</Typography>
+                        <Formik
+                          initialValues={{
+                            authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                              formData.draftDefaults?.authorizedMembers?.defaults || [],
+                              {
+                                creatorsLabel: t_i18n('Creators'),
+                                authorOrgLabel: t_i18n('Draft author (org)'),
+                                dynamicOptionsLabel: t_i18n('Dynamic from draft'),
+                              },
+                            ),
+                          }}
+                          onSubmit={() => {}}
+                        >
+                          {() => (
+                            <>
+                              <Field
+                                name="authorized_members"
+                                component={AuthorizedMembersField}
+                                withDynamicKeys={true}
+                                allowDynamicGroupsRestriction={true}
+                                dynamicContextTypeLabel="Dynamic from draft"
+                                dynamicAuthorOrgLabel="Draft author (org)"
+                                includeBundleOrganizationDynamicOption={false}
+                                dynamicGroupsRestrictionSupportedValues={['AUTHOR']}
+                              />
+                              <AuthorizedMembersSync
+                                onChange={(vals) => {
+                                  if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
+                                    handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
+                                  }
+                                }}
+                              />
+                            </>
+                          )}
+                        </Formik>
+                      </Box>
+                    )}
+
+                    <DraftAdvancedDefaultsSync
+                      onChange={(vals) => {
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
+                          handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
+                        }
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
+                          handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </Formik>
+            </AccordionDetails>
+          </Accordion>
 
           {formData.mainEntityMultiple && !formData.mainEntityLookup && (
             <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
