@@ -12,7 +12,13 @@ const USER_ID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 
 const buildScopes = () => buildUserFootprintScopes({
   userId: USER_ID,
-  schemaFieldNames: ['user_id', 'creator_id', 'creator_id'],
+  schemaFieldNames: [
+    'user_id',
+    'creator_id',
+    'creator_id',
+    'platform_ip_whitelist_exclusion_ids',
+    'feed_public_user_id',
+  ],
   indices: {
     active: ['opencti_internal_objects*', 'opencti_internal_relationships*'],
     draft: 'opencti_draft_objects*',
@@ -84,6 +90,41 @@ describe('User footprint registry', () => {
         id: 'active.rights.has-role.from',
         category: 'unexpected_direct_right',
         disposition: 'conditional',
+      }),
+    ]));
+  });
+
+  it('never classifies source security rights or operational accounts as automatic transfers', () => {
+    const scopes = buildScopes();
+    const active = scopes.find(({ id }) => id === 'active');
+    const history = scopes.find(({ id }) => id === 'history');
+
+    expect(active?.references).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: 'platform_ip_whitelist_exclusion_ids',
+        disposition: 'invalidate',
+      }),
+      expect.objectContaining({
+        label: 'authorized_authorities[]',
+        disposition: 'invalidate',
+      }),
+      expect.objectContaining({
+        label: 'activity_listeners_ids[]',
+        disposition: 'invalidate',
+      }),
+      expect.objectContaining({
+        label: 'feed_public_user_id',
+        disposition: 'conditional',
+      }),
+      expect.objectContaining({
+        label: 'connector_user_id',
+        disposition: 'conditional',
+      }),
+    ]));
+    expect(history?.references).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        label: 'restricted_members[].id',
+        disposition: 'retain',
       }),
     ]));
   });

@@ -70,14 +70,14 @@ export interface BuildUserFootprintScopesArgs {
 
 const ROOT_FIELD_DISPOSITIONS: Record<string, UserFootprintDisposition> = {
   creator_id: 'transfer',
-  platform_ip_whitelist_exclusion_ids: 'transfer',
+  platform_ip_whitelist_exclusion_ids: 'invalidate',
   xtm_hub_registration_user_id: 'transfer',
   user_id: 'conditional',
   applicant_id: 'conditional',
   recipients: 'transfer',
-  feed_public_user_id: 'transfer',
-  taxii_public_user_id: 'transfer',
-  stream_public_user_id: 'transfer',
+  feed_public_user_id: 'conditional',
+  taxii_public_user_id: 'conditional',
+  stream_public_user_id: 'conditional',
 };
 
 const exact = (field: string, value: string): QueryClause => ({
@@ -137,6 +137,7 @@ const buildCommonObjectReferences = (
 ): UserFootprintReference[] => {
   const operationalDisposition = historical ? 'retain' : 'transfer';
   const lifecycleDisposition = historical ? 'retain' : 'conditional';
+  const securityDisposition = historical ? 'retain' : 'invalidate';
   return [
     createReference(`${prefix}.nested.i_attributes.user_id`, 'i_attributes.user_id', 'attribute_history', 'retain', 'exact', exact('i_attributes.user_id', userId)),
     createReference(`${prefix}.nested.restricted_members.id`, 'restricted_members[].id', 'restricted_members', operationalDisposition, 'exact', nestedExact('restricted_members', 'restricted_members.id', userId)),
@@ -148,8 +149,10 @@ const buildCommonObjectReferences = (
       'exact',
       nestedExact('connections', 'connections.internal_id', userId),
     ),
-    createReference(`${prefix}.field.connector_user_id`, 'connector_user_id', 'operational_reference', operationalDisposition, 'exact', exact('connector_user_id', userId)),
+    createReference(`${prefix}.field.connector_user_id`, 'connector_user_id', 'operational_reference', lifecycleDisposition, 'exact', exact('connector_user_id', userId)),
     createReference(`${prefix}.field.initiator_id`, 'initiator_id', 'lifecycle_reference', lifecycleDisposition, 'exact', exact('initiator_id', userId)),
+    createReference(`${prefix}.field.authorized_authorities`, 'authorized_authorities[]', 'security_right', securityDisposition, 'exact', exact('authorized_authorities', userId)),
+    createReference(`${prefix}.field.activity_listeners_ids`, 'activity_listeners_ids[]', 'security_subscription', securityDisposition, 'exact', exact('activity_listeners_ids', userId)),
     createReference(
       `${prefix}.ref.object-assignee`,
       `rel_${relationDatabaseNames.assignee}.internal_id`,
@@ -306,7 +309,7 @@ export const buildUserFootprintScopes = ({
           'history.restricted_members.id',
           'restricted_members[].id',
           'historical_access',
-          'conditional',
+          'retain',
           'exact',
           nestedExact('restricted_members', 'restricted_members.id', userId),
         ),
