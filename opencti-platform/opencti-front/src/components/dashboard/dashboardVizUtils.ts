@@ -211,6 +211,7 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
     isKnowledgeRelationshipWidget: true,
     fallbackToDefaultDates: true,
   };
+  const { startDate, endDate } = computeStartEndDates(config, opts.fallbackToDefaultDates);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     const { dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, opts);
@@ -222,8 +223,6 @@ export const buildRelationshipMultiWidgetBaseQueryVariables = (
       dynamicTo: normalizeFilterGroupForBackend(selection.dynamicTo),
     };
   });
-
-  const { startDate, endDate } = computeWidgetFiltersForSelection(dataSelection[0], config, opts);
 
   return {
     operation: 'count',
