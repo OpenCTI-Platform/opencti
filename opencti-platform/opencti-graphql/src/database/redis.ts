@@ -791,13 +791,6 @@ export interface FeedLog {
   count?: number;
 }
 
-export interface FeedLog {
-  timestamp: string;
-  status: 'success' | 'error';
-  messages: string[];
-  count?: number;
-}
-
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
   await getClientBase().set(`connector-${connectorId}-logs`, data);
@@ -935,7 +928,7 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
 };
 
 // region ingestion log history (FIFO, last 20 per feed)
-const INGESTION_LOG_KEY_PREFIX = 'ingestion-';
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
 const INGESTION_LOG_MAX_SIZE = 20;
 
 export interface IngestionLogEntry {

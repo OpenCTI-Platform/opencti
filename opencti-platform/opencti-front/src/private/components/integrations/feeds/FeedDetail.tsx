@@ -1,9 +1,9 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { graphql, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, PreloadedQuery } from 'react-relay';
 import type { OperationType } from 'relay-runtime';
-import { Box, Grid2 as Grid, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Grid2 as Grid, Stack, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import SyncPopover from '@components/data/sync/SyncPopover';
 import IngestionRssPopover from '@components/data/ingestionRss/IngestionRssPopover';
@@ -13,6 +13,8 @@ import IngestionCsvPopover from '@components/data/ingestionCsv/IngestionCsvPopov
 import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPopover';
 import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
+import IngestionTaxiiLogsDrawer from '@components/data/ingestionTaxii/IngestionTaxiiLogsDrawer';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -266,7 +268,11 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { t_i18n, nsdt, n } = useFormatter();
   const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
+  const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
+
+  const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
 
   const data = usePreloadedQuery(FEED_QUERIES[kind].query, queryRef) as Record<string, FeedDetailNode | null>;
   const node = data[FEED_QUERIES[kind].rootField];
@@ -489,10 +495,30 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                   {nsdt(node.updated_at)}
                 </DetailField>
               )}
+              {isIngestionFeedLogsEnabled && kind === 'taxii' && (
+                <Grid size={{ xs: 12 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="primary"
+                    onClick={() => setLogsDrawerOpen(true)}
+                  >
+                    {t_i18n('View logs')}
+                  </Button>
+                </Grid>
+              )}
             </Grid>
           </Card>
         </Grid>
       </Grid>
+      {isIngestionFeedLogsEnabled && kind === 'taxii' && (
+        <IngestionTaxiiLogsDrawer
+          feedId={node.id}
+          feedName={node.name}
+          isOpen={logsDrawerOpen}
+          onClose={() => setLogsDrawerOpen(false)}
+        />
+      )}
     </PageContainer>
   );
 };
