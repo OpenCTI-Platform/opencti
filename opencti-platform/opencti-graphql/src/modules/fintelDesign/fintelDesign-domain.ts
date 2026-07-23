@@ -11,6 +11,7 @@ import { type FileUploadData, uploadToStorage } from '../../database/file-storag
 import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { lockResources } from '../../lock/master-lock';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
   await checkEnterpriseEdition(context);
@@ -24,24 +25,37 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
 
 export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
   await checkEnterpriseEdition(context);
-  const created = await createEntity(context, user, fintelDesign, ENTITY_TYPE_FINTEL_DESIGN);
   const shouldSetDefault = (fintelDesign as { default?: boolean }).default === true;
-  if (shouldSetDefault) {
-    await applyUniqueDefaultFintelDesignConstraint(context, user, created.id);
+
+  // The default status is stored on the object itself (fintelDesign) rather than on a parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing design)
+  // could leave us with multiple defaults or none at all.
+  // Locking prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference as a dedicated field on a settings entity,
+  // which would make this unicity constraint trivial to enforce.
+  const lock = shouldSetDefault ? await lockResources(['fintel-design-default']) : null;
+  try {
+    const created = await createEntity(context, user, fintelDesign, ENTITY_TYPE_FINTEL_DESIGN);
+    if (shouldSetDefault) {
+      await applyUniqueDefaultFintelDesignConstraint(context, user, created.id);
+    }
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
+      message: `creates fintel design '${fintelDesign.name}`,
+      context_data: {
+        id: created.id,
+        entity_type: ENTITY_TYPE_FINTEL_DESIGN,
+        input: fintelDesign,
+      },
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].ADDED_TOPIC, created, user);
+  } finally {
+    if (lock) await lock.unlock();
   }
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'administration',
-    message: `creates fintel design '${fintelDesign.name}`,
-    context_data: {
-      id: created.id,
-      entity_type: ENTITY_TYPE_FINTEL_DESIGN,
-      input: fintelDesign,
-    },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].ADDED_TOPIC, created, user);
 };
 
 const applyUniqueDefaultFintelDesignConstraint = async (
@@ -134,23 +148,38 @@ export const fintelDesignEditField = async (
   if (finalInput.length === 0) {
     return null;
   }
-  const { element } = await updateAttribute<StoreEntityFintelDesign>(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
-  if (isEditInputSetAsDefault(finalInput)) {
-    await applyUniqueDefaultFintelDesignConstraint(context, user, element.id);
+
+  const settingDefault = isEditInputSetAsDefault(finalInput);
+
+  // The default status is stored on the object itself (fintelDesign) rather than on a parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing design)
+  // could leave us with multiple defaults or none at all.
+  // Locking prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference as a dedicated field on a settings entity,
+  // which would make this unicity constraint trivial to enforce.
+  const lock = settingDefault ? await lockResources(['fintel-design-default']) : null;
+  try {
+    const { element } = await updateAttribute<StoreEntityFintelDesign>(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
+    if (settingDefault) {
+      await applyUniqueDefaultFintelDesignConstraint(context, user, element.id);
+    }
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `updates ${(input ?? []).map((i) => i.key).join(', ')} for fintel design ${element.name}`,
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_FINTEL_DESIGN,
+        input,
+      },
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].EDIT_TOPIC, element, user);
+  } finally {
+    if (lock) await lock.unlock();
   }
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates ${(input ?? []).map((i) => i.key).join(', ')} for fintel design ${element.name}`,
-    context_data: {
-      id: element.id,
-      entity_type: ENTITY_TYPE_FINTEL_DESIGN,
-      input,
-    },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].EDIT_TOPIC, element, user);
 };
 
 export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, designId: string) => {
