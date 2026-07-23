@@ -130,6 +130,7 @@ import {
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
+import { hashSHA256 } from '../utils/hash';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -184,14 +185,14 @@ export const userWithOrigin = (req, user, originHeaders = {}) => {
   const sso_headers_metadata = R.mergeAll((user.headers_audit ?? [])
     .map((header) => ({ [header]: req.header(header) })));
   const tracing_headers_metadata = getRequestAuditHeaders(req);
-
+  const hashedSessionId = req?.sessionID ? hashSHA256(req.sessionID) : undefined;
   const origin = {
     socket: 'query',
     ip: req?.ip,
     user_id: user.id,
     group_ids: user.groups?.map((g) => g.internal_id) ?? [],
     organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
-    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata },
+    user_metadata: { ...sso_headers_metadata, ...tracing_headers_metadata, sessionHash: hashedSessionId },
     referer: req?.headers.referer,
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
