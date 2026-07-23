@@ -718,13 +718,12 @@ export const pushToWorkerForConnector = async (connectorId, message) => {
   const rawBundle = Buffer.from(message.content, 'base64').toString('utf-8');
   let bundles;
   let expectationsNumber;
-  if (message.no_split) {
+  const bundleContent = JSON.parse(rawBundle);
+  if (message.no_split || !Array.isArray(bundleContent.objects) || bundleContent.objects.length <= 1) {
     // Split is explicitly disabled, keep the bundle intact but keep expectations aligned with the number of objects
-    const bundleContent = JSON.parse(rawBundle);
     bundles = [rawBundle];
     expectationsNumber = Array.isArray(bundleContent.objects) ? bundleContent.objects.length : 1;
   } else {
-    const bundleContent = JSON.parse(rawBundle);
     const eventVersion = bundleContent.x_opencti_event_version;
     const stix2Splitter = new OpenCTIStix2Splitter();
     const { expectations, bundles: splitBundles } = stix2Splitter.splitBundleWithExpectations(rawBundle, true, eventVersion);
