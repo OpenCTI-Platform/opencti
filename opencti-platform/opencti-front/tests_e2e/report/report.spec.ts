@@ -323,6 +323,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
 
   await reportPage.openNewReportForm();
   const reportName = `Report with created entities - ${uuid()}`;
+  const labelName = `threat-${uuid()}`;
   await reportForm.nameField.fill(reportName);
 
   // region Check author labels and external references creation forms
@@ -346,12 +347,12 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await labelForm.getCreateButton().click();
   await expect(labelForm.valueField.getByText('This field is required')).toBeVisible();
   await expect(labelForm.colorField.getByText('This field is required')).toBeVisible();
-  await labelForm.valueField.fill('threat');
+  await labelForm.valueField.fill(labelName);
   await expect(labelForm.valueField.getByText('This field is required')).toBeHidden();
   await labelForm.colorField.fill('#9d3fb8');
   await expect(labelForm.colorField.getByText('This field is required')).toBeHidden();
   await labelForm.getCreateButton().click();
-  await expect(reportForm.labelsAutocomplete.getOption('threat')).toBeVisible();
+  await expect(reportForm.labelsAutocomplete.getOption(labelName)).toBeVisible();
 
   // Create external references
   await reportForm.externalReferencesAutocomplete.openAddOptionForm();
@@ -380,7 +381,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   const author = reportDetailsPage.getTextForHeading('Author', 'Jeanne Mitchel');
   await expect(author).toBeVisible();
 
-  await expect(reportDetailsPage.overview.getLabel('threat')).toBeVisible();
+  await expect(reportDetailsPage.overview.getLabel(labelName)).toBeVisible();
 
   const externalReference = reportDetailsPage.getTextForCard('EXTERNAL REFERENCES', 'external ref (report.test.pdf)');
   await expect(externalReference).toBeVisible();
