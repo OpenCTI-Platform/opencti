@@ -7,6 +7,8 @@ on:
     branches:
       # FIXME to move to master & lts at the end
       - issue/17219-node-sbom
+      - master
+      - lts/*
 
 jobs:
   # -----------------------
@@ -16,7 +18,7 @@ jobs:
     name: Build builder image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/docker-build-builder
         with:
           checkout_ref: ${{ github.sha }}
@@ -26,8 +28,10 @@ jobs:
     name: Build and generate app SBOM
     runs-on: ubuntu-latest
     needs: [build-builder]
+    outputs:
+      app_version: ${{ steps.version.outputs.app_version }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Download builder image
         uses: actions/download-artifact@v8
@@ -61,63 +65,60 @@ jobs:
         working-directory: opencti-platform/opencti-graphql
         run: |
           syft dir:. \
-            --config ../../.syft.yaml \
+            --config ../../.github/.syft.yaml \
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=opencti-graphql.cdx.json
+          jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
+            '.metadata.manufacturer = $mfr[0]' opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json opencti-graphql.cdx.json
 
       - name: Generate front SBOM
         working-directory: opencti-platform/opencti-front
         run: |
           syft dir:. \
-            --config ../../.syft.yaml \
+            --config ../../.github/.syft.yaml \
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=opencti-front.cdx.json
+          jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
+            '.metadata.manufacturer = $mfr[0]' opencti-front.cdx.json > tmp.cdx.json && mv tmp.cdx.json opencti-front.cdx.json
 
-      - name: Assemble hierarchical SBOM
+      - name: Get app version
+        id: version
+        run: echo "app_version=$(jq -r '.version' opencti-platform/opencti-graphql/package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate parent SBOM
         working-directory: opencti-platform
         run: |
           APP_VERSION=$(jq -r '.version' opencti-graphql/package.json)
           jq -n \
             --arg version "$APP_VERSION" \
-            --slurpfile graphql opencti-graphql/opencti-graphql.cdx.json \
-            --slurpfile front opencti-front/opencti-front.cdx.json \
+            --slurpfile mfr ../.github/sbom-manufacturer.json \
             '{
               "bomFormat": "CycloneDX",
               "specVersion": "1.6",
               "version": 1,
               "metadata": {
-                "manufacturer": {
-                  "name": "Filigran SAS",
-                  "address": { "country": "FR" },
-                  "url": ["https://filigran.io"]
-                },
+                "manufacturer": $mfr[0],
                 "component": {
                   "type": "application",
-                  "name": "opencti-platform",
+                  "group": "io.opencti",
+                  "name": "opencti",
                   "version": $version
                 }
-              },
-              "components": [
-                {
-                  "type": "application",
-                  "name": "opencti-graphql",
-                  "version": $version,
-                  "components": $graphql[0].components
-                },
-                {
-                  "type": "application",
-                  "name": "opencti-front",
-                  "version": $version,
-                  "components": $front[0].components
-                }
-              ]
-            }' > opencti-platform-app.cdx.json
+              }
+            }' > parent-sbom.cdx.json
 
-      - name: Upload SBOM artifact
+      - name: Collect app SBOMs
+        run: |
+          mkdir -p sbom-staging
+          cp opencti-platform/opencti-graphql/opencti-graphql.cdx.json sbom-staging/
+          cp opencti-platform/opencti-front/opencti-front.cdx.json sbom-staging/
+          cp opencti-platform/parent-sbom.cdx.json sbom-staging/
+
+      - name: Upload app SBOMs
         uses: actions/upload-artifact@v4
         with:
-          name: opencti-platform-app-sbom
-          path: opencti-platform/opencti-platform-app.cdx.json
+          name: opencti-app-sbom
+          path: sbom-staging/
           retention-days: 7
 
   # -----------------------
@@ -137,7 +138,7 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.sha }}
@@ -161,7 +162,7 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.sha }}
@@ -186,7 +187,7 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/generate-sbom
         with:
           tags: '["${{ github.sha }}"]'
@@ -210,7 +211,7 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/generate-sbom
         with:
           tags: '["${{ github.sha }}"]'
@@ -220,12 +221,12 @@ jobs:
           sbom_name: "opencti-worker${{ matrix.suffix }}"
 
   # -----------------------
-  # Merge app SBOM into platform SBOM
+  # Merge all SBOMs with cyclonedx-cli
   # -----------------------
-  merge-sbom-platform:
-    name: Merge SBOM (platform ${{ matrix.variant }})
+  merge-sbom:
+    name: Merge SBOM (${{ matrix.variant }})
     runs-on: ubuntu-latest
-    needs: [app-sbom, generate-sbom-platform]
+    needs: [app-sbom, generate-sbom-platform, generate-sbom-worker]
     strategy:
       fail-fast: false
       matrix:
@@ -237,54 +238,59 @@ jobs:
           - variant: fips
             suffix: "_fips"
     steps:
+      - name: Download app SBOMs
+        uses: actions/download-artifact@v8
+        with:
+          name: opencti-app-sbom
+          path: sbom-work/
+
       - name: Download platform docker SBOM
         uses: actions/download-artifact@v8
         with:
           name: sbom-opencti-platform${{ matrix.suffix }}
           path: sbom-work/
 
-      - name: Download app Node.js SBOM
+      - name: Download worker docker SBOM
         uses: actions/download-artifact@v8
         with:
-          name: opencti-platform-app-sbom
+          name: sbom-opencti-worker${{ matrix.suffix }}
           path: sbom-work/
-
-      - name: Merge docker SBOM into app SBOM
-        working-directory: sbom-work
-        run: |
-          DOCKER_SBOM=$(ls filigran-platform-*.cdx.json)
-          jq --slurpfile docker "$DOCKER_SBOM" \
-            '.components += [{
-              "type": "container",
-              "name": "opencti-docker",
-              "version": .metadata.component.version,
-              "components": $docker[0].components
-            }]' opencti-platform-app.cdx.json > merged.cdx.json
-          mv merged.cdx.json "$DOCKER_SBOM"
 
       - name: Install cyclonedx-cli
         run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.33.1/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
           chmod +x /usr/local/bin/cyclonedx-cli
+
+      - name: Merge SBOMs
+        working-directory: sbom-work
+        run: |
+          APP_VERSION="${{ needs.app-sbom.outputs.app_version }}"
+          PLATFORM_SBOM=$(ls filigran-platform-*.cdx.json)
+          WORKER_SBOM=$(ls filigran-worker-*.cdx.json)
+          cyclonedx-cli merge \
+            --input-files parent-sbom.cdx.json "$PLATFORM_SBOM" opencti-front.cdx.json opencti-graphql.cdx.json "$WORKER_SBOM" \
+            --output-file opencti-platform.cdx.json \
+            --hierarchical \
+            --group io.opencti \
+            --name opencti \
+            --version "$APP_VERSION"
 
       - name: Validate merged SBOM
         working-directory: sbom-work
-        run: |
-          PLATFORM_SBOM=$(ls filigran-platform-*.cdx.json)
-          cyclonedx-cli validate --input-file "$PLATFORM_SBOM" --fail-on-errors
+        run: cyclonedx-cli validate --input-file opencti-platform.cdx.json --fail-on-errors
 
       - name: Upload merged SBOM
         uses: actions/upload-artifact@v4
         with:
           name: sbom-opencti-platform${{ matrix.suffix }}
-          path: sbom-work/filigran-platform-*.cdx.json
+          path: sbom-work/opencti-platform.cdx.json
           overwrite: true
           retention-days: 7
 
   upload-artifacts:
     name: Upload all artifacts
     runs-on: ubuntu-latest
-    needs: [merge-sbom-platform, generate-sbom-worker]
+    needs: [merge-sbom]
     steps:
       - name: Download all SBOM artifacts
         uses: actions/download-artifact@v8

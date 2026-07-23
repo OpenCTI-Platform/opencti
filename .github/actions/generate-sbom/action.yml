@@ -83,9 +83,14 @@ runs:
           SAFE_IMAGE=$(echo "${IMAGE_NAME}" | tr '/' '-')
 
           echo "Generating SBOM for ${IMAGE_REF}"
+          SBOM_FILE="${SAFE_IMAGE}-${SAFE_TAG}.cdx.json"
           syft "${IMAGE_REF}" \
-            -c "${{ github.workspace }}/.syft.yaml" \
-            -o "cyclonedx-json=${SAFE_IMAGE}-${SAFE_TAG}.cdx.json"
+            -c "${{ github.workspace }}/.github/.syft.yaml" \
+            -o "cyclonedx-json=${SBOM_FILE}"
+
+          echo "Injecting manufacturer metadata into ${SBOM_FILE}"
+          jq --slurpfile mfr "${{ github.workspace }}/.github/sbom-manufacturer.json" \
+            '.metadata.manufacturer = $mfr[0]' "${SBOM_FILE}" > tmp.cdx.json && mv tmp.cdx.json "${SBOM_FILE}"
 
           echo "::endgroup::"
         done
