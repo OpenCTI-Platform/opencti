@@ -44,14 +44,13 @@ class TestValidationModeDefaults(TestCase):
     """Test that validation_mode defaults to 'draft' in all scenarios."""
 
     def test_helper_initial_validation_mode_is_draft(self):
-        """When a connector registers, self.validation_mode should be 'draft'."""
-        helper = DummyHelper()
-        # Simulate what happens at line 2405 in opencti_connector_helper.py
-        # We test the actual default by checking the source directly
-        # Since we can't easily instantiate the full helper, we verify the
-        # ListenQueue._data_handler behavior instead (see below).
-        # This test documents the expected contract.
-        assert helper.validation_mode is None  # our dummy starts at None
+        """OpenCTIConnectorHelper.__init__ should default validation_mode to 'draft'."""
+        import inspect
+
+        from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
+
+        source = inspect.getsource(OpenCTIConnectorHelper.__init__)
+        assert 'self.validation_mode = "draft"' in source
 
     def test_data_handler_defaults_validation_mode_to_draft_when_missing(self):
         """When a message has no validation_mode, it should default to 'draft'."""
@@ -59,6 +58,8 @@ class TestValidationModeDefaults(TestCase):
         listen_queue = ListenQueue.__new__(ListenQueue)
         listen_queue.helper = helper
         listen_queue.pika_connection = MagicMock()
+        listen_queue.callback = helper.callback
+        listen_queue.connector_applicant_id = "test-connector-applicant"
 
         # Minimal message without validation_mode in event data
         json_data = {
@@ -70,16 +71,12 @@ class TestValidationModeDefaults(TestCase):
             "internal": {
                 "work_id": "work-123",
                 "draft_id": "",
+                "applicant_id": None,
             },
         }
 
         with patch.object(listen_queue, "_set_draft_id"):
-            try:
-                listen_queue._data_handler(json_data)
-            except (TypeError, AttributeError, KeyError):
-                # The handler will fail further down due to missing callback setup,
-                # but validation_mode is set before that point.
-                pass
+            listen_queue._data_handler(json_data)
 
         assert helper.validation_mode == "draft"
 
@@ -89,6 +86,8 @@ class TestValidationModeDefaults(TestCase):
         listen_queue = ListenQueue.__new__(ListenQueue)
         listen_queue.helper = helper
         listen_queue.pika_connection = MagicMock()
+        listen_queue.callback = helper.callback
+        listen_queue.connector_applicant_id = "test-connector-applicant"
 
         json_data = {
             "event": {
@@ -99,13 +98,11 @@ class TestValidationModeDefaults(TestCase):
             "internal": {
                 "work_id": "work-123",
                 "draft_id": "",
+                "applicant_id": None,
             },
         }
 
         with patch.object(listen_queue, "_set_draft_id"):
-            try:
-                listen_queue._data_handler(json_data)
-            except (TypeError, AttributeError, KeyError):
-                pass
+            listen_queue._data_handler(json_data)
 
         assert helper.validation_mode == "workbench"
