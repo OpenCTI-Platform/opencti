@@ -5318,5 +5318,6 @@
   "Once the new configuration is in place you would need to restart your platform.": "Sobald die neue Konfiguration eingerichtet ist, müssen Sie Ihre Plattform neu starten.",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "Derzeit wird SMTP über eine Backend-Konfiguration konfiguriert. Um Ihre Konfiguration zu ändern, aktivieren Sie einfach die Nutzung der Schnittstellenkonfiguration und definieren Sie Ihre SMTP-Konfiguration in diesem Bildschirm.",
   "Use configuration in interface": "Konfiguration in der Benutzeroberfläche verwenden",
-  "SMTP configuration saved": "SMTP-Konfiguration gespeichert"
+  "SMTP configuration saved": "SMTP-Konfiguration gespeichert",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

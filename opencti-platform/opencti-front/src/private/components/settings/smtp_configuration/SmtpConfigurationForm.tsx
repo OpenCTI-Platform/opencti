@@ -1,3 +1,5 @@
+import Tooltip from '@mui/material/Tooltip';
+import { InfoOutlined } from '@mui/icons-material';
 import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -322,7 +324,14 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                 component={DateTimePickerField}
                 name="oauth_refresh_token_expires_at"
                 textFieldProps={{
-                  label: t_i18n('Refresh token expiration date'),
+                  label: (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {t_i18n('Refresh token expiration date')}
+                      <Tooltip title={t_i18n('This date will help you identify when your token will be revoked, it only serves as a reminder.')}>
+                        <InfoOutlined fontSize="small" color="info" sx={{ cursor: 'help' }} />
+                      </Tooltip>
+                    </span>
+                  ),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },

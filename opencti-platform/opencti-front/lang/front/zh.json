@@ -5318,5 +5318,6 @@
   "Once the new configuration is in place you would need to restart your platform.": "新配置就位后，您需要重新启动平台。",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "目前，SMTP通过后端配置进行配置。要更改配置，只需启用界面配置的使用并在此屏幕中定义您的SMTP配置。",
   "Use configuration in interface": "使用界面配置",
-  "SMTP configuration saved": "SMTP配置已保存"
+  "SMTP configuration saved": "SMTP配置已保存",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }

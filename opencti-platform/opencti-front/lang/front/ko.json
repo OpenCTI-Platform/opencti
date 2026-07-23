@@ -5318,5 +5318,6 @@
   "Once the new configuration is in place you would need to restart your platform.": "새 구성이 완료되면 플랫폼을 재시작해야 합니다.",
   "Currently, the SMTP is configured via a backend configuration. To change your configuration, simply enable the usage of the Interface configuration & define your SMTP configuration in this screen.": "현재 SMTP는 백엔드 구성을 통해 설정되어 있습니다. 구성을 변경하려면 인터페이스 구성 사용을 활성화하고 이 화면에서 SMTP 구성을 정의하세요.",
   "Use configuration in interface": "인터페이스 설정 사용",
-  "SMTP configuration saved": "SMTP 구성이 저장되었습니다"
+  "SMTP configuration saved": "SMTP 구성이 저장되었습니다",
+  "This date will help you identify when your token will be revoked, it only serves as a reminder.": "This date will help you identify when your token will be revoked, it only serves as a reminder."
 }
