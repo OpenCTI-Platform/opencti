@@ -661,8 +661,11 @@ describe('computeWidgetFiltersForSelection', () => {
       filterGroups: [],
     };
     const result = computeWidgetFiltersForSelection({ filters: selectionFilters }, {});
-    expect(result.filters).toStrictEqual(selectionFilters);
-  });
+    expect(result.filters).toStrictEqual({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    });
 
   it('does not apply fallback dates by default', () => {
     const result = computeWidgetFiltersForSelection({}, {});
