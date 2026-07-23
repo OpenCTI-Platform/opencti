@@ -935,7 +935,7 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
 };
 
 // region ingestion log history (FIFO, last 20 per feed)
-const INGESTION_LOG_KEY_PREFIX = 'ingestion-';
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
 const INGESTION_LOG_MAX_SIZE = 20;
 
 export interface IngestionLogEntry {

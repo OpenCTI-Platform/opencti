@@ -49,13 +49,15 @@ const IngestionTaxiiLogsDrawerContent: React.FC<{
   const { t_i18n } = useFormatter();
   const [refreshing, setRefreshing] = useState(false);
 
+  // Clear the refreshing state once the new query reference has arrived,
+  // instead of synchronously right after triggering the (async) reload.
+  useEffect(() => {
+    setRefreshing(false);
+  }, [queryRef]);
+
   const handleRefresh = () => {
     setRefreshing(true);
-    try {
-      onRefresh();
-    } finally {
-      setRefreshing(false);
-    }
+    onRefresh();
   };
 
   const content = queryRef ? (
@@ -111,7 +113,7 @@ const IngestionTaxiiLogsDrawer: React.FC<IngestionTaxiiLogsDrawerProps> = ({
     if (isOpen && feedId) {
       loadQuery({ id: feedId }, { fetchPolicy: 'network-only' });
     }
-  }, [isOpen, feedId]);
+  }, [isOpen, feedId, loadQuery]);
 
   const handleRefresh = () => {
     if (feedId) {

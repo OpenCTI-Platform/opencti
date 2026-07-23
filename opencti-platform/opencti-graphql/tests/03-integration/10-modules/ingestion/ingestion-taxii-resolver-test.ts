@@ -486,7 +486,7 @@ describe('TAXII ingestion resolver — ingestion logs', () => {
 
   it('should fail when encountering an unknown log level', async () => {
     await redisDeleteIngestionLogHistory(taxiiLogsIngestionId);
-    await getClientBase().lpush(`ingestion-${taxiiLogsIngestionId}-history`, JSON.stringify({
+    await getClientBase().lpush(`ingestion-log-${taxiiLogsIngestionId}-history`, JSON.stringify({
       timestamp: new Date().toISOString(),
       level: 'unknown_level',
       type: 'taxii',

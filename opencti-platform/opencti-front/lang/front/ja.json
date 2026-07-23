@@ -3839,7 +3839,6 @@
   "Remove attribute": "属性の削除",
   "Remove bookmark": "ブックマークを削除する",
   "Remove configuration": "設定を削除",
-  "Remove configuration": "設定を削除",
   "Remove data from STIX bundle that does not match the filter. The main element will always remain.": "フィルターに従ってSTIXデータを削減する（マッチするものだけを残す）",
   "Remove exclusion": "除外を削除",
   "Remove file": "ファイルを削除",
