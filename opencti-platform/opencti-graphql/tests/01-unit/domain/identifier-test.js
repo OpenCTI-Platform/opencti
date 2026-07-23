@@ -384,7 +384,7 @@ describe('identifier', () => {
 });
 
 describe('Function generateHashedObservableStandardIds - all supported hashes', () => {
-  it.each(FUZZY_HASH_ALGORITHMS)('should generate an id for all fuzzy hashes', (algo) => {
+  it.each(FUZZY_HASH_ALGORITHMS)('should generate an id for all fuzzy hashes | fail if not added in indentifier hashes list', (algo) => {
     const ids = generateHashedObservableStandardIds({
       hashes: { [algo]: 'dummyhashvalue' },
       entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
