@@ -12,6 +12,7 @@
     "build:antlr": "java -jar ./builder/antlr/antlr-4.13.0-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "migrate:add": "migrate create --template-file src/templates/migration-template.ts --migrations-dir=./src/migrations",
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
+    "poc:merge-plan": "node build/script-merge-user-plan.js",
     "backend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis back",
     "frontend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis front",
     "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
