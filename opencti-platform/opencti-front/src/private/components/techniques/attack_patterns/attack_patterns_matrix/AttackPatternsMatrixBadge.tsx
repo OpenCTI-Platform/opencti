@@ -8,10 +8,14 @@ interface AttackPatternsMatrixBadgeProps {
   attackPattern: FilteredAttackPattern;
   color: string;
   textColor?: string;
+  // When the cell shows a top-right corner indicator (security-posture shield
+  // and/or coverage donuts), the sub-technique count badge is shifted left so
+  // the two do not overlap.
+  hasCornerIndicator?: boolean;
   children: React.ReactNode;
 }
 
-const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, children }: AttackPatternsMatrixBadgeProps) => {
+const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, hasCornerIndicator = false, children }: AttackPatternsMatrixBadgeProps) => {
   const theme = useTheme<Theme>();
   const attackPatternsCount = (attackPattern.isCovered ? 1 : 0)
     + (attackPattern.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0);
@@ -34,6 +38,9 @@ const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, children }
           minWidth: '14px',
           fontSize: '10px',
           paddingInline: '4px',
+          // Shift the count badge left so it clears the shield / coverage donuts
+          // pinned in the same top-right corner.
+          right: hasCornerIndicator ? 24 : 0,
         },
       }}
     >

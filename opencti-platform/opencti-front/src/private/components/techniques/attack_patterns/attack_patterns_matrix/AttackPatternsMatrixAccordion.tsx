@@ -17,6 +17,7 @@ import {
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
 import MatrixEntityMarkers, { MatrixCellEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixEntityMarkers';
 import MatrixCoverageIndicator, { CoverageInformation } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixCoverageIndicator';
+import { getHeatmapColors, HeatmapScale } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsHeatmap';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
@@ -31,6 +32,9 @@ interface AccordionAttackPatternProps {
   entityId?: string;
   entityUsageMap?: Map<string, MatrixCellEntity[]>;
   coverageOverlayMap?: Map<string, CoverageInformation>;
+  heatmapActive?: boolean;
+  frequencyMap?: Map<string, number>;
+  heatmapScale?: HeatmapScale;
 }
 
 const AccordionAttackPattern = ({
@@ -43,6 +47,9 @@ const AccordionAttackPattern = ({
   entityId,
   entityUsageMap,
   coverageOverlayMap,
+  heatmapActive = false,
+  frequencyMap,
+  heatmapScale,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
@@ -110,7 +117,35 @@ const AccordionAttackPattern = ({
   const styles = isCoverage
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
-  const { border, backgroundColor } = styles;
+  let { border, backgroundColor } = styles;
+
+  // Frequency heatmap (US.3): a technique with a direct usage score is filled
+  // with its mapped colour. A technique with no direct score but at least one
+  // scored sub-technique receives no fill and a border coloured by its
+  // highest-scoring sub-technique.
+  let isHeatmapFilled = false;
+  if (heatmapActive && heatmapScale) {
+    const directCount = frequencyMap?.get(attackPattern.attack_pattern_id) ?? 0;
+    if (directCount > 0) {
+      const colors = getHeatmapColors(directCount, heatmapScale);
+      border = `1px solid ${colors.border}`;
+      backgroundColor = colors.background;
+      isHeatmapFilled = true;
+    } else {
+      const maxSubCount = (attackPattern.subAttackPatterns ?? []).reduce(
+        (max, sub) => Math.max(max, frequencyMap?.get(sub.attack_pattern_id) ?? 0),
+        0,
+      );
+      if (maxSubCount > 0) {
+        const colors = getHeatmapColors(maxSubCount, heatmapScale);
+        border = `1px solid ${colors.border}`;
+        backgroundColor = 'transparent';
+      }
+    }
+  }
+  // The pastel fills are light, so switch the label to dark text for contrast
+  // (only when the parent itself is filled, not when it is border-only).
+  const heatmapTextColor = isHeatmapFilled ? 'rgba(0, 0, 0, 0.87)' : undefined;
 
   // Aggregate the entities that use this technique directly or via any of its
   // (present) sub-techniques, de-duplicated, for the parent summary markers.
@@ -188,7 +223,7 @@ const AccordionAttackPattern = ({
           isOverlapping={attackPattern.isOverlapping || false}
         />
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" fontSize={10}>
+          <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
             {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
           </Typography>
           {aggregatedUsage.length > 0 && (

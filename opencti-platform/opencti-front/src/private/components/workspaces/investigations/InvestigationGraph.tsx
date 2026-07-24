@@ -471,6 +471,14 @@ const InvestigationGraphComponent = ({
     height: `calc(100vh - ${totalHeight}px)`,
   };
 
+  // The matrix view has its own internal toolbar (kill chain row) rather than
+  // the graph toolbar, so it should reclaim that reserved height and fill down
+  // to the bottom of the page instead of leaving a gap.
+  const matrixContainerStyle: CSSProperties = {
+    margin: `0 -${theme.spacing(3)}`,
+    height: `calc(100vh - ${totalHeight - toolbarHeight}px)`,
+  };
+
   const savePositions = (positions: OctiGraphPositions) => {
     commitEditPositions({
       variables: {
@@ -576,31 +584,37 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
-        titleActions={(
-          <InvestigationViewSwitcher view={view} onChange={handleChangeView} />
-        )}
       />
-      {view === 'matrix' ? (
-        <div style={graphContainerStyle}>
+      {view === 'matrix' || view === 'matrix-b' ? (
+        <div style={view === 'matrix' ? matrixContainerStyle : graphContainerStyle}>
           <Suspense fallback={<Loader />}>
-            <InvestigationMatrix objects={rawObjects} />
+            <InvestigationMatrix
+              objects={rawObjects}
+              variant={view === 'matrix-b' ? 'B' : 'A'}
+              headerActions={<InvestigationViewSwitcher view={view} onChange={handleChangeView} />}
+            />
           </Suspense>
         </div>
       ) : (
-        <div style={graphContainerStyle} ref={ref}>
-          <Graph parentRef={ref} onPositionsChanged={savePositions}>
-            <GraphToolbar
-              onUnfixNodes={() => savePositions({})}
-              stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-              relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-              entity={investigation}
-              onAddRelation={addRelation}
-              onRemove={remove}
-              onInvestigationExpand={expand}
-              onInvestigationRollback={rollback}
-            />
-          </Graph>
-        </div>
+        <>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+            <InvestigationViewSwitcher view={view} onChange={handleChangeView} />
+          </div>
+          <div style={graphContainerStyle} ref={ref}>
+            <Graph parentRef={ref} onPositionsChanged={savePositions}>
+              <GraphToolbar
+                onUnfixNodes={() => savePositions({})}
+                stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+                relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+                entity={investigation}
+                onAddRelation={addRelation}
+                onRemove={remove}
+                onInvestigationExpand={expand}
+                onInvestigationRollback={rollback}
+              />
+            </Graph>
+          </div>
+        </>
       )}
     </div>
   );
