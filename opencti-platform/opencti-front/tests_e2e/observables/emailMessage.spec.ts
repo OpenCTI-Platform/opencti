@@ -5,6 +5,9 @@ import LeftBarPage from '../model/menu/leftBar.pageModel';
 import ObservablesPage from '../model/observable.pageModel';
 import ObservableDetailsPage from '../model/observableDetails.pageModel';
 
+// Each test uses unique uuid-generated data — safe to run in parallel
+test.describe.configure({ mode: 'parallel' });
+
 /**
  * Content of the test
  * -------------------

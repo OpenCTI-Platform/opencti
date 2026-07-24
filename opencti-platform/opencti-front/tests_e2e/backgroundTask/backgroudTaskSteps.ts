@@ -6,7 +6,6 @@ import FiltersPageModel from '../model/filters.pageModel';
 import { expect } from '../fixtures/baseFixtures';
 import SearchPageModel from '../model/search.pageModel';
 import DataEntitiesPage from '../model/DataEntities.pageModel';
-import { sleep } from '../utils';
 
 export const runBackgroundTaskOnIncidentByFilter = async (page: Page, dryRun: boolean) => {
   const incidentPage = new EventsIncidentPage(page);
@@ -69,12 +68,13 @@ export const searchOnDataEntitiesPerLabels = async (page: Page, dryRun: boolean)
 
   await filter.addLabelFilter('background-task-search-add-label');
   if (!dryRun) {
-    await sleep(3000);
-    if (!await dataTable.getNumberElements(2).isVisible({ timeout: 500 })) {
-      // Try to reload page in case it's a flake.
+    await expect(async () => {
       await entitiesPage.goto();
-    }
-    await expect(dataTable.getNumberElements(2)).toBeVisible(); // 1 by this test + 1 in stix imported data
+      await expect(dataTable.getNumberElements(2)).toBeVisible(); // 1 by this test + 1 in stix imported data
+    }).toPass({
+      intervals: [1_000, 2_000, 3_000],
+      timeout: 15_000,
+    });
   }
   // Clear filter on label
   await filter.removeLastFilter();
