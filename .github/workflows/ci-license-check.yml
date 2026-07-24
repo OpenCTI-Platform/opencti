@@ -28,7 +28,7 @@ jobs:
         docker run  \
           --name backend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux;
              npm install -g corepack
              cd /home/workspace/opencti-platform/opencti-graphql
@@ -41,7 +41,7 @@ jobs:
         docker run  \
           --name frontend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux;
              npm install -g corepack
              cd /home/workspace/opencti-platform/opencti-front
@@ -54,7 +54,7 @@ jobs:
         docker run  \
           --name generate-licenses \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux;
              cd /home/workspace
              chmod 777 scripts/*

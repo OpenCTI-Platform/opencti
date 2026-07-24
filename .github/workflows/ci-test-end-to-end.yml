@@ -206,7 +206,7 @@ jobs:
         docker run  \
           --name frontend-verify-translation \
           -v ${{ github.workspace }}:/home/workspace \
-          node:22-alpine \
+          node:22-alpine3.23 \
           sh -c 'set -eux
             cd /home/workspace/opencti-platform/opencti-front
             node script/verify-translation.js
