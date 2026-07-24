@@ -4,7 +4,7 @@ import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { SmtpAuthType, type SmtpConfigurationAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ALLOW_EMAIL_REWRITE, SMTP_JSON_CONFIG, smtpTest } from '../../database/smtp';
 import { decryptSmtpSecret, encryptSmtpSecret } from './smtpConfiguration-crypto';
 import type { BasicStoreSettings, SmtpConfiguration } from '../../types/settings';
@@ -12,12 +12,6 @@ import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 
 const SMTP_SECRET_FIELDS = ['password', 'oauth_client_secret', 'oauth_refresh_token'] as const;
-
-const checkSmtpConfigurationFeatureEnabled = () => {
-  if (!isFeatureEnabled('SMTP_CONFIGURATION')) {
-    throw ForbiddenAccess('SMTP configuration feature is disabled');
-  }
-};
 
 const encryptSmtpInput = async (input: Record<string, unknown>): Promise<Record<string, unknown>> => {
   const result: Record<string, unknown> = { ...input };
@@ -69,20 +63,11 @@ export const getSmtpConfiguration = async (
   return { ...stored, forced_sender_email: false };
 };
 
-export const getSmtpConfigurationForAdmin = async (
-  context: AuthContext,
-  user: AuthUser,
-): Promise<SmtpConfiguration | null> => {
-  checkSmtpConfigurationFeatureEnabled();
-  return getSmtpConfiguration(context, user);
-};
-
 export const smtpConfigurationEdit = async (
   context: AuthContext,
   user: AuthUser,
   input: SmtpConfigurationAddInput,
 ): Promise<SmtpConfiguration> => {
-  checkSmtpConfigurationFeatureEnabled();
   if (!ALLOW_EMAIL_REWRITE) {
     throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
   }
@@ -132,7 +117,6 @@ export const smtpConfigurationDelete = async (
   context: AuthContext,
   user: AuthUser,
 ): Promise<boolean> => {
-  checkSmtpConfigurationFeatureEnabled();
   if (!ALLOW_EMAIL_REWRITE) {
     throw ForbiddenAccess('SMTP configuration is enforced by the backend configuration');
   }
@@ -156,6 +140,5 @@ export const smtpConfigurationTest = async (
   _user: AuthUser,
   email: string,
 ): Promise<boolean> => {
-  checkSmtpConfigurationFeatureEnabled();
   return smtpTest(email);
 };
