@@ -11,7 +11,7 @@ import type { ConnectorContractConfiguration, ContractConfigInput } from '../../
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
 import { buildCatalogMapFromDefinitions, buildContractsByImageCache, clearCatalogCacheValidators, type InternalCatalog } from './catalog-cache';
-import { findAllCatalogs, findLatestContractsBySlug } from './catalog-persistence';
+import { findAllCatalogs, findLatestContractsBySlug } from './catalog-repository';
 import type { BasicStoreEntityCatalog, BasicStoreEntityCatalogContract } from './catalog-entity';
 
 const validatorCache = new Map<string, ValidateFunction>();
