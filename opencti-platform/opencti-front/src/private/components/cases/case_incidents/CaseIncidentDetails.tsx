@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, Suspense, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
 import Divider from '@mui/material/Divider';
@@ -12,6 +12,10 @@ import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
+import useHelper from '../../../../utils/hooks/useHelper';
+import { CustomFieldsLoader, CustomFieldDef } from '../../common/custom_fields/CustomFieldsInput';
+
+const CASE_INCIDENT_TYPE = 'Case-Incident';
 
 const CaseIncidentDetailsFragment = graphql`
   fragment CaseIncidentDetails_case on CaseIncident {
@@ -41,6 +45,16 @@ const CaseIncidentDetailsFragment = graphql`
       }
     }
     workflowEnabled
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      boolean_value
+      date_value
+      select_value
+      select_values
+    }
     relatedContainers(
       first: 10
       orderBy: modified
@@ -53,6 +67,12 @@ const CaseIncidentDetailsFragment = graphql`
   }
 `;
 
+// Formats a raw custom field name (e.g. "risk_score") into a human-readable label ("Risk score").
+const formatCustomFieldLabel = (fieldName: string) => {
+  const spaced = fieldName.replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+};
+
 interface CaseIncidentDetailsProps {
   caseIncidentData: CaseIncidentDetails_case$key;
 }
@@ -60,9 +80,33 @@ interface CaseIncidentDetailsProps {
 const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
   caseIncidentData,
 }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const data = useFragment(CaseIncidentDetailsFragment, caseIncidentData);
   const responseTypes = data.response_types ?? [];
+  const customFieldValues = data.customFieldValues ?? [];
+  const { isFeatureEnable } = useHelper();
+  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+  const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
+  const customFieldLabelById = new Map(customFieldDefs.map((def) => [def.id, def.label]));
+
+  const getCustomFieldDisplayValue = (cfv: NonNullable<typeof customFieldValues>[number]) => {
+    if (cfv.boolean_value !== null && cfv.boolean_value !== undefined) {
+      return cfv.boolean_value ? t_i18n('True') : t_i18n('False');
+    }
+    if (cfv.date_value) {
+      return fldt(cfv.date_value);
+    }
+    if (cfv.int_value !== null && cfv.int_value !== undefined) {
+      return String(cfv.int_value);
+    }
+    if (cfv.select_values && cfv.select_values.length > 0) {
+      return cfv.select_values.join(', ');
+    }
+    if (cfv.select_value) {
+      return cfv.select_value;
+    }
+    return cfv.string_value ?? '';
+  };
 
   return (
     <div style={{ height: '100%' }}>
@@ -115,6 +159,21 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
+          {isCustomFieldsEnabled && customFieldValues.length > 0 && (
+            <Suspense fallback={null}>
+              <CustomFieldsLoader entityType={CASE_INCIDENT_TYPE} onLoaded={setCustomFieldDefs} />
+            </Suspense>
+          )}
+          {customFieldValues.map((cfv) => (
+            <Grid item xs={6} key={cfv.field_id}>
+              <Label>
+                {customFieldLabelById.get(cfv.field_id) ?? formatCustomFieldLabel(cfv.field_name)}
+              </Label>
+              <FieldOrEmpty source={getCustomFieldDisplayValue(cfv)}>
+                <Tag label={getCustomFieldDisplayValue(cfv)} />
+              </FieldOrEmpty>
+            </Grid>
+          ))}
         </Grid>
         <Divider />
         <RelatedContainers
