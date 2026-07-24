@@ -280,6 +280,7 @@ jobs:
         run: cyclonedx-cli validate --input-file opencti-platform.cdx.json --fail-on-errors
 
       - name: Upload merged SBOM
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: sbom-opencti-platform${{ matrix.suffix }}
