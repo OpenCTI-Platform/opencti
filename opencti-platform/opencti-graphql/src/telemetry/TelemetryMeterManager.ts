@@ -118,6 +118,9 @@ export class TelemetryMeterManager {
   // Number of active connectors
   activeConnectorsCount = 0;
 
+  // Number of OpenAEV connectors
+  oaevConnectorsCount = 0;
+
   // Active connectors broken down by catalog identity (slug, managed, type).
   // Composer-managed connectors carry the exact catalog contract slug; manual
   // connectors fall back to their registered name (managed=false).
@@ -192,6 +195,12 @@ export class TelemetryMeterManager {
 
   // Number security coverages
   securityCoveragesCount = 0;
+
+  // Number security coverages
+  securityCoverageResultsCount = 0;
+
+  // Number of relationships has-covered
+  relationshipsHasCoveredCount = 0;
 
   // Number of decay rules created
   decayRuleCreationCount = 0;
@@ -389,6 +398,10 @@ export class TelemetryMeterManager {
     this.activeConnectorsCount = n;
   }
 
+  setOaevConnectorsCount(n: number) {
+    this.oaevConnectorsCount = n;
+  }
+
   setActiveConnectorsByIdentity(items: DimensionalGaugeItem[]) {
     this.activeConnectorsByIdentity = items;
   }
@@ -495,6 +508,14 @@ export class TelemetryMeterManager {
 
   setSecurityCoveragesCount(n: number) {
     this.securityCoveragesCount = n;
+  }
+
+  setSecurityCoverageResultsCount(n: number) {
+    this.securityCoverageResultsCount = n;
+  }
+
+  setRelationshipsHasCoveredCount(n: number) {
+    this.relationshipsHasCoveredCount = n;
   }
 
   setDecayRuleCreationCount(n: number) {
@@ -684,6 +705,7 @@ export class TelemetryMeterManager {
     this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
+    this.registerGauge('oaev_connectors_count', 'number of OpenAEV connectors', 'oaevConnectorsCount');
     this.registerDimensionalGauge('active_connectors_by_identity', 'active connectors broken down by catalog identity (slug, managed, type)', 'activeConnectorsByIdentity');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
@@ -712,6 +734,8 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
+    this.registerGauge('security_coverage_results_count', 'Number of security coverage results', 'securityCoverageResultsCount');
+    this.registerGauge('relationships_has_covered_count', 'Number of relationships has-covered', 'relationshipsHasCoveredCount');
     this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
     this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
     this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
