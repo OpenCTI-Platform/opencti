@@ -26,6 +26,7 @@ const ThemeExportHandlerQuery = graphql`
       theme_login_aside_gradient_end
       theme_login_aside_gradient_start
       theme_login_aside_image 
+      theme_advanced_override
     }
   }
 `;

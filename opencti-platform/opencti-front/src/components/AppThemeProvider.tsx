@@ -2,7 +2,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
-import themeDark, {
+import {
   THEME_DARK_DEFAULT_ACCENT,
   THEME_DARK_DEFAULT_BACKGROUND,
   THEME_DARK_DEFAULT_PAPER,
@@ -10,10 +10,11 @@ import themeDark, {
   THEME_DARK_DEFAULT_SECONDARY,
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
-import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
+import ThemeBuilder from './ThemeBuilder';
+import type { AppThemeType } from './Theme';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -21,57 +22,8 @@ interface AppThemeProviderProps {
   activeTheme?: { id: string } & AppThemeType | null;
 }
 
-interface AppThemeType {
-  name: string;
-  theme_background: string;
-  theme_paper: string;
-  theme_nav: string;
-  theme_primary: string;
-  theme_secondary: string;
-  theme_accent: string;
-  theme_logo?: string | null;
-  theme_logo_collapsed?: string | null;
-  theme_logo_login?: string | null;
-  theme_text_color: string;
-}
-
-const themeBuilder = (
-  theme: AppThemeType,
-) => {
-  const platformThemeLogo = theme?.theme_logo ?? null;
-  const platformThemeLogoCollapsed = theme?.theme_logo_collapsed ?? null;
-  const platformThemeBackground = theme?.theme_background ?? null;
-  const platformThemePaper = theme?.theme_paper ?? null;
-  const platformThemeNav = theme?.theme_nav ?? null;
-  const platformThemePrimary = theme?.theme_primary ?? null;
-  const platformThemeSecondary = theme?.theme_secondary ?? null;
-  const platformThemeAccent = theme?.theme_accent ?? null;
-  const platformThemeTextColor = theme?.theme_text_color ?? 'rgba(255, 255, 255, 0.7)';
-  if (theme?.name === 'Light') {
-    // needed until everything is customizable, like text colors
-    return themeLight(
-      platformThemeLogo,
-      platformThemeLogoCollapsed,
-      platformThemeBackground,
-      platformThemePaper,
-      platformThemeNav,
-      platformThemePrimary,
-      platformThemeSecondary,
-      platformThemeAccent,
-      platformThemeTextColor,
-    );
-  }
-  return themeDark(
-    platformThemeLogo,
-    platformThemeLogoCollapsed,
-    platformThemeBackground,
-    platformThemePaper,
-    platformThemeNav,
-    platformThemePrimary,
-    platformThemeSecondary,
-    platformThemeAccent,
-    platformThemeTextColor,
-  );
+const themeBuilder = (theme: AppThemeType) => {
+  return ThemeBuilder(theme);
 };
 
 const defaultTheme: AppThemeType = {
@@ -111,6 +63,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
       theme_primary: themeToUse?.theme_primary ?? defaultTheme.theme_primary,
       theme_secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
       theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
+      theme_advanced_override: themeToUse?.theme_advanced_override ?? defaultTheme.theme_advanced_override,
     };
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
   }, [themeToUse]);
@@ -143,10 +96,10 @@ export const ConnectedThemeProvider = createFragmentContainer(
           theme_nav
           theme_primary
           theme_secondary
-          theme_text_color
           theme_accent
           theme_background
           theme_paper
+          theme_advanced_override
         }
       }
     `,
