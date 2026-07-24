@@ -186,6 +186,36 @@ const REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY = gql`
     }
 `;
 
+const REMOVE_STIX_CORE_RELATIONSHIP_FROM_DRAFT_QUERY = gql`
+    mutation StixCoreRelationshipEditRemoveFromDraft($id: ID!) {
+        stixCoreRelationshipEdit(id: $id) {
+            removeFromDraft
+        }
+    }
+`;
+
+const CREATE_CORE_RELATIONSHIP_QUERY = gql`
+    mutation StixCoreRelationshipAddForDraftTest($input: StixCoreRelationshipAddInput!) {
+        stixCoreRelationshipAdd(input: $input) {
+            id
+            standard_id
+        }
+    }
+`;
+
+const READ_REPORT_DRAFT_VERSION_QUERY = gql`
+    query reportDraftVersion($id: String!) {
+        report(id: $id) {
+            id
+            description
+            draftVersion {
+                draft_id
+                draft_operation
+            }
+        }
+    }
+`;
+
 const IMPORT_FILE_QUERY = gql`
     mutation StixDomainObjectImportPush($id: ID!, $file: Upload!, $fileMarkings: [String]) {
         stixDomainObjectEdit(id: $id) {
@@ -676,6 +706,85 @@ describe('Drafts workspace resolver testing', () => {
       DELETE_REPORT_QUERY,
       { id: reportToDeleteStandardId },
     );
+  });
+
+  it('should remove an update_linked entity from draft once its linking relation is gone (issue #17256)', async () => {
+    // Create a draft
+    const draftName = 'updateLinkedRemovalTestDraft';
+    const createdDraft = await queryAsAdmin({
+      query: CREATE_DRAFT_WORKSPACE_QUERY,
+      variables: { input: { name: draftName } },
+    });
+    expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+    const updateLinkedDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+
+    // Ensure we are not already in a draft context left over from a previous test before
+    // creating the "live" report below.
+    await modifyAdminDraftContext('');
+
+    // Create a report live (outside of any draft)
+    const EXISTING_REPORT = {
+      input: {
+        name: 'Existing report for update_linked test',
+        description: 'Original description',
+        published: '2020-02-26T00:51:35.000Z',
+        confidence: 90,
+      },
+    };
+    const existingReport = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, EXISTING_REPORT);
+    const existingReportStandardId = existingReport.data?.reportAdd.standard_id;
+    const existingReportId = existingReport.data?.reportAdd.id;
+
+    await modifyAdminDraftContext(updateLinkedDraftId);
+
+    // Update the pre-existing report in draft (draft_operation: update)
+    await queryInitPlatformAsAdmin(
+      UPDATE_REPORT_QUERY,
+      { id: existingReportStandardId, input: { key: 'description', value: 'Updated in draft' } },
+    );
+
+    // Create a new report in draft and link it to the existing report (draft_operation: create relation)
+    const NEW_REPORT_IN_DRAFT = {
+      input: {
+        name: 'New report created in draft',
+        description: 'New report created in draft',
+        published: '2020-02-26T00:51:35.000Z',
+        confidence: 90,
+      },
+    };
+    const newReportInDraft = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, NEW_REPORT_IN_DRAFT);
+    const newReportInDraftId = newReportInDraft.data?.reportAdd.id;
+
+    const createdRelation = await queryInitPlatformAsAdmin(CREATE_CORE_RELATIONSHIP_QUERY, {
+      input: {
+        fromId: newReportInDraftId,
+        toId: existingReportId,
+        relationship_type: 'related-to',
+      },
+    });
+    const createdRelationStandardId = createdRelation.data?.stixCoreRelationshipAdd.standard_id;
+    expect(createdRelationStandardId).toBeDefined();
+
+    // Removing the existing report from draft should revert its own field changes but keep it
+    // as update_linked, since the draft-created relation still targets it.
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: existingReportStandardId });
+    const reportAfterFirstRemoval = await queryInitPlatformAsAdmin(READ_REPORT_DRAFT_VERSION_QUERY, { id: existingReportStandardId });
+    expect(reportAfterFirstRemoval.data?.report.description).toBe('Original description');
+    expect(reportAfterFirstRemoval.data?.report.draftVersion?.draft_operation).toBe('update_linked');
+
+    // Calling remove from draft again while still update_linked must not throw and must be a no-op
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: existingReportStandardId });
+    const reportStillLinked = await queryInitPlatformAsAdmin(READ_REPORT_DRAFT_VERSION_QUERY, { id: existingReportStandardId });
+    expect(reportStillLinked.data?.report.draftVersion?.draft_operation).toBe('update_linked');
+
+    // Removing the linking relation from draft should now cascade-clean the update_linked report
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_RELATIONSHIP_FROM_DRAFT_QUERY, { id: createdRelationStandardId });
+    const reportAfterCascadeCleanup = await queryInitPlatformAsAdmin(READ_REPORT_DRAFT_VERSION_QUERY, { id: existingReportStandardId });
+    expect(reportAfterCascadeCleanup.data?.report.draftVersion).toBeNull();
+
+    await modifyAdminDraftContext('');
+    await queryInitPlatformAsAdmin(DELETE_REPORT_QUERY, { id: existingReportStandardId });
+    await queryAsAdmin({ query: DELETE_DRAFT_WORKSPACE_QUERY, variables: { id: updateLinkedDraftId } });
   });
 
   // ---- Tests for draftWorkspaceEditField ----
