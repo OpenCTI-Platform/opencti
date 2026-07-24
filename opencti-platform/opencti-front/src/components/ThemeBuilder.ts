@@ -60,10 +60,10 @@ const buildOverrideDefault = (theme?: AppThemeType) => {
   );
 };
 
-const addThemePropertiesIfMissing = (defaultTheme: any, selectedTheme: any) => {
+const addThemePropertiesIfMissing = (defaultTheme: object, selectedTheme: object) => {
   // read through default theme and add properties to selected theme
   for (const key in defaultTheme) {
-    if (defaultTheme.hasOwnProperty(key)) {
+    if (Object.hasOwn(defaultTheme, key)) {
       // Check if the property exists in the selected theme, if not add it
       if (selectedTheme[key] === undefined) {
         selectedTheme[key] = defaultTheme[key];
