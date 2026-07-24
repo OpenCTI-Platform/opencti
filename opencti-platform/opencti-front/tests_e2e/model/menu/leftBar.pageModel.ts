@@ -23,8 +23,9 @@ export default class LeftBarPage {
 
     await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {
-      expect(await this.page.getByRole('menuitem', { name: subMenuItem }).isVisible());
+      await expect(this.page.getByRole('menuitem', { name: subMenuItem })).toBeVisible();
       await this.page.getByRole('menuitem', { name: subMenuItem }).click();
+      await this.page.waitForLoadState('domcontentloaded');
     }
   }
 
