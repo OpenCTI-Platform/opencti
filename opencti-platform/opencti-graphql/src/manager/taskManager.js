@@ -33,6 +33,7 @@ import {
   ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_REMOVE_GROUPS,
   ACTION_TYPE_REMOVE_ORGANIZATIONS,
+  ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES,
   ACTION_TYPE_REPLACE,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_RULE_APPLY,
@@ -543,6 +544,47 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+// Cascade cleanup of a deleted custom field definition: for each entity still holding a value
+// for the deleted field, rebuild its custom_field_values without the removed field and patch it.
+const customFieldValuesRemoveOperationCallback = async (context, user, task, operations) => {
+  const fieldName = operations[0]?.context?.values?.[0];
+  let totalProcessed = task.task_processed_number;
+  return async (elements) => {
+    const objects = [];
+    const ids = elements.map((e) => e.internal_id);
+    // `elements` only carry the query's baseData fields (see taskQuery/elList options), which do
+    // NOT include custom_field_values. A full reload is required to read and filter that field.
+    const loadedElements = await internalFindByIds(context, user, ids);
+    for (let index = 0; index < loadedElements.length; index += 1) {
+      await doYield();
+      const element = loadedElements[index];
+      const currentValues = element.custom_field_values ?? [];
+      const nextValues = currentValues.filter((value) => value.field_name !== fieldName);
+      // Only patch entities actually holding a value for the deleted field
+      if (nextValues.length !== currentValues.length) {
+        objects.push({
+          id: element.standard_id,
+          type: convertTypeToStixType(element.entity_type),
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              id: element.internal_id,
+              type: element.entity_type,
+              opencti_operation: 'patch',
+              opencti_field_patch: [{ key: 'custom_field_values', value: nextValues, operation: 'replace' }],
+            },
+          },
+        });
+      }
+    }
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+    }
+    // Update task
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -555,6 +597,10 @@ const computeOperationCallback = async (context, user, task, actionType, operati
     const { containerId } = operations[0];
     const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
     return promoteOperationCallback(context, user, task, container);
+  }
+  // Handle specific case of removing a deleted custom field definition values from entities
+  if (actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES) {
+    return customFieldValuesRemoveOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {

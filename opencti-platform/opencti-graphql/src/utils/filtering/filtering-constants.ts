@@ -2,6 +2,7 @@ import { INPUT_LABELS } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
+import { CUSTOM_FIELD_PREFIX } from '../../modules/customField/custom-field-types';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -109,6 +110,22 @@ export const PIR_SCORE_SUBFILTER = 'score';
 export const LAST_PIR_SCORE_DATE_SUBFILTER = 'date';
 export const PIR_IDS_SUBFILTER = 'pir_ids';
 
+// for Custom Fields (nested filter on custom_field_values)
+export const CUSTOM_FIELD_NAME_SUBFILTER = 'field_name';
+export const CUSTOM_FIELD_INT_VALUE_SUBFILTER = 'int_value';
+export const CUSTOM_FIELD_STRING_VALUE_SUBFILTER = 'string_value';
+export const CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER = 'boolean_value';
+export const CUSTOM_FIELD_DATE_VALUE_SUBFILTER = 'date_value';
+export const CUSTOM_FIELD_SELECT_VALUE_SUBFILTER = 'select_value';
+export const CUSTOM_FIELD_SELECT_VALUES_SUBFILTER = 'select_values';
+
+/**
+ * Check if a filter key corresponds to a custom field (dynamically detected by prefix).
+ */
+export const isCustomFieldFilterKey = (key: string): boolean => {
+  return key.startsWith(CUSTOM_FIELD_PREFIX);
+};
+
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 
@@ -151,7 +168,8 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
   return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
-    || isMetricsName(filterKey);
+    || isMetricsName(filterKey)
+    || isCustomFieldFilterKey(filterKey);
 };
 
 // list of the special filtering keys

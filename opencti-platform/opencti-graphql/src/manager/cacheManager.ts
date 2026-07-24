@@ -58,6 +58,7 @@ import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/ex
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -348,6 +349,12 @@ const platformPirs = (context: AuthContext) => {
   };
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
+const platformCustomFieldDefinitions = (context: AuthContext) => {
+  const reloadCustomFieldDefinitions = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]);
+  };
+  return { values: null, fn: reloadCustomFieldDefinitions };
+};
 
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
@@ -376,6 +383,7 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
     writeCacheForEntity(ENTITY_TYPE_DECAY_EXCLUSION_RULE, platformDecayExclusionRules(context));
+    writeCacheForEntity(ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, platformCustomFieldDefinitions(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing

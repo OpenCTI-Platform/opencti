@@ -3,8 +3,8 @@ import { getRuntimeAttributeValues, getSchemaAttributeNames, getSchemaAttributes
 const attributeResolvers = {
   Query: {
     runtimeAttributes: (_, args, context) => getRuntimeAttributeValues(context, context.user, args),
-    schemaAttributeNames: (_, { elementType }) => getSchemaAttributeNames(elementType),
-    schemaAttributes: (_) => getSchemaAttributes(),
+    schemaAttributeNames: (_, { elementType }, context) => getSchemaAttributeNames(context, context.user, elementType),
+    schemaAttributes: (_, args, context) => getSchemaAttributes(context, context.user),
   },
 };
 
