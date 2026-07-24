@@ -68,6 +68,12 @@ const FintelDesignEditionOverviewComponent: FunctionComponent<
     }
   `;
 
+  const refetchDesigns = () => {
+    fetchQuery(fintelDesignsRefetchQuery, {}).toPromise().catch((err) => {
+      handleError(err);
+    });
+  };
+
   const fintelDesignValidation = () => Yup.object().shape({
     name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
     description: Yup.string().nullable(),
@@ -79,6 +85,7 @@ const FintelDesignEditionOverviewComponent: FunctionComponent<
         id: fintelDesign.id,
         input: { key: name, value: value ?? '' },
       },
+      onCompleted: name === 'default' ? refetchDesigns : undefined,
     });
   };
 
