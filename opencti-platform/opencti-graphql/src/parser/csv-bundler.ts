@@ -33,7 +33,7 @@ export interface CsvBundlerIngestionOpts {
   draftId?: string;
 }
 
-const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
+const sendBundleToWorker = async (context: AuthContext, bundle: BundleBuilder, opts: CsvBundlerIngestionOpts) => {
   // Handle container
   if (opts.entity && isStixDomainObjectContainer(opts.entity.entity_type)) {
     const refs = bundle.ids();
@@ -53,7 +53,7 @@ const sendBundleToWorker = async (bundle: BundleBuilder, opts: CsvBundlerIngesti
     work_id: opts.workId,
     content: bundleContentAsString,
     draft_id: opts.draftId ?? '',
-  });
+  }, context, opts.applicantUser);
   return objectCount;
 };
 
@@ -105,7 +105,7 @@ const internalGenerateBundles = async (
           } else {
             let objectSentCount = bundleBuilder.objects.length;
             if (sendBundles) {
-              objectSentCount = await sendBundleToWorker(bundleBuilder, opts);
+              objectSentCount = await sendBundleToWorker(context, bundleBuilder, opts);
             }
             totalBundleSend += 1;
             totalObjectSend += objectSentCount;
@@ -123,7 +123,7 @@ const internalGenerateBundles = async (
     if (bundleBuilder.objects.length > 0) {
       let objectSentCount = bundleBuilder.objects.length;
       if (sendBundles) {
-        objectSentCount = await sendBundleToWorker(bundleBuilder, opts);
+        objectSentCount = await sendBundleToWorker(context, bundleBuilder, opts);
       }
       totalObjectSend += objectSentCount;
       totalBundleSend += 1;
