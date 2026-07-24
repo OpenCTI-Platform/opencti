@@ -7,16 +7,19 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Box, ListItemButton } from '@mui/material';
+import { Box, ListItemButton, Tooltip } from '@mui/material';
+import { InformationOutline } from 'mdi-material-ui';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import AddVulnerabilities from './AddVulnerabilities';
 import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
 import SecurityCoverageScores from './SecurityCoverageScores';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
+import Alert from '../../../../components/Alert';
+
+const MAX_VULNERABILITIES = 500;
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
@@ -33,18 +36,29 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
     relationship_type: 'has-covered',
     toTypes: ['Vulnerability'],
   };
+  const globalCount = securityCoverage.vulnerabilities?.pageInfo?.globalCount ?? 0;
   return (
     <div>
-      <Label action={(
-        <AddVulnerabilities
-          securityCoverage={securityCoverage}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      <Label
+        action={(
+          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        )}
       >
         {t_i18n('Vulnerabilities')}
       </Label>
-      <List>
+      {globalCount > MAX_VULNERABILITIES && (
+        <Alert
+          severity="warning"
+          style={{ marginBottom: 10 }}
+          content={t_i18n(
+            'Showing {max} of {count} vulnerabilities. Some results are not displayed.',
+            { values: { max: MAX_VULNERABILITIES, count: globalCount } },
+          )}
+        />
+      )}
+      <List sx={{ maxHeight: 10 * 44, overflowY: 'auto' }}>
         <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
           {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
             const vulnerability = vulnerabilityEdge.node.to;
@@ -110,8 +124,11 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
           orderBy: created_at
           orderMode: asc
           toTypes: ["Vulnerability"]
-          first: 25
+          first: 500
         ) @connection(key: "Pagination_vulnerabilities") {
+          pageInfo {
+            globalCount
+          }
           edges {
             node {
               id
