@@ -220,7 +220,7 @@
   "resolutions": {
     "axios": "1.18.1",
     "chokidar": "5.0.0",
-    "cookie": "1.1.1",
+    "cookie": "2.0.1",
     "cross-fetch": "4.1.0",
     "ioredis": "5.8.2",
     "openid-clientv5/jose": "5.10.0",
