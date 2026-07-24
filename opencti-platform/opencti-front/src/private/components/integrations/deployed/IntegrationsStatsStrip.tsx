@@ -3,16 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
-import {
-  DnsOutlined,
-  DownloadOutlined,
-  EngineeringOutlined,
-  RocketLaunchOutlined,
-  SpeedOutlined,
-  StorageOutlined,
-  SwapVertOutlined,
-  UploadOutlined,
-} from '@mui/icons-material';
+import { DnsOutlined, DownloadOutlined, EngineeringOutlined, RocketLaunchOutlined, SpeedOutlined, StorageOutlined, SwapVertOutlined, UploadOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { interval } from 'rxjs';
 import { IntegrationsStatsStripQuery } from './__generated__/IntegrationsStatsStripQuery.graphql';
@@ -236,18 +227,20 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
     </Stack>
   );
 
-  const nodes: FlowNodeProps[] = [
+  // Ids are stable across locales: used as React keys (labels are translated).
+  const nodes: (FlowNodeProps & { id: string })[] = [
     {
+      id: 'deployed',
       icon: RocketLaunchOutlined,
       value: safeValue(deployedCount),
       label: t_i18n('Deployed integrations'),
       to: '/dashboard/integrations/deployed',
     },
-    { icon: DnsOutlined, value: safeValue(metrics.queuedBundles), label: t_i18n('Queued bundles') },
-    { icon: EngineeringOutlined, value: safeValue(metrics.consumers), label: t_i18n('Connected workers') },
-    { icon: SpeedOutlined, value: safeValue(metrics.ackRate, '/s'), label: t_i18n('Bundles processed') },
-    { icon: SwapVertOutlined, value: operationsValue, label: t_i18n('Operations') },
-    { icon: StorageOutlined, value: safeValue(metrics.docsCount), label: t_i18n('Total documents') },
+    { id: 'queued', icon: DnsOutlined, value: safeValue(metrics.queuedBundles), label: t_i18n('Queued bundles') },
+    { id: 'workers', icon: EngineeringOutlined, value: safeValue(metrics.consumers), label: t_i18n('Connected workers') },
+    { id: 'processed', icon: SpeedOutlined, value: safeValue(metrics.ackRate, '/s'), label: t_i18n('Bundles processed') },
+    { id: 'operations', icon: SwapVertOutlined, value: operationsValue, label: t_i18n('Operations') },
+    { id: 'documents', icon: StorageOutlined, value: safeValue(metrics.docsCount), label: t_i18n('Total documents') },
   ];
 
   return (
@@ -261,8 +254,8 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
         borderTop: `1px solid ${alpha(theme.palette.text.primary, 0.05)}`,
       }}
     >
-      {nodes.map((node, i) => (
-        <Fragment key={node.label}>
+      {nodes.map(({ id, ...node }, i) => (
+        <Fragment key={id}>
           <FlowNode {...node} />
           {i < nodes.length - 1 && <FlowLink index={i} />}
         </Fragment>

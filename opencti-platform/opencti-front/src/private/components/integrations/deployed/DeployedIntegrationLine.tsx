@@ -160,6 +160,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           <Typography
             sx={{
               fontSize: 13,
+              // Allow the flex child to shrink so long names truncate with an
+              // ellipsis instead of pushing the other columns.
+              minWidth: 0,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -218,15 +221,15 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
                 lineHeight: '16px',
                 ...(hasQueuedMessages
                   ? {
-                    color: theme.palette.primary.main,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                  }
+                      color: theme.palette.primary.main,
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    }
                   : {
-                    color: theme.palette.text.secondary,
-                    backgroundColor: alpha(theme.palette.text.primary, 0.04),
-                    border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-                  }),
+                      color: theme.palette.text.secondary,
+                      backgroundColor: alpha(theme.palette.text.primary, 0.04),
+                      border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
+                    }),
               }}
             >
               {n(item.messagesCount)}
