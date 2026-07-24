@@ -610,9 +610,6 @@ const ThemeLight = (
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
           },
-          '.leaflet-container': {
-            backgroundColor: `${paper || '#ffffff'} !important`,
-          },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid #AFB0B6 !important',
             borderBottom: '2px solid #AFB0B6 !important',

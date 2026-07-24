@@ -102,6 +102,16 @@ COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
+# Download default map tiles (PMTiles) for offline map rendering.
+ARG MAP_TILE_URL=""
+RUN <<EOT
+  set -euxo pipefail
+
+  if [ -n "${MAP_TILE_URL}" ]; then
+    curl -sSfL -o /opt/opencti/world.pmtiles "${MAP_TILE_URL}"
+  fi
+EOT
+
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"

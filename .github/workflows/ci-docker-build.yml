@@ -99,6 +99,8 @@ jobs:
         outputs: ${{ inputs.publish_to_registry == 'false' && 'type=docker,dest=/tmp/opencti-platform.tar' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          MAP_TILE_URL=${{ vars.MAP_TILE_URL }}
 
     - name: Upload opencti docker image artifact
       if: ${{ inputs.publish_to_registry == 'false' }}

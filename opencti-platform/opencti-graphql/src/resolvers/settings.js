@@ -15,6 +15,9 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
+  uploadMapTileData,
+  deleteMapTileData,
+  getMapTileS3FileInfo,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -25,7 +28,7 @@ import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
-import { CguStatus, PlatformType } from '../generated/graphql';
+import { CguStatus, MapTileServerMode, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
@@ -74,6 +77,17 @@ const settingsResolvers = {
     caller_ip: (_, __, context) => context.req?.ip ?? null,
     metrics_definition: () => getEntityMetricsConfiguration(),
     is_authentication_by_env: () => isAuthenticationForcedFromEnv(),
+    platform_map_tile_server_mode: (settings) => settings.platform_map_tile_server_mode ?? MapTileServerMode.Bundled,
+    platform_map_tile_server_s3_file: async () => {
+      const meta = await getMapTileS3FileInfo();
+      if (!meta) return null;
+      const nameMatch = meta.contentDisposition?.match(/filename="(.+)"/);
+      return {
+        name: nameMatch ? nameMatch[1] : 'world.pmtiles',
+        size: meta.contentLength ?? 0,
+        sha256: meta.checksumSHA256 ?? null,
+      };
+    },
   },
   AppInfo: {
     memory: getMemoryStatistics(),
@@ -93,6 +107,8 @@ const settingsResolvers = {
       updateLocalAuth: ({ input }) => updateLocalAuth(context, context.user, id, input),
       updateCertAuth: ({ input }) => updateCertAuth(context, context.user, id, input),
       updateHeaderAuth: ({ input }) => updateHeaderAuth(context, context.user, id, input),
+      uploadMapTileData: ({ file }) => uploadMapTileData(context, context.user, file),
+      deleteMapTileData: () => deleteMapTileData(context, context.user),
     }),
   },
   Subscription: {

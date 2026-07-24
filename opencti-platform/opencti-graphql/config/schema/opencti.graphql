@@ -1198,6 +1198,11 @@ enum CGUStatus {
   enabled
 }
 
+enum MapTileServerMode {
+  bundled
+  s3
+}
+
 type PublicProvider {
   name: String!
   type: String!
@@ -1226,8 +1231,6 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1339,8 +1342,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1412,6 +1413,15 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   # XTM1 AI
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  # Map tiles
+  platform_map_tile_server_mode: MapTileServerMode!
+  platform_map_tile_server_s3_file: MapTileS3File
+}
+
+type MapTileS3File {
+  name: String!
+  size: Float!
+  sha256: String
 }
 
 ############## Groups
@@ -16007,6 +16017,8 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateCertAuth(input: CertAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
+  uploadMapTileData(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteMapTileData: Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType

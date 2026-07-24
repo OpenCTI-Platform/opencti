@@ -610,9 +610,6 @@ const ThemeDark = (
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
           },
-          '.leaflet-container': {
-            backgroundColor: `${paper || THEME_DARK_DEFAULT_PAPER} !important`,
-          },
           '.react-grid-item .react-resizable-handle::after': {
             borderRight: '2px solid rgba(255, 255, 255, 0.4) !important',
             borderBottom: '2px solid rgba(255, 255, 255, 0.4) !important',

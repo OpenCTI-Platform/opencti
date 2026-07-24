@@ -51,8 +51,6 @@ const rootSettingsFragment = graphql`
       }
     }
     platform_language
-    platform_map_tile_server_dark
-    platform_map_tile_server_light
     platform_openaev_url
     platform_opengrc_url
     platform_xtmhub_url
@@ -119,6 +117,7 @@ const rootSettingsFragment = graphql`
     platform_trash_enabled
     filigran_chatbot_ai_cgu_status
     is_authentication_by_env
+    platform_map_tile_server_mode
     platform_protected_sensitive_config {
       enabled
       markings {

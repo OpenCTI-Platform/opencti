@@ -595,6 +595,7 @@
   "Manager ID": "관리자 ID",
   "Manager running": "관리자 실행 중",
   "Manifest": "매니페스트",
+  "Map tile server mode": "지도 타일 서버 모드",
   "Mappings": "매핑",
   "Marital status": "결혼 상태",
   "Marking": "마킹",
@@ -942,6 +943,7 @@
   "Size": "크기",
   "Skip line character": "라인 건너뛰기 문자",
   "Slug": "슬러그",
+  "SMTP configuration": "SMTP 구성",
   "SMTP enabled": "SMTP 사용",
   "Sophistication": "정교함",
   "Source": "출처",
@@ -1145,6 +1147,5 @@
   "XTM Hub Token": "XTM 허브 토큰",
   "XTM One intent": "XTM One 의도",
   "XTM One registration manager": "XTM One 등록 관리자",
-  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태",
-  "SMTP configuration": "SMTP 구성"
+  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }
