@@ -25,7 +25,7 @@ export const findFintelDesignPaginated = async (context: AuthContext, user: Auth
 
 export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
   await checkEnterpriseEdition(context);
-  const shouldSetDefault = (fintelDesign as { default?: boolean }).default === true;
+  const fintelDesignWithDefault = { ...fintelDesign, default: fintelDesign.default ?? false };
 
   // The default status is stored on the object itself (fintelDesign) rather than on a parent entity.
   // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
@@ -34,10 +34,10 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
   // Locking prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference as a dedicated field on a settings entity,
   // which would make this unicity constraint trivial to enforce.
-  const lock = shouldSetDefault ? await lockResources(['fintel-design-default']) : null;
+  const lock = fintelDesignWithDefault.default ? await lockResources(['fintel-design-default']) : null;
   try {
-    const created = await createEntity(context, user, fintelDesign, ENTITY_TYPE_FINTEL_DESIGN);
-    if (shouldSetDefault) {
+    const created = await createEntity(context, user, fintelDesignWithDefault, ENTITY_TYPE_FINTEL_DESIGN);
+    if (fintelDesignWithDefault.default) {
       await applyUniqueDefaultFintelDesignConstraint(context, user, created.id);
     }
     await publishUserAction({
@@ -45,7 +45,7 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
-      message: `creates fintel design '${fintelDesign.name}`,
+      message: `creates fintel design '${fintelDesign.name}'`,
       context_data: {
         id: created.id,
         entity_type: ENTITY_TYPE_FINTEL_DESIGN,
@@ -72,7 +72,7 @@ const applyUniqueDefaultFintelDesignConstraint = async (
       filters: {
         filters: [{
           key: ['default'],
-          values: ['true'],
+          values: [true],
         }, {
           key: ['id'],
           values: [newDefaultDesignId],
@@ -96,24 +96,12 @@ const applyUniqueDefaultFintelDesignConstraint = async (
       ENTITY_TYPE_FINTEL_DESIGN,
       [{
         key: 'default',
-        value: ['false'],
+        value: [false],
       }],
     )),
   );
 
   return results.map(({ element }) => element);
-};
-
-const isEditInputSetAsDefault = (input: MutationFintelDesignFieldPatchArgs['input']) => {
-  const defaultInput = input?.find((i) => i.key === 'default');
-  const firstValue = defaultInput?.value?.[0];
-  if (typeof firstValue === 'boolean') {
-    return firstValue;
-  }
-  if (typeof firstValue === 'string') {
-    return firstValue === 'true';
-  }
-  return false;
 };
 
 const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fintelDesignId: string, file: FileUploadData) => {
@@ -149,7 +137,7 @@ export const fintelDesignEditField = async (
     return null;
   }
 
-  const settingDefault = isEditInputSetAsDefault(finalInput);
+  const settingDefault = finalInput.find((i) => i.key === 'default')?.value?.[0] === true;
 
   // The default status is stored on the object itself (fintelDesign) rather than on a parent entity.
   // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.

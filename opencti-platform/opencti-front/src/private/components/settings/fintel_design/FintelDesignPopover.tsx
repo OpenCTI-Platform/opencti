@@ -8,26 +8,13 @@ import stopEvent from '../../../../utils/domEvent';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import FintelDesignReplaceDefaultDialog from './FintelDesignReplaceDefaultDialog';
+import { fintelDesignsCurrentDefaultQuery } from './FintelDesignFormDrawer';
 
 const fintelDesignSetDefaultMutation = graphql`
   mutation FintelDesignPopoverSetDefaultMutation($id: ID!, $input: [EditInput!]) {
     fintelDesignFieldPatch(id: $id, input: $input) {
       id
       default
-    }
-  }
-`;
-
-const fintelDesignsRefetchQuery = graphql`
-  query FintelDesignPopoverRefetchQuery {
-    fintelDesigns(orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          name
-          default
-        }
-      }
     }
   }
 `;
@@ -56,7 +43,7 @@ const FintelDesignPopover = ({
   const [commitSetDefault] = useApiMutation(fintelDesignSetDefaultMutation);
 
   const refetchDesigns = () => {
-    fetchQuery(fintelDesignsRefetchQuery, {}).toPromise().catch((err) => {
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => {
       handleError(err);
     });
   };
@@ -65,13 +52,13 @@ const FintelDesignPopover = ({
     commitSetDefault({
       variables: {
         id: fintelDesignId,
-        input: [{ key: 'default', value: ['true'] }],
+        input: [{ key: 'default', value: [true] }],
       },
       onCompleted: refetchDesigns,
     });
   };
 
-  const onSetAsDefault = async (e: UIEvent) => {
+  const onSetAsDefault = (e: UIEvent) => {
     stopEvent(e);
     setAnchorEl(undefined);
 
@@ -81,21 +68,26 @@ const FintelDesignPopover = ({
       return;
     }
 
-    const result = await fetchQuery(fintelDesignsRefetchQuery, {}).toPromise() as {
-      fintelDesigns?: {
-        edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
-      };
-    } | undefined;
-    const existingDefault = result?.fintelDesigns?.edges
-      ?.map((edge) => edge?.node)
-      .find((node) => node?.default && node.id !== fintelDesignId);
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {})
+      .toPromise()
+      .then((result) => {
+        const data = result as {
+          fintelDesigns?: {
+            edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
+          };
+        } | undefined;
+        const existingDefault = data?.fintelDesigns?.edges
+          ?.map((edge) => edge?.node)
+          .find((node) => node?.default && node.id !== fintelDesignId);
 
-    if (existingDefault?.name) {
-      setResolvedDefaultName(existingDefault.name);
-      setReplaceDialogOpen(true);
-    } else {
-      doSetDefault();
-    }
+        if (existingDefault?.name) {
+          setResolvedDefaultName(existingDefault.name);
+          setReplaceDialogOpen(true);
+        } else {
+          doSetDefault();
+        }
+      })
+      .catch((err) => handleError(err));
   };
 
   const onRemoveDefault = (e: UIEvent) => {
@@ -104,7 +96,7 @@ const FintelDesignPopover = ({
     commitSetDefault({
       variables: {
         id: fintelDesignId,
-        input: [{ key: 'default', value: ['false'] }],
+        input: [{ key: 'default', value: [false] }],
       },
       onCompleted: refetchDesigns,
     });
@@ -126,6 +118,7 @@ const FintelDesignPopover = ({
     <>
       {inline ? (
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={(e: UIEvent) => {
             stopEvent(e);
             setAnchorEl(e.currentTarget);

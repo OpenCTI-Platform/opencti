@@ -133,7 +133,7 @@ describe('Fintel Design resolver standard behavior', () => {
       query: EDIT_QUERY,
       variables: {
         id: fintelDesignInternalId,
-        input: [{ key: 'default', value: ['true'] }],
+        input: [{ key: 'default', value: [true] }],
       },
     });
 
@@ -217,7 +217,7 @@ describe('Fintel Design resolver default behavior', () => {
       query: SET_DEFAULT_QUERY,
       variables: {
         id: firstDesignId,
-        input: [{ key: 'default', value: ['true'] }],
+        input: [{ key: 'default', value: [true] }],
       },
     });
 
@@ -248,7 +248,7 @@ describe('Fintel Design resolver default behavior', () => {
       query: SET_DEFAULT_QUERY,
       variables: {
         id: secondDesignId,
-        input: [{ key: 'default', value: ['true'] }],
+        input: [{ key: 'default', value: [true] }],
       },
     });
 
