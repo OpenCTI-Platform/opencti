@@ -47,9 +47,15 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
 
 interface XtmHubTabProps {
   registrationStatus?: string;
+  /**
+   * When provided, the connect/disconnect trigger is rendered by the caller
+   * (e.g. inside the Filigran Experience card footer) instead of the default
+   * floated button. The callback receives the dialog opener.
+   */
+  renderTrigger?: (openDialog: () => void) => React.ReactNode;
 }
 
-const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
+const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -328,16 +334,18 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     }
     return (
       <>
-        <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
-          <Button
-            variant="secondary"
-            size="small"
-            intent="destructive"
-            onClick={handleOpenDialog}
-          >
-            {getButtonText()}
-          </Button>
-        </div>
+        {renderTrigger ? renderTrigger(handleOpenDialog) : (
+          <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
+            <Button
+              variant="secondary"
+              size="small"
+              intent="destructive"
+              onClick={handleOpenDialog}
+            >
+              {getButtonText()}
+            </Button>
+          </div>
+        )}
         <ProcessDialog
           open={isDialogOpen}
           title={config.dialogTitle}
@@ -360,16 +368,18 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
 
   return (
     <>
-      <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
-        <Button
-          gradient
-          variant="secondary"
-          style={{ marginTop: 10, marginBottom: 10 }}
-          onClick={handleOpenDialog}
-        >
-          {getButtonText()}
-        </Button>
-      </div>
+      {renderTrigger ? renderTrigger(handleOpenDialog) : (
+        <div style={{ float: 'right', marginTop: theme.spacing(-2), position: 'relative' }}>
+          <Button
+            gradient
+            variant="secondary"
+            style={{ marginTop: 10, marginBottom: 10 }}
+            onClick={handleOpenDialog}
+          >
+            {getButtonText()}
+          </Button>
+        </div>
+      )}
       <Dialog
         open={isAutoRegistrationPromptOpen}
         onClose={handleCancelAutoRegistration}
