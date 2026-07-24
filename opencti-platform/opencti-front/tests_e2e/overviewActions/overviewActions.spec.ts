@@ -58,7 +58,7 @@ const OVERVIEW_ROUTE_CHECKS: OverviewRouteCheck[] = [
   },
 ];
 
-test('Overview routes display action buttons', { tag: ['@ce', '@navigation'] }, async ({ page }) => {
+test('Overview routes display action buttons', { tag: ['@ce', '@navigation', '@group1'] }, async ({ page }) => {
   for (const routeCheck of OVERVIEW_ROUTE_CHECKS) {
     await page.goto(routeCheck.listPath);
     const entityLink = page.getByRole('link', { name: routeCheck.entityName });

@@ -29,7 +29,7 @@ const TEST_PDF_PATH = fileURLToPath(new URL('assets/report.test.pdf', import.met
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
@@ -306,7 +306,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   // const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);

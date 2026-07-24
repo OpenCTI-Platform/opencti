@@ -26,6 +26,10 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
+    - name: Fetch EE license
+      run: |
+        echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
+
     - name: Download image platform
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -59,7 +63,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
-         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
@@ -84,11 +88,9 @@ jobs:
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
+          -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-            APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
-            export APP__ENTERPRISE_EDITION_LICENSE
-
             cd /home/workspace/opencti-platform/opencti-graphql 
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
@@ -172,6 +174,10 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
+    - name: Fetch EE license
+      run: |
+        echo "EE_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')" >> "$GITHUB_ENV"
+
     - name: Download image builder
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -197,7 +203,7 @@ jobs:
          set -eux
          cd scripts/ci
          export TAG=${{ github.sha }}
-         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"%s\"" "$EE_LICENSE" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
          ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
@@ -211,10 +217,9 @@ jobs:
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e PYTHONUNBUFFERED=1  \
+          -e "APP__ENTERPRISE_EDITION_LICENSE=${{ env.EE_LICENSE }}" \
           filigran/builder:${{ github.sha }} \
           sh -c 'set -eux
-              APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
-              export APP__ENTERPRISE_EDITION_LICENSE
 
               cd /home/workspace/opencti-platform/opencti-graphql 
               mkdir -p ../../opencti-connectors/stream/backup-files/src
@@ -282,9 +287,9 @@ jobs:
           docker load --input /tmp/opencti-builder.tar   
           docker images
 
-    - name: Start unit and linter (aka yarn test:ci-unit)
+    - name: Backend install and build
       run: |
-        docker run --name unit-and-other-tests \
+        docker run --name backend-build \
           -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
@@ -294,8 +299,32 @@ jobs:
             yarn install
             yarn install:python
             yarn build
+        '
+
+    - name: Backend type checking and linting
+      run: |
+        docker run --name backend-lint \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
             yarn check-ts
             yarn lint
+        '
+
+    - name: Start unit tests (aka yarn test:ci-unit)
+      if: '!cancelled()'
+      run: |
+        docker run --name unit-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
+            yarn install:python
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
 

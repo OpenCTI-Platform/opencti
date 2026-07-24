@@ -21,7 +21,7 @@ import SettingsCustomizationPage from 'tests_e2e/model/settingsCustomization.pag
  * 9. Export then re-import the view.
  * 10. Delete the view (and its duplicate and the imported view).
  */
-test('Custom View CRUD - golden path', { tag: ['@ce'] }, async ({ page }) => {
+test('Custom View CRUD - golden path', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const customViewsSettingsPage = new CustomViewsSettingsPage(page);
   const customizationPage = new SettingsCustomizationPage(page);
