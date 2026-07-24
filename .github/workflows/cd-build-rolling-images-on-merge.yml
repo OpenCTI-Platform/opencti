@@ -283,9 +283,7 @@ jobs:
       - name: Upload merged SBOM
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: sbom-opencti-platform-${APP_VERSION}${{ matrix.suffix }}
-          path: sbom-work/sbom-opencti-platform-*.cdx.json
+          name: sbom-opencti-platform-${{ needs.app-sbom.outputs.app_version }}${{ matrix.suffix }}
           overwrite: true
           retention-days: 7
 
