@@ -4,7 +4,7 @@ import path from 'node:path';
 const srcDirectory = 'src';
 const englishTranslationFiles = 'lang/front/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
-const searchPattern = /t_i18n\('[^']+'\)/g;
+const searchPattern = /t_i18n\('([^']+)'\s*[,)]/g;
 const labelSearchPattern = /label:\s'(\w+)',/g;
 const labelExecPattern = /label:\s'(\w+)',/;
 const extractedValues = {};
@@ -13,7 +13,7 @@ const extractedValues = {};
 // and add them in opencti-front/lang/en.json
 
 const extractValueFromPattern = (pattern) => {
-  const match = /t_i18n\('([^']+)'\)/.exec(pattern);
+  const match = /t_i18n\('([^']+)'\s*[,)]/.exec(pattern);
   return match ? match[1] : null;
 }
 
