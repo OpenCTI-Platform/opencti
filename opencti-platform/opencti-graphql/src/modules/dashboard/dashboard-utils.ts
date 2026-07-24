@@ -9,6 +9,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
+import { findSavedFilter } from '../savedFilter/savedFilter-domain';
 
 const MINIMAL_COMPATIBLE_VERSION = '5.12.16';
 
@@ -32,11 +33,49 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
   }
 };
 
+/**
+ * Resolves saved filter references in widget data selections:
+ * Replaces saved filters ids with the actual inline filters and removes the saved filters references.
+ */
+export const resolveSavedFiltersInDataSelection = async (
+  context: AuthContext,
+  user: AuthUser,
+  widgetDefinition: any,
+) => {
+  const dataSelection = widgetDefinition.dataSelection;
+  if (dataSelection) {
+    await Promise.all(dataSelection.map(async (selection: any) => {
+      if (isNotEmptyField(selection.filters_id)) {
+        const savedFilter = await findSavedFilter(context, user, selection.filters_id as string);
+        if (savedFilter) {
+          selection.filters = JSON.parse(savedFilter.filters);
+        }
+        selection.filters_id = undefined;
+      }
+      if (isNotEmptyField(selection.dynamicFrom_id)) {
+        const savedFilter = await findSavedFilter(context, user, selection.dynamicFrom_id);
+        if (savedFilter) {
+          selection.dynamicFrom = JSON.parse(savedFilter.filters);
+        }
+        selection.dynamicFrom_id = undefined;
+      }
+      if (isNotEmptyField(selection.dynamicTo_id)) {
+        const savedFilter = await findSavedFilter(context, user, selection.dynamicTo_id);
+        if (savedFilter) {
+          selection.dynamicTo = JSON.parse(savedFilter.filters);
+        }
+        selection.dynamicTo_id = undefined;
+      }
+    }));
+  }
+};
+
 export const exportDashboardWidget = async (context: AuthContext, user: AuthUser, manifest: string, widgetId: string) => {
   const parsedManifest = fromB64(manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
     delete widgetDefinition.id; // Remove current widget id
+    await resolveSavedFiltersInDataSelection(context, user, widgetDefinition);
     await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
     const exportConfigration = {
       openCTI_version: pjson.version,

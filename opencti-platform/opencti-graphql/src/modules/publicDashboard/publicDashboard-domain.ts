@@ -32,6 +32,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -138,6 +139,48 @@ export const getAllowedMarkings = async (
   return publicDashboardMarkingsIds.flatMap((id: string) => markingsMap.get(id) || []);
 };
 
+/**
+ * Creates the private manifest by resolving saved filter references
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ */
+const createPrivateManifest = async (
+  context: AuthContext,
+  user: AuthUser,
+  parsedManifest: any,
+) => {
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
+    const widgetDefinitions = Object.values(parsedManifest.widgets);
+    await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+  }
+  return toB64(parsedManifest ?? '{}');
+};
+
+/**
+ * Creates the public manifest by stripping each widget's dataSelection
+ * to only keep display-related properties (no filters, no query data).
+ */
+const createPublicManifest = (parsedManifest: any) => {
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
+    Object.keys(parsedManifest.widgets).forEach((widgetId) => {
+      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
+        .widgets[widgetId]
+        .dataSelection.map((selection: any) => {
+          return {
+            ...(selection.label && { label: selection.label }),
+            ...(selection.attribute && { attribute: selection.attribute }),
+            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
+            ...(selection.number && { number: selection.number }),
+            ...(selection.centerLat && { centerLat: selection.centerLat }),
+            ...(selection.centerLng && { centerLng: selection.centerLng }),
+            ...(selection.zoom && { zoom: selection.zoom }),
+            ...(selection.columns && { columns: selection.columns }),
+          };
+        });
+    });
+  }
+  return toB64(parsedManifest ?? '{}');
+};
+
 export const addPublicDashboard = async (
   context: AuthContext,
   user: AuthUser,
@@ -187,27 +230,9 @@ export const addPublicDashboard = async (
     ...(parsedManifest.config ?? {}),
     refresh_interval: dashboardRefreshInterval,
   };
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    Object.keys(parsedManifest.widgets).forEach((widgetId) => {
-      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
-        .widgets[widgetId]
-        .dataSelection.map((selection: any) => {
-          return {
-            ...(selection.label && { label: selection.label }),
-            ...(selection.attribute && { attribute: selection.attribute }),
-            ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
-            ...(selection.number && { number: selection.number }),
-            ...(selection.centerLat && { centerLat: selection.centerLat }),
-            ...(selection.centerLng && { centerLng: selection.centerLng }),
-            ...(selection.zoom && { zoom: selection.zoom }),
-            ...(selection.columns && { columns: selection.columns }),
-          };
-        });
-    });
-  }
 
-  // Create public manifest
-  const publicManifest = toB64(parsedManifest ?? '{}');
+  const privateManifest = await createPrivateManifest(context, user, parsedManifest);
+  const publicManifest = createPublicManifest(parsedManifest);
 
   // Create publicDashboard
   const publicDashboardToCreate = {
@@ -215,7 +240,7 @@ export const addPublicDashboard = async (
     enabled: input.enabled,
     description: input.description,
     public_manifest: publicManifest,
-    private_manifest: dashboard.manifest,
+    private_manifest: privateManifest,
     dashboard_id: input.dashboard_id,
     user_id: user.id,
     uri_key: uriKey,

@@ -1,11 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { createUploadFromTestDataFile, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
-import { toB64 } from '../../../src/utils/base64';
+import { toB64, fromB64 } from '../../../src/utils/base64';
+import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
 
 const LIST_QUERY = gql`
   query workspaces(
@@ -90,6 +91,14 @@ const UPDATE_MEMBERS_QUERY = gql`
         entity_type
         access_right
       }
+    }
+  }
+`;
+
+const EXPORT_WIDGET_QUERY = gql`
+  query workspaceWidgetExport($id: String!, $widgetId: ID!) {
+    workspace(id: $id) {
+      toWidgetExport(widgetId: $widgetId)
     }
   }
 `;
@@ -254,6 +263,25 @@ describe('Workspace resolver standard behavior', () => {
   });
 
   it('can duplicate workspace', async () => {
+    const manifestWithFiltersId = toB64({
+      widgets: {
+        'widget-1': {
+          id: 'widget-1',
+          type: 'vertical-bar',
+          perspective: 'entities',
+          dataSelection: [
+            {
+              filters_id: 'saved-filter-123',
+              date_attribute: 'created_at',
+              label: 'My widget',
+            },
+          ],
+          parameters: { title: 'Test widget' },
+        },
+      },
+      config: {},
+    });
+
     const queryResult = await queryAsAdmin({
       query: gql`
         mutation duplicateWorkspace($input: WorkspaceDuplicateInput!) {
@@ -261,6 +289,7 @@ describe('Workspace resolver standard behavior', () => {
             id
             entity_type
             name
+            manifest
             authorizedMembers {
               access_right
             }
@@ -271,6 +300,7 @@ describe('Workspace resolver standard behavior', () => {
         input: {
           type: 'dashboard',
           name: 'Dashboard to duplicate',
+          manifest: manifestWithFiltersId,
         },
       },
     });
@@ -280,9 +310,215 @@ describe('Workspace resolver standard behavior', () => {
     expect(queryResult.data.workspaceDuplicate.entity_type).toBe('Workspace');
     expect(queryResult.data.workspaceDuplicate.authorizedMembers.length).toBe(1);
     expect(queryResult.data.workspaceDuplicate.authorizedMembers[0].access_right).toBe('admin');
+
+    // Verify filters_id is preserved in the duplicated manifest
+    const duplicatedManifest = JSON.parse(
+      Buffer.from(queryResult.data.workspaceDuplicate.manifest, 'base64').toString('utf-8'),
+    );
+    const widget = duplicatedManifest.widgets['widget-1'];
+    expect(widget).toBeDefined();
+    expect(widget.dataSelection[0].filters_id).toBe('saved-filter-123');
+
     await queryAsAdmin({
       query: DELETE_QUERY,
       variables: { id: queryResult.data.workspaceDuplicate.id },
+    });
+  });
+
+  describe('Widget export', () => {
+    let savedFilterId;
+    let dynamicFromSavedFilterId;
+    let exportTestWorkspaceId;
+    const savedFilterContent = {
+      mode: 'and',
+      filters: [{ key: 'relationship_type', values: ['targets'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const dynamicFromFilterContent = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Threat-Actor-Group'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+    const existingDynamicToFilters = {
+      mode: 'or',
+      filters: [{ key: 'entity_type', values: ['Identity'], operator: 'eq', mode: 'or' }],
+      filterGroups: [],
+    };
+
+    beforeAll(async () => {
+      const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+        name: 'export-test-filter',
+        filters: JSON.stringify(savedFilterContent),
+        scope: 'stix-core-relationship',
+      });
+      savedFilterId = savedFilter.id;
+      const dynamicFromSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+        name: 'export-test-dynamic-from-filter',
+        filters: JSON.stringify(dynamicFromFilterContent),
+        scope: 'Stix-Core-Object',
+      });
+      dynamicFromSavedFilterId = dynamicFromSavedFilter.id;
+
+      // Load malware entity for ID conversion test
+      const malwareEntity = await elLoadById(
+        testContext,
+        ADMIN_USER,
+        'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      );
+      const internalId = malwareEntity.internal_id;
+
+      // Create a single dashboard with all widgets needed for export tests
+      const manifest = toB64({
+        widgets: {
+          'widget-export-test': {
+            id: 'widget-export-test',
+            type: 'vertical-bar',
+            perspective: 'relationships',
+            dataSelection: [
+              {
+                filters_id: savedFilterId,
+                filters: null,
+                dynamicFrom_id: dynamicFromSavedFilterId,
+                dynamicTo: existingDynamicToFilters,
+                date_attribute: 'created_at',
+                label: 'Widget with saved filters',
+              },
+            ],
+            parameters: { title: 'Test export widget with saved filters' },
+            layout: { w: 6, h: 4, x: 0, y: 0, i: 'widget-export-test', moved: false, static: false },
+          },
+          'widget-ids-test': {
+            id: 'widget-ids-test',
+            type: 'vertical-bar',
+            perspective: 'relationships',
+            dataSelection: [
+              {
+                filters: {
+                  mode: 'and',
+                  filters: [
+                    { key: 'objects', values: [internalId], operator: 'eq', mode: 'or' },
+                  ],
+                  filterGroups: [],
+                },
+                dynamicFrom: {
+                  mode: 'and',
+                  filters: [
+                    { key: 'regardingOf', values: [{ key: 'id', values: [internalId] }] },
+                  ],
+                  filterGroups: [],
+                },
+                date_attribute: 'created_at',
+                label: 'Widget with internal id in filter',
+              },
+            ],
+            parameters: { title: 'Test IDs conversion' },
+            layout: { w: 6, h: 4, x: 6, y: 0, i: 'widget-ids-test', moved: false, static: false },
+          },
+        },
+        config: {},
+      });
+
+      const workspace = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            type: 'dashboard',
+            name: 'Dashboard for widget export tests',
+          },
+        },
+      });
+      expect(workspace).not.toBeNull();
+      expect(workspace.data.workspaceAdd).not.toBeNull();
+      exportTestWorkspaceId = workspace.data.workspaceAdd.id;
+
+      // Set the manifest separately since it's not part of WorkspaceAddInput
+      const updateResult = await queryAsAdmin({
+        query: UPDATE_QUERY,
+        variables: {
+          id: exportTestWorkspaceId,
+          input: { key: 'manifest', value: manifest },
+        },
+      });
+      expect(updateResult.data.workspaceFieldPatch).not.toBeNull();
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({
+        query: DELETE_QUERY,
+        variables: { id: exportTestWorkspaceId },
+      });
+      await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId);
+      await deleteSavedFilter(testContext, ADMIN_USER, dynamicFromSavedFilterId);
+    });
+
+    it('should resolve filters_id into inline filters when exporting a widget', async () => {
+      const widgetId = 'widget-export-test';
+
+      const exportResult = await queryAsAdmin({
+        query: EXPORT_WIDGET_QUERY,
+        variables: { id: exportTestWorkspaceId, widgetId },
+      });
+
+      expect(exportResult.data.workspace.toWidgetExport).toBeDefined();
+      const exportedData = JSON.parse(exportResult.data.workspace.toWidgetExport);
+      expect(exportedData.type).toBe('widget');
+
+      const widgetConfig = fromB64(exportedData.configuration);
+      const selection = widgetConfig.dataSelection[0];
+
+      // filters_id should be cleared after export and filters should be filled with the saved filter content
+      expect(selection.filters_id).toBeUndefined();
+      expect(selection.filters).toEqual(savedFilterContent);
+
+      // dynamicFrom_id should be cleared and dynamicFrom filled with saved filter content
+      expect(selection.dynamicFrom_id).toBeUndefined();
+      expect(selection.dynamicFrom).toEqual(dynamicFromFilterContent);
+
+      // dynamicTo should be preserved as-is since dynamicTo_id is undefined
+      expect(selection.dynamicTo_id).toBeUndefined();
+      expect(selection.dynamicTo).toEqual(existingDynamicToFilters);
+    });
+
+    it('should convert internal IDs to standard STIX IDs in filters when exporting a widget', async () => {
+      const malwareEntity = await elLoadById(
+        testContext,
+        ADMIN_USER,
+        'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85',
+      );
+      const internalId = malwareEntity.internal_id;
+      const standardId = malwareEntity.standard_id;
+      // Verify the test is meaningful: internalId and standardId should differ
+      expect(internalId).not.toBe(standardId);
+
+      const widgetId = 'widget-ids-test';
+
+      const exportResult = await queryAsAdmin({
+        query: EXPORT_WIDGET_QUERY,
+        variables: { id: exportTestWorkspaceId, widgetId },
+      });
+
+      expect(exportResult.data.workspace.toWidgetExport).toBeDefined();
+      const exportedData = JSON.parse(exportResult.data.workspace.toWidgetExport);
+      const widgetConfig = fromB64(exportedData.configuration);
+      const selection = widgetConfig.dataSelection[0];
+
+      // Internal ID should have been converted to standard STIX ID in filters
+      expect(selection.filters).toEqual({
+        mode: 'and',
+        filters: [
+          { key: 'objects', values: [standardId], operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      });
+
+      // Internal ID should have been converted to standard STIX ID in dynamicFrom
+      expect(selection.dynamicFrom).toEqual({
+        mode: 'and',
+        filters: [
+          { key: 'regardingOf', values: [{ key: 'id', values: [standardId] }] },
+        ],
+        filterGroups: [],
+      });
     });
   });
 
