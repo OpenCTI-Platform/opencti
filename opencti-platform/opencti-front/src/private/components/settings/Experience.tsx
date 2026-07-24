@@ -172,17 +172,18 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
         <>
           <DangerZoneButton
             sensitiveType="ce_ee_toggle"
+            size="default"
             onClick={() => setOpenEEChanges(true)}
           >
             {t_i18n('Disable Enterprise Edition')}
           </DangerZoneButton>
-          <EnterpriseEditionButton inLine title="Update license" />
+          <EnterpriseEditionButton inLine size="default" title="Update license" />
         </>
       )
     : undefined;
 
   const eeCommunityFooter = isGrantedToParameters
-    ? <EnterpriseEditionButton inLine title="Try OpenCTI Enterprise Edition" />
+    ? <EnterpriseEditionButton inLine size="default" title="Try OpenCTI Enterprise Edition" />
     : (
         <Button
           variant="secondary"
