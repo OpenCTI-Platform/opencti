@@ -20,7 +20,7 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
   return elAttributeValues(context, user, attributeName, opts);
 };
 
-export const getSchemaAttributeNames = (elementTypes: string[]) => {
+export const getSchemaAttributeNames = async (context: AuthContext, user: AuthUser, elementTypes: string[]) => {
   const attributes = R.uniq(elementTypes.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
@@ -29,7 +29,7 @@ export const getSchemaAttributeNames = (elementTypes: string[]) => {
   )(attributes);
   // Inject custom field names dynamically for dashboard widgets and distribution queries
   for (const type of elementTypes) {
-    const customFieldDefs = getCustomFieldDefinitionsForEntityType(type);
+    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, type);
     for (const cfDef of customFieldDefs) {
       if (!finalResult.some((r: any) => r.node.id === cfDef.name)) {
         finalResult.push({ node: { id: cfDef.name, key: type, value: cfDef.name } });
@@ -39,10 +39,10 @@ export const getSchemaAttributeNames = (elementTypes: string[]) => {
   return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
 };
 
-export const getSchemaAttributes = () => {
+export const getSchemaAttributes = async (context: AuthContext, user: AuthUser) => {
   const allTypes = schemaAttributesDefinition.getRegisteredTypes();
 
-  return allTypes.map((entityType) => {
+  return Promise.all(allTypes.map(async (entityType) => {
     const attributes = schemaAttributesDefinition.getAttributes(entityType);
     const attributesArray = Array.from(attributes.values());
 
@@ -65,7 +65,7 @@ export const getSchemaAttributes = () => {
       }));
 
     // Inject custom field attributes dynamically
-    const customFieldDefs = getCustomFieldDefinitionsForEntityType(entityType);
+    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
     for (const cfDef of customFieldDefs) {
       let attributeType: AttributeDefinition['type'] = 'string';
       if (cfDef.field_type === 'integer') attributeType = 'numeric';
@@ -92,5 +92,5 @@ export const getSchemaAttributes = () => {
       type: entityType,
       attributes: typeAttributes,
     };
-  });
+  }));
 };

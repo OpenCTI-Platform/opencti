@@ -5,6 +5,7 @@ import * as BackgroundTask from '../../../../src/domain/backgroundTask';
 import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import * as Access from '../../../../src/utils/access';
+import * as CacheModule from '../../../../src/database/cache';
 import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   customFieldDefinitionAdd,
@@ -18,9 +19,7 @@ import {
   findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
   isCustomFieldKey,
-  loadCustomFieldDefinitions,
 } from '../../../../src/modules/customField/custom-field-domain';
-import { getCustomFieldDefinitionByName, setCustomFieldDefinitionsCache } from '../../../../src/modules/customField/custom-field-cache';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
@@ -46,6 +45,10 @@ vi.mock('../../../../src/database/redis', () => ({
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/cache', () => ({
+  getEntitiesListFromCache: vi.fn(async () => []),
 }));
 
 vi.mock('../../../../src/utils/access', async () => {
@@ -74,11 +77,15 @@ const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition
   ...overrides,
 } as unknown as BasicStoreEntityCustomFieldDefinition);
 
+const seedCustomFieldDefinitions = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
+  vi.mocked(CacheModule.getEntitiesListFromCache).mockResolvedValue(definitions);
+};
+
 beforeEach(() => {
   // resetAllMocks (not clearAllMocks) so a mockImplementation set by one test (e.g. making
   // enforceEnableFeatureFlag throw) never leaks into the next test.
   vi.resetAllMocks();
-  setCustomFieldDefinitionsCache([]);
+  seedCustomFieldDefinitions();
   vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
   vi.mocked(MiddlewareLoader.pageEntitiesConnection).mockResolvedValue({ edges: [], pageInfo: {} } as any);
   vi.mocked(Redis.notify).mockImplementation((_topic: string, element: any) => Promise.resolve(element));
@@ -133,16 +140,6 @@ describe('findById / findCustomFieldDefinitionsPaginated / findCustomFieldDefini
   });
 });
 
-describe('loadCustomFieldDefinitions', () => {
-  it('fetches all definitions and populates the cache', async () => {
-    const defs = [makeDefinition()];
-    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue(defs as any);
-    await loadCustomFieldDefinitions(mockContext);
-    expect(MiddlewareLoader.fullEntitiesList).toHaveBeenCalledWith(mockContext, Access.SYSTEM_USER, ['CustomFieldDefinition']);
-    expect(getCustomFieldDefinitionByName(defs[0].name)).toEqual(defs[0]);
-  });
-});
-
 describe('customFieldDefinitionAdd', () => {
   const validInput = {
     name: 'x_opencti_cf_score',
@@ -165,13 +162,13 @@ describe('customFieldDefinitionAdd', () => {
   });
 
   it('throws when the technical name already exists', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_score' })]);
+    seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_score' }));
     await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput))
       .rejects.toThrow('A custom field with this technical name already exists');
   });
 
   it('throws when the label already exists', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_other', label: 'Score' })]);
+    seedCustomFieldDefinitions(makeDefinition({ name: 'x_opencti_cf_other', label: 'Score' }));
     await expect(customFieldDefinitionAdd(mockContext, mockUser, validInput))
       .rejects.toThrow('A custom field with this label already exists');
   });
@@ -206,13 +203,12 @@ describe('customFieldDefinitionAdd', () => {
       event_scope: 'create',
       message: 'creates custom field definition `x_opencti_cf_tags`',
     }));
-    expect(MiddlewareLoader.fullEntitiesList).toHaveBeenCalled();
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), created, mockUser);
   });
 });
 
 describe('customFieldDefinitionDelete', () => {
-  it('deletes the entity, notifies, publishes the action, reloads the cache and schedules the cascade cleanup', async () => {
+  it('deletes the entity, notifies, publishes the action and schedules the cascade cleanup', async () => {
     const element = { id: 'cf-id-1', name: 'x_opencti_cf_score', entity_types: ['Case-Incident'] };
     vi.mocked(Middleware.deleteElementById).mockResolvedValue(element as any);
 
@@ -221,7 +217,6 @@ describe('customFieldDefinitionDelete', () => {
     expect(Middleware.deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'cf-id-1', 'CustomFieldDefinition');
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), element, mockUser);
     expect(UserActionListener.publishUserAction).toHaveBeenCalledWith(expect.objectContaining({ event_scope: 'delete' }));
-    expect(MiddlewareLoader.fullEntitiesList).toHaveBeenCalled();
     expect(BackgroundTask.createQueryTask).toHaveBeenCalledWith(
       expect.anything(),
       Access.SYSTEM_USER,
@@ -240,13 +235,13 @@ describe('customFieldDefinitionEdit', () => {
   });
 
   it('throws when the new label is already used by another definition', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-id-2', label: 'Existing label' })]);
+    seedCustomFieldDefinitions(makeDefinition({ id: 'cf-id-2', label: 'Existing label' }));
     await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'label', value: ['Existing label'] } as any]))
       .rejects.toThrow('A custom field with this label already exists');
   });
 
   it('does not throw when editing the label to the same value on the same definition', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-id-1', label: 'Same label' })]);
+    seedCustomFieldDefinitions(makeDefinition({ id: 'cf-id-1', label: 'Same label' }));
     vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: makeDefinition({ id: 'cf-id-1' }) } as any);
     await expect(customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', [{ key: 'label', value: ['Same label'] } as any]))
       .resolves.not.toThrow();
@@ -292,14 +287,13 @@ describe('customFieldDefinitionEdit', () => {
     expect(Middleware.updateAttribute).toHaveBeenCalled();
   });
 
-  it('updates the attribute, notifies, publishes the action and reloads the cache on success', async () => {
+  it('updates the attribute, notifies and publishes the action on success', async () => {
     const updatedElem = makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_score' });
     vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: updatedElem } as any);
     const edit = [{ key: 'description', value: ['New description'] } as any];
     await customFieldDefinitionEdit(mockContext, mockUser, 'cf-id-1', edit);
     expect(Middleware.updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'cf-id-1', 'CustomFieldDefinition', edit);
     expect(UserActionListener.publishUserAction).toHaveBeenCalledWith(expect.objectContaining({ event_scope: 'update' }));
-    expect(MiddlewareLoader.fullEntitiesList).toHaveBeenCalled();
     expect(Redis.notify).toHaveBeenCalledWith(expect.any(String), updatedElem, mockUser);
   });
 });

@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as cacheModule from '../../../../src/database/cache';
 import {
   getCustomFieldDefinitionByLabel,
   getCustomFieldDefinitionByName,
@@ -6,9 +7,11 @@ import {
   getCustomFieldDefinitionsForEntityType,
   getCustomFieldSettingForEntityType,
   getCustomFieldValueField,
-  setCustomFieldDefinitionsCache,
 } from '../../../../src/modules/customField/custom-field-cache';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
+
+const CONTEXT = {} as any;
+const USER = { id: 'user-1' } as any;
 
 const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition> = {}): BasicStoreEntityCustomFieldDefinition => ({
   id: 'cf-id-1',
@@ -24,47 +27,52 @@ const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition
   ...overrides,
 } as unknown as BasicStoreEntityCustomFieldDefinition);
 
+const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
+  vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(definitions);
+};
+
 describe('custom-field-cache', () => {
   beforeEach(() => {
-    // Reset the module-level cache between tests
-    setCustomFieldDefinitionsCache([]);
+    vi.restoreAllMocks();
   });
 
-  it('getCustomFieldDefinitions returns an empty array when nothing is cached', () => {
-    expect(getCustomFieldDefinitions()).toEqual([]);
+  it('getCustomFieldDefinitions returns an empty array when the cache is empty', async () => {
+    seed();
+    expect(await getCustomFieldDefinitions(CONTEXT, USER)).toEqual([]);
   });
 
-  it('setCustomFieldDefinitionsCache replaces the cache content and getCustomFieldDefinitions reflects it', () => {
+  it('getCustomFieldDefinitions reads through the generic cache for the CustomFieldDefinition entity type', async () => {
     const definitions = [makeDefinition(), makeDefinition({ id: 'cf-id-2', name: 'x_opencti_cf_other' })];
-    setCustomFieldDefinitionsCache(definitions);
-    expect(getCustomFieldDefinitions()).toEqual(definitions);
+    seed(...definitions);
+    expect(await getCustomFieldDefinitions(CONTEXT, USER)).toEqual(definitions);
+    expect(cacheModule.getEntitiesListFromCache).toHaveBeenCalledWith(CONTEXT, USER, 'CustomFieldDefinition');
   });
 
   describe('getCustomFieldDefinitionsForEntityType', () => {
-    it('returns definitions attached to the given entity type', () => {
+    it('returns definitions attached to the given entity type', async () => {
       const def = makeDefinition({ entity_types: ['Case-Incident'] });
-      setCustomFieldDefinitionsCache([def]);
-      expect(getCustomFieldDefinitionsForEntityType('Case-Incident')).toEqual([def]);
+      seed(def);
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'Case-Incident')).toEqual([def]);
     });
 
-    it('excludes definitions not attached to the given entity type', () => {
+    it('excludes definitions not attached to the given entity type', async () => {
       const def = makeDefinition({ entity_types: ['Report'] });
-      setCustomFieldDefinitionsCache([def]);
-      expect(getCustomFieldDefinitionsForEntityType('Case-Incident')).toEqual([]);
+      seed(def);
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'Case-Incident')).toEqual([]);
     });
 
-    it('excludes definitions with no entity_types at all', () => {
+    it('excludes definitions with no entity_types at all', async () => {
       const def = makeDefinition({ entity_types: undefined });
-      setCustomFieldDefinitionsCache([def]);
-      expect(getCustomFieldDefinitionsForEntityType('Case-Incident')).toEqual([]);
+      seed(def);
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'Case-Incident')).toEqual([]);
     });
 
-    it('returns multiple matching definitions attached to several entity types', () => {
+    it('returns multiple matching definitions attached to several entity types', async () => {
       const def1 = makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_a', entity_types: ['Case-Incident', 'Report'] });
       const def2 = makeDefinition({ id: 'cf-2', name: 'x_opencti_cf_b', entity_types: ['Case-Incident'] });
       const def3 = makeDefinition({ id: 'cf-3', name: 'x_opencti_cf_c', entity_types: ['Report'] });
-      setCustomFieldDefinitionsCache([def1, def2, def3]);
-      expect(getCustomFieldDefinitionsForEntityType('Case-Incident')).toEqual([def1, def2]);
+      seed(def1, def2, def3);
+      expect(await getCustomFieldDefinitionsForEntityType(CONTEXT, USER, 'Case-Incident')).toEqual([def1, def2]);
     });
   });
 
@@ -91,28 +99,28 @@ describe('custom-field-cache', () => {
   });
 
   describe('getCustomFieldDefinitionByName', () => {
-    it('finds a definition by its technical name', () => {
+    it('finds a definition by its technical name', async () => {
       const def = makeDefinition({ name: 'x_opencti_cf_score' });
-      setCustomFieldDefinitionsCache([def]);
-      expect(getCustomFieldDefinitionByName('x_opencti_cf_score')).toEqual(def);
+      seed(def);
+      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_score')).toEqual(def);
     });
 
-    it('returns undefined when no definition matches the name', () => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_score' })]);
-      expect(getCustomFieldDefinitionByName('x_opencti_cf_unknown')).toBeUndefined();
+    it('returns undefined when no definition matches the name', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_score' }));
+      expect(await getCustomFieldDefinitionByName(CONTEXT, USER, 'x_opencti_cf_unknown')).toBeUndefined();
     });
   });
 
   describe('getCustomFieldDefinitionByLabel', () => {
-    it('finds a definition by its label', () => {
+    it('finds a definition by its label', async () => {
       const def = makeDefinition({ label: 'Score' });
-      setCustomFieldDefinitionsCache([def]);
-      expect(getCustomFieldDefinitionByLabel('Score')).toEqual(def);
+      seed(def);
+      expect(await getCustomFieldDefinitionByLabel(CONTEXT, USER, 'Score')).toEqual(def);
     });
 
-    it('returns undefined when no definition matches the label', () => {
-      setCustomFieldDefinitionsCache([makeDefinition({ label: 'Score' })]);
-      expect(getCustomFieldDefinitionByLabel('Unknown label')).toBeUndefined();
+    it('returns undefined when no definition matches the label', async () => {
+      seed(makeDefinition({ label: 'Score' }));
+      expect(await getCustomFieldDefinitionByLabel(CONTEXT, USER, 'Unknown label')).toBeUndefined();
     });
   });
 

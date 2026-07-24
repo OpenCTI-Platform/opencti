@@ -1,6 +1,7 @@
 import type { CustomFieldValue } from './custom-field-types';
 import { CUSTOM_FIELD_PREFIX } from './custom-field-types';
-import { getCustomFieldDefinitionByName, getCustomFieldValueField } from './custom-field-cache';
+import { getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
+import type { AuthContext, AuthUser } from '../../types/user';
 
 /**
  * Flatten custom_field_values array into a flat object for STIX export.
@@ -26,15 +27,21 @@ export const flattenCustomFieldValuesForStix = (customFieldValues?: CustomFieldV
  * for ingestion into OpenCTI.
  * Returns undefined if no custom field properties are found.
  */
-export const unflattenStixToCustomFieldValues = (stixExtensions: Record<string, any>): CustomFieldValue[] | undefined => {
+export const unflattenStixToCustomFieldValues = async (
+  context: AuthContext,
+  user: AuthUser,
+  stixExtensions: Record<string, any>,
+): Promise<CustomFieldValue[] | undefined> => {
   if (!stixExtensions) return undefined;
 
   const customFieldValues: CustomFieldValue[] = [];
+  // Fetch the definitions once (not once per key) to avoid a redundant cache read per custom field.
+  const definitions = await getCustomFieldDefinitions(context, user);
 
   for (const [key, value] of Object.entries(stixExtensions)) {
     if (!key.startsWith(CUSTOM_FIELD_PREFIX)) continue;
 
-    const definition = getCustomFieldDefinitionByName(key);
+    const definition = definitions.find((def) => def.name === key);
     if (!definition) {
       // Skip unknown custom fields — do not auto-create definitions
       continue;

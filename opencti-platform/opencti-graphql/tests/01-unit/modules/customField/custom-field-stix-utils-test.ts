@@ -1,7 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as cacheModule from '../../../../src/database/cache';
 import { flattenCustomFieldValuesForStix, unflattenStixToCustomFieldValues } from '../../../../src/modules/customField/custom-field-stix-utils';
-import { setCustomFieldDefinitionsCache } from '../../../../src/modules/customField/custom-field-cache';
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from '../../../../src/modules/customField/custom-field-types';
+
+const CONTEXT = {} as any;
+const USER = { id: 'user-1' } as any;
 
 const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition> = {}): BasicStoreEntityCustomFieldDefinition => ({
   id: 'cf-id-1',
@@ -16,6 +19,12 @@ const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition
   multiple: false,
   ...overrides,
 } as unknown as BasicStoreEntityCustomFieldDefinition);
+
+const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
+  vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(definitions);
+};
+
+const unflatten = (stixExtensions: Record<string, any>) => unflattenStixToCustomFieldValues(CONTEXT, USER, stixExtensions);
 
 describe('flattenCustomFieldValuesForStix', () => {
   it('returns an empty object when there are no custom field values', () => {
@@ -59,48 +68,50 @@ describe('flattenCustomFieldValuesForStix', () => {
 
 describe('unflattenStixToCustomFieldValues', () => {
   beforeEach(() => {
-    setCustomFieldDefinitionsCache([]);
+    vi.restoreAllMocks();
   });
 
-  it('returns undefined when the extension object is empty or nullish', () => {
-    expect(unflattenStixToCustomFieldValues({})).toBeUndefined();
+  it('returns undefined when the extension object is empty or nullish', async () => {
+    seed();
+    expect(await unflatten({})).toBeUndefined();
   });
 
-  it('ignores keys not prefixed with the custom field prefix', () => {
-    expect(unflattenStixToCustomFieldValues({ extension_type: 'new-sdo' })).toBeUndefined();
+  it('ignores keys not prefixed with the custom field prefix', async () => {
+    seed();
+    expect(await unflatten({ extension_type: 'new-sdo' })).toBeUndefined();
   });
 
-  it('skips a custom field property with no matching cached definition (does not auto-create)', () => {
-    setCustomFieldDefinitionsCache([]);
-    expect(unflattenStixToCustomFieldValues({ x_opencti_cf_unknown: 'value' })).toBeUndefined();
+  it('skips a custom field property with no matching cached definition (does not auto-create)', async () => {
+    seed();
+    expect(await unflatten({ x_opencti_cf_unknown: 'value' })).toBeUndefined();
   });
 
-  it('converts a known integer custom field back to a CustomFieldValue', () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' })]);
-    const result = unflattenStixToCustomFieldValues({ x_opencti_cf_score: 42 });
+  it('converts a known integer custom field back to a CustomFieldValue', async () => {
+    seed(makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' }));
+    const result = await unflatten({ x_opencti_cf_score: 42 });
     expect(result).toEqual([{ field_id: 'cf-1', field_name: 'x_opencti_cf_score', int_value: 42 }]);
   });
 
-  it('converts a known boolean custom field, coercing string "true"/"false" to a boolean', () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_flag', field_type: 'boolean' })]);
-    expect(unflattenStixToCustomFieldValues({ x_opencti_cf_flag: 'true' }))
+  it('converts a known boolean custom field, coercing string "true"/"false" to a boolean', async () => {
+    seed(makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_flag', field_type: 'boolean' }));
+    expect(await unflatten({ x_opencti_cf_flag: 'true' }))
       .toEqual([{ field_id: 'cf-1', field_name: 'x_opencti_cf_flag', boolean_value: true }]);
-    expect(unflattenStixToCustomFieldValues({ x_opencti_cf_flag: false }))
+    expect(await unflatten({ x_opencti_cf_flag: false }))
       .toEqual([{ field_id: 'cf-1', field_name: 'x_opencti_cf_flag', boolean_value: false }]);
   });
 
-  it('converts a known multi_select custom field array back to select_values of strings', () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_tags', field_type: 'multi_select' })]);
-    const result = unflattenStixToCustomFieldValues({ x_opencti_cf_tags: ['a', 'b'] });
+  it('converts a known multi_select custom field array back to select_values of strings', async () => {
+    seed(makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_tags', field_type: 'multi_select' }));
+    const result = await unflatten({ x_opencti_cf_tags: ['a', 'b'] });
     expect(result).toEqual([{ field_id: 'cf-1', field_name: 'x_opencti_cf_tags', select_values: ['a', 'b'] }]);
   });
 
-  it('converts multiple known custom fields at once and ignores unknown ones', () => {
-    setCustomFieldDefinitionsCache([
+  it('converts multiple known custom fields at once and ignores unknown ones', async () => {
+    seed(
       makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' }),
       makeDefinition({ id: 'cf-2', name: 'x_opencti_cf_label', field_type: 'string' }),
-    ]);
-    const result = unflattenStixToCustomFieldValues({
+    );
+    const result = await unflatten({
       x_opencti_cf_score: 7,
       x_opencti_cf_label: 'test',
       x_opencti_cf_unknown: 'ignored',
@@ -113,11 +124,11 @@ describe('unflattenStixToCustomFieldValues', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('round-trips flatten -> unflatten for a known definition', () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' })]);
+  it('round-trips flatten -> unflatten for a known definition', async () => {
+    seed(makeDefinition({ id: 'cf-1', name: 'x_opencti_cf_score', field_type: 'integer' }));
     const original: CustomFieldValue[] = [{ field_id: 'cf-1', field_name: 'x_opencti_cf_score', int_value: 5 }];
     const flattened = flattenCustomFieldValuesForStix(original);
-    const roundTripped = unflattenStixToCustomFieldValues(flattened);
+    const roundTripped = await unflatten(flattened);
     expect(roundTripped).toEqual(original);
   });
 });

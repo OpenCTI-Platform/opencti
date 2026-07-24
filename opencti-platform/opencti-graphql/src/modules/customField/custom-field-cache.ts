@@ -1,37 +1,32 @@
-import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeSetting, type CustomFieldType } from './custom-field-types';
+import { getEntitiesListFromCache } from '../../database/cache';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeSetting, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type CustomFieldType } from './custom-field-types';
 
-// ----- In-memory cache of all custom field definitions (loaded at boot) -----
-// Kept in its own module (no dependency on utils/access.ts, database/middleware.ts, or the
-// heavier CRUD domain functions) so lightweight, read-only consumers (schema attribute
-// injection, filter key injection, STIX/filtering utils) don't pull in the full custom field
-// domain module and its import graph, which previously caused a circular import (this cache
-// file <-> utils/access.ts <-> ... <-> domain/attribute.ts) at platform boot.
-let customFieldDefinitionsCache: BasicStoreEntityCustomFieldDefinition[] = [];
+// ----- Custom field definitions read through the platform generic cache -----
+// Registered like any other cached entity type in cacheManager.ts (writeCacheForEntity),
+// so it's kept in sync across every platform instance for free via the existing
+// ADDED/EDIT/DELETE pub/sub topics, without any bespoke cache module.
 
-/**
- * Replaces the in-memory cache. Called by `loadCustomFieldDefinitions` in custom-field-domain.ts
- * after fetching the definitions from the database (platform startup and every CRUD mutation).
- */
-export const setCustomFieldDefinitionsCache = (definitions: BasicStoreEntityCustomFieldDefinition[]): void => {
-  customFieldDefinitionsCache = definitions;
-};
-
-export const getCustomFieldDefinitions = (): BasicStoreEntityCustomFieldDefinition[] => {
-  return customFieldDefinitionsCache;
+export const getCustomFieldDefinitions = (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
+  return getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(context, user, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
 };
 
 /**
  * Get cached custom field definitions for a given entity type.
  */
-export const getCustomFieldDefinitionsForEntityType = (entityType: string): BasicStoreEntityCustomFieldDefinition[] => {
-  return customFieldDefinitionsCache.filter(
-    (def) => def.entity_types && def.entity_types.includes(entityType),
-  );
+export const getCustomFieldDefinitionsForEntityType = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
+  const definitions = await getCustomFieldDefinitions(context, user);
+  return definitions.filter((def) => def.entity_types && def.entity_types.includes(entityType));
 };
 
 /**
  * Resolve the per-entity-type settings (mandatory / default_value) of a definition
  * for a given entity type. Returns undefined if the field is not attached to it.
+ * Pure function on already-loaded data: no cache access needed.
  */
 export const getCustomFieldSettingForEntityType = (
   definition: BasicStoreEntityCustomFieldDefinition,
@@ -43,16 +38,27 @@ export const getCustomFieldSettingForEntityType = (
 /**
  * Get a cached custom field definition by its name (e.g. x_opencti_cf_score).
  */
-export const getCustomFieldDefinitionByName = (name: string): BasicStoreEntityCustomFieldDefinition | undefined => {
-  return customFieldDefinitionsCache.find((def) => def.name === name);
+export const getCustomFieldDefinitionByName = async (
+  context: AuthContext,
+  user: AuthUser,
+  name: string,
+): Promise<BasicStoreEntityCustomFieldDefinition | undefined> => {
+  const definitions = await getCustomFieldDefinitions(context, user);
+  return definitions.find((def) => def.name === name);
 };
 
-export const getCustomFieldDefinitionByLabel = (label: string): BasicStoreEntityCustomFieldDefinition | undefined => {
-  return customFieldDefinitionsCache.find((def) => def.label === label);
+export const getCustomFieldDefinitionByLabel = async (
+  context: AuthContext,
+  user: AuthUser,
+  label: string,
+): Promise<BasicStoreEntityCustomFieldDefinition | undefined> => {
+  const definitions = await getCustomFieldDefinitions(context, user);
+  return definitions.find((def) => def.label === label);
 };
 
 /**
  * Get the value field name in the nested object based on the field type.
+ * Pure mapping function: no cache access needed.
  */
 export const getCustomFieldValueField = (fieldType: CustomFieldType): string => {
   switch (fieldType) {

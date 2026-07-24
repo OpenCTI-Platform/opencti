@@ -336,7 +336,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   // Validate custom field values against their definitions (mandatory / min-max / select options)
   const customFieldValuesInput = input.find((inputData) => inputData.key === 'custom_field_values');
   if (customFieldValuesInput) {
-    validateCustomFieldValues(customFieldValuesInput.value ?? [], stixDomainObject.entity_type);
+    await validateCustomFieldValues(context, user, customFieldValuesInput.value ?? [], stixDomainObject.entity_type);
   }
   // Start the element edition
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);

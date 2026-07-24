@@ -44,6 +44,7 @@ import {
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
+import type { AuthContext, AuthUser } from '../types/user';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -211,7 +212,9 @@ const completeFilterDefinitionMapForType = (
   }
 };
 
-const completeFilterDefinitionMapWithSpecialKeys = (
+const completeFilterDefinitionMapWithSpecialKeys = async (
+  context: AuthContext,
+  user: AuthUser,
   type: string,
   filterDefinitionsMap: Map<string, FilterDefinition>, // filter definition map to complete
   subEntityTypes: string[],
@@ -240,7 +243,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
 
   // Add custom field filters dynamically from loaded definitions
   if (isStixDomainObject(type) && isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const customFieldDefs = getCustomFieldDefinitionsForEntityType(type);
+    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, type);
     for (const cfDef of customFieldDefs) {
       // Map custom field type to filter type
       let filterType = 'string';
@@ -544,14 +547,14 @@ const handleRemoveSpecialKeysFromFilterDefinitionsMap = (filterDefinitionsMap: M
   }
 };
 
-const completeFilterDefinitionsMapForTypeAndSubtypes = (filterDefinitionsMap: Map<string, FilterDefinition>, type: string) => {
+const completeFilterDefinitionsMapForTypeAndSubtypes = async (context: AuthContext, user: AuthUser, filterDefinitionsMap: Map<string, FilterDefinition>, type: string) => {
   const subTypes = schemaTypesDefinition.hasChildren(type) ? schemaTypesDefinition.get(type) : []; // fetch the subtypes
   completeFilterDefinitionMapForType(filterDefinitionsMap, type, subTypes); // add attributes and relations refs of type
-  completeFilterDefinitionMapWithSpecialKeys(type, filterDefinitionsMap, subTypes.concat([type])); // add or remove some special keys
+  await completeFilterDefinitionMapWithSpecialKeys(context, user, type, filterDefinitionsMap, subTypes.concat([type])); // add or remove some special keys
   if (subTypes.length > 0) { // handle the filter definitions of the subtypes
-    subTypes.forEach((subType) => {
-      completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, subType);
-    });
+    for (const subType of subTypes) {
+      await completeFilterDefinitionsMapForTypeAndSubtypes(context, user, filterDefinitionsMap, subType);
+    }
   }
 };
 
@@ -562,12 +565,12 @@ export const generateFilterKeysSchema = async () => {
   const isNotEnterpriseEdition = !isEnterpriseEditionFromSettings(settings);
   // A. build filterKeysSchema map for each entity type
   const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
-  registeredTypes.forEach((type) => {
+  for (const type of registeredTypes) {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
-    completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, type);
+    await completeFilterDefinitionsMapForTypeAndSubtypes(context, SYSTEM_USER, filterDefinitionsMap, type);
     handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
     filterKeysSchema.set(type, filterDefinitionsMap);
-  });
+  }
   // B. add special types
   // connectedToId special key (for instance triggers)
   filterKeysSchema.set('Instance', new Map([[CONNECTED_TO_INSTANCE_FILTER, {

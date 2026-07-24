@@ -1,17 +1,20 @@
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldValue } from './custom-field-types';
 import { FunctionalError } from '../../config/errors';
 import { getCustomFieldDefinitionsForEntityType } from './custom-field-cache';
+import type { AuthContext, AuthUser } from '../../types/user';
 
 /**
  * Validates an array of custom field values against the definitions for a given entity type.
  * Throws FunctionalError if any validation fails.
  */
-export const validateCustomFieldValues = (
+export const validateCustomFieldValues = async (
+  context: AuthContext,
+  user: AuthUser,
   customFieldValues: CustomFieldValue[],
   entityType: string,
-): void => {
+): Promise<void> => {
   const values = customFieldValues ?? [];
-  const definitions = getCustomFieldDefinitionsForEntityType(entityType);
+  const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
   // No custom fields configured for this entity type
   if (definitions.length === 0) {
     if (values.length > 0) {

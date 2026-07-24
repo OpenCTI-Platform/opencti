@@ -1,38 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Capture the subscription callbacks registered by cacheManager's start()
-type SubEvent = { instance: Record<string, unknown> };
+const mockWriteCacheForEntity = vi.fn();
+const mockPubSubSubscription = vi.fn(async (topic: string) => ({ topic, unsubscribe: vi.fn() }));
 
-const capturedHandlers: Record<string, ((event: SubEvent) => Promise<void>) | null> = {
-  add: null,
-  edit: null,
-  delete: null,
-};
-
-const mockLoadCustomFieldDefinitions = vi.fn(async () => {});
-
-const mockPubSubSubscription = vi.fn(async (topic: string, handler: any) => {
-  if (topic.includes('ADDED_TOPIC')) {
-    capturedHandlers.add = handler;
-  } else if (topic.includes('EDIT_TOPIC')) {
-    capturedHandlers.edit = handler;
-  } else if (topic.includes('DELETE_TOPIC')) {
-    capturedHandlers.delete = handler;
-  }
-  return { topic, unsubscribe: vi.fn() };
-});
-
-vi.mock('../../../src/modules/customField/custom-field-domain', () => ({
-  loadCustomFieldDefinitions: mockLoadCustomFieldDefinitions,
-}));
-
+// Mock dependencies before importing cacheManager
 vi.mock('../../../src/database/redis', () => ({
   CACHE_RESET_TOPIC: 'TEST_PREFIX_CACHE_RESET_TOPIC',
   pubSubSubscription: (topic: string, handler: any) => mockPubSubSubscription(topic, handler),
 }));
 
 vi.mock('../../../src/database/cache', () => ({
-  writeCacheForEntity: vi.fn(),
+  writeCacheForEntity: (...args: unknown[]) => mockWriteCacheForEntity(...args),
   resetCacheForEntity: vi.fn(),
   addCacheForEntity: vi.fn(),
   refreshCacheForEntity: vi.fn(),
@@ -89,71 +67,23 @@ vi.mock('../../../src/utils/base64', () => ({
   fromB64: vi.fn((v: string) => v),
 }));
 
-describe('cacheManager — custom field definitions sync', () => {
+describe('cacheManager — custom field definitions registration', () => {
   beforeEach(() => {
-    capturedHandlers.add = null;
-    capturedHandlers.edit = null;
-    capturedHandlers.delete = null;
-    mockLoadCustomFieldDefinitions.mockClear();
-    mockPubSubSubscription.mockClear();
+    mockWriteCacheForEntity.mockClear();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('reloads custom field definitions when a CustomFieldDefinition entity is ADDED', async () => {
+  it('registers CustomFieldDefinition in the generic cache, like any other cached entity type', async () => {
+    // Custom field definitions no longer have a bespoke sync cache: they are registered in the
+    // generic cache (database/cache.ts) and kept in sync cluster-wide via the same ADDED/EDIT/DELETE
+    // pub/sub topics used by every other cached entity type (no special-casing needed anymore).
     const { default: cacheManager } = await import('../../../src/manager/cacheManager');
-    await cacheManager.start();
 
-    expect(capturedHandlers.add).not.toBeNull();
-    await capturedHandlers.add!({ instance: { entity_type: 'CustomFieldDefinition' } });
+    cacheManager.init();
 
-    expect(mockLoadCustomFieldDefinitions).toHaveBeenCalledTimes(1);
-  });
-
-  it('reloads custom field definitions when a CustomFieldDefinition entity is EDITED', async () => {
-    const { default: cacheManager } = await import('../../../src/manager/cacheManager');
-    await cacheManager.start();
-
-    expect(capturedHandlers.edit).not.toBeNull();
-    await capturedHandlers.edit!({ instance: { entity_type: 'CustomFieldDefinition' } });
-
-    expect(mockLoadCustomFieldDefinitions).toHaveBeenCalledTimes(1);
-  });
-
-  it('reloads custom field definitions when a CustomFieldDefinition entity is DELETED', async () => {
-    const { default: cacheManager } = await import('../../../src/manager/cacheManager');
-    await cacheManager.start();
-
-    expect(capturedHandlers.delete).not.toBeNull();
-    await capturedHandlers.delete!({ instance: { entity_type: 'CustomFieldDefinition' } });
-
-    expect(mockLoadCustomFieldDefinitions).toHaveBeenCalledTimes(1);
-  });
-
-  it('does NOT reload custom field definitions for other entity type events', async () => {
-    const { default: cacheManager } = await import('../../../src/manager/cacheManager');
-    await cacheManager.start();
-
-    await capturedHandlers.add!({ instance: { entity_type: 'User' } });
-    await capturedHandlers.edit!({ instance: { entity_type: 'Settings' } });
-    await capturedHandlers.delete!({ instance: { entity_type: 'Malware' } });
-
-    expect(mockLoadCustomFieldDefinitions).not.toHaveBeenCalled();
-  });
-
-  it('reloads custom field definitions when one of the instances in an array is a CustomFieldDefinition', async () => {
-    const { default: cacheManager } = await import('../../../src/manager/cacheManager');
-    await cacheManager.start();
-
-    await capturedHandlers.add!({
-      instance: [
-        { entity_type: 'User' },
-        { entity_type: 'CustomFieldDefinition' },
-      ] as unknown as Record<string, unknown>,
-    });
-
-    expect(mockLoadCustomFieldDefinitions).toHaveBeenCalledTimes(1);
+    expect(mockWriteCacheForEntity).toHaveBeenCalledWith('CustomFieldDefinition', expect.objectContaining({ fn: expect.any(Function) }));
   });
 });
