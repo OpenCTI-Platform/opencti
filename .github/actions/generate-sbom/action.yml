@@ -80,10 +80,11 @@ runs:
 
           # Sanitize tag for filename (replace / and : with -)
           SAFE_TAG=$(echo "${TAG}" | tr '/:' '-')
-          SAFE_IMAGE=$(echo "${IMAGE_NAME}" | tr '/' '-')
+          # Extract short name (e.g. "platform" from "filigran/platform")
+          SHORT_NAME=$(echo "${IMAGE_NAME}" | awk -F/ '{print $NF}')
 
           echo "Generating SBOM for ${IMAGE_REF}"
-          SBOM_FILE="${SAFE_IMAGE}-${SAFE_TAG}.cdx.json"
+          SBOM_FILE="sbom-${SHORT_NAME}-container-${SAFE_TAG}.cdx.json"
           syft "${IMAGE_REF}" \
             -c "${{ github.workspace }}/.github/.syft.yaml" \
             -o "cyclonedx-json=${SBOM_FILE}"
