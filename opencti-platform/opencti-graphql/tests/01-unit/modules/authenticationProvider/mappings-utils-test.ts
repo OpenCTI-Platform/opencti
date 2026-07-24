@@ -268,6 +268,7 @@ describe('mappings-utils', () => {
         ],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       };
       const mapper = createGroupsMapper(conf, resolveExpr);
       const result = await mapper({ groups: 'admin' });
@@ -284,6 +285,7 @@ describe('mappings-utils', () => {
         ],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       };
       const mapper = createGroupsMapper(conf, resolveExpr);
       const result = await mapper({ groups: 'admin' });
@@ -300,6 +302,7 @@ describe('mappings-utils', () => {
         ],
         auto_create_groups: false,
         prevent_default_groups: false,
+        extend_platform_groups: false,
       };
       const mapper = createGroupsMapper(conf, resolveExpr);
       const result = await mapper({ groups: 'viewer' });
