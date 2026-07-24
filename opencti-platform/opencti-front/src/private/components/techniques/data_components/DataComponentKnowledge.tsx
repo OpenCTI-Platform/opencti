@@ -1,32 +1,14 @@
-import { FunctionComponent } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { graphql, useFragment } from 'react-relay';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { DataComponentKnowledge_dataComponent$key } from './__generated__/DataComponentKnowledge_dataComponent.graphql';
 
-const DataComponentKnowledgeFragment = graphql`
-  fragment DataComponentKnowledge_dataComponent on DataComponent {
-    id
-    name
-    aliases
-  }
-`;
-
-interface DataComponentKnowledgeProps {
-  data: DataComponentKnowledge_dataComponent$key;
-}
-
-const DataComponentKnowledge: FunctionComponent<
-  DataComponentKnowledgeProps
-> = ({ data }) => {
-  const dataComponent = useFragment(DataComponentKnowledgeFragment, data);
+const DataComponentKnowledge = () => {
   return (
     <>
       <Routes>
         <Route
           path="/relations/:relationId"
           element={
-            <StixCoreRelationship entityId={dataComponent.id} />
+            <StixCoreRelationship />
           }
         />
       </Routes>

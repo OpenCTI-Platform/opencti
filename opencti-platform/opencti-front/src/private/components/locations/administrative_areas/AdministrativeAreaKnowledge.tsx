@@ -36,10 +36,7 @@ const AdministrativeAreaKnowledge = ({
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={administrativeArea.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

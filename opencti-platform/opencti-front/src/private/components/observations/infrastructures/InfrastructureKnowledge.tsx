@@ -59,10 +59,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
         <Route
           path="/relations/:relationId/"
           element={(
-            <StixCoreRelationship
-              entityId={infrastructureData.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route
