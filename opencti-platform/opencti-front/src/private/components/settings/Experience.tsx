@@ -305,7 +305,6 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
           gap: theme.spacing(1.5),
-          marginTop: 'auto',
         }}
       >
         <ExperienceFeatureTile accent={eeAccent} icon={<AutoAwesomeOutlined />} label={t_i18n('Agentic AI capabilities')} />

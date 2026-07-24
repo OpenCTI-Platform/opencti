@@ -188,7 +188,6 @@ const XtmHubSettingsComponent = () => {
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               gap: theme.spacing(1.5),
-              marginTop: 'auto',
             }}
           >
             <ExperienceFeatureTile accent={accent} icon={<RocketLaunchOutlined />} label={t_i18n('XTM Platform free trial')} />
