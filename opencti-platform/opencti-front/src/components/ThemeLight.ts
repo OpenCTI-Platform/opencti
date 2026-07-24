@@ -84,6 +84,9 @@ const ThemeLight = (
       lightBackground: hexToRGB(EE_COLOR, 0.08),
       contrastText: '#F2F2F3',
     },
+    // Aligned with the OpenAEV xtmhub token so the Filigran Experience
+    // screens share the same accent on both platforms.
+    xtmhub: { main: '#00f1bd' },
     background: {
       default: background || THEME_LIGHT_DEFAULT_BACKGROUND,
       paper: paper || THEME_LIGHT_DEFAULT_PAPER,
