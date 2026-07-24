@@ -12,6 +12,7 @@ import {
   AccessRequiredError,
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
+  ConfigurationError,
   DatabaseError,
   ForbiddenAccess,
   FunctionalError,
@@ -126,7 +127,9 @@ import {
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_OBJECT,
+  RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_MARKING,
+  RELATION_OBJECT_PARTICIPANT,
   STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -200,7 +203,7 @@ import {
   topRelationsList,
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntityFromCache } from './cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
@@ -211,6 +214,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { canonicalizeMergeUsersPocAliasUpdateInputs, getMergeUsersPocCanonicalAliasMap, resolveMergeUsersPocAliasId } from '../utils/merge-users-poc-alias';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -882,6 +886,7 @@ export const distributionEntities = async (
   const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
     ...distributionArgs,
     field: finalField,
+    userAliasPolicy: 'operational',
   });
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
@@ -2361,6 +2366,36 @@ const updateAttributeRaw = async (
   };
 };
 
+const MERGE_USERS_POC_OPERATIONAL_WRITE_KEYS = new Set([
+  'creator_id',
+  'objectAssignee',
+  'objectParticipant',
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_PARTICIPANT,
+]);
+
+const validateMergeUsersPocAliasTargets = async (
+  context: AuthContext,
+  inputs: Array<{ key: string; value?: unknown[] | null }>,
+) => {
+  const configuredTargetIds = new Set(Object.values(getMergeUsersPocCanonicalAliasMap()));
+  const targetIds = inputs
+    .filter((input) => MERGE_USERS_POC_OPERATIONAL_WRITE_KEYS.has(input.key))
+    .flatMap((input) => input.value ?? [])
+    .filter((value): value is string => typeof value === 'string')
+    .map((id) => ({ id, targetId: resolveMergeUsersPocAliasId(id) }))
+    .filter(({ id, targetId }) => id !== targetId || configuredTargetIds.has(id))
+    .map(({ targetId }) => targetId);
+  if (targetIds.length === 0) {
+    return;
+  }
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const missingTargetIds = [...new Set(targetIds)].filter((id) => !platformUsers.get(id));
+  if (missingTargetIds.length > 0) {
+    throw ConfigurationError('MERGE_POC_ALIAS_MAP target users cannot be resolved', { ids: missingTargetIds });
+  }
+};
+
 const resolveRefsForInputs = async (
   context: AuthContext,
   user: AuthUser,
@@ -2857,7 +2892,9 @@ export const updateAttributeFromLoadedWithRefs = async <T extends StoreObject>(
     controlUserConfidenceAgainstElement(user, initial);
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial) as EditInput[];
-  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
+  await validateMergeUsersPocAliasTargets(context, newInputs);
+  const aliasAwareInputs = canonicalizeMergeUsersPocAliasUpdateInputs(newInputs);
+  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, aliasAwareInputs);
 
   return updateAttributeMetaResolved<T>(context, user, initial, revolvedInputs as EditInput[], opts);
 };
@@ -3204,13 +3241,18 @@ const upsertElement = async (
 
   // upsertOperations : resolve refs
   if (updatePatch.upsertOperations?.length > 0) {
-    updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, updatePatch.upsertOperations);
+    const upsertOperations = updatePatch.upsertOperations as EditInput[];
+    await validateMergeUsersPocAliasTargets(context, upsertOperations);
+    const aliasAwareOperations = canonicalizeMergeUsersPocAliasUpdateInputs(upsertOperations);
+    updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, aliasAwareOperations);
   }
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
   // All inputs impacted by modifications (+inner)
-  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  const rawInputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  await validateMergeUsersPocAliasTargets(context, rawInputs);
+  const inputs = canonicalizeMergeUsersPocAliasUpdateInputs(rawInputs);
 
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
@@ -3295,10 +3337,15 @@ export const createRelationRaw = async (
 ) => {
   let lock;
   const { fromRule, locks = [] } = opts;
-  const { fromId, toId, relationship_type: relationshipType } = rawInput;
 
   // region confidence control
   const input = structuredClone(rawInput);
+  const { relationship_type: relationshipType } = input;
+  if (relationshipType === RELATION_OBJECT_ASSIGNEE || relationshipType === RELATION_OBJECT_PARTICIPANT) {
+    await validateMergeUsersPocAliasTargets(context, [{ key: relationshipType, value: [input.toId] }]);
+    input.toId = resolveMergeUsersPocAliasId(input.toId);
+  }
+  const { fromId, toId } = input;
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, relationshipType);
   input.confidence = confidenceLevelToApply; // confidence of the new relation will be capped to user's confidence
   // endregion
@@ -3610,6 +3657,17 @@ const internalCreateEntityRaw = async (
 ) => {
   // region confidence control
   const input = { ...rawInput };
+  const operationalUserInputs = ['objectAssignee', 'objectParticipant']
+    .filter((field) => input[field] !== undefined)
+    .map((field) => ({ key: field, value: Array.isArray(input[field]) ? input[field] : [input[field]] }));
+  await validateMergeUsersPocAliasTargets(context, operationalUserInputs);
+  for (const field of ['objectAssignee', 'objectParticipant']) {
+    if (Array.isArray(input[field])) {
+      input[field] = input[field].map((id: unknown) => typeof id === 'string' ? resolveMergeUsersPocAliasId(id) : id);
+    } else if (typeof input[field] === 'string') {
+      input[field] = resolveMergeUsersPocAliasId(input[field]);
+    }
+  }
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming

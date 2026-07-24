@@ -59,6 +59,7 @@ import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import type { PirInformation } from '../../../modules/pir/pir-types';
 import { pushAll } from '../../arrayUtil';
+import { canonicalizeMergeUsersPocAliasIds, resolveMergeUsersPocAliasId } from '../../merge-users-poc-alias';
 
 // -----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -186,7 +187,8 @@ export const testCreatedBy = (stix: any, filter: Filter, changeContext?: { filte
  */
 export const testCreator = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.creator_ids ?? [];
-  return testStringFilter(filter, stixValues, changeContext);
+  const aliasFilter = { ...filter, values: filter.values.map((value) => typeof value === 'string' ? resolveMergeUsersPocAliasId(value) : value) };
+  return testStringFilter(aliasFilter, canonicalizeMergeUsersPocAliasIds(stixValues), changeContext);
 };
 
 /**
@@ -195,7 +197,8 @@ export const testCreator = (stix: any, filter: Filter, changeContext?: { filterK
  */
 export const testAssignee = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.assignee_ids ?? [];
-  return testStringFilter(filter, stixValues, changeContext);
+  const aliasFilter = { ...filter, values: filter.values.map((value) => typeof value === 'string' ? resolveMergeUsersPocAliasId(value) : value) };
+  return testStringFilter(aliasFilter, canonicalizeMergeUsersPocAliasIds(stixValues), changeContext);
 };
 
 /**
@@ -204,7 +207,8 @@ export const testAssignee = (stix: any, filter: Filter, changeContext?: { filter
  */
 export const testParticipant = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.participant_ids ?? [];
-  return testStringFilter(filter, stixValues, changeContext);
+  const aliasFilter = { ...filter, values: filter.values.map((value) => typeof value === 'string' ? resolveMergeUsersPocAliasId(value) : value) };
+  return testStringFilter(aliasFilter, canonicalizeMergeUsersPocAliasIds(stixValues), changeContext);
 };
 
 /**

@@ -57,6 +57,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_AD
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../database/redis/token_usage';
+import { resolveMergeUsersPocAliasId } from '../utils/merge-users-poc-alias';
 import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
@@ -307,15 +308,26 @@ const buildCreatorUser = (user) => {
     [RELATION_PARTICIPATE_TO]: user[RELATION_PARTICIPATE_TO],
   };
 };
+const buildDisplayedCreator = (platformUsers, id) => {
+  const canonicalId = resolveMergeUsersPocAliasId(id);
+  const creator = INTERNAL_USERS[canonicalId] || buildCreatorUser(platformUsers.get(canonicalId));
+  if (!creator && canonicalId !== id) {
+    throw ConfigurationError('MERGE_POC_ALIAS_MAP target user cannot be resolved', { id: canonicalId });
+  }
+  return creator || SYSTEM_USER;
+};
 export const batchCreator = async (context, user, userIds) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER);
+  return userIds.map((id) => buildDisplayedCreator(platformUsers, id));
 };
 
 export const batchCreators = async (context, user, userListIds) => {
   const userIds = userListIds.map((u) => (Array.isArray(u) ? u : [u]));
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || buildCreatorUser(platformUsers.get(id)) || SYSTEM_USER));
+  return userIds.map((ids) => R.uniqBy(
+    (creator) => creator.id,
+    ids.map((id) => buildDisplayedCreator(platformUsers, id)),
+  ));
 };
 
 export const userOrganizationsPaginatedWithoutInferences = async (context, user, userId, opts) => {

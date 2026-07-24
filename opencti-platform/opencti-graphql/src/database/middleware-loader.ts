@@ -42,6 +42,8 @@ import { completeContextDataForEntity, publishUserAction } from '../listener/Use
 import { extractEntityRepresentativeName } from './entity-representative';
 import { asyncMap } from '../utils/data-processing';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { expandMergeUsersPocAliasFilterGroup } from '../utils/merge-users-poc-alias';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -275,13 +277,20 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
     R.dissoc('confidences'),
   )(args);
 
-  let computedFilters = filters;
+  const queriedTypes = Array.isArray(types) ? types : [types];
+  const preservesHistoricalUserIds = queriedTypes.some((type) => {
+    return type === ENTITY_TYPE_ACTIVITY || type === ENTITY_TYPE_HISTORY || type === ENTITY_TYPE_PIR_HISTORY;
+  });
+  const aliasExpandedFilters = filters && !preservesHistoricalUserIds
+    ? expandMergeUsersPocAliasFilterGroup(filters)
+    : filters;
+  let computedFilters = aliasExpandedFilters;
   // Args filters must be wrapper on top of api filters
   if (filtersFromOptionsContent.length > 0) {
     computedFilters = {
       mode: FilterMode.And,
       filters: filtersFromOptionsContent,
-      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+      filterGroups: aliasExpandedFilters && isFilterGroupNotEmpty(aliasExpandedFilters) ? [aliasExpandedFilters] : [],
     };
   }
   return {
