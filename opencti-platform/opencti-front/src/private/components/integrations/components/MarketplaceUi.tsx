@@ -3,7 +3,7 @@ import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material
 import { CheckCircleOutlined, ExpandMoreOutlined, Search } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';
@@ -72,64 +72,6 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
         }}
       />
     </Tooltip>
-  );
-};
-
-interface HeroStatChipProps {
-  icon: SvgIconComponent;
-  value: number;
-  label: string;
-  // Optional deep link to the matching pre-filtered view.
-  to?: string;
-}
-
-export const HeroStatChip = ({ icon: Icon, value, label, to }: HeroStatChipProps) => {
-  const theme = useTheme();
-  const content = (
-    <>
-      <Icon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
-      <Typography sx={{ fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-        {value}
-      </Typography>
-      <Typography sx={{ fontSize: 13, color: theme.palette.text.secondary }}>
-        {label}
-      </Typography>
-    </>
-  );
-  const baseSx = {
-    paddingInline: 1.25,
-    paddingBlock: 0.5,
-    borderRadius: 1,
-    border: `1px solid ${alpha(theme.palette.text.primary, 0.1)}`,
-    backgroundColor: alpha(theme.palette.text.primary, 0.04),
-  };
-  if (to) {
-    return (
-      <Stack
-        component={Link}
-        to={to}
-        direction="row"
-        alignItems="center"
-        gap={0.75}
-        sx={{
-          ...baseSx,
-          textDecoration: 'none',
-          color: 'inherit',
-          transition: 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out',
-          '&:hover': {
-            borderColor: alpha(theme.palette.primary.main, 0.4),
-            backgroundColor: alpha(theme.palette.primary.main, 0.08),
-          },
-        }}
-      >
-        {content}
-      </Stack>
-    );
-  }
-  return (
-    <Stack direction="row" alignItems="center" gap={0.75} sx={baseSx}>
-      {content}
-    </Stack>
   );
 };
 
