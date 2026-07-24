@@ -5,8 +5,6 @@ name: OpenCTI CD Rolling
 on:
   push:
     branches:
-      # FIXME to move to master & lts at the end
-      - issue/17219-node-sbom
       - master
       - lts/*
 
