@@ -9414,7 +9414,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nan@npm:^2.27.0":
+"nan@npm:^2.28.0":
   version: 2.28.0
   resolution: "nan@npm:2.28.0"
   dependencies:
@@ -9559,7 +9559,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-gyp@npm:^13.0.0, node-gyp@npm:latest":
+"node-gyp@npm:^13.0.1, node-gyp@npm:latest":
   version: 13.0.1
   resolution: "node-gyp@npm:13.0.1"
   dependencies:
@@ -10078,7 +10078,7 @@ __metadata:
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:11.2.0"
-    re2: "npm:1.26.0"
+    re2: "npm:1.26.1"
     semver: "npm:7.8.5"
     set-interval-async: "npm:3.0.3"
     slug: "npm:11.0.1"
@@ -10750,14 +10750,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"re2@npm:1.26.0":
-  version: 1.26.0
-  resolution: "re2@npm:1.26.0"
+"re2@npm:1.26.1":
+  version: 1.26.1
+  resolution: "re2@npm:1.26.1"
   dependencies:
     install-artifact-from-github: "npm:^1.7.0"
-    nan: "npm:^2.27.0"
-    node-gyp: "npm:^13.0.0"
-  checksum: 10c0/1355e1ffa00d12f862d7c6b98be36a2baceea6dbe1e9fbe9eb52e38d2966637f3bc9d13eb4f15d868514b3039da3e6180984a753ff8fb9ee33afc596138da708
+    nan: "npm:^2.28.0"
+    node-gyp: "npm:^13.0.1"
+  checksum: 10c0/6204450f56e7b65772c02491c5c04b9264d3a95a5e635519b0f4f98623aef958d57d23b8c738c433a668d6a75166f03ae1ce3ee8ae7fe0bb2913fb2dcde4100f
   languageName: node
   linkType: hard
 
