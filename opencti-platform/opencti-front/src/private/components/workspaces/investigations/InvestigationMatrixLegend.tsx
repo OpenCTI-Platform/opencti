@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Tooltip, Typography } from '@mui/material';
+import { Box, Checkbox, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import MatrixEntityMarker from '../../techniques/attack_patterns/attack_patterns_matrix/MatrixEntityMarker';
 import { MatrixEntityUsage } from './investigationMatrixUsage';
@@ -15,20 +15,24 @@ interface InvestigationMatrixLegendProps {
   hiddenEntityIds?: Set<string>;
   // Toggle a single entity's marker visibility on the matrix.
   onToggleEntity?: (entityId: string) => void;
+  // When the frequency heatmap is active, the relative min/max used to render
+  // the yellow -> red "Risk" scale.
+  heatmapScale?: { min: number; max: number };
 }
 
 // Bottom legend bar mapping each colour + shape marker to the entity it represents.
-// Each entity chip is clickable to toggle whether its markers show on the matrix.
+// Each entity has a selection box to control whether its markers show on the matrix.
 const InvestigationMatrixLegend = ({
   legend,
   hasCoverage = false,
   hiddenEntityIds,
   onToggleEntity,
+  heatmapScale,
 }: InvestigationMatrixLegendProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
-  if (legend.length === 0 && !hasCoverage) {
+  if (legend.length === 0 && !hasCoverage && !heatmapScale) {
     return null;
   }
 
@@ -60,7 +64,7 @@ const InvestigationMatrixLegend = ({
           <Tooltip
             key={entity.id}
             title={isToggleable
-              ? (isHidden ? t_i18n('Click to show on matrix') : t_i18n('Click to hide from matrix'))
+              ? (isHidden ? t_i18n('Show on matrix') : t_i18n('Hide from matrix'))
               : ''}
           >
             <Box
@@ -68,18 +72,25 @@ const InvestigationMatrixLegend = ({
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.75,
+                gap: 0.25,
                 cursor: isToggleable ? 'pointer' : 'default',
-                opacity: isHidden ? 0.4 : 1,
                 userSelect: 'none',
-                transition: 'opacity 0.15s ease',
               }}
             >
+              {isToggleable && (
+                <Checkbox
+                  size="small"
+                  checked={!isHidden}
+                  disableRipple
+                  sx={{ padding: 0.25 }}
+                  inputProps={{ 'aria-label': entity.name }}
+                />
+              )}
               <MatrixEntityMarker shape={entity.shape} color={entity.color} label={entity.name} />
               <Typography
                 variant="caption"
                 noWrap
-                sx={{ textDecoration: isHidden ? 'line-through' : 'none' }}
+                sx={{ opacity: isHidden ? 0.5 : 1 }}
               >
                 {entity.name}
               </Typography>
@@ -99,6 +110,26 @@ const InvestigationMatrixLegend = ({
           />
           <Typography variant="caption" noWrap>
             {t_i18n('Coverage score (low \u2192 high, detection & prevention)')}
+          </Typography>
+        </Box>
+      )}
+      {heatmapScale && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, marginLeft: (legend.length > 0 || hasCoverage) ? 2 : 0 }}>
+          <Typography variant="caption" sx={{ fontWeight: 600 }}>
+            {t_i18n('Risk')}
+          </Typography>
+          <Typography variant="caption">{heatmapScale.min}</Typography>
+          <Box
+            sx={{
+              width: 60,
+              height: 10,
+              borderRadius: 5,
+              background: 'linear-gradient(to right, rgb(253, 246, 179), rgb(252, 205, 144), rgb(245, 150, 137))',
+            }}
+          />
+          <Typography variant="caption">{heatmapScale.max}</Typography>
+          <Typography variant="caption" noWrap sx={{ marginLeft: 0.5 }}>
+            {t_i18n('Technique usage (low \u2192 high)')}
           </Typography>
         </Box>
       )}

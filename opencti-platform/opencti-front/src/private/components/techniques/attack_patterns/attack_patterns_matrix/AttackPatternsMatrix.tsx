@@ -9,6 +9,7 @@ import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import { MatrixCellEntity } from './MatrixEntityMarkers';
 import { CoverageInformation } from './MatrixCoverageIndicator';
+import { HeatmapScale } from './attackPatternsHeatmap';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
@@ -31,6 +32,14 @@ export interface AttackPatternsMatrixProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
   entityId?: string;
+  // Frequency heatmap (TTP Analyser US.3): when active, technique/sub-technique
+  // cells are coloured by how many entities use them, on a relative yellow->red
+  // scale. Off by default so other matrix callers are unaffected.
+  heatmapActive?: boolean;
+  // attack_pattern_id -> usage count (only entries with count > 0).
+  frequencyMap?: Map<string, number>;
+  // Relative min/max used to map counts onto the colour scale.
+  heatmapScale?: HeatmapScale;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -55,6 +64,9 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  heatmapActive = false,
+  frequencyMap,
+  heatmapScale,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -85,6 +97,9 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             isCoverage={isCoverage}
             coverageMap={coverageMap}
             entityId={entityId}
+            heatmapActive={heatmapActive}
+            frequencyMap={frequencyMap}
+            heatmapScale={heatmapScale}
           />
         </React.Suspense>
       )}

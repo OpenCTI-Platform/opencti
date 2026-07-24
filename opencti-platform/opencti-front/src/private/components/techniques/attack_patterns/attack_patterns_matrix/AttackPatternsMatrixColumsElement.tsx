@@ -11,6 +11,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
 import MatrixEntityMarkers, { MatrixCellEntity } from './MatrixEntityMarkers';
 import MatrixCoverageIndicator, { CoverageInformation } from './MatrixCoverageIndicator';
+import { getHeatmapColors, HeatmapScale } from './attackPatternsHeatmap';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 
 interface AttackPatternsMatrixColumnsElementProps {
@@ -23,6 +24,9 @@ interface AttackPatternsMatrixColumnsElementProps {
   entityId?: string;
   entityUsageMap?: Map<string, MatrixCellEntity[]>;
   coverageOverlayMap?: Map<string, CoverageInformation>;
+  heatmapActive?: boolean;
+  frequencyMap?: Map<string, number>;
+  heatmapScale?: HeatmapScale;
 }
 
 const AttackPatternsMatrixColumnsElement = ({
@@ -34,6 +38,9 @@ const AttackPatternsMatrixColumnsElement = ({
   coverageMap,
   entityUsageMap,
   coverageOverlayMap,
+  heatmapActive = false,
+  frequencyMap,
+  heatmapScale,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
@@ -82,7 +89,20 @@ const AttackPatternsMatrixColumnsElement = ({
   const styles = isCoverage
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
-  const { border, backgroundColor } = styles;
+  let { border, backgroundColor } = styles;
+
+  // Frequency heatmap (US.3): a scored technique/sub-technique is filled with
+  // its mapped colour, overriding the default/coverage styling.
+  const heatmapCount = frequencyMap?.get(attackPattern.attack_pattern_id) ?? 0;
+  const isHeatmapFilled = heatmapActive && heatmapScale !== undefined && heatmapCount > 0;
+  if (isHeatmapFilled && heatmapScale) {
+    const colors = getHeatmapColors(heatmapCount, heatmapScale);
+    border = `1px solid ${colors.border}`;
+    backgroundColor = colors.background;
+  }
+  // The pastel fills are light, so switch the label to dark text for contrast.
+  const heatmapTextColor = isHeatmapFilled ? 'rgba(0, 0, 0, 0.87)' : undefined;
+
   const cellEntities = entityUsageMap?.get(attackPattern.attack_pattern_id) ?? [];
   const cellCoverage = coverageOverlayMap?.get(attackPattern.attack_pattern_id) ?? [];
   // "Compare with security posture": show the tick/cross in the top-right corner
@@ -118,7 +138,7 @@ const AttackPatternsMatrixColumnsElement = ({
         isOverlapping={attackPattern.isOverlapping || false}
       />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'center' }}>
-        <Typography variant="body2" fontSize={10}>
+        <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
           {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
         </Typography>
 

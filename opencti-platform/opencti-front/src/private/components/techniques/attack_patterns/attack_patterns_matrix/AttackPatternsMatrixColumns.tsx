@@ -159,6 +159,9 @@ const AttackPatternsMatrixColumns = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  heatmapActive = false,
+  frequencyMap,
+  heatmapScale,
 }: AttackPatternsMatrixColumnsProps) => {
   const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
@@ -207,6 +210,9 @@ const AttackPatternsMatrixColumns = ({
     return attackPatterns.filter((n) => n.id === sap.attack_pattern_id).length;
   };
 
+  // Frequency > 0 for a given attack-pattern id (heatmap mode only).
+  const hasFrequency = (id: string): boolean => (frequencyMap?.get(id) ?? 0) > 0;
+
   const filteredData: FilteredData[] | undefined = useMemo(() => attackPatternsMatrix?.attackPatternsOfPhases
     ?.filter((a) => a.kill_chain_name === selectedKillChain)
     .sort((a, b) => a.x_opencti_order - b.x_opencti_order)
@@ -227,13 +233,32 @@ const AttackPatternsMatrixColumns = ({
             level: getSubAttackPatternLevel(sub),
             isCovered: isAttackPatternCovered(sub),
             isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
-          })).filter((sub) => (onlyActiveSubAttackPatterns ? sub.isCovered : true)),
+          })).filter((sub) => {
+            // Heatmap mode still respects the "only used techniques" toggle: when
+            // it is on, restrict sub-techniques to used ones; when off, show all.
+            if (heatmapActive) return isModeOnlyActive ? hasFrequency(sub.attack_pattern_id) : true;
+            return onlyActiveSubAttackPatterns ? sub.isCovered : true;
+          }),
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
-        .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
-        .sort((f, s) => f.name.localeCompare(s.name)),
-    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, onlyActiveSubAttackPatterns]);
+        .filter((ap) => {
+          // Heatmap mode respects the "only used techniques" toggle. When on,
+          // keep techniques used directly or with at least one used
+          // sub-technique; when off, show the whole matrix (heatmap just
+          // colours the used cells).
+          if (heatmapActive && isModeOnlyActive) {
+            return hasFrequency(ap.attack_pattern_id) || (ap.subAttackPatterns?.length ?? 0) > 0;
+          }
+          return isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true;
+        })
+        // Order techniques by their MITRE id (e.g. T1078 before T1548) so the
+        // column matches the ATT&CK matrix. Fall back to the name when a
+        // technique has no x_mitre_id.
+        .sort((f, s) => (f.x_mitre_id ?? '').localeCompare(s.x_mitre_id ?? '', undefined, { numeric: true })
+          || f.name.localeCompare(s.name)),
+    })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive,
+    onlyActiveSubAttackPatterns, heatmapActive, frequencyMap, selectedKillChain]);
 
   const { height: topBannerHeight } = useTopBanner();
 
@@ -257,7 +282,7 @@ const AttackPatternsMatrixColumns = ({
               height: fillContainer ? '100%' : `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
-              paddingBottom: 2,
+              paddingBottom: fillContainer ? 0 : 2,
               position: 'relative',
               marginBlockStart: fillContainer ? 0 : 3,
             }}
@@ -306,12 +331,22 @@ const AttackPatternsMatrixColumns = ({
                             }
                           }
 
+                          // The security-posture shield and/or coverage donuts sit in the
+                          // cell's top-right corner; when present, offset the sub-technique
+                          // count badge so they do not overlap.
+                          const showOverlap = !isCoverage
+                            && attackPatternIdsToOverlap?.length !== undefined
+                            && (ap.isCovered || isSubAttackPatternCovered(ap));
+                          const hasCoverageCorner = (coverageOverlayMap?.get(ap.attack_pattern_id)?.length ?? 0) > 0;
+                          const hasCornerIndicator = showOverlap || hasCoverageCorner;
+
                           return (
                             <AttackPatternsMatrixBadge
                               key={ap.attack_pattern_id}
                               attackPattern={ap}
                               color={badgeColor}
                               textColor={badgeTextColor}
+                              hasCornerIndicator={hasCornerIndicator}
                             >
                               <AccordionAttackPattern
                                 attackPattern={ap}
@@ -323,6 +358,9 @@ const AttackPatternsMatrixColumns = ({
                                 entityId={entityId}
                                 entityUsageMap={entityUsageMap}
                                 coverageOverlayMap={coverageOverlayMap}
+                                heatmapActive={heatmapActive}
+                                frequencyMap={frequencyMap}
+                                heatmapScale={heatmapScale}
                               />
                             </AttackPatternsMatrixBadge>
                           );
@@ -339,6 +377,9 @@ const AttackPatternsMatrixColumns = ({
                           entityId={entityId}
                           entityUsageMap={entityUsageMap}
                           coverageOverlayMap={coverageOverlayMap}
+                          heatmapActive={heatmapActive}
+                          frequencyMap={frequencyMap}
+                          heatmapScale={heatmapScale}
                         />
                       )
                     );
