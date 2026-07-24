@@ -552,6 +552,8 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   return async (elements) => {
     const objects = [];
     const ids = elements.map((e) => e.internal_id);
+    // `elements` only carry the query's baseData fields (see taskQuery/elList options), which do
+    // NOT include custom_field_values. A full reload is required to read and filter that field.
     const loadedElements = await internalFindByIds(context, user, ids);
     for (let index = 0; index < loadedElements.length; index += 1) {
       await doYield();

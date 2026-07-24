@@ -127,6 +127,7 @@ import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
+import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -279,8 +280,12 @@ const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.Stix
 
 // General
 export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+  const stixObject = buildStixObject(instance);
+  // custom_field_values only exists on StoreEntity (not StoreRelation); shared here so any entity
+  // type adopting custom fields gets STIX flattening for free, without per-type converter wiring.
+  const customFieldValues = 'custom_field_values' in instance ? instance.custom_field_values : undefined;
   return {
-    ...buildStixObject(instance),
+    ...stixObject,
     created: convertToStixDate(instance.created),
     modified: convertToStixDate(instance.modified),
     revoked: instance.revoked,
@@ -290,6 +295,12 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...stixObject.extensions[STIX_EXT_OCTI],
+        ...flattenCustomFieldValuesForStix(customFieldValues),
+      }),
+    },
   };
 };
 const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {
