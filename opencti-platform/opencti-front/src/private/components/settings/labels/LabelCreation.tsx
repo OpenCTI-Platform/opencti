@@ -12,12 +12,10 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
 import SimpleTextField from '../../../../components/SimpleTextField';
-import { commitMutation, defaultCommitMutation, fetchQuery, handleErrorInForm } from '../../../../relay/environment';
+import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
-import { labelsSearchQuery } from '../LabelsQuery';
-import { LabelsQuerySearchQuery$data } from '../__generated__/LabelsQuerySearchQuery.graphql';
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -82,14 +80,6 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     if (dryrun && contextual) {
       creationCallback({ labelAdd: values } as LabelCreationContextualMutation$data);
       handleClose();
-      return;
-    }
-    const data = await fetchQuery(labelsSearchQuery, { search: values.value, orderBy: 'value', orderMode: 'asc' }).toPromise();
-    const edges = (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? [];
-    const exists = edges.some((e) => (e.node.value ?? '').toLowerCase() === values.value.trim().toLowerCase());
-    if (exists) {
-      setErrors({ value: t_i18n('This label already exists') });
-      setSubmitting(false);
       return;
     }
     commitMutation({
