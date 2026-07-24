@@ -37,10 +37,7 @@ const ToolKnowledgeComponent = ({
         <Route
           path="/relations/:relationId/*"
           element={(
-            <StixCoreRelationship
-              entityId={tool.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

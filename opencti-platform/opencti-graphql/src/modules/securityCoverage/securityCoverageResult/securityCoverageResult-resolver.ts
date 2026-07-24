@@ -1,11 +1,16 @@
 import { stixDomainObjectAddRelation, stixDomainObjectDeleteRelation } from '../../../domain/stixDomainObject';
 import type { Resolvers } from '../../../generated/graphql';
+import { loadThroughDenormalized } from '../../../resolvers/stix';
 import { addSecurityCoverageResult, deleteSecurityCoverageResult, findById, findSecurityCoverageResultPaginated } from './securityCoverageResult-domain';
+import { INPUT_RESULT_OF } from './securityCoverageResult-types';
 
 const SecurityCoverageResultResolvers: Resolvers = {
   Query: {
     securityCoverageResult: (_, { id }, context) => findById(context, context.user, id),
     securityCoverageResults: (_, args, context) => findSecurityCoverageResultPaginated(context, context.user, args),
+  },
+  SecurityCoverageResult: {
+    resultOf: (scr, _, context) => loadThroughDenormalized(context, context.user, scr, INPUT_RESULT_OF),
   },
   Mutation: {
     securityCoverageResultAdd: (_, { input }, context) => addSecurityCoverageResult(context, context.user, input),

@@ -49,7 +49,6 @@ const securityCoverageQuery = graphql`
       }
       currentUserAccessRight
       ...SecurityCoverage_securityCoverage
-      ...SecurityCoverageKnowledge_securityCoverage
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -156,9 +155,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   path="/knowledge/*"
                   element={(
                     <div>
-                      <SecurityCoverageKnowledge
-                        securityCoverageData={securityCoverage}
-                      />
+                      <SecurityCoverageKnowledge />
                     </div>
                   )}
                 />
@@ -166,9 +163,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <Route
                   path="/relations/:relationId"
                   element={(
-                    <StixCoreRelationship
-                      entityId={securityCoverageId}
-                    />
+                    <StixCoreRelationship />
                   )}
                 />
               </>

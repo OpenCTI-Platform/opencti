@@ -37,10 +37,7 @@ const CountryKnowledgeComponent = ({
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={country.id}
-              paddingRight={20}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

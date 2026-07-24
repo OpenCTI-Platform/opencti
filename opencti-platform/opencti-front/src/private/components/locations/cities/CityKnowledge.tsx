@@ -33,10 +33,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
         <Route
           path="/relations/:relationId"
           element={(
-            <StixCoreRelationship
-              entityId={city.id}
-              paddingRight={true}
-            />
+            <StixCoreRelationship />
           )}
         />
         <Route

@@ -21,6 +21,7 @@ export const resolveLink = (type = 'unknown'): string | null => {
     case 'Note':
       return '/dashboard/analyses/notes';
     case 'Security-Coverage':
+    case 'Security-Coverage-Result':
       return '/dashboard/analyses/security_coverages';
     case 'Observed-Data':
       return '/dashboard/events/observed_data';

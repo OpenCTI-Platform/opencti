@@ -89,9 +89,7 @@ class RootOpinion extends Component {
                     <Route
                       path="/knowledge/relations/:relationId"
                       element={(
-                        <StixCoreRelationship
-                          entityId={props.opinion.id}
-                        />
+                        <StixCoreRelationship />
                       )}
                     />
                   </Routes>
