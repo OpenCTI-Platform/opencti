@@ -11,7 +11,7 @@ import {
   type CatalogStatus,
   updateCatalogManagerInternalCache,
 } from '../modules/catalog/catalog-domain';
-import { persistCatalogSnapshot } from '../modules/catalog/catalog-persistence';
+import { persistCatalogSnapshot } from '../modules/catalog/catalog-repository';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const CATALOG_MANAGER_ENABLED = booleanConf('app:catalog_manager:enabled', true);

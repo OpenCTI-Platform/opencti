@@ -1,5 +1,4 @@
 import { DECOUPLING_CONNECTOR_VERSIONS, findCatalog, findCatalogFromES, findById, findContractBySlug, getCatalogVersionInfo } from './catalog-domain';
-import { findAllCatalogs, findCatalogBySlug, findContractBySlugAndVersion, findLatestContractBySlug } from './catalog-persistence';
 import catalogManager from '../../manager/catalogManager';
 import { isFeatureEnabled } from '../../config/conf';
 import type { Resolvers } from '../../generated/graphql';
