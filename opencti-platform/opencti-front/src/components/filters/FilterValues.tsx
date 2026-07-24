@@ -157,7 +157,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           fontFamily: 'Consolas, monaco, monospace',
         };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
-    const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
+    let value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
+    if (typeof value === 'number') {
+      value = value.toString();
+    }
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
     return (
       <Fragment key={id}>
