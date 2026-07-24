@@ -29,7 +29,6 @@ test('Custom theme creation, edition, and deletion', { tag: ['@ce'] }, async ({ 
     theme_accent: '#5d4e4e',
     theme_text_color: '#353131',
     theme_logo: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png',
-    theme_advanced_override: '',
   };
 
   // Navigate to Settings
