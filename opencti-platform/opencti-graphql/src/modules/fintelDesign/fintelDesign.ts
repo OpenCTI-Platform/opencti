@@ -33,6 +33,7 @@ export const FINTEL_DESIGN_DEFINITION: ModuleDefinition<StoreEntityFintelDesign,
     { name: 'gradiantFromColor', label: 'Gradiant From Color', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'gradiantToColor', label: 'Gradiant To Color', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'textColor', label: 'Text Color', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'default', label: 'Default', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixFintelDesign) => {

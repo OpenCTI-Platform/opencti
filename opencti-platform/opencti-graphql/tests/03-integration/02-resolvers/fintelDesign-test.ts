@@ -24,6 +24,7 @@ const LIST_QUERY = gql`
         node {
           id
           name
+          default
           description
           file_id
           gradiantFromColor
@@ -42,6 +43,7 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      default
       file_id
       gradiantFromColor
       gradiantToColor
@@ -74,15 +76,26 @@ const EDIT_QUERY = gql`
   }
 `;
 
+const SET_DEFAULT_QUERY = gql`
+  mutation fintelDesignSetDefault($id: ID!, $input: [EditInput!]) {
+    fintelDesignFieldPatch(id: $id, input: $input) {
+      id
+      default
+    }
+  }
+`;
+
 describe('Fintel Design resolver standard behavior', () => {
   let fintelDesignInternalId: string;
   const fintelDesignInput = {
     name: 'Test Fintel Design',
     description: 'A design for testing',
+    default: false,
     gradiantFromColor: '#ffffff',
     gradiantToColor: '#000000',
     textColor: '#333333',
   };
+  let secondFintelDesignInternalId: string;
 
   beforeAll(() => {
     // Activate EE for this test
@@ -115,6 +128,34 @@ describe('Fintel Design resolver standard behavior', () => {
     expect(listResult.data?.fintelDesigns.edges.length).toBeGreaterThan(0);
   });
 
+  it('should enforce unique default Fintel Design', async () => {
+    await queryAsAdmin({
+      query: EDIT_QUERY,
+      variables: {
+        id: fintelDesignInternalId,
+        input: [{ key: 'default', value: [true] }],
+      },
+    });
+
+    const secondDesign = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          ...fintelDesignInput,
+          name: 'Test Fintel Design 2',
+          default: true,
+        },
+      },
+    });
+    secondFintelDesignInternalId = secondDesign.data?.fintelDesignAdd.id;
+
+    const listResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 50 } });
+    const firstDesign = listResult.data?.fintelDesigns.edges.find((e: { node: { id: string } }) => e.node.id === fintelDesignInternalId)?.node;
+    const secondDesignFromList = listResult.data?.fintelDesigns.edges.find((e: { node: { id: string } }) => e.node.id === secondFintelDesignInternalId)?.node;
+    expect(firstDesign?.default).toEqual(false);
+    expect(secondDesignFromList?.default).toEqual(true);
+  });
+
   it('should update Fintel Design', async () => {
     // update fintel design
     const updateResult = await queryAsAdmin({
@@ -138,8 +179,99 @@ describe('Fintel Design resolver standard behavior', () => {
       }
     `;
     await queryAsAdmin({ query: DELETE_QUERY, variables: { id: fintelDesignInternalId } });
+    if (secondFintelDesignInternalId) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondFintelDesignInternalId } });
+    }
     const readAfterDelete = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelDesignInternalId } });
     expect(readAfterDelete).not.toBeNull();
     expect(readAfterDelete.data?.fintelDesign).toBeNull();
+  });
+});
+
+describe('Fintel Design resolver default behavior', () => {
+  let firstDesignId: string;
+  let secondDesignId: string;
+
+  beforeAll(() => {
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+  });
+
+  it('should set fintel design as default', async () => {
+    const firstDesign = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Default test design 1',
+          description: 'Default test design 1',
+          default: false,
+          gradiantFromColor: '#111111',
+          gradiantToColor: '#222222',
+          textColor: '#ffffff',
+        },
+      },
+    });
+    firstDesignId = firstDesign.data?.fintelDesignAdd.id;
+
+    const setDefaultResult = await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: {
+        id: firstDesignId,
+        input: [{ key: 'default', value: [true] }],
+      },
+    });
+
+    expect(setDefaultResult.data?.fintelDesignFieldPatch.id).toEqual(firstDesignId);
+    expect(setDefaultResult.data?.fintelDesignFieldPatch.default).toBe(true);
+
+    const readResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: firstDesignId } });
+    expect(readResult.data?.fintelDesign.default).toBe(true);
+  });
+
+  it('should enforce uniqueness: setting a new default removes the previous one', async () => {
+    const secondDesign = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Default test design 2',
+          description: 'Default test design 2',
+          default: false,
+          gradiantFromColor: '#333333',
+          gradiantToColor: '#444444',
+          textColor: '#ffffff',
+        },
+      },
+    });
+    secondDesignId = secondDesign.data?.fintelDesignAdd.id;
+
+    await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: {
+        id: secondDesignId,
+        input: [{ key: 'default', value: [true] }],
+      },
+    });
+
+    const firstRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: firstDesignId } });
+    expect(firstRead.data?.fintelDesign.default).toBe(false);
+
+    const secondRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: secondDesignId } });
+    expect(secondRead.data?.fintelDesign.default).toBe(true);
+  });
+
+  it('should cleanup default behavior test data', async () => {
+    const DELETE_QUERY = gql`
+      mutation FintelDesignDelete($id: ID!) {
+        fintelDesignDelete(id: $id)
+      }
+    `;
+
+    if (firstDesignId) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: firstDesignId } });
+    }
+
+    if (secondDesignId) {
+      await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondDesignId } });
+    }
   });
 });

@@ -13,6 +13,7 @@ export const convertFintelDesignToStix = (instance: StoreEntityFintelDesign): St
     gradiantFromColor: instance.gradiantFromColor,
     gradiantToColor: instance.gradiantToColor,
     textColor: instance.textColor,
+    default: instance.default,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

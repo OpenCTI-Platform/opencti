@@ -1,13 +1,13 @@
 import { graphql } from 'react-relay';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FintelDesignsLinesPaginationQuery,
   FintelDesignsLinesPaginationQuery$variables,
 } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
-import FintelDesignCreation from '@components/settings/fintel_design/FintelDesignCreation';
 import { FintelDesignsLines_data$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLines_data.graphql';
 import { FintelDesignsLine_node$data } from '@components/settings/fintel_design/__generated__/FintelDesignsLine_node.graphql';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
+import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -21,6 +21,11 @@ import PageContainer from '../../../../components/PageContainer';
 import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import Tag from '@common/tag/Tag';
+import { useTheme } from '@mui/material';
+import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
+import FintelDesignDeletion from '@components/settings/fintel_design/FintelDesignDeletion';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 const fintelDesignsQuery = graphql`
   query FintelDesignsLinesPaginationQuery(
@@ -64,6 +69,8 @@ export const fintelDesignsFragment = graphql`
       edges {
         node {
           id
+          name
+          default
           ...FintelDesignsLine_node
         }
       }
@@ -85,15 +92,22 @@ const fintelDesignsLineFragment = graphql`
     gradiantFromColor
     gradiantToColor
     textColor
+    default
   }
 `;
 
 const LOCAL_STORAGE_KEY = 'view-fintel-designs';
 
+type FintelDesignRow = FintelDesignsLine_node$data & {
+  currentDefaultName?: string;
+};
+
 const FintelDesigns = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const { setTitle } = useConnectedDocumentModifier();
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   setTitle(t_i18n('Fintel design | Customization | Settings'));
   const initialValues = {
     searchTerm: '',
@@ -124,19 +138,33 @@ const FintelDesigns = () => {
     fintelDesignsQuery,
     queryPaginationOptions,
   );
+  const [fintelDesignToDelete, setFintelDesignToDelete] = useState<string | null>(null);
+  const [fintelDesignToEdit, setFintelDesignToEdit] = useState<FintelDesignEditData | null>(null);
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       id: 'name',
       label: t_i18n('Name'),
-      percentWidth: 40,
+      percentWidth: 30,
       isSortable: true,
     },
     description: {
       id: 'description',
       label: t_i18n('Description'),
-      percentWidth: 60,
+      percentWidth: 50,
       isSortable: false,
+    },
+    default: {
+      id: 'default',
+      label: t_i18n('Default'),
+      percentWidth: 20,
+      isSortable: false,
+      render: ({ default: isDefault }) => isDefault ? (
+        <Tag
+          color={theme.palette.success.main}
+          label={isDefault ? t_i18n('Default') : ''}
+        />
+      ) : '-',
     },
   };
 
@@ -173,7 +201,29 @@ const FintelDesigns = () => {
             {queryRef && (
               <DataTable
                 dataColumns={dataColumns}
-                resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
+                resolvePath={(data: FintelDesignsLines_data$data) => {
+                  type OuterNode = NonNullable<NonNullable<FintelDesignsLines_data$data['fintelDesigns']>['edges'][number]['node']>;
+                  const nodes = (data.fintelDesigns?.edges ?? [])
+                    .map((n) => n?.node)
+                    .filter((node): node is OuterNode => Boolean(node));
+                  const { defaultDesigns, otherDesigns } = nodes.reduce(
+                    (acc, node) => {
+                      if (node.default) {
+                        acc.defaultDesigns.push(node);
+                      } else {
+                        acc.otherDesigns.push(node);
+                      }
+                      return acc;
+                    },
+                    { defaultDesigns: [] as OuterNode[], otherDesigns: [] as OuterNode[] },
+                  );
+                  const currentDefaultName = defaultDesigns[0]?.name;
+                  return [...defaultDesigns, ...otherDesigns]
+                    .map((node) => ({
+                      ...node,
+                      currentDefaultName: node.default ? undefined : currentDefaultName,
+                    }));
+                }}
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
                 contextFilters={contextFilters}
@@ -181,8 +231,37 @@ const FintelDesigns = () => {
                 lineFragment={fintelDesignsLineFragment}
                 disableLineSelection
                 preloadedPaginationProps={preloadedPaginationProps}
-                createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
+                createButton={<FintelDesignFormDrawer paginationOptions={queryPaginationOptions} />}
                 icon={() => <ItemIcon type="FintelDesign" />}
+                actions={(row: FintelDesignRow) => (
+                  <FintelDesignPopover
+                    fintelDesignId={row.id}
+                    isDefault={!!row.default}
+                    currentDefaultName={row.currentDefaultName}
+                    onUpdate={() => setFintelDesignToEdit({
+                      id: row.id,
+                      name: row.name,
+                      description: row.description ?? null,
+                      default: !!row.default,
+                    })}
+                    onDelete={canDelete ? () => setFintelDesignToDelete(row.id) : undefined}
+                  />
+                )}
+              />
+            )}
+            {fintelDesignToEdit && (
+              <FintelDesignFormDrawer
+                fintelDesign={fintelDesignToEdit}
+                isOpen={!!fintelDesignToEdit}
+                onClose={() => setFintelDesignToEdit(null)}
+              />
+            )}
+            {fintelDesignToDelete && (
+              <FintelDesignDeletion
+                id={fintelDesignToDelete}
+                isOpen={!!fintelDesignToDelete}
+                handleClose={() => setFintelDesignToDelete(null)}
+                paginationOptions={queryPaginationOptions}
               />
             )}
           </>
