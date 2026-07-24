@@ -7,7 +7,6 @@ on:
     branches:
       - master
       - lts/*
-      - issue/17219-node-sbom #FIXME
 
 jobs:
   # -----------------------
