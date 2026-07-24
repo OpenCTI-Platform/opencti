@@ -10,7 +10,7 @@ on:
 
 jobs:
   opencti-frontend-test:
-    name: Unit tests
+    name: Frontend quality checks (build, lint, unit tests)
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
