@@ -6,7 +6,7 @@ const mockPubSubSubscription = vi.fn(async (topic: string) => ({ topic, unsubscr
 // Mock dependencies before importing cacheManager
 vi.mock('../../../src/database/redis', () => ({
   CACHE_RESET_TOPIC: 'TEST_PREFIX_CACHE_RESET_TOPIC',
-  pubSubSubscription: (topic: string, handler: any) => mockPubSubSubscription(topic, handler),
+  pubSubSubscription: (topic: string) => mockPubSubSubscription(topic),
 }));
 
 vi.mock('../../../src/database/cache', () => ({

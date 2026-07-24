@@ -4,7 +4,6 @@ import { INPUT_OBJECTS } from '../../../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type Stix2CaseIncident, type StixCaseIncident, type StoreEntityCaseIncident } from './case-incident-types';
 import { assertType, cleanObject } from '../../../database/stix-converter-utils';
 import { buildStixDomain as buildStixDomain2 } from '../../../database/stix-2-0-converter';
-import { flattenCustomFieldValuesForStix } from '../../customField/custom-field-stix-utils';
 
 export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident): StixCaseIncident => {
   const caseIncident = buildStixDomain(instance);
@@ -22,7 +21,6 @@ export const convertCaseIncidentToStix_2_1 = (instance: StoreEntityCaseIncident)
       [STIX_EXT_OCTI]: cleanObject({
         ...caseIncident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-        ...flattenCustomFieldValuesForStix(instance.custom_field_values),
       }),
     },
   };
