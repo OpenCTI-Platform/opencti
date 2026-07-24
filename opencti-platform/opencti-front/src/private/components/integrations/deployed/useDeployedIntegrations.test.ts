@@ -42,7 +42,7 @@ const renderIntegrations = ({
 }: {
   connectors?: unknown[];
   states?: unknown[];
-  queues?: { name: string; messages: unknown }[];
+  queues?: { name: string; messages: unknown; message_stats?: { ack_details?: { rate?: unknown } } | null }[];
   feeds?: Record<string, unknown>;
   forms?: unknown[];
   logosBySlug?: Map<string, string>;
@@ -135,6 +135,29 @@ describe('useDeployedIntegrations', () => {
       });
       expect(result.current[0].messagesCount).toBe(7);
     });
+
+    it('sums push and listen queue ack rates into the connector throughput', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        queues: [
+          { name: 'push_connector-1', messages: 0, message_stats: { ack_details: { rate: 1.5 } } },
+          { name: 'listen_connector-1', messages: 0, message_stats: { ack_details: { rate: 0.5 } } },
+          { name: 'push_other-connector', messages: 0, message_stats: { ack_details: { rate: 100 } } },
+        ],
+      });
+      expect(result.current[0].throughputRate).toBe(2);
+    });
+
+    it('keeps a null throughput when the queues never saw traffic (no message_stats)', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        queues: [
+          { name: 'push_connector-1', messages: 0, message_stats: null },
+          { name: 'listen_connector-1', messages: 0 },
+        ],
+      });
+      expect(result.current[0].throughputRate).toBeNull();
+    });
   });
 
   describe('feed twin connectors', () => {
@@ -146,7 +169,7 @@ describe('useDeployedIntegrations', () => {
           makeConnector({ id: twinId, name: 'RSS twin connector' }),
           makeConnector(),
         ],
-        queues: [{ name: `push_${twinId}`, messages: 12 }],
+        queues: [{ name: `push_${twinId}`, messages: 12, message_stats: { ack_details: { rate: 0.8 } } }],
         feeds: {
           ingestionRsss: {
             pageInfo: { globalCount: 1 },
@@ -159,6 +182,7 @@ describe('useDeployedIntegrations', () => {
       const feed = result.current.find((item) => item.id === feedId)!;
       expect(feed.kind).toBe('rss');
       expect(feed.messagesCount).toBe(12);
+      expect(feed.throughputRate).toBe(0.8);
     });
   });
 
