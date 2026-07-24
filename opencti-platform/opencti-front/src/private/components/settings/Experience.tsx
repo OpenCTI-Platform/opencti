@@ -189,7 +189,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           component="a"
           href="https://filigran.io/offerings/opencti-enterprise-edition/"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           {t_i18n('Discover OpenCTI EE')}
         </Button>

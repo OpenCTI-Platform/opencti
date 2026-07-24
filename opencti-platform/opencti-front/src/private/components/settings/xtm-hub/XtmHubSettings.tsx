@@ -104,7 +104,7 @@ const XtmHubSettingsComponent = () => {
             component="a"
             href={hubUrl}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             {t_i18n('Go to the Hub')}
           </Button>
@@ -117,7 +117,7 @@ const XtmHubSettingsComponent = () => {
             component="a"
             href="https://filigran.io/platforms/xtm-hub/"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             {t_i18n('Explore XTM Hub')}
           </Button>

@@ -106,6 +106,9 @@ const ExperienceCard = ({
           </Typography>
           <Typography
             variant="h1"
+            // Keep the h1 visuals but emit an h2: several cards live on the
+            // same screen and must not produce multiple h1 headings.
+            component="h2"
             sx={{
               margin: 0,
               textTransform: 'none',
