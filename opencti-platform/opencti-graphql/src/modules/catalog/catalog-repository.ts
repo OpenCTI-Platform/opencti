@@ -1,7 +1,7 @@
 // opencti-platform/opencti-graphql/src/modules/catalog/catalog-persistence.ts
 
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createEntity, patchAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
@@ -29,7 +29,6 @@ export interface CatalogInput {
   source_code?: string;
   type?: string; // connector category (e.g. EXTERNAL_IMPORT) - lives here, NOT on the contract; see open question in review thread
   last_synced_at: string;
-  is_deleted: boolean;
 }
 
 export interface CatalogContractInput {
@@ -44,7 +43,6 @@ export interface CatalogContractInput {
   is_latest: boolean;
   format_version?: string;
   last_synced_at: string;
-  is_deleted: boolean;
 }
 
 // -- Writes --
@@ -109,6 +107,13 @@ export const findLatestContractsBySlug = async (
   return fullEntitiesList<BasicStoreEntityCatalogContract>(context, user, [ENTITY_TYPE_CATALOG_CONTRACT], {
     filters: { mode: FilterMode.And, filters: [{ key: ['is_latest'], values: [true], operator: FilterOperator.Eq }], filterGroups: [] },
   });
+};
+
+export const findAllCatalogContracts = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<BasicStoreEntityCatalogContract[]> => {
+  return fullEntitiesList<BasicStoreEntityCatalogContract>(context, user, [ENTITY_TYPE_CATALOG_CONTRACT]);
 };
 
 export const findLatestContractBySlug = async (
@@ -200,8 +205,6 @@ export const compareVersions = (a: string, b: string): number => {
 // slug (stable fields, taken from the latest version) and one CatalogContract per
 // (slug, version) with is_latest set accordingly.
 //
-// Deliberately does NOT handle tombstoning entities that disappeared from the manifest
-// (is_deleted) - open question from an earlier review, still unresolved, out of scope here.
 export const persistCatalogSnapshot = async (
   context: AuthContext,
   user: AuthUser,
@@ -213,6 +216,11 @@ export const persistCatalogSnapshot = async (
     return;
   }
   logApp.info('[OPENCTI-MODULE] Catalog persistence starting snapshot', { contractCount: contracts.length });
+
+  const [existingCatalogs, existingContracts] = await Promise.all([
+    findAllCatalogs(context, user),
+    findAllCatalogContracts(context, user),
+  ]);
 
   const now = new Date().toISOString();
   const bySlug = new Map<string, AdapterCatalogContract[]>();
@@ -243,7 +251,6 @@ export const persistCatalogSnapshot = async (
       source_code: latest.source_code,
       type: latest.type,
       last_synced_at: now,
-      is_deleted: false,
     });
 
     logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting contracts for slug', { slug, versionCount: sorted.length });
@@ -262,8 +269,32 @@ export const persistCatalogSnapshot = async (
         format_version: contract.format_version,
         is_latest: v === 0,
         last_synced_at: now,
-        is_deleted: false,
       });
+    }
+  }
+
+  const incomingSlugs = new Set<string>(bySlug.keys());
+  const incomingContractKeys = new Set<string>(
+    contracts.map((contract) => `${contract.slug}::${contract.container_version}`),
+  );
+
+  for (let i = 0; i < existingContracts.length; i += 1) {
+    const existingContract = existingContracts[i];
+    const contractKey = `${existingContract.slug}::${existingContract.version}`;
+    if (!incomingContractKeys.has(contractKey)) {
+      logApp.info('[OPENCTI-MODULE] Catalog persistence deleting missing contract', {
+        slug: existingContract.slug,
+        version: existingContract.version,
+      });
+      await deleteElementById(context, user, existingContract.id, ENTITY_TYPE_CATALOG_CONTRACT);
+    }
+  }
+
+  for (let i = 0; i < existingCatalogs.length; i += 1) {
+    const existingCatalog = existingCatalogs[i];
+    if (!incomingSlugs.has(existingCatalog.slug)) {
+      logApp.info('[OPENCTI-MODULE] Catalog persistence deleting missing catalog', { slug: existingCatalog.slug });
+      await deleteElementById(context, user, existingCatalog.id, ENTITY_TYPE_CATALOG);
     }
   }
 

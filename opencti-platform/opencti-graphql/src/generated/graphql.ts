@@ -3852,7 +3852,6 @@ export type CatalogConnection = {
 export type CatalogConnector = {
   __typename?: 'CatalogConnector';
   description?: Maybe<Scalars['String']['output']>;
-  is_deleted: Scalars['Boolean']['output'];
   last_verified_date?: Maybe<Scalars['String']['output']>;
   logo?: Maybe<Scalars['String']['output']>;
   manager_supported?: Maybe<Scalars['Boolean']['output']>;
@@ -3873,7 +3872,6 @@ export type CatalogConnectorContract = {
   container_type?: Maybe<Scalars['String']['output']>;
   container_version?: Maybe<Scalars['String']['output']>;
   format_version?: Maybe<Scalars['String']['output']>;
-  is_deleted: Scalars['Boolean']['output'];
   is_latest?: Maybe<Scalars['Boolean']['output']>;
   max_confidence_level?: Maybe<Scalars['Int']['output']>;
   slug: Scalars['String']['output'];
@@ -43034,7 +43032,6 @@ export type CatalogConnectionResolvers<ContextType = any, ParentType extends Res
 
 export type CatalogConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogConnector'] = ResolversParentTypes['CatalogConnector']> = ResolversObject<{
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_verified_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_supported?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -43054,7 +43051,6 @@ export type CatalogConnectorContractResolvers<ContextType = any, ParentType exte
   container_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   container_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   format_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  is_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_latest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   max_confidence_level?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

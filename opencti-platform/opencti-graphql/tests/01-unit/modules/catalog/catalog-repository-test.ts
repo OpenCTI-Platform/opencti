@@ -7,15 +7,17 @@ import {
   persistCatalogSnapshot,
   upsertCatalog,
   upsertCatalogContract,
-} from '../../../../src/modules/catalog/catalog-persistence';
+} from '../../../../src/modules/catalog/catalog-repository';
 
 const mockCreateEntity = vi.fn();
 const mockPatchAttribute = vi.fn();
+const mockDeleteElementById = vi.fn();
 const mockFullEntitiesList = vi.fn();
 
 vi.mock('../../../../src/database/middleware', () => ({
   createEntity: (...args: unknown[]) => mockCreateEntity(...args),
   patchAttribute: (...args: unknown[]) => mockPatchAttribute(...args),
+  deleteElementById: (...args: unknown[]) => mockDeleteElementById(...args),
 }));
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
@@ -29,6 +31,7 @@ describe('catalog-persistence', () => {
   beforeEach(() => {
     mockCreateEntity.mockReset();
     mockPatchAttribute.mockReset();
+    mockDeleteElementById.mockReset();
     mockFullEntitiesList.mockReset();
   });
 
@@ -44,7 +47,6 @@ describe('catalog-persistence', () => {
       playbook_supported: true,
       manager_supported: true,
       last_synced_at: '2026-07-24T00:00:00.000Z',
-      is_deleted: false,
     });
 
     expect(mockCreateEntity).toHaveBeenCalledWith(
@@ -66,7 +68,6 @@ describe('catalog-persistence', () => {
       version: '2.0.0',
       is_latest: true,
       last_synced_at: '2026-07-24T00:00:00.000Z',
-      is_deleted: false,
     });
 
     expect(mockPatchAttribute).toHaveBeenCalledWith(
@@ -92,7 +93,6 @@ describe('catalog-persistence', () => {
       version: '1.0.0',
       is_latest: false,
       last_synced_at: '2026-07-24T00:00:00.000Z',
-      is_deleted: false,
     });
 
     expect(mockFullEntitiesList).not.toHaveBeenCalled();
@@ -148,7 +148,12 @@ describe('catalog-persistence', () => {
   });
 
   it('persistCatalogSnapshot should mark latest contract per slug from version ordering', async () => {
-    mockFullEntitiesList.mockResolvedValue([]);
+    mockFullEntitiesList.mockImplementation((_, __, types, opts) => {
+      const isContractType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_CONTRACT;
+      if (!opts && isContractType) return Promise.resolve([]);
+      if (!opts && !isContractType) return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
     mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
@@ -178,5 +183,69 @@ describe('catalog-persistence', () => {
 
     expect(latestCall?.[2].is_latest).toBe(true);
     expect(olderCall?.[2].is_latest).toBe(false);
+  });
+
+  it('persistCatalogSnapshot should hard-delete contracts and catalogs missing from new manifest', async () => {
+    mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
+    mockDeleteElementById.mockResolvedValue({ id: 'deleted-id' });
+
+    mockFullEntitiesList.mockImplementation((_, __, types, opts) => {
+      const isContractType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_CONTRACT;
+
+      // Existing data snapshot for cleanup stage
+      if (!opts && !isContractType) {
+        return Promise.resolve([
+          { id: 'catalog-ipinfo', slug: 'ipinfo' },
+          { id: 'catalog-shodan', slug: 'shodan' },
+        ]);
+      }
+      if (!opts && isContractType) {
+        return Promise.resolve([
+          { id: 'contract-ipinfo-1.0.0', slug: 'ipinfo', version: '1.0.0' },
+          { id: 'contract-shodan-1.1.0', slug: 'shodan', version: '1.1.0' },
+        ]);
+      }
+
+      // findLatestContractBySlug lookups while upserting incoming latest contracts
+      return Promise.resolve([]);
+    });
+
+    await persistCatalogSnapshot(mockContext, mockUser, {
+      allContracts: [
+        {
+          slug: 'ipinfo',
+          title: 'IPinfo',
+          container_version: '1.0.0',
+          config_schema: { a: 1 },
+          container_image: 'opencti/ipinfo:1.0.0',
+        },
+      ],
+    });
+
+    expect(mockDeleteElementById).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'contract-shodan-1.1.0',
+      ENTITY_TYPE_CATALOG_CONTRACT,
+    );
+    expect(mockDeleteElementById).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'catalog-shodan',
+      ENTITY_TYPE_CATALOG,
+    );
+
+    expect(mockDeleteElementById).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'contract-ipinfo-1.0.0',
+      ENTITY_TYPE_CATALOG_CONTRACT,
+    );
+    expect(mockDeleteElementById).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'catalog-ipinfo',
+      ENTITY_TYPE_CATALOG,
+    );
   });
 });

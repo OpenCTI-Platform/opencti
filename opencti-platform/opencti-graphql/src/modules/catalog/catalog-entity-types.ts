@@ -27,7 +27,6 @@ interface CatalogEntityFields {
   container_image: string;
   class_name: string;
   last_synced_at: Date;
-  is_deleted: boolean;
 }
 
 export interface BasicStoreEntityCatalog extends BasicStoreEntity, CatalogEntityFields {}
@@ -57,7 +56,6 @@ interface CatalogContractEntityFields {
   is_latest: boolean;
   format_version: string;
   last_synced_at: Date;
-  is_deleted: boolean;
 }
 
 export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, CatalogContractEntityFields {}

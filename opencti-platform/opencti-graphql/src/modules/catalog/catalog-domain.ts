@@ -533,7 +533,6 @@ export const findCatalogFromES = async (context: AuthContext, user: AuthUser) =>
   latestContracts.forEach((c) => contractsBySlug.set(c.slug, c));
 
   return catalogEntities
-    .filter((catalog) => !catalog.is_deleted)
     .map((catalog) => {
       const contract = contractsBySlug.get(catalog.slug);
       const contracts = contract ? [buildContractStringFromES(catalog, contract)] : [];

@@ -29,7 +29,6 @@ type CatalogConnector {
   manager_supported: Boolean
   subscription_link: String
   source_code: String
-  is_deleted: Boolean!
 }
 
 type CatalogConnectorContract {
@@ -43,7 +42,6 @@ type CatalogConnectorContract {
   max_confidence_level: Int
   is_latest: Boolean
   format_version: String
-  is_deleted: Boolean!
 }
 
 type CatalogVersionInfo {

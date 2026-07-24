@@ -45,7 +45,6 @@ const CATALOG_DEFINITION: ModuleDefinition<StoreEntityCatalog, StixCatalog> = {
     { name: 'source_code', label: 'Source code', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'last_synced_at', label: 'Last synced at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'is_deleted', label: 'Deleted', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixCatalog) => {
@@ -83,7 +82,6 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
     { name: 'is_latest', label: 'Is latest', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'format_version', label: 'Format version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'last_synced_at', label: 'Last synced at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'is_deleted', label: 'Deleted', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   relations: [],
   representative: (stix: StixCatalogContract) => {

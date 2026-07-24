@@ -4,7 +4,7 @@ import { findCatalogFromES } from '../../../../src/modules/catalog/catalog-domai
 const findAllCatalogsMock = vi.fn();
 const findLatestContractsBySlugMock = vi.fn();
 
-vi.mock('../../../../src/modules/catalog/catalog-persistence', () => ({
+vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
   findAllCatalogs: (...args: unknown[]) => findAllCatalogsMock(...args),
   findLatestContractsBySlug: (...args: unknown[]) => findLatestContractsBySlugMock(...args),
 }));
@@ -18,7 +18,7 @@ describe('catalog-domain findCatalogFromES', () => {
     findLatestContractsBySlugMock.mockReset();
   });
 
-  it('should return only non-deleted catalogs and attach the latest contract by slug', async () => {
+  it('should attach the latest contract by slug', async () => {
     findAllCatalogsMock.mockResolvedValue([
       {
         id: 'catalog-ipinfo',
@@ -28,18 +28,7 @@ describe('catalog-domain findCatalogFromES', () => {
         slug: 'ipinfo',
         title: 'IPinfo',
         description: 'IP enrichment',
-        is_deleted: false,
         type: 'INTERNAL_ENRICHMENT',
-      },
-      {
-        id: 'catalog-deleted',
-        entity_type: 'Catalog',
-        parent_types: ['Internal-Object'],
-        standard_id: 'standard-catalog-deleted',
-        slug: 'deleted',
-        title: 'Deleted',
-        description: 'Should not be returned',
-        is_deleted: true,
       },
       {
         id: 'catalog-nocontract',
@@ -49,7 +38,6 @@ describe('catalog-domain findCatalogFromES', () => {
         slug: 'nocontract',
         title: 'No Contract',
         description: 'No latest contract found',
-        is_deleted: false,
       },
     ]);
 
@@ -100,7 +88,6 @@ describe('catalog-domain findCatalogFromES', () => {
         standard_id: 'standard-catalog-minimal',
         slug: 'minimal',
         title: 'Minimal',
-        is_deleted: false,
       },
     ]);
 
