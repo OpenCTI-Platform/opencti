@@ -1,3 +1,6 @@
+source:
+  supplier: "Filigran SAS"
+
 log:
   # suppress all logging output (env: SYFT_LOG_QUIET)
   quiet: false
@@ -22,7 +25,7 @@ exclude:
   - '**/node_modules/[!@]*/*/*/**/[!node_modules]/**/package.json'
 
 output:
-  - "cyclonedx-json=opencti-platform.cdx.json"
+  - "cyclonedx-json@1.6=opencti-platform.cdx.json"
 
 # selection of layers to catalog, options=[squashed all-layers deep-squashed] (env: SYFT_SCOPE)
 scope: "squashed"
