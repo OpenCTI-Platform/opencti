@@ -4,9 +4,10 @@ import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_D
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
-import { isEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
+import { isEmptyField, isNotEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
+import { OpenCTIStix2Splitter } from './rabbitmq-utils';
 import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
@@ -695,9 +696,60 @@ export const rabbitMQIsAlive = async () => {
   return assertExchangeResult;
 };
 
-export const pushToWorkerForConnector = (connectorId, message) => {
+/**
+ * Push a message to the worker queue of a connector.
+ *
+ * For bundle messages (type === 'bundle'), this mirrors the python helper
+ * `send_stix2_bundle` behavior: the bundle carried in `message.content` is split
+ * into per-element bundles (ordered by dependencies), the resulting expectations
+ * number is written to the associated work, and each split bundle is sent to the
+ * worker as a separate message.
+ * Non-bundle messages (e.g. `type === 'event'`) and messages flagged `no_split`
+ * are forwarded as-is.
+ */
+export const pushToWorkerForConnector = async (connectorId, message) => {
   const routingKey = pushRouting(connectorId);
-  return send(WORKER_EXCHANGE, routingKey, JSON.stringify(message));
+  // Only STIX bundle messages carry a splittable content, everything else is sent as-is
+  const isBundleMessage = message?.type === 'bundle' && isNotEmptyField(message?.content);
+  if (!isBundleMessage) {
+    return send(WORKER_EXCHANGE, routingKey, JSON.stringify(message));
+  }
+  // Decode the base64 STIX bundle content
+  const rawBundle = Buffer.from(message.content, 'base64').toString('utf-8');
+  let bundles;
+  let expectationsNumber;
+  const bundleContent = JSON.parse(rawBundle);
+  if (message.no_split || !Array.isArray(bundleContent.objects) || bundleContent.objects.length <= 1) {
+    // Split is explicitly disabled, keep the bundle intact but keep expectations aligned with the number of objects
+    bundles = [rawBundle];
+    expectationsNumber = Array.isArray(bundleContent.objects) ? bundleContent.objects.length : 1;
+  } else {
+    const eventVersion = bundleContent.x_opencti_event_version;
+    const stix2Splitter = new OpenCTIStix2Splitter();
+    const { expectations, bundles: splitBundles } = stix2Splitter.splitBundleWithExpectations(rawBundle, true, eventVersion);
+    bundles = splitBundles;
+    expectationsNumber = expectations;
+  }
+  if (bundles.length === 0) {
+    // Nothing to split/send (e.g. an empty bundle such as an empty draft validation).
+    // Keep the previous lenient behavior and simply skip instead of failing the caller.
+    logApp.debug('[RABBITMQ] Skipping push, bundle has nothing to import', { connectorId, work_id: message.work_id });
+    return true;
+  }
+  // Write the expectations to the work (like send_stix2_bundle)
+  if (isNotEmptyField(message.work_id)) {
+    // Lazy import to avoid a circular dependency between rabbitmq and the work domain
+    const { updateExpectationsNumber } = await import('../domain/work');
+    const context = executionContext('rabbitmq_push');
+    await updateExpectationsNumber(context, SYSTEM_USER, message.work_id, expectationsNumber);
+  }
+  // Send each split bundle separately to the worker
+  for (let index = 0; index < bundles.length; index += 1) {
+    const content = Buffer.from(bundles[index], 'utf-8').toString('base64');
+    const bundleMessage = { ...message, content };
+    await send(WORKER_EXCHANGE, routingKey, JSON.stringify(bundleMessage));
+  }
+  return true;
 };
 
 export const pushToConnector = (connectorId, message) => {
