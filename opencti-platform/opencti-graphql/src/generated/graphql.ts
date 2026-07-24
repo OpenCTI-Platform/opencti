@@ -10502,6 +10502,7 @@ export type GroupsMapping = {
   __typename?: 'GroupsMapping';
   auto_create_groups: Scalars['Boolean']['output'];
   default_groups: Array<Scalars['String']['output']>;
+  extend_platform_groups?: Maybe<Scalars['Boolean']['output']>;
   group_splitter?: Maybe<Scalars['String']['output']>;
   groups_expr: Array<Scalars['String']['output']>;
   groups_mapping: Array<MappingEntry>;
@@ -10511,6 +10512,7 @@ export type GroupsMapping = {
 export type GroupsMappingInput = {
   auto_create_groups: Scalars['Boolean']['input'];
   default_groups: Array<Scalars['String']['input']>;
+  extend_platform_groups: Scalars['Boolean']['input'];
   group_splitter?: InputMaybe<Scalars['String']['input']>;
   groups_expr: Array<Scalars['String']['input']>;
   groups_mapping: Array<MappingEntryInput>;
@@ -45261,6 +45263,7 @@ export type GroupingEdgeResolvers<ContextType = any, ParentType extends Resolver
 export type GroupsMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupsMapping'] = ResolversParentTypes['GroupsMapping']> = ResolversObject<{
   auto_create_groups?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   default_groups?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  extend_platform_groups?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   group_splitter?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groups_expr?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   groups_mapping?: Resolver<Array<ResolversTypes['MappingEntry']>, ParentType, ContextType>;
