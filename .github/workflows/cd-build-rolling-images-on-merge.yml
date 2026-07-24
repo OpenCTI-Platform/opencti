@@ -273,6 +273,15 @@ jobs:
           chmod +x "$RUNNER_TEMP/cyclonedx-cli"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
+      - name: Patch container SBOM versions
+        working-directory: sbom-work
+        run: |
+          APP_VERSION="${{ needs.app-sbom.outputs.app_version }}"
+          PLATFORM_SBOM=$(ls sbom-platform-container-*.cdx.json)
+          WORKER_SBOM=$(ls sbom-worker-container-*.cdx.json)
+          jq --arg version "$APP_VERSION" '.metadata.component.version = $version' "$PLATFORM_SBOM" > tmp.cdx.json && mv tmp.cdx.json "$PLATFORM_SBOM"
+          jq --arg version "$APP_VERSION" '.metadata.component.version = $version' "$WORKER_SBOM" > tmp.cdx.json && mv tmp.cdx.json "$WORKER_SBOM"
+
       - name: Merge all SBOMs
         working-directory: sbom-work
         run: |
