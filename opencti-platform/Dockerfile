@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.25
-FROM node:22-alpine3.23 AS base
+FROM node:24-alpine3.23 AS base
 
 
 ##############################
