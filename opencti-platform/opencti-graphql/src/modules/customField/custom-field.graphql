@@ -84,6 +84,9 @@ type Query {
     search: String
     filters: FilterGroup
   ): CustomFieldDefinitionConnection @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  # Read-only, available to any user with knowledge access (unlike customFieldDefinitions which is admin-only).
+  # Used by entity creation/edition forms to render the custom fields applicable to a given entity type.
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection @auth(for: [KNOWLEDGE]) @ff(flags: ["CUSTOM_FIELDS"])
 }
 
 # Mutations

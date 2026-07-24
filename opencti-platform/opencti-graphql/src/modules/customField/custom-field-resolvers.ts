@@ -7,6 +7,7 @@ import {
   customFieldDefinitionRemoveEntityType,
   customFieldDefinitionUpdateEntityType,
   findById,
+  findCustomFieldDefinitionsForEntityType,
   findCustomFieldDefinitionsPaginated,
 } from './custom-field-domain';
 
@@ -14,6 +15,7 @@ const customFieldResolvers: Resolvers = {
   Query: {
     customFieldDefinition: (_, { id }, context) => findById(context, context.user, id),
     customFieldDefinitions: (_, args, context) => findCustomFieldDefinitionsPaginated(context, context.user, args),
+    customFieldDefinitionsForEntityType: (_, { entityType }, context) => findCustomFieldDefinitionsForEntityType(context, context.user, entityType),
   },
   Mutation: {
     customFieldDefinitionAdd: (_, { input }, context) => customFieldDefinitionAdd(context, context.user, input),
