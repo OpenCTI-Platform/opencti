@@ -125,7 +125,7 @@ const useDistributionGraphData = () => {
    */
   const buildWidgetWordCloudOption = (distributionData: DistributionQueryData, groupBy: string) => {
     return distributionData.map((n) => {
-      if (!n) return { text: 'Unknown', value: 0 };
+      if (!n || n.label === 'unknown') return { text: 'Unknown', value: 0 };
       if (isFieldForIdentifier(groupBy)) {
         return { text: getMainRepresentative(n.entity), value: n.value ?? 0 };
       }
