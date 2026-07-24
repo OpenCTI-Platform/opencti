@@ -1,10 +1,10 @@
 import { Navigate, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../relay/environment';
-import { resolveLink } from '../../utils/Entity';
 import Loader from '../../components/Loader';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import makeStyles from '@mui/styles/makeStyles';
+import { useComputeLink } from '../../utils/hooks/useAppData';
 
 export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = graphql`
   query StixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery(
@@ -15,6 +15,11 @@ export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = gra
         id
         parent_types
         entity_type
+      }
+      ... on SecurityCoverageResult {
+        resultOf {
+          id
+        }
       }
       ... on StixCoreRelationship {
         id
@@ -94,6 +99,7 @@ const useStyles = makeStyles({
 const StixObjectOrStixRelationship = () => {
   const classes = useStyles();
   const { id } = useParams();
+  const computeLink = useComputeLink();
 
   return (
     <div className={classes.container}>
@@ -103,58 +109,8 @@ const StixObjectOrStixRelationship = () => {
         render={({ props }) => {
           if (props) {
             if (props.stixObjectOrStixRelationship) {
-              let redirectLink;
-              const { stixObjectOrStixRelationship } = props;
-              const fromRestricted = stixObjectOrStixRelationship.from === null;
-              const toRestricted = stixObjectOrStixRelationship.to === null;
-              if (
-                stixObjectOrStixRelationship.relationship_type
-                === 'stix-sighting-relationship'
-              ) {
-                if (!toRestricted) {
-                  redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.to.entity_type,
-                  )}/${
-                    stixObjectOrStixRelationship.to.id
-                  }/knowledge/sightings/${stixObjectOrStixRelationship.id}`;
-                } else {
-                  redirectLink = !fromRestricted
-                    ? `${resolveLink(
-                      stixObjectOrStixRelationship.from.entity_type,
-                    )}/${
-                      stixObjectOrStixRelationship.from.id
-                    }/knowledge/sightings/${stixObjectOrStixRelationship.id}`
-                    : undefined;
-                }
-              } else if (stixObjectOrStixRelationship.relationship_type) {
-                if (stixObjectOrStixRelationship.from?.relationship_type) {
-                  redirectLink = !toRestricted
-                    ? `${resolveLink(
-                      stixObjectOrStixRelationship.to.entity_type,
-                    )}/${
-                      stixObjectOrStixRelationship.to.id
-                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`
-                    : undefined;
-                } else if (!fromRestricted) {
-                  redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.from.entity_type,
-                  )}/${
-                    stixObjectOrStixRelationship.from.id
-                  }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
-                } else {
-                  redirectLink = !toRestricted
-                    ? `${resolveLink(
-                      stixObjectOrStixRelationship.to.entity_type,
-                    )}/${
-                      stixObjectOrStixRelationship.to.id
-                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`
-                    : undefined;
-                }
-              } else {
-                redirectLink = `${resolveLink(
-                  stixObjectOrStixRelationship.entity_type,
-                )}/${stixObjectOrStixRelationship.id}`;
-              }
+              const { stixObjectOrStixRelationship: node } = props;
+              const redirectLink = computeLink(node);
               if (redirectLink) {
                 return <Navigate exact from={`/id/${id}`} to={redirectLink} replace={true} />;
               }

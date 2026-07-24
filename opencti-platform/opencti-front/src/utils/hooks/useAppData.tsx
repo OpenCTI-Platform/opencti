@@ -21,11 +21,16 @@ export type AppDataProps = {
 export const useComputeLinkFn = () => {
   const { isRelationship } = useSchema();
   const computeLink = (node: ComputeLinkNode): string | undefined => {
-    let redirectLink;
-    if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
-      redirectLink = `${resolveLink(node.from.entity_type)}/${
-        node.from.id
-      }/knowledge/sightings/${node.id}`;
+    let redirectLink: string | undefined;
+    // Special case of Sightings.
+    if (node.relationship_type === 'stix-sighting-relationship') {
+      if (node.to) {
+        redirectLink = `${resolveLink(node.to.entity_type)}/${node.to.id}/knowledge/sightings/${node.id}`;
+      } else if (node.from) {
+        redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/sightings/${node.id}`;
+      } else {
+        redirectLink = undefined;
+      }
     } else if (node.relationship_type) {
       if (
         node.from
@@ -34,25 +39,24 @@ export const useComputeLinkFn = () => {
         && node.from.entity_type !== 'Security-Coverage-Result'
       ) {
         // 'from' not restricted and not a relationship and not SCR
-        redirectLink = `${resolveLink(node.from.entity_type)}/${
-          node.from.id
-        }/knowledge/relations/${node.id}`;
+        redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`;
       } else if (
         node.to
         && node.to.entity_type
         && !isRelationship(node.to.entity_type)
       ) {
         // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
-        redirectLink = `${resolveLink(node.to.entity_type)}/${
-          node.to.id
-        }/knowledge/relations/${node.id}`;
+        redirectLink = `${resolveLink(node.to.entity_type)}/${node.to.id}/knowledge/relations/${node.id}`;
       } else {
         redirectLink = undefined; // no redirection if from and to are restricted
       }
+    // Special case of Workspaces (investigations and dashboards).
     } else if (node.entity_type === 'Workspace') {
       redirectLink = `${resolveLink(node.type)}/${node.id}`;
+    // Special case of Security coverage results.
     } else if (node.entity_type === 'Security-Coverage-Result') {
       redirectLink = `${resolveLink(node.entity_type)}/${node.resultOf?.id}/result`;
+    // Default link of entities.
     } else {
       redirectLink = `${resolveLink(node.entity_type)}/${node.id}`;
     }
