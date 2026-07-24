@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ENTITY_TYPE_CATALOG, ENTITY_TYPE_CATALOG_CONTRACT } from '../../../../src/modules/catalog/catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT } from '../../../../src/modules/catalog/catalog-entity-types';
 import {
   compareVersions,
   findContractBySlugAndVersion,
   findLatestContractBySlug,
   persistCatalogSnapshot,
-  upsertCatalog,
   upsertCatalogContract,
 } from '../../../../src/modules/catalog/catalog-repository';
 
@@ -35,25 +34,28 @@ describe('catalog-persistence', () => {
     mockFullEntitiesList.mockReset();
   });
 
-  it('upsertCatalog should call createEntity with catalog entity type', async () => {
-    mockCreateEntity.mockResolvedValue({ id: 'catalog-1', slug: 'ipinfo' });
+  it('upsertCatalogContract should call createEntity with contract entity type and all metadata', async () => {
+    mockFullEntitiesList.mockResolvedValueOnce([]); // no existing latest for this slug
+    mockCreateEntity.mockResolvedValue({ id: 'catalog-1', slug: 'ipinfo', version: '1.0.0' });
 
-    await upsertCatalog(mockContext, mockUser, {
+    await upsertCatalogContract(mockContext, mockUser, {
       slug: 'ipinfo',
+      version: '1.0.0',
       title: 'IPinfo',
       description: 'desc',
       use_cases: [],
       verified: true,
       playbook_supported: true,
       manager_supported: true,
+      is_latest: true,
       last_synced_at: '2026-07-24T00:00:00.000Z',
     });
 
     expect(mockCreateEntity).toHaveBeenCalledWith(
       mockContext,
       mockUser,
-      expect.objectContaining({ slug: 'ipinfo' }),
-      ENTITY_TYPE_CATALOG,
+      expect.objectContaining({ slug: 'ipinfo', version: '1.0.0', title: 'IPinfo' }),
+      ENTITY_TYPE_CATALOG_CONTRACT,
     );
   });
 
@@ -66,6 +68,12 @@ describe('catalog-persistence', () => {
     await upsertCatalogContract(mockContext, mockUser, {
       slug: 'ipinfo',
       version: '2.0.0',
+      title: 'IPinfo',
+      description: '',
+      use_cases: [],
+      verified: false,
+      playbook_supported: false,
+      manager_supported: false,
       is_latest: true,
       last_synced_at: '2026-07-24T00:00:00.000Z',
     });
@@ -91,6 +99,12 @@ describe('catalog-persistence', () => {
     await upsertCatalogContract(mockContext, mockUser, {
       slug: 'ipinfo',
       version: '1.0.0',
+      title: 'IPinfo',
+      description: '',
+      use_cases: [],
+      verified: false,
+      playbook_supported: false,
+      manager_supported: false,
       is_latest: false,
       last_synced_at: '2026-07-24T00:00:00.000Z',
     });
@@ -161,16 +175,16 @@ describe('catalog-persistence', () => {
         {
           slug: 'ipinfo',
           title: 'IPinfo',
-          container_version: '1.0.0',
+          version: '1.0.0',
           config_schema: { a: 1 },
-          container_image: 'opencti/ipinfo:1.0.0',
+          image: 'opencti/ipinfo:1.0.0',
         },
         {
           slug: 'ipinfo',
           title: 'IPinfo',
-          container_version: '1.2.0',
+          version: '1.2.0',
           config_schema: { a: 2 },
-          container_image: 'opencti/ipinfo:1.2.0',
+          image: 'opencti/ipinfo:1.2.0',
         },
       ],
     });
@@ -192,13 +206,6 @@ describe('catalog-persistence', () => {
     mockFullEntitiesList.mockImplementation((_, __, types, opts) => {
       const isContractType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_CONTRACT;
 
-      // Existing data snapshot for cleanup stage
-      if (!opts && !isContractType) {
-        return Promise.resolve([
-          { id: 'catalog-ipinfo', slug: 'ipinfo' },
-          { id: 'catalog-shodan', slug: 'shodan' },
-        ]);
-      }
       if (!opts && isContractType) {
         return Promise.resolve([
           { id: 'contract-ipinfo-1.0.0', slug: 'ipinfo', version: '1.0.0' },
@@ -206,7 +213,6 @@ describe('catalog-persistence', () => {
         ]);
       }
 
-      // findLatestContractBySlug lookups while upserting incoming latest contracts
       return Promise.resolve([]);
     });
 
@@ -215,9 +221,9 @@ describe('catalog-persistence', () => {
         {
           slug: 'ipinfo',
           title: 'IPinfo',
-          container_version: '1.0.0',
+          version: '1.0.0',
           config_schema: { a: 1 },
-          container_image: 'opencti/ipinfo:1.0.0',
+          image: 'opencti/ipinfo:1.0.0',
         },
       ],
     });
@@ -228,24 +234,12 @@ describe('catalog-persistence', () => {
       'contract-shodan-1.1.0',
       ENTITY_TYPE_CATALOG_CONTRACT,
     );
-    expect(mockDeleteElementById).toHaveBeenCalledWith(
-      mockContext,
-      mockUser,
-      'catalog-shodan',
-      ENTITY_TYPE_CATALOG,
-    );
 
     expect(mockDeleteElementById).not.toHaveBeenCalledWith(
       mockContext,
       mockUser,
       'contract-ipinfo-1.0.0',
       ENTITY_TYPE_CATALOG_CONTRACT,
-    );
-    expect(mockDeleteElementById).not.toHaveBeenCalledWith(
-      mockContext,
-      mockUser,
-      'catalog-ipinfo',
-      ENTITY_TYPE_CATALOG,
     );
   });
 });

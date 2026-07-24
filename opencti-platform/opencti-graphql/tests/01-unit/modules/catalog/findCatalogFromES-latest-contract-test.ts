@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { findCatalogFromES } from '../../../../src/modules/catalog/catalog-domain';
 
-const findAllCatalogsMock = vi.fn();
 const findLatestContractsBySlugMock = vi.fn();
 
 vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
-  findAllCatalogs: (...args: unknown[]) => findAllCatalogsMock(...args),
   findLatestContractsBySlug: (...args: unknown[]) => findLatestContractsBySlugMock(...args),
 }));
 
@@ -14,58 +12,48 @@ const mockUser = { id: 'user-1' } as any;
 
 describe('catalog-domain findCatalogFromES', () => {
   beforeEach(() => {
-    findAllCatalogsMock.mockReset();
     findLatestContractsBySlugMock.mockReset();
   });
 
-  it('should attach the latest contract by slug', async () => {
-    findAllCatalogsMock.mockResolvedValue([
-      {
-        id: 'catalog-ipinfo',
-        entity_type: 'Catalog',
-        parent_types: ['Internal-Object'],
-        standard_id: 'standard-catalog-ipinfo',
-        slug: 'ipinfo',
-        title: 'IPinfo',
-        description: 'IP enrichment',
-        type: 'INTERNAL_ENRICHMENT',
-      },
-      {
-        id: 'catalog-nocontract',
-        entity_type: 'Catalog',
-        parent_types: ['Internal-Object'],
-        standard_id: 'standard-catalog-nocontract',
-        slug: 'nocontract',
-        title: 'No Contract',
-        description: 'No latest contract found',
-      },
-    ]);
-
+  it('should return one entry per latest contract, with contract data as the connector metadata', async () => {
     findLatestContractsBySlugMock.mockResolvedValue([
       {
         id: 'contract-ipinfo-latest',
         slug: 'ipinfo',
         version: '2.1.0',
+        entity_type: 'CatalogContract',
+        parent_types: ['Internal-Object'],
+        standard_id: 'standard-contract-ipinfo',
+        title: 'IPinfo',
+        description: 'IP enrichment',
+        type: 'INTERNAL_ENRICHMENT',
         config_schema: JSON.stringify({ required: ['IPINFO_TOKEN'] }),
-        container_image: 'opencti/connector-ipinfo:2.1.0',
-        class_name: 'IPInfoConnector',
+        image: 'opencti/connector-ipinfo:2.1.0',
         support_version: '>=7.2.0',
         max_confidence_level: 80,
       },
       {
-        id: 'contract-orphan',
-        slug: 'orphan',
-        version: '9.9.9',
+        id: 'contract-virustotal-latest',
+        slug: 'virustotal',
+        version: '2.3.0',
+        entity_type: 'CatalogContract',
+        parent_types: ['Internal-Object'],
+        standard_id: 'standard-contract-virustotal',
+        title: 'VirusTotal',
+        description: 'File enrichment',
+        type: 'EXTERNAL_IMPORT',
         config_schema: '{}',
+        image: 'opencti/connector-virustotal:2.3.0',
       },
     ]);
 
     const result = await findCatalogFromES(mockContext, mockUser);
 
     expect(result).toHaveLength(2);
-    expect(result.map((c) => c.id)).toEqual(['catalog-ipinfo', 'catalog-nocontract']);
+    expect(result.map((c) => c.id)).toEqual(['contract-ipinfo-latest', 'contract-virustotal-latest']);
 
-    const ipinfo = result.find((c) => c.id === 'catalog-ipinfo');
+    const ipinfo = result.find((c) => c.id === 'contract-ipinfo-latest');
+    expect(ipinfo?.name).toBe('IPinfo');
     expect(ipinfo?.contracts).toHaveLength(1);
 
     const parsedContract = JSON.parse(ipinfo?.contracts[0] ?? '{}');
@@ -74,27 +62,18 @@ describe('catalog-domain findCatalogFromES', () => {
     expect(parsedContract.container_image).toBe('opencti/connector-ipinfo:2.1.0');
     expect(parsedContract.container_type).toBe('INTERNAL_ENRICHMENT');
     expect(parsedContract.config_schema).toEqual({ required: ['IPINFO_TOKEN'] });
-
-    const noContract = result.find((c) => c.id === 'catalog-nocontract');
-    expect(noContract?.contracts).toEqual([]);
   });
 
-  it('should use fallback defaults when optional catalog and contract fields are missing', async () => {
-    findAllCatalogsMock.mockResolvedValue([
-      {
-        id: 'catalog-minimal',
-        entity_type: 'Catalog',
-        parent_types: ['Internal-Object'],
-        standard_id: 'standard-catalog-minimal',
-        slug: 'minimal',
-        title: 'Minimal',
-      },
-    ]);
-
+  it('should use fallback defaults when optional contract fields are missing', async () => {
     findLatestContractsBySlugMock.mockResolvedValue([
       {
+        id: 'contract-minimal',
         slug: 'minimal',
         version: '1.0.0',
+        entity_type: 'CatalogContract',
+        parent_types: ['Internal-Object'],
+        standard_id: 'standard-contract-minimal',
+        title: 'Minimal',
         config_schema: '{}',
       },
     ]);

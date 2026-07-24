@@ -5,19 +5,15 @@ import { createEntity, deleteElementById, patchAttribute } from '../../database/
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
-import { ENTITY_TYPE_CATALOG, ENTITY_TYPE_CATALOG_CONTRACT } from './catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT } from './catalog-entity-types';
 
-import type { BasicStoreEntityCatalog, BasicStoreEntityCatalogContract } from './catalog-entity';
+import type { BasicStoreEntityCatalogContract } from './catalog-entity';
 
-// -- Domain fields (primary definition; storage entities extend these + BasicStoreEntity) --
-// Field-for-field match against catalog-entity.ts's registered `attributes` lists.
-// NOT derived via Omit<Entity, keyof BasicStoreEntity> - that pattern silently
-// stripped every field when BasicStoreEntity carries an index signature (see PR history).
-
-export interface CatalogInput {
+export interface CatalogContractInput {
   slug: string;
+  version: string;
   title: string;
-  description: string; // required: BasicStoreEntity mandates description: string, not optional
+  description: string;
   short_description?: string;
   logo?: string;
   use_cases: string[];
@@ -27,17 +23,10 @@ export interface CatalogInput {
   manager_supported: boolean;
   subscription_link?: string;
   source_code?: string;
-  type?: string; // connector category (e.g. EXTERNAL_IMPORT) - lives here, NOT on the contract; see open question in review thread
-  last_synced_at: string;
-}
-
-export interface CatalogContractInput {
-  slug: string;
-  version: string;
+  type?: string;
+  // Deployment data
   config_schema?: string;
-  container_version?: string;
-  container_image?: string;
-  class_name?: string;
+  image?: string;
   support_version?: string;
   max_confidence_level?: number;
   is_latest: boolean;
@@ -46,19 +35,6 @@ export interface CatalogContractInput {
 }
 
 // -- Writes --
-
-// Upsert relies on the identifier definition (hashed from `slug`) resolving to the
-// same standard_id on every sync - createEntity updates in place if it already exists.
-export const upsertCatalog = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: CatalogInput,
-): Promise<BasicStoreEntityCatalog> => {
-  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting Catalog', { slug: input.slug });
-  const result = await createEntity(context, user, input, ENTITY_TYPE_CATALOG);
-  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserted Catalog', { slug: input.slug, id: result.id });
-  return result;
-};
 
 // Maintains "exactly one is_latest per slug" at write time - not left for a reader to
 // arbitrate if the sync manager ever upserts two versions marked latest in the same run.
@@ -81,24 +57,6 @@ export const upsertCatalogContract = async (
 };
 
 // -- Reads --
-
-export const findAllCatalogs = async (
-  context: AuthContext,
-  user: AuthUser,
-): Promise<BasicStoreEntityCatalog[]> => {
-  return fullEntitiesList<BasicStoreEntityCatalog>(context, user, [ENTITY_TYPE_CATALOG]);
-};
-
-export const findCatalogBySlug = async (
-  context: AuthContext,
-  user: AuthUser,
-  slug: string,
-): Promise<BasicStoreEntityCatalog | undefined> => {
-  const results = await fullEntitiesList<BasicStoreEntityCatalog>(context, user, [ENTITY_TYPE_CATALOG], {
-    filters: { mode: FilterMode.And, filters: [{ key: ['slug'], values: [slug], operator: FilterOperator.Eq }], filterGroups: [] },
-  });
-  return results[0];
-};
 
 export const findLatestContractsBySlug = async (
   context: AuthContext,
@@ -161,6 +119,8 @@ export const findContractBySlugAndVersion = async (
 // `CatalogContract` adapter type before merging.
 export interface AdapterCatalogContract {
   slug: string;
+  version?: string;
+  container_version?: string;
   title: string;
   description?: string;
   short_description?: string;
@@ -173,10 +133,10 @@ export interface AdapterCatalogContract {
   subscription_link?: string;
   source_code?: string;
   type?: string;
+  container_type?: string;
   config_schema?: object;
-  container_version: string;
+  image?: string;
   container_image?: string;
-  class_name?: string;
   support_version?: string;
   max_confidence_level?: number;
   format_version?: string;
@@ -185,6 +145,18 @@ export interface AdapterCatalogContract {
 export interface AdapterInternalCatalog {
   allContracts?: AdapterCatalogContract[];
 }
+
+const getContractVersion = (contract: AdapterCatalogContract): string => {
+  return contract.version ?? contract.container_version ?? '';
+};
+
+const getContractImage = (contract: AdapterCatalogContract): string | undefined => {
+  return contract.image ?? contract.container_image;
+};
+
+const getContractType = (contract: AdapterCatalogContract): string | undefined => {
+  return contract.type ?? contract.container_type;
+};
 
 // Dependency-free numeric dot-segment comparison, not full semver (no pre-release/build
 // metadata handling). Replaces "latest by array order", which was the original bug.
@@ -217,10 +189,7 @@ export const persistCatalogSnapshot = async (
   }
   logApp.info('[OPENCTI-MODULE] Catalog persistence starting snapshot', { contractCount: contracts.length });
 
-  const [existingCatalogs, existingContracts] = await Promise.all([
-    findAllCatalogs(context, user),
-    findAllCatalogContracts(context, user),
-  ]);
+  const existingContracts = await findAllCatalogContracts(context, user);
 
   const now = new Date().toISOString();
   const bySlug = new Map<string, AdapterCatalogContract[]>();
@@ -233,37 +202,35 @@ export const persistCatalogSnapshot = async (
   const slugEntries = Array.from(bySlug.entries());
   for (let i = 0; i < slugEntries.length; i += 1) {
     const [slug, versions] = slugEntries[i];
-    const sorted = [...versions].sort((a, b) => compareVersions(b.container_version, a.container_version));
-    const latest = sorted[0];
-
-    await upsertCatalog(context, user, {
-      slug,
-      title: latest.title,
-      description: latest.description ?? '',
-      short_description: latest.short_description,
-      logo: latest.logo,
-      use_cases: latest.use_cases ?? [],
-      verified: latest.verified ?? false,
-      last_verified_date: latest.last_verified_date,
-      playbook_supported: latest.playbook_supported ?? false,
-      manager_supported: latest.manager_supported ?? false,
-      subscription_link: latest.subscription_link,
-      source_code: latest.source_code,
-      type: latest.type,
-      last_synced_at: now,
-    });
+    const sorted = [...versions].sort((a, b) => compareVersions(getContractVersion(b), getContractVersion(a)));
 
     logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting contracts for slug', { slug, versionCount: sorted.length });
     for (let v = 0; v < sorted.length; v += 1) {
       const contract = sorted[v];
+      const version = getContractVersion(contract);
+      if (!version) {
+        logApp.warn('[OPENCTI-MODULE] Catalog persistence skipping contract with empty version', { slug, title: contract.title });
+        // Ignore malformed contracts instead of creating non-versioned records.
+        continue;
+      }
 
       await upsertCatalogContract(context, user, {
         slug,
-        version: contract.container_version,
+        version,
+        title: contract.title,
+        description: contract.description ?? '',
+        short_description: contract.short_description,
+        logo: contract.logo,
+        use_cases: contract.use_cases ?? [],
+        verified: contract.verified ?? false,
+        last_verified_date: contract.last_verified_date,
+        playbook_supported: contract.playbook_supported ?? false,
+        manager_supported: contract.manager_supported ?? false,
+        subscription_link: contract.subscription_link,
+        source_code: contract.source_code,
+        type: getContractType(contract),
         config_schema: JSON.stringify(contract.config_schema ?? {}),
-        container_version: contract.container_version,
-        container_image: contract.container_image,
-        class_name: contract.class_name,
+        image: getContractImage(contract),
         support_version: contract.support_version,
         max_confidence_level: contract.max_confidence_level,
         format_version: contract.format_version,
@@ -273,9 +240,11 @@ export const persistCatalogSnapshot = async (
     }
   }
 
-  const incomingSlugs = new Set<string>(bySlug.keys());
   const incomingContractKeys = new Set<string>(
-    contracts.map((contract) => `${contract.slug}::${contract.container_version}`),
+    contracts
+      .map((contract) => ({ slug: contract.slug, version: getContractVersion(contract) }))
+      .filter((contract) => !!contract.version)
+      .map((contract) => `${contract.slug}::${contract.version}`),
   );
 
   for (let i = 0; i < existingContracts.length; i += 1) {
@@ -287,14 +256,6 @@ export const persistCatalogSnapshot = async (
         version: existingContract.version,
       });
       await deleteElementById(context, user, existingContract.id, ENTITY_TYPE_CATALOG_CONTRACT);
-    }
-  }
-
-  for (let i = 0; i < existingCatalogs.length; i += 1) {
-    const existingCatalog = existingCatalogs[i];
-    if (!incomingSlugs.has(existingCatalog.slug)) {
-      logApp.info('[OPENCTI-MODULE] Catalog persistence deleting missing catalog', { slug: existingCatalog.slug });
-      await deleteElementById(context, user, existingCatalog.id, ENTITY_TYPE_CATALOG);
     }
   }
 
