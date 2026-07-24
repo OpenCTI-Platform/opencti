@@ -91,7 +91,7 @@ runs:
 
           echo "Injecting manufacturer metadata into ${SBOM_FILE}"
           jq --slurpfile mfr "${{ github.workspace }}/.github/sbom-manufacturer.json" \
-            '.metadata.manufacturer = $mfr[0]' "${SBOM_FILE}" > tmp.cdx.json && mv tmp.cdx.json "${SBOM_FILE}"
+            '.metadata.component.manufacturer = $mfr[0]' "${SBOM_FILE}" > tmp.cdx.json && mv tmp.cdx.json "${SBOM_FILE}"
 
           echo "::endgroup::"
         done

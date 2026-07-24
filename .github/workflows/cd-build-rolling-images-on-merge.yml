@@ -69,7 +69,7 @@ jobs:
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=sbom-opencti-graphql.cdx.json
           jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
-            '.metadata.manufacturer = $mfr[0]
+            '.metadata.component.manufacturer = $mfr[0]
             | .metadata.component.name = "opencti-graphql"
             | .metadata.component["bom-ref"] = "opencti-graphql"' sbom-opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-graphql.cdx.json
 
@@ -81,7 +81,7 @@ jobs:
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=sbom-opencti-front.cdx.json
           jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
-            '.metadata.manufacturer = $mfr[0]
+            '.metadata.component.manufacturer = $mfr[0]
             | .metadata.component.name = "opencti-front"
             | .metadata.component["bom-ref"] = "opencti-front"' sbom-opencti-front.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-front.cdx.json
 
@@ -263,6 +263,7 @@ jobs:
       - name: Install cyclonedx-cli
         run: |
           curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.33.1/cyclonedx-linux-x64 -o "$RUNNER_TEMP/cyclonedx-cli"
+          echo "bfc8b2538da86fe239bc53658bbb63c1c8c510a293c1e6891aa5bea5d3c58746  $RUNNER_TEMP/cyclonedx-cli" | sha256sum --check --strict
           chmod +x "$RUNNER_TEMP/cyclonedx-cli"
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
