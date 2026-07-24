@@ -5,6 +5,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 // region CatalogContract (one persisted entry per (slug, version))
 // All connector metadata lives here because every field can vary between versions.
 export const ENTITY_TYPE_CATALOG_CONTRACT = 'CatalogContract';
+export const ENTITY_TYPE_CATALOG_LOGO = 'CatalogLogo';
 
 interface CatalogContractEntityFields {
   slug: string;
@@ -13,7 +14,8 @@ interface CatalogContractEntityFields {
   title: string;
   description: string;
   short_description: string;
-  logo: string;
+  logo?: string;
+  logo_ref?: string;
   use_cases: string[];
   verified: boolean;
   last_verified_date: string;
@@ -37,11 +39,28 @@ export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, Catal
 
 export interface StoreEntityCatalogContract extends StoreEntity, CatalogContractEntityFields {}
 
+interface CatalogLogoEntityFields {
+  hash: string;
+  data_uri: string;
+  last_synced_at: Date;
+}
+
+export interface BasicStoreEntityCatalogLogo extends BasicStoreEntity, CatalogLogoEntityFields {}
+
+export interface StoreEntityCatalogLogo extends StoreEntity, CatalogLogoEntityFields {}
+
 // Internal object: never exported as a real STIX SDO.
 export interface StixCatalogContract extends StixObject {
   slug: string;
   version: string;
   title: string;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
+}
+
+export interface StixCatalogLogo extends StixObject {
+  hash: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

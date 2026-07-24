@@ -116,6 +116,8 @@ const normalizeContractFromNewManifest = (contract: Record<string, any>): Catalo
     subscription_link: contract.subscription_link ?? '',
     source_code: contract.source_code ?? '',
     manager_supported: toBoolean(contract.manager_supported, false),
+    // Legacy compatibility: keep container_* fields for the in-memory/GraphQL
+    // contract shape while embedded-manifest-based paths still exist.
     container_version: contract.version ?? '',
     container_image: contract.image_name ?? contract.container_image ?? '',
     container_type: (contract.image_type ?? contract.container_type ?? 'EXTERNAL_IMPORT') as IngestionConnectorType,

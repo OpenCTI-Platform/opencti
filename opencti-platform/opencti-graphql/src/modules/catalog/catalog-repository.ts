@@ -1,13 +1,14 @@
 // opencti-platform/opencti-graphql/src/modules/catalog/catalog-persistence.ts
 
+import { createHash } from 'node:crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
-import { ENTITY_TYPE_CATALOG_CONTRACT } from './catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO } from './catalog-entity-types';
 
-import type { BasicStoreEntityCatalogContract } from './catalog-entity';
+import type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo } from './catalog-entity';
 
 export interface CatalogContractInput {
   slug: string;
@@ -16,6 +17,7 @@ export interface CatalogContractInput {
   description: string;
   short_description?: string;
   logo?: string;
+  logo_ref?: string;
   use_cases: string[];
   verified: boolean;
   last_verified_date?: string;
@@ -31,6 +33,12 @@ export interface CatalogContractInput {
   max_confidence_level?: number;
   is_latest: boolean;
   format_version?: string;
+  last_synced_at: string;
+}
+
+export interface CatalogLogoInput {
+  hash: string;
+  data_uri: string;
   last_synced_at: string;
 }
 
@@ -56,6 +64,14 @@ export const upsertCatalogContract = async (
   return result;
 };
 
+export const upsertCatalogLogo = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: CatalogLogoInput,
+): Promise<BasicStoreEntityCatalogLogo> => {
+  return createEntity(context, user, input, ENTITY_TYPE_CATALOG_LOGO);
+};
+
 // -- Reads --
 
 export const findLatestContractsBySlug = async (
@@ -72,6 +88,28 @@ export const findAllCatalogContracts = async (
   user: AuthUser,
 ): Promise<BasicStoreEntityCatalogContract[]> => {
   return fullEntitiesList<BasicStoreEntityCatalogContract>(context, user, [ENTITY_TYPE_CATALOG_CONTRACT]);
+};
+
+export const findCatalogLogosByRefs = async (
+  context: AuthContext,
+  user: AuthUser,
+  refs: string[],
+): Promise<BasicStoreEntityCatalogLogo[]> => {
+  if (refs.length === 0) return [];
+  return fullEntitiesList<BasicStoreEntityCatalogLogo>(context, user, [ENTITY_TYPE_CATALOG_LOGO], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['hash'], values: refs, operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+  });
+};
+
+export const findAllCatalogLogos = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<BasicStoreEntityCatalogLogo[]> => {
+  return fullEntitiesList<BasicStoreEntityCatalogLogo>(context, user, [ENTITY_TYPE_CATALOG_LOGO]);
 };
 
 export const findLatestContractBySlug = async (
@@ -158,6 +196,10 @@ const getContractType = (contract: AdapterCatalogContract): string | undefined =
   return contract.type ?? contract.container_type;
 };
 
+const computeLogoHash = (logo: string): string => {
+  return createHash('sha256').update(logo).digest('hex');
+};
+
 // Dependency-free numeric dot-segment comparison, not full semver (no pre-release/build
 // metadata handling). Replaces "latest by array order", which was the original bug.
 export const compareVersions = (a: string, b: string): number => {
@@ -192,6 +234,7 @@ export const persistCatalogSnapshot = async (
   const existingContracts = await findAllCatalogContracts(context, user);
 
   const now = new Date().toISOString();
+  const seenLogoHashes = new Set<string>();
   const bySlug = new Map<string, AdapterCatalogContract[]>();
   contracts.forEach((contract) => {
     const existing = bySlug.get(contract.slug) ?? [];
@@ -214,13 +257,24 @@ export const persistCatalogSnapshot = async (
         continue;
       }
 
+      const logo = contract.logo ?? '';
+      const logoRef = logo ? computeLogoHash(logo) : undefined;
+      if (logoRef && !seenLogoHashes.has(logoRef)) {
+        await upsertCatalogLogo(context, user, {
+          hash: logoRef,
+          data_uri: logo,
+          last_synced_at: now,
+        });
+        seenLogoHashes.add(logoRef);
+      }
+
       await upsertCatalogContract(context, user, {
         slug,
         version,
         title: contract.title,
         description: contract.description ?? '',
         short_description: contract.short_description,
-        logo: contract.logo,
+        logo_ref: logoRef,
         use_cases: contract.use_cases ?? [],
         verified: contract.verified ?? false,
         last_verified_date: contract.last_verified_date,
@@ -256,6 +310,22 @@ export const persistCatalogSnapshot = async (
         version: existingContract.version,
       });
       await deleteElementById(context, user, existingContract.id, ENTITY_TYPE_CATALOG_CONTRACT);
+    }
+  }
+
+  // GC orphan logos (not referenced by any remaining or newly ingested contract).
+  const allContractsAfterSync = await findAllCatalogContracts(context, user);
+  const referencedLogoRefs = new Set<string>(
+    allContractsAfterSync
+      .map((contract) => (contract as unknown as Record<string, unknown>).logo_ref)
+      .filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
+  );
+  const allLogos = await findAllCatalogLogos(context, user);
+  for (let i = 0; i < allLogos.length; i += 1) {
+    const logo = allLogos[i];
+    if (!referencedLogoRefs.has(logo.hash)) {
+      logApp.info('[OPENCTI-MODULE] Catalog persistence deleting unreferenced logo', { hash: logo.hash });
+      await deleteElementById(context, user, logo.id, ENTITY_TYPE_CATALOG_LOGO);
     }
   }
 

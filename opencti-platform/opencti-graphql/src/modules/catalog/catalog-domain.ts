@@ -11,7 +11,7 @@ import type { ConnectorContractConfiguration, ContractConfigInput } from '../../
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
 import { buildCatalogMapFromDefinitions, buildContractsByImageCache, clearCatalogCacheValidators, type InternalCatalog } from './catalog-cache';
-import { findLatestContractsBySlug } from './catalog-repository';
+import { findCatalogLogosByRefs, findLatestContractsBySlug } from './catalog-repository';
 import type { BasicStoreEntityCatalogContract } from './catalog-entity';
 
 const validatorCache = new Map<string, ValidateFunction>();
@@ -495,16 +495,20 @@ export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
  */
 const buildContractStringFromES = (
   contract: BasicStoreEntityCatalogContract,
+  logoByRef: Map<string, string>,
 ): string => {
   // config_schema is stored as a JSON string in ES
   const rawSchema = (contract as unknown as Record<string, unknown>).config_schema;
+  const rawLogoRef = (contract as unknown as Record<string, unknown>).logo_ref;
+  const logoRef = typeof rawLogoRef === 'string' ? rawLogoRef : undefined;
+  const resolvedLogo = (logoRef ? logoByRef.get(logoRef) : undefined) ?? contract.logo ?? '';
   const configSchema = typeof rawSchema === 'string' ? JSON.parse(rawSchema) : (rawSchema ?? {});
   return JSON.stringify({
     title: contract.title,
     slug: contract.slug,
     description: contract.description ?? '',
     short_description: contract.short_description ?? '',
-    logo: contract.logo ?? '',
+    logo: resolvedLogo,
     use_cases: contract.use_cases ?? [],
     verified: contract.verified ?? false,
     last_verified_date: contract.last_verified_date ?? '',
@@ -523,6 +527,19 @@ const buildContractStringFromES = (
 
 export const findCatalogFromES = async (context: AuthContext, user: AuthUser) => {
   const latestContracts = await findLatestContractsBySlug(context, user);
+  const logoRefs = Array.from(new Set(
+    latestContracts
+      .map((contract) => (contract as unknown as Record<string, unknown>).logo_ref)
+      .filter((ref): ref is string => typeof ref === 'string' && ref.length > 0),
+  ));
+
+  const logoByRef = new Map<string, string>();
+  if (logoRefs.length > 0) {
+    const logos = await findCatalogLogosByRefs(context, user, logoRefs);
+    logos.forEach((logo) => {
+      logoByRef.set(logo.hash, logo.data_uri);
+    });
+  }
 
   return latestContracts.map((contract) => ({
     id: contract.id,
@@ -531,7 +548,7 @@ export const findCatalogFromES = async (context: AuthContext, user: AuthUser) =>
     standard_id: contract.standard_id,
     name: contract.title,
     description: contract.description ?? '',
-    contracts: [buildContractStringFromES(contract)],
+    contracts: [buildContractStringFromES(contract, logoByRef)],
   }));
 };
 

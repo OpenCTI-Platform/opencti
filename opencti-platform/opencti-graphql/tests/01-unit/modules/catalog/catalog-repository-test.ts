@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ENTITY_TYPE_CATALOG_CONTRACT } from '../../../../src/modules/catalog/catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO } from '../../../../src/modules/catalog/catalog-entity-types';
 import {
   compareVersions,
   findContractBySlugAndVersion,
@@ -240,6 +240,139 @@ describe('catalog-persistence', () => {
       mockUser,
       'contract-ipinfo-1.0.0',
       ENTITY_TYPE_CATALOG_CONTRACT,
+    );
+  });
+
+  it('persistCatalogSnapshot should store logo once and reference it from each version', async () => {
+    mockFullEntitiesList.mockResolvedValue([]);
+    mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
+
+    await persistCatalogSnapshot(mockContext, mockUser, {
+      allContracts: [
+        {
+          slug: 'ipinfo',
+          title: 'IPinfo',
+          version: '1.0.0',
+          logo: 'data:image/png;base64,AAA',
+          config_schema: {},
+        },
+        {
+          slug: 'ipinfo',
+          title: 'IPinfo',
+          version: '1.1.0',
+          logo: 'data:image/png;base64,AAA',
+          config_schema: {},
+        },
+      ],
+    });
+
+    const logoCreates = mockCreateEntity.mock.calls.filter((call) => call[3] === ENTITY_TYPE_CATALOG_LOGO);
+    const contractCreates = mockCreateEntity.mock.calls.filter((call) => call[3] === ENTITY_TYPE_CATALOG_CONTRACT);
+
+    expect(logoCreates).toHaveLength(1);
+    expect(contractCreates).toHaveLength(2);
+    expect(contractCreates[0][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
+    expect(contractCreates[1][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
+    expect(contractCreates[0][2].logo_ref).toBe(contractCreates[1][2].logo_ref);
+  });
+
+  it('persistCatalogSnapshot should support URL logos and deduplicate identical URLs', async () => {
+    mockFullEntitiesList.mockResolvedValue([]);
+    mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
+
+    await persistCatalogSnapshot(mockContext, mockUser, {
+      allContracts: [
+        {
+          slug: 'shodan',
+          title: 'Shodan',
+          version: '1.1.0',
+          logo: 'https://cdn.example.com/logos/shodan.png',
+          config_schema: {},
+        },
+        {
+          slug: 'shodan',
+          title: 'Shodan',
+          version: '1.2.0',
+          logo: 'https://cdn.example.com/logos/shodan.png',
+          config_schema: {},
+        },
+      ],
+    });
+
+    const logoCreates = mockCreateEntity.mock.calls.filter((call) => call[3] === ENTITY_TYPE_CATALOG_LOGO);
+    const contractCreates = mockCreateEntity.mock.calls.filter((call) => call[3] === ENTITY_TYPE_CATALOG_CONTRACT);
+
+    expect(logoCreates).toHaveLength(1);
+    expect(contractCreates).toHaveLength(2);
+    expect(contractCreates[0][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
+    expect(contractCreates[1][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
+    expect(contractCreates[0][2].logo_ref).toBe(contractCreates[1][2].logo_ref);
+  });
+
+  it('persistCatalogSnapshot should delete orphan logos no longer referenced by contracts', async () => {
+    mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
+    mockDeleteElementById.mockResolvedValue({ id: 'deleted-id' });
+
+    let contractListCallCount = 0;
+
+    mockFullEntitiesList.mockImplementation((_, __, types, opts) => {
+      const isContractType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_CONTRACT;
+      const isLogoType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_LOGO;
+
+      if (!opts && isContractType) {
+        contractListCallCount += 1;
+        if (contractListCallCount === 1) {
+          // Existing contracts before sync.
+          return Promise.resolve([
+            { id: 'contract-ipinfo-1.0.0', slug: 'ipinfo', version: '1.0.0', logo_ref: 'hash-ipinfo' },
+            { id: 'contract-shodan-1.1.0', slug: 'shodan', version: '1.1.0', logo_ref: 'hash-shodan' },
+          ]);
+        }
+        // Contracts after sync (only ipinfo remains).
+        return Promise.resolve([
+          { id: 'contract-ipinfo-1.0.0', slug: 'ipinfo', version: '1.0.0', logo_ref: 'hash-ipinfo' },
+        ]);
+      }
+
+      if (!opts && isLogoType) {
+        return Promise.resolve([
+          { id: 'logo-ipinfo', hash: 'hash-ipinfo', data_uri: 'data:image/png;base64,AAA' },
+          { id: 'logo-shodan', hash: 'hash-shodan', data_uri: 'data:image/png;base64,BBB' },
+        ]);
+      }
+
+      return Promise.resolve([]);
+    });
+
+    await persistCatalogSnapshot(mockContext, mockUser, {
+      allContracts: [
+        {
+          slug: 'ipinfo',
+          title: 'IPinfo',
+          version: '1.0.0',
+          logo: 'data:image/png;base64,AAA',
+          config_schema: {},
+        },
+      ],
+    });
+
+    expect(mockDeleteElementById).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'contract-shodan-1.1.0',
+      ENTITY_TYPE_CATALOG_CONTRACT,
+    );
+    expect(mockDeleteElementById).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'logo-shodan',
+      ENTITY_TYPE_CATALOG_LOGO,
+    );
+    expect(mockDeleteElementById).not.toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'logo-ipinfo',
+      ENTITY_TYPE_CATALOG_LOGO,
     );
   });
 });
