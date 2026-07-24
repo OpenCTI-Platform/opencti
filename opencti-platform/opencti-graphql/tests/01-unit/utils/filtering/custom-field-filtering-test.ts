@@ -1,10 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as cacheModule from '../../../../src/database/cache';
 import { adaptFilterToCustomFieldFilterKey } from '../../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
 import { isCustomFieldFilterKey, isComplexConversionFilterKey } from '../../../../src/utils/filtering/filtering-constants';
-import { setCustomFieldDefinitionsCache } from '../../../../src/modules/customField/custom-field-cache';
 import { FilterOperator } from '../../../../src/generated/graphql';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 import type { Filter } from '../../../../src/generated/graphql';
+
+const CONTEXT = {} as any;
+const USER = { id: 'user-1' } as any;
 
 const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition> = {}): BasicStoreEntityCustomFieldDefinition => ({
   id: 'cf-id-1',
@@ -27,6 +30,12 @@ const makeFilter = (overrides: Partial<Filter> = {}): Filter => ({
   mode: 'or',
   ...overrides,
 } as Filter);
+
+const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
+  vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue(definitions);
+};
+
+const adapt = (filter: Filter) => adaptFilterToCustomFieldFilterKey(CONTEXT, USER, filter);
 
 describe('isCustomFieldFilterKey', () => {
   it('returns true for keys starting with the custom field prefix', () => {
@@ -55,22 +64,22 @@ describe('isComplexConversionFilterKey — custom field integration', () => {
 
 describe('adaptFilterToCustomFieldFilterKey', () => {
   beforeEach(() => {
-    setCustomFieldDefinitionsCache([]);
+    vi.restoreAllMocks();
   });
 
-  it('throws when the definition is not found in the cache', () => {
-    setCustomFieldDefinitionsCache([]);
+  it('throws when the definition is not found in the cache', async () => {
+    seed();
     const filter = makeFilter({ key: ['x_opencti_cf_unknown'] });
-    expect(() => adaptFilterToCustomFieldFilterKey(filter)).toThrow('Custom field definition not found for filter key');
+    await expect(adapt(filter)).rejects.toThrow('Custom field definition not found for filter key');
   });
 
   describe('string fields', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
     });
 
-    it('produces a nested filter scoped to field_name + string_value', () => {
-      const { newFilter, newFilterGroup } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['hello'] }));
+    it('produces a nested filter scoped to field_name + string_value', async () => {
+      const { newFilter, newFilterGroup } = await adapt(makeFilter({ values: ['hello'] }));
       expect(newFilterGroup).toBeUndefined();
       expect(newFilter.key).toEqual(['custom_field_values']);
       expect(newFilter.nested).toEqual(expect.arrayContaining([
@@ -79,8 +88,8 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
       ]));
     });
 
-    it('passes through non-eq operators on string fields unchanged', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(
+    it('passes through non-eq operators on string fields unchanged', async () => {
+      const { newFilter } = await adapt(
         makeFilter({ values: ['prefix'], operator: FilterOperator.StartsWith }),
       );
       expect(newFilter.nested).toEqual(expect.arrayContaining([
@@ -91,11 +100,11 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
 
   describe('boolean fields', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'boolean' })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'boolean' }));
     });
 
-    it('uses boolean_value as the nested value field', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['true'] }));
+    it('uses boolean_value as the nested value field', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['true'] }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'boolean_value', values: ['true'], operator: FilterOperator.Eq },
       ]));
@@ -104,11 +113,11 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
 
   describe('date fields', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'date' })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'date' }));
     });
 
-    it('uses date_value as the nested value field', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['2026-01-01T00:00:00.000Z'] }));
+    it('uses date_value as the nested value field', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['2026-01-01T00:00:00.000Z'] }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'date_value', values: ['2026-01-01T00:00:00.000Z'], operator: FilterOperator.Eq },
       ]));
@@ -117,11 +126,11 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
 
   describe('select fields', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'select', select_options: ['a', 'b'] })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'select', select_options: ['a', 'b'] }));
     });
 
-    it('uses select_value as the nested value field', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['a'] }));
+    it('uses select_value as the nested value field', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['a'] }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'select_value', values: ['a'], operator: FilterOperator.Eq },
       ]));
@@ -130,11 +139,11 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
 
   describe('multi_select fields', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select', select_options: ['a', 'b'] })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'multi_select', select_options: ['a', 'b'] }));
     });
 
-    it('uses select_values as the nested value field', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['a', 'b'] }));
+    it('uses select_values as the nested value field', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['a', 'b'] }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'select_values', values: ['a', 'b'], operator: FilterOperator.Eq },
       ]));
@@ -143,11 +152,11 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
 
   describe('integer fields — special eq range logic', () => {
     beforeEach(() => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' })]);
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'integer' }));
     });
 
-    it('translates eq to gte+lte range for exact integer match', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['42'], operator: FilterOperator.Eq }));
+    it('translates eq to gte+lte range for exact integer match', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['42'], operator: FilterOperator.Eq }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'int_value', values: [42], operator: FilterOperator.Gte },
         { key: 'int_value', values: [42], operator: FilterOperator.Lte },
@@ -158,35 +167,35 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
       ]));
     });
 
-    it('parses numeric string values to numbers for eq operator', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['7'], operator: FilterOperator.Eq }));
+    it('parses numeric string values to numbers for eq operator', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['7'], operator: FilterOperator.Eq }));
       const gtClause = newFilter.nested?.find((n: any) => n.operator === FilterOperator.Gte);
       expect(gtClause?.values).toEqual([7]);
     });
 
-    it('uses a single int_value clause for non-eq operators (e.g. gte)', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['10'], operator: FilterOperator.Gte }));
+    it('uses a single int_value clause for non-eq operators (e.g. gte)', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['10'], operator: FilterOperator.Gte }));
       const intClauses = newFilter.nested?.filter((n: any) => n.key === 'int_value');
       expect(intClauses).toHaveLength(1);
       expect(intClauses?.[0]).toMatchObject({ key: 'int_value', values: [10], operator: FilterOperator.Gte });
     });
 
-    it('produces an empty values array at the root level of the nested filter', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['5'] }));
+    it('produces an empty values array at the root level of the nested filter', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['5'] }));
       expect(newFilter.values).toEqual([]);
     });
 
-    it('targets custom_field_values as the root key', () => {
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['1'] }));
+    it('targets custom_field_values as the root key', async () => {
+      const { newFilter } = await adapt(makeFilter({ values: ['1'] }));
       expect(newFilter.key).toEqual(['custom_field_values']);
     });
   });
 
   describe('key provided as a string (not array)', () => {
-    it('extracts the key from a plain string instead of an array', () => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' })]);
+    it('extracts the key from a plain string instead of an array', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'string' }));
       const filter = { ...makeFilter(), key: 'x_opencti_cf_field' as unknown as string[] };
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(filter);
+      const { newFilter } = await adapt(filter);
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'field_name', values: ['x_opencti_cf_field'], operator: FilterOperator.Eq },
       ]));
@@ -194,9 +203,9 @@ describe('adaptFilterToCustomFieldFilterKey', () => {
   });
 
   describe('markdown fields (reuse string_value channel)', () => {
-    it('uses string_value for markdown type', () => {
-      setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_field', field_type: 'markdown' })]);
-      const { newFilter } = adaptFilterToCustomFieldFilterKey(makeFilter({ values: ['# Title'] }));
+    it('uses string_value for markdown type', async () => {
+      seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'markdown' }));
+      const { newFilter } = await adapt(makeFilter({ values: ['# Title'] }));
       expect(newFilter.nested).toEqual(expect.arrayContaining([
         { key: 'string_value', values: ['# Title'], operator: FilterOperator.Eq },
       ]));

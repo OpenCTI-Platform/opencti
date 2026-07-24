@@ -875,7 +875,7 @@ export const distributionEntities = async (
 
   // Handle custom fields (x_opencti_cf_*) via nested aggregation
   if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
-    const customFieldDef = getCustomFieldDefinitionByName(field);
+    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
     const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];

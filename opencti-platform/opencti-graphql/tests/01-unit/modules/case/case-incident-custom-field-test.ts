@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Middleware from '../../../../src/database/middleware';
 import * as Redis from '../../../../src/database/redis';
-import { setCustomFieldDefinitionsCache } from '../../../../src/modules/customField/custom-field-cache';
+import * as CacheModule from '../../../../src/database/cache';
 import type { BasicStoreEntityCustomFieldDefinition } from '../../../../src/modules/customField/custom-field-types';
 
 vi.mock('../../../../src/database/middleware', () => ({
@@ -17,6 +17,10 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
 vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn().mockImplementation((_topic, element) => Promise.resolve(element)),
   BUS_TOPICS: {},
+}));
+
+vi.mock('../../../../src/database/cache', () => ({
+  getEntitiesListFromCache: vi.fn(async () => []),
 }));
 
 vi.mock('../../../../src/config/conf', async (importOriginal) => {
@@ -62,15 +66,19 @@ const makeDefinition = (overrides: Partial<BasicStoreEntityCustomFieldDefinition
 } as unknown as BasicStoreEntityCustomFieldDefinition);
 
 describe('addCaseIncident — custom field values handling', () => {
+  const seed = (...definitions: BasicStoreEntityCustomFieldDefinition[]) => {
+    vi.mocked(CacheModule.getEntitiesListFromCache).mockResolvedValue(definitions);
+  };
+
   beforeEach(() => {
-    setCustomFieldDefinitionsCache([]);
     vi.clearAllMocks();
+    seed();
     vi.mocked(Middleware.createEntity).mockResolvedValue({ id: 'created-id', entity_type: 'Case-Incident' } as any);
     vi.mocked(Redis.notify).mockImplementation((_t, el) => Promise.resolve(el));
   });
 
   it('stores normalized custom field values on the entity when feature is enabled and values are provided', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer' })]);
+    seed(makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer' }));
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
@@ -85,7 +93,7 @@ describe('addCaseIncident — custom field values handling', () => {
   });
 
   it('removes the camelCase customFieldValues key before calling createEntity', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition()]);
+    seed(makeDefinition());
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {
@@ -98,7 +106,7 @@ describe('addCaseIncident — custom field values handling', () => {
   });
 
   it('does not set custom_field_values on the entity when no values are provided', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition()]);
+    seed(makeDefinition());
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, { name: 'Test' } as any);
@@ -108,7 +116,7 @@ describe('addCaseIncident — custom field values handling', () => {
   });
 
   it('rejects an integer value out of bounds via validateCustomFieldValues', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer', min_value: 0, max_value: 100 })]);
+    seed(makeDefinition({ name: 'x_opencti_cf_score', field_type: 'integer', min_value: 0, max_value: 100 }));
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await expect(
@@ -120,7 +128,7 @@ describe('addCaseIncident — custom field values handling', () => {
   });
 
   it('normalizes null GraphQL fields to undefined in the CustomFieldValue shape', async () => {
-    setCustomFieldDefinitionsCache([makeDefinition({ field_type: 'integer' })]);
+    seed(makeDefinition({ field_type: 'integer' }));
     const { addCaseIncident } = await import('../../../../src/modules/case/case-incident/case-incident-domain');
 
     await addCaseIncident(MOCK_CONTEXT, MOCK_USER, {

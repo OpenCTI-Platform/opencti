@@ -619,12 +619,12 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
  * Adapts a filter on a custom field key (x_opencti_cf_*) into a nested filter
  * on the custom_field_values array stored in Elasticsearch.
  */
-export const adaptFilterToCustomFieldFilterKey = (filter: Filter) => {
+export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
   const { key, values, operator } = filter;
   const op: string = operator ?? FilterOperator.Eq;
   const filterKey = Array.isArray(key) ? key[0] : key;
 
-  const definition = getCustomFieldDefinitionByName(filterKey);
+  const definition = await getCustomFieldDefinitionByName(context, user, filterKey);
   if (!definition) {
     throw FunctionalError('Custom field definition not found for filter key', { filterKey });
   }
@@ -934,7 +934,7 @@ export const completeSpecialFilterKeys = async (
       }
 
       if (isCustomFieldFilterKey(filterKey)) {
-        const { newFilter, newFilterGroup } = adaptFilterToCustomFieldFilterKey(filter);
+        const { newFilter, newFilterGroup } = await adaptFilterToCustomFieldFilterKey(context, user, filter);
         if (newFilter) {
           finalFilters.push(newFilter);
         }

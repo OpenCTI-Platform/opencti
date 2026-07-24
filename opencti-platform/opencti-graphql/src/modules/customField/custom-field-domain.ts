@@ -1,4 +1,4 @@
-import { type EntityOptions, type FilterGroupWithNested, countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, type FilterGroupWithNested, countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityCustomFieldDefinition,
   CUSTOM_FIELD_PREFIX,
@@ -19,22 +19,8 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { enforceEnableFeatureFlag, executionContext, SYSTEM_USER } from '../../utils/access';
-import { CUSTOM_FIELDS_FEATURE_FLAG, logApp } from '../../config/conf';
-import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitionByName, getCustomFieldValueField, setCustomFieldDefinitionsCache } from './custom-field-cache';
-
-/**
- * Load all custom field definitions from the database into memory.
- * Called at platform startup and when definitions are modified.
- */
-export const loadCustomFieldDefinitions = async (context: AuthContext): Promise<void> => {
-  const definitions = await fullEntitiesList<BasicStoreEntityCustomFieldDefinition>(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION],
-  );
-  setCustomFieldDefinitionsCache(definitions);
-  logApp.info(`[CUSTOM_FIELDS] Loaded ${definitions.length} custom field definitions`);
-};
+import { CUSTOM_FIELDS_FEATURE_FLAG } from '../../config/conf';
+import { getCustomFieldDefinitionByLabel, getCustomFieldDefinitions, getCustomFieldValueField } from './custom-field-cache';
 
 /**
  * Technical name must be the custom field prefix followed by lowercase letters,
@@ -95,12 +81,12 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
       { name: input.name },
     );
   }
-  // Validate the technical name is unique
-  if (getCustomFieldDefinitionByName(input.name)) {
+  // Validate the technical name and label are unique among all custom fields (single cache read)
+  const existingDefinitions = await getCustomFieldDefinitions(context, user);
+  if (existingDefinitions.some((def) => def.name === input.name)) {
     throw ValidationError('A custom field with this technical name already exists', 'nameSuffix', { name: input.name });
   }
-  // Validate the label is unique among all custom fields
-  if (getCustomFieldDefinitionByLabel(input.label)) {
+  if (existingDefinitions.some((def) => def.label === input.label)) {
     throw ValidationError('A custom field with this label already exists', 'label', { label: input.label });
   }
   // Validate field_type is supported
@@ -128,8 +114,6 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
     message: `creates custom field definition \`${input.name}\``,
     context_data: { id: created.id, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input },
   });
-  // Reload the cache after creation
-  await loadCustomFieldDefinitions(context);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 
@@ -175,8 +159,6 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
     message: `deletes custom field definition \`${element.name}\``,
     context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input: element },
   });
-  // Reload the cache first so the removed definition is no longer applied during cleanup
-  await loadCustomFieldDefinitions(context);
   // Cascade deletion: schedule a background task to clean stored values of this definition from all entities using it
   await scheduleCustomFieldValuesCleanupTask(element.name, element.entity_types ?? []);
   return customFieldDefinitionId;
@@ -194,7 +176,7 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
   const labelEdit = input.find((i) => i.key === 'label');
   if (labelEdit) {
     const newLabel = Array.isArray(labelEdit.value) ? labelEdit.value[0] : labelEdit.value;
-    const existing = getCustomFieldDefinitionByLabel(newLabel);
+    const existing = await getCustomFieldDefinitionByLabel(context, user, newLabel);
     if (existing && existing.id !== customFieldDefinitionId) {
       throw ValidationError('A custom field with this label already exists', 'label', { label: newLabel });
     }
@@ -311,8 +293,6 @@ export const customFieldDefinitionEdit = async (context: AuthContext, user: Auth
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom field definition \`${updatedElem.name}\``,
     context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input },
   });
-  // Reload the cache after edit
-  await loadCustomFieldDefinitions(context);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
