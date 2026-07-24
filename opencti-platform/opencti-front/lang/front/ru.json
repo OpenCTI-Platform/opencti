@@ -4640,6 +4640,7 @@
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "Это открытый словарь, охватывающий общие возможности, которые могут проявляться у экземпляра или семейства вредоносных программ",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "Это ваша личная учётная запись. Если ваш IP-адрес отсутствует в списке разрешённых, после сохранения вам будет отказано в доступе к платформе.",
   "This item is built-in": "Этот предмет является встроенным",
+  "This label already exists": "Эта метка уже существует",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все черновики, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все сущности, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
   "This malware has been used": "Эта вредоносная программа использовалась",

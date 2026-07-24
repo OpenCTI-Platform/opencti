@@ -4640,6 +4640,7 @@
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "これはオープンな語彙で、マルウェアのインスタンスやファミリーが示す可能性のある一般的な機能を網羅しています。",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "これはご自身のアカウントです。お使いのIPアドレスが許可リストに含まれていない場合、保存後にプラットフォームへのアクセスが制限されます。",
   "This item is built-in": "このアイテムは内蔵されています",
+  "This label already exists": "このラベルはすでに存在します",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、アクセス制限が有効になっている、つまり特定のユーザーしかアクセスできない草稿がすべて表示されます。この画面ではアクセス制限を解除できます。",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、一部のアクセス制限が有効になっている、つまり一部の特定のユーザーしかアクセスできないエンティティがすべて表示されます。この画面では、このアクセス制限を削除できます。",
   "This malware has been used": "このマルウェアが使用された",

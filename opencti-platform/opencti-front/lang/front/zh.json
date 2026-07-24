@@ -4640,6 +4640,7 @@
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "这是一个开放的词汇表，涵盖了恶意软件实例或系列可能表现出的常见能力。",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "这是您自己的账户。如果您的 IP 地址未列入白名单，保存后您将被锁定在平台之外。",
   "This item is built-in": "该项目是内置的",
+  "This label already exists": "该标签已存在",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "此列表显示启用了某些访问限制的所有草稿，即只有某些特定用户才能访问这些草稿。您可以在此界面删除此访问限制。",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "此列表显示启用了某些访问限制的所有实体，即只有某些特定用户才能访问这些实体。您可以在此屏幕上删除此访问限制。",
   "This malware has been used": "该恶意软件已经被使用",

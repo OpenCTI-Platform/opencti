@@ -16,8 +16,8 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { ...draftChange, isFilterable: false },
   ],
   [ENTITY_TYPE_LABEL]: [
-    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
-    { name: 'color', label: 'Color', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'color', label: 'Color', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: [
     { name: 'source_name', label: 'Source name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
