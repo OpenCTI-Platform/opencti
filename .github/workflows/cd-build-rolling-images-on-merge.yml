@@ -63,26 +63,32 @@ jobs:
       - name: Generate graphql SBOM
         working-directory: opencti-platform/opencti-graphql
         run: |
+          APP_VERSION=$(jq -r '.version' package.json)
           syft dir:. \
             --config ../../.github/.syft.yaml \
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=sbom-opencti-graphql.cdx.json
           jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
+            --arg version "$APP_VERSION" \
             '.metadata.component.manufacturer = $mfr[0]
             | .metadata.component.name = "opencti-graphql"
-            | .metadata.component["bom-ref"] = "opencti-graphql"' sbom-opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-graphql.cdx.json
+            | .metadata.component["bom-ref"] = "opencti-graphql"
+            | .metadata.component.version = $version' sbom-opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-graphql.cdx.json
 
       - name: Generate front SBOM
         working-directory: opencti-platform/opencti-front
         run: |
+          APP_VERSION=$(jq -r '.version' ../opencti-graphql/package.json)
           syft dir:. \
             --config ../../.github/.syft.yaml \
             --select-catalogers javascript \
             --output cyclonedx-json@1.6=sbom-opencti-front.cdx.json
           jq --slurpfile mfr ../../.github/sbom-manufacturer.json \
+            --arg version "$APP_VERSION" \
             '.metadata.component.manufacturer = $mfr[0]
             | .metadata.component.name = "opencti-front"
-            | .metadata.component["bom-ref"] = "opencti-front"' sbom-opencti-front.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-front.cdx.json
+            | .metadata.component["bom-ref"] = "opencti-front"
+            | .metadata.component.version = $version' sbom-opencti-front.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-front.cdx.json
 
       - name: Get app version
         id: version
@@ -105,7 +111,8 @@ jobs:
                   "type": "application",
                   "group": "io.opencti",
                   "name": "opencti",
-                  "version": $version
+                  "version": $version,
+                  "manufacturer": $mfr[0],
                 }
               }
             }' > sbom-parent.cdx.json
