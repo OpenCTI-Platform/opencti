@@ -30412,6 +30412,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
+  resultOf?: Maybe<SecurityCoverage>;
   revoked: Scalars['Boolean']['output'];
   roles?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   spec_version: Scalars['String']['output'];
@@ -51309,6 +51310,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityCoverageResultReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  resultOf?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
