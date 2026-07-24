@@ -262,8 +262,9 @@ jobs:
 
       - name: Install cyclonedx-cli
         run: |
-          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.33.1/cyclonedx-linux-x64 -o /usr/local/bin/cyclonedx-cli
-          chmod +x /usr/local/bin/cyclonedx-cli
+          curl -sSfL https://github.com/CycloneDX/cyclonedx-cli/releases/download/v0.33.1/cyclonedx-linux-x64 -o "$RUNNER_TEMP/cyclonedx-cli"
+          chmod +x "$RUNNER_TEMP/cyclonedx-cli"
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
 
       - name: Merge all SBOMs
         working-directory: sbom-work
