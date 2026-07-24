@@ -5,7 +5,6 @@ import PirPage from '../model/pir.pageModel';
 import PirFormPageModel from '../model/form/pirForm.pageModel';
 import PirDetailsPageModel from '../model/pirDetails.pageModel';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
-import { awaitUntilCondition } from '../utils';
 
 /**
  * Content of the test
@@ -83,25 +82,29 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee', '@group1'] }, async ({ page
   // region Control tab Overview after flagging
   // ------------------------------------------
 
-  const waitForFlagging = async () => {
+  // Wait until flagging is fully processed: Malware count, top authors, and relationships
+  // must all be visible. Using toPass() retries the entire block (including page reload)
+  // until all assertions pass together.
+  await expect(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '1';
-  };
-  await awaitUntilCondition(waitForFlagging, 5000, 20);
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
-  await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
-  await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
+    await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
+    await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
+    await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
+  }).toPass({
+    intervals: [5_000, 5_000, 5_000, 5_000, 5_000],
+    timeout: 120_000,
+  });
 
   const historyItemName = 'Malware E2E dashboard - Malware - month ago added to PIR';
-  const waitForHistory = async () => {
+  await expect(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
-    return pirDetails.getNewsFeedItem(historyItemName).isVisible();
-  };
-  await awaitUntilCondition(waitForHistory, 5000, 20);
-  await expect(pirDetails.getNewsFeedItem(historyItemName)).toBeVisible();
+    await expect(pirDetails.getNewsFeedItem(historyItemName)).toBeVisible();
+  }).toPass({
+    intervals: [5_000, 5_000, 5_000, 5_000, 5_000],
+    timeout: 120_000,
+  });
 
   // ---------
   // endregion
@@ -142,14 +145,14 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee', '@group1'] }, async ({ page
   // region Control tab Overview after unflagging
   // --------------------------------------------
 
-  const waitForUnflagging = async () => {
+  await expect(async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '0';
-  };
-  await awaitUntilCondition(waitForUnflagging, 5000, 20);
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
+    await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
+  }).toPass({
+    intervals: [5_000, 5_000, 5_000, 5_000, 5_000],
+    timeout: 120_000,
+  });
 
   // ---------
   // endregion
