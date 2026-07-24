@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { ExtensionOutlined, RocketLaunchOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
 import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
@@ -10,7 +9,6 @@ import IngestionConnectorsCatalogs, { ingestionConnectorsCatalogsQuery } from '@
 import IngestionConnectors, { ingestionConnectorsQuery } from '@components/integrations/catalog/IngestionConnectors';
 import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnectorsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsQuery.graphql';
-import { IngestionConnector } from '@components/integrations/catalog/types';
 import {
   IngestionFeeds,
   IngestionFeedsData,
@@ -21,8 +19,7 @@ import {
 } from '@components/integrations/deployed/IngestionFeeds';
 import { IngestionFeedsQuery } from '@components/integrations/deployed/__generated__/IngestionFeedsQuery.graphql';
 import { IngestionFeedsFormsQuery } from '@components/integrations/deployed/__generated__/IngestionFeedsFormsQuery.graphql';
-import { BUILT_IN_INTEGRATIONS } from '@components/integrations/available/builtInIntegrations';
-import { BrowseMoreButton, HeroStatChip } from '@components/integrations/components/MarketplaceUi';
+import { BrowseMoreButton } from '@components/integrations/components/MarketplaceUi';
 import IntegrationsAvailable from '@components/integrations/available/IntegrationsAvailable';
 import IntegrationsDeployed from '@components/integrations/deployed/IntegrationsDeployed';
 import IntegrationsStatsStrip from '@components/integrations/deployed/IntegrationsStatsStrip';
@@ -146,12 +143,9 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
 
 interface IntegrationsHeroProps {
   deployedCount: number;
-  availableCount: number;
-  verifiedCount: number;
-  builtInCount: number;
 }
 
-const IntegrationsHero = ({ deployedCount, availableCount, verifiedCount, builtInCount }: IntegrationsHeroProps) => {
+const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   return (
@@ -193,38 +187,11 @@ const IntegrationsHero = ({ deployedCount, availableCount, verifiedCount, builtI
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 640 }}>
             {t_i18n('Browse, deploy and monitor all the integrations feeding your platform with threat intelligence.')}
           </Typography>
-          {/* Each stat deep-links to the matching pre-filtered view. */}
-          <Stack direction="row" flexWrap="wrap" gap={1} sx={{ marginTop: 2 }}>
-            <HeroStatChip
-              icon={RocketLaunchOutlined}
-              value={deployedCount}
-              label={t_i18n('Deployed')}
-              to="/dashboard/integrations/deployed"
-            />
-            <HeroStatChip
-              icon={ExtensionOutlined}
-              value={availableCount}
-              label={t_i18n('Available connectors')}
-              to="/dashboard/integrations/available?deployment=connector"
-            />
-            <HeroStatChip
-              icon={VerifiedOutlined}
-              value={verifiedCount}
-              label={t_i18n('Supported by Filigran')}
-              to="/dashboard/integrations/available?status=filigran"
-            />
-            <HeroStatChip
-              icon={WidgetsOutlined}
-              value={builtInCount}
-              label={t_i18n('Built-in methods')}
-              to="/dashboard/integrations/available?deployment=built-in"
-            />
-          </Stack>
         </Box>
         <BrowseMoreButton />
       </Stack>
       <Box sx={{ position: 'relative' }}>
-        <IntegrationsStatsStrip />
+        <IntegrationsStatsStrip deployedCount={deployedCount} />
       </Box>
     </Box>
   );
@@ -238,27 +205,7 @@ interface IntegrationsComponentProps {
 const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
-  const { catalogsData, deploymentData, feedsData, formsData } = data;
-
-  // Hero statistics, computed from every granted data source.
-  const { availableCount, verifiedCount } = useMemo(() => {
-    let available = 0;
-    let verified = 0;
-    for (const catalog of catalogsData?.catalogs ?? []) {
-      for (const contract of catalog.contracts) {
-        try {
-          const connector: IngestionConnector = JSON.parse(contract);
-          if (connector.manager_supported) {
-            available += 1;
-            if (connector.verified) verified += 1;
-          }
-        } catch (_e) {
-          // ignored: the available tab notifies parse failures
-        }
-      }
-    }
-    return { availableCount: available, verifiedCount: verified };
-  }, [catalogsData]);
+  const { deploymentData, feedsData, formsData } = data;
 
   // Feed instances register a technical twin connector: excluded from the
   // connector count so deployed integrations are not counted twice.
@@ -297,12 +244,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
         />
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
-        <IntegrationsHero
-          deployedCount={deployedCount}
-          availableCount={availableCount}
-          verifiedCount={verifiedCount}
-          builtInCount={BUILT_IN_INTEGRATIONS.length}
-        />
+        <IntegrationsHero deployedCount={deployedCount} />
 
         <Tabs value={tab}>
           <Tab
