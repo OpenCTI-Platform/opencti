@@ -72,11 +72,10 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
 
   const data = usePreloadedQuery(fintelDesignFieldQuery, queryRef);
   const fintelDesigns = data.fintelDesigns?.edges?.map(({ node }) => {
-    const typedNode = node as (typeof node & { default?: boolean });
     return {
       value: node,
       label: node?.name,
-      isDefault: !!typedNode?.default,
+      isDefault: !!node?.default,
     };
   });
 

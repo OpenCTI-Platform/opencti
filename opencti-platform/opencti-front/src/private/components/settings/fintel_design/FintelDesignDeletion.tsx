@@ -1,5 +1,4 @@
 import { graphql } from 'react-relay';
-import React from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FintelDesignsLinesPaginationQuery$variables } from '@components/settings/fintel_design/__generated__/FintelDesignsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';

@@ -3,10 +3,11 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import { useNavigate, useParams } from 'react-router-dom';
 import { FintelDesignQuery } from '@components/settings/fintel_design/__generated__/FintelDesignQuery.graphql';
 import Grid from '@mui/material/Grid2';
+import Button from '@common/button/Button';
 import { useTheme } from '@mui/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
-import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
+import FintelDesignFormDrawer, { FintelDesignEditData } from '@components/settings/fintel_design/FintelDesignFormDrawer';
 import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -37,7 +38,6 @@ const fintelDesignQuery = graphql`
     }
     fintelDesign(id: $id) {
       ...FintelDesign_fintelDesign
-      ...FintelDesignEditionOverview_fintelDesign
       default
     }
   }
@@ -68,6 +68,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   const navigate = useNavigate();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const [openDelete, setOpenDelete] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [pdf, setPdf] = useState<File>();
   const { buildFileFromTemplate } = useFileFromTemplate();
@@ -128,7 +129,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               />
             )}
           </Stack>
-          <div style={{ marginRight: theme.spacing(1) }}>
+          <Stack direction="row" alignItems="center" spacing={1}>
             <FintelDesignPopover
               fintelDesignId={fintelDesign.id}
               isDefault={!!fintelDesign.default}
@@ -136,16 +137,25 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
               inline={false}
               onDelete={canDelete ? handleOpenDelete : undefined}
             />
-          </div>
+            <Button disableElevation onClick={() => setIsEditing(true)}>
+              {t_i18n('Update')}
+            </Button>
+          </Stack>
           <FintelDesignDeletion
             id={fintelDesign.id}
             isOpen={openDelete}
             handleClose={handleCloseDelete}
             onDeleteComplete={() => navigate('/dashboard/settings/customization/fintel_designs')}
           />
-          <FintelDesignEdition
-            fintelDesignId={fintelDesign.id}
-            overviewData={queryResult.fintelDesign}
+          <FintelDesignFormDrawer
+            fintelDesign={{
+              id: fintelDesign.id,
+              name: fintelDesign.name,
+              description: fintelDesign.description ?? null,
+              default: !!fintelDesign.default,
+            } satisfies FintelDesignEditData}
+            isOpen={isEditing}
+            onClose={() => setIsEditing(false)}
           />
         </Stack>
         <Grid

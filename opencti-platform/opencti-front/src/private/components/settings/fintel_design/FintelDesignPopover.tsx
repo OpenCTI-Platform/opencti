@@ -8,26 +8,13 @@ import stopEvent from '../../../../utils/domEvent';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import FintelDesignReplaceDefaultDialog from './FintelDesignReplaceDefaultDialog';
+import { fintelDesignsCurrentDefaultQuery } from './FintelDesignFormDrawer';
 
 const fintelDesignSetDefaultMutation = graphql`
   mutation FintelDesignPopoverSetDefaultMutation($id: ID!, $input: [EditInput!]) {
     fintelDesignFieldPatch(id: $id, input: $input) {
       id
       default
-    }
-  }
-`;
-
-const fintelDesignsRefetchQuery = graphql`
-  query FintelDesignPopoverRefetchQuery {
-    fintelDesigns(orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          name
-          default
-        }
-      }
     }
   }
 `;
@@ -56,7 +43,7 @@ const FintelDesignPopover = ({
   const [commitSetDefault] = useApiMutation(fintelDesignSetDefaultMutation);
 
   const refetchDesigns = () => {
-    fetchQuery(fintelDesignsRefetchQuery, {}).toPromise().catch((err) => {
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => {
       handleError(err);
     });
   };
@@ -65,7 +52,7 @@ const FintelDesignPopover = ({
     commitSetDefault({
       variables: {
         id: fintelDesignId,
-        input: [{ key: 'default', value: ['true'] }],
+        input: [{ key: 'default', value: [true] }],
       },
       onCompleted: refetchDesigns,
     });
@@ -81,7 +68,7 @@ const FintelDesignPopover = ({
       return;
     }
 
-    const result = await fetchQuery(fintelDesignsRefetchQuery, {}).toPromise() as {
+    const result = await fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise() as {
       fintelDesigns?: {
         edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
       };
@@ -104,7 +91,7 @@ const FintelDesignPopover = ({
     commitSetDefault({
       variables: {
         id: fintelDesignId,
-        input: [{ key: 'default', value: ['false'] }],
+        input: [{ key: 'default', value: [false] }],
       },
       onCompleted: refetchDesigns,
     });
