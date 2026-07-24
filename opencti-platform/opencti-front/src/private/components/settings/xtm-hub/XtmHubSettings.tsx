@@ -76,7 +76,10 @@ const XtmHubSettingsComponent = () => {
           {canInteract && (
             <XtmHubTab
               registrationStatus={registrationStatus}
-              renderTrigger={(openDialog) => (
+              // In lost_connectivity, XtmHubTab runs the (re)connect flow when
+              // the dialog opens: the trigger must offer to connect, not to
+              // disconnect (which is only available while fully registered).
+              renderTrigger={(openDialog) => (registrationStatus === 'registered' ? (
                 <Button
                   variant="secondary"
                   intent="destructive"
@@ -84,7 +87,15 @@ const XtmHubSettingsComponent = () => {
                 >
                   {t_i18n('Disconnect from XTM Hub')}
                 </Button>
-              )}
+              ) : (
+                <Button
+                  gradient
+                  variant="secondary"
+                  onClick={openDialog}
+                >
+                  {t_i18n('Connect to XTM Hub')}
+                </Button>
+              ))}
             />
           )}
           <Button

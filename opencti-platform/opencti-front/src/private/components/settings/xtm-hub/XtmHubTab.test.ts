@@ -27,9 +27,18 @@ const getLastRegistrationUrl = () => {
   return (calls[calls.length - 1]?.[0] as { url?: string } | undefined)?.url ?? '';
 };
 
-const renderXtmHubTab = (route: string, platformTitle = 'OpenCTI Platform') => {
+interface XtmHubTabTestProps {
+  registrationStatus?: string;
+  renderTrigger?: (openDialog: () => void) => React.ReactNode;
+}
+
+const renderXtmHubTab = (
+  route: string,
+  platformTitle = 'OpenCTI Platform',
+  props: XtmHubTabTestProps = {},
+) => {
   return testRender(
-    React.createElement(XtmHubTab, { registrationStatus: 'unregistered' }),
+    React.createElement(XtmHubTab, { registrationStatus: 'unregistered', ...props }),
     {
       route,
       userContext: createMockUserContext({
@@ -65,6 +74,47 @@ describe('XtmHubTab', () => {
       });
       expect(getLastRegistrationUrl()).toContain('platform_title=Fallback+Platform');
       expect(getLastRegistrationUrl()).toContain('platform_id=settings-id');
+    });
+  });
+
+  describe('XtmHubTab trigger rendering', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    const route = '/dashboard/settings/experience';
+
+    it('renders the default floated button when no renderTrigger is provided', () => {
+      renderXtmHubTab(route);
+
+      expect(screen.getByRole('button', { name: 'Connect to XTM Hub' })).toBeInTheDocument();
+    });
+
+    it('renders the caller trigger instead of the default button when renderTrigger is provided', () => {
+      renderXtmHubTab(route, 'OpenCTI Platform', {
+        renderTrigger: (openDialog) => React.createElement(
+          'button',
+          { type: 'button', onClick: openDialog },
+          'Custom trigger',
+        ),
+      });
+
+      expect(screen.getByRole('button', { name: 'Custom trigger' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Connect to XTM Hub' })).not.toBeInTheDocument();
+    });
+
+    it('opens the connection dialog through the openDialog callback given to renderTrigger', async () => {
+      const { user } = renderXtmHubTab(route, 'OpenCTI Platform', {
+        renderTrigger: (openDialog) => React.createElement(
+          'button',
+          { type: 'button', onClick: openDialog },
+          'Custom trigger',
+        ),
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Custom trigger' }));
+
+      expect(await screen.findByRole('dialog', { name: 'Connect your product to XTM Hub' })).toBeInTheDocument();
     });
   });
 });
