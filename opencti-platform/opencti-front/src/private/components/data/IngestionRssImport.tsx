@@ -98,7 +98,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
           value="import"
           size="small"
           sx={{ marginLeft: 1 }}
-          title={t_i18n('Import a RSS Feed')}
+          title={t_i18n('Import an RSS Feed')}
           onClick={() => inputFileRef?.current?.click()}
         >
           <FileUploadOutlined fontSize="small" color="primary" />
@@ -120,7 +120,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
         paginationOptions={paginationOptions}
         triggerButton={false}
         drawerSettings={{
-          title: t_i18n('Import a RSS Feed'),
+          title: t_i18n('Import an RSS Feed'),
           button: t_i18n('Create'),
         }}
       />
