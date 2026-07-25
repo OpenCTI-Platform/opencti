@@ -30,8 +30,12 @@ export const syncImportQuery = graphql`
 
 interface SyncImportProps {
   paginationOptions: PaginationOptions;
+  // Hide the upload toggle when the import is driven externally (Hub deep link).
+  hideTrigger?: boolean;
+  // Called when the prefilled creation drawer closes (creation or cancel).
+  onClose?: () => void;
 }
-const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) => {
+const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -87,15 +91,17 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      <ToggleButton
-        value="import"
-        size="small"
-        sx={{ marginLeft: 1 }}
-        title={t_i18n('Import an OpenCTI Stream')}
-        onClick={() => inputFileRef?.current?.click()}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      {!hideTrigger && (
+        <ToggleButton
+          value="import"
+          size="small"
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('Import an OpenCTI Stream')}
+          onClick={() => inputFileRef?.current?.click()}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
@@ -104,12 +110,15 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
       />
       <SyncCreation
         open={open}
-        handleClose={() => setOpen(false)}
+        handleClose={() => {
+          setOpen(false);
+          onClose?.();
+        }}
         ingestionSynchronizerData={ingestSynchronizerData}
         paginationOptions={paginationOptions}
         triggerButton={false}
         drawerSettings={{
-          title: t_i18n('Import a Taxii Feed'),
+          title: t_i18n('Import an OpenCTI Stream'),
           button: t_i18n('Create'),
         }}
       />

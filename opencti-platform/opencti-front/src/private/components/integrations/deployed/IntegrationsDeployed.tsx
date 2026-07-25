@@ -165,6 +165,7 @@ const IntegrationsDeployedContent = ({
             <MenuItem value="name">{t_i18n('Name (A-Z)')}</MenuItem>
             <MenuItem value="status">{t_i18n('Status')}</MenuItem>
             <MenuItem value="lastRun">{t_i18n('Last run')}</MenuItem>
+            <MenuItem value="messages">{t_i18n('Queued messages')}</MenuItem>
           </TextField>
           <ResultCountChip count={filteredItems.length} />
           <ToggleButtonGroup

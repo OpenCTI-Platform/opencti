@@ -13,9 +13,12 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useQueryLoader } from 'react-relay';
+import fileDownload from 'js-file-download';
+import { IngestionJsonPopoverExportQuery$data } from '@components/data/ingestionJson/__generated__/IngestionJsonPopoverExportQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
+import { fetchQuery } from '../../../../relay/environment';
 
 export const ingestionJsonPopoverEditionPatch = graphql`
   mutation IngestionJsonPopoverPatchMutation($id: ID!, $input: [EditInput!]!) {
@@ -37,6 +40,15 @@ const ingestionJsonPopoverResetStateMutation = graphql`
             ...IngestionJsonLine_node
         }
     }
+`;
+
+const ingestionJsonPopoverExportQuery = graphql`
+  query IngestionJsonPopoverExportQuery($id: String!) {
+    ingestionJson(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
 `;
 
 interface IngestionJsonPopoverProps {
@@ -152,6 +164,19 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
     handleCloseResetState();
   };
 
+  // -- Export --
+  const handleExport = async () => {
+    handleClose();
+    const data = await fetchQuery(ingestionJsonPopoverExportQuery, { id: ingestionJsonId }).toPromise();
+    const { ingestionJson } = data as IngestionJsonPopoverExportQuery$data;
+    if (ingestionJson) {
+      const blob = new Blob([ingestionJson.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_jsonFeed_${ingestionJson.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
   // -- Running --
   const [commitRunning] = useApiMutation(ingestionJsonPopoverEditionPatch);
   const submitStart = () => {
@@ -213,6 +238,9 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </MenuItem>
           <MenuItem onClick={handleOpenDuplicate}>
             {t_i18n('Duplicate')}
+          </MenuItem>
+          <MenuItem onClick={handleExport}>
+            {t_i18n('Export')}
           </MenuItem>
           <MenuItem onClick={handleOpenResetState}>
             {t_i18n('Reset state')}

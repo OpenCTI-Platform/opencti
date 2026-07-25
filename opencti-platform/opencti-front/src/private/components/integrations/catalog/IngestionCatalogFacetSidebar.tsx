@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import { Check, ExtensionOutlined, GroupsOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
+import { Check, ExtensionOutlined, GroupsOutlined, MoneyOffOutlined, PaidOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
@@ -39,6 +39,13 @@ export const useCatalogDeploymentLabel = () => {
 const DEPLOYMENT_FACET_ICONS: Record<CatalogDeploymentFacet, SvgIconComponent> = {
   connector: ExtensionOutlined,
   'built-in': WidgetsOutlined,
+};
+
+// License values come from the catalog manifests: known ones get a dedicated
+// icon, unknown ones simply render without an icon.
+const LICENSE_TYPE_ICONS: Partial<Record<string, SvgIconComponent>> = {
+  Free: MoneyOffOutlined,
+  Commercial: PaidOutlined,
 };
 
 interface FacetCheckboxProps {
@@ -172,8 +179,12 @@ interface IngestionCatalogFacetSidebarProps {
   facets: {
     types: IngestionConnectorType[];
     useCases: string[];
+    solutionCategories: string[];
+    licenseTypes: string[];
     typeCounts: Record<string, number>;
     useCaseCounts: Record<string, number>;
+    solutionCategoryCounts: Record<string, number>;
+    licenseTypeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     deploymentCounts: Record<string, number>;
   };
@@ -230,17 +241,10 @@ const IngestionCatalogFacetSidebar = ({
           overflowY: { xs: 'visible', md: 'auto' },
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography
-            sx={{
-              fontFamily: theme.typography.h1.fontFamily,
-              fontSize: 15,
-              fontWeight: 600,
-            }}
-          >
-            {t_i18n('Filters')}
-          </Typography>
-          {hasActiveFilters && (
+        {/* No 'Filters' title: the sidebar is self-explanatory, the row only
+            appears to host the clear action when a filter is active. */}
+        {hasActiveFilters && (
+          <Stack direction="row" alignItems="center" justifyContent="flex-end">
             <Button
               variant="tertiary"
               size="small"
@@ -248,8 +252,8 @@ const IngestionCatalogFacetSidebar = ({
             >
               {t_i18n('Clear all')}
             </Button>
-          )}
-        </Stack>
+          </Stack>
+        )}
 
         <Box sx={groupSx}>
           <FacetGroupLabel>{t_i18n('Kind')}</FacetGroupLabel>
@@ -290,6 +294,38 @@ const IngestionCatalogFacetSidebar = ({
                 icon={getUseCaseIcon(useCase)}
                 label={useCase} // no translation on purpose, values come from the catalog
                 onToggle={() => onFiltersChange((prev) => ({ ...prev, useCases: toggleValue(prev.useCases, useCase) }))}
+              />
+            ))}
+          </Box>
+        )}
+
+        {facets.solutionCategories.length > 0 && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('Solution categories')}</FacetGroupLabel>
+            {facets.solutionCategories.map((category) => (
+              <FacetCheckbox
+                key={category}
+                checked={filters.solutionCategories.includes(category)}
+                count={facets.solutionCategoryCounts[category] ?? 0}
+                icon={getUseCaseIcon(category)}
+                label={category} // no translation on purpose, values come from the catalog
+                onToggle={() => onFiltersChange((prev) => ({ ...prev, solutionCategories: toggleValue(prev.solutionCategories, category) }))}
+              />
+            ))}
+          </Box>
+        )}
+
+        {facets.licenseTypes.length > 0 && (
+          <Box sx={dividedGroupSx}>
+            <FacetGroupLabel>{t_i18n('License type')}</FacetGroupLabel>
+            {facets.licenseTypes.map((licenseType) => (
+              <FacetCheckbox
+                key={licenseType}
+                checked={filters.licenseTypes.includes(licenseType)}
+                count={facets.licenseTypeCounts[licenseType] ?? 0}
+                icon={LICENSE_TYPE_ICONS[licenseType]}
+                label={licenseType} // no translation on purpose, values come from the catalog
+                onToggle={() => onFiltersChange((prev) => ({ ...prev, licenseTypes: toggleValue(prev.licenseTypes, licenseType) }))}
               />
             ))}
           </Box>

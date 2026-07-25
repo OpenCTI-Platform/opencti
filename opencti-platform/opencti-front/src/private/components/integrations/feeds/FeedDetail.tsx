@@ -14,6 +14,8 @@ import IngestionJsonPopover from '@components/data/ingestionJson/IngestionJsonPo
 import FormView from '@components/data/forms/view/FormView';
 import { BuiltInIntegrationKind, getBuiltInIntegration, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import IngestionTaxiiLogsDrawer from '@components/data/ingestionTaxii/IngestionTaxiiLogsDrawer';
+import { ConnectorWorksSection } from '@components/data/connectors/Connector';
+import { connectorIdFromIngestId } from '@components/integrations/deployed/useDeployedIntegrations';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -28,7 +30,7 @@ import Label from '../../../../components/common/label/Label';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../../utils/Security';
-import { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../../utils/hooks/useGranted';
 
 const feedDetailSyncQuery = graphql`
   query FeedDetailSyncQuery($id: String!) {
@@ -213,6 +215,18 @@ const FEED_QUERIES: Record<FeedKind, { query: GraphQLTaggedNode; rootField: stri
 
 const noop = () => {};
 
+// Mirrors the backend scheduler (schedulingPeriodToMs): used to compute the
+// next scheduled run from the last execution date.
+const SCHEDULING_PERIOD_MS: Record<string, number> = {
+  PT5M: 5 * 60 * 1000,
+  PT15M: 15 * 60 * 1000,
+  PT30M: 30 * 60 * 1000,
+  PT1H: 60 * 60 * 1000,
+  PT6H: 6 * 60 * 60 * 1000,
+  PT12H: 12 * 60 * 60 * 1000,
+  PT1D: 24 * 60 * 60 * 1000,
+};
+
 interface FeedActionsPopoverProps {
   kind: FeedKind;
   node: FeedDetailNode;
@@ -271,6 +285,8 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
   const { isFeatureEnable } = useHelper();
   const definition = getBuiltInIntegration(kind);
   const [logsDrawerOpen, setLogsDrawerOpen] = useState(false);
+  // The works API is gated by the MODULES capability, like connector pages.
+  const isConnectorReader = useGranted([MODULES]);
 
   const isIngestionFeedLogsEnabled = isFeatureEnable('INGESTION_FEED_LOGS');
 
@@ -283,6 +299,25 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
 
   const running = kind === 'sync' ? !!node.running : !!node.ingestion_running;
   const Icon = definition.icon;
+
+  // Next scheduled run, computed like the backend scheduler: last execution
+  // date plus the scheduling period ('auto' feeds run on every manager tick,
+  // about 30 seconds). Stopped feeds have no next run.
+  let nextRunDisplay: string | null = null;
+  if (running && node.scheduling_period !== undefined) {
+    if (!node.scheduling_period || node.scheduling_period === 'auto') {
+      nextRunDisplay = t_i18n('Within about 30 seconds');
+    } else {
+      const periodMs = SCHEDULING_PERIOD_MS[node.scheduling_period];
+      if (periodMs) {
+        const nextRunTime = node.last_execution_date
+          ? new Date(node.last_execution_date).getTime() + periodMs
+          : 0;
+        // Overdue (or never executed): picked up by the next manager tick.
+        nextRunDisplay = nextRunTime <= Date.now() ? t_i18n('Imminent') : nsdt(new Date(nextRunTime));
+      }
+    }
+  }
 
   return (
     <PageContainer withGap style={{ paddingBottom: 50 }}>
@@ -465,6 +500,11 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
                   <FieldOrEmpty source={node.last_execution_date}>{nsdt(node.last_execution_date)}</FieldOrEmpty>
                 </DetailField>
               )}
+              {node.scheduling_period !== undefined && (
+                <DetailField label={t_i18n('Next run')}>
+                  <FieldOrEmpty source={nextRunDisplay}>{nextRunDisplay}</FieldOrEmpty>
+                </DetailField>
+              )}
               {node.current_state_date !== undefined && (
                 <DetailField label={t_i18n('Current state')}>
                   <FieldOrEmpty source={node.current_state_date}>{nsdt(node.current_state_date)}</FieldOrEmpty>
@@ -511,6 +551,14 @@ const FeedDetailContent = ({ kind, queryRef }: FeedDetailContentProps) => {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Works of the feed's technical queue connector (in progress and
+          completed), exactly like the connector detail pages. Synchronizers
+          consume streams directly and never register works. */}
+      {isConnectorReader && kind !== 'sync' && (
+        <ConnectorWorksSection connectorId={connectorIdFromIngestId(node.id)} />
+      )}
+
       {isIngestionFeedLogsEnabled && kind === 'taxii' && (
         <IngestionTaxiiLogsDrawer
           feedId={node.id}
