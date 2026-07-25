@@ -46,7 +46,6 @@ export const rootPublicQuery = graphql`
       }
       playground_enabled
       ...ExternalAuthsFragment
-      ...LoginLogoFragment
       ...AppIntlProvider_settings
       ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings
