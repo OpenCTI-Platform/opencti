@@ -241,17 +241,10 @@ const IngestionCatalogFacetSidebar = ({
           overflowY: { xs: 'visible', md: 'auto' },
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography
-            sx={{
-              fontFamily: theme.typography.h1.fontFamily,
-              fontSize: 15,
-              fontWeight: 600,
-            }}
-          >
-            {t_i18n('Filters')}
-          </Typography>
-          {hasActiveFilters && (
+        {/* No 'Filters' title: the sidebar is self-explanatory, the row only
+            appears to host the clear action when a filter is active. */}
+        {hasActiveFilters && (
+          <Stack direction="row" alignItems="center" justifyContent="flex-end">
             <Button
               variant="tertiary"
               size="small"
@@ -259,8 +252,8 @@ const IngestionCatalogFacetSidebar = ({
             >
               {t_i18n('Clear all')}
             </Button>
-          )}
-        </Stack>
+          </Stack>
+        )}
 
         <Box sx={groupSx}>
           <FacetGroupLabel>{t_i18n('Kind')}</FacetGroupLabel>
