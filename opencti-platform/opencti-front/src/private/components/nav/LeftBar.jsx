@@ -264,7 +264,7 @@ const LeftBarComponent = ({ queryRef }) => {
 
   const navOpenLogo = draftContext ? LogoTextOrange : theme.logo;
   const navCloseLogo = draftContext ? LogoCollapsedOrange : theme.logo_collapsed;
-  let logo = navOpen ? LogoResaaCtip : LogoResaaCtipIcon;
+  // let logo = navOpen ? LogoResaaCtip : LogoResaaCtipIcon;
 
   const addMenuUnique = (menu) => {
     const joined = selectedMenu.concat(menu);
