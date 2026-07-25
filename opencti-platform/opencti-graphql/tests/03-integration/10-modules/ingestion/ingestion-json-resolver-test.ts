@@ -284,6 +284,10 @@ describe('JSON ingestion resolver — configuration export / import', () => {
           user_id: ADMIN_USER.id,
           scheduling_period: 'PT1H',
           verb: 'get',
+          headers: [
+            { name: 'Accept', value: 'application/json' },
+            { name: 'Authorization', value: 'Bearer super-secret-token' },
+          ],
         },
       },
     });
@@ -332,6 +336,12 @@ describe('JSON ingestion resolver — configuration export / import', () => {
       // Credentials are platform-specific and never exported.
       authentication_value: '',
     });
+    // Covers: sanitizeExportedHeaders — sensitive header values are blanked,
+    // non-sensitive ones are exported as-is.
+    expect(exported.configuration.headers).toEqual([
+      { name: 'Accept', value: 'application/json' },
+      { name: 'Authorization', value: '' },
+    ]);
     expect(exported.configuration.json_mapper.name).toBe('JSON mapper for export test');
     expect(exported.configuration.json_mapper.representations).toHaveLength(1);
     expect(exported.configuration.json_mapper.representations[0].target.entity_type).toBe('Domain-Name');

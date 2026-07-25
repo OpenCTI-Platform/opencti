@@ -59,9 +59,13 @@ export const createJsonMapperFromConfiguration = async (
   user: AuthUser,
   configuration: { name: string; representations: unknown; variables: unknown },
 ) => {
+  // Exported representations reference entities (default values) by STIX
+  // standard id: convert them back to internal ids so they resolve here.
+  const representations = (configuration.representations ?? []) as JsonMapperRepresentation[];
+  await convertRepresentationsIds(context, user, representations, 'stix');
   const importData = {
     name: configuration.name,
-    representations: JSON.stringify(configuration.representations),
+    representations: JSON.stringify(representations),
     variables: JSON.stringify(configuration.variables),
   };
   const importMapper = await createEntity(context, user, importData, ENTITY_TYPE_JSON_MAPPER);
