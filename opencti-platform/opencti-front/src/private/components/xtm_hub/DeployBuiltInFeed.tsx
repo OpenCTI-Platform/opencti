@@ -30,7 +30,7 @@ const DeployBuiltInFeed = () => {
       <BuiltInIntegrationImport
         kind={kind}
         hideTrigger
-        onClose={() => navigate(`/dashboard/integrations/deployed?kind=${kind}`)}
+        onClose={() => navigate(`/dashboard/integrations/deployed?kind=${kind}`, { replace: true })}
       />
     </>
   );

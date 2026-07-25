@@ -43,7 +43,7 @@ const DEPLOYMENT_FACET_ICONS: Record<CatalogDeploymentFacet, SvgIconComponent> =
 
 // License values come from the catalog manifests: known ones get a dedicated
 // icon, unknown ones simply render without an icon.
-const LICENSE_TYPE_ICONS: Record<string, SvgIconComponent> = {
+const LICENSE_TYPE_ICONS: Partial<Record<string, SvgIconComponent>> = {
   Free: MoneyOffOutlined,
   Commercial: PaidOutlined,
 };
