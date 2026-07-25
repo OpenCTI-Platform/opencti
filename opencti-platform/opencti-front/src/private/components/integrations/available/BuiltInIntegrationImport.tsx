@@ -5,6 +5,9 @@ import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport
 import IngestionTaxiiImport from '@components/data/ingestionTaxii/IngestionTaxiiImport';
 import IngestionRssImport from '@components/data/IngestionRssImport';
 import SyncImport from '@components/data/SyncImport';
+import IngestionJsonImport from '@components/data/ingestionJson/IngestionJsonImport';
+import IngestionTaxiiCollectionImport from '@components/data/ingestionTaxiiCollection/IngestionTaxiiCollectionImport';
+import FormImport from '@components/data/forms/FormImport';
 import { IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import { BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -12,8 +15,8 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../../utils/utils';
 
 // The built-in methods whose configuration can be imported from a JSON file
-// (matching the backend ...AddInputFromImport queries).
-const IMPORTABLE_BUILT_IN_KINDS = ['sync', 'taxii', 'rss', 'csv'] as const;
+// (matching the backend ...AddInputFromImport queries / mutations).
+const IMPORTABLE_BUILT_IN_KINDS = ['sync', 'taxii', 'taxii-push', 'rss', 'csv', 'json', 'form'] as const;
 
 export type ImportableBuiltInKind = (typeof IMPORTABLE_BUILT_IN_KINDS)[number];
 
@@ -21,9 +24,10 @@ export const isImportableBuiltInKind = (kind: string): kind is ImportableBuiltIn
   return (IMPORTABLE_BUILT_IN_KINDS as readonly string[]).includes(kind);
 };
 
-// XTM Hub integration types of the importable built-in methods, used by the
-// Hub redirect entry point (same values as the legacy feed screens).
-const HUB_INTEGRATION_TYPES: Record<ImportableBuiltInKind, string> = {
+// XTM Hub integration types of the built-in methods shared on the Hub, used by
+// the Hub redirect entry point (same values as the legacy feed screens). The
+// other importable kinds (taxii-push, json, form) only support file imports.
+const HUB_INTEGRATION_TYPES: Partial<Record<ImportableBuiltInKind, string>> = {
   sync: 'stream',
   taxii: 'taxii_feed',
   rss: 'rss_feed',
@@ -55,6 +59,12 @@ export const BuiltInIntegrationImport = ({ kind, hideTrigger, onClose }: BuiltIn
       );
     case 'csv':
       return <IngestionCsvImport hideTrigger={hideTrigger} onClose={onClose} />;
+    case 'taxii-push':
+      return <IngestionTaxiiCollectionImport hideTrigger={hideTrigger} onClose={onClose} />;
+    case 'json':
+      return <IngestionJsonImport hideTrigger={hideTrigger} onClose={onClose} />;
+    case 'form':
+      return <FormImport hideTrigger={hideTrigger} onClose={onClose} />;
     default:
       return null;
   }
@@ -69,7 +79,7 @@ interface BuiltInIntegrationHubButtonProps {
 export const BuiltInIntegrationHubButton = ({ kind }: BuiltInIntegrationHubButtonProps) => {
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
-  if (!isImportableBuiltInKind(kind)) return null;
+  if (!isImportableBuiltInKind(kind) || !HUB_INTEGRATION_TYPES[kind]) return null;
   if (!isXTMHubAccessible || !isNotEmptyField(settings?.platform_xtmhub_url)) return null;
   const href = `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=${HUB_INTEGRATION_TYPES[kind]}`;
   return (

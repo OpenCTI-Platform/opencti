@@ -9716,6 +9716,7 @@ type Query {
   ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
+  ingestionTaxiiCollectionAddInputFromImport(file: Upload!): IngestionTaxiiCollectionAddInputFromImport!
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
@@ -10635,6 +10636,7 @@ type Mutation {
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
+  ingestionJsonAddInputFromImport(file: Upload!): IngestionJsonAddInputFromImport!
   ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
   ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
   ingestionJsonResetState(id: ID!): IngestionJson
@@ -13978,6 +13980,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13995,6 +13998,12 @@ type IngestionTaxiiCollectionConnection {
 type IngestionTaxiiCollectionEdge {
   cursor: String!
   node: IngestionTaxiiCollection!
+}
+
+type IngestionTaxiiCollectionAddInputFromImport {
+  name: String!
+  description: String
+  confidence_to_score: Boolean
 }
 
 input IngestionTaxiiCollectionAddInput {
@@ -14145,6 +14154,29 @@ type IngestionJson implements InternalObject & BasicObject {
   last_execution_date: DateTime
   markings: [String!]
   ssl_verify: Boolean
+  toConfigurationExport: String!
+}
+
+type IngestionJsonMapperFromImport {
+  id: String!
+  name: String!
+}
+
+type IngestionJsonAddInputFromImport {
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String
+  verb: String
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  authentication_type: IngestionAuthType
+  ssl_verify: Boolean
+  jsonMapper: IngestionJsonMapperFromImport!
 }
 
 enum IngestionJsonOrdering {
