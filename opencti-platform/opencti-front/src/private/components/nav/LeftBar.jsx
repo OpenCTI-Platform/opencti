@@ -120,8 +120,6 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
-import LogoResaaCtip from '../../../static/images/rctip-logo-text.svg';
-import LogoResaaCtipIcon from '../../../static/images/rctip-logo-icon.svg';
 export const SMALL_BAR_WIDTH = 100;
 export const OPEN_BAR_WIDTH = 180;
 

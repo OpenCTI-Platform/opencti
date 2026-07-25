@@ -315,8 +315,8 @@ export default defineConfig({
         return html
           .replace(/%BASE_PATH%/g, basePath)
           .replace(/%APP_SCRIPT_SNIPPET%/g, "")
-          .replace(/%APP_TITLE%/g, "RCTIP")
-          .replace(/%APP_DESCRIPTION%/g, "RCTIP Development platform")
+          .replace(/%APP_TITLE%/g, "ACTIP")
+          .replace(/%APP_DESCRIPTION%/g, "ACTIP Development platform")
           .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
           .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`);
       },

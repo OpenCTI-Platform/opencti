@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import { PropsWithChildren } from "react";
 import SystemBanners from "../SystemBanners";
 import { LoginRootPublicQuery$data } from "../../__generated__/LoginRootPublicQuery.graphql";
-import LoginLogo from "./LoginLogo";
+import Logo from "../../../private/components/common/Logo";
 import SolarSystemAnimation from "./SolarSystemAnimation";
 import { loginPanelSx } from "./loginStyles";
 
@@ -29,7 +29,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           }}
         >
           <Box sx={{ p: 4, pb: 0 }}>
-            <LoginLogo data={settings} />
+            <Logo />
           </Box>
 
           <Stack
@@ -51,7 +51,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
               fontSize: 13,
             }}
           >
-            {`© ResaaCTIP ${currentYear}`}
+            {`© ACTIP ${currentYear}`}
           </Typography>
         </Box>
 

@@ -729,7 +729,7 @@ const RessaSearch = () => {
             fontWeight: 600,
           }}
         >
-          {t_i18n('Global Search')}
+          {t_i18n('Universal Search')}
         </Typography>
 
         {/* Tab Bar */}

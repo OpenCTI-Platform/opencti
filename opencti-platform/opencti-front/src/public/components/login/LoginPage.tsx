@@ -55,7 +55,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               lineHeight: 1.25,
             }}
           >
-            {t_i18n('Welcome to ResaaCTIP')}
+            {t_i18n('Welcome to ACTIP')}
           </Typography>
           <Typography
             variant="body2"

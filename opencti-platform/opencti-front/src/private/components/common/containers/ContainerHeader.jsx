@@ -649,7 +649,7 @@ const ContainerHeader = (props) => {
                           </Tooltip>
                         )}
                         {modes.includes('resaa-timeline') && (
-                          <Tooltip title={t_i18n('Resaa Timeline view')}>
+                          <Tooltip title={t_i18n('ACTIP Timeline view')}>
                             <ToggleButton
                               value="resaa-timeline"
                               component={Link}

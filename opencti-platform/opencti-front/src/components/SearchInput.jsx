@@ -243,11 +243,11 @@ const SearchInput = (props) => {
                 {isNLQActivated && isNLQLoading && (
                   <Loader variant="inline" />
                 )}
- <Tooltip title={t_i18n('Ressa Search')}>
+                <Tooltip title={t_i18n('Universal Search')}>
                   <IconButton
                     onClick={handleRemoveAskAI}
                     component={Link}
-                    to="/dashboard/ressa-search"
+                    to="/dashboard/universal-search"
                     selected={
                       location.pathname.includes(
                         '/dashboard/search_bulk',
