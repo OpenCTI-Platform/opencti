@@ -32,8 +32,12 @@ export const rssFeedImportQuery = graphql`
 
 interface IngestionRssImportProps {
   paginationOptions: IngestionRssLinesDataTableQuery$variables;
+  // Hide the upload toggle when the import is driven externally (Hub deep link).
+  hideTrigger?: boolean;
+  // Called when the prefilled creation drawer closes (creation or cancel).
+  onClose?: () => void;
 }
-const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ paginationOptions }) => {
+const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -89,15 +93,17 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />
-      <ToggleButton
-        value="import"
-        size="small"
-        sx={{ marginLeft: 1 }}
-        title={t_i18n('Import a RSS Feed')}
-        onClick={() => inputFileRef?.current?.click()}
-      >
-        <FileUploadOutlined fontSize="small" color="primary" />
-      </ToggleButton>
+      {!hideTrigger && (
+        <ToggleButton
+          value="import"
+          size="small"
+          sx={{ marginLeft: 1 }}
+          title={t_i18n('Import a RSS Feed')}
+          onClick={() => inputFileRef?.current?.click()}
+        >
+          <FileUploadOutlined fontSize="small" color="primary" />
+        </ToggleButton>
+      )}
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
@@ -106,7 +112,10 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
       />
       <IngestionRssCreation
         open={open}
-        handleClose={() => setOpen(false)}
+        handleClose={() => {
+          setOpen(false);
+          onClose?.();
+        }}
         ingestionRssData={ingestRssData}
         paginationOptions={paginationOptions}
         triggerButton={false}

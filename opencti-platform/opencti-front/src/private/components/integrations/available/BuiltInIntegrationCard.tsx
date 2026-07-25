@@ -4,6 +4,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { BuiltInIntegrationDefinition } from '@components/integrations/available/builtInIntegrations';
+import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -130,16 +131,28 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             to={`/dashboard/integrations/deployed?type=${definition.kind}`}
           />
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <Button
-              size="small"
-              onClick={(event) => {
-                event.stopPropagation();
-                onClickCreate();
-              }}
-              sx={{ marginLeft: 'auto' }}
+            {/* The whole card triggers the creation: the secondary actions
+                (configuration import) must not bubble up to it. */}
+            <Stack
+              direction="row"
+              alignItems="center"
+              onClick={(event) => event.stopPropagation()}
+              sx={{ marginLeft: 'auto', flexShrink: 0 }}
             >
-              {t_i18n('Create')}
-            </Button>
+              {isImportableBuiltInKind(definition.kind) && (
+                <>
+                  <BuiltInIntegrationImport kind={definition.kind} />
+                  <BuiltInIntegrationHubButton kind={definition.kind} />
+                </>
+              )}
+              <Button
+                size="small"
+                onClick={onClickCreate}
+                sx={{ marginLeft: 1 }}
+              >
+                {t_i18n('Create')}
+              </Button>
+            </Stack>
           </Security>
         </CardActions>
       </Card>

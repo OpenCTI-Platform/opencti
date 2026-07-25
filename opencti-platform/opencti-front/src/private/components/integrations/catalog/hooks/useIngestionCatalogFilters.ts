@@ -25,6 +25,8 @@ export interface CatalogFilterState {
   search: string;
   types: string[];
   useCases: string[];
+  solutionCategories: string[];
+  licenseTypes: string[];
   statuses: CatalogStatusFacet[];
   deployments: CatalogDeploymentFacet[];
 }
@@ -44,6 +46,8 @@ export interface CatalogItem {
   deployment: CatalogDeploymentFacet;
   verified: boolean;
   useCases: string[];
+  solutionCategories: string[];
+  licenseType: string | null;
   deploymentCount: number;
   connector?: CatalogConnectorEntry;
   builtIn?: BuiltInIntegrationDefinition;
@@ -89,7 +93,7 @@ const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean =
   return !item.verified;
 };
 
-type FacetGroup = 'types' | 'useCases' | 'statuses' | 'deployments';
+type FacetGroup = 'types' | 'useCases' | 'solutionCategories' | 'licenseTypes' | 'statuses' | 'deployments';
 
 const matchesFilters = (
   item: CatalogItem,
@@ -110,6 +114,13 @@ const matchesFilters = (
     const useCaseMatch = item.useCases.some((useCase) => filters.useCases.includes(useCase));
     if (!useCaseMatch) return false;
   }
+  if (skip !== 'solutionCategories' && filters.solutionCategories.length > 0) {
+    const categoryMatch = item.solutionCategories.some((category) => filters.solutionCategories.includes(category));
+    if (!categoryMatch) return false;
+  }
+  if (skip !== 'licenseTypes' && filters.licenseTypes.length > 0) {
+    if (!item.licenseType || !filters.licenseTypes.includes(item.licenseType)) return false;
+  }
   if (skip !== 'statuses' && filters.statuses.length > 0) {
     const statusMatch = filters.statuses.some((status) => matchesStatus(item, status));
     if (!statusMatch) return false;
@@ -124,6 +135,8 @@ const parseFiltersFromParams = (searchParams: URLSearchParams): CatalogFilterSta
   search: searchParams.get('search') || '',
   types: parseListParam(searchParams.get('type')),
   useCases: parseListParam(searchParams.get('useCase')),
+  solutionCategories: parseListParam(searchParams.get('solutionCategory')),
+  licenseTypes: parseListParam(searchParams.get('licenseType')),
   statuses: parseListParam(searchParams.get('status'))
     .filter((s): s is CatalogStatusFacet => (CATALOG_STATUS_FACETS as string[]).includes(s)),
   deployments: parseListParam(searchParams.get('deployment'))
@@ -165,6 +178,8 @@ const useIngestionCatalogFilters = ({
     // same canonical URL regardless of selection order.
     if (filters.types.length > 0) params.set('type', [...filters.types].sort().join(','));
     if (filters.useCases.length > 0) params.set('useCase', [...filters.useCases].sort().join(','));
+    if (filters.solutionCategories.length > 0) params.set('solutionCategory', [...filters.solutionCategories].sort().join(','));
+    if (filters.licenseTypes.length > 0) params.set('licenseType', [...filters.licenseTypes].sort().join(','));
     if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
     if (filters.deployments.length > 0) params.set('deployment', [...filters.deployments].sort().join(','));
     if (sort !== 'name') params.set('sort', sort);
@@ -193,6 +208,8 @@ const useIngestionCatalogFilters = ({
         // Built-in methods ship with the platform: supported by Filigran.
         verified: true,
         useCases: [],
+        solutionCategories: [],
+        licenseType: null,
         deploymentCount: builtIn.deploymentCount,
         builtIn: builtIn.definition,
       });
@@ -210,11 +227,14 @@ const useIngestionCatalogFilters = ({
                 connector.description,
                 connector.short_description,
                 ...(connector.use_cases ?? []),
+                ...(connector.solution_categories ?? []),
               ].join(' ').toLowerCase(),
               sectionKey: connector.container_type,
               deployment: 'connector',
               verified: connector.verified,
               useCases: connector.use_cases ?? [],
+              solutionCategories: connector.solution_categories ?? [],
+              licenseType: connector.license_type ?? null,
               deploymentCount: deploymentCounts.get(connector.container_image) ?? 0,
               connector: { connector, catalogId: catalog.id },
             });
@@ -262,6 +282,28 @@ const useIngestionCatalogFilters = ({
     return counts;
   }, [items, filters]);
 
+  const solutionCategoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      if (matchesFilters(item, filters, 'solutionCategories')) {
+        for (const category of item.solutionCategories) {
+          counts[category] = (counts[category] ?? 0) + 1;
+        }
+      }
+    }
+    return counts;
+  }, [items, filters]);
+
+  const licenseTypeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      if (item.licenseType && matchesFilters(item, filters, 'licenseTypes')) {
+        counts[item.licenseType] = (counts[item.licenseType] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [items, filters]);
+
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const item of items) {
@@ -301,6 +343,14 @@ const useIngestionCatalogFilters = ({
     return [...new Set(items.flatMap((item) => item.useCases))].sort();
   }, [items]);
 
+  const availableSolutionCategories = useMemo(() => {
+    return [...new Set(items.flatMap((item) => item.solutionCategories))].sort();
+  }, [items]);
+
+  const availableLicenseTypes = useMemo(() => {
+    return [...new Set(items.flatMap((item) => (item.licenseType ? [item.licenseType] : [])))].sort();
+  }, [items]);
+
   const filteredItems = useMemo(
     () => items.filter((item) => matchesFilters(item, filters)),
     [items, filters],
@@ -330,11 +380,13 @@ const useIngestionCatalogFilters = ({
   const hasActiveFilters = filters.search !== ''
     || filters.types.length > 0
     || filters.useCases.length > 0
+    || filters.solutionCategories.length > 0
+    || filters.licenseTypes.length > 0
     || filters.statuses.length > 0
     || filters.deployments.length > 0;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], useCases: [], statuses: [], deployments: [] });
+    setFilters({ search: '', types: [], useCases: [], solutionCategories: [], licenseTypes: [], statuses: [], deployments: [] });
   };
 
   return {
@@ -350,8 +402,12 @@ const useIngestionCatalogFilters = ({
     facets: {
       types: availableTypes,
       useCases: availableUseCases,
+      solutionCategories: availableSolutionCategories,
+      licenseTypes: availableLicenseTypes,
       typeCounts,
       useCaseCounts,
+      solutionCategoryCounts,
+      licenseTypeCounts,
       statusCounts,
       deploymentCounts: deploymentCountsByFacet,
     },

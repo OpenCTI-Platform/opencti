@@ -22,6 +22,9 @@ export interface IngestionConnector {
   short_description: string;
   logo: string;
   use_cases: string[];
+  // Optional: older catalog manifests do not carry these metadata fields.
+  solution_categories?: string[] | null;
+  license_type?: string | null;
   verified: boolean;
   last_verified_date: string;
   playbook_supported: boolean;

@@ -122,7 +122,9 @@ interface ConnectorWorksSectionProps {
   connectorId: string;
 }
 
-const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
+// Exported: also used by the built-in feed detail page, through the feed's
+// technical queue connector id.
+export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps> = ({ connectorId }) => {
   const optionsInProgress: ConnectorWorksQuery$variables = {
     count: 50,
     orderMode: 'asc',
