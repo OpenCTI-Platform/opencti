@@ -201,7 +201,9 @@ export const extractFilterGroupValues = (
       pushAll(ids, dynamicIds);
       ids.push('dynamic');
     } else {
-      pushAll(ids, f.values);
+      // Only push actual string values; skip complex sub-filter objects
+      // (e.g. coverageScore, pir_score filters have object values)
+      pushAll(ids, f.values.filter((v: unknown) => typeof v === 'string'));
     }
   });
   // recurse on filter groups

@@ -5,6 +5,9 @@ import {
   BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
+  COVERAGE_SCORE_FILTER,
+  COVERAGE_SCORE_NAME_SUBFILTER,
+  COVERAGE_SCORE_VALUE_SUBFILTER,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -556,6 +559,28 @@ const adaptFilterToPirFilterKeys = async (context: AuthContext, user: AuthUser, 
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterToCoverageScoreFilterKey = (filter: Filter) => {
+  const coverageNames: string[] = filter.values.find((v) => v.key === COVERAGE_SCORE_NAME_SUBFILTER)?.values ?? [];
+  const scoreSubFilter = filter.values.find((v) => v.key === COVERAGE_SCORE_VALUE_SUBFILTER);
+  // The score operator can come from:
+  // - the sub-filter object (playground / direct API usage)
+  // - the top-level filter.operator (frontend UI stores operator at filter level)
+  const scoreOperator = scoreSubFilter?.operator ?? filter.operator;
+  // Score values can come from the sub-filter object or directly from filter.values (flat format from frontend)
+  const scoreValues = scoreSubFilter?.values ?? filter.values.filter((v) => typeof v === 'string');
+  const nested = [];
+  if (coverageNames.length > 0) {
+    nested.push({ key: 'coverage_name', values: coverageNames, operator: FilterOperator.Eq });
+  }
+  nested.push({ key: 'coverage_score', values: scoreValues, operator: scoreOperator });
+  const newFilter = {
+    key: ['coverage_information'],
+    values: [],
+    nested,
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToServiceAccountFilterKey = (filter: Filter) => {
   const { operator, mode, values } = filter;
   let newFilter;
@@ -825,6 +850,10 @@ export const completeSpecialFilterKeys = async (
       }
       if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
         const { newFilter } = await adaptFilterToPirFilterKeys(context, user, filterKey, filter);
+        finalFilters.push(newFilter);
+      }
+      if (filterKey === COVERAGE_SCORE_FILTER) {
+        const { newFilter } = adaptFilterToCoverageScoreFilterKey(filter);
         finalFilters.push(newFilter);
       }
       if (filterKey === USER_SERVICE_ACCOUNT_FILTER) {
