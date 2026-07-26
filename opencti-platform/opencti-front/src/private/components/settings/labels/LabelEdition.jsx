@@ -10,6 +10,7 @@ import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import Drawer from '../../common/drawer/Drawer';
+import { HEX_COLOR_REGEX } from '../../../../utils/Colors';
 
 const subscription = graphql`
   subscription LabelEditionSubscription($id: ID!) {
@@ -41,7 +42,9 @@ const labelEditionFocus = graphql`
 
 const labelValidation = (t) => Yup.object().shape({
   value: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
+  color: Yup.string()
+    .matches(HEX_COLOR_REGEX, t('Invalid hexa color code'))
+    .required(t('This field is required')),
 });
 
 class LabelEditionContainer extends Component {
