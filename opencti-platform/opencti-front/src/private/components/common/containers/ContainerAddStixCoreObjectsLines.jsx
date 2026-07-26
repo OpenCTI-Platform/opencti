@@ -105,6 +105,19 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     };
   }
 
+  componentDidMount() {
+    // When Relay serves data from cache on the initial mount, componentDidUpdate
+    // is never called with a data transition (null → data), so the count would
+    // never be set.  Simulate a "no previous data" call here so the count is
+    // always initialised correctly when data is already available at mount time.
+    setNumberOfElements(
+      { data: null },
+      this.props,
+      'stixCoreObjects',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,

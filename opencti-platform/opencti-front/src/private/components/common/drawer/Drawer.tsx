@@ -5,7 +5,7 @@ import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
+import React, { CSSProperties, forwardRef, isValidElement, Ref, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -33,7 +33,15 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
   },
   container: {
     padding: theme.spacing(3),
-    height: '100%',
+    // Use flex: 1 + minHeight: 0 instead of height: '100%' so this div
+    // fills exactly the remaining space in the Paper flex-column layout
+    // (after DrawerHeader). This ensures only this div scrolls when content
+    // overflows, preventing a competing scroll on the MUI Paper itself.
+    // Without this, both the Paper and this div have overflow:auto and both
+    // try to scroll, causing WindowScroller to track the wrong element and
+    // breaking InfiniteLoader pagination inside drawers.
+    flex: 1,
+    minHeight: 0,
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
@@ -77,6 +85,14 @@ interface DrawerProps {
   };
   controlledDial?: DrawerControlledDialType;
   containerStyle?: CSSProperties;
+  /**
+   * Optional ref forwarded to the inner scrollable container div.
+   * Used by components such as ListLinesContent to correctly bind
+   * infinite-scroll detection to the drawer's scroll element rather
+   * than the window, which prevents blank gaps when loading paginated
+   * entity lists inside a drawer.
+   */
+  containerRef?: Ref<HTMLDivElement>;
   disabled?: boolean;
   size?: DrawerSize;
   sx?: SxProps;
@@ -104,6 +120,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   subHeader,
   controlledDial,
   containerStyle,
+  containerRef,
   disabled = false,
   size = 'large',
   disableBackdropClose = false,
@@ -230,10 +247,22 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
           paper: {
             ref,
             sx: {
-              minHeight: '100vh',
+              // Use height (not minHeight) so the Paper has a DEFINITE height.
+              // With minHeight alone, CSS flex doesn't distribute available space
+              // to flex children (flex:1 on .container doesn't work as expected),
+              // so the container grew to match its content with no overflow/scroll.
+              // With height:100vh the container is constrained to viewport minus
+              // DrawerHeader, content overflow triggers the overflowY:auto scroll.
+              height: '100vh',
               width: getDrawerWidth(size),
               position: 'fixed',
-              overflow: 'auto',
+              // Use overflow: hidden (not auto) so the Paper itself never
+              // scrolls. Scrolling is delegated to the inner .container div
+              // which uses flex:1 to fill the remaining space. This removes
+              // the dual-scroll issue that broke WindowScroller pagination.
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
               transition: theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,
@@ -256,6 +285,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         />
 
         <div
+          ref={containerRef}
           className={classes.container}
           style={{
             ...containerStyle,
