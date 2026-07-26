@@ -9112,10 +9112,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"invert-color@npm:2.0.0":
-  version: 2.0.0
-  resolution: "invert-color@npm:2.0.0"
-  checksum: 10c0/bd27342450a1f4d016b31ad918b2268df6e31975cf8e00772594751b692b77e02b6582325c09296dc680f666ba77c22e9f283d0d321643dfce48a41c741030e7
+"invert-color@npm:3.0.0":
+  version: 3.0.0
+  resolution: "invert-color@npm:3.0.0"
+  checksum: 10c0/8341e0f5acaee19469aa59e89cde4fb424f7b2d45cc10a915613e00eb7e64bde1b1b08704e6e995b28ef10dd0d561c70fb25234b68c141068605bedd0230fc64
   languageName: node
   linkType: hard
 
@@ -11874,7 +11874,7 @@ __metadata:
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.33"
     i18n-auto-translation: "npm:2.2.3"
-    invert-color: "npm:2.0.0"
+    invert-color: "npm:3.0.0"
     ipaddr.js: "npm:2.4.0"
     is-svg: "npm:6.1.0"
     js-base64: "npm:3.9.1"
