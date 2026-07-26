@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import stopEvent from '../../../../utils/domEvent';
 
 // Shared column geometry between the header row and the lines, mirroring the
 // deployed tab lines view: the name column absorbs the remaining space and
@@ -91,7 +92,6 @@ export interface AvailableIntegrationLineProps {
 const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, onClickCreate }: AvailableIntegrationLineProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const canCreate = useGranted([INGESTION_SETINGESTIONS]);
 
   const connector = item.connector?.connector;
@@ -104,20 +104,18 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
     ? connector.short_description
     : t_i18n(item.builtIn?.description ?? '');
 
-  // Opening a connector line navigates to its catalog detail; a built-in line
+  // Opening a connector line navigates to its catalog detail (rendered as a
+  // real link so ctrl/cmd/middle click opens a new tab); a built-in line
   // opens its creation drawer (like the matching cards).
-  const handleLineClick = () => {
-    if (connector) {
-      navigate(`/dashboard/integrations/catalog/${connector.slug}`);
-    } else if (canCreate) {
-      onClickCreate();
-    }
-  };
+  const linkProps = connector
+    ? { component: Link, to: `/dashboard/integrations/catalog/${connector.slug}` }
+    : {};
 
   return (
     <Box
       data-testid="available-integration-line"
-      onClick={handleLineClick}
+      {...linkProps}
+      onClick={!connector && canCreate ? onClickCreate : undefined}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -125,6 +123,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         paddingInline: 1.5,
         paddingBlock: 0.75,
         cursor: connector || canCreate ? 'pointer' : undefined,
+        textDecoration: 'none',
+        color: 'inherit',
         transition: 'background-color 0.2s ease-in-out',
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -242,8 +242,8 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
           </Typography>
         )}
       </Box>
-      {/* Actions column. */}
-      <Box onClick={(event) => event.stopPropagation()} sx={cellSx('actions')}>
+      {/* Actions column: lives inside the row link, block navigation. */}
+      <Box onClick={stopEvent} sx={cellSx('actions')}>
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {item.builtIn ? (
             <Stack direction="row" alignItems="center">

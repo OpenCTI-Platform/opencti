@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -10,6 +10,7 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import stopEvent from '../../../../utils/domEvent';
 
 // Shared column geometry between the header row and the lines, so every
 // section renders as a proper aligned table. Widths are percentages of the
@@ -92,7 +93,6 @@ export interface DeployedIntegrationLineProps {
 const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, nsdt, rd } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -114,7 +114,9 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
   return (
     <Box
       data-testid="integration-line"
-      onClick={() => navigate(item.detailUrl)}
+      // A real link so ctrl/cmd/middle click opens the detail in a new tab.
+      component={Link}
+      to={item.detailUrl}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -122,6 +124,8 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
         paddingInline: 1.5,
         paddingBlock: 0.75,
         cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'inherit',
         transition: 'background-color 0.2s ease-in-out',
         '&:hover': {
           backgroundColor: theme.palette.action.hover,
@@ -283,8 +287,8 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
           </Typography>
         )}
       </Box>
-      {/* Status column. */}
-      <Box onClick={(event) => event.stopPropagation()} sx={cellSx('status')}>
+      {/* Status column: lives inside the row link, block navigation. */}
+      <Box onClick={stopEvent} sx={cellSx('status')}>
         {item.status === 'processing'
           ? <ItemBoolean status={undefined} label={statusText} />
           : <ItemBoolean status={item.status === 'active'} label={statusText} />}
