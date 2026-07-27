@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DeleteOutlined, LinkOutlined, VisibilityOutlined } from '@mui/icons-material';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 import StixCoreRelationshipCreation from '@components/common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixNestedRefRelationshipCreationFromKnowledgeGraph from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraph';
 import StixNestedRefRelationshipCreation from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';

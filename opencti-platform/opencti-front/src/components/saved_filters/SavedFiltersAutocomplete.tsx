@@ -65,7 +65,7 @@ const SavedFiltersAutocomplete = ({
               <Typography component="span">{filterLabel}</Typography>
             </div>
           </Tooltip>
-          {canManage && (
+          {canManage && localStorageKey && (
             <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
               <Tooltip title={t_i18n('Edit this saved filter')}>
                 <IconButton

@@ -8,7 +8,6 @@ import {
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
 import { useFormatter } from '../../components/i18n';
-import useHelper from './useHelper';
 
 export type EntitySetting = EntitySettingsFragment_entitySetting$data;
 
@@ -46,13 +45,8 @@ export const useIsEnforceReference = (id: string): boolean => {
 };
 
 export const useIsMandatoryAttribute = (id: string) => {
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
-    if (id === 'DraftWorkspace' && !isDraftWorkflowFeatureEnabled) {
-      return { entitySettings, mandatoryAttributes: ['name'] };
-    }
     throw Error(`Invalid type for setting: ${id}`);
   }
   const mandatoryAttributes = [...entitySettings.mandatoryAttributes];

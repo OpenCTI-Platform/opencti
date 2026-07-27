@@ -8,6 +8,7 @@ const emptyDef = (overrides: Partial<NonNullable<WorkflowDef>> = {}): NonNullabl
   id: 'wf-1',
   name: 'Test',
   published: false,
+  hasPublishedVersion: false,
   errors: [],
   initialState: '',
   states: [],

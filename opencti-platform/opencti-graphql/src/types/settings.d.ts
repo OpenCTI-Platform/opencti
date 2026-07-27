@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
@@ -36,6 +36,26 @@ export type HeadersAuthConfig = {
   logout_uri?: string;
 };
 
+export type SmtpConfiguration = {
+  smtp_enabled: boolean;
+  use_db_config: boolean;
+  forced_sender_email: boolean;
+  sender_email_address: string;
+  hostname: string;
+  port: number;
+  use_ssl: boolean;
+  reject_unauthorized: boolean;
+  auth_type?: SmtpAuthType;
+  username: string;
+  password_encrypted: string;
+  oauth_user: string;
+  oauth_client_id: string;
+  oauth_client_secret_encrypted: string;
+  oauth_issuer: string;
+  oauth_refresh_token_encrypted: string;
+  oauth_refresh_token_expires_at: Date;
+};
+
 export interface BasicStoreSettings extends BasicStoreEntity {
   platform_url: string;
   platform_email: string;
@@ -70,4 +90,5 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   cert_auth?: CertAuthConfig;
   headers_auth?: HeadersAuthConfig;
   password_policy_validity_days?: number;
+  smtp_configuration?: SmtpConfiguration;
 }

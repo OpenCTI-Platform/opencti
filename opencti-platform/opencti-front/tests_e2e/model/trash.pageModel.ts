@@ -15,6 +15,6 @@ export default class TrashPage {
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('Trash');
+    await leftBarPage.clickOnMenu('Data', 'Trash');
   }
 }

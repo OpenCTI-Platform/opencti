@@ -2,7 +2,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import { act } from '@testing-library/react';
 import ReactDOM from 'react-dom/client';
-import { RelayEnvironmentProvider } from 'react-relay/hooks';
+import { RelayEnvironmentProvider } from 'react-relay';
 import { createMockEnvironment, MockPayloadGenerator } from 'relay-test-utils';
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';

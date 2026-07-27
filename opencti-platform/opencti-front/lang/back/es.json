@@ -1145,5 +1145,6 @@
   "XTM Hub Token": "Token del concentrador XTM",
   "XTM One intent": "Intento de XTM One",
   "XTM One registration manager": "Gestor de inscripciones XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC",
+  "SMTP configuration": "Configuración SMTP"
 }

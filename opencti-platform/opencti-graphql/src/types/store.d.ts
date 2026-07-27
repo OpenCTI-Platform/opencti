@@ -763,3 +763,8 @@ export interface BasicStoreEntityIdentity extends BasicStoreBase {
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;
 type StoreObject = StoreEntity | StoreCyberObservable | StoreRelation;
+
+interface BasicStoreEntityMigrationStatus extends BasicStoreEntity {
+  platformVersion: string;
+  lastRun: string;
+}

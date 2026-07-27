@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
@@ -73,11 +74,7 @@ describe('Workflow Conditions Resolver', () => {
         to: 'step1',
         event: 'named_condition_event',
         conditions: {
-          filters: {
-            mode: 'and',
-            filters: [],
-            filterGroups: [],
-          },
+          filters: emptyFilterGroup,
         },
       },
       {

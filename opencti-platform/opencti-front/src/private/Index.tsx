@@ -39,6 +39,7 @@ const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('@components/data/Root'));
+const RootIntegrations = lazy(() => import('@components/integrations/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
 const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
@@ -143,6 +144,7 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
                 <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
                 <Route path="/data/*" element={boundaryWrapper(RootData)} />
+                <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
                 {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
                 <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
                 <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />

@@ -3,14 +3,13 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { ReactNode, Suspense } from 'react';
+import { ReactNode } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixCoreObjectsDonutDistributionQuery } from './__generated__/StixCoreObjectsDonutDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
@@ -108,14 +107,14 @@ const StixCoreObjectsDonutComponent = ({
   const selection = dataSelection[0];
   const data = stixCoreObjectsDistribution ?? [];
 
-  return data.length === 0 ? (
-    <WidgetNoData />
-  ) : (
-    <WidgetDonut
-      data={data}
-      groupBy={selection.attribute ?? 'entity_type'}
-    />
-  );
+  return data.length === 0
+    ? <WidgetNoData />
+    : (
+        <WidgetDonut
+          data={data}
+          groupBy={selection.attribute ?? 'entity_type'}
+        />
+      );
 };
 
 interface StixCoreObjectsDonutProps {
@@ -170,7 +169,7 @@ const StixCoreObjectsDonut = ({
   host,
 }: StixCoreObjectsDonutProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -182,23 +181,6 @@ const StixCoreObjectsDonut = ({
 
   const defaultTitle = withoutTitle ? undefined : t_i18n('Distribution of entities');
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsDonutComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="small"
@@ -208,7 +190,17 @@ const StixCoreObjectsDonut = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsDonutComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

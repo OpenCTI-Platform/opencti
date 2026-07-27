@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsTreeMapQuery } from './__generated__/PublicStixCoreObjectsTreeMapQuery.graphql';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
@@ -93,7 +93,7 @@ const PublicStixCoreObjectsTreeMap = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsTreeMapQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsTreeMapQuery>(
     publicStixCoreObjectsTreeMapQuery,
     {
       uriKey,

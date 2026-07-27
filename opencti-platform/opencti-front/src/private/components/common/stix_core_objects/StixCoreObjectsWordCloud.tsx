@@ -1,16 +1,15 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixCoreObjectsWordCloudDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsWordCloudDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const stixCoreObjectsWordCloudDistributionQuery = graphql`
@@ -170,7 +169,7 @@ const StixCoreObjectsWordCloud = ({
   refreshRate = null,
 }: StixCoreObjectsWordCloudProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsWordCloudDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -180,25 +179,6 @@ const StixCoreObjectsWordCloud = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsWordCloudComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -207,7 +187,17 @@ const StixCoreObjectsWordCloud = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsWordCloudComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

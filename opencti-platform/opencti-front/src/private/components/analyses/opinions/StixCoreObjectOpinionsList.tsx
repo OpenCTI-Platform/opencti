@@ -7,7 +7,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { FunctionComponent } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import type { PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';

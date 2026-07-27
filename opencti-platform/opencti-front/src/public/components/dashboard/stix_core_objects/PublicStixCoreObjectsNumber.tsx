@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { Suspense } from 'react';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import { PublicStixCoreObjectsNumberQuery } from './__generated__/PublicStixCoreObjectsNumberQuery.graphql';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -70,7 +70,7 @@ const PublicStixCoreObjectsNumber = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsNumberQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsNumberQuery>(
     publicStixCoreObjectsNumberQuery,
     {
       uriKey,

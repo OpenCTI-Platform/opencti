@@ -5,6 +5,7 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 const GET_SAVED_FILTERS_QUERY = gql`
   query savedFilters(
@@ -95,11 +96,7 @@ const EDIT_AUTHORIZED_MEMBERS_MUTATION = gql`
 
 describe('Saved Filter Resolver', () => {
   let createdFilterId: string = '';
-  const newFilter = {
-    mode: 'and',
-    filters: [],
-    filterGroups: [],
-  };
+  const newFilter = emptyFilterGroup;
 
   describe('savedFilterAdd', () => {
     it('should create a filter with the creator as admin in authorized members', async () => {

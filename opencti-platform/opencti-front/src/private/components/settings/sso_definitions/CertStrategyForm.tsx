@@ -46,6 +46,7 @@ const certStrategyFormQuery = graphql`
           }
           auto_create_groups
           prevent_default_groups
+          extend_platform_groups
         }
         organizations_mapping {
           default_organizations
@@ -87,6 +88,7 @@ const certStrategyFormMutation = graphql`
             }
             auto_create_groups
             prevent_default_groups
+            extend_platform_groups
           }
           organizations_mapping {
             default_organizations
@@ -126,6 +128,7 @@ interface CertStrategyFormValues {
     groups_mapping: MappingEntry[];
     auto_create_groups: boolean;
     prevent_default_groups: boolean;
+    extend_platform_groups: boolean;
   };
   organizations_mapping: {
     default_organizations: string[];
@@ -185,6 +188,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
       groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
       auto_create_groups: gm?.auto_create_groups ?? false,
       prevent_default_groups: gm?.prevent_default_groups ?? false,
+      extend_platform_groups: gm?.extend_platform_groups ?? false,
     },
     organizations_mapping: {
       default_organizations: [...(om?.default_organizations ?? [])],
@@ -222,6 +226,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               .map((m) => ({ provider: m.provider, platform: m.platform })),
             auto_create_groups: values.groups_mapping.auto_create_groups,
             prevent_default_groups: values.groups_mapping.prevent_default_groups,
+            extend_platform_groups: values.groups_mapping.extend_platform_groups,
           },
           organizations_mapping: {
             default_organizations: values.organizations_mapping.default_organizations.filter((s) => s.trim() !== ''),

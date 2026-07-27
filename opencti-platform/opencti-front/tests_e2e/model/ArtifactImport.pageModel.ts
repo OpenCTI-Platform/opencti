@@ -12,6 +12,6 @@ export default class ArtifactImportPage {
   }
 
   getErrorMessage() {
-    return this.page.getByText('This field is required');
+    return this.page.getByText('A file or a URL must be provided');
   }
 }

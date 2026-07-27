@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { OrderingMode, StixCoreObjectsOrdering, StixCoreObjectsTimelineQuery } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -7,12 +7,11 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import { resolveLink } from '../../../../utils/Entity';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -149,7 +148,7 @@ const StixCoreObjectsTimeline = ({
   refreshRate = null,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -158,22 +157,6 @@ const StixCoreObjectsTimeline = ({
     config,
     buildQueryVariables,
   });
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsTimelineComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -183,7 +166,17 @@ const StixCoreObjectsTimeline = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsTimelineComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -6,13 +6,13 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsMultiLineChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiLineChartTimeSeriesQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiLineChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiLineChartTimeSeriesQuery(
@@ -88,6 +88,7 @@ const StixRelationshipsMultiLineChartComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixRelationshipsMultiLineChartTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
@@ -113,7 +114,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -141,36 +142,16 @@ const StixRelationshipsMultiLineChart = ({
 }: StixRelationshipsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
     refreshRate,
     query: stixRelationshipsMultiLineChartTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsMultiLineChartComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-          onMounted={(c) => setChart(c as ApexCharts)}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -182,7 +163,19 @@ const StixRelationshipsMultiLineChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsMultiLineChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          onMounted={(c) => setChart(c as ApexCharts)}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

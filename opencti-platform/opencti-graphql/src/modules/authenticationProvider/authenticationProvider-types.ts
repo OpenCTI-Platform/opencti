@@ -28,6 +28,7 @@ export interface GroupsMapping {
   groups_mapping: { provider: string; platform: string }[];
   auto_create_groups: boolean;
   prevent_default_groups: boolean;
+  extend_platform_groups: boolean;
 }
 
 export interface OrganizationsMapping {

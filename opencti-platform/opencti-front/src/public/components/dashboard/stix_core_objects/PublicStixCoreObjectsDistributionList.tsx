@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { PublicStixCoreObjectsDistributionListQuery } from './__generated__/PublicStixCoreObjectsDistributionListQuery.graphql';
@@ -105,7 +105,7 @@ const PublicStixCoreObjectsDistributionList = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsDistributionListQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsDistributionListQuery>(
     publicStixCoreObjectsDistributionListQuery,
     {
       uriKey,

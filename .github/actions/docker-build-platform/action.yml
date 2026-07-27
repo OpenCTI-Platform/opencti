@@ -56,4 +56,4 @@ runs:
       with:
         name: docker-image-opencti-platform${{ inputs.docker_image_suffix }}
         path: /tmp/opencti-platform${{ inputs.docker_image_suffix }}.tar
-        retention-days: 7
+        retention-days: 1

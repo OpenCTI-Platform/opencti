@@ -250,17 +250,20 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
                 height="100%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.password_valid_until.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
-            </div>
+            {dataColumns.password_valid_until
+              && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.password_valid_until.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width={100}
+                    height="100%"
+                  />
+                </div>
+              )}
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}

@@ -1,20 +1,10 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
-let capturedVariables: Record<string, unknown> | null = null;
-
-vi.mock('../../../../relay/environment', () => ({
-  APP_BASE_PATH: '',
-  fileUri: (f: string) => f,
-  MESSAGING$: { messages$: { subscribe: () => ({}) } },
-  environment: {},
-  QueryRenderer: ({ render, variables }: { render: (args: { props: null }) => React.ReactNode; variables: Record<string, unknown> }) => {
-    capturedVariables = variables;
-    return render({ props: null });
-  },
-  fetchQuery: vi.fn(),
-}));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let lastBuildQueryVariables: ((...args: any[]) => any) | undefined;
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
@@ -28,29 +18,36 @@ vi.mock('../../../../components/dashboard/WidgetMultiAreas', () => ({
   default: () => <div data-testid="widget-multi-areas" />,
 }));
 
-vi.mock('../../../../components/Loader', () => ({
-  default: () => <div data-testid="loader" />,
-  LoaderVariant: { inElement: 'inElement' },
-}));
-
-vi.mock('../../../../components/dashboard/DashboardRefreshContext', () => ({
-  useDashboardRefreshToken: () => null,
-}));
-
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
-    resolvedDataSelection: dataSelection,
-    isMissingHostEntity: false,
-    isPreviewMode: false,
-  }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default: (opts: any) => {
+    lastBuildQueryVariables = opts.buildQueryVariables;
+    return {
+      resolvedDataSelection: [{
+        filters: emptyFilterGroup,
+        date_attribute: 'created_at',
+      }],
+      isMissingHostEntity: false,
+      isMissingSavedFilters: false,
+      isPreviewMode: false,
+      queryRef: null,
+    };
+  },
 }));
 
-vi.mock('../../../../components/dashboard/dashboard-viz-utils', () => ({
+vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef: unknown }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
+  ),
+}));
+
+vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
   computeStartEndDates: () => ({ startDate: null, endDate: null }),
 }));
 
-vi.mock('../../../../components/dashboard/WidgetNoHostEntity', () => ({
-  default: () => <div data-testid="widget-no-host" />,
+vi.mock('../../../../utils/hooks/useGranted', () => ({
+  default: () => true,
+  SETTINGS_SETACCESSES: 'SETTINGS_SETACCESSES',
 }));
 
 import DraftsMultiAreaChart from './DraftsMultiAreaChart';
@@ -59,26 +56,37 @@ describe('DraftsMultiAreaChart', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
     dataSelection: [{
-      filters: { mode: 'and' as const, filters: [], filterGroups: [] },
+      filters: emptyFilterGroup,
       date_attribute: 'created_at',
     }],
     parameters: {},
   };
+
+  beforeEach(() => {
+    lastBuildQueryVariables = undefined;
+  });
 
   it('renders without crashing', () => {
     const { container } = testRender(<DraftsMultiAreaChart {...minimalProps} />);
     expect(container).toBeTruthy();
   });
 
-  it('shows loader while data is loading', () => {
+  it('shows loader when queryRef is null', () => {
     const { getByTestId } = testRender(<DraftsMultiAreaChart {...minimalProps} />);
     expect(getByTestId('loader')).toBeTruthy();
   });
 
   it('falls back to monthsAgo(12) and now() when computeStartEndDates returns null', () => {
     testRender(<DraftsMultiAreaChart {...minimalProps} />);
-    expect(capturedVariables).toBeDefined();
-    expect(capturedVariables?.startDate).toBeTruthy();
-    expect(capturedVariables?.endDate).toBeTruthy();
+    expect(lastBuildQueryVariables).toBeDefined();
+    const variables = lastBuildQueryVariables!(
+      [{ filters: emptyFilterGroup, date_attribute: 'created_at' }],
+      { relativeDate: null, startDate: null, endDate: null },
+      {},
+    );
+    expect(variables.startDate).toBeTruthy();
+    expect(variables.endDate).toBeTruthy();
+    expect(typeof variables.startDate).toBe('string');
+    expect(typeof variables.endDate).toBe('string');
   });
 });

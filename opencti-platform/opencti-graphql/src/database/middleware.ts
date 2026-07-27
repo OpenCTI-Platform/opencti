@@ -764,15 +764,21 @@ const convertAggregateDistributions = async (
   limit: number,
   orderingFunction: any,
   distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
-  // filter out unresolved data (like the SYSTEM user for instance)
-  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
+  // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
+  const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds: string[] = [];
   for (let i = 0; i < filteredData.length; i += 1) {
+    // The 'unknown' bucket has no real entity — skip resolution and access check
+    if (filteredData[i].label === 'unknown') {
+      grantedIds.push('unknown');
+      // eslint-disable-next-line no-continue
+      continue;
+    }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
@@ -781,6 +787,10 @@ const convertAggregateDistributions = async (
   }
   return filteredData
     .map((n) => {
+      // The 'unknown' bucket has no backing entity
+      if (n.label === 'unknown') {
+        return { ...n, entity: null };
+      }
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
         return {
@@ -842,11 +852,11 @@ export const distributionHistory = async (context: AuthContext, user: AuthUser, 
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name' || field === 'context_data.id') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -863,7 +873,7 @@ export const distributionEntities = async (
   user: AuthUser,
   types: string | string[] | undefined | null,
   args: EntityFilters<BasicStoreEntity> & { limit?: number | null; order?: string | null; field: string } & { onlyInferred?: boolean },
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
   const aggregationNotSupported = field.includes('.')
@@ -889,11 +899,11 @@ export const distributionEntities = async (
     return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
   }
   if (field === 'name') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));

@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -7,13 +7,12 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import type { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsDistributionListDistributionQuery } from './__generated__/StixCoreObjectsDistributionListDistributionQuery.graphql';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixCoreObjectsDistributionListDistributionQuery = graphql`
   query StixCoreObjectsDistributionListDistributionQuery(
@@ -180,7 +179,7 @@ const StixCoreObjectsDistributionList = ({
 }: StixCoreObjectsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -189,24 +188,6 @@ const StixCoreObjectsDistributionList = ({
     config,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsDistributionListComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          hasSetAccess={hasSetAccess}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -217,7 +198,18 @@ const StixCoreObjectsDistributionList = ({
       showPreviewTag={isPreviewMode}
     >
       <div style={{ height: '100%' }}>
-        {renderContent()}
+        <WidgetRenderContent
+          isMissingHostEntity={isMissingHostEntity}
+          isMissingSavedFilters={isMissingSavedFilters}
+          queryRef={queryRef}
+          host={host}
+        >
+          <StixCoreObjectsDistributionListComponent
+            queryRef={queryRef!}
+            dataSelection={resolvedDataSelection}
+            hasSetAccess={hasSetAccess}
+          />
+        </WidgetRenderContent>
       </div>
     </WidgetContainer>
   );

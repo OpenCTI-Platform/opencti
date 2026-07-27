@@ -27,7 +27,7 @@ import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import type { PlaybookBundleElementsToApply, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
 import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
 import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
@@ -43,21 +43,27 @@ import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldStrin
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
-import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
   = PlaybookUpdateActionsForm
     & {
-    // Common for every component
+    // Common for several components
       name: string;
       description?: string;
+      applyToElements?: PlaybookBundleElementsToApply;
+      filters?: string;
       // Component: CRON
       time?: string;
       period?: string;
       day?: string;
+      triggerTime?: string;
       // Component: Container wrapper
-      all?: boolean;
+      newContainer?: boolean;
+      // Component : create indicator and create observable
+      wrap_in_container?: boolean;
     };
 
 interface PlaybookFlowFormProps {
@@ -148,55 +154,7 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
-  // region initial values
-
-  const initialValues: PlaybookFlowFormData = {
-    name: '',
-    description: '',
-  };
-
-  if (!currentConfig) {
-    // Get default values from schema.
-    initialValues.name = selectedComponent?.name ?? '';
-    initialValues.description = '';
-    Object.entries(configurationSchema?.properties ?? {})
-      .forEach(([propName, property]) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-        initialValues[propName] = property.default;
-        if (propName === 'actions') initialValues.actionsFormValues = [];
-      });
-  } else {
-    // Get values from saved config.
-    initialValues.name = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.name ?? ''
-      : selectedComponent?.name ?? '';
-    initialValues.description = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.description ?? ''
-      : '';
-    const actionsFormValues: PlaybookUpdateAction['value'][] = [];
-    Object.entries(currentConfig)
-      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-      .forEach(([key, value]) => {
-        if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
-        else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-          initialValues[key] = value;
-        }
-        initialValues.actionsFormValues = actionsFormValues;
-      });
-    // Ensure applyToElements defaults to 'only-main' for existing configs missing it
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!initialValues.applyToElements && configurationSchema?.properties?.applyToElements) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      initialValues.applyToElements = 'only-main';
-    }
-  }
-
-  // endregion
+  const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
 
   return (
     <div style={{ padding: '0px 0px 20px 0px' }}>

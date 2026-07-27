@@ -15,8 +15,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
+
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
     settings {
@@ -90,8 +89,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { settings: appSettings } = useAuth();
-  const forcePasswordChangeEnabled = isFeatureEnable(appSettings, 'FORCE_PASSWORD_CHANGE');
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
   const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;
@@ -248,17 +245,15 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             label={t_i18n('Number of uppercase chars must be greater or equals to')}
             fullWidth
           />
-          {forcePasswordChangeEnabled && (
-            <Field
-              component={TextField}
-              type="number"
-              variant="standard"
-              style={{ marginTop: 20 }}
-              name="password_policy_validity_days"
-              label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
-              fullWidth
-            />
-          )}
+          <Field
+            component={TextField}
+            type="number"
+            variant="standard"
+            style={{ marginTop: 20 }}
+            name="password_policy_validity_days"
+            label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
+            fullWidth
+          />
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="secondary"

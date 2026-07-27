@@ -2,7 +2,6 @@
 @import '@filigran/rich-text-editor/styles.css';
 @import '@fontsource/geologica';
 @import '@fontsource/ibm-plex-sans';
-@import 'ckeditor5/ckeditor5.css';
 @import 'graphiql/style.css';
 @import 'react-grid-layout/css/styles.css';
 @import 'react-mde/lib/styles/css/react-mde-all.css';
@@ -11,8 +10,6 @@
 @import 'reactflow/dist/style.css';
 @import 'tippy.js/animations/scale.css';
 @import 'tippy.js/dist/tippy.css';
-@import './CKEditorDark.css';
-@import './CKEditorLight.css';
 @import './leaflet.css';
 @import './timerange.css';
 
@@ -142,10 +139,6 @@ div.markdown table {
 
 input[type="file"] {
   width: 100% !important;
-}
-
-.ck-powered-by {
-  display: none !important;
 }
 
 .marker-yellow {

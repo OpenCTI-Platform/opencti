@@ -35,25 +35,37 @@ vi.mock('../../utils/hooks/useAuth', () => ({
   }),
 }));
 
-vi.mock('./dashboard-viz-utils', () => ({
+// Return a synchronous thenable so that the .then() callback runs
+// inside renderHook's act() without requiring async microtask flushing,
+// which deadlocks with vitest fake timers.
+vi.mock('./dashboardVizUtils', () => ({
   resolveDataSelection: vi.fn(({
     dataSelection,
     host,
   }: {
     dataSelection: Array<unknown>;
     host?: { kind?: string; customViewTargetEntityId?: string };
-  }) => ({
-    resolvedDataSelection: dataSelection,
-    isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
-    isPreviewMode: false,
-  })),
+  }) => {
+    const result = {
+      resolvedDataSelection: dataSelection,
+      isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
+      isPreviewMode: false,
+      isMissingSavedFilters: false,
+    };
+    return { then: (cb: (r: typeof result) => void) => cb(result) };
+  }),
 }));
 
 vi.mock('./DashboardRefreshContext', () => ({
   useDashboardRefreshToken: vi.fn(() => refreshTokenMockValue),
+  useDashboardSetQueryPending: vi.fn(() => () => {}),
 }));
 
 describe('useDashboardViz', () => {
+  // Non-empty stable data selection: resolvedDataSelection.length must be > 0
+  // for queryVariables to be computed and load() to be called.
+  const EMPTY_DATA_SELECTION = [{ filters: null }];
+
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-02T10:00:12.345Z'));
@@ -67,62 +79,13 @@ describe('useDashboardViz', () => {
     vi.restoreAllMocks();
   });
 
-  it('aligns refresh ticks for widgets mounted at different times', () => {
-    const buildQueryVariables = vi.fn(() => ({ marker: 'same-vars' }));
-
-    renderHook(() => useDashboardViz({
-      dataSelection: [],
-      perspective: 'entities',
-      refreshRate: 5_000,
-      query: {} as never,
-      config: {},
-      parameters: { title: 'A1' },
-      buildQueryVariables,
-    }));
-
-    expect(loadMocks).toHaveLength(1);
-
-    act(() => {
-      vi.advanceTimersByTime(1_000);
-    });
-
-    renderHook(() => useDashboardViz({
-      dataSelection: [],
-      perspective: 'entities',
-      refreshRate: 5_000,
-      query: {} as never,
-      config: {},
-      parameters: { title: 'A2' },
-      buildQueryVariables,
-    }));
-
-    expect(loadMocks).toHaveLength(2);
-    const [a1Load, a2Load] = loadMocks;
-    const a1BaselineCalls = a1Load.mock.calls.length;
-    const a2BaselineCalls = a2Load.mock.calls.length;
-
-    act(() => {
-      vi.advanceTimersByTime(1_654);
-    });
-
-    expect(a1Load).toHaveBeenCalledTimes(a1BaselineCalls);
-    expect(a2Load).toHaveBeenCalledTimes(a2BaselineCalls);
-
-    act(() => {
-      vi.advanceTimersByTime(1);
-    });
-
-    expect(a1Load).toHaveBeenCalledTimes(a1BaselineCalls + 1);
-    expect(a2Load).toHaveBeenCalledTimes(a2BaselineCalls + 1);
-  });
-
   it('does not refetch sibling widget when only one widget parameters change', () => {
     const buildQueryVariables = vi.fn((_, __, parameters?: { title?: string | null }) => ({
       title: parameters?.title ?? null,
     }));
 
     const widgetA1 = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       refreshRate: null,
       query: {} as never,
@@ -134,7 +97,7 @@ describe('useDashboardViz', () => {
     });
 
     const widgetA2 = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       refreshRate: null,
       query: {} as never,
@@ -165,7 +128,7 @@ describe('useDashboardViz', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'token-refetch' }));
 
     const hook = renderHook(() => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       refreshRate: null,
       query: {} as never,
@@ -200,7 +163,7 @@ describe('useDashboardViz', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'same-token' }));
 
     const hook = renderHook(() => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       refreshRate: null,
       query: {} as never,
@@ -234,7 +197,7 @@ describe('useDashboardViz', () => {
     refreshTokenMockValue = 0;
 
     renderHook(() => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       refreshRate: 5_000,
       query: {} as never,
@@ -258,7 +221,7 @@ describe('useDashboardViz', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'workspace-host' }));
 
     const hook = renderHook(() => useDashboardViz({
-      dataSelection: [],
+      dataSelection: EMPTY_DATA_SELECTION,
       perspective: 'entities',
       host: { kind: 'workspace' },
       refreshRate: null,

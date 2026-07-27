@@ -1,6 +1,6 @@
 // Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.13.0
 // jshint ignore: start
-import antlr4 from './STIXAntlr';
+import antlr4 from 'antlr4';
 
 // This class defines a complete listener for a parse tree produced by STIXPatternParser.
 export default class STIXPatternListener extends antlr4.tree.ParseTreeListener {

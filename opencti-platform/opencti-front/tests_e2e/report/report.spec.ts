@@ -1,5 +1,4 @@
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
@@ -13,7 +12,8 @@ import ExternalReferenceFormPageModel from '../model/form/externalReferenceForm.
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 
-const baseDir = path.dirname(fileURLToPath(import.meta.url));
+const TEST_MD_PATH = fileURLToPath(new URL('assets/report.test.md', import.meta.url));
+const TEST_PDF_PATH = fileURLToPath(new URL('assets/report.test.pdf', import.meta.url));
 
 /**
  * Content of the test
@@ -29,7 +29,7 @@ const baseDir = path.dirname(fileURLToPath(import.meta.url));
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
@@ -118,7 +118,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   await reportForm.markingsAutocomplete.selectOption('TLP:GREEN');
   await expect(reportForm.markingsAutocomplete.getOption('TLP:GREEN')).toBeVisible();
 
-  await reportForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.md'));
+  await reportForm.associatedFileField.uploadContentFile(TEST_MD_PATH);
   await expect(reportForm.associatedFileField.getByText('report.test.md')).toBeVisible();
 
   await reportForm.getCreateButton().click();
@@ -306,7 +306,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   // const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);
@@ -361,7 +361,7 @@ test('Report live entities creation and relationships', { tag: ['@report', '@kno
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/opencti');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(baseDir, 'assets/report.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('report.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
   await expect(reportForm.externalReferencesAutocomplete.getOption('external ref')).toBeVisible();

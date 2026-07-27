@@ -3,6 +3,7 @@ import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
   securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
@@ -46,11 +47,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
     count: 25,
     orderBy: 'created_at',
     orderMode: 'asc',
-    filters: {
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    },
+    filters: emptyFilterGroup,
   };
 
   return (
