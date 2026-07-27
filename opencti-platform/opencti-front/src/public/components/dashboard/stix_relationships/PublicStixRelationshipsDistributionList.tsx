@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsDistributionListQuery } from './__generated__/PublicStixRelationshipsDistributionListQuery.graphql';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -96,7 +96,7 @@ const PublicStixRelationshipsDistributionList = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsDistributionListQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsDistributionListQuery>(
     publicStixRelationshipsDistributionListQuery,
     {
       uriKey,

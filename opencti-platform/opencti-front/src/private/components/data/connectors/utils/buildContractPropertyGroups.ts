@@ -1,6 +1,6 @@
 import { JsonSchema } from '@jsonforms/core';
-import { IngestionTypedProperty } from '@components/data/IngestionCatalog';
-import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from '@components/data/IngestionCatalog/utils/deprecatedFields';
+import { IngestionTypedProperty } from '@components/integrations/catalog/types';
+import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from '@components/integrations/catalog/utils/deprecatedFields';
 import { ManagerContractProperty } from './reconcileManagedConnectorContractDataWithSchema';
 
 export interface ContractPropertyGroups {

@@ -8,7 +8,7 @@ import cacheManager from '../src/manager/cacheManager';
 import { initExclusionListCache } from '../src/database/exclusionListCache';
 
 const ADMIN_USER = { id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' };
-const API_URI = `http://localhost:${conf.get('app:port')}`;
+const API_URI = `http://localhost:${conf.get('app:port')}${conf.get('app:base_path') ?? ''}`;
 const API_TOKEN = conf.get('app:admin:token');
 const PYTHON_PATH = './src/python/testing';
 
@@ -18,7 +18,7 @@ const PYTHON_PATH = './src/python/testing';
 // Where a,b,c are the names of the files to import (without file extension).
 const DEFAULT_DATASETS = ['DATA-TEST-STIX2_v2', 'poisonivy'];
 const datasetsArg = process.argv.find((arg) => arg.startsWith('--datasets='));
-const datasetsStr = datasetsArg?.split('=')[1] || null; // "|| null" to avoid empty string.
+const datasetsStr = datasetsArg?.split('=')[1] || undefined; // avoid empty string.
 const datasets = datasetsStr?.split(',').filter((d) => d.length > 0) ?? DEFAULT_DATASETS;
 const samples = datasets.map((dataset) => [API_URI, API_TOKEN, `./tests/data/${dataset}.json`]);
 
@@ -43,14 +43,14 @@ const scriptInsertDataset = async () => {
   }
 };
 
-const getStartingHandler = () => {
+const getStartingHandler = async () => {
   const manualStartHandler = {
-    start: () => {
+    start: async () => {
       logApp.info('[OPENCTI] The httpServer is already launched');
     },
-    shutdown: () => {
+    shutdown: async () => {
       process.exit();
-    }
+    },
   };
   const autoStartHandler = {
     start: async () => {
@@ -63,10 +63,14 @@ const getStartingHandler = () => {
       await cacheManager.shutdown();
       await httpServer.shutdown();
       process.exit();
-    }
+    },
   };
-  return fetch(`${API_URI}/health`, {}).then(() => manualStartHandler).catch(() => autoStartHandler);
+  try {
+    await fetch(`${API_URI}/health`);
+    return manualStartHandler;
+  } catch {
+    return autoStartHandler;
+  }
 };
 
-// noinspection JSIgnoredPromiseFromCall
-scriptInsertDataset();
+await scriptInsertDataset();

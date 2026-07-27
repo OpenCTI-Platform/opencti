@@ -58,6 +58,7 @@ WORKDIR /opt/opencti/opencti-front
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-front/package.json opencti-front/yarn.lock ./
 COPY opencti-front/packages/ ./packages/
+COPY opencti-front/patch/ ./patch/
 
 RUN yarn install --immutable
 
@@ -116,4 +117,4 @@ EOT
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/back.js"]
+CMD ["node", "build/back.mjs"]

@@ -18,8 +18,6 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../../utils/platformModulesHelper';
 
 export const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
@@ -113,8 +111,6 @@ interface MembersListContainerProps {
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
   const { t_i18n, fd } = useFormatter();
-  const { settings } = useAuth();
-  const forcePasswordChangeEnabled = isFeatureEnable(settings, 'FORCE_PASSWORD_CHANGE');
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -176,30 +172,28 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: forcePasswordChangeEnabled ? 20 : 22,
+      percentWidth: 20,
     },
     user_email: {
-      percentWidth: forcePasswordChangeEnabled ? 25 : 28,
+      percentWidth: 25,
     },
     firstname: {
-      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
+      percentWidth: 10,
     },
     lastname: {
-      percentWidth: forcePasswordChangeEnabled ? 10 : 12,
+      percentWidth: 10,
     },
     effective_confidence_level: {
       percentWidth: 10,
     },
     otp: {
-      percentWidth: forcePasswordChangeEnabled ? 5 : 6,
+      percentWidth: 5,
     },
-    ...(forcePasswordChangeEnabled ? {
-      password_valid_until: {
-        label: 'Password valid until',
-        percentWidth: 10,
-        render: (date) => (date ? fd(date) : '-'),
-      },
-    } : {}),
+    password_valid_until: {
+      label: 'Password valid until',
+      percentWidth: 10,
+      render: (date) => (date ? fd(date) : '-'),
+    },
     created_at: {
       percentWidth: 10,
     },

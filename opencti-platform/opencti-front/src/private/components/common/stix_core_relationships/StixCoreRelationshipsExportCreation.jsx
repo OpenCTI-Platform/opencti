@@ -92,6 +92,15 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
     const finalFilters = filters ?? emptyFilterGroup;
 
+    const updatedExportContext = { ...exportContext };
+    // Only forward visible_columns for a "Current view" CSV export. The column
+    // selector is hidden for other formats, so clear it otherwise (including
+    // after the format is switched away from CSV) to avoid sending a stale
+    // hidden-field value to the export connector.
+    if (values.columns !== 'view' || values.format !== 'text/csv') {
+      updatedExportContext.visible_columns = undefined;
+    }
+
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
@@ -100,7 +109,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
           exportType: 'full',
           contentMaxMarkings,
           fileMarkings,
-          exportContext,
+          exportContext: updatedExportContext,
           orderMode,
           orderBy,
           filters: removeIdAndIncorrectKeysFromFilterGroupObject(finalFilters, availableFilterKeys),
@@ -127,6 +136,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
 
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const visibleColumnExportEnabledFormats = ['text/csv'];
 
     return (
       <UserContext.Consumer>
@@ -143,12 +153,13 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                         format: '',
                         contentMaxMarkings: [],
                         fileMarkings: [],
+                        columns: 'all',
                       }}
                       validationSchema={exportValidation(t)}
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
                       onReset={onClose}
                     >
-                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
@@ -207,6 +218,25 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         style={fieldSpacingContainerStyle}
                                         setFieldValue={setFieldValue}
                                       />
+                                      {visibleColumnExportEnabledFormats.includes(values.format)
+                                        ? (
+                                            <Field
+                                              component={SelectField}
+                                              variant="standard"
+                                              name="columns"
+                                              label={t('Choose column to export')}
+                                              fullWidth={true}
+                                              containerstyle={fieldSpacingContainerStyle}
+                                            >
+                                              <MenuItem value="all">
+                                                {t('All attributes')}
+                                              </MenuItem>
+                                              <MenuItem value="view">
+                                                {t('Current view')}
+                                              </MenuItem>
+                                            </Field>
+                                          )
+                                        : undefined}
                                     </>
                                   );
                                 }

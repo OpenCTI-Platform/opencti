@@ -182,6 +182,11 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = fromB64(dashboard.manifest ?? '{}');
+  const dashboardRefreshInterval = dashboard.refresh_interval ?? 0;
+  parsedManifest.config = {
+    ...(parsedManifest.config ?? {}),
+    refresh_interval: dashboardRefreshInterval,
+  };
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
       parsedManifest.widgets[widgetId].dataSelection = parsedManifest
@@ -427,7 +432,7 @@ export const publicStixCoreObjectsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
@@ -498,7 +503,7 @@ export const publicStixRelationshipsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 

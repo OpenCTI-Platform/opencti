@@ -1,20 +1,18 @@
-import { useState, useEffect, useRef, CSSProperties, ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import ApexCharts from 'apexcharts';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
-import { useDashboardRefreshToken } from '../../../../components/dashboard/DashboardRefreshContext';
+import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
-import { DraftsHorizontalBarsDistributionQuery$data } from './__generated__/DraftsHorizontalBarsDistributionQuery.graphql';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import { DraftsHorizontalBarsDistributionQuery } from './__generated__/DraftsHorizontalBarsDistributionQuery.graphql';
 
 const draftsHorizontalBarsDistributionQuery = graphql`
   query DraftsHorizontalBarsDistributionQuery(
@@ -64,90 +62,105 @@ const draftsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
+interface DraftsHorizontalBarsComponentProps {
+  queryRef: PreloadedQuery<DraftsHorizontalBarsDistributionQuery>;
+  dataSelection: Widget['dataSelection'];
+  parameters: {
+    distributed?: boolean | null;
+  };
+  setChart: (chart: ApexCharts) => void;
+}
+
+const DraftsHorizontalBarsComponent = ({
+  queryRef,
+  dataSelection,
+  parameters,
+  setChart,
+}: DraftsHorizontalBarsComponentProps) => {
+  const { t_i18n } = useFormatter();
+  const { buildWidgetProps } = useDistributionGraphData();
+  const data = usePreloadedQuery(
+    draftsHorizontalBarsDistributionQuery,
+    queryRef,
+  );
+  const selection = dataSelection[0];
+  const distribution = data?.draftWorkspacesDistribution ?? [];
+
+  if (distribution.length === 0) {
+    return <WidgetNoData />;
+  }
+  const { series, redirectionUtils } = buildWidgetProps(
+    distribution,
+    selection,
+    t_i18n('Number of draft workspaces'),
+  );
+
+  return (
+    <WidgetHorizontalBars
+      series={series}
+      distributed={parameters.distributed ?? undefined}
+      redirectionUtils={redirectionUtils}
+      onMounted={setChart}
+    />
+  );
+};
+
+interface DraftsHorizontalBarsProps {
+  dataSelection: Widget['dataSelection'];
+  parameters?: WidgetParameters;
+  popover?: ReactNode;
+  variant?: string;
+  height?: number;
+  host?: WidgetHost;
+  config: DashboardConfig;
+  refreshRate?: number | null;
+}
+
+const buildQueryVariables = (
+  resolvedDataSelection: WidgetDataSelection[],
+  config: DashboardConfig,
+): DraftsHorizontalBarsDistributionQuery['variables'] => {
+  const selection = resolvedDataSelection[0];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
+  const { startDate, endDate } = computeStartEndDates(config);
+  const { filters } = buildFiltersAndOptionsForWidgets(
+    selection.filters,
+    { startDate, endDate, dateAttribute },
+  );
+  return {
+    field: selection.attribute ?? 'entity_type',
+    operation: 'count',
+    startDate,
+    endDate,
+    dateAttribute,
+    filters: normalizeFilterGroupForBackend(filters),
+    limit: selection.number ?? 10,
+  };
+};
+
 const DraftsHorizontalBars = ({
   variant,
   height,
-  config,
-  refreshRate = null,
   dataSelection,
   parameters = {},
   popover,
+  config,
+  refreshRate = null,
   host,
-}: {
-  variant?: string;
-  height?: CSSProperties['height'];
-  config: DashboardConfig;
-  refreshRate?: number | null;
-  dataSelection: WidgetDataSelection[];
-  parameters?: WidgetParameters;
-  popover?: ReactNode;
-  host?: WidgetHost;
-}) => {
+}: DraftsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { buildWidgetProps } = useDistributionGraphData();
-  const { startDate, endDate } = computeStartEndDates(config);
-
-  const refreshToken = useDashboardRefreshToken();
-  const [localRefreshKey, setLocalRefreshKey] = useState(0);
-  const prevRefreshTokenRef = useRef(refreshToken);
-  useEffect(() => {
-    if (prevRefreshTokenRef.current === refreshToken) return;
-    prevRefreshTokenRef.current = refreshToken;
-    setLocalRefreshKey((k) => k + 1);
-  }, [refreshToken]);
-  useEffect(() => {
-    if (!refreshRate || refreshToken !== null) return () => {};
-    const interval = setInterval(() => setLocalRefreshKey((k) => k + 1), refreshRate);
-    return () => clearInterval(interval);
-  }, [refreshRate, refreshToken]);
-
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useDashboardViz({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
+    refreshRate,
+    query: draftsHorizontalBarsDistributionQuery,
+    config,
+    buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-    const selection = resolvedDataSelection[0];
-    return (
-      <QueryRenderer
-        key={localRefreshKey}
-        query={draftsHorizontalBarsDistributionQuery}
-        variables={{
-          field: selection.attribute,
-          operation: 'count',
-          startDate,
-          endDate,
-          dateAttribute: selection.date_attribute && selection.date_attribute.length > 0
-            ? selection.date_attribute
-            : 'created_at',
-          filters: selection.filters,
-          limit: selection.number ?? 10,
-        }}
-        render={({ props }: { props: DraftsHorizontalBarsDistributionQuery$data }) => {
-          if (props && props.draftWorkspacesDistribution && props.draftWorkspacesDistribution.length > 0) {
-            const { series, redirectionUtils } = buildWidgetProps(props.draftWorkspacesDistribution, selection, 'Number of draft workspaces');
-            return (
-              <WidgetHorizontalBars
-                series={series}
-                distributed={parameters.distributed ?? undefined}
-                redirectionUtils={redirectionUtils}
-                onMounted={setChart}
-              />
-            );
-          }
-          if (props) {
-            return <WidgetNoData />;
-          }
-          return <Loader variant={LoaderVariant.inElement} />;
-        }}
-      />
-    );
-  };
 
   return (
     <WidgetContainer
@@ -159,7 +172,19 @@ const DraftsHorizontalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <DraftsHorizontalBarsComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          setChart={setChart}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

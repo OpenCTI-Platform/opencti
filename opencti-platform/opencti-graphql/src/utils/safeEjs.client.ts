@@ -1,5 +1,4 @@
 import { Worker } from 'worker_threads';
-import * as path from 'path';
 import type { Data } from 'ejs';
 import type { SafeRenderOptions } from './safeEjs';
 import type { WorkerReply } from './safeEjs.worker';
@@ -24,18 +23,8 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   const timeout = options?.timeout ?? 5000; // Default 5 seconds
 
   // Determine the correct worker path based on the environment
-  let workerPath: string;
-
-  if (__filename.endsWith('.js')) {
-    // Production: running from build directory
-    // The worker is built to build/safeEjs.worker.js (at the root of build)
-    workerPath = path.join(__dirname, 'safeEjs.worker.js');
-  } else {
-    // Development/Test: running from source directory (src/utils/)
-    // The worker is built to opencti-graphql/build/safeEjs.worker.js
-    // From src/utils, go up to opencti-graphql root, then into build
-    workerPath = path.join(__dirname, '..', '..', 'build', 'safeEjs.worker.js');
-  }
+  const isProduction = import.meta.url.endsWith('.mjs');
+  const workerUrl = new URL(isProduction ? 'safeEjs.worker.mjs' : '../../build/safeEjs.worker.mjs', import.meta.url);
 
   // Handle escape function - remove it from options if it exists (can't be serialized)
   const workerOptions = { ...options };
@@ -43,7 +32,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     delete workerOptions.escape;
   }
 
-  const worker = new Worker(workerPath, {
+  const worker = new Worker(workerUrl, {
     workerData: { template, data, options: workerOptions, useJsonEscape: options?.useJsonEscape },
     resourceLimits: {
       maxOldGenerationSizeMb: options?.resourceLimits?.maxOldGenerationSizeMb ?? 50, // 50 MB heap

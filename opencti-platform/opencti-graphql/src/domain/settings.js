@@ -184,6 +184,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_lowercase',
   'password_policy_min_uppercase',
   'password_policy_validity_days',
+  'smtp_configuration',
 ];
 
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [

@@ -174,7 +174,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
 
           {columns
-            .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
+            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
             .map((column) => (
               <DataTableHeader
                 key={column.id}

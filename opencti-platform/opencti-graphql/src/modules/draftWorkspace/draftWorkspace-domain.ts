@@ -627,6 +627,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   user: AuthUser,
   workspaceId: string,
   input: MemberAccessInput[] | undefined | null,
+  options?: { skipAdminValidation?: boolean },
 ) => {
   const args = {
     entityId: workspaceId,
@@ -634,6 +635,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
     requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS],
     entityType: ENTITY_TYPE_DRAFT_WORKSPACE,
     busTopicKey: ENTITY_TYPE_DRAFT_WORKSPACE,
+    skipAdminValidation: options?.skipAdminValidation,
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);

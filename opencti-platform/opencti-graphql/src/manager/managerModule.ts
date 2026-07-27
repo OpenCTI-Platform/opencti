@@ -9,7 +9,8 @@ import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import type { DataEvent, SseEvent } from '../types/event';
-import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { executionContext } from '../utils/access';
 import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
@@ -48,6 +49,13 @@ export interface ManagerDefinition {
   warning?: () => boolean; // condition to display a warning on manager module (ex: missing configuration, manager can't start)
 }
 
+const isEnterpriseEditionAuthorized = async (manager: ManagerDefinition): Promise<boolean> => {
+  if (!manager.enterpriseEditionOnly) {
+    return true;
+  }
+  return isEnterpriseEdition(executionContext(manager.executionContext));
+};
+
 const initManager = (manager: ManagerDefinition) => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer<[]>;
@@ -61,6 +69,9 @@ const initManager = (manager: ManagerDefinition) => {
 
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
+      if (!(await isEnterpriseEditionAuthorized(manager))) {
+        return;
+      }
       let lock;
       let cronInput;
       const startDate = utcDate();
@@ -101,6 +112,9 @@ const initManager = (manager: ManagerDefinition) => {
 
   const streamHandler = async () => {
     if (manager.streamSchedulerHandler) {
+      if (!(await isEnterpriseEditionAuthorized(manager))) {
+        return;
+      }
       let lock;
       try {
       // Lock the manager

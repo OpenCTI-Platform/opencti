@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
@@ -6,17 +6,16 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import {
   OrderingMode,
   StixRelationshipsOrdering,
   StixRelationshipsTimelineStixRelationshipQuery,
 } from '@components/common/stix_relationships/__generated__/StixRelationshipsTimelineStixRelationshipQuery.graphql';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   query StixRelationshipsTimelineStixRelationshipQuery(
@@ -982,6 +981,47 @@ interface StixRelationshipsTimelineComponentProps {
   dataSelection: WidgetDataSelection[];
 }
 
+export const RELATIONSHIP_TIMELINE_DATE_KEY = 'relTimelineDate';
+
+type TimelineEdges = NonNullable<
+  NonNullable<StixRelationshipsTimelineStixRelationshipQuery['response']['stixRelationships']>['edges']
+>;
+
+type TimelineRelationshipNode = TimelineEdges[number]['node'];
+type TimelineRemoteNode = NonNullable<TimelineRelationshipNode['from']> | NonNullable<TimelineRelationshipNode['to']>;
+
+export const buildStixRelationshipsTimelineData = (
+  edges: TimelineEdges,
+  selection: WidgetDataSelection,
+  dateAttribute: string,
+  dateKey: string = RELATIONSHIP_TIMELINE_DATE_KEY,
+) => {
+  const fromId
+    = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
+  return edges.flatMap((edge) => {
+    const rel = edge.node;
+    const remoteNode: TimelineRemoteNode | null | undefined
+      = rel.from
+        && fromId
+        && fromId.includes(rel.from.id)
+        && selection.isTo !== false
+        ? rel.to
+        : rel.from;
+    if (!remoteNode) return [];
+    const restricted = rel.from === null || rel.to === null;
+    const link = restricted
+      ? undefined
+      : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}/knowledge/relations/${rel.id}`;
+    return [{
+      value: {
+        ...remoteNode,
+        [dateKey]: rel[dateAttribute as keyof TimelineRelationshipNode],
+      },
+      link,
+    }];
+  });
+};
+
 const StixRelationshipsTimelineComponent = ({
   queryRef,
   dataSelection,
@@ -998,37 +1038,16 @@ const StixRelationshipsTimelineComponent = ({
   const selection = dataSelection[0];
   const dateAttribute
     = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-  const fromId
-    = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
-  const edges = data.stixRelationships.edges;
-  const timelineData = edges.flatMap((edge) => {
-    const rel = edge.node;
-    const remoteNode
-      = rel.from
-        && fromId
-        && fromId.includes(rel.from.id)
-        && selection.isTo !== false
-        ? rel.to
-        : rel.from;
-    if (!remoteNode) return [];
-    const restricted = rel.from === null || rel.to === null;
-    const link = restricted
-      ? undefined
-      : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}/knowledge/relations/${rel.id}`;
-    return {
-      value: {
-        ...remoteNode,
-        created:
-            rel[dateAttribute as keyof typeof rel] ?? rel.created,
-      },
-      link,
-    };
-  });
+  const timelineData = buildStixRelationshipsTimelineData(
+    data.stixRelationships.edges,
+    selection,
+    dateAttribute,
+  );
 
   return (
     <WidgetTimeline
       data={timelineData}
-      dateAttribute={dateAttribute}
+      dateAttribute={RELATIONSHIP_TIMELINE_DATE_KEY}
     />
   );
 };
@@ -1083,7 +1102,7 @@ const StixRelationshipsTimeline = ({
   refreshRate = null,
 }: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -1093,25 +1112,6 @@ const StixRelationshipsTimeline = ({
     buildQueryVariables,
   });
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsTimelineComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       height={height}
@@ -1120,7 +1120,17 @@ const StixRelationshipsTimeline = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsTimelineComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

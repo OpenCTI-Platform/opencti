@@ -69,7 +69,7 @@ const setPasswordValidUntil = async (request: any, userId: string, value: string
   `);
 };
 
-test.describe('Force password change - navigation blocking', { tag: ['@ce'] }, () => {
+test.describe('Force password change - navigation blocking', { tag: ['@ce', '@groupff'] }, () => {
   let testUserId: string;
 
   test.beforeEach(async ({ request }) => {

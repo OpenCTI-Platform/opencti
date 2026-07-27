@@ -3,7 +3,8 @@ import {
   addSavedFilter,
   deleteSavedFilter,
   fieldPatchSavedFilter,
-  findSaveFilterPaginated,
+  findSavedFilter,
+  findSavedFilterPaginated,
   getCurrentUserAccessRight,
   savedFilterEditAuthorizedMembers,
 } from './savedFilter-domain';
@@ -11,7 +12,8 @@ import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const savedFilterResolver: Resolvers = {
   Query: {
-    savedFilters: (_, args, context) => findSaveFilterPaginated(context, context.user, args),
+    savedFilter: (_, { id }, context) => findSavedFilter(context, context.user, id),
+    savedFilters: (_, args, context) => findSavedFilterPaginated(context, context.user, args),
   },
   SavedFilter: {
     creator_id: (savedFilter) => {

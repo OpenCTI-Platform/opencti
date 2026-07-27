@@ -2,7 +2,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React from 'react';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsPolarAreaQuery } from './__generated__/PublicStixCoreObjectsPolarAreaQuery.graphql';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
@@ -107,7 +107,7 @@ const PublicStixCoreObjectsPolarArea = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsPolarAreaQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsPolarAreaQuery>(
     publicStixCoreObjectsPolarAreaQuery,
     {
       uriKey,

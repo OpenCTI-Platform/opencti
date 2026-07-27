@@ -69,7 +69,6 @@ import './theme/theme';
 import './deleteOperation/deleteOperation';
 import './support/support';
 import './exclusionList/exclusionList';
-import './smtpConfiguration/smtpConfiguration';
 import './draftWorkspace/draftWorkspace';
 import './fintelTemplate/fintelTemplate';
 import './disseminationList/disseminationList';

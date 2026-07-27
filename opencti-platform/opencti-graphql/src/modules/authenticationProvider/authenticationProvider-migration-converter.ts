@@ -460,9 +460,11 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // Groups mapping
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
+  const extendPlatformGroups = ext.get<boolean>('extend_platform_groups', false);
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
+    extend_platform_groups: extendPlatformGroups,
     default_groups: [],
     groups_expr: buildOidcGroupsExpr(gm),
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -564,6 +566,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // Falls back to roles_management if groups_management is absent (deprecated alias)
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
+  const extendPlatformGroups = ext.get<boolean>('extend_platform_groups', false);
   const gm = resolveGroupsManagement(ext, 'saml', warnings);
   const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
     ? (gm.group_attributes || ['groups']).map(quotePathSegment)
@@ -571,6 +574,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
+    extend_platform_groups: extendPlatformGroups,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -671,6 +675,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   // Falls back to roles_management if groups_management is absent (deprecated alias)
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
+  const extendPlatformGroups = ext.get<boolean>('extend_platform_groups', false);
   const gm = resolveGroupsManagement(ext, 'ldap', warnings);
   const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
     ? [quotePathSegment(gm.group_attribute ?? 'cn')]
@@ -678,6 +683,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
+    extend_platform_groups: extendPlatformGroups,
     default_groups: [],
     groups_expr: groupsExpr,
     groups_mapping: convertMappingEntries(gm?.groups_mapping),
@@ -829,7 +835,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, extend_platform_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
       organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
       extra_conf: collectExtraConf(ext, warnings),
     };
@@ -868,7 +874,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     },
-    groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+    groups_mapping: { auto_create_groups: false, prevent_default_groups: false, extend_platform_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
     organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
     extra_conf: extraConf,
   };

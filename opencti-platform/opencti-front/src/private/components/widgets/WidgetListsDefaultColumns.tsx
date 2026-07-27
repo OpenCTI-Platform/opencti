@@ -1,6 +1,5 @@
 import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [
@@ -475,10 +474,6 @@ export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] 
 
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[]): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
-  // TODO(DRAFT_WORKFLOW): remove useHelper and isDraftWorkflowEnabled when the DRAFT_WORKFLOW flag is removed.
-  // Also remove the corresponding vi.mock('useHelper') in WidgetListsDefaultColumns.test.ts.
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
 
   if (type === 'relationships') {
     return availableWidgetColumns.relationships;
@@ -486,8 +481,7 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
 
   if (type === 'entities') {
     if (entityType === 'DraftWorkspace') {
-      const draftColumns = availableWidgetColumns.DraftWorkspace;
-      return isDraftWorkflowEnabled ? draftColumns : draftColumns.filter((c) => c.attribute !== 'workflowInstance');
+      return availableWidgetColumns.DraftWorkspace;
     }
 
     if (entityType) {

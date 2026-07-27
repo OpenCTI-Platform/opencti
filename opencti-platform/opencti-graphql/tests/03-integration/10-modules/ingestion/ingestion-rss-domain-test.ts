@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { addIngestion, ingestionDelete, ingestionEditField } from '../../../../src/modules/ingestion/ingestion-rss-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, type IngestionRssAddInput } from '../../../../src/generated/graphql';
-import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
+import * as uriDenyListConfigMock from '../../../../src/config/uriDenyList';
 import type { BasicStoreEntityIngestionRss } from '../../../../src/modules/ingestion/ingestion-types';
 
 describe('Ingestion Rss domain - Deny list coverage', async () => {
@@ -15,7 +15,7 @@ describe('Ingestion Rss domain - Deny list coverage', async () => {
   });
 
   it('should be able to create a RSS feed with an allowed URI, and refused field patch of denied URL', async () => {
-    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.denied.com']);
 
     const creationInput: IngestionRssAddInput = {
       name: 'Test RSS feed deny list',

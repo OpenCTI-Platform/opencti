@@ -44,6 +44,29 @@ type IngestionJson implements InternalObject & BasicObject {
     last_execution_date: DateTime
     markings: [String!]
     ssl_verify: Boolean
+    toConfigurationExport: String!
+}
+
+type IngestionJsonMapperFromImport {
+    id: String!
+    name: String!
+}
+
+type IngestionJsonAddInputFromImport {
+    name: String!
+    description: String
+    scheduling_period: String
+    uri: String
+    verb: String
+    body: String
+    pagination_with_sub_page: Boolean
+    pagination_with_sub_page_attribute_path: String
+    pagination_with_sub_page_query_verb: String
+    headers: [IngestionHeader!]
+    query_attributes: [IngestionQueryAttribute!]
+    authentication_type: IngestionAuthType
+    ssl_verify: Boolean
+    jsonMapper: IngestionJsonMapperFromImport!
 }
 
 enum IngestionJsonOrdering {
@@ -118,6 +141,9 @@ input IngestionJsonAddInput {
 }
 
 type Mutation {
+    # Mutation (not a query) because the embedded JSON mapper is created when
+    # no existing mapper matches the imported one.
+    ingestionJsonAddInputFromImport(file: Upload!): IngestionJsonAddInputFromImport! @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     ingestionJsonResetState(id: ID!): IngestionJson @auth(for: [INGESTION_SETINGESTIONS])

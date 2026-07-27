@@ -11,11 +11,19 @@ import {
   getRedisVersion,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
+  CACHE_RESET_TOPIC,
+  publishCacheResetEvent,
+  pubSubSubscription,
+  redisAddIngestionHistory,
   redisClearTelemetry,
+  redisDeleteIngestionLogHistory,
   redisGetForgotPasswordOtp,
+  redisGetIngestionHistory,
+  redisGetIngestionLogHistory,
   redisGetTelemetry,
   redisGetXtmAgentResponse,
   redisInit,
+  redisPushIngestionLog,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
@@ -23,6 +31,8 @@ import {
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+
+const ingestionHistoryKey = (feedId) => `ingestion-${feedId}-history`;
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
@@ -233,6 +243,197 @@ describe('Redis XTM agent response cache', () => {
       await getClientBase().set(`xtm_agent_cache:${cacheKey}`, payload, 'EX', 60);
       const cached = await redisGetXtmAgentResponse(cacheKey);
       expect(cached, `payload ${payload} should be rejected`).toBeNull();
+    }
+  });
+});
+
+describe('Redis ingestion history', () => {
+  it('should add and read ingestion history', async () => {
+    const feedId = `feed-${uuid()}`;
+    const log = { timestamp: new Date().toISOString(), status: 'success', messages: ['first-log'] };
+
+    await getClientBase().del(ingestionHistoryKey(feedId));
+    await redisAddIngestionHistory(feedId, log);
+    const history = await redisGetIngestionHistory(feedId);
+
+    expect(history).toHaveLength(1);
+    expect(history[0].status).toBe('success');
+    expect(history[0].messages).toEqual(['first-log']);
+  });
+
+  it('should deduplicate consecutive identical logs and increment count', async () => {
+    const feedId = `feed-${uuid()}`;
+    const firstTimestamp = '2026-07-06T10:00:00.000Z';
+    const secondTimestamp = '2026-07-06T10:01:00.000Z';
+
+    await getClientBase().del(ingestionHistoryKey(feedId));
+    await redisAddIngestionHistory(feedId, {
+      timestamp: firstTimestamp,
+      status: 'error',
+      messages: ['same-error'],
+    });
+    await redisAddIngestionHistory(feedId, {
+      timestamp: secondTimestamp,
+      status: 'error',
+      messages: ['same-error'],
+    });
+
+    const history = await redisGetIngestionHistory(feedId);
+    expect(history).toHaveLength(1);
+    expect(history[0].count).toBe(2);
+    expect(history[0].timestamp).toBe(secondTimestamp);
+  });
+
+  it('should push a new entry when status or message changes', async () => {
+    const feedId = `feed-${uuid()}`;
+
+    await getClientBase().del(ingestionHistoryKey(feedId));
+    await redisAddIngestionHistory(feedId, {
+      timestamp: '2026-07-06T10:00:00.000Z',
+      status: 'success',
+      messages: ['ok'],
+    });
+    await redisAddIngestionHistory(feedId, {
+      timestamp: '2026-07-06T10:01:00.000Z',
+      status: 'error',
+      messages: ['ko'],
+    });
+
+    const history = await redisGetIngestionHistory(feedId);
+    expect(history).toHaveLength(2);
+    expect(history[0].status).toBe('error');
+    expect(history[1].status).toBe('success');
+  });
+
+  it('should keep only the latest 20 ingestion history entries', async () => {
+    const feedId = `feed-${uuid()}`;
+
+    await getClientBase().del(ingestionHistoryKey(feedId));
+    for (let i = 0; i < 25; i += 1) {
+      await redisAddIngestionHistory(feedId, {
+        timestamp: `2026-07-06T10:${String(i).padStart(2, '0')}:00.000Z`,
+        status: 'success',
+        messages: [`msg-${i}`],
+      });
+    }
+
+    const history = await redisGetIngestionHistory(feedId);
+    expect(history).toHaveLength(20);
+    expect(history[0].messages).toEqual(['msg-24']);
+    expect(history[19].messages).toEqual(['msg-5']);
+  });
+});
+
+describe('Redis ingestion logs', () => {
+  it('should add and read ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    await redisPushIngestionLog(feedId, {
+      level: 'error',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'an-error',
+      meta: { source: 'test' },
+    });
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(1);
+    expect(logs[0].level).toBe('error');
+    expect(logs[0].message).toBe('an-error');
+    expect(logs[0].meta).toEqual({ source: 'test' });
+  });
+
+  it('should keep only the latest 20 ingestion logs', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+
+    for (let i = 0; i < 25; i += 1) {
+      await redisPushIngestionLog(feedId, {
+        level: i % 2 === 0 ? 'info' : 'error',
+        type: 'taxii',
+        identifier: feedId,
+        message: `log-${i}`,
+        meta: { i },
+      });
+    }
+
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(20);
+    expect(logs[0].message).toBe('log-24');
+    expect(logs[19].message).toBe('log-5');
+  });
+
+  it('should delete ingestion logs history', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    await redisDeleteIngestionLogHistory(feedId);
+    await redisPushIngestionLog(feedId, {
+      level: 'warn',
+      type: 'taxii',
+      identifier: feedId,
+      message: 'to-delete',
+      meta: {},
+    });
+
+    await redisDeleteIngestionLogHistory(feedId);
+    const logs = await redisGetIngestionLogHistory(feedId);
+    expect(logs).toHaveLength(0);
+  });
+});
+
+describe('Redis publishCacheResetEvent', () => {
+  it('should publish a cache reset event that subscribers receive', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+
+      const timeout = 5000;
+      const start = Date.now();
+      while (!receivedEvents.some((e) => e.entityType === 'User') && Date.now() - start < timeout) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
+      }
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(1);
+      const userEvent = receivedEvents.find((e) => e.entityType === 'User');
+      expect(userEvent).toBeDefined();
+      expect(userEvent.entityType).toBe('User');
+    } finally {
+      subscription.unsubscribe();
+    }
+  });
+
+  it('should publish distinct events for different entity types', async () => {
+    const receivedEvents = [];
+    const subscription = await pubSubSubscription(CACHE_RESET_TOPIC, (event) => {
+      receivedEvents.push(event);
+    });
+
+    try {
+      await publishCacheResetEvent('User');
+      await publishCacheResetEvent('Settings');
+
+      const timeout = 5000;
+      const start = Date.now();
+      while (
+        (!receivedEvents.some((e) => e.entityType === 'User') || !receivedEvents.some((e) => e.entityType === 'Settings'))
+        && Date.now() - start < timeout
+      ) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
+      }
+
+      expect(receivedEvents.length).toBeGreaterThanOrEqual(2);
+      expect(receivedEvents.some((e) => e.entityType === 'User')).toBe(true);
+      expect(receivedEvents.some((e) => e.entityType === 'Settings')).toBe(true);
+    } finally {
+      subscription.unsubscribe();
     }
   });
 });
