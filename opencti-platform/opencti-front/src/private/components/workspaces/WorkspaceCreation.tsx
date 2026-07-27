@@ -26,6 +26,7 @@ import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreati
 import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
 import useDashboardImport from '../../../components/dashboard/import-export/useDashboardImport';
 import DashboardHiddenImportInput from '../../../components/dashboard/import-export/DashboardHiddenImportInput';
+import { Tooltip } from '@mui/material';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -126,16 +127,18 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const createDashboardButton = (props: { onOpen: () => void }) => (
     <Security needs={[EXPLORE_EXUPDATE]}>
       <>
-        <IconButton
-          value="import"
-          size="default"
-          variant="secondary"
-          onClick={importHelpers.handleImport}
-          data-testid="ImportDashboard"
-          title={t_i18n('Import dashboard')}
-        >
-          <FileUploadOutlined fontSize="small" color="primary" />
-        </IconButton>
+        <Tooltip title={t_i18n('Import dashboard')}>
+          <IconButton
+            value="import"
+            size="default"
+            variant="secondary"
+            onClick={importHelpers.handleImport}
+            data-testid="ImportDashboard"
+
+          >
+            <FileUploadOutlined fontSize="small" color="primary" />
+          </IconButton>
+        </Tooltip>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient

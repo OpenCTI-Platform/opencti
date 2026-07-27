@@ -33,6 +33,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -118,6 +119,7 @@ const UserFragment = graphql`
     account_lock_after_date
     language
     otp_activated
+    password_valid_until
     created_at
     creator {
       name
@@ -208,7 +210,7 @@ interface UserProps {
 }
 
 const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
-  const { t_i18n, nsdt, fsd, fldt } = useFormatter();
+  const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
   const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
@@ -301,6 +303,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
       (a: Session, b: Session) => (timestamp(a.created) ?? 0) - (timestamp(b.created) ?? 0),
     );
   const accountExpireDate = fldt(user.account_lock_after_date);
+  const passwordValidUntil = (user as { password_valid_until?: string | null }).password_valid_until;
+  const passwordValidUntilDate = passwordValidUntil ? fd(passwordValidUntil) : EMPTY_VALUE;
   const isServiceAccount = user.user_service_account;
   const creationDate = fldt(user.created_at);
   const creatorName = user.creator ? user.creator?.name : EMPTY_VALUE;
@@ -348,6 +352,12 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <pre style={{ margin: 0 }}>
                       {user.otp_activated ? t_i18n('Enabled') : t_i18n('Disabled')}
                     </pre>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Label>
+                      {t_i18n('Password valid until')}
+                    </Label>
+                    {passwordValidUntilDate}
                   </Grid>
                 </>
               )}

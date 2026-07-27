@@ -37,6 +37,13 @@ export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your
   ...data,
 });
 
+export const PASSWORD_CHANGE_REQUIRED = 'PASSWORD_CHANGE_REQUIRED';
+export const PasswordChangeRequired = (data) => error(PASSWORD_CHANGE_REQUIRED, 'You must change your password before continuing.', {
+  http_status: 403,
+  genre: CATEGORY_TECHNICAL,
+  ...data,
+});
+
 export const LTS_REQUIRED_ACTIVATION = 'LTS_REQUIRED_ACTIVATION';
 export const LtsRequiredActivation = (data) => error(LTS_REQUIRED_ACTIVATION, 'You must activate your LTS license.', {
   http_status: 401,
@@ -66,6 +73,7 @@ export const AUTH_ERRORS = [
   AUTH_FAILURE,
   AUTH_REQUIRED,
   OTP_REQUIRED,
+  PASSWORD_CHANGE_REQUIRED,
   OTP_REQUIRED_ACTIVATION,
   FORBIDDEN_ACCESS,
 ];

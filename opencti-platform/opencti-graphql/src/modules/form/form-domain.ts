@@ -4,12 +4,12 @@ import type { FileHandle } from 'fs/promises';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
-import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
+import { ENTITY_TYPE_FORM, FormFieldType, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
@@ -220,6 +220,31 @@ const normalizeOptionId = (option: unknown): string | undefined => {
     return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
   }
   return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
+export const resolveMainEntityAuthorFromValues = (
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
+): string | null => {
+  const createdByField = schema.fields.find((f) => f.type === FormFieldType.CreatedBy);
+  const createdByKeys = Array.from(new Set([
+    createdByField?.name,
+    createdByField?.attributeMapping?.attributeName,
+    'createdBy',
+  ].filter((k): k is string => typeof k === 'string' && k.length > 0)));
+  const resolveIn = (container: any): string | undefined => {
+    for (let i = 0; i < createdByKeys.length; i += 1) {
+      const id = normalizeOptionId(container?.[createdByKeys[i]]);
+      if (id) return id;
+    }
+    return undefined;
+  };
+  return (
+    resolveIn(values)
+    || resolveIn(values.mainEntityFields)
+    || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || null
+  );
 };
 
 export const resolveDraftFieldDefaults = (
@@ -448,20 +473,17 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      const isFormIntakeDefaultsEnabled = isFeatureEnabled('FORM_INTAKE_DEFAULT_VALUES');
       let createdBy: string | null = null;
       const {
         finalDraftName,
         finalDraftDescription,
         finalDraftAssignees,
         finalDraftParticipants,
-      } = isFormIntakeDefaultsEnabled
-        ? resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass)
-        : { finalDraftName: `${form.name} - ${nowTime()}`, finalDraftDescription: '', finalDraftAssignees: [], finalDraftParticipants: [] };
+      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
 
       // Apply draft defaults for author
-      const canOverrideDraftAuthor = isFormIntakeDefaultsEnabled && (isBypass || (schema.draftDefaults?.author?.isEditable !== false));
-      const isAuthorRequired = isFormIntakeDefaultsEnabled && schema.draftDefaults?.author?.isRequired === true;
+      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
       const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
       if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
@@ -469,14 +491,11 @@ export const formSubmit = async (
         // User explicitly cleared the field; it's editable and not required → honour the opt-out
         // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
         createdBy = null;
-      } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.author) {
+      } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'static') {
           createdBy = schema.draftDefaults.author.defaultValue || null;
         } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          const possibleAuthor = values.createdBy
-            || values.mainEntityFields?.createdBy
-            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
-          createdBy = normalizeOptionId(possibleAuthor) || null;
+          createdBy = resolveMainEntityAuthorFromValues(schema, values);
         } else if (schema.draftDefaults.author.type === 'none') {
           createdBy = null;
         }
@@ -484,11 +503,11 @@ export const formSubmit = async (
 
       // Apply explicit authorized members from form submission
       // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isFormIntakeDefaultsEnabled && (isBypass || schema.draftDefaults?.authorizedMembers?.isEditable);
+      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
       }
 
@@ -515,6 +534,7 @@ export const formSubmit = async (
       work_id: work.id,
       draft_id: draftId,
       update: true,
+      no_split: true,
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });

@@ -450,7 +450,11 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
                     onChange={handleFileUpload}
                   />
                   <label htmlFor={`file-upload-${fieldName}`}>
-                    <IconButton color="primary" component="span">
+                    <IconButton
+                      aria-label={t_i18n('Upload')}
+                      color="primary"
+                      component="span"
+                    >
                       <CloudUploadOutlined />
                     </IconButton>
                   </label>

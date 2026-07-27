@@ -17,7 +17,7 @@ import { findById as findUserById, userDelete } from '../../../../src/domain/use
 import { executionContext, SYSTEM_USER } from '../../../../src/utils/access';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import type { BasicStoreEntityIngestionCsv } from '../../../../src/modules/ingestion/ingestion-types';
-import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
+import * as uriDenyListConfigMock from '../../../../src/config/uriDenyList';
 
 describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
   const ingestionCreatedIds: string[] = [];
@@ -236,7 +236,7 @@ describe('Ingestion CSV domain - Deny list coverage', async () => {
   });
 
   it('should be able to create a CSV feed with an allowed URI, and refused field patch of denied URL', async () => {
-    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.denied.com']);
 
     const creationInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,
@@ -255,7 +255,7 @@ describe('Ingestion CSV domain - Deny list coverage', async () => {
   });
 
   it('should test be denied when URL is in deny list', async () => {
-    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.denied.com']);
 
     const testInput: IngestionCsvAddInput = {
       authentication_type: IngestionAuthType.None,

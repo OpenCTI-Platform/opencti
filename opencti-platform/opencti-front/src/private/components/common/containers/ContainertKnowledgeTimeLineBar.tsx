@@ -117,14 +117,12 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                     : t_i18n('Display relationships')
                 }
               >
-                <span>
-                  <IconButton
-                    color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
-                    onClick={() => handleToggleTimeLineDisplayRelationships()}
-                  >
-                    <RelationManyToMany />
-                  </IconButton>
-                </span>
+                <IconButton
+                  color={timeLineDisplayRelationships ? 'secondary' : 'primary'}
+                  onClick={() => handleToggleTimeLineDisplayRelationships()}
+                >
+                  <RelationManyToMany />
+                </IconButton>
               </Tooltip>
               <Tooltip
                 title={
@@ -133,14 +131,12 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                     : t_i18n('Use functional dates')
                 }
               >
-                <span>
-                  <IconButton
-                    color={timeLineFunctionalDate ? 'secondary' : 'primary'}
-                    onClick={() => handleToggleTimeLineFunctionalDate()}
-                  >
-                    <CalendarMultiselectOutline />
-                  </IconButton>
-                </span>
+                <IconButton
+                  color={timeLineFunctionalDate ? 'secondary' : 'primary'}
+                  onClick={() => handleToggleTimeLineFunctionalDate()}
+                >
+                  <CalendarMultiselectOutline />
+                </IconButton>
               </Tooltip>
 
               <Divider orientation="vertical" flexItem sx={{ ml: 0.5, mr: 0.5 }} />

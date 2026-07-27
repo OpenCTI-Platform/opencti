@@ -26,7 +26,7 @@ const DataTableLineDummy = () => {
   const { columns, tableWidthState: [tableWidth] } = useDataTableContext();
   return (
     <div style={{ display: 'flex' }}>
-      {columns.map((column) => (
+      {columns.filter((c) => c.visible).map((column) => (
         <div
           key={column.id}
           style={{
@@ -119,6 +119,7 @@ const DataTableLine = ({
     useDataTablePaginationLocalStorage: {
       viewStorage: { redirectionMode },
     },
+    formatter: { t_i18n },
   } = useDataTableContext();
 
   const data = useLineData(row);
@@ -230,7 +231,7 @@ const DataTableLine = ({
           </div>
         )}
 
-        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
+        {columns.filter((c) => c.visible).slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
           <DataTableCell
             key={column.id}
             cell={column}
@@ -249,7 +250,7 @@ const DataTableLine = ({
           >
             {actions && actions(data)}
             {endsWithNavigate && (
-              <IconButton onClick={() => (link ? navigate(link) : undefined)}>
+              <IconButton aria-label={t_i18n('Open link')} onClick={() => (link ? navigate(link) : undefined)}>
                 <KeyboardArrowRightOutlined />
               </IconButton>
             )}

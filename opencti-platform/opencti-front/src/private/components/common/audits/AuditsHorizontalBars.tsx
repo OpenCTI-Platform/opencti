@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, Suspense, useCallback, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, ReactNode, useCallback, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { ApexOptions } from 'apexcharts';
 import ApexCharts from 'apexcharts';
@@ -24,18 +24,14 @@ import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useDistributionGraphData, { DistributionQueryData } from '../../../../utils/hooks/useDistributionGraphData';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
+import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
 const auditsHorizontalBarsDistributionQuery = graphql`
   query AuditsHorizontalBarsDistributionQuery(
@@ -175,8 +171,6 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
-  const isEnterpriseEdition = useEnterpriseEdition();
 
   const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsHorizontalBarsDistributionQuery['variables'] => {
     const selection = resolvedDataSelection[0];
@@ -195,7 +189,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -207,31 +201,6 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
   });
   const selection = resolvedDataSelection[0];
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!isGrantedToSettings || !isEnterpriseEdition) {
-      return <WidgetAccessDenied />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AuditsHorizontalBarsComponent
-          queryRef={queryRef}
-          selection={selection}
-          distributed={parameters.distributed ?? undefined}
-          onMounted={setChart}
-        />
-      </Suspense>
-    );
-  };
-
   return (
     <WidgetContainer
       padding="small"
@@ -242,7 +211,19 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <AuditsWidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <AuditsHorizontalBarsComponent
+          queryRef={queryRef!}
+          selection={selection}
+          distributed={parameters.distributed ?? undefined}
+          onMounted={setChart}
+        />
+      </AuditsWidgetRenderContent>
     </WidgetContainer>
   );
 };

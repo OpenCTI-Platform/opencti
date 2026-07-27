@@ -179,7 +179,6 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             <Tooltip title={t_i18n('Create a custom theme')}>
               <IconButton
                 color="primary"
-                aria-label={t_i18n('Create a custom theme')}
                 onClick={handleOpenCreation}
                 size="small"
                 data-testid="create-theme-btn"

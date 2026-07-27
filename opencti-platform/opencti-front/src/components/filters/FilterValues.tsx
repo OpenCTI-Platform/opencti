@@ -59,6 +59,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const filterOperator = currentFilter.operator;
   const filterValues = currentFilter.values;
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
+  const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
   const labelStyle = deactivatePopoverMenu
@@ -82,6 +83,23 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         </strong>{' '}
         <span>
           {filterOperator === 'nil' ? t_i18n('is empty') : t_i18n('is not empty')}
+        </span>
+      </>
+    );
+  }
+
+  // special case for has_changed/not_has_changed
+  if (isOperatorChange) {
+    return (
+      <>
+        <strong
+          style={labelStyle}
+          onClick={onCLick}
+        >
+          {label}
+        </strong>{' '}
+        <span>
+          {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
         </span>
       </>
     );

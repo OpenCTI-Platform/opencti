@@ -6,14 +6,22 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { InputMaybe, MemberAccessInput, MutationSavedFilterFieldPatchArgs, QuerySavedFiltersArgs, SavedFilterAddInput } from '../../generated/graphql';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_CREATOR, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
+import { addSharedSavedFiltersPermissionChangesCount } from '../../manager/telemetryManager';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 
-const findById = (context: AuthContext, user: AuthUser, id: string) => {
+// saved filters with other members than the creator in restricted_members are considered shared
+export const isSavedFilterShared = (savedFilter: BasicStoreEntitySavedFilter) => {
+  const creatorId = Array.isArray(savedFilter.creator_id) ? savedFilter.creator_id[0] : savedFilter.creator_id;
+  return (savedFilter.restricted_members ?? [])
+    .some((m) => m.id && m.id !== creatorId && m.id !== MEMBER_ACCESS_CREATOR);
+};
+
+export const findSavedFilter = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntitySavedFilter>(context, user, id, ENTITY_TYPE_SAVED_FILTER);
 };
 
-export const findSaveFilterPaginated = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
+export const findSavedFilterPaginated = (context: AuthContext, user: AuthUser, args: QuerySavedFiltersArgs) => {
   return pageEntitiesConnection<BasicStoreEntitySavedFilter>(context, user, [ENTITY_TYPE_SAVED_FILTER], args);
 };
 
@@ -47,7 +55,7 @@ export const addSavedFilter = (context: AuthContext, user: AuthUser, input: Save
 export const deleteSavedFilter = async (context: AuthContext, user: AuthUser, savedFilterId: string) => {
   // Only the creator can delete a saved filter unless the user has the KNOWLEDGE_KNSHAREFILTERS capability
   if (!isUserHasCapability(user, KNOWLEDGE_KNSHAREFILTERS)) {
-    const savedFilter = await findById(context, user, savedFilterId);
+    const savedFilter = await findSavedFilter(context, user, savedFilterId);
     if (!savedFilter || savedFilter.creator_id?.[0] !== user.id) {
       throw ForbiddenAccess('You do not have the permission to delete this saved filter');
     }
@@ -59,7 +67,7 @@ export const deleteSavedFilter = async (context: AuthContext, user: AuthUser, sa
 
 export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser, args: MutationSavedFilterFieldPatchArgs) => {
   const { id, input } = args;
-  const savedFilter = await findById(context, user, id);
+  const savedFilter = await findSavedFilter(context, user, id);
   if (!savedFilter) throw FunctionalError('Saved filter cannot be found', { id });
   if (!input) throw FunctionalError('No input given for field patch', { input });
 
@@ -96,7 +104,10 @@ export const savedFilterEditAuthorizedMembers = async (
     requiredCapabilities: [KNOWLEDGE_KNSHAREFILTERS],
     entityType: ENTITY_TYPE_SAVED_FILTER,
   };
-  return editAuthorizedMembers(context, user, args);
+  const before = await findSavedFilter(context, user, savedFilterId);
+  const result = await editAuthorizedMembers(context, user, args);
+  if ((before && isSavedFilterShared(before)) || isSavedFilterShared(result)) addSharedSavedFiltersPermissionChangesCount();
+  return result;
 };
 
 export const getCurrentUserAccessRight = (

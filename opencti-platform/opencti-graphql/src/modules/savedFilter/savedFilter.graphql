@@ -2,6 +2,7 @@ type SavedFilter implements InternalObject & BasicObject {
     id: ID!
     standard_id: String!
     entity_type: String!
+    representative: Representative!
     parent_types: [String!]!
     metrics:[Metric]
     # SavedFilters
@@ -38,6 +39,7 @@ input SavedFilterAddInput {
 
 
 type Query {
+    savedFilter(id: ID!): SavedFilter @auth
     savedFilters(
         first: Int
         after: ID

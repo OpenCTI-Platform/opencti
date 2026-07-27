@@ -13,6 +13,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { SettingsMessagesLine_settingsMessage$key } from './__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import SettingsMessagesPopover from './SettingsMessagesPopover';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -115,13 +116,14 @@ export const SettingsMessagesLineDummy = ({
   dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   return (
     <ListItem
       divider={true}
       classes={{ root: classes.item }}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton disabled={true} aria-haspopup="true">
+          <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>

@@ -5,6 +5,7 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 const GET_SAVED_FILTERS_QUERY = gql`
   query savedFilters(
@@ -36,6 +37,9 @@ const GET_SAVED_FILTERS_QUERY = gql`
             name
             entity_type
             access_right
+          }
+          representative {
+            main
           }
         }
       }
@@ -92,11 +96,7 @@ const EDIT_AUTHORIZED_MEMBERS_MUTATION = gql`
 
 describe('Saved Filter Resolver', () => {
   let createdFilterId: string = '';
-  const newFilter = {
-    mode: 'and',
-    filters: [],
-    filterGroups: [],
-  };
+  const newFilter = emptyFilterGroup;
 
   describe('savedFilterAdd', () => {
     it('should create a filter with the creator as admin in authorized members', async () => {
@@ -163,8 +163,9 @@ describe('Saved Filter Resolver', () => {
       expect(savedFilters).toBeDefined();
       expect(savedFilters.length).toEqual(1);
       const myFilter = savedFilters[0].node;
-      expect(myFilter.name).toEqual('my new filter');
       expect(myFilter.creator_id).toEqual(ADMIN_USER.id);
+      expect(myFilter.name).toEqual('my new filter');
+      expect(myFilter.representative.main).toEqual('my new filter');
       expect(myFilter.currentUserAccessRight).toEqual('admin');
       expect(myFilter.authorizedMembers.length).toEqual(1);
       expect(myFilter.authorizedMembers[0].name).toEqual(ADMIN_USER.name);

@@ -65,6 +65,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
   after?: string | undefined | null;
   orderBy?: any;
   baseData?: boolean;
+  baseFields?: string[];
   orderMode?: InputMaybe<OrderingMode> | OrderingMode;
   filters?: FilterGroupWithNested | null;
   noFiltersChecking?: boolean;
@@ -462,7 +463,12 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
   return connection as BasicConnection<T>;
 };
 
-export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
+export const topEntitiesList = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: string[],
+  args: EntityOptions<T> = {},
+) => {
   const data = await pageEntitiesConnection(context, user, entityTypes, args);
   return asyncMap(data.edges, (edge) => edge.node);
 };

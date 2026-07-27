@@ -54,6 +54,7 @@ export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
 export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const WORKFLOW_FILTER = 'workflow_id';
+export const WORKFLOW_INSTANCE_STATUS_FILTER = 'workflowInstanceCurrentState';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_TYPE_FILTER = 'pattern_type';
@@ -209,6 +210,7 @@ export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   WORKFLOW_FILTER,
+  WORKFLOW_INSTANCE_STATUS_FILTER,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER,

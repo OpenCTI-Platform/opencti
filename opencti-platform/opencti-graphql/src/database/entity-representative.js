@@ -1,10 +1,14 @@
 import moment from 'moment';
 import { isEmptyField, isNotEmptyField, REDACTED_INFORMATION } from './utils';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { observableValue } from '../utils/format';
 import { ENABLED_DEMO_MODE } from '../config/conf';
+import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
+import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../modules/xtm/hub/news-feed/news-feed-types';
 
 export const extractRepresentativeDescription = (entityData) => {
   let secondValue;
@@ -43,6 +47,18 @@ export const extractEntityRepresentativeName = (entityData) => {
   let mainValue;
   if (entityData.entity_type === ENTITY_TYPE_USER) {
     mainValue = ENABLED_DEMO_MODE ? REDACTED_INFORMATION : entityData.name;
+  } else if (entityData.entity_type === ENTITY_TYPE_NEWS_FEED_ITEM) {
+    mainValue = entityData.title;
+  } else if (entityData.entity_type === ENTITY_TYPE_DELETE_OPERATION) {
+    mainValue = entityData.main_entity_name;
+  } else if (entityData.entity_type === ENTITY_TYPE_SETTINGS) {
+    mainValue = entityData.platform_title;
+  } else if (entityData.entity_type === ENTITY_TYPE_ENTITY_SETTING) {
+    mainValue = entityData.target_type;
+  } else if (entityData.entity_type === ENTITY_TYPE_MANAGER_CONFIGURATION) {
+    mainValue = entityData.manager_id;
+  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
+    return entityData.description;
   } else if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
   } else if (entityData.entity_type === ENTITY_TYPE_STATUS && entityData.name && entityData.type) {
@@ -75,8 +91,6 @@ export const extractEntityRepresentativeName = (entityData) => {
       .utc()
       .toISOString();
     mainValue = `${from} - ${to}`;
-  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
-    return entityData.description;
   } else if (isNotEmptyField(entityData.result_name)) { // MALWARE-ANALYSES
     mainValue = entityData.result_name;
   } else if (isNotEmptyField(entityData.name)) {
@@ -86,6 +100,8 @@ export const extractEntityRepresentativeName = (entityData) => {
     }
   } else if (isNotEmptyField(entityData.description)) {
     mainValue = entityData.description;
+  } else if (isInternalObject(entityData.entity_type)) {
+    mainValue = entityData.name;
   }
   // If no representative value found, return the standard id
   if (isEmptyField(mainValue)) {

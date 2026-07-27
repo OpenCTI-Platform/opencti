@@ -4,6 +4,7 @@ type ExclusionList implements InternalObject & BasicObject {
   description: String
   standard_id: String!
   entity_type: String!
+  representative: Representative!
   parent_types: [String!]!
   metrics:[Metric]
   created_at: DateTime!

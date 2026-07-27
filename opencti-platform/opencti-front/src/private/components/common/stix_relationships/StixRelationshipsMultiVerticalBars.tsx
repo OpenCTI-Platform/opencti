@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -6,13 +6,13 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { StixRelationshipsMultiVerticalBarsTimeSeriesQuery } from './__generated__/StixRelationshipsMultiVerticalBarsTimeSeriesQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import ApexCharts from 'apexcharts';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixRelationshipsMultiVerticalBarsTimeSeriesQuery = graphql`
   query StixRelationshipsMultiVerticalBarsTimeSeriesQuery(
@@ -87,6 +87,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
   const fallbackStart = monthsAgo(12);
   const fallbackEnd = now();
@@ -112,7 +113,7 @@ const buildQueryVariables = (
     operation: 'count',
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -142,36 +143,16 @@ const StixRelationshipsMultiVerticalBars = ({
 }: StixRelationshipsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
     refreshRate,
     query: stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsMultiVerticalBarsComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-          onMounted={(chart) => setChart(chart as ApexCharts)}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -183,7 +164,19 @@ const StixRelationshipsMultiVerticalBars = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsMultiVerticalBarsComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+          onMounted={(chart) => setChart(chart as ApexCharts)}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

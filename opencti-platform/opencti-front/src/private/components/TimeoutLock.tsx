@@ -30,6 +30,13 @@ const timeoutLockRefreshQuery = graphql`
     }
   }
 `;
+const createTimeWithOffset = (): number => {
+  return Date.now() - ONE_SECOND;
+};
+
+const createOffsetTimeItem = (): { startDate: Date; startDateEpoch: number } => {
+  return { startDate: new Date(), startDateEpoch: createTimeWithOffset() };
+};
 
 /**
  * Handles various state changes for the timeout counting functionality.
@@ -37,6 +44,7 @@ const timeoutLockRefreshQuery = graphql`
 const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
   const { idleLimit, sessionLimit } = state;
   let { idleCount, startDate, startDateEpoch } = state;
+  const offsetTimeItem = createOffsetTimeItem();
   if (idleCount === null) {
     idleCount = sessionLimit;
   }
@@ -45,11 +53,10 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
     const timeoutData = JSON.parse(timeoutJSON);
     startDate = timeoutData.startDate;
     startDateEpoch = timeoutData.startDateEpoch;
-    idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / 1000;
+    idleCount = sessionLimit - (Date.now() - timeoutData.startDateEpoch) / ONE_SECOND;
   } else {
     // If timeout start not yet initialize, setup the local storage
-    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
-    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
+    localStorage.setItem('lockoutTracker', JSON.stringify(offsetTimeItem));
     idleCount -= 1;
   }
   // Handle actions
@@ -60,14 +67,13 @@ const timeoutReducer = (state: TimeoutState, action: Action): TimeoutState => {
     return state;
   }
   if (action.type === 'reset timeout') {
-    const newTimeItem = { startDate: new Date(), startDateEpoch: Date.now() };
-    localStorage.setItem('lockoutTracker', JSON.stringify(newTimeItem));
+    localStorage.setItem('lockoutTracker', JSON.stringify(offsetTimeItem));
     return {
       idleLimit,
       sessionLimit,
       idleCount: sessionLimit,
-      startDate: newTimeItem.startDate,
-      startDateEpoch: newTimeItem.startDateEpoch,
+      startDate: offsetTimeItem.startDate,
+      startDateEpoch: offsetTimeItem.startDateEpoch,
     };
   }
   return state;
@@ -85,7 +91,7 @@ const TimeoutLock: React.FunctionComponent = () => {
     sessionLimit,
     idleCount: null,
     startDate: new Date(),
-    startDateEpoch: Date.now(),
+    startDateEpoch: createTimeWithOffset(),
   });
   const [resetCounter, triggerReset] = useState(false);
   const interval = useRef<NodeJS.Timeout | null>(null);

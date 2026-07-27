@@ -58,9 +58,10 @@ export const insertNode = (
       if (!Number.isInteger(globalCount)) return;
       pageInfo.setValue(globalCount + 1, 'globalCount');
     }
-  } else {
-    throw new Error(`Cant insert node on not found connection ${key} with filters ${JSON.stringify(params)}`);
   }
+  // When the connection is not mounted (e.g. the mutation is triggered from a
+  // screen that does not render the paginated list), there is nothing to
+  // update: the list will be refetched on its next mount.
 };
 
 export const deleteNodeFromId = (store, containerId, key, filters, id) => {
@@ -77,8 +78,11 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
     conn = ConnectionHandler.getConnection(record, key, params);
   }
 
+  // When the connection is not mounted (e.g. the mutation is triggered from a
+  // screen that does not render the paginated list), there is nothing to
+  // update: the list will be refetched on its next mount.
   if (!conn) {
-    throw new Error(`Delete node ${id}, connection ${key} not found.`);
+    return;
   }
 
   const edges = conn.getLinkedRecords('edges') || [];
@@ -88,7 +92,7 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   });
 
   if (!nodeExists) {
-    throw new Error(`Node with id ${id} not found, nothing to delete`);
+    return;
   }
 
   ConnectionHandler.deleteNode(conn, id);

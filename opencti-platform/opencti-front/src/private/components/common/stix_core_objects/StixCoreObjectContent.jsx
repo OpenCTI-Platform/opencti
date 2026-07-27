@@ -6,7 +6,7 @@ import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
@@ -24,13 +24,11 @@ import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisp
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { RichTextEditor } from '@filigran/rich-text-editor';
-import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
+import '../../../../utils/pdfWorker-setup';
 
 const styles = (theme) => ({
   container: {
@@ -463,7 +461,7 @@ class StixCoreObjectContentComponent extends Component {
       .replaceAll(regex, '');
     const fragment = stixCoreObject.name.split('/');
     const currentName = R.last(fragment);
-    await htmlToPdf('content', htmlData, !this.props.isOldEditorEnable).download(`${currentName}.pdf`);
+    await htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -592,27 +590,15 @@ class StixCoreObjectContentComponent extends Component {
                   className={classes.editorContainer}
                   style={{ minHeight: height, height }}
                 >
-                  {!this.props.isOldEditorEnable ? (
-                    <RichTextEditor
-                      data={currentContent ?? ''}
-                      onChange={(_, adapter) => {
-                        this.setState({ currentContent: adapter.getData(), changed: true });
-                      }}
-                      onBlur={(_, adapter) => {
-                        this.onHtmlFieldChange(adapter.getData());
-                      }}
-                    />
-                  ) : (
-                    <CKEditor
-                      data={currentContent ?? ''}
-                      onChange={(_, editor) => {
-                        this.setState({ currentContent: editor.getData(), changed: true });
-                      }}
-                      onBlur={(_, editor) => {
-                        this.onHtmlFieldChange(editor.getData());
-                      }}
-                    />
-                  )}
+                  <RichTextEditor
+                    data={currentContent ?? ''}
+                    onChange={(_, adapter) => {
+                      this.setState({ currentContent: adapter.getData(), changed: true });
+                    }}
+                    onBlur={(_, adapter) => {
+                      this.onHtmlFieldChange(adapter.getData());
+                    }}
+                  />
                   <TextFieldAskAI
                     currentValue={currentContent ?? ''}
                     setFieldValue={(val) => {
@@ -958,20 +944,10 @@ const withAttributes = (Component) => {
   return WithAttributes;
 };
 
-const withHelperFF = (Component) => {
-  const WithHelperFF = (props) => {
-    const { isOldEditorEnable } = useHelper();
-    return <Component {...props} isOldEditorEnable={isOldEditorEnable()} />;
-  };
-  WithHelperFF.displayName = `WithHelperFF(${Component.displayName || Component.name || 'Component'})`;
-  return WithHelperFF;
-};
-
 export default R.compose(
   inject18n,
   withTheme,
   withRouter,
   withStyles(styles),
   withAttributes,
-  withHelperFF,
 )(StixCoreObjectContent);

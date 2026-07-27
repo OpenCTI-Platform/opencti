@@ -120,6 +120,9 @@ const SyncEditionContainer = ({ synchronizer }) => {
           MESSAGING$.notifySuccess(t_i18n('Connection successfully verified'));
         }
       },
+      onError: (error) => {
+        MESSAGING$.notifyRelayError(error);
+      },
     });
   };
 
@@ -133,6 +136,9 @@ const SyncEditionContainer = ({ synchronizer }) => {
           variables: {
             id: synchronizer.id,
             input: { key: name, value: parsedValue || '' },
+          },
+          onError: (error) => {
+            MESSAGING$.notifyRelayError(error);
           },
         });
       })

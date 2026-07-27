@@ -172,6 +172,9 @@ class SyncPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        if (this.props.onDeleteComplete) {
+          this.props.onDeleteComplete();
+        }
       },
     });
   }
@@ -245,6 +248,7 @@ class SyncPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 3 }}
@@ -389,6 +393,7 @@ SyncPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  onDeleteComplete: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(SyncPopover);

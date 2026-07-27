@@ -4,6 +4,7 @@ import { FilterMode } from '../../../../src/generated/graphql';
 import {
   filterBundleElements,
   isBundleElementMatchFilters,
+  convertMembersToUsersFromElements,
   MINIMAL_COMPATIBLE_SCOPE_VERSION,
   updateImportedPlaybookDefinitionScope,
 } from '../../../../src/modules/playbook/playbook-utils';
@@ -483,6 +484,84 @@ describe('Playbook utils unit tests', () => {
 
         expect(result).toEqual(expectedResult);
       });
+    });
+  });
+
+  describe('Function: convertMembersToUsersFromElements()', () => {
+    const element1 = {
+      id: 'report--elem1',
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          created_by_ref_id: 'id-9',
+          creator_ids: ['id-10'],
+          assignee_ids: ['id-11'],
+          participant_ids: ['id-12'],
+          type: 'Report',
+          id: 'report--elem1',
+        },
+      },
+    } as unknown as StixObject;
+
+    const element2 = {
+      id: 'incident--elem2',
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          created_by_ref_id: 'id-1',
+          creator_ids: ['id-10'],
+          assignee_ids: ['id-1'],
+          participant_ids: ['id-11', 'id-12'],
+          type: 'Incident',
+          id: 'incident--elem2',
+        },
+      },
+    } as unknown as StixObject;
+
+    const testBundle: StixBundle = {
+      id: 'bundle--1',
+      spec_version: '2.1',
+      type: 'bundle',
+      objects: [element1, element2],
+    };
+
+    it('should aggregate ASSIGNEES from multiple source elements', async () => {
+      const members = [{ value: 'ASSIGNEES' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 has assignee id-11, element2 has assignee id-1
+      expect(userIds).toContain('id-11');
+      expect(userIds).toContain('id-1');
+    });
+
+    it('should aggregate PARTICIPANTS from multiple source elements', async () => {
+      const members = [{ value: 'PARTICIPANTS' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 has participant id-12, element2 has participants id-11 and id-12
+      expect(userIds).toContain('id-12');
+      expect(userIds).toContain('id-11');
+    });
+
+    it('should deduplicate users appearing in multiple elements', async () => {
+      // Both elements have creator id-10
+      const members = [{ value: 'CREATORS' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // id-10 should appear only once
+      expect(userIds.filter((id) => id === 'id-10').length).toBe(1);
+    });
+
+    it('should resolve AUTHOR from multiple source elements', async () => {
+      const members = [{ value: 'AUTHOR' }];
+      const users = await convertMembersToUsersFromElements(members, [element1, element2], testBundle);
+      const userIds = users.map((u) => u.id);
+      // element1 author is id-9, element2 author is id-1
+      expect(userIds).toContain('id-9');
+      expect(userIds).toContain('id-1');
+    });
+
+    it('should return empty array for empty members', async () => {
+      const users = await convertMembersToUsersFromElements([], [element1], testBundle);
+      expect(users).toEqual([]);
     });
   });
 });

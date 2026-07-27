@@ -1,7 +1,6 @@
 import React, { useState, SyntheticEvent, ReactNode } from 'react';
 import Button from '@common/button/Button';
-import { FilterListOffOutlined, FilterListOutlined } from '@mui/icons-material';
-import IconButton from '@common/button/IconButton';
+import { FilterListOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
@@ -14,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
+import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
 
 const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
 
@@ -127,7 +127,8 @@ const ListFilters = ({
 
   const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    if (key === 'name' && filterDefinition?.label === 'Draft name') {
+    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    if (isDraftSpecificKey) {
       return t_i18n('Draft filters');
     }
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
@@ -141,10 +142,11 @@ const ListFilters = ({
 
   const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
       return 1;
     }
-    if (key === 'name' && filterDefinition?.label === 'Draft name') {
+    if (isDraftSpecificKey) {
       return 2;
     }
     if (isFilterKeyForAllTypes(subEntityTypes)) {
@@ -226,16 +228,11 @@ const ListFilters = ({
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          <Tooltip title={t_i18n('Clear filters')}>
-            <IconButton
-              color={color}
-              onClick={handleClearFilters}
-              size="small"
-              disabled={disabled}
-            >
-              <FilterListOffOutlined fontSize="small" />
-            </IconButton>
-          </Tooltip>
+          <ClearFiltersIcon
+            disabled={disabled}
+            color={color}
+            onClear={handleClearFilters}
+          />
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}

@@ -89,7 +89,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
   enableReferences,
 }) => {
   const classes = useStyles();
-  const { fld } = useFormatter();
+  const { fld, t_i18n } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
   const [open, setOpen] = useState(false);
   return (
@@ -136,7 +136,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
         onClose={() => setOpen(false)}
         header={(
           <IconButton
-            aria-label="Go to"
+            aria-label={t_i18n('Go to')}
             size="small"
             component={Link}
             to={`/dashboard/cases/tasks/${task.id}`}
@@ -154,12 +154,14 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 
 export const CaseTasksLineDummy = () => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
         <IconButton
+          aria-label={t_i18n('Open menu')}
           disabled={true}
           aria-haspopup="true"
           style={{ marginTop: 3 }}

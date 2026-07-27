@@ -43,7 +43,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     handleValidateDraft,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id });
+  } = useTransitionWizard({ entityId: draft.id, entityNavigationId: draft.entity_id, draftId: draft.id });
 
   const workflowInstance = draft.workflowInstance;
   const isPending = workflowInstance?.pendingStatus === 'pending';

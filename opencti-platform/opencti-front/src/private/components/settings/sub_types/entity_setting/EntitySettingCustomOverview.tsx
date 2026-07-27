@@ -60,16 +60,16 @@ const EntitySettingCustomOverview = () => {
         <Card
           title={t_i18n('Overview layout customization')}
           action={(
-            <IconButton
-              onClick={() => resetLayout()}
-              aria-haspopup="true"
-              size="small"
-              color="primary"
-            >
-              <Tooltip title={t_i18n('Reset to default layout')}>
+            <Tooltip title={t_i18n('Reset to default layout')}>
+              <IconButton
+                onClick={() => resetLayout()}
+                aria-haspopup="true"
+                size="small"
+                color="primary"
+              >
                 <RestartAlt fontSize="small" color="primary" />
-              </Tooltip>
-            </IconButton>
+              </IconButton>
+            </Tooltip>
           )}
         >
           <EntitySettingsOverviewLayoutCustomization

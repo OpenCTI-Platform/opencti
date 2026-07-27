@@ -257,6 +257,7 @@ class StixCoreRelationshipContainer extends Component {
               action={!stixCoreRelationship.is_inferred && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IconButton
+                    aria-label={t('edit')}
                     color="primary"
                     onClick={this.handleOpenEdition.bind(this)}
                     size="small"
@@ -552,6 +553,7 @@ class StixCoreRelationshipContainer extends Component {
               ))}
               {expandable && (
                 <IconButton
+                  aria-label={expanded ? t('Collapse') : t('Expand')}
                   variant="tertiary"
                   size="small"
                   onClick={this.handleToggleExpand.bind(this)}

@@ -60,6 +60,7 @@ const NotifierPopover = ({ data, paginationOptions }: { data: NotifierLine_node$
   return (
     <>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}

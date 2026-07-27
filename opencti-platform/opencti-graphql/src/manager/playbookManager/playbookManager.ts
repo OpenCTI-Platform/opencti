@@ -23,7 +23,7 @@ import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
-import type { SseEvent, StreamDataEvent } from '../../types/event';
+import type { SseEvent, StreamDataEvent, UpdateEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
 import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
@@ -44,7 +44,7 @@ import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
-import { isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
+import { buildFilterEventContext, isDebugPlaybook, isValidEventType, StreamDataEventTypeEnum } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
 import { InterruptibleTimer } from '../interruptible-timer';
@@ -120,7 +120,13 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                 const jsonFilters = filters ? JSON.parse(filters) : null;
 
                 const isValidEvent = isValidEventType(type, configuration);
-                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
+                // Build event context for has_changed/not_has_changed filter evaluation
+                const eventContext = type === StreamDataEventTypeEnum.UPDATE
+                  ? buildFilterEventContext(streamEvent.data as UpdateEvent)
+                  : type === StreamDataEventTypeEnum.CREATE
+                    ? { changedAttributes: [], isCreation: true }
+                    : undefined;
+                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters, eventContext);
 
                 if (currentPlaybookInDebug) {
                   logApp.info(`[OPENCTI-MODULE] Event match for playbook ${playbook.name} (${playbook.id})`, { isValidEvent, isMatch, filters: jsonFilters });

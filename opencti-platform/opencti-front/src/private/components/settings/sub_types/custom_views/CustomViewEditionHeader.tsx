@@ -90,6 +90,12 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
           }
           labelTextTransform="none"
         />
+        {customView.default && (
+          <Tag
+            color={theme.palette.success.main}
+            label={t_i18n('Default')}
+          />
+        )}
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
           <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
             <IconButton
@@ -97,7 +103,6 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget, host }:
               size="default"
               disabled={mutating}
               onClick={handleToggleEnabled}
-              aria-label={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}
             >
               {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </IconButton>

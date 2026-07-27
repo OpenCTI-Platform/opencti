@@ -1,9 +1,9 @@
-import { describe, it, vi, expect, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
-import FormView from './FormView';
-import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import { MockPayloadGenerator } from 'relay-test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as useGrantedModule from '../../../../../utils/hooks/useGranted';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import FormView from './FormView';
 
 vi.mock('../../../common/form/AuthorizedMembersField', () => ({
   __esModule: true,
@@ -67,9 +67,6 @@ const defaultMockForm = makeMockForm({
 // entitySettings: { edges: [] } is required to match what FormView expects from the user context
 const mockUserContext = createMockUserContext({
   entitySettings: { edges: [] },
-  settings: {
-    platform_feature_flags: [{ id: 'FORM_INTAKE_DEFAULT_VALUES', enable: true }],
-  },
 });
 
 const resolveAndWait = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], form: object) => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { truncate } from '../utils/String';
+import { useFormatter } from './i18n';
 
 interface ExpandablePreProps {
   source: string | null | undefined;
@@ -10,6 +11,7 @@ interface ExpandablePreProps {
 
 const ExpandablePre = ({ source, limit }: ExpandablePreProps) => {
   const [expand, setExpand] = useState(false);
+  const { t_i18n } = useFormatter();
 
   const onClick = () => setExpand(!expand);
 
@@ -19,7 +21,7 @@ const ExpandablePre = ({ source, limit }: ExpandablePreProps) => {
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick}>
+          <IconButton aria-label={expand ? t_i18n('Collapse') : t_i18n('Expand')} onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

@@ -163,6 +163,16 @@ const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
 };
 
+export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
+  if (!filters) return false;
+  const entityTypeFilter = filters.filters.find((f) => f.key === 'entity_type');
+  if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
+  return entityTypeFilter.values.every((v) => {
+    const val = typeof v === 'string' ? v : (v?.value ?? v?.id);
+    return val === 'DraftWorkspace';
+  });
+};
+
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | GqlFilterGroup | null) => {
   return !!(
     filterGroup
@@ -373,9 +383,21 @@ export const getEntityTypeThreeFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean; startDate?: string | null; endDate?: string | null; dateAttribute?: string; isKnowledgeRelationshipWidget?: boolean } = {},
+  opts: {
+    removeTypeAll?: boolean;
+    startDate?: string | null;
+    endDate?: string | null;
+    dateAttribute?: string;
+    isKnowledgeRelationshipWidget?: boolean;
+  } = {},
 ) => {
-  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
+  const {
+    removeTypeAll = false,
+    startDate = null,
+    endDate = null,
+    dateAttribute = 'created_at',
+    isKnowledgeRelationshipWidget = false,
+  } = opts;
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
@@ -514,7 +536,7 @@ export function normalizeFilterGroupForBackend(filterGroup?: FilterGroup | null)
 export function normalizeFilterGroupForBackend(
   filterGroup?: FilterGroup | null,
 ): GqlFilterGroup | undefined {
-  if (!filterGroup || !isFilterGroupNotEmpty(filterGroup)) {
+  if (!filterGroup) {
     return undefined;
   }
   return {
@@ -734,23 +756,25 @@ export const getAvailableOperatorForFilterKey = (
     return ['eq'];
   }
   const { type: filterType } = filterDefinition;
+  // In stix filtering context (playbooks, streams, triggers), add has_changed/not_has_changed operators
+  const changeOperators = opts?.isStixFiltering ? ['has_changed', 'not_has_changed'] : [];
   if (filterType === 'date') {
-    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within'];
+    return ['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within', ...changeOperators];
   }
   if (isNumericFilter(filterType)) {
-    return ['gt', 'gte', 'lt', 'lte'];
+    return ['gt', 'gte', 'lt', 'lte', ...changeOperators];
   }
   if (filterType === 'boolean') {
-    return ['eq', 'not_eq'];
+    return ['eq', 'not_eq', ...changeOperators];
   }
   if (isBasicTextFilter(filterDefinition)) {
     if (filterDefinition.type === 'string' || opts?.isStixFiltering) { // all the string operators are available for short string or in stix filtering
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
-        'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
+        'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search', ...changeOperators];
     }
     if (filterDefinition.type === 'text') {
       if (filterDefinition.type === 'text') {
-        return ['search', 'nil', 'not_nil'];
+        return ['search', 'nil', 'not_nil', ...changeOperators];
       }
     } else {
       throw Error(`A basic text filter is of type string or text, not ${filterDefinition.type}`);
@@ -758,10 +782,10 @@ export const getAvailableOperatorForFilterKey = (
   }
 
   if (filterDefinition.multiple) {
-    return ['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil'];
+    return ['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil', ...changeOperators];
   }
 
-  return ['eq', 'not_eq', 'nil', 'not_nil'];
+  return ['eq', 'not_eq', 'nil', 'not_nil', ...changeOperators];
 };
 
 export const getAvailableOperatorForFilter = (
@@ -883,7 +907,7 @@ const removeFrontendIdAndEmptyFiltersFromFiltersArray = (filtersArray: Filter[])
   };
 
   return filtersArray
-    .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
+    .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
     .map((f) => removeFrontendIdFromFilter(f));
 };
 
@@ -902,7 +926,10 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   };
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (
+  filters?: FilterGroup | null,
+  entityTypes = ['Stix-Core-Object'],
+): FilterGroup | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(NOT_CLEANABLE_FILTER_KEYS);
   return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
 };
@@ -1075,6 +1102,8 @@ export const filterOperatorsWithIcon = [
   'gte',
   'nil',
   'not_nil',
+  'has_changed',
+  'not_has_changed',
   'eq',
   'not_eq',
 ];

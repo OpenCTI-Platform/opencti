@@ -1,9 +1,6 @@
-import useGranted, { getCapabilitiesName, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
-import useAuth from './useAuth';
+import useGranted, { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from './useGranted';
 
 const useImportAccess = () => {
-  const { me } = useAuth();
-
   // Has global import (KNOWLEDGE_KNASKIMPORT in base capabilities)
   const hasImportBaseCapability = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
@@ -22,14 +19,12 @@ const useImportAccess = () => {
   // or if they only have KNOWLEDGE_KNUPDATE in draft (not in main).
   const isForcedImportToDraft = (!hasImportBaseCapability && hasAnyImportCapability) || hasKnowledgeUpdateInDraftOnly;
 
-  // Only access to Import Draft Tab
-  const userCapabilities = getCapabilitiesName(me.capabilities);
-  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+  // Only access to Import Draft Tab: requires at minimum KNOWLEDGE_KNUPDATE (in main or draft)
+  const hasKnowledgeUpdate = useGranted([KNOWLEDGE_KNUPDATE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNUPDATE],
+  });
 
-  const hasAnyKnowledgeCapability = [...userCapabilities, ...userCapabilitiesInDraft]
-    .some((cap) => cap.includes(KNOWLEDGE));
-
-  const hasOnlyAccessToImportDraftTab = !hasImportBaseCapability && hasAnyKnowledgeCapability;
+  const hasOnlyAccessToImportDraftTab = !hasImportBaseCapability && hasKnowledgeUpdate;
 
   return {
     isForcedImportToDraft,

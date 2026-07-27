@@ -92,6 +92,7 @@ const settingsOrganizationUsersLineFragment = graphql`
     otp_activated
     entity_type
     user_service_account
+    password_valid_until
     created_at
     effective_confidence_level {
       max_confidence
@@ -109,7 +110,7 @@ interface MembersListContainerProps {
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, fd } = useFormatter();
   const LOCAL_STORAGE_KEY = `organization-${organization.id}-users`;
 
   const isSetAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -171,10 +172,10 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 25,
+      percentWidth: 20,
     },
     user_email: {
-      percentWidth: 30,
+      percentWidth: 25,
     },
     firstname: {
       percentWidth: 10,
@@ -187,6 +188,11 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
     },
     otp: {
       percentWidth: 5,
+    },
+    password_valid_until: {
+      label: 'Password valid until',
+      percentWidth: 10,
+      render: (date) => (date ? fd(date) : '-'),
     },
     created_at: {
       percentWidth: 10,

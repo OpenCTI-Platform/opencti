@@ -18,7 +18,7 @@ export const initLockFork = () => {
     return;
   }
   if (!lockProcess.forked) {
-    lockProcess.forked = fork('./build/child-lock.manager.js', {
+    lockProcess.forked = fork('./build/child-lock.manager.mjs', {
       execArgv: [`--max-old-space-size=${CHILD_PROCESS_MEMORY}`],
     }, { detached: false });
     lockProcess.forked.on('message', (msg) => {

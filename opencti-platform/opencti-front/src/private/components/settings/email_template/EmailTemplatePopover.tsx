@@ -75,6 +75,7 @@ const EmailTemplatePopover = ({
         </ToggleButton>
       ) : (
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={onOpenMenu}
           aria-haspopup="true"
           className="icon-outlined"

@@ -45,6 +45,12 @@ vi.mock('../../../../../src/schema/general', () => ({
   OPENCTI_ADMIN_UUID: 'admin-uuid',
 }));
 
+// Telemetry counters are fire-and-forget side effects; mocking the manager
+// also keeps its heavy transitive dependency graph out of this unit test.
+vi.mock('../../../../../src/manager/telemetryManager', () => ({
+  addPlaybookAiAgentRunCount: vi.fn(),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────────
 
 import nconf from 'nconf';
@@ -57,12 +63,18 @@ import { ENTITY_TYPE_USER } from '../../../../../src/schema/internalObject';
 import { OPENCTI_ADMIN_UUID } from '../../../../../src/schema/general';
 import {
   AGENT_CALL_TIMEOUT_MS,
+  assertDefinitionRunAsAllowed,
+  assertRunAsUserAllowed,
   buildAgentMessageContent,
   buildAgentSlugOneOf,
   buildPlaybookAutomationContext,
   callXtmAgent,
   isAgentBoundToIntent,
+  isRunAsUserAllowed,
+  isXtmOneConfigured,
+  resolveAgentJwtUser,
   resolveRunAsUserId,
+  sanitizeDefinitionRunAs,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
 
@@ -159,9 +171,112 @@ describe('ai-agent-shared', () => {
     });
   });
 
+  describe('isXtmOneConfigured', () => {
+    it('should be true only when both the XTM One URL and the client token are configured', () => {
+      vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
+      expect(isXtmOneConfigured()).toBe(true);
+
+      vi.mocked(nconf.get).mockReturnValue(undefined);
+      expect(isXtmOneConfigured()).toBe(false);
+
+      vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
+      vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
+      expect(isXtmOneConfigured()).toBe(false);
+    });
+  });
+
+  describe('resolveAgentJwtUser', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+
+    it('should resolve the seeded admin (single lookup) when no run-as user is configured', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
+
+      const result = await resolveAgentJwtUser(undefined);
+
+      expect(result).toEqual(ADMIN_JWT_USER);
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        OPENCTI_ADMIN_UUID,
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should resolve the run-as user (single lookup) when a runAsUserId is provided', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+
+      const result = await resolveAgentJwtUser('user-7');
+
+      expect(result).toEqual({ id: 'user-7', user_email: 'analyst@org.test' });
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'user-7',
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should fall back to the seeded admin when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return null;
+      }) as any);
+
+      await expect(resolveAgentJwtUser('missing-user')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should fall back to the seeded admin when the resolved run-as user has no email', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        return { id: 'user-9' };
+      }) as any);
+
+      await expect(resolveAgentJwtUser('user-9')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should fall back to the seeded admin when resolving the run-as user throws', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === OPENCTI_ADMIN_UUID) return ADMIN_JWT_USER;
+        throw new Error('ES down');
+      }) as any);
+
+      await expect(resolveAgentJwtUser('user-x')).resolves.toEqual(ADMIN_JWT_USER);
+    });
+
+    it('should not look the seeded admin up twice when the run-as user IS the seeded admin', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      const result = await resolveAgentJwtUser(OPENCTI_ADMIN_UUID);
+
+      expect(result).toBeNull();
+      expect(internalLoadById).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return null when neither the run-as user nor the seeded admin can be resolved', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      const result = await resolveAgentJwtUser('missing-user');
+
+      expect(result).toBeNull();
+      expect(internalLoadById).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('isAgentBoundToIntent', () => {
+    const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
+
     it('should return false (without calling XTM One) when the slug is empty', async () => {
-      const result = await isAgentBoundToIntent('cti.stix_transformer', '');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', '', ADMIN_JWT_USER);
+      expect(result).toBe(false);
+      expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
+    });
+
+    it('should fail closed (no catalog call) when no JWT identity could be resolved (jwtUser null)', async () => {
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', null);
+
       expect(result).toBe(false);
       expect(xtmOneClient.listAgentsForIntent).not.toHaveBeenCalled();
     });
@@ -172,11 +287,24 @@ describe('ai-agent-shared', () => {
         { agent_id: '2', agent_name: 'B', agent_slug: 'agent-b', agent_description: null, priority: 0 },
       ]);
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-b', ADMIN_JWT_USER);
 
       expect(result).toBe(true);
+    });
+
+    it('should query the catalog as the passed JWT identity (same identity as the agent call), without a user lookup', async () => {
+      vi.mocked(xtmOneClient.listAgentsForIntent).mockResolvedValue([
+        { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
+      ]);
+
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', { id: 'user-7', user_email: 'analyst@org.test' });
+
+      expect(result).toBe(true);
+      // The identity was resolved once by the executor — no lookup here.
+      expect(internalLoadById).not.toHaveBeenCalled();
       const passedContext = vi.mocked(xtmOneClient.listAgentsForIntent).mock.calls[0][0];
-      expect(passedContext.user).toBe(AUTOMATION_MANAGER_USER);
+      expect(passedContext.user?.id).toBe('user-7');
+      expect(passedContext.user?.user_email).toBe('analyst@org.test');
     });
 
     it('should return false when the slug is NOT in the intent catalog (defense-in-depth check fails closed)', async () => {
@@ -184,7 +312,7 @@ describe('ai-agent-shared', () => {
         { agent_id: '1', agent_name: 'A', agent_slug: 'agent-a', agent_description: null, priority: 0 },
       ]);
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-not-bound');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-not-bound', ADMIN_JWT_USER);
 
       expect(result).toBe(false);
     });
@@ -192,7 +320,7 @@ describe('ai-agent-shared', () => {
     it('should fail closed (return false) when the catalog call throws', async () => {
       vi.mocked(xtmOneClient.listAgentsForIntent).mockRejectedValue(new Error('XTM One down'));
 
-      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a');
+      const result = await isAgentBoundToIntent('cti.stix_transformer', 'agent-a', ADMIN_JWT_USER);
 
       expect(result).toBe(false);
     });
@@ -217,6 +345,161 @@ describe('ai-agent-shared', () => {
     });
   });
 
+  describe('assertRunAsUserAllowed', () => {
+    const context = { source: 'test' } as any;
+    const author = { id: 'author-1' } as any;
+
+    it('should allow (without a DB lookup) when no run-as user is configured', async () => {
+      await expect(assertRunAsUserAllowed(context, author, null)).resolves.toBeUndefined();
+      await expect(assertRunAsUserAllowed(context, author, undefined)).resolves.toBeUndefined();
+      await expect(assertRunAsUserAllowed(context, author, { label: '', value: '' })).resolves.toBeUndefined();
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should allow the current (authenticated) author without a DB lookup', async () => {
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Me', value: 'author-1' })).resolves.toBeUndefined();
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should allow a service account target', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'svc-1', user_service_account: true } as any);
+
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Service', value: 'svc-1' })).resolves.toBeUndefined();
+      expect(internalLoadById).toHaveBeenCalledWith(
+        expect.anything(),
+        SYSTEM_USER,
+        'svc-1',
+        { type: ENTITY_TYPE_USER },
+      );
+    });
+
+    it('should refuse a regular (non-service-account) user', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-2', user_service_account: false } as any);
+
+      await expect(assertRunAsUserAllowed(context, author, { label: 'Bob', value: 'user-2' }))
+        .rejects.toThrow(/service account/);
+    });
+
+    it('should refuse (fail closed) when the run-as user cannot be loaded', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+
+      await expect(assertRunAsUserAllowed(context, author, 'ghost-user'))
+        .rejects.toThrow(/service account/);
+    });
+  });
+
+  describe('isRunAsUserAllowed', () => {
+    const context = { source: 'test' } as any;
+    const author = { id: 'author-1' } as any;
+
+    it('should allow (without a DB lookup) an unset run-as or the current author', async () => {
+      await expect(isRunAsUserAllowed(context, author, null)).resolves.toBe(true);
+      await expect(isRunAsUserAllowed(context, author, { label: 'Me', value: 'author-1' })).resolves.toBe(true);
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should allow a service account and refuse a regular or unknown user', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === 'svc-1') return { id, user_service_account: true };
+        if (id === 'user-2') return { id, user_service_account: false };
+        return null;
+      }) as any);
+
+      await expect(isRunAsUserAllowed(context, author, 'svc-1')).resolves.toBe(true);
+      await expect(isRunAsUserAllowed(context, author, 'user-2')).resolves.toBe(false);
+      await expect(isRunAsUserAllowed(context, author, 'ghost')).resolves.toBe(false);
+    });
+  });
+
+  describe('assertDefinitionRunAsAllowed', () => {
+    const context = { source: 'test' } as any;
+    const author = { id: 'author-1' } as any;
+
+    const definitionWith = (runAsValues: Array<unknown>) => JSON.stringify({
+      nodes: runAsValues.map((runAs, index) => ({
+        id: `node-${index}`,
+        name: `node-${index}`,
+        position: { x: 0, y: 0 },
+        component_id: 'PLAYBOOK_AI_AGENT_SEND_COMPONENT',
+        configuration: JSON.stringify(runAs === undefined ? {} : { run_as: runAs }),
+      })),
+      links: [],
+    });
+
+    it('should resolve for an empty, missing or unparseable definition', async () => {
+      await expect(assertDefinitionRunAsAllowed(context, author, undefined)).resolves.toBeUndefined();
+      await expect(assertDefinitionRunAsAllowed(context, author, '{not json')).resolves.toBeUndefined();
+      await expect(assertDefinitionRunAsAllowed(context, author, definitionWith([]))).resolves.toBeUndefined();
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should resolve when every node targets the author, a service account or nothing', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'svc-1', user_service_account: true } as any);
+
+      const definition = definitionWith([undefined, { label: 'Me', value: 'author-1' }, { label: 'Svc', value: 'svc-1' }]);
+      await expect(assertDefinitionRunAsAllowed(context, author, definition)).resolves.toBeUndefined();
+    });
+
+    it('should reject when any node targets a regular user', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-2', user_service_account: false } as any);
+
+      const definition = definitionWith([{ label: 'Me', value: 'author-1' }, { label: 'Bob', value: 'user-2' }]);
+      await expect(assertDefinitionRunAsAllowed(context, author, definition)).rejects.toThrow(/service account/);
+    });
+  });
+
+  describe('sanitizeDefinitionRunAs', () => {
+    const context = { source: 'test' } as any;
+    const author = { id: 'author-1', name: 'Author One' } as any;
+
+    const parseNodeRunAs = (definition: string) => (JSON.parse(definition).nodes as Array<{ configuration: string }>)
+      .map((node) => JSON.parse(node.configuration).run_as);
+
+    it('should return the input unchanged when it is empty or unparseable', async () => {
+      await expect(sanitizeDefinitionRunAs(context, author, null)).resolves.toBeNull();
+      await expect(sanitizeDefinitionRunAs(context, author, '{not json')).resolves.toBe('{not json');
+      expect(internalLoadById).not.toHaveBeenCalled();
+    });
+
+    it('should keep allowed targets and reset disallowed ones to the acting user', async () => {
+      vi.mocked(internalLoadById).mockImplementation((async (_context: any, _user: any, id: string) => {
+        if (id === 'svc-1') return { id, user_service_account: true };
+        return { id, user_service_account: false };
+      }) as any);
+
+      const definition = JSON.stringify({
+        nodes: [
+          { id: 'a', name: 'a', position: { x: 0, y: 0 }, component_id: 'C', configuration: JSON.stringify({ run_as: { label: 'Me', value: 'author-1' } }) },
+          { id: 'b', name: 'b', position: { x: 0, y: 0 }, component_id: 'C', configuration: JSON.stringify({ run_as: { label: 'Svc', value: 'svc-1' } }) },
+          { id: 'c', name: 'c', position: { x: 0, y: 0 }, component_id: 'C', configuration: JSON.stringify({ run_as: { label: 'Bob', value: 'user-2' } }) },
+          { id: 'd', name: 'd', position: { x: 0, y: 0 }, component_id: 'C', configuration: JSON.stringify({ other: true }) },
+        ],
+        links: [],
+      });
+
+      const sanitized = await sanitizeDefinitionRunAs(context, author, definition);
+      expect(sanitized).not.toBe(definition);
+      const [a, b, c, d] = parseNodeRunAs(sanitized as string);
+      expect(a).toEqual({ label: 'Me', value: 'author-1' });
+      expect(b).toEqual({ label: 'Svc', value: 'svc-1' });
+      expect(c).toEqual({ label: 'Author One', value: 'author-1' });
+      expect(d).toBeUndefined();
+    });
+
+    it('should return the original string when nothing has to change', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'svc-1', user_service_account: true } as any);
+
+      const definition = JSON.stringify({
+        nodes: [
+          { id: 'a', name: 'a', position: { x: 0, y: 0 }, component_id: 'C', configuration: JSON.stringify({ run_as: { label: 'Svc', value: 'svc-1' } }) },
+        ],
+        links: [],
+      });
+
+      await expect(sanitizeDefinitionRunAs(context, author, definition)).resolves.toBe(definition);
+    });
+  });
+
   describe('callXtmAgent', () => {
     const ADMIN_JWT_USER = { id: OPENCTI_ADMIN_UUID, user_email: 'admin@opencti.io' };
 
@@ -224,34 +507,27 @@ describe('ai-agent-shared', () => {
       vi.mocked(issueXtmJwt).mockResolvedValue('signed.jwt');
       vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
       vi.mocked(nconf.get).mockReturnValue('https://xtm-one.test');
-      // No run-as user configured by default -> the seeded admin is resolved.
-      vi.mocked(internalLoadById).mockResolvedValue(ADMIN_JWT_USER as any);
     });
 
     it('should return null and not call the HTTP client when XTM One is not configured', async () => {
       vi.mocked(nconf.get).mockReturnValue(undefined);
       vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
 
-      const result = await callXtmAgent('any-agent', 'content');
+      const result = await callXtmAgent('any-agent', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
       expect(getHttpClient).not.toHaveBeenCalled();
     });
 
-    it('should default to the seeded admin and POST a non-streaming chat message', async () => {
+    it('should mint the JWT for the passed identity (no extra lookup) and POST a non-streaming chat message', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'agent reply' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'hello world');
+      const result = await callXtmAgent('agent-slug', 'hello world', ADMIN_JWT_USER);
 
       expect(result).toBe('agent reply');
-      // No run-as user -> resolve the seeded admin by its fixed UUID.
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        OPENCTI_ADMIN_UUID,
-        { type: ENTITY_TYPE_USER },
-      );
+      // The identity was resolved once by the executor — no lookup here.
+      expect(internalLoadById).not.toHaveBeenCalled();
       expect(issueXtmJwt).toHaveBeenCalledWith(ADMIN_JWT_USER, 'https://xtm-one.test');
       expect(getHttpClient).toHaveBeenCalledTimes(1);
       const headers = vi.mocked(getHttpClient).mock.calls[0][0].headers as Record<string, string>;
@@ -264,58 +540,32 @@ describe('ai-agent-shared', () => {
       );
     });
 
-    it('should mint the JWT for the resolved run-as user when a runAsUserId is provided', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-7', user_email: 'analyst@org.test' } as any);
+    it('should mint the JWT for a run-as identity exactly as passed', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content', 'user-7');
+      const result = await callXtmAgent('agent-slug', 'content', { id: 'user-7', user_email: 'analyst@org.test' });
 
       expect(result).toBe('ok');
-      expect(internalLoadById).toHaveBeenCalledWith(
-        expect.anything(),
-        SYSTEM_USER,
-        'user-7',
-        { type: ENTITY_TYPE_USER },
-      );
       expect(issueXtmJwt).toHaveBeenCalledWith({ id: 'user-7', user_email: 'analyst@org.test' }, 'https://xtm-one.test');
     });
 
-    it('should fall back to AUTOMATION_MANAGER_USER when the run-as user cannot be loaded', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue(null as any);
+    it('should skip the call (return null, no JWT minted) when no JWT identity could be resolved (jwtUser null)', async () => {
       const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      await callXtmAgent('agent-slug', 'content', 'missing-user');
+      const result = await callXtmAgent('agent-slug', 'content', null);
 
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
-    });
-
-    it('should fall back to AUTOMATION_MANAGER_USER when the resolved user has no email', async () => {
-      vi.mocked(internalLoadById).mockResolvedValue({ id: 'user-9' } as any);
-      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
-      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
-
-      await callXtmAgent('agent-slug', 'content', 'user-9');
-
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
-    });
-
-    it('should fall back to AUTOMATION_MANAGER_USER when resolving the run-as user throws', async () => {
-      vi.mocked(internalLoadById).mockRejectedValue(new Error('ES down'));
-      const post = vi.fn().mockResolvedValue({ data: { content: 'ok' } });
-      vi.mocked(getHttpClient).mockReturnValue({ post } as any);
-
-      await callXtmAgent('agent-slug', 'content', 'user-x');
-
-      expect(issueXtmJwt).toHaveBeenCalledWith(AUTOMATION_MANAGER_USER, 'https://xtm-one.test');
+      expect(result).toBeNull();
+      expect(issueXtmJwt).not.toHaveBeenCalled();
+      expect(post).not.toHaveBeenCalled();
     });
 
     it('should return null when the assistant content field is missing', async () => {
       const post = vi.fn().mockResolvedValue({ data: {} });
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content');
+      const result = await callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
     });
@@ -324,7 +574,7 @@ describe('ai-agent-shared', () => {
       const post = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'));
       vi.mocked(getHttpClient).mockReturnValue({ post } as any);
 
-      const result = await callXtmAgent('agent-slug', 'content');
+      const result = await callXtmAgent('agent-slug', 'content', ADMIN_JWT_USER);
 
       expect(result).toBeNull();
     });

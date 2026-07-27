@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+
+const BASE_PATH = process.env.APP__BASE_PATH ?? '';
+const BASE_URL = `http://localhost:3000${BASE_PATH}`;
+
 // https://playwright.dev/docs/browsers
 
 /**
@@ -35,7 +39,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: BASE_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -105,8 +109,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
    webServer: {
-     command: 'yarn start',
-     url: 'http://localhost:3000',
+     command: `APP__BASE_PATH=${BASE_PATH} yarn start`,
+     url: BASE_URL,
      reuseExistingServer: !process.env.CI,
    },
 

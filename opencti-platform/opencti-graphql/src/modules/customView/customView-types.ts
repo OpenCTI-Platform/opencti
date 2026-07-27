@@ -48,5 +48,6 @@ export interface CustomViewExport {
   configuration: {
     name: string;
     manifest: string;
+    target_entity_type?: string;
   };
 }

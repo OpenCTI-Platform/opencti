@@ -6,6 +6,7 @@ import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/impo
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { internalLoadById } from '../database/middleware-loader';
 import {
+  redisAcquireWorkCompletionFlag,
   redisDeleteWorks,
   redisGetWork,
   redisGetWorkCompletionState,
@@ -24,6 +25,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } 
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
+import { addIngestionObjectsProcessedCount } from '../manager/telemetryManager';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -298,6 +300,33 @@ const updateWorkTaskToComplete = async (context, user, work) => {
 
 const isWorkFinished = (expected, total) => total >= expected;
 
+// Works exist for the whole connector surface (imports, exports, analysis,
+// notifications...). The ingestion volume proxy must only count import-side
+// pipelines, and only ONCE per work: reportExpectation and updateProcessedTime
+// can both observe the completion of the same work concurrently (even from
+// different nodes), so uniqueness is enforced with an atomic Redis SET NX
+// flag - only the caller that acquires it counts. The status check is just a
+// cheap short-circuit for works that are already complete in the index.
+// Fire-and-forget: a telemetry failure must never break the work completion.
+const INGESTION_WORK_EVENT_TYPES = [
+  'EXTERNAL_IMPORT', // external connectors, built-in ingesters, form intakes
+  'INTERNAL_IMPORT_FILE', // file imports
+  'INTERNAL_ENRICHMENT', // enrichment results ingested back
+  'INTERNAL_INGESTION', // draft validation
+];
+const countIngestionObjectsProcessed = (work, objectsCount) => {
+  if (!work || work.status === 'complete' || !INGESTION_WORK_EVENT_TYPES.includes(work.event_type)) {
+    return;
+  }
+  redisAcquireWorkCompletionFlag(work.id)
+    .then((isFirstCompletion) => {
+      if (isFirstCompletion) {
+        addIngestionObjectsProcessedCount(objectsCount);
+      }
+    })
+    .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
+};
+
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
@@ -335,6 +364,11 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     if (currentWork) {
+      if (isComplete) {
+        // Telemetry: objects processed by this completed work (volume proxy,
+        // import-side pipelines only, first completion only).
+        countIngestionObjectsProcessed(currentWork, total);
+      }
       await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
@@ -443,6 +477,10 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
                ctx._source['import_expected_number'] = params.completed_number;
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
+    // Telemetry: objects processed by this completed work (volume proxy,
+    // import-side pipelines only, first completion only). Use the real
+    // processed total, not the defaulted-to-1 completed_number.
+    countIngestionObjectsProcessed(currentWork, total);
   }
   if (isNotEmptyField(message)) {
     if (inError) {

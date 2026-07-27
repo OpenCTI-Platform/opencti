@@ -346,14 +346,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                       : t_i18n('Display only used techniques')
                   }
                 >
-                  <span>
-                    <IconButton
-                      color={isModeOnlyActive ? 'secondary' : 'primary'}
-                      onClick={() => setIsModeOnlyActive((value) => !value)}
-                    >
-                      <VisibilityOutlined />
-                    </IconButton>
-                  </span>
+                  <IconButton
+                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    onClick={() => setIsModeOnlyActive((value) => !value)}
+                  >
+                    <VisibilityOutlined />
+                  </IconButton>
                 </Tooltip>
               </Stack>
 

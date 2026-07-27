@@ -43,7 +43,6 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
     <Tooltip title={t_i18n('Add an entity to this container')}>
       <IconButton
         color="primary"
-        aria-label={t_i18n('Add')}
         onClick={() => onOpen()}
       >
         <Add />

@@ -298,6 +298,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         <EETooltip forAi={true} title={tooltipTitle}>
           <span style={{ display: 'inline-flex' }}>
             <IconButton
+              aria-label={t_i18n('Open menu')}
               size="small"
               onClick={(event) => handleOpenMenu(event)}
               disabled={isButtonDisabled}

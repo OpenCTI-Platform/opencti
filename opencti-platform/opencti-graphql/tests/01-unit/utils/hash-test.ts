@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { compareHashSHA256, hashSHA256 } from '../../../src/utils/hash';
+import { inputHashesToStix } from '../../../src/schema/fieldDataAdapter';
 
 describe('Hash utilities: compareHashSHA256', () => {
   // Ref text.
@@ -43,5 +44,31 @@ describe('Hash utilities: compareHashSHA256', () => {
   it('should return false if content differs at start', () => {
     const hash = hashSHA256(CONTENT_1);
     expect(compareHashSHA256(CONTENT_3, hash)).toEqual(false);
+  });
+});
+
+describe('fieldDataAdapter.inputHashesToStix', () => {
+  it('preserves case for SSDEEP', () => {
+    const inputs = [{ algorithm: 'ssdeep', hash: 'AbC:DeF:123 ' }];
+    const result = inputHashesToStix(inputs as any);
+    expect(result.SSDEEP).toBe('AbC:DeF:123');
+  });
+
+  it('preserves case for SDHASH', () => {
+    const inputs = [{ algorithm: 'SDHash', hash: 'XyZ123' }];
+    const result = inputHashesToStix(inputs as any);
+    expect(result.SDHASH).toBe('XyZ123');
+  });
+
+  it('preserves case for SHA-256 when treated as sensitive', () => {
+    const inputs = [{ algorithm: 'sha-256', hash: 'ABCDEF123456' }];
+    const result = inputHashesToStix(inputs as any);
+    expect(result['SHA-256']).toBe('ABCDEF123456');
+  });
+
+  it('lowercases non-sensitive algorithm values (MD5)', () => {
+    const inputs = [{ algorithm: 'md5', hash: 'ABCDEF123456' }];
+    const result = inputHashesToStix(inputs as any);
+    expect(result.MD5).toBe('ABCDEF123456');
   });
 });

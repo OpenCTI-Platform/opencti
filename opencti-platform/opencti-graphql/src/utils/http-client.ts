@@ -16,6 +16,7 @@ export interface Certificates {
 export interface GetHttpClient {
   baseURL?: string;
   rejectUnauthorized?: boolean;
+  timeout?: number;
   responseType: 'json' | 'arraybuffer' | 'text' | 'stream';
   headers?: RawAxiosRequestHeaders | AxiosHeaders | Partial<HeadersDefaults>;
   certificates?: Certificates;
@@ -54,7 +55,7 @@ const buildHttpAgentOpts = (uri: string, baseURL: string | undefined, defaultHtt
     proxy: false, // Disable direct proxy protocol in http adapter
   };
 };
-export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseType, certificates, auth }: GetHttpClient) => {
+export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth }: GetHttpClient) => {
   // Build a default https agent to force query options if no proxy is setup
   const cert = isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined;
   const key = isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined;
@@ -64,6 +65,7 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, responseTy
   // Create the default caller
   const caller = axios.create({
     baseURL,
+    timeout,
     responseType,
     headers,
     auth,

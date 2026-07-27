@@ -44,6 +44,7 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
   return (
     <div>
       <IconButton
+        aria-label={t_i18n('Add')}
         onClick={handleOpen}
         size="small"
       >

@@ -116,6 +116,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                   divider={true}
                   secondaryAction={(
                     <IconButton
+                      aria-label={t('Go to')}
                       component={Link}
                       to={`${link}/${element.node.id}`}
                     >

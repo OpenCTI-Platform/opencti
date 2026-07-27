@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { formSubmit } from '../../../src/modules/form/form-domain';
 import * as draftWorkspaceDomain from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import * as workDomain from '../../../src/domain/work';
+import * as rabbitmq from '../../../src/database/rabbitmq';
 import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 
 const { mockStoreLoadById } = vi.hoisted(() => ({
@@ -450,6 +451,24 @@ describe('formSubmit', () => {
     expect(draftInput.description).toBeUndefined();
     expect(draftInput.objectAssignee).toBeUndefined();
     expect(draftInput.objectParticipant).toBeUndefined();
+  });
+
+  it('should send bundle with no_split:true to prevent race condition with multiple workers', async () => {
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({ name: 'Test Individual' }),
+    };
+
+    mockStoreLoadById.mockResolvedValue(mockForm);
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' } as any);
+    vi.spyOn(workDomain, 'updateExpectationsNumber').mockResolvedValue(undefined as any);
+
+    await formSubmit(mockContext, mockUser, input, false); // isDraft=false → pushToWorkerForConnector path
+
+    const pushSpy = vi.mocked(rabbitmq.pushToWorkerForConnector);
+    expect(pushSpy).toHaveBeenCalledOnce();
+    const message = pushSpy.mock.calls[0][1];
+    expect(message).toMatchObject({ no_split: true });
   });
 
   it('should bypass mandatory attributes when creating draft from form intake', async () => {

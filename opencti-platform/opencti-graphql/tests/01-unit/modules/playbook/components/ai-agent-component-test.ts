@@ -7,6 +7,8 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
   isAgentBoundToIntent: vi.fn(),
+  isXtmOneConfigured: vi.fn(),
+  resolveAgentJwtUser: vi.fn(),
   resolveRunAsUserId: vi.fn(),
 }));
 
@@ -22,6 +24,8 @@ import {
   buildAgentSlugOneOf,
   callXtmAgent,
   isAgentBoundToIntent,
+  isXtmOneConfigured,
+  resolveAgentJwtUser,
   resolveRunAsUserId,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
@@ -45,6 +49,10 @@ const ORIGINAL_BUNDLE: StixBundle = {
 };
 
 const TRANSFORMED_BUNDLE_OBJECT = { id: TRANSFORMED_INDICATOR_ID, type: 'indicator', spec_version: '2.1' };
+
+// Identity resolved once by the executor and shared between the binding
+// check and the agent call.
+const JWT_USER = { id: 'jwt-user-id', user_email: 'jwt-user@org.test' };
 
 const buildExecutorParams = (
   configuration: { agent_slug: string; prompt?: string },
@@ -71,8 +79,13 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // XTM One configured by default; the unconfigured test overrides this.
+    vi.mocked(isXtmOneConfigured).mockReturnValue(true);
     // No run-as user configured by default; tests that need it override this.
     vi.mocked(resolveRunAsUserId).mockReturnValue(undefined);
+    // The executor resolves the JWT identity once and forwards it to both
+    // the binding check and the agent call.
+    vi.mocked(resolveAgentJwtUser).mockResolvedValue(JWT_USER);
     // Default to "agent slug is bound to the right intent" so existing
     // tests exercise the live agent-call path; tests that need the
     // negative branch override this explicitly.
@@ -130,6 +143,33 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
     });
 
+    it('should route to `unmodified` without any user lookup or XTM One call when XTM One is not configured', async () => {
+      vi.mocked(isXtmOneConfigured).mockReturnValue(false);
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(resolveAgentJwtUser).not.toHaveBeenCalled();
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
+    it('should route to `unmodified` and skip both the binding check and the agent call when no JWT identity can be resolved', async () => {
+      vi.mocked(resolveAgentJwtUser).mockResolvedValue(null);
+
+      const result = await PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle).toBe(ORIGINAL_BUNDLE);
+    });
+
     it('should route to `unmodified` and not call XTM One when the slug is not bound to the cti.stix_transformer intent (defense in depth)', async () => {
       vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
 
@@ -137,7 +177,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-not-bound-to-transformer' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-not-bound-to-transformer');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-not-bound-to-transformer', JWT_USER);
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
@@ -150,7 +190,7 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x', JWT_USER);
     });
 
     it('should route to `unmodified` when XTM One call fails (callXtmAgent returns null)', async () => {
@@ -160,12 +200,12 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', undefined);
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
       expect(result.output_port).toBe('unmodified');
       expect(result.bundle).toBe(ORIGINAL_BUNDLE);
     });
 
-    it('should resolve the configured run-as user and forward it to the agent call', async () => {
+    it('should resolve the JWT identity ONCE from the configured run-as user and forward it to both the binding check and the agent call', async () => {
       vi.mocked(resolveRunAsUserId).mockReturnValue('run-as-user-id');
       vi.mocked(callXtmAgent).mockResolvedValue(null);
 
@@ -173,7 +213,10 @@ describe('PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', 'run-as-user-id');
+      expect(resolveAgentJwtUser).toHaveBeenCalledTimes(1);
+      expect(resolveAgentJwtUser).toHaveBeenCalledWith('run-as-user-id');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_transformer', 'agent-x', JWT_USER);
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
     });
 
     it('should accept a raw JSON STIX bundle response and emit a new bundle preserving the original envelope', async () => {

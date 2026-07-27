@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from 'react';
+import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
@@ -6,13 +6,13 @@ import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
-import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
+import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { StixCoreObjectsMultiLineChartTimeSeriesQuery } from './__generated__/StixCoreObjectsMultiLineChartTimeSeriesQuery.graphql';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
+import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 
 const stixCoreObjectsMultiLineChartTimeSeriesQuery = graphql`
   query StixCoreObjectsMultiLineChartTimeSeriesQuery(
@@ -96,6 +96,7 @@ const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
   config: DashboardConfig,
+  parameters?: WidgetParameters,
 ): StixCoreObjectsMultiLineChartTimeSeriesQuery['variables'] => {
   const computed = computeStartEndDates(config);
   const startDate = computed.startDate ?? monthsAgo(12);
@@ -118,7 +119,7 @@ const buildQueryVariables = (
   return {
     startDate,
     endDate,
-    interval: 'day',
+    interval: getWidgetInterval(parameters),
     timeSeriesParameters,
   };
 };
@@ -134,33 +135,16 @@ const StixCoreObjectsMultiLineChart = ({
   host,
 }: StixCoreObjectsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
     refreshRate,
     query: stixCoreObjectsMultiLineChartTimeSeriesQuery,
     config,
+    parameters,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) return null;
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixCoreObjectsMultiLineChartComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          parameters={parameters}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -171,7 +155,18 @@ const StixCoreObjectsMultiLineChart = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixCoreObjectsMultiLineChartComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          parameters={parameters}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

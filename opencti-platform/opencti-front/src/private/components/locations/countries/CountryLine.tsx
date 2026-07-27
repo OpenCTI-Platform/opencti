@@ -7,14 +7,13 @@ import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { graphql, useFragment } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { CountryLine_node$key } from './__generated__/CountryLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { findFlagUrl } from '../../../../utils/flags';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -80,9 +79,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
   const classes = useStyles();
   const { fd } = useFormatter();
   const data = useFragment(countryLineFragment, node);
-  const flag = R.head(
-    (data.x_opencti_aliases ?? []).filter((n) => n?.length === 2),
-  );
+  const flagUrl = findFlagUrl(data.x_opencti_aliases);
   return (
     <ListItemButton
       classes={{ root: classes.item }}
@@ -91,10 +88,10 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
       to={`/dashboard/locations/countries/${data.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {flag ? (
+        {flagUrl ? (
           <img
             style={{ width: 20 }}
-            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            src={flagUrl}
             alt={data.name}
           />
         ) : (

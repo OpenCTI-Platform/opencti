@@ -204,13 +204,19 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
 
 export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const { dataColumns } = props;
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
-        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true">
+        <IconButton
+          aria-label={t_i18n('Open menu')}
+          classes={classes.itemIconDisabled}
+          disabled={true}
+          aria-haspopup="true"
+        >
           <MoreVert />
         </IconButton>
       )}

@@ -3,7 +3,7 @@ import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptio
 import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { mergeDeepRightAll, now } from '../utils/format';
@@ -17,6 +17,7 @@ import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -326,6 +327,12 @@ export const getRedisVersion = async () => {
   return versionString.split(':')[1];
 };
 
+export const CACHE_RESET_TOPIC = `${TOPIC_PREFIX}CACHE_RESET_TOPIC`;
+
+export const publishCacheResetEvent = async (entityType: string) => {
+  await getClientPubSub().publish(CACHE_RESET_TOPIC, { entityType });
+};
+
 /* v8 ignore next */
 export const notify = async (topic: string, instance: any, user: AuthUser) => {
   // Instance can be empty if user is currently looking for a deleted instance
@@ -334,9 +341,9 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     // Resolved object_refs must be dissoc from original objects as not directly used for live update
     // and can imply very large event message
     if (Array.isArray(instance)) {
-      data = (instance as any[]).map((i) => R.dissoc(INPUT_OBJECTS, i));
+      data = (instance as any[]).map(removeResolvedRefs);
     } else {
-      data = R.dissoc(INPUT_OBJECTS, instance);
+      data = removeResolvedRefs(instance);
     }
     // Direct refresh the current instance cache
     await refreshLocalCacheForEntity(topic, data as unknown as BasicStoreCommon);
@@ -344,6 +351,11 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
     await getClientPubSub().publish(topic, { instance: data, user });
   }
   return instance;
+};
+
+export const removeResolvedRefs = (instance: any) => {
+  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
 };
 
 // region user context (clientContext)
@@ -534,6 +546,16 @@ export const redisInitializeWork = async (workId: string, isMultiPartWork: boole
     });
   });
 };
+// Atomic first-completion marker for a work: SET NX guarantees that exactly
+// one caller wins, whichever completion path (reportExpectation vs
+// updateProcessedTime) and whichever node observes the completion first.
+// A dedicated TTL-bounded key is used instead of a field on the work hash so
+// the marker can never recreate or orphan a deleted work key.
+const WORK_COMPLETION_FLAG_TTL = 86400; // 1 day, works complete well within it
+export const redisAcquireWorkCompletionFlag = async (workId: string): Promise<boolean> => {
+  const result = await getClientBase().set(`work_completion_counted:${workId}`, '1', 'EX', WORK_COMPLETION_FLAG_TTL, 'NX');
+  return result === 'OK';
+};
 // endregion
 // region async calls tracking
 const ASYNC_CALL_TTL = 300;
@@ -569,7 +591,7 @@ export const getClusterInstances = async () => {
 };
 // endregion
 
-// playground handling
+// playbook handling
 const PLAYBOOK_EXECUTION_TTL = 90 * 24 * 60 * 60; // 90 days
 export const PLAYBOOK_EXECUTIONS_MAX_LENGTH = 20;
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
@@ -713,22 +735,15 @@ export const redisDelForgotPassword = async (id: string, email: string) => {
 // region - telemetry gauges
 const TELEMETRY_EVENT_KEY = 'telemetry_events';
 /**
- * Increment a gauge by its name
+ * Increment a gauge by its name.
+ * HINCRBY is atomic: concurrent increments (multiple API instances, or
+ * fire-and-forget calls racing on the same node) can never lose updates,
+ * unlike the previous hget + hset read-modify-write.
  * @param gaugeName
  * @param countToAdd 1 or more to be added in count
  */
 export const redisSetTelemetryAdd = async (gaugeName: string, countToAdd: number) => {
-  const currentCountStr = await getClientBase().hget(TELEMETRY_EVENT_KEY, gaugeName);
-  if (currentCountStr) {
-    const currentCount: number = +currentCountStr;
-    if (!Number.isNaN(currentCount) && countToAdd > 0) {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, currentCount + countToAdd);
-    } else {
-      await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-    }
-  } else {
-    await getClientBase().hset(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
-  }
+  await getClientBase().hincrby(TELEMETRY_EVENT_KEY, gaugeName, countToAdd);
 };
 
 /**
@@ -769,6 +784,13 @@ export const redisGetManagerEventState = async (managerName: string) => {
 // endregion
 
 // region connector logs
+export interface FeedLog {
+  timestamp: string;
+  status: 'success' | 'error';
+  messages: string[];
+  count?: number;
+}
+
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);
   await getClientBase().set(`connector-${connectorId}-logs`, data);
@@ -776,6 +798,64 @@ export const redisSetConnectorLogs = async (connectorId: string, logs: string[])
 export const redisGetConnectorLogs = async (connectorId: string): Promise<string[]> => {
   const rawLogs = await getClientBase().get(`connector-${connectorId}-logs`);
   return rawLogs ? JSON.parse(rawLogs) : [];
+};
+
+const getIngestionLogKey = (feedId: string) => `ingestion-${feedId}-history`;
+
+const INGESTION_DEDUP_MAX_COUNT = 100;
+const INGESTION_HISTORY_MAX_LENGTH = 20;
+const INGESTION_HISTORY_UPDATE_RETRIES = 5;
+
+export const redisAddIngestionHistory = async (feedId: string, log: FeedLog) => {
+  const clientBase = getClientBase();
+  const key = getIngestionLogKey(feedId);
+  const incomingMessages = JSON.stringify(log.messages);
+
+  for (let attempt = 0; attempt < INGESTION_HISTORY_UPDATE_RETRIES; attempt += 1) {
+    await clientBase.watch(key);
+    try {
+      const latestLogData = await clientBase.lindex(key, 0);
+      const tx = clientBase.multi();
+
+      if (latestLogData) {
+        const latestLog: FeedLog = JSON.parse(latestLogData);
+        const isSameStatus = latestLog.status === log.status;
+        const isSameMessage = JSON.stringify(latestLog.messages) === incomingMessages;
+        const count = latestLog.count ?? 1;
+
+        if (isSameStatus && isSameMessage && count < INGESTION_DEDUP_MAX_COUNT) {
+          const updatedLog: FeedLog = {
+            ...latestLog,
+            count: count + 1,
+            timestamp: log.timestamp,
+          };
+          tx.lset(key, 0, JSON.stringify(updatedLog));
+        } else {
+          tx.lpush(key, JSON.stringify(log));
+          tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
+        }
+      } else {
+        tx.lpush(key, JSON.stringify(log));
+        tx.ltrim(key, 0, INGESTION_HISTORY_MAX_LENGTH - 1);
+      }
+
+      const result = await tx.exec();
+      if (result !== null) {
+        return;
+      }
+    } finally {
+      await clientBase.unwatch();
+    }
+  }
+
+  throw DatabaseError('Redis transaction conflict while updating ingestion history', {
+    feedId,
+  });
+};
+
+export const redisGetIngestionHistory = async (feedId: string): Promise<FeedLog[]> => {
+  const rawLogs = await getClientBase().lrange(getIngestionLogKey(feedId), 0, -1);
+  return rawLogs.map((entry) => JSON.parse(entry) as FeedLog);
 };
 // endregion
 
@@ -846,6 +926,55 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
     logApp.error('Failed to delete auth log history from Redis', { cause: err });
   }
 };
+
+// region ingestion log history (FIFO, last 20 per feed)
+const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
+const INGESTION_LOG_MAX_SIZE = 20;
+
+export interface IngestionLogEntry {
+  timestamp: number;
+  level: 'success' | 'info' | 'warn' | 'error';
+  type: string;
+  identifier: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
+
+export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
+  try {
+    const key = ingestionLogListKey(feedId);
+    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    await redisTx(getClientBase(), async (tx) => {
+      tx.lpush(key, value);
+      tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+    });
+  } catch (err) {
+    logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
+  }
+};
+
+export const redisGetIngestionLogHistory = async (feedId: string): Promise<IngestionLogEntry[]> => {
+  const listKey = ingestionLogListKey(feedId);
+  const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
+  return rawList.map((s) => {
+    try {
+      return JSON.parse(s) as IngestionLogEntry;
+    } catch {
+      return null;
+    }
+  }).filter((e): e is IngestionLogEntry => e !== null);
+};
+
+export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
+  try {
+    await getClientBase().del(ingestionLogListKey(feedId));
+  } catch (err) {
+    logApp.error('Failed to delete ingestion log history from Redis', { cause: err });
+  }
+};
+// endregion
 
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';

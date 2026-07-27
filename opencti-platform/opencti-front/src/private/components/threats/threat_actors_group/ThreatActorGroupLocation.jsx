@@ -8,11 +8,11 @@ import { Link } from 'react-router-dom';
 import IconButton from '@common/button/IconButton';
 import { LinkOff } from '@mui/icons-material';
 import { graphql, createFragmentContainer } from 'react-relay';
-import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import { APP_BASE_PATH, commitMutation } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
+import { findFlagUrl } from '../../../../utils/flags';
 import inject18n from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -66,12 +66,8 @@ class ThreatActorGroupLocationsComponent extends Component {
               const { types } = locationEdge;
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
-              const flag = location.entity_type === 'Country'
-                && R.head(
-                  (location.x_opencti_aliases ?? []).filter(
-                    (n) => n?.length === 2,
-                  ),
-                );
+              const flagUrl = location.entity_type === 'Country'
+                && findFlagUrl(location.x_opencti_aliases);
               return (
                 <ListItem
                   key={location.id}
@@ -94,10 +90,10 @@ class ThreatActorGroupLocationsComponent extends Component {
                     to={`${link}/${location.id}`}
                   >
                     <ListItemIcon sx={{ minWidth: 32 }}>
-                      {flag ? (
+                      {flagUrl ? (
                         <img
                           style={{ width: 20 }}
-                          src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+                          src={flagUrl}
                           alt={location.name}
                         />
                       ) : (

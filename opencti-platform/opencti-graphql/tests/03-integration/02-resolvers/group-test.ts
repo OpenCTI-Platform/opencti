@@ -19,6 +19,9 @@ const LIST_QUERY = gql`
           id
           name
           description
+          representative {
+            main
+          }
         }
       }
     }
@@ -277,6 +280,7 @@ describe('Group resolver standard behavior', () => {
     });
     expect(queryDefaultIngestionGroup?.data?.groups.edges.length).toBe(1);
     expect(queryDefaultIngestionGroup?.data?.groups.edges[0].node.name).toBe('Connectors');
+    expect(queryDefaultIngestionGroup?.data?.groups.edges[0].node.representative.main).toBe('Connectors');
 
     // WHEN Connectors is removed from default ingestion group
     const UPDATE_QUERY = gql`

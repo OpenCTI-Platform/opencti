@@ -27,7 +27,7 @@ import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/l
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
-import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
+import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 
@@ -53,7 +53,7 @@ const settingsResolvers = {
     platform_ip_whitelist_exclusions: (settings, __, context) => internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     platform_email: (settings) => smtpConfiguredEmail(settings),
-    platform_email_configurable: () => ALLOW_EMAIL_REWRITE,
+    platform_email_configurable: () => isEmailRewriteAllowed(),
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,
     password_policy_min_symbols: (settings) => settings.password_policy_min_symbols ?? 0,
@@ -61,12 +61,14 @@ const settingsResolvers = {
     password_policy_min_words: (settings) => settings.password_policy_min_words ?? 0,
     password_policy_min_lowercase: (settings) => settings.password_policy_min_lowercase ?? 0,
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
+    password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),
     platform_enterprise_edition: (settings) => getEnterpriseEditionInfo(settings),
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
+    platform_notifier_auto_trigger_assignee: (settings) => settings.platform_notifier_auto_trigger_assignee ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     caller_ip: (_, __, context) => context.req?.ip ?? null,

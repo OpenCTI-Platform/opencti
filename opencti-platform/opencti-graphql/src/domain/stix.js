@@ -28,6 +28,7 @@ import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from './backgr
 import { objectOrganization, RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { elFindByIds } from '../database/engine';
+import { addExportGeneratedCount } from '../manager/telemetryManager';
 
 export const stixDelete = async (context, user, id, opts = {}) => {
   const element = await internalLoadById(context, user, id);
@@ -94,6 +95,9 @@ export const askListExport = async (context, user, exportContext, format, select
     throw FunctionalError('entity_type is missing from askListExport');
   }
 
+  // Telemetry: one export generation requested (attempts semantics).
+  addExportGeneratedCount();
+
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);
@@ -112,6 +116,7 @@ export const askListExport = async (context, user, exportContext, format, select
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
 
   const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: selectedIds });
+  const extendedListParams = { ...listParams, visible_columns: exportContext.visible_columns };
 
   const baseEvent = {
     format, // extension mime type
@@ -138,6 +143,7 @@ export const askListExport = async (context, user, exportContext, format, select
           export_scope: 'selection', // query or selection or single
           file_name: fileName, // Export expected file name
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
+          list_params: extendedListParams,
           ...baseEvent,
         },
       };
@@ -147,7 +153,7 @@ export const askListExport = async (context, user, exportContext, format, select
       event: {
         export_scope: 'query', // query or selection or single
         file_name: fileName, // Export expected file name
-        list_params: listParams,
+        list_params: extendedListParams,
         ...baseEvent,
       },
     };
@@ -174,6 +180,9 @@ export const askListExport = async (context, user, exportContext, format, select
 };
 
 export const askEntityExport = async (context, user, format, entity, type, contentMaxMarkings, fileMarkings) => {
+  // Telemetry: one export generation requested (attempts semantics).
+  addExportGeneratedCount();
+
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
     return await findMarkingDefinitionById(context, user, id);

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
@@ -39,6 +39,7 @@ const RootTechnique = lazy(() => import('./components/techniques/Root'));
 const RootEntities = lazy(() => import('./components/entities/Root'));
 const RootLocation = lazy(() => import('./components/locations/Root'));
 const RootData = lazy(() => import('@components/data/Root'));
+const RootIntegrations = lazy(() => import('@components/integrations/Root'));
 const RootTrash = lazy(() => import('./components/trash/Root'));
 const RootDrafts = lazy(() => import('./components/drafts/Root'));
 const RootWorkspaces = lazy(() => import('./components/workspaces/Root'));
@@ -46,12 +47,15 @@ const RootSettings = lazy(() => import('./components/settings/Root'));
 const RootAudit = lazy(() => import('./components/settings/activity/audit/Root'));
 const RootPir = lazy(() => import('./components/pir/Root'));
 const RootXTMHub = lazy(() => import('@components/xtm_hub/Root'));
+const ForcePasswordChange = lazy(() => import('./components/profile/ForcePasswordChange'));
 
 interface IndexProps {
   settings: RootSettings$data;
 }
 
 const Index = ({ settings }: IndexProps) => {
+  const location = useLocation();
+  const isForcePasswordChangeRoute = location.pathname.startsWith('/dashboard/change-password');
   const theme = useTheme<Theme>();
   const { isTrashEnable } = useHelper();
   const {
@@ -80,14 +84,16 @@ const Index = ({ settings }: IndexProps) => {
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
-    paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
+    paddingTop: isForcePasswordChangeRoute
+      ? 0
+      : `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px + ${topBannerHeight}px)`,
     marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
   const boxSx: SxProps = {
-    px: 3,
+    px: isForcePasswordChangeRoute ? 0 : 3,
     flex: 1,
-    overflowY: 'auto',
+    overflowY: isForcePasswordChangeRoute ? 'hidden' : 'auto',
     minHeight: 0,
   };
 
@@ -101,14 +107,14 @@ const Index = ({ settings }: IndexProps) => {
       <Box
         sx={{
           display: 'flex',
-          minWidth: 1400,
+          minWidth: isForcePasswordChangeRoute ? 0 : 1400,
           marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
           marginBottom: bannerHeight,
         }}
       >
         <CssBaseline />
-        <TopBar />
-        <LeftBar />
+        {!isForcePasswordChangeRoute && <TopBar />}
+        {!isForcePasswordChangeRoute && <LeftBar />}
         <Message />
         <NewsFeedToastManager />
         <Stack component="main" sx={mainSx}>
@@ -138,19 +144,21 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
                 <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
                 <Route path="/data/*" element={boundaryWrapper(RootData)} />
+                <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
                 {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
                 <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
                 <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                 <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
                 <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
                 <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+                <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
                 <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
                 <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
                 <Route path="/*" element={<NoMatch />} />
               </Routes>
             </Suspense>
           </Box>
-          <DraftToolbar />
+          {!isForcePasswordChangeRoute && <DraftToolbar />}
         </Stack>
       </Box>
     </ChatbotProvider>

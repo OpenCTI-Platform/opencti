@@ -5,30 +5,30 @@ const url = `${protocol}//${hostname}:${port || ''}`;
 
 export const FONTS = {
   Roboto: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/Roboto-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/Roboto-Bold.ttf`,
-    italics: `${url}${APP_BASE_PATH}/static/ext/Roboto-Italic.ttf`,
-    bolditalics: `${url}${APP_BASE_PATH}/static/ext/Roboto-BoldItalic.ttf`,
+    normal: `${url}${APP_BASE_PATH}/assets/static/Roboto-Regular.ttf`,
+    bold: `${url}${APP_BASE_PATH}/assets/static/Roboto-Bold.ttf`,
+    italics: `${url}${APP_BASE_PATH}/assets/static/Roboto-Italic.ttf`,
+    bolditalics: `${url}${APP_BASE_PATH}/assets/static/Roboto-BoldItalic.ttf`,
   },
   Geologica: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/Geologica-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/Geologica-Bold.ttf`,
-    italics: `${url}${APP_BASE_PATH}/static/ext/Geologica-Regular.ttf`,
-    bolditalics: `${url}${APP_BASE_PATH}/static/ext/Geologica-Bold.ttf`,
+    normal: `${url}${APP_BASE_PATH}/assets/static/Geologica-Regular.ttf`,
+    bold: `${url}${APP_BASE_PATH}/assets/static/Geologica-Bold.ttf`,
+    italics: `${url}${APP_BASE_PATH}/assets/static/Geologica-Regular.ttf`,
+    bolditalics: `${url}${APP_BASE_PATH}/assets/static/Geologica-Bold.ttf`,
   },
   IbmPlexSans: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/IBMPlexSans-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/IBMPlexSans-Bold.ttf`,
-    italics: `${url}${APP_BASE_PATH}/static/ext/IBMPlexSans-RegularItalic.ttf`,
-    bolditalics: `${url}${APP_BASE_PATH}/static/ext/IBMPlexSans-BoldItalic.ttf`,
+    normal: `${url}${APP_BASE_PATH}/assets/static/IBMPlexSans-Regular.ttf`,
+    bold: `${url}${APP_BASE_PATH}/assets/static/IBMPlexSans-Bold.ttf`,
+    italics: `${url}${APP_BASE_PATH}/assets/static/IBMPlexSans-RegularItalic.ttf`,
+    bolditalics: `${url}${APP_BASE_PATH}/assets/static/IBMPlexSans-BoldItalic.ttf`,
   },
   NotoSansJp: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/NotoSansJP-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/NotoSansJP-Bold.ttf`,
+    normal: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Regular.ttf`,
+    bold: `${url}${APP_BASE_PATH}/assets/static/NotoSansJP-Bold.ttf`,
   },
   NotoSansKr: {
-    normal: `${url}${APP_BASE_PATH}/static/ext/NotoSansKR-Regular.ttf`,
-    bold: `${url}${APP_BASE_PATH}/static/ext/NotoSansKR-Bold.ttf`,
+    normal: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Regular.ttf`,
+    bold: `${url}${APP_BASE_PATH}/assets/static/NotoSansKR-Bold.ttf`,
   },
 };
 

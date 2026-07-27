@@ -193,6 +193,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                       setAnchorEl(e.currentTarget);
                     }}
                     aria-haspopup="true"
+                    aria-label={t_i18n('Open menu')}
                     color="primary"
                     size="small"
                   >

@@ -4,7 +4,7 @@ import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsRadarQuery } from './__generated__/PublicStixRelationshipsRadarQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -110,7 +110,7 @@ const PublicStixRelationshipsRadar = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsRadarQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsRadarQuery>(
     publicStixRelationshipsRadarsQuery,
     {
       uriKey,

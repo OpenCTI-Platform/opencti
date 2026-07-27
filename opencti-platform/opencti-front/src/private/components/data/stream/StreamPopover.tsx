@@ -106,6 +106,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
   return (
     <div style={{ margin: 0 }}>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}

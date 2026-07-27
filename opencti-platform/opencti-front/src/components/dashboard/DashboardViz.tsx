@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { ErrorBoundary } from '../../private/components/Error';
+import { ErrorBoundary } from '@components/Error';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import DashboardRawViz from './DashboardRawViz';
 import DashboardRelationshipsViz from './DashboardRelationshipsViz';
@@ -54,10 +54,7 @@ const DashboardViz = ({
           />
         )}
         {perspective === null && (
-          <DashboardRawViz
-            widget={widget}
-            popover={popover}
-          />
+          <DashboardRawViz widget={widget} popover={popover} config={config} host={host} />
         )}
       </>
     </ErrorBoundary>

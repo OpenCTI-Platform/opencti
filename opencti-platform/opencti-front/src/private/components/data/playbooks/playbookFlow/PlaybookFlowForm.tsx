@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import Button from '@common/button/Button';
 import OpenVocabField from '@components/common/form/OpenVocabField';
-import ObjectMembersField from '@components/common/form/ObjectMembersField';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -28,7 +27,7 @@ import { parse } from '../../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
+import type { PlaybookBundleElementsToApply, PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
 import PlaybookFlowFieldAccessRestrictions from './playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
 import PlaybookFlowFieldArray, { PlaybookFlowFieldArrayProps } from './playbookFlowFields/PlaybookFlowFieldArray';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
@@ -39,25 +38,32 @@ import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFiel
 import PlaybookFlowFieldNumber from './playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldOrganizations from './playbookFlowFields/PlaybookFlowFieldOrganizations';
 import PlaybookFlowFieldPeriod from './playbookFlowFields/PlaybookFlowFieldPeriod';
+import PlaybookFlowFieldRunAs from './playbookFlowFields/PlaybookFlowFieldRunAs';
 import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldString';
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
-import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
   = PlaybookUpdateActionsForm
     & {
-    // Common for every component
+    // Common for several components
       name: string;
       description?: string;
+      applyToElements?: PlaybookBundleElementsToApply;
+      filters?: string;
       // Component: CRON
       time?: string;
       period?: string;
       day?: string;
+      triggerTime?: string;
       // Component: Container wrapper
-      all?: boolean;
+      newContainer?: boolean;
+      // Component : create indicator and create observable
+      wrap_in_container?: boolean;
     };
 
 interface PlaybookFlowFormProps {
@@ -148,47 +154,7 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
-  // region initial values
-
-  const initialValues: PlaybookFlowFormData = {
-    name: '',
-    description: '',
-  };
-
-  if (!currentConfig) {
-    // Get default values from schema.
-    initialValues.name = selectedComponent?.name ?? '';
-    initialValues.description = '';
-    Object.entries(configurationSchema?.properties ?? {})
-      .forEach(([propName, property]) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-        initialValues[propName] = property.default;
-        if (propName === 'actions') initialValues.actionsFormValues = [];
-      });
-  } else {
-    // Get values from saved config.
-    initialValues.name = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.name ?? ''
-      : selectedComponent?.name ?? '';
-    initialValues.description = nodeData?.component?.id === selectedComponent?.id
-      ? nodeData?.description ?? ''
-      : '';
-    const actionsFormValues: PlaybookUpdateAction['value'][] = [];
-    Object.entries(currentConfig)
-      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-      .forEach(([key, value]) => {
-        if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
-        else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-          initialValues[key] = value;
-        }
-        initialValues.actionsFormValues = actionsFormValues;
-      });
-  }
-
-  // endregion
+  const initialValues = computeInitialComponentConfigValues({ action, currentConfig, configurationSchema, nodeData, selectedComponent });
 
   return (
     <div style={{ padding: '0px 0px 20px 0px' }}>
@@ -235,11 +201,10 @@ const PlaybookFlowForm = ({
                   }
                   if (propName === 'run_as') {
                     return (
-                      <ObjectMembersField
+                      <PlaybookFlowFieldRunAs
                         key={propName}
                         name={propName}
-                        label={t_i18n(property.$ref ?? 'Run as')}
-                        entityTypes={['User']}
+                        label={property.$ref ?? 'Run as'}
                         style={fieldSpacingContainerStyle}
                       />
                     );

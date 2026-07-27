@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { FormSchemaDefinition } from './form-types';
+import type { AdditionalEntity, FormSchemaDefinition } from './form-types';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
@@ -17,6 +17,102 @@ import { transformSpecialFields, convertFieldType } from './form-fields-converte
 import { completeEntity } from './form-entity-builder';
 import { loadFormEntity } from './form-utils';
 
+/**
+ * Input fields coming from the entity-creation mutations that must NOT be copied
+ * verbatim onto the pending store entity. They are either:
+ *  - references that carry OpenCTI internal ids (createdBy, objectMarking, …) which
+ *    cannot be resolved as STIX refs inside this bundle,
+ *  - file uploads, or
+ *  - GraphQL/mutation metadata (type, update, clientMutationId, …).
+ * Everything else that is a scalar (or array of scalars) is copied so we do not
+ * silently lose attributes (aliases, x_mitre_id, goals, channel_types, …).
+ */
+const PENDING_NON_SCALAR_INPUT_FIELDS = new Set<string>([
+  'createdBy', 'objectMarking', 'objectLabel', 'objectOrganization',
+  'objectAssignee', 'objectParticipant', 'externalReferences', 'killChainPhases',
+  'objects', 'caseTemplates', 'content_mapping', 'file', 'files', 'x_opencti_files',
+  // `files` / `embedded` are injected by useMarkdownCreationFilesInput() for markdown
+  // image uploads; `embedded` is a boolean[] and would otherwise pass the scalar filter.
+  'embedded', 'update', 'clientMutationId', 'type',
+]);
+
+const isScalarOrScalarArray = (value: unknown): boolean => {
+  if (value === undefined || value === null || value === '') return false;
+  const valueType = typeof value;
+  if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') return true;
+  if (Array.isArray(value)) {
+    return value.length > 0 && value.every((item) => ['string', 'number', 'boolean'].includes(typeof item));
+  }
+  return false;
+};
+
+/**
+ * Build partial StoreEntity objects from pending-creation payloads.
+ *
+ * A "pending creation" is emitted by the frontend when a draft-only user creates an
+ * entity on the fly inside a Form Intake lookup field. The mutation is intercepted
+ * client-side and the raw mutation variables (`input` for SDOs, or the flat variable
+ * object for SCOs) are forwarded here as part of the form submission so the entity
+ * can be materialised in the draft bundle.
+ *
+ * SDO mutations: variables = { input: { name, description, aliases, … } }
+ * SCO mutations: variables are flat: { type, x_opencti_description, IPv4Addr: { value }, … }
+ *
+ * Scalar attributes are copied generically (see PENDING_NON_SCALAR_INPUT_FIELDS for the
+ * exclusions). Reference fields (createdBy, objectMarking, objectLabel) carry OpenCTI
+ * internal ids that are not guaranteed to exist in the bundle and are intentionally
+ * skipped: the entity is materialised in the draft where such links can be added later.
+ */
+const buildPendingEntities = (
+  pendingList: Array<{ entityType: string; input: Record<string, any> }>,
+): StoreEntity[] => {
+  return pendingList.map((pending) => {
+    const entity: Record<string, any> = { entity_type: pending.entityType };
+    const { input } = pending;
+
+    // SCO flat-variable format: the observable data is nested under a type key
+    // e.g. { type: 'IPv4-Addr', IPv4Addr: { value: '1.2.3.4' }, x_opencti_description: '…' }
+    const isObservableInput = typeof input.type === 'string' && !('name' in input);
+    if (isObservableInput) {
+      // Observables use x_opencti_description (not description) in the store / STIX model.
+      if (input.x_opencti_description) entity.x_opencti_description = input.x_opencti_description;
+      if (input.x_opencti_score !== undefined && input.x_opencti_score !== null) {
+        entity.x_opencti_score = input.x_opencti_score;
+      }
+      // The observable-specific attributes are nested under the type key (the only nested
+      // object, e.g. 'IPv4Addr', 'DomainName', 'EmailMessage'). Copy all of its scalar
+      // attributes (value, but also subject, body, dst_port, ...), still skipping refs/files.
+      const obsTypeKey = Object.keys(input).find((key) => key !== 'type'
+        && !PENDING_NON_SCALAR_INPUT_FIELDS.has(key)
+        && typeof input[key] === 'object'
+        && input[key] !== null
+        && !Array.isArray(input[key]));
+      if (obsTypeKey) {
+        const observableData = input[obsTypeKey] as Record<string, any>;
+        for (const [key, value] of Object.entries(observableData)) {
+          if (isScalarOrScalarArray(value)) {
+            entity[key] = value;
+          }
+        }
+        // Use the observable value as a display name so standard id generation / STIX conversion can work.
+        if (entity.value !== undefined && entity.name === undefined) {
+          entity.name = entity.value;
+        }
+      }
+    } else {
+      // SDO/generic: copy every scalar (or scalar-array) attribute except references/meta
+      for (const [key, value] of Object.entries(input)) {
+        if (PENDING_NON_SCALAR_INPUT_FIELDS.has(key)) continue;
+        if (isScalarOrScalarArray(value)) {
+          entity[key] = value;
+        }
+      }
+    }
+
+    return entity as StoreEntity;
+  });
+};
+
 export const buildMainStixEntities = async (
   context: AuthContext,
   user: AuthUser,
@@ -29,13 +125,28 @@ export const buildMainStixEntities = async (
   let mainEntityStixId;
 
   if (schema.mainEntityLookup) {
-    const vals = Array.isArray(values.mainEntityLookup) ? values.mainEntityLookup : [values.mainEntityLookup];
-    const mainEntities = await Promise.all(vals.map((id: string) => {
-      return loadFormEntity(context, user, id, mainEntityType);
-    }));
-    for (let index = 0; index < mainEntities.length; index += 1) {
-      mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
-      mainEntityStixId = mainEntities[index].standard_id;
+    // Existing entities selected through the lookup (skipped when the user only created
+    // on-the-fly entities: values.mainEntityLookup is then undefined).
+    if (isNotEmptyField(values.mainEntityLookup)) {
+      const vals = Array.isArray(values.mainEntityLookup) ? values.mainEntityLookup : [values.mainEntityLookup];
+      const mainEntities = await Promise.all(vals.map((id: string) => {
+        return loadFormEntity(context, user, id, mainEntityType);
+      }));
+      for (let index = 0; index < mainEntities.length; index += 1) {
+        mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
+        mainEntityStixId = mainEntities[index].standard_id;
+      }
+    }
+
+    // Handle pending (deferred) entity creations for main-entity lookup
+    if (isNotEmptyField(values.mainEntityLookupPending)) {
+      const pendingEntities = buildPendingEntities(values.mainEntityLookupPending);
+      for (let index = 0; index < pendingEntities.length; index += 1) {
+        const pendingEntity = completeEntity(pendingEntities[index].entity_type, pendingEntities[index]);
+        const stixPending = convertStoreToStix_2_1(pendingEntity);
+        mainStixEntities.push(stixPending);
+        mainEntityStixId = pendingEntity.standard_id;
+      }
     }
   } else {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -167,7 +278,7 @@ export const buildAdditionalEntities = async (
   if (!schema.additionalEntities) return additionalEntitiesMap;
 
   for (let index = 0; index < schema.additionalEntities.length; index += 1) {
-    const additionalEntity = schema.additionalEntities[index];
+    const additionalEntity: AdditionalEntity = schema.additionalEntities[index];
     const additionalEntityType = additionalEntity.entityType;
     if (additionalEntity.lookup) {
       if (isNotEmptyField(values[`additional_${additionalEntity.id}_lookup`])) {
@@ -182,6 +293,22 @@ export const buildAdditionalEntities = async (
             additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
           } else {
             additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          }
+        }
+      }
+
+      // Handle pending (deferred) entity creations inside this lookup field
+      const pendingKey = `additional_${additionalEntity.id}_lookup_pending`;
+      if (isNotEmptyField(values[pendingKey])) {
+        const pendingEntities = buildPendingEntities(values[pendingKey]);
+        for (let index2 = 0; index2 < pendingEntities.length; index2 += 1) {
+          const pendingEntity = completeEntity(pendingEntities[index2].entity_type, pendingEntities[index2]);
+          const stixPending = convertStoreToStix_2_1(pendingEntity);
+          bundle.objects.push(stixPending);
+          if (additionalEntitiesMap[additionalEntity.id]) {
+            additionalEntitiesMap[additionalEntity.id].push(stixPending.id);
+          } else {
+            additionalEntitiesMap[additionalEntity.id] = [stixPending.id];
           }
         }
       }

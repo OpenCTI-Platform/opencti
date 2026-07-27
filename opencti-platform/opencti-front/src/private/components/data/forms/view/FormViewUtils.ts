@@ -449,9 +449,18 @@ export const formatFormDataForSubmission = (
   // If main entity lookup is enabled, include the selected entities
   if (schema.mainEntityLookup && values.mainEntityLookup) {
     if (schema.mainEntityMultiple) {
-      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }[]).map((n) => n.value);
+      const lookupArr = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+      const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
+      const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+      if (existingIds.length > 0) formattedData.mainEntityLookup = existingIds;
+      if (pendingEntities.length > 0) formattedData.mainEntityLookupPending = pendingEntities;
     } else {
-      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }).value;
+      const single = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+      if (single.isPendingCreation && single.pendingInputData) {
+        formattedData.mainEntityLookupPending = [single.pendingInputData];
+      } else {
+        formattedData.mainEntityLookup = single.value;
+      }
     }
   }
 
@@ -515,13 +524,22 @@ export const formatFormDataForSubmission = (
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
 
       if (entity.lookup) {
-        // Handle lookup mode
+        // Handle lookup mode – split existing entities (by ID) from pending creations.
         const lookupValue = values[`additional_${entity.id}_lookup`];
         if (lookupValue) {
           if (entity.multiple) {
-            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }[]).map((n) => n.value);
+            const lookupArr = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+            const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
+            const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+            if (existingIds.length > 0) formattedData[`additional_${entity.id}_lookup`] = existingIds;
+            if (pendingEntities.length > 0) formattedData[`additional_${entity.id}_lookup_pending`] = pendingEntities;
           } else {
-            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }).value;
+            const single = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+            if (single.isPendingCreation && single.pendingInputData) {
+              formattedData[`additional_${entity.id}_lookup_pending`] = [single.pendingInputData];
+            } else {
+              formattedData[`additional_${entity.id}_lookup`] = single.value;
+            }
           }
         }
       } else if (entity.multiple && entity.fieldMode === 'parsed') {

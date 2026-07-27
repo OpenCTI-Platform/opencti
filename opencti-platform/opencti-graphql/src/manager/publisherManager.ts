@@ -43,11 +43,13 @@ import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { InterruptibleTimer } from './interruptible-timer';
+import { addNotificationSentCount } from './telemetryManager';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
+const WEBHOOK_TIMEOUT = conf.get('publisher_manager:webhook_timeout') || 300_000;
 const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 
@@ -68,6 +70,7 @@ export async function processNotificationData(
         operation: type,
         message,
         instance_id: instance.id,
+        entity_type: instance.entity_type,
       };
 
       const notificationUser = usersMap.get(user.user_id);
@@ -227,7 +230,7 @@ export async function handleWebhookNotification(configurationString: string | un
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
 
-  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject };
+  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
   const httpClient = getHttpClient(httpClientOptions);
 
   await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
@@ -258,17 +261,23 @@ export const internalProcessNotification = async (
 
   const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
 
+  // Telemetry: notifications sent by channel (attempts semantics, counted
+  // before the delivery call; simplified email counts as email).
   switch (notifierConnectorId) {
     case NOTIFIER_CONNECTOR_UI:
+      addNotificationSentCount('ui');
       await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
       break;
     case NOTIFIER_CONNECTOR_EMAIL:
+      addNotificationSentCount('email');
       await handleEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
+      addNotificationSentCount('email');
       await handleSimplifiedEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_WEBHOOK:
+      addNotificationSentCount('webhook');
       await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
       break;
     default:

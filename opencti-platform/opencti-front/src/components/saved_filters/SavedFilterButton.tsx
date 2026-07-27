@@ -94,20 +94,17 @@ const SavedFilterButton = ({ currentSavedFilter, setCurrentSavedFilter }: SavedF
   return (
     <>
       <Tooltip title={!isDisabled && currentSavedFilter ? t_i18n('Update filter') : t_i18n('Save filter')}>
-        <span>
-          <IconButton
-            color="primary"
-            onClick={handleSaveButtonClick}
-            size="small"
-            disabled={isDisabled}
-            aria-label={t_i18n('Save')}
-          >
-            {!hasSameFilters && currentSavedFilter
-              ? renderBadge()
-              : <SaveOutlined />
-            }
-          </IconButton>
-        </span>
+        <IconButton
+          color="primary"
+          onClick={handleSaveButtonClick}
+          size="small"
+          disabled={isDisabled}
+        >
+          {!hasSameFilters && currentSavedFilter
+            ? renderBadge()
+            : <SaveOutlined />
+          }
+        </IconButton>
       </Tooltip>
 
       {isSavedDialogOpen && (

@@ -3,7 +3,7 @@ import { afterAll, describe, expect, it, vi } from 'vitest';
 import { addIngestionJson, deleteIngestionJson, ingestionJsonEditField, testJsonIngestionMapping } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionJsonAddInput } from '../../../../src/generated/graphql';
-import * as ingestionConfigMock from '../../../../src/manager/ingestionManager/ingestionManagerConfiguration';
+import * as uriDenyListConfigMock from '../../../../src/config/uriDenyList';
 import type { BasicStoreEntityIngestionJson } from '../../../../src/modules/ingestion/ingestion-types';
 import { createJsonMapper, deleteJsonMapper, jsonMapperTest } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import type { FileUploadData } from '../../../../src/database/file-storage';
@@ -19,7 +19,7 @@ describe('Ingestion Json domain - Deny list coverage', async () => {
   });
 
   it('should be able to create a JSON feed with an allowed URI, and refused field patch of denied URL', async () => {
-    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.denied.com']);
 
     const creationInput: IngestionJsonAddInput = {
       authentication_type: IngestionAuthType.None,
@@ -40,7 +40,7 @@ describe('Ingestion Json domain - Deny list coverage', async () => {
   });
 
   it('should test be denied when URL is in deny list', async () => {
-    vi.spyOn(ingestionConfigMock, 'ingestionUriDenyList').mockReturnValue(['*.denied.com']);
+    vi.spyOn(uriDenyListConfigMock, 'uriDenyList').mockReturnValue(['*.denied.com']);
 
     const testInput: IngestionJsonAddInput = {
       authentication_type: IngestionAuthType.None,

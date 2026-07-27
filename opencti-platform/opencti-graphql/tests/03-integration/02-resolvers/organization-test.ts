@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR, TEST_ORGANIZATION, USER_SECURITY, getUserIdByEmail } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { queryAsUserIsExpectedError } from '../../utils/testQueryHelper';
+import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -428,5 +429,68 @@ describe('Organization default_dashboard user cache refresh', () => {
     expect(userResult.data.me).not.toBeNull();
     const dashboardIds = userResult.data.me.default_dashboards.map((d: { id: string }) => d.id);
     expect(dashboardIds.length).toEqual(0);
+  });
+});
+
+describe('Organization grantable groups permissions', () => {
+  let userEditorId: string;
+
+  const ORGA_ADMIN_ADD_QUERY = gql`
+    mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+      organizationAdminAdd(id: $id, memberId: $memberId) {
+        id
+      }
+    }
+  `;
+
+  const ORGA_ADMIN_REMOVE_QUERY = gql`
+    mutation OrganizationAdminRemove($id: ID!, $memberId: String!) {
+      organizationAdminRemove(id: $id, memberId: $memberId) {
+        id
+      }
+    }
+  `;
+
+  const UPDATE_GRANTABLE_GROUPS_QUERY = gql`
+    mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
+      organizationFieldPatch(id: $id, input: $input) {
+        id
+      }
+    }
+  `;
+
+  beforeAll(async () => {
+    userEditorId = await getUserIdByEmail(USER_EDITOR.email);
+    await queryAsAdmin({
+      query: ORGA_ADMIN_ADD_QUERY,
+      variables: {
+        id: TEST_ORGANIZATION.id,
+        memberId: userEditorId,
+      },
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: ORGA_ADMIN_REMOVE_QUERY,
+      variables: {
+        id: TEST_ORGANIZATION.id,
+        memberId: userEditorId,
+      },
+    });
+  });
+
+  it('should not allow organization administrator without SET_ACCESS to modify grantable_groups', async () => {
+    await queryAsUserIsExpectedForbidden(
+      USER_EDITOR,
+      {
+        query: UPDATE_GRANTABLE_GROUPS_QUERY,
+        variables: {
+          id: TEST_ORGANIZATION.id,
+          input: [{ key: 'grantable_groups', value: [] }],
+        },
+      },
+      'Organization administrator without SETTINGS_SETACCESSES must not edit grantable_groups',
+    );
   });
 });

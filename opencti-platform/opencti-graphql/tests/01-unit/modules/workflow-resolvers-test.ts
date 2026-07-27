@@ -7,6 +7,7 @@ import {
   triggerWorkflowEvent,
   clearWorkflowPendingState,
   getWorkflowInstance,
+  getWorkflowPublishedVersionId,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 
@@ -18,8 +19,10 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   setWorkflowDefinition: vi.fn(),
   publishWorkflowDefinition: vi.fn(),
   deleteWorkflowDefinition: vi.fn(),
+  restorePublishedWorkflowDefinition: vi.fn(),
   triggerWorkflowEvent: vi.fn(),
   clearWorkflowPendingState: vi.fn(),
+  getWorkflowPublishedVersionId: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-async-completion', () => ({
@@ -440,6 +443,32 @@ describe('workflow-resolvers', () => {
       });
     });
 
+    describe('workflowDefinitionRestorePublished', () => {
+      it('should call restorePublishedWorkflowDefinition with correct arguments', async () => {
+        const mockRestored = {
+          id: 'def-6',
+          workflow_id: 'workflow-3',
+          target_type: 'Incident',
+          errors: [],
+          published: true,
+        } as any;
+        vi.mocked(workflowDomain.restorePublishedWorkflowDefinition).mockResolvedValue(mockRestored);
+
+        const result = await workflowResolvers.Mutation.workflowDefinitionRestorePublished(
+          {},
+          { entityType: 'Incident' },
+          mockContext,
+        );
+
+        expect(workflowDomain.restorePublishedWorkflowDefinition).toHaveBeenCalledWith(
+          mockContext,
+          mockContext.user,
+          'Incident',
+        );
+        expect(result).toBe(mockRestored);
+      });
+    });
+
     describe('triggerWorkflowEvent', () => {
       it('should call triggerWorkflowEvent with correct arguments', async () => {
         const mockResult = { success: true, newState: 'closed', instance: {}, entity: {} };
@@ -844,5 +873,102 @@ describe('DraftWorkspace.workflowInstance resolver', () => {
     );
 
     expect(getWorkflowInstance).toHaveBeenCalledWith(mockContext, mockContext.user, 'draft-internal-id');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// EntitySetting.workflow_published_version_id
+// ---------------------------------------------------------------------------
+
+describe('EntitySetting.workflow_published_version_id resolver', () => {
+  it('calls getWorkflowPublishedVersionId with context and entitySetting, and returns the result', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue('pub-v1');
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(result).toBe('pub-v1');
+  });
+
+  it('returns null when the workflow has never been published', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace', workflow_id: 'wf-id' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue(null);
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when entitySetting has no workflow_id', async () => {
+    const entitySetting = { id: 'es-1', target_type: 'DraftWorkspace' };
+    (getWorkflowPublishedVersionId as any).mockResolvedValue(null);
+
+    const result = await workflowResolvers.EntitySetting.workflow_published_version_id(
+      entitySetting,
+      {},
+      mockContext,
+    );
+
+    expect(getWorkflowPublishedVersionId).toHaveBeenCalledWith(mockContext, entitySetting);
+    expect(result).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// WorkflowSerializedTransition field resolvers
+// ---------------------------------------------------------------------------
+
+describe('WorkflowSerializedTransition resolver – from field', () => {
+  it('should wrap a single string into an array', () => {
+    const transition = { from: 'status-open', to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual(['status-open']);
+  });
+
+  it('should return an array unchanged when from is already an array', () => {
+    const transition = { from: ['status-open', 'status-draft'], to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual(['status-open', 'status-draft']);
+  });
+
+  it('should return an empty array when from is null', () => {
+    const transition = { from: null, to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual([]);
+  });
+
+  it('should return an empty array when from is undefined', () => {
+    const transition = { to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.from(transition);
+    expect(result).toEqual([]);
+  });
+});
+
+describe('WorkflowSerializedTransition resolver – to field', () => {
+  it('should return the target state when to is defined', () => {
+    const transition = { from: ['status-open'], to: 'status-closed', event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBe('status-closed');
+  });
+
+  it('should return null when to is null (unlinked transition)', () => {
+    const transition = { from: ['status-open'], to: null, event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBeNull();
+  });
+
+  it('should return null when to is undefined', () => {
+    const transition = { from: ['status-open'], event: 'close' };
+    const result = workflowResolvers.WorkflowSerializedTransition.to(transition);
+    expect(result).toBeNull();
   });
 });

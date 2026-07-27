@@ -85,6 +85,10 @@ More information can be found:
 
 The trash manager is responsible to delete permanently elements stored in the [trash](../../usage/delete-restore.md) after a specified period of time (7 days by default).
 
+## Data sanity manager
+
+The data sanity manager runs periodic or on demand operations to improve data consistency.
+
 ## Filigran telemetry manager
 
 The telemetry manager collects periodically statistical data about platform usage.

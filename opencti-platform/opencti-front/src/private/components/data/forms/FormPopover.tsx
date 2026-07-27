@@ -119,6 +119,7 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
   return (
     <div className={classes.container}>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         color="primary"

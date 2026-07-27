@@ -10,6 +10,8 @@ import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './Wo
 import type { WorkflowStatusTriggerMutation as WorkflowStatusTriggerMutationType } from './__generated__/WorkflowStatusTriggerMutation.graphql';
 import type { WorkflowStatusClearMutation as WorkflowStatusClearMutationType } from './__generated__/WorkflowStatusClearMutation.graphql';
 
+const DRAFT_COMMENT_SEEN_PREFIX = 'opencti-draft-comment-seen-';
+
 export type WizardStep = 'org-picker' | 'comment' | 'validate';
 
 export interface TransitionWizard {
@@ -26,9 +28,10 @@ export interface TransitionWizard {
 interface UseTransitionWizardArgs {
   entityId: string;
   entityNavigationId: string | null | undefined;
+  draftId?: string;
 }
 
-export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransitionWizardArgs) => {
+export const useTransitionWizard = ({ entityId, entityNavigationId, draftId }: UseTransitionWizardArgs) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { exitDraft } = useSwitchDraft();
@@ -61,6 +64,10 @@ export const useTransitionWizard = ({ entityId, entityNavigationId }: UseTransit
     commit({
       variables: { entityId, eventName, runtimeParams, comment },
       onCompleted: (response) => {
+        const newTimestamp = response.triggerWorkflowEvent?.instance?.lastHistoryEntry?.timestamp;
+        if (newTimestamp && draftId) {
+          window.localStorage.setItem(`${DRAFT_COMMENT_SEEN_PREFIX}${draftId}`, newTimestamp);
+        }
         if (
           response.triggerWorkflowEvent?.success
           && response.triggerWorkflowEvent.executionStatus !== 'pending'

@@ -206,13 +206,14 @@ export const AlertingLineDummy = ({
   dataColumns: DataColumns;
 }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <IconButton disabled={true} aria-haspopup="true">
+          <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>

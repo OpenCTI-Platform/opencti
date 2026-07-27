@@ -3,6 +3,7 @@ import { useMutation, UseMutationConfig } from 'react-relay';
 import { ReactNode, useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
 import { RelayError } from '../../relay/relayTypes';
+import { useDeferredCreation } from './useDeferredCreation';
 
 export interface UsiApiMutationOptions {
   errorMessage?: string | ReactNode;
@@ -11,15 +12,36 @@ export interface UsiApiMutationOptions {
 }
 
 /**
- * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails
+ * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails.
+ *
+ * When `DeferredCreationContext.isDeferredMode` is active (e.g. a draft-only user is
+ * creating an entity on the fly inside a Form Intake), the mutation is NOT dispatched
+ * to the server. Instead, the raw `input` from `variables` is captured via the context
+ * so it can be bundled and created in draft when the form intake is submitted.
  */
 const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
   fn?: (environment: IEnvironment, config: MutationConfig<T>) => Disposable,
   options?: UsiApiMutationOptions,
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
+  const { isDeferredMode, captureInput } = useDeferredCreation();
   const [commit, inFlight] = useMutation(query, fn);
   const commitWithError = useCallback((args: UseMutationConfig<T>) => {
+    if (isDeferredMode) {
+      // Intercept the mutation: capture the raw input data and fake a successful
+      // completion so the creation form closes gracefully without any server call.
+      //
+      // SDO mutations wrap the input: { input: { name, description, … } }
+      // SCO mutations use flat top-level variables: { type: 'IPv4-Addr', IPv4Addr: { value: '…' }, … }
+      const variables = args.variables as Record<string, unknown>;
+      const inputData = (variables?.input as Record<string, unknown> | undefined) ?? variables;
+      if (inputData) {
+        captureInput(inputData);
+      }
+      // Suppress the success notification – the entity hasn't been created yet.
+      args.onCompleted?.({} as T['response'], null);
+      return;
+    }
     commit({
       ...args,
       onError: (error: Error) => {
@@ -39,7 +61,7 @@ const useApiMutation = <T extends MutationParameters>(
         if (options?.successMessage) MESSAGING$.notifySuccess(options.successMessage);
       },
     });
-  }, [commit]);
+  }, [commit, isDeferredMode, captureInput]);
   return [commitWithError, inFlight];
 };
 

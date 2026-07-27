@@ -1,7 +1,8 @@
-import type { StreamDataEvent, StreamDataEventType } from '../../types/event';
+import type { StreamDataEvent, StreamDataEventType, UpdateEvent } from '../../types/event';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isStixRelation } from '../../schema/stixRelationship';
 import conf from '../../config/conf';
+import type { FilterEventContext } from '../../utils/filtering/boolean-logic-engine';
 
 export enum StreamDataEventTypeEnum {
   UPDATE = 'update',
@@ -36,6 +37,21 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
   if (eventType === StreamDataEventTypeEnum.DELETE && deletion === true) validEventType = true;
 
   return validEventType;
+};
+
+/**
+ * Build a FilterEventContext from an UpdateEvent.
+ * Extracts the changed attribute names from context.changes.
+ *
+ * The changes[].field format is "EntityType--attributeName" (e.g., "Report--objectMarking").
+ * We extract the attribute name part which is used as the changed attribute identifier.
+ */
+export const buildFilterEventContext = (updateEvent: UpdateEvent): FilterEventContext => {
+  const changedFields = (updateEvent.context?.changes ?? []).map((change) => {
+    const parts = change.field.split('--');
+    return parts.length > 1 ? parts[1] : change.field;
+  });
+  return { changedAttributes: [...new Set(changedFields)] };
 };
 
 /**

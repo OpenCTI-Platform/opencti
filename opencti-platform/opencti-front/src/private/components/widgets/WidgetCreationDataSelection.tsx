@@ -167,6 +167,7 @@ const WidgetCreationDataSelection = () => {
       {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
           <IconButton
+            aria-label={t_i18n('Add')}
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"

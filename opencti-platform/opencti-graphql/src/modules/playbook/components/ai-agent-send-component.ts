@@ -17,7 +17,7 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, resolveRunAsUserId } from './ai-agent-shared';
+import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, isXtmOneConfigured, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
 
 interface AiAgentSendConfiguration {
   agent_slug: string;
@@ -98,13 +98,40 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', { playbookId });
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
+    // Without an XTM One configuration the step can never run: skip it
+    // before resolving the JWT identity so no user lookup is performed
+    // and no misleading identity-resolution warning is logged.
+    if (!isXtmOneConfigured()) {
+      logApp.warn('[PLAYBOOK AI AGENT SEND] XTM One is not configured, dropping playbook step', {
+        playbookId,
+        agentSlug: agent_slug,
+      });
+      return { output_port: undefined, bundle, forceBundleTracking: true };
+    }
+    // Resolve the XTM One identity ONCE (run-as user, defaulting to the
+    // seeded platform admin) and share it between the binding check and
+    // the agent call: both are guaranteed to run as the same identity
+    // with a single user lookup.
+    const jwtUser = await resolveAgentJwtUser(resolveRunAsUserId(run_as));
+    if (!jwtUser) {
+      // No resolvable JWT identity: neither the binding check nor the
+      // agent call could run — skip both with an accurate log instead
+      // of a misleading "agent not bound" warning.
+      logApp.warn('[PLAYBOOK AI AGENT SEND] No resolvable JWT identity for the agent call, dropping playbook step', {
+        playbookId,
+        agentSlug: agent_slug,
+      });
+      return { output_port: undefined, bundle, forceBundleTracking: true };
+    }
     // Defense in depth: re-check that the configured slug is currently
     // bound to the consumer intent before invoking it. AJV `oneOf`
     // validation only covers saves that go through the schema resolver
     // — a crafted playbook update or an agent that was unbound after
     // save would otherwise let us run an arbitrary XTM One agent under
-    // the platform automation identity.
-    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug))) {
+    // the configured run-as identity. The check runs as the SAME
+    // identity as the agent call so the per-user XTM One catalog
+    // visibility matches what the call will actually see.
+    if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug, jwtUser))) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step', {
         playbookId,
         agentSlug: agent_slug,
@@ -113,7 +140,7 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);
-    const rawResponse = await callXtmAgent(agent_slug, content, resolveRunAsUserId(run_as));
+    const rawResponse = await callXtmAgent(agent_slug, content, jwtUser);
     if (rawResponse === null) {
       logApp.warn('[PLAYBOOK AI AGENT SEND] Agent call did not complete', {
         playbookId,

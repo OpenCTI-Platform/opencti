@@ -59,6 +59,13 @@ export type StreamInfo = {
   streamSize: number;
 };
 
+// A notification event read from a range, paired with the byte size it occupied in the Redis stream
+// (computed from the raw stored fields), so callers can budget memory without re-serializing the event.
+export interface SizedNotifEvent<T extends StreamNotifEvent> {
+  event: T;
+  byteSize: number;
+}
+
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
   rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
@@ -74,7 +81,11 @@ export interface RawStreamClient {
     opts?: FetchEventRangeOption,
   ) => Promise<{ lastEventId: string }>;
   rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
-  rawFetchRangeNotifications: <T extends StreamNotifEvent> (start: Date, end: Date) => Promise<Array<T>>;
+  rawFetchRangeNotifications: <T extends StreamNotifEvent> (
+    start: Date,
+    end: Date,
+    callback: (events: Array<SizedNotifEvent<T>>) => Promise<boolean | void> | boolean | void,
+  ) => Promise<void>;
   rawStoreActivityEvent: (event: ActivityStreamEvent) => Promise<void>;
 }
 

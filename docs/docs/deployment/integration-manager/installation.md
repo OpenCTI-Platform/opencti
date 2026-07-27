@@ -40,8 +40,8 @@ kubectl create namespace xtm-composer
 
 2. Create secret for RSA key:
 ```bash
-# Generate key
-openssl genrsa -out private_key_4096.pem 4096
+# Generate key (PKCS#8 format, as required by XTM Composer)
+openssl genpkey -algorithm RSA -out private_key_4096.pem -pkeyopt rsa_keygen_bits:4096
 
 # Create secret
 kubectl create secret generic xtm-composer-keys \
@@ -148,8 +148,8 @@ docker pull filigran/xtm-composer:latest
 # Create configuration directory
 mkdir -p /opt/xtm-composer/config
 
-# Generate RSA private key
-openssl genrsa -out /opt/xtm-composer/private_key_4096.pem 4096
+# Generate RSA private key (PKCS#8 format, as required by XTM Composer)
+openssl genpkey -algorithm RSA -out /opt/xtm-composer/private_key_4096.pem -pkeyopt rsa_keygen_bits:4096
 
 # Run container
 docker run -d \
@@ -206,7 +206,7 @@ networks:
    - After deployment, access the container console via Portainer
    - Generate the RSA key:
      ```bash
-     openssl genrsa -out /keys/private_key.pem 4096
+     openssl genpkey -algorithm RSA -out /keys/private_key.pem -pkeyopt rsa_keygen_bits:4096
      ```
    - Copy your configuration files to `/config`
 
@@ -261,9 +261,9 @@ volumes:
 
 Deploy with:
 ```bash
-# Generate RSA key first
+# Generate RSA key first (PKCS#8 format, as required by XTM Composer)
 mkdir -p keys
-openssl genrsa -out keys/private_key.pem 4096
+openssl genpkey -algorithm RSA -out keys/private_key.pem -pkeyopt rsa_keygen_bits:4096
 
 # Deploy the stack
 docker-compose up -d
@@ -295,8 +295,8 @@ cd xtm-composer
 # Build release binary
 cargo build --release
 
-# Generate RSA key
-openssl genrsa -out ./private_key_4096.pem 4096
+# Generate RSA key (PKCS#8 format, as required by XTM Composer)
+openssl genpkey -algorithm RSA -out ./private_key_4096.pem -pkeyopt rsa_keygen_bits:4096
 
 # Run the binary
 ./target/release/xtm-composer

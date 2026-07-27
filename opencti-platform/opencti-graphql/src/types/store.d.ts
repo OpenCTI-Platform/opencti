@@ -427,6 +427,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   revoked: boolean;
   is_family: boolean;
   is_inferred: boolean;
+  password_valid_until: Date | null;
   // custom
   x_opencti_detection: boolean;
   x_opencti_cisa_kev: boolean;
@@ -762,3 +763,8 @@ export interface BasicStoreEntityIdentity extends BasicStoreBase {
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;
 type StoreObject = StoreEntity | StoreCyberObservable | StoreRelation;
+
+interface BasicStoreEntityMigrationStatus extends BasicStoreEntity {
+  platformVersion: string;
+  lastRun: string;
+}

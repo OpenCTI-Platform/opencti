@@ -1,4 +1,4 @@
-module.exports = {
+const rule = {
   meta: {
     type: "problem",
     fixable: "code",
@@ -71,4 +71,6 @@ module.exports = {
       }
     };
   },
-}
+};
+
+export default rule;

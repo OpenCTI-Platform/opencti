@@ -7,6 +7,8 @@ vi.mock('../../../../../src/modules/playbook/components/ai-agent-shared', () => 
   buildAgentSlugOneOf: vi.fn(),
   callXtmAgent: vi.fn(),
   isAgentBoundToIntent: vi.fn(),
+  isXtmOneConfigured: vi.fn(),
+  resolveAgentJwtUser: vi.fn(),
   resolveRunAsUserId: vi.fn(),
 }));
 
@@ -22,6 +24,8 @@ import {
   buildAgentSlugOneOf,
   callXtmAgent,
   isAgentBoundToIntent,
+  isXtmOneConfigured,
+  resolveAgentJwtUser,
   resolveRunAsUserId,
 } from '../../../../../src/modules/playbook/components/ai-agent-shared';
 import type { StixBundle } from '../../../../../src/types/stix-2-1-common';
@@ -35,6 +39,10 @@ const BUNDLE: StixBundle = {
   type: 'bundle',
   objects: [],
 };
+
+// Identity resolved once by the executor and shared between the binding
+// check and the agent call.
+const JWT_USER = { id: 'jwt-user-id', user_email: 'jwt-user@org.test' };
 
 const buildExecutorParams = (configuration: { agent_slug: string; prompt?: string }) => ({
   eventId: 'event-id',
@@ -58,8 +66,13 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(buildAgentMessageContent).mockReturnValue('built content');
+    // XTM One configured by default; the unconfigured test overrides this.
+    vi.mocked(isXtmOneConfigured).mockReturnValue(true);
     // No run-as user configured by default; tests that need it override this.
     vi.mocked(resolveRunAsUserId).mockReturnValue(undefined);
+    // The executor resolves the JWT identity once and forwards it to both
+    // the binding check and the agent call.
+    vi.mocked(resolveAgentJwtUser).mockResolvedValue(JWT_USER);
     // Default to "agent slug is bound to the consumer intent" so the
     // existing tests exercise the live path; tests that need the
     // negative branch override this explicitly.
@@ -106,6 +119,35 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       expect(result.forceBundleTracking).toBe(true);
     });
 
+    it('should drop the step without any user lookup or XTM One call when XTM One is not configured', async () => {
+      vi.mocked(isXtmOneConfigured).mockReturnValue(false);
+
+      const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(resolveAgentJwtUser).not.toHaveBeenCalled();
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBeUndefined();
+      expect(result.bundle).toBe(BUNDLE);
+      expect(result.forceBundleTracking).toBe(true);
+    });
+
+    it('should drop the step (no binding check, no agent call) when no JWT identity can be resolved', async () => {
+      vi.mocked(resolveAgentJwtUser).mockResolvedValue(null);
+
+      const result = await PLAYBOOK_AI_AGENT_SEND_COMPONENT.executor(
+        buildExecutorParams({ agent_slug: 'agent-x' }),
+      );
+
+      expect(isAgentBoundToIntent).not.toHaveBeenCalled();
+      expect(callXtmAgent).not.toHaveBeenCalled();
+      expect(result.output_port).toBeUndefined();
+      expect(result.bundle).toBe(BUNDLE);
+      expect(result.forceBundleTracking).toBe(true);
+    });
+
     it('should drop the step (no agent call) when the slug is not bound to the cti.stix_consumer intent (defense in depth)', async () => {
       vi.mocked(isAgentBoundToIntent).mockResolvedValue(false);
 
@@ -113,7 +155,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-not-bound-to-consumer' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-not-bound-to-consumer');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-not-bound-to-consumer', JWT_USER);
       expect(callXtmAgent).not.toHaveBeenCalled();
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
@@ -127,7 +169,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x', JWT_USER);
     });
 
     it('should call the agent and still terminate cleanly (bundle tracked) when the agent responds', async () => {
@@ -138,7 +180,7 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
       );
 
       expect(buildAgentMessageContent).toHaveBeenCalledWith(BUNDLE, 'do something');
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', undefined);
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
@@ -151,13 +193,13 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', undefined);
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
       expect(result.output_port).toBeUndefined();
       expect(result.bundle).toBe(BUNDLE);
       expect(result.forceBundleTracking).toBe(true);
     });
 
-    it('should resolve the configured run-as user and forward it to the agent call', async () => {
+    it('should resolve the JWT identity ONCE from the configured run-as user and forward it to both the binding check and the agent call', async () => {
       vi.mocked(resolveRunAsUserId).mockReturnValue('run-as-user-id');
       vi.mocked(callXtmAgent).mockResolvedValue('reply');
 
@@ -165,7 +207,10 @@ describe('PLAYBOOK_AI_AGENT_SEND_COMPONENT', () => {
         buildExecutorParams({ agent_slug: 'agent-x' }),
       );
 
-      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', 'run-as-user-id');
+      expect(resolveAgentJwtUser).toHaveBeenCalledTimes(1);
+      expect(resolveAgentJwtUser).toHaveBeenCalledWith('run-as-user-id');
+      expect(isAgentBoundToIntent).toHaveBeenCalledWith('cti.stix_consumer', 'agent-x', JWT_USER);
+      expect(callXtmAgent).toHaveBeenCalledWith('agent-x', 'built content', JWT_USER);
     });
   });
 });

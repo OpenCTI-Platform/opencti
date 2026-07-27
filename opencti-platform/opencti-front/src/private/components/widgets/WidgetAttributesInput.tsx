@@ -358,7 +358,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             },
                           }}
                         />
-                        <IconButton size="small" color="primary" disabled>
+                        <IconButton aria-label={t_i18n('Delete')} size="small" color="primary" disabled>
                           <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </div>

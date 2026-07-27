@@ -62,6 +62,7 @@ interface AuthorizedMembersFieldProps
   style?: CSSProperties;
   isDraftEntity?: boolean;
   disabled?: boolean;
+  disableOwnerAccessRightsEdition?: boolean;
 }
 
 const DYNAMIC_GROUPS_RESTRICTION_SUPPORTED = ['AUTHOR', 'CREATORS'];
@@ -112,6 +113,7 @@ const AuthorizedMembersField = ({
   style,
   isDraftEntity,
   disabled = false,
+  disableOwnerAccessRightsEdition = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -571,7 +573,7 @@ const AuthorizedMembersField = ({
                             accessRights={accessRights}
                             ownerId={owner?.id}
                             onRemove={() => arrayHelpers.remove(index)}
-                            disabled={disabled}
+                            disabled={disableOwnerAccessRightsEdition && authorizedMember.value === owner?.id ? true : disabled}
                           />
                         )
                       : null))}

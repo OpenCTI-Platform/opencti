@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
-const { promisify } = require('util');
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
 // deepl-free API key
 const subscriptionKey = process.env.SUBSCRIPTION_KEY;
 
-async function translateFiles() {
+const translateFiles = async () => {
   console.log('Translation process started...');
   if (!subscriptionKey) {
     throw new Error('SUBSCRIPTION_KEY environment variable is not set. Aborting.');
@@ -17,7 +17,7 @@ async function translateFiles() {
   try {
     // extract the available languages from the translation files name
     const langDir = './lang/front';
-    const files = await fs.promises.readdir(langDir);
+    const files = await readdir(langDir);
     const languageCodes = files
       .filter(file => file.endsWith('.json'))
       .map(file => path.basename(file, '.json'))
@@ -50,4 +50,4 @@ async function translateFiles() {
 }
 
 // Run the script
-translateFiles();
+await translateFiles();

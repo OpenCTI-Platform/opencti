@@ -117,11 +117,12 @@ nav:
       - Configuration: deployment/configuration.md
       - Authentication:
         - Authentication via environment variables: deployment/authentication.md
-      - Telemetry: deployment/telemetry.md
+      - Observability metrics: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - MCP server (via XTM One): deployment/mcp-server.md
       - Manager:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md
@@ -211,7 +212,9 @@ nav:
         - Widget creation: usage/widgets.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
-      - Workflows and assignation: usage/workflows.md
+      - Workflows:
+         - Draft workflow: usage/draft-workflow.md
+         - Entities workflow: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Playbook automation:
         - Introduction: usage/playbook-automation.md
@@ -235,6 +238,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - SMTP configuration: administration/smtp-configuration.md
         - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:

@@ -230,6 +230,7 @@ const StixCoreObjectEnrichment = ({
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                             <div style={{ right: 0 }}>
                               <IconButton
+                                aria-label={t('Delete')}
                                 onClick={() => deleteWork(work.id)}
                               >
                                 <DeleteOutlined />

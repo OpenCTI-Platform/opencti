@@ -21,7 +21,6 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
 } from '../../schema/stixDomainObject';
-import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -34,6 +33,7 @@ import { createInternalObject, deleteInternalObject, editInternalObject } from '
 import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
+import { lockResources } from '../../lock/master-lock';
 
 /**
  * Exclusion list: entity types not capable of
@@ -48,7 +48,6 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
-  ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
 /**
@@ -199,34 +198,47 @@ export const addCustomView = async (
     enabled: input.enabled ?? false,
     default: input.default ?? false,
   };
-  const element = await createInternalObject<StoreEntityCustomView>(
-    context,
-    user,
-    customViewToCreate,
-    ENTITY_TYPE_CUSTOM_VIEW,
-    {
-      auditLogEnabled: true,
-      auditLogContextSanitizer: (element) => ({
-        ...element,
-        manifest: '[sanitized]',
-      }),
-    },
-  );
-  TELEMETRY.customViewCreated();
-  if (element.enabled) {
-    TELEMETRY.customViewEnabled();
-  }
-  if (element.default) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-    await applyUniqueDefaultCustomViewConstraint(
+
+  // The default status is stored on the object itself (customView) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing view)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
+  const lock = input.default ? await lockResources([`custom-view-default:${input.targetEntityType}`]) : null;
+  try {
+    const element = await createInternalObject<StoreEntityCustomView>(
       context,
       user,
-      element.target_entity_type,
-      element.id,
+      customViewToCreate,
+      ENTITY_TYPE_CUSTOM_VIEW,
+      {
+        auditLogEnabled: true,
+        auditLogContextSanitizer: (element) => ({
+          ...element,
+          manifest: '[sanitized]',
+        }),
+      },
     );
+    TELEMETRY.customViewCreated();
+    if (element.enabled) {
+      TELEMETRY.customViewEnabled();
+    }
+    if (element.default) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultCustomViewConstraint(
+        context,
+        user,
+        element.target_entity_type,
+        element.id,
+      );
+    }
+    return element;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  return element;
 };
 
 export const editCustomView = async (
@@ -238,40 +250,56 @@ export const editCustomView = async (
   const nameInput = input.find((i) => i.key === 'name');
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
   const enabledFieldValue = input.find((i) => i.key === 'enabled')?.value?.[0];
-  const element = await editInternalObject<StoreEntityCustomView>(
-    context,
-    user,
-    customViewId,
-    ENTITY_TYPE_CUSTOM_VIEW,
-    [
-      ...input,
-      ...(nameInput ? [{
-        key: 'slug',
-        value: [slugify(nameInput.value[0])],
-      }] : []),
-    ],
-    {
-      auditLogEnabled: true,
-      auditLogContextSanitizer: (input) => input.map((entry) => ({
-        ...entry,
-        value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
-      })),
-    },
-  );
-  if (enabledFieldValue) {
-    TELEMETRY.customViewEnabled();
-  }
-  if (defaultFieldValue) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-    await applyUniqueDefaultCustomViewConstraint(
+
+  const existing = await storeLoadById<BasicStoreEntityCustomView>(context, user, customViewId, ENTITY_TYPE_CUSTOM_VIEW);
+  const entity_type = existing.target_entity_type;
+
+  // The default status is stored on the object itself (customView) rather than on its parent entity.
+  // While this simplifies certain aspects of the design, it makes it hard to guarantee that only one default exists at a time.
+  // Without a lock, two concurrent operations (e.g. one setting a new default while another is promoting an existing view)
+  // could leave us with multiple defaults or none at all.
+  // Locking the object list on the entity prevents this race condition.
+  // Note: a cleaner long-term approach would be to store the default reference directly on the entity
+  // (e.g. a defaultCustomViewId field), which would make this unicity constraint trivial to enforce.
+  const lock = defaultFieldValue ? await lockResources([`custom-view-default:${entity_type}`]) : null;
+  try {
+    const element = await editInternalObject<StoreEntityCustomView>(
       context,
       user,
-      element.target_entity_type,
-      element.id,
+      customViewId,
+      ENTITY_TYPE_CUSTOM_VIEW,
+      [
+        ...input,
+        ...(nameInput ? [{
+          key: 'slug',
+          value: [slugify(nameInput.value[0])],
+        }] : []),
+      ],
+      {
+        auditLogEnabled: true,
+        auditLogContextSanitizer: (input) => input.map((entry) => ({
+          ...entry,
+          value: entry.key === 'manifest' ? ['[sanitized]'] : entry.value,
+        })),
+      },
     );
+    if (enabledFieldValue) {
+      TELEMETRY.customViewEnabled();
+    }
+    if (defaultFieldValue) {
+    // Unset the `default` fields for other CustomViews of the same
+    // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultCustomViewConstraint(
+        context,
+        user,
+        element.target_entity_type,
+        element.id,
+      );
+    }
+    return element;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  return element;
 };
 
 export const customViewImportWidgetConfiguration = async (
@@ -363,7 +391,7 @@ export async function duplicateCustomView(
     );
   }
   return duplicate;
-};
+}
 
 export const deleteCustomView = async (
   context: AuthContext,
@@ -397,6 +425,7 @@ export const exportCustomView = async (
     configuration: {
       name: customView.name,
       manifest: generatedManifest,
+      target_entity_type: customView.target_entity_type,
     },
   };
   return JSON.stringify(exportConfigration);
@@ -405,23 +434,28 @@ export const exportCustomView = async (
 export const importCustomViewConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  targetEntityType: string,
+  targetEntityType: string | undefined | null,
   file: Promise<FileHandle>,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
-    throw FunctionalError(
-      'Custom views cannot be created for given entity type', {
-        entityType: targetEntityType,
-      });
-  }
   const parsedData: CustomViewExport = await extractContentFrom(file);
   const { manifest } = parsedData.configuration;
+  const inputTargetEntityType = typeof targetEntityType === 'string' ? targetEntityType.trim() : undefined;
+  const resolvedTargetEntityType = inputTargetEntityType || parsedData.configuration.target_entity_type;
+  if (!resolvedTargetEntityType) {
+    throw FunctionalError('Missing target entity type for custom view import');
+  }
+  if (!isCustomViewsAvailableForEntityType(resolvedTargetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: resolvedTargetEntityType,
+      });
+  }
   // Manifest ids must be rewritten for filters
   const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
     manifest: generatedManifest,
-    target_entity_type: targetEntityType,
+    target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,
     enabled: false,

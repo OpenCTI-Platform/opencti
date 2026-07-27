@@ -49,6 +49,7 @@ import { findById as findTaxiiCollection } from '../../../../src/modules/dataSha
 import { authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
 import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
+import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ const MOCK_STREAM_COLLECTION = {
   stream_public: true,
   stream_public_user_id: 'public-user-id',
   stream_live: true,
-  filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }),
+  filters: JSON.stringify(emptyFilterGroup),
   restricted_members: [],
 };
 

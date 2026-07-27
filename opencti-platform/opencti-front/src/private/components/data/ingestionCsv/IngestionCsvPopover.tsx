@@ -51,6 +51,8 @@ interface IngestionCsvPopoverProps {
   running?: boolean | null;
   paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
   setStateHash: Dispatch<string>;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
@@ -58,6 +60,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
   paginationOptions,
   running,
   setStateHash,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -119,6 +122,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
   };
@@ -204,6 +208,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
     <>
       <div style={{ margin: 0 }}>
         <IconButton
+          aria-label={t_i18n('Open menu')}
           onClick={handleOpen}
           aria-haspopup="true"
           style={{ marginTop: 3 }}

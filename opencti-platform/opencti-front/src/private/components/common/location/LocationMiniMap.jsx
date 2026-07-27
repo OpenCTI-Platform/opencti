@@ -7,7 +7,6 @@ import L from 'leaflet';
 import countries from '../../../../static/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/hooks/useAuth';
-import { fileUri } from '../../../../relay/environment';
 import CityDark from '../../../../static/images/leaflet/city_dark.png';
 import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
@@ -16,16 +15,16 @@ import { isValidLatitude, isValidLongitude, validateCoordinates } from '../../..
 import Card from '@common/card/Card';
 
 const cityIcon = (dark = true) => new L.Icon({
-  iconUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
-  iconRetinaUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
+  iconUrl: dark ? CityDark : CityLight,
+  iconRetinaUrl: dark ? CityDark : CityLight,
   iconAnchor: [12, 12],
   popupAnchor: [0, -12],
   iconSize: [25, 25],
 });
 
 const positionIcon = (dark = true) => new L.Icon({
-  iconUrl: dark ? fileUri(MarkerDark) : fileUri(MarkerLight),
-  iconRetinaUrl: dark ? fileUri(MarkerDark) : fileUri(MarkerLight),
+  iconUrl: dark ? MarkerDark : MarkerLight,
+  iconRetinaUrl: dark ? MarkerDark : MarkerLight,
   iconAnchor: [12, 12],
   popupAnchor: [0, -12],
   iconSize: [25, 25],

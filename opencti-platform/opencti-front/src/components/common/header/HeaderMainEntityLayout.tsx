@@ -23,9 +23,10 @@ const HeaderMainEntityLayout = ({
   const hasLeftTags = Boolean(leftTags);
   const hasRightTags = Boolean(rightTags);
   const hasBothTags = hasLeftTags && hasRightTags;
+  const hasTagsRow = !isNestedHeader && (hasLeftTags || hasRightTags);
 
   return (
-    <Stack gap={1} sx={{ marginBottom: 1 }}>
+    <Stack gap={1} sx={{ marginBottom: 0 }}>
       {/* Title + TitleRight on left + Actions on right */}
       <Stack
         direction="row"
@@ -80,7 +81,7 @@ const HeaderMainEntityLayout = ({
       </Stack>
 
       {/* Second row */}
-      {!isNestedHeader
+      {hasTagsRow
         && (
           <Stack
             direction="row"

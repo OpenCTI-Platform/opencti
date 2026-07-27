@@ -4,7 +4,7 @@ import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsTimelineQuery } from './__generated__/PublicStixRelationshipsTimelineQuery.graphql';
 import type { Widget } from '../../../../utils/widget/widget';
@@ -926,7 +926,6 @@ const publicStixRelationshipsTimelineQuery = graphql`
                   created
                   objectMarking {
                     id
-                    definition_type
                     definition
                     x_opencti_order
                     x_opencti_color
@@ -1007,7 +1006,7 @@ const PublicStixRelationshipsTimeline = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsTimelineQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsTimelineQuery>(
     publicStixRelationshipsTimelineQuery,
     {
       uriKey,

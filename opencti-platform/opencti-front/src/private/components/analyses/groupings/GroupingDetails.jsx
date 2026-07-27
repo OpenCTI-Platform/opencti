@@ -45,6 +45,12 @@ const GroupingDetailsComponent = (props) => {
             operator: 'eq',
             mode: 'or',
           },
+          {
+            key: 'toTypes',
+            values: ['Stix-Core-Object'],
+            operator: 'eq',
+            mode: 'or',
+          },
         ],
         filterGroups: [],
       },

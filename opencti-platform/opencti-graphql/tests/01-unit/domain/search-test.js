@@ -91,6 +91,15 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
   expect(query).toEqual(expectedQuery);
 });
 
+it('should include source_name in search fields for external reference lookup', () => {
+  const shouldSearch = elGenerateFullTextSearchShould('IETF');
+  const allFields = shouldSearch.flatMap((clause) => [
+    ...(clause?.query_string?.fields ?? []),
+    ...(clause?.multi_match?.fields ?? []),
+  ]);
+  expect(allFields.some((f) => f === 'source_name' || f.startsWith('source_name'))).toBe(true);
+});
+
 it('should generate search clauses for both activity and history fields in historyFiltering mode', () => {
   const shouldSearch = elGenerateFullTextSearchShould('login', { historyFiltering: true });
   const topLevelActivityAndHistoryQueryString = shouldSearch.find(
