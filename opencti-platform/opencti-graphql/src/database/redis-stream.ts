@@ -18,7 +18,7 @@ import { streamEventId, utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 import { asyncMap } from '../utils/data-processing';
 import { roundRate } from '../utils/consumer-metrics';
-import {getFileContent, rawUpload} from './raw-file-storage';
+import { getFileContent, rawUpload } from './raw-file-storage';
 
 // region opencti data stream
 const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
