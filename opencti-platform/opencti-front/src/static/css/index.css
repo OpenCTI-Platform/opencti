@@ -22,10 +22,6 @@
   height: 100vh;
 }
 
-:focus {
-  outline: 0;
-}
-
 input:-webkit-autofill {
   transition-delay: 9999s;
 }
