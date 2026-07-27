@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WidgetDataSelection } from '../../../../utils/widget/widget';
-import { buildStixRelationshipsTimelineData } from './StixRelationshipsTimeline';
+import { buildStixRelationshipsTimelineData, RELATIONSHIP_TIMELINE_DATE_KEY } from './StixRelationshipsTimeline';
 
 describe('buildStixRelationshipsTimelineData', () => {
   it('uses relationship date attribute on relDate without overriding remote node created field', () => {
@@ -39,7 +39,7 @@ describe('buildStixRelationshipsTimelineData', () => {
             },
           },
         },
-      ] as Parameters<typeof buildStixRelationshipsTimelineData>[0],
+      ] as unknown as Parameters<typeof buildStixRelationshipsTimelineData>[0],
       selection,
       'created_at',
     );
@@ -47,6 +47,6 @@ describe('buildStixRelationshipsTimelineData', () => {
     expect(timelineData).toHaveLength(1);
     expect(timelineData[0]?.value.id).toBe('to-1');
     expect(timelineData[0]?.value.created).toBe('2020-01-01T00:00:00.000Z');
-    expect(timelineData[0]?.value.relDate).toBe('2024-02-01T00:00:00.000Z');
+    expect(timelineData[0]?.value[RELATIONSHIP_TIMELINE_DATE_KEY]).toBe('2024-02-01T00:00:00.000Z');
   });
 });

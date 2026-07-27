@@ -981,7 +981,7 @@ interface StixRelationshipsTimelineComponentProps {
   dataSelection: WidgetDataSelection[];
 }
 
-const RELATIONSHIP_TIMELINE_DATE_KEY = 'relDate';
+export const RELATIONSHIP_TIMELINE_DATE_KEY = 'relTimelineDate';
 
 type TimelineEdges = NonNullable<
   NonNullable<StixRelationshipsTimelineStixRelationshipQuery['response']['stixRelationships']>['edges']
@@ -1000,7 +1000,7 @@ export const buildStixRelationshipsTimelineData = (
     = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
   return edges.flatMap((edge) => {
     const rel = edge.node;
-    const remoteNode: TimelineRemoteNode | null
+    const remoteNode: TimelineRemoteNode | null | undefined
       = rel.from
         && fromId
         && fromId.includes(rel.from.id)
