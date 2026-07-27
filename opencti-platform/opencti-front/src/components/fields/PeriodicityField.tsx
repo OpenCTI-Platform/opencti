@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import { Field, FieldProps } from 'formik';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
@@ -46,6 +47,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   setFieldValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
 
   return (
     <Box style={style}>
@@ -132,7 +134,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
               </Box>
               {helperText && (
                 <Box mt={1}>
-                  <small style={{ color: 'rgba(255, 255, 255, 0.5)' }}>{helperText}</small>
+                  <small style={{ color: theme.palette.common.lightGrey }}>{helperText}</small>
                 </Box>
               )}
             </>
