@@ -6,7 +6,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { RelayError } from '../../../../relay/relayTypes';
 import { deleteNode } from '../../../../utils/store';
 
 const fintelDesignDeletionMutation = graphql`
@@ -65,8 +64,7 @@ const FintelDesignDeletion = ({
       onError: (error) => {
         setDeleting(false);
         handleClose();
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
       },
     });
   };

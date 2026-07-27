@@ -11,7 +11,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivity-lost';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 
 export const csvFeedImportQuery = graphql`
@@ -92,8 +91,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
           }
         })
         .catch((e) => {
-          const { errors } = (e as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
+          MESSAGING$.notifyRelayError(e);
         });
     }
   };
