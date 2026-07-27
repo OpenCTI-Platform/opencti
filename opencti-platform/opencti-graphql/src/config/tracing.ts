@@ -50,11 +50,11 @@ class MeterManager {
     this.latencyHistogram?.record(val, attributes);
   }
 
-  lockWait(val: number, attributes: any) {
+  lockWait(val: number, attributes?: any) {
     this.lockWaitHistogram?.record(val, attributes);
   }
 
-  lockContention(attributes: any) {
+  lockContention(attributes?: any) {
     this.lockContentions?.add(1, attributes);
   }
 

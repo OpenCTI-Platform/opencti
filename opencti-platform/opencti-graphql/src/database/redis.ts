@@ -425,14 +425,14 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const { signal } = controller;
   const redlock = new Redlock([getClientLock()], { retryCount, retryDelay, retryJitter });
   // Get the lock
-  const acquireStart = Date.now();
+  const acquireStart = performance.now(); // monotonic: immune to system clock adjustments
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
   // A contended acquisition waits in silent retry polls (retry_delay); without these metrics that
   // wait is invisible: it inflates operation latency but emits no signal until full retry
   // exhaustion throws a LOCK_ERROR.
-  meterManager.lockWait(Date.now() - acquireStart, {});
+  meterManager.lockWait(Math.round(performance.now() - acquireStart));
   if (lock.attempts.length > 1) {
-    meterManager.lockContention({});
+    meterManager.lockContention();
   }
   const queue = () => {
     timeout = setTimeout(
