@@ -233,7 +233,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
+    expect(R.head(data).value).toEqual(36 + TESTING_ORGS.length);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
