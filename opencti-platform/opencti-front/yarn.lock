@@ -6148,10 +6148,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"convert@npm:7.0.0":
-  version: 7.0.0
-  resolution: "convert@npm:7.0.0"
-  checksum: 10c0/96a1ea9f195083b15d9a7240fb3852ab1594b137efa886fa4c2a0bc41f80afc0045d0a2b67198cb179d4c127cd0106101fdaa7e31c275e39a67979e5705c99b3
+"convert@npm:7.0.2":
+  version: 7.0.2
+  resolution: "convert@npm:7.0.2"
+  checksum: 10c0/6081d4122ae1b325c46b679e784c015e6009d70ac321a6579affd2cfc8ae2accf2b2d93a6b9897924cef3e7814c199058909dcb561d8d01523c6e35a92f9cebf
   languageName: node
   linkType: hard
 
@@ -11837,7 +11837,7 @@ __metadata:
     axios: "npm:1.18.1"
     babel-plugin-relay: "npm:21.0.1"
     classnames: "npm:2.5.1"
-    convert: "npm:7.0.0"
+    convert: "npm:7.0.2"
     d3-hierarchy: "npm:3.1.2"
     d3-scale: "npm:4.0.2"
     d3-timer: "npm:3.0.1"
