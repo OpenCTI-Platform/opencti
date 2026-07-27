@@ -1,16 +1,33 @@
 import { Environment, Observable, RecordSource, Store } from 'relay-runtime';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import type { SubscribeFunction } from 'react-relay-network-modern';
 import * as R from 'ramda';
 import { createClient } from 'graphql-ws';
 import uploadMiddleware from './uploadMiddleware';
+import type { RelayError } from './relayTypes';
+
+declare global {
+  interface Window {
+    BASE_PATH?: string;
+  }
+}
+
+interface ServiceMessage {
+  type: string;
+  text?: unknown;
+  fullError?: unknown;
+}
 
 // Service bus
-const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
+const MESSENGER$ = new Subject<ServiceMessage[]>().pipe(
+  debounce(() => timer(500)),
+) as Subject<ServiceMessage[]>;
 export const MESSAGING$ = {
   messages: MESSENGER$,
   notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
@@ -38,15 +55,18 @@ export const MESSAGING$ = {
 
 // Default application exception.
 export class ApplicationError extends Error {
-  constructor(errors) {
+  data: unknown;
+
+  constructor(errors: unknown) {
     super();
     this.data = errors;
   }
 }
 
 // Network
-const isEmptyPath = R.isNil(window.BASE_PATH) || R.isEmpty(window.BASE_PATH);
-const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
+const basePath = window.BASE_PATH ?? '';
+const isEmptyPath = R.isEmpty(basePath);
+const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 // Create Network
@@ -79,7 +99,7 @@ const fetchMiddleware = urlMiddleware({
   // -----------
 });
 const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
-  subscribeFn,
+  subscribeFn: subscribeFn as unknown as SubscribeFunction,
 });
 const store = new Store(new RecordSource());
 const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
@@ -94,7 +114,13 @@ const getDataID = (fieldValue, typeName) => {
 export const environment = new Environment({ network, store, getDataID });
 
 // Components
-export class QueryRenderer extends Component {
+interface QueryRendererProps {
+  variables: Record<string, unknown>;
+  query: GraphQLTaggedNode;
+  render: (data: { error: Error | null; props: unknown }) => ReactNode;
+}
+
+export class QueryRenderer extends Component<QueryRendererProps> {
   render() {
     const { variables, query, render } = this.props;
     return (
@@ -120,13 +146,11 @@ QueryRenderer.propTypes = {
   query: PropTypes.object,
 };
 
-const buildErrorMessages = (error) => R.map(
+const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
   (e) => ({
     type: 'error',
-    text: R.pathOr(e.message, ['data', 'reason'], e),
-  }),
-  error.res.errors,
-);
+    text: e?.data?.reason ?? e.message,
+  }));
 
 const FORCE_PASSWORD_CHANGE_ROUTE = '/dashboard/change-password';
 
@@ -202,34 +226,30 @@ export const fetchQuery = (query, args) => FQ(environment, query, args);
 
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
 
-export const handleErrorInForm = (error, setErrors) => {
-  const formattedError = R.head(error.res.errors);
-  if (formattedError.data && formattedError.data.field) {
+export const handleErrorInForm = (error: RelayError, setErrors) => {
+  const formattedError = R.head(error.res.errors ?? []);
+  if (formattedError?.data && formattedError.data.field) {
     setErrors({
       [formattedError.data.field]:
       formattedError.data.message || formattedError.data.reason,
     });
   } else {
-    const messages = R.map(
+    const messages = (error.res.errors ?? []).map(
       (e) => ({
         type: 'error',
-        text: R.pathOr(e.message, ['data', 'reason'], e),
-      }),
-      error.res.errors,
-    );
+        text: e?.data?.reason ?? e.message,
+      }));
     MESSAGING$.messages.next(messages);
   }
 };
 
 export const handleError = (error) => {
   if (error && error.res && error.res.errors) {
-    const messages = R.map(
+    const messages = (error.res.errors ?? []).map(
       (e) => ({
         type: 'error',
-        text: R.pathOr((e.message), ['data', 'message'], e),
-      }),
-      error.res.errors,
-    );
+        text: e?.data?.message ?? e.message,
+      }));
     MESSAGING$.messages.next(messages);
   }
 };
