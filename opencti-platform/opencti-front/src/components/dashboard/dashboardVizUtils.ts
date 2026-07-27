@@ -157,7 +157,12 @@ export const computeWidgetFiltersForSelection = (
     },
   );
 
-  return { dateAttribute, startDate, endDate, filters: normalizeFilterGroupForBackend(filters) };
+  return {
+    dateAttribute,
+    startDate,
+    endDate,
+    filters: normalizeFilterGroupForBackend(filters),
+  };
 };
 
 /**
