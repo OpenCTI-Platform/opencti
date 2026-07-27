@@ -373,14 +373,20 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(result.expectations).toBe(0);
   });
 
-  it('throws a DatabaseError (not a raw crash) when content is missing entirely', () => {
+  it('forwards the original message unsplit, with null expectations, when content is missing entirely', () => {
     const message = { type: 'bundle' };
-    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBeNull();
   });
 
-  it('throws a DatabaseError (not a raw crash) when content decodes to invalid JSON', () => {
+  it('forwards the original message unsplit, with null expectations, when content decodes to invalid JSON', () => {
+    // Matches pre-split behavior: Node.js can't parse it, so it forwards the message as-is
+    // instead of blocking publishing - the worker remains the ultimate authority on validity.
     const message = { type: 'bundle', content: Buffer.from('not valid json{{{', 'utf-8').toString('base64') };
-    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBeNull();
   });
 
   it('treats no_split: false the same as no_split absent - still splits', () => {
@@ -585,5 +591,48 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
     const publishedMessage = JSON.parse(publishedBuffer.toString());
     expect(publishedMessage.content).toBe(message.content);
     expect(publishedMessage.applicant_id).toBe('user-1');
+  });
+
+  it('publishes a valid multi-object bundle split into one message per distinct object (happy path baseline)', async () => {
+    const objects = [
+      { id: 'malware--a', type: 'malware' },
+      { id: 'malware--b', type: 'malware' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(mockChannelPublish).toHaveBeenCalledTimes(2);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-1', 2);
+    const publishedIds = mockChannelPublish.mock.calls.map(([, , content]) => decode(JSON.parse(content.toString()).content).objects[0].id);
+    expect(publishedIds).toEqual(['malware--a', 'malware--b']);
+  });
+
+  it('still publishes an unparseable bundle unsplit and untouched, without tracking expectations, instead of blocking (invalid input parity with pre-split behavior)', async () => {
+    const message = {
+      type: 'bundle',
+      content: Buffer.from('not valid json{{{', 'utf-8').toString('base64'),
+      work_id: 'work-1',
+      trackExpectations: true,
+    };
+
+    await expect(pushBundleToWorker(context, user, 'connector-1', message)).resolves.toBeUndefined();
+
+    // expectations is null for unparseable content, so shouldTrackExpectations (`expectations > 0`) is false.
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    // The message still reaches the worker exchange, unmodified, exactly once.
+    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
+    const [, , publishedBuffer] = mockChannelPublish.mock.calls[0];
+    const publishedMessage = JSON.parse(publishedBuffer.toString());
+    expect(publishedMessage.content).toBe(message.content);
+  });
+
+  it('still publishes a bundle with missing content unsplit, without tracking expectations, instead of blocking', async () => {
+    const message = { type: 'bundle', work_id: 'work-1', trackExpectations: true };
+
+    await expect(pushBundleToWorker(context, user, 'connector-1', message)).resolves.toBeUndefined();
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
   });
 });
