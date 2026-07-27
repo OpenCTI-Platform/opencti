@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
-import * as Conf from '../../../../src/config/conf';
 import {
   getSmtpConfiguration,
   smtpConfigurationEdit,
@@ -71,7 +70,6 @@ vi.mock('../../../../src/database/redis', () => ({
 vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
-
 vi.mock('../../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../../src/config/conf');
   return {
@@ -81,7 +79,6 @@ vi.mock('../../../../src/config/conf', async () => {
         EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
       },
     },
-    isFeatureEnabled: vi.fn(() => true),
   };
 });
 
@@ -101,7 +98,6 @@ const MOCK_SETTINGS_WITHOUT_STORED = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(Conf.isFeatureEnabled).mockReturnValue(true);
 });
 
 describe('getSmtpConfiguration (forced mode — ALLOW_EMAIL_REWRITE=false)', () => {
