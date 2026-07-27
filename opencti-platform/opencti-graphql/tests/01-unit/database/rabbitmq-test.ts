@@ -373,20 +373,14 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(result.expectations).toBe(0);
   });
 
-  it('forwards the original message unsplit, with null expectations, when content is missing entirely', () => {
+  it('throws a DatabaseError (not a raw crash) when content is missing entirely', () => {
     const message = { type: 'bundle' };
-    const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
-    expect(result.expectations).toBeNull();
+    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
   });
 
-  it('forwards the original message unsplit, with null expectations, when content decodes to invalid JSON', () => {
-    // Matches pre-split behavior: Node.js can't parse it, so it forwards the message as-is
-    // instead of blocking publishing - the worker remains the ultimate authority on validity.
+  it('throws a DatabaseError (not a raw crash) when content decodes to invalid JSON', () => {
     const message = { type: 'bundle', content: Buffer.from('not valid json{{{', 'utf-8').toString('base64') };
-    const result = buildSplitMessages(message);
-    expect(result.messages).toEqual([message]);
-    expect(result.expectations).toBeNull();
+    expect(() => buildSplitMessages(message)).toThrow(/Invalid stix bundle content/);
   });
 
   it('treats no_split: false the same as no_split absent - still splits', () => {
@@ -616,23 +610,18 @@ describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () 
       trackExpectations: true,
     };
 
-    await expect(pushBundleToWorker(context, user, 'connector-1', message)).resolves.toBeUndefined();
+    await expect(pushBundleToWorker(context, user, 'connector-1', message)).rejects.toThrow(/Invalid stix bundle content/);
 
-    // expectations is null for unparseable content, so shouldTrackExpectations (`expectations > 0`) is false.
     expect(updateExpectationsNumber).not.toHaveBeenCalled();
-    // The message still reaches the worker exchange, unmodified, exactly once.
-    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
-    const [, , publishedBuffer] = mockChannelPublish.mock.calls[0];
-    const publishedMessage = JSON.parse(publishedBuffer.toString());
-    expect(publishedMessage.content).toBe(message.content);
+    expect(mockChannelPublish).not.toHaveBeenCalled();
   });
 
-  it('still publishes a bundle with missing content unsplit, without tracking expectations, instead of blocking', async () => {
+  it('rejects a bundle with missing content instead of publishing it', async () => {
     const message = { type: 'bundle', work_id: 'work-1', trackExpectations: true };
 
-    await expect(pushBundleToWorker(context, user, 'connector-1', message)).resolves.toBeUndefined();
+    await expect(pushBundleToWorker(context, user, 'connector-1', message)).rejects.toThrow(/Invalid stix bundle content/);
 
     expect(updateExpectationsNumber).not.toHaveBeenCalled();
-    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
+    expect(mockChannelPublish).not.toHaveBeenCalled();
   });
 });
