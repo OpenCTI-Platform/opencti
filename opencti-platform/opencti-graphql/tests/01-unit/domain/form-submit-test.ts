@@ -24,7 +24,7 @@ vi.mock('../../../src/database/middleware', () => ({
 }));
 vi.mock('../../../src/domain/work');
 vi.mock('../../../src/database/rabbitmq', () => ({
-  pushToWorkerForConnector: vi.fn(),
+  pushBundleToWorker: vi.fn(),
   pushToConnector: vi.fn(),
 }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
@@ -463,12 +463,12 @@ describe('formSubmit', () => {
     vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' } as any);
     vi.spyOn(workDomain, 'updateExpectationsNumber').mockResolvedValue(undefined as any);
 
-    await formSubmit(mockContext, mockUser, input, false); // isDraft=false → pushToWorkerForConnector path
+    await formSubmit(mockContext, mockUser, input, false); // isDraft=false → pushBundleToWorker path
 
-    const pushSpy = vi.mocked(rabbitmq.pushToWorkerForConnector);
+    const pushSpy = vi.mocked(rabbitmq.pushBundleToWorker);
     expect(pushSpy).toHaveBeenCalledOnce();
-    const message = pushSpy.mock.calls[0][1];
-    expect(message).toMatchObject({ no_split: true });
+    const message = pushSpy.mock.calls[0][3];
+    expect(message).toMatchObject({ no_split: true, trackExpectations: true });
   });
 
   it('should bypass mandatory attributes when creating draft from form intake', async () => {

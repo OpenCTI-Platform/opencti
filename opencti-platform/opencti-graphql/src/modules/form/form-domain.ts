@@ -10,8 +10,8 @@ import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isFeatureEnabled, logApp } from '../../config/conf';
-import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
+import { pushBundleToWorker } from '../../database/rabbitmq';
+import { createWork } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
@@ -467,10 +467,6 @@ export const formSubmit = async (
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
 
-    if (bundle.objects.length > 0) {
-      await updateExpectationsNumber(context, SYSTEM_USER, work.id, bundle.objects.length);
-    }
-
     let draftId = null;
     if (finalIsDraft) {
       const isFormIntakeDefaultsEnabled = isFeatureEnabled('FORM_INTAKE_DEFAULT_VALUES');
@@ -530,7 +526,7 @@ export const formSubmit = async (
       // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
       await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
     }
-    await pushToWorkerForConnector(connectorId, {
+    await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
       type: 'bundle',
       applicant_id: user.id,
       content,
@@ -538,6 +534,7 @@ export const formSubmit = async (
       draft_id: draftId,
       update: true,
       no_split: true,
+      trackExpectations: true,
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });

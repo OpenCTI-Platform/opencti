@@ -453,8 +453,13 @@ const amqpExecute = async (execute) => {
  * Note: Ordering is maintained when callers use sequential awaits.
  * In rare edge cases around connection failures, duplicate delivery
  * is possible (at-least-once semantics). Consumers should be idempotent.
+ *
+ * Not exported on purpose: this is the low-level publish primitive for this module.
+ * Callers outside rabbitmq.js must go through pushToConnector or pushBundleToWorker,
+ * so every message to a worker/connector queue is guaranteed to go through their
+ * respective splitting/expectations/routing logic instead of bypassing it.
  */
-export const send = async (exchangeName, routingKey, message) => {
+const send = async (exchangeName, routingKey, message) => {
   let attemptNumber = 0;
   let retryDelay = RECONNECT_INITIAL_DELAY;
 
@@ -699,14 +704,19 @@ export const rabbitMQIsAlive = async () => {
 
 /**
  * Pure splitting decision for an outgoing worker message.
- * Returns null when the message shouldn't be split (not a bundle, already flagged
- * no_split, or the bundle only has a single object) - in that case the caller must
- * fall back to sending the original message unchanged.
- * Returns the array of one-object-per-message replacements otherwise.
+ * Returns { messages, expectations }:
+ * - messages: the message(s) to actually publish. The original message, unchanged, when no
+ *   split occurs (not a bundle, already flagged no_split, or the bundle only has a single
+ *   object); one message per resulting chunk otherwise.
+ * - expectations: the total number of STIX objects the bundle represents, used by callers that
+ *   opt in to centralized expectation tracking (see `trackExpectations` on pushBundleToWorker).
+ *   null when the message isn't a STIX bundle at all (e.g. sync 'event' messages), since those
+ *   don't carry expectation semantics here.
  */
 export const buildSplitMessages = (message) => {
-  if (message.type !== 'bundle' || message.no_split) {
-    return null;
+  const unsplit = (expectations) => ({ messages: [message], expectations });
+  if (message.type !== 'bundle') {
+    return unsplit(null);
   }
   const bundleContent = fromBase64(message.content);
   let parsedBundle;
@@ -715,34 +725,42 @@ export const buildSplitMessages = (message) => {
   } catch (e) {
     throw DatabaseError('Invalid stix bundle content', { cause: e });
   }
+  const objectCount = Array.isArray(parsedBundle.objects) ? parsedBundle.objects.length : 0;
   // Mirror the worker's own pre-check (push_handler.py): never attempt to split single-object
-  // bundles. This avoids needless work for the common case and sidesteps the splitter's
-  // dependency-walk on payloads it was never meant to touch (matching prior behavior exactly,
-  // since single-object bundles were never split by the worker either).
-  if (!Array.isArray(parsedBundle.objects) || parsedBundle.objects.length <= 1) {
-    return null;
+  // (or explicitly no_split) bundles. This avoids needless work for the common case and sidesteps
+  // the splitter's dependency-walk on payloads it was never meant to touch (matching prior
+  // behavior exactly, since single-object bundles were never split by the worker either).
+  if (message.no_split || objectCount <= 1) {
+    return unsplit(objectCount);
   }
   const splitter = new Stix2Splitter();
-  const { bundles } = splitter.splitBundleWithExpectations(bundleContent);
+  const { bundles, numberExpectations } = splitter.splitBundleWithExpectations(bundleContent);
   if (bundles.length <= 1) {
-    return null;
+    return unsplit(objectCount);
   }
-  return bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
+  const messages = bundles.map((bundle) => ({ ...message, content: toBase64(bundle), no_split: true }));
+  return { messages, expectations: numberExpectations };
 };
 
-export const pushToWorkerForConnector = async (connectorId, message, context, user) => {
+/**
+ * Publishes a message to a connector's worker queue.
+ * When message.trackExpectations is true and message.work_id is set, the work's expected
+ * completion count is updated to reflect the actual number of STIX objects being sent - whether
+ * the bundle ends up split into several messages or sent as a single one. This is opt-in
+ * (rather than inferred from work_id's presence) because some callers, like CSV ingestion, track
+ * a work's expectations themselves under a different model (one expectation for the whole job) and
+ * must not have it incremented again here.
+ */
+export const pushBundleToWorker = async (context, user, connectorId, message) => {
   const routingKey = pushRouting(connectorId);
-  const splitMessages = buildSplitMessages(message);
-  if (splitMessages) {
-    if (message.work_id && context && user) {
-      await updateExpectationsNumber(context, user, message.work_id, splitMessages.length);
-    }
-    for (let i = 0; i < splitMessages.length; i += 1) {
-      await send(WORKER_EXCHANGE, routingKey, JSON.stringify(splitMessages[i]));
-    }
-    return undefined;
+  const { messages, expectations } = buildSplitMessages(message);
+  const shouldTrackExpectations = message.trackExpectations && message.work_id && context && user && expectations > 0;
+  if (shouldTrackExpectations) {
+    await updateExpectationsNumber(context, user, message.work_id, expectations);
   }
-  return send(WORKER_EXCHANGE, routingKey, JSON.stringify(message));
+  for (const splitMessage of messages) {
+    await send(WORKER_EXCHANGE, routingKey, JSON.stringify(splitMessage));
+  }
 };
 
 export const pushToConnector = (connectorId, message) => {

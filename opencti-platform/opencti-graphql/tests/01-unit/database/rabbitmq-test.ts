@@ -9,6 +9,28 @@ vi.mock('../../../src/utils/http-client', () => ({
   getHttpClient: vi.fn(() => mockHttpClient),
 }));
 
+// Fake confirm channel: publish() immediately acks via the confirm callback, so
+// pushBundleToWorker's real send() resolves synchronously without a broker.
+const mockChannelPublish = vi.fn((_exchange, _routingKey, _content, _options, callback) => {
+  callback(null);
+  return true;
+});
+const mockChannel = {
+  on: vi.fn(),
+  publish: mockChannelPublish,
+};
+const mockConnection = {
+  on: vi.fn(),
+  close: vi.fn(),
+  createConfirmChannel: vi.fn((cb) => cb(null, mockChannel)),
+};
+vi.mock('amqplib/callback_api', () => ({
+  default: {
+    connect: vi.fn((_uri, _options, callback) => callback(null, mockConnection)),
+    credentials: { plain: vi.fn() },
+  },
+}));
+
 vi.mock('../../../src/config/conf', () => ({
   default: { get: vi.fn(() => undefined) },
   booleanConf: vi.fn(() => false),
@@ -72,7 +94,8 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
-import { buildSplitMessages, getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
+import { updateExpectationsNumber } from '../../../src/domain/work';
+import { buildSplitMessages, getConnectorQueueSize, metrics, pushBundleToWorker } from '../../../src/database/rabbitmq';
 
 describe('rabbitmq: metrics', () => {
   const context = {};
@@ -270,32 +293,38 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
   const toBundle = (objects: unknown[]) => Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects }), 'utf-8').toString('base64');
   const decode = (base64Content: string) => JSON.parse(Buffer.from(base64Content, 'base64').toString('utf-8'));
 
-  it('returns null for non-bundle messages', () => {
+  it('returns the original message unsplit, with a null expectations count, for non-bundle messages', () => {
     const message = { type: 'event', content: 'irrelevant' };
-    expect(buildSplitMessages(message)).toBeNull();
+    expect(buildSplitMessages(message)).toEqual({ messages: [message], expectations: null });
   });
 
-  it('returns null for messages explicitly marked no_split', () => {
+  it('returns the original message unsplit for messages explicitly marked no_split', () => {
     const message = {
       type: 'bundle',
       no_split: true,
       content: toBundle([{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }]),
     };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(2);
   });
 
-  it('returns null for single-object bundles', () => {
+  it('returns the original message unsplit for single-object bundles', () => {
     const message = { type: 'bundle', content: toBundle([{ id: 'malware--only', type: 'malware', name: 'Only' }]) };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(1);
   });
 
-  it('returns null for a single-object bundle even when the object has no id (malformed/partial STIX)', () => {
+  it('returns the original message unsplit for a single-object bundle even when the object has no id (malformed/partial STIX)', () => {
     // Regression test: a real TAXII response can contain an object with no `id` field.
     // The splitter's dependency walk cannot safely handle that, so single-object bundles
     // must be short-circuited before ever invoking it - mirroring the worker's own
     // `len(content['objects']) == 1` pre-check in push_handler.py.
     const message = { type: 'bundle', content: toBundle([{ type: 'report', confidence: 100 }]) };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(1);
   });
 
   it('splits a multi-object bundle into one message per object, preserving other fields', () => {
@@ -307,10 +336,10 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     ];
     const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', applicant_id: 'user-1', update: true };
 
-    const splitMessages = buildSplitMessages(message);
+    const { messages: splitMessages, expectations } = buildSplitMessages(message);
 
-    expect(splitMessages).not.toBeNull();
     expect(splitMessages).toHaveLength(objects.length);
+    expect(expectations).toBe(objects.length);
     const ids = (splitMessages as { content: string; no_split: boolean; work_id: string; applicant_id: string; update: boolean }[]).map((msg) => {
       expect(msg.no_split).toBe(true);
       expect(msg.work_id).toBe('work-1');
@@ -323,19 +352,25 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
     expect(new Set(ids)).toEqual(new Set(objects.map((o) => o.id)));
   });
 
-  it('returns null when objects is an empty array', () => {
+  it('returns expectations 0 and the original message unsplit when objects is an empty array', () => {
     const message = { type: 'bundle', content: toBundle([]) };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(0);
   });
 
-  it('returns null when the bundle has no objects field at all', () => {
+  it('returns expectations 0 and the original message unsplit when the bundle has no objects field at all', () => {
     const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle' }), 'utf-8').toString('base64') };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(0);
   });
 
-  it('returns null when objects is not an array (malformed payload)', () => {
+  it('returns expectations 0 and the original message unsplit when objects is not an array (malformed payload)', () => {
     const message = { type: 'bundle', content: Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects: 'not-an-array' }), 'utf-8').toString('base64') };
-    expect(buildSplitMessages(message)).toBeNull();
+    const result = buildSplitMessages(message);
+    expect(result.messages).toEqual([message]);
+    expect(result.expectations).toBe(0);
   });
 
   it('throws a DatabaseError (not a raw crash) when content is missing entirely', () => {
@@ -351,14 +386,15 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
   it('treats no_split: false the same as no_split absent - still splits', () => {
     const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
     const message = { type: 'bundle', no_split: false, content: toBundle(objects) };
-    const splitMessages = buildSplitMessages(message);
+    const { messages: splitMessages, expectations } = buildSplitMessages(message);
     expect(splitMessages).toHaveLength(2);
+    expect(expectations).toBe(2);
   });
 
   it('splits exactly at the boundary of 2 objects (smallest splittable size)', () => {
     const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
     const message = { type: 'bundle', content: toBundle(objects) };
-    const splitMessages = buildSplitMessages(message);
+    const { messages: splitMessages } = buildSplitMessages(message);
     expect(splitMessages).toHaveLength(2);
   });
 
@@ -372,8 +408,9 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
       { id: 'malware--other', type: 'malware', name: 'Other' },
     ];
     const message = { type: 'bundle', content: toBundle(objects) };
-    const splitMessages = buildSplitMessages(message);
+    const { messages: splitMessages, expectations } = buildSplitMessages(message);
     expect(splitMessages).toHaveLength(2);
+    expect(expectations).toBe(2);
   });
 
   it('throws when a multi-object bundle contains an object with no id (known pycti-parity limitation)', () => {
@@ -392,9 +429,161 @@ describe('rabbitmq: buildSplitMessages (Proposal B - Node.js bundle splitting)',
   it('splits a larger bundle (20 objects) preserving every distinct id exactly once', () => {
     const objects = Array.from({ length: 20 }, (_, i) => ({ id: `malware--${i}`, type: 'malware', name: `Malware ${i}` }));
     const message = { type: 'bundle', content: toBundle(objects) };
-    const splitMessages = buildSplitMessages(message);
+    const { messages: splitMessages, expectations } = buildSplitMessages(message);
     expect(splitMessages).toHaveLength(20);
+    expect(expectations).toBe(20);
     const ids = (splitMessages as { content: string }[]).map((msg) => decode(msg.content).objects[0].id);
     expect(new Set(ids)).toEqual(new Set(objects.map((o) => o.id)));
+  });
+});
+
+describe('rabbitmq: pushBundleToWorker (centralized expectations tracking)', () => {
+  const toBundle = (objects: unknown[]) => Buffer.from(JSON.stringify({ id: 'bundle--test', type: 'bundle', objects }), 'utf-8').toString('base64');
+  const decode = (base64Content: string) => JSON.parse(Buffer.from(base64Content, 'base64').toString('utf-8'));
+  const context = {};
+  const user = {};
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockChannelPublish.mockImplementation((_exchange, _routingKey, _content, _options, callback) => {
+      callback(null);
+      return true;
+    });
+    mockConnection.createConfirmChannel.mockImplementation((cb: (err: unknown, channel: unknown) => void) => cb(null, mockChannel));
+  });
+
+  it('tracks expectations exactly once for a single-object bundle opted-in via trackExpectations', async () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-1', 1);
+    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT track expectations when trackExpectations is false, even with a work_id present (CSV ingestion safety)', async () => {
+    // This is the exact guard that prevents CSV's own flat upfront expectation (set once per job)
+    // from being incremented again here - a regression here would silently break CSV job completion.
+    const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-csv', trackExpectations: false };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(mockChannelPublish).toHaveBeenCalledTimes(2);
+  });
+
+  it('does NOT track expectations when trackExpectations is omitted entirely, defaulting to opt-out', async () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1' };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+  });
+
+  it('does NOT track expectations when work_id is missing, even if trackExpectations is true', async () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT track expectations for non-bundle messages (e.g. sync "event" type) even with trackExpectations true', async () => {
+    // buildSplitMessages returns expectations: null for non-bundle messages, so `expectations > 0` is false.
+    const message = { type: 'event', event_id: 'evt-1', work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).not.toHaveBeenCalled();
+    expect(mockChannelPublish).toHaveBeenCalledTimes(1);
+  });
+
+  it('tracks the true post-split expectation count (not raw message count) for a multi-object bundle', async () => {
+    const objects = [
+      { id: 'malware--a', type: 'malware' },
+      { id: 'malware--b', type: 'malware' },
+      { id: 'malware--c', type: 'malware' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).toHaveBeenCalledTimes(1);
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-1', 3);
+    // One publish per split object, since the bundle was split into 3 single-object messages.
+    expect(mockChannelPublish).toHaveBeenCalledTimes(3);
+  });
+
+  it('tracks the deduplicated expectation count, not the raw pre-dedup object count, for a bundle with duplicate ids', async () => {
+    const objects = [
+      { id: 'malware--dup', type: 'malware', name: 'First' },
+      { id: 'malware--dup', type: 'malware', name: 'Second' },
+      { id: 'malware--other', type: 'malware' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(updateExpectationsNumber).toHaveBeenCalledWith(context, user, 'work-1', 2);
+    expect(mockChannelPublish).toHaveBeenCalledTimes(2);
+  });
+
+  it('calls updateExpectationsNumber before publishing any split message (expectations must be visible before completion signals can arrive)', async () => {
+    const callOrder: string[] = [];
+    vi.mocked(updateExpectationsNumber).mockImplementation(async () => {
+      callOrder.push('updateExpectationsNumber');
+      return 'work-1';
+    });
+    mockChannelPublish.mockImplementation((_exchange, _routingKey, _content, _options, callback) => {
+      callOrder.push('publish');
+      callback(null);
+      return true;
+    });
+    const objects = [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(callOrder).toEqual(['updateExpectationsNumber', 'publish', 'publish']);
+  });
+
+  it('publishes split messages in the splitter dependency-sorted order, preserving FIFO publish order', async () => {
+    const publishedIds: string[] = [];
+    mockChannelPublish.mockImplementation((_exchange, _routingKey, content: Buffer, _options, callback) => {
+      const published = JSON.parse(content.toString());
+      publishedIds.push(decode(published.content).objects[0].id);
+      callback(null);
+      return true;
+    });
+    // A relationship depends on both endpoints, so it must sort (and publish) after them.
+    const objects = [
+      { id: 'relationship--rel', type: 'relationship', source_ref: 'malware--a', target_ref: 'malware--b' },
+      { id: 'malware--a', type: 'malware' },
+      { id: 'malware--b', type: 'malware' },
+    ];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    expect(publishedIds.indexOf('relationship--rel')).toBeGreaterThan(publishedIds.indexOf('malware--a'));
+    expect(publishedIds.indexOf('relationship--rel')).toBeGreaterThan(publishedIds.indexOf('malware--b'));
+  });
+
+  it('publishes the single unsplit message unchanged when no split occurs, without invoking the splitter logic on it', async () => {
+    const objects = [{ id: 'malware--a', type: 'malware' }];
+    const message = { type: 'bundle', content: toBundle(objects), work_id: 'work-1', trackExpectations: true, applicant_id: 'user-1' };
+
+    await pushBundleToWorker(context, user, 'connector-1', message);
+
+    const [, , publishedBuffer] = mockChannelPublish.mock.calls[0];
+    const publishedMessage = JSON.parse(publishedBuffer.toString());
+    expect(publishedMessage.content).toBe(message.content);
+    expect(publishedMessage.applicant_id).toBe('user-1');
   });
 });

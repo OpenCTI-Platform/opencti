@@ -11,7 +11,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
 import { storeLoadById, topEntitiesList } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { pushBundleToWorker } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { getHttpClient } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
@@ -312,7 +312,7 @@ const syncManagerInstance = (syncId) => {
             // Handle data events (create, update, delete, merge)
             const { data: stixData, context: eventContext, version, event_id } = JSON.parse(eventData);
             if (version !== EVENT_CURRENT_VERSION) continue;
-            // Process the event with retry: if pushToWorkerForConnector or saveCurrentState fails,
+            // Process the event with retry: if pushBundleToWorker or saveCurrentState fails,
             // retry indefinitely until it succeeds or the manager is stopped.
             let processed = false;
             while (!processed && running) {
@@ -320,7 +320,7 @@ const syncManagerInstance = (syncId) => {
                 const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
                 const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
                 const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
-                await pushToWorkerForConnector(sync.internal_id, {
+                await pushBundleToWorker(context, SYSTEM_USER, sync.internal_id, {
                   type: 'event',
                   event_id,
                   synchronized,

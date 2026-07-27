@@ -12,7 +12,7 @@ import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import conf, { logApp } from '../config/conf';
 import type { StixBundle, StixObject } from '../types/stix-2-1-common';
-import { pushToWorkerForConnector } from '../database/rabbitmq';
+import { pushBundleToWorker } from '../database/rabbitmq';
 
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
@@ -46,14 +46,14 @@ const sendBundleToWorker = async (context: AuthContext, bundle: BundleBuilder, o
   const bundleContentAsString = Buffer.from(JSON.stringify(bundleBuilt), 'utf-8').toString('base64');
 
   logApp.debug(`${LOG_PREFIX} push bundle to worker with ${objectCount} objects`);
-  await pushToWorkerForConnector(opts.connectorId, {
+  await pushBundleToWorker(context, opts.applicantUser, opts.connectorId, {
     type: 'bundle',
     update: true,
     applicant_id: opts.applicantUser.id,
     work_id: opts.workId,
     content: bundleContentAsString,
     draft_id: opts.draftId ?? '',
-  }, context, opts.applicantUser);
+  });
   return objectCount;
 };
 
