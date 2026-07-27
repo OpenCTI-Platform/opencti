@@ -560,8 +560,8 @@ describe('computeStartEndDates', () => {
       };
       const { startDate, endDate } = computeStartEndDates(config);
       // relativeDate should override absolute dates
-      expect(startDate).toBe('2025-03-08T10:30:00.000Z');
-      expect(endDate).toBe('2025-03-15T10:30:00.000Z');
+      expect(startDate).toBe('2025-03-08T10:30:00+00:00');
+      expect(endDate).toBe('2025-03-15T10:30:00+00:00');
     } finally {
       vi.useRealTimers();
     }
@@ -644,10 +644,14 @@ describe('computeWidgetFiltersForSelection', () => {
         },
       ],
       filterGroups: [{
-        key: ['entity_type'],
-        values: ['Malware'],
-        operator: 'eq',
-        mode: 'or',
+        mode: 'and',
+        filters: [{
+          key: ['entity_type'],
+          values: ['Malware'],
+          operator: 'eq',
+          mode: 'or',
+        }],
+        filterGroups: [],
       }],
     });
   });
@@ -719,25 +723,8 @@ describe('computeWidgetFiltersForMultiSelection', () => {
     expect(result.timeSeriesParameters[0].types).toStrictEqual(['Stix-Core-Object']);
     let firstLevelFilterKeys = result.timeSeriesParameters[0].filters?.filters.map((f) => f.key).flat();
     expect(firstLevelFilterKeys).toContain('created_at');
-    let secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups[0].filters;
-    expect(secondLevelFilters).toEqual({
-      mode: 'and',
-      filters: [{
-        key: ['entity_type'],
-        values: ['Malware'],
-        operator: 'eq',
-        mode: 'or',
-      }],
-      filterGroups: [],
-    });
-
-    // Second selection: updated_at + Report filter + date filters
-    expect(result.timeSeriesParameters[1].field).toBe('updated_at');
-    expect(result.timeSeriesParameters[1].types).toStrictEqual(['Stix-Core-Object']);
-    firstLevelFilterKeys = result.timeSeriesParameters[1].filters?.filters.map((f) => f.key).flat();
-    expect(firstLevelFilterKeys).toContain('updated_at');
-    secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups[0].filters;
-    expect(secondLevelFilters).toEqual({
+    let secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups;
+    expect(secondLevelFilters).toEqual([{
       mode: 'and',
       filters: [{
         key: ['entity_type'],
@@ -746,7 +733,24 @@ describe('computeWidgetFiltersForMultiSelection', () => {
         mode: 'or',
       }],
       filterGroups: [],
-    });
+    }]);
+
+    // Second selection: updated_at + Report filter + date filters
+    expect(result.timeSeriesParameters[1].field).toBe('updated_at');
+    expect(result.timeSeriesParameters[1].types).toStrictEqual(['Stix-Core-Object']);
+    firstLevelFilterKeys = result.timeSeriesParameters[1].filters?.filters.map((f) => f.key).flat();
+    expect(firstLevelFilterKeys).toContain('updated_at');
+    secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups;
+    expect(secondLevelFilters).toEqual([{
+      mode: 'and',
+      filters: [{
+        key: ['entity_type'],
+        values: ['Report'],
+        operator: 'eq',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    }]);
   });
 });
 
@@ -815,7 +819,7 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
         mode: 'and',
         filters: [
           {
-            key: 'entity_type',
+            key: ['entity_type'],
             mode: 'or',
             operator: 'eq',
             values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],
@@ -850,11 +854,25 @@ describe('buildRelationshipMultiWidgetBaseQueryVariables', () => {
       filters: {
         mode: 'and',
         filters: [
-          { key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' },
-          { key: ['updated_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
-          { key: ['updated_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+          {
+            key: ['entity_type'],
+            mode: 'or',
+            operator: 'eq',
+            values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],
+          },
         ],
-        filterGroups: [],
+        filterGroups: [{
+          mode: 'and',
+          filters: [
+            { key: ['updated_at'], values: ['2025-01-01T00:00:00Z'], operator: 'gt', mode: 'or' },
+            { key: ['updated_at'], values: ['2025-06-01T00:00:00Z'], operator: 'lt', mode: 'or' },
+          ],
+          filterGroups: [{
+            mode: 'and',
+            filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }],
+            filterGroups: [],
+          }],
+        }],
       },
       dynamicFrom: undefined,
       dynamicTo: {
@@ -923,7 +941,7 @@ describe('buildRelationshipSingleWidgetBaseQueryVariables', () => {
         mode: 'and',
         filters: [
           {
-            key: 'entity_type',
+            key: ['entity_type'],
             mode: 'or',
             operator: 'eq',
             values: ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'],

@@ -112,8 +112,6 @@ export const resolveDataSelection = async ({
  * If no dates are configured and `fallbackToDefaultDates` is true, falls back to the last 12 months.
  */
 export const computeStartEndDates = (config?: DashboardConfig, fallbackToDefaultDates = false) => {
-  const fallbackStartDate = fallbackToDefaultDates ? monthsAgo(12) : undefined;
-  const fallbackEndDate = fallbackToDefaultDates ? now() : undefined;
   const startDate = config?.relativeDate
     ? computeRelativeDate(config.relativeDate)
     : config?.startDate;
@@ -122,10 +120,12 @@ export const computeStartEndDates = (config?: DashboardConfig, fallbackToDefault
     ? formatDate(dayStartDate(null, false))
     : config?.endDate;
 
-  return {
-    startDate: startDate ?? fallbackStartDate,
-    endDate: endDate ?? fallbackEndDate,
-  };
+  return fallbackToDefaultDates
+    ? {
+        startDate: startDate ?? monthsAgo(12),
+        endDate: endDate ?? now(),
+      }
+    : { startDate, endDate };
 };
 
 /**
