@@ -9,6 +9,7 @@ const fintelTemplateEditMutation = graphql`
       id
       name
       description
+      default
       instance_filters
       settings_types
       start_date

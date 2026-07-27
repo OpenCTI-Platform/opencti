@@ -1087,7 +1087,6 @@ describe('meUser specific resolvers', async () => {
         language
         theme
         otp_activated
-        otp_qr
         description
       }
     }
@@ -1846,5 +1845,294 @@ describe('Password policy propagation to all users', () => {
     // Should NOT be close to old_date+1
     const oldDatePlus1 = new Date(oldDate).getTime() + 1 * 86400000;
     expect(Math.abs(editorNewDate - oldDatePlus1)).toBeGreaterThan(86400000); // at least 1 day away from old_date+1
+  });
+});
+
+describe('Bookmarks API', () => {
+  const BOOKMARKS_QUERY = gql`
+    query Bookmarks($first: Int, $after: ID, $types: [String], $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode, $filters: FilterGroup) {
+      bookmarks(first: $first, after: $after, types: $types, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
+        edges {
+          node {
+            id
+            entity_type
+            ... on Malware {
+              name
+              created
+            }
+            ... on Report {
+              name
+              published
+            }
+          }
+        }
+        pageInfo {
+          startCursor
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          globalCount
+        }
+      }
+    }
+  `;
+
+  const BOOKMARK_ADD_MUTATION = gql`
+    mutation BookmarkAdd($id: ID!, $type: String!) {
+      bookmarkAdd(id: $id, type: $type) {
+        id
+        entity_type
+      }
+    }
+  `;
+
+  const BOOKMARK_DELETE_MUTATION = gql`
+    mutation BookmarkDelete($id: ID!) {
+      bookmarkDelete(id: $id)
+    }
+  `;
+
+  const MALWARE_ADD_MUTATION = gql`
+    mutation MalwareAdd($input: MalwareAddInput!) {
+      malwareAdd(input: $input) {
+        id
+        name
+        entity_type
+      }
+    }
+  `;
+
+  const MALWARE_DELETE_MUTATION = gql`
+    mutation MalwareDelete($id: ID!) {
+      malwareEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  const REPORT_ADD_MUTATION = gql`
+    mutation ReportAdd($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+        name
+        entity_type
+      }
+    }
+  `;
+
+  const REPORT_DELETE_MUTATION = gql`
+    mutation ReportDelete($id: ID!) {
+      reportEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  let malware1Id: string;
+  let malware2Id: string;
+  let reportId: string;
+
+  beforeAll(async () => {
+    // Create test malware entities
+    const malware1 = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware 1', malware_types: ['ransomware'] } },
+    });
+    malware1Id = malware1.data?.malwareAdd.id;
+
+    const malware2 = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware 2', malware_types: ['trojan'] } },
+    });
+    malware2Id = malware2.data?.malwareAdd.id;
+
+    // Create a test report
+    const report = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Report', published: '2024-01-01T00:00:00.000Z' } },
+    });
+    reportId = report.data?.reportAdd.id;
+
+    // Add all three as bookmarks
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: malware1Id, type: 'Malware' },
+    });
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: malware2Id, type: 'Malware' },
+    });
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: reportId, type: 'Report' },
+    });
+  });
+
+  afterAll(async () => {
+    // Clean up bookmarks
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: malware1Id } });
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: malware2Id } });
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: reportId } });
+    // Delete test entities
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: malware1Id } });
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: malware2Id } });
+    await queryAsAdmin({ query: REPORT_DELETE_MUTATION, variables: { id: reportId } });
+  });
+
+  it('should list all bookmarks regardless of type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: {},
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(3);
+    const ids = edges.map((e: any) => e.node.id);
+    expect(ids).toContain(malware1Id);
+    expect(ids).toContain(malware2Id);
+    expect(ids).toContain(reportId);
+  });
+
+  it('should list only Malware bookmarks when filtered by type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    const ids = edges.map((e: any) => e.node.id);
+    expect(ids).toContain(malware1Id);
+    expect(ids).toContain(malware2Id);
+    expect(ids).not.toContain(reportId);
+    edges.forEach((e: any) => {
+      expect(e.node.entity_type).toBe('Malware');
+    });
+  });
+
+  it('should list only Report bookmarks when filtered by type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Report'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(1);
+    expect(edges[0].node.id).toEqual(reportId);
+    expect(edges[0].node.entity_type).toBe('Report');
+  });
+
+  it('should filter bookmarks by entity type using filters parameter', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    edges.forEach((e: any) => {
+      expect(e.node.entity_type).toBe('Malware');
+    });
+  });
+
+  it('should order bookmarks by name ascending', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], orderBy: 'name', orderMode: 'asc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    const names = edges.map((e: any) => e.node.name);
+    expect(names[0]).toBe('Bookmark Malware 1');
+    expect(names[1]).toBe('Bookmark Malware 2');
+  });
+
+  it('should order bookmarks by name descending', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], orderBy: 'name', orderMode: 'desc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    const names = edges.map((e: any) => e.node.name);
+    expect(names[0]).toBe('Bookmark Malware 2');
+    expect(names[1]).toBe('Bookmark Malware 1');
+  });
+
+  it('should paginate bookmarks with first parameter', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { first: 2, orderBy: 'name', orderMode: 'asc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    const pageInfo = queryResult.data?.bookmarks.pageInfo;
+    expect(pageInfo.hasNextPage).toBe(true);
+  });
+
+  it('should reject filters with unsupported keys', async () => {
+    await queryAsAdminWithError({
+      query: BOOKMARKS_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['objectLabel'], values: ['some-label-id'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      },
+    }, 'Bookmarks widgets only support filter with key=entity_type.');
+  });
+
+  it('should return empty connection when no bookmarks match type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Campaign'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toBe(0);
+  });
+
+  it('should clean up bookmarks that reference deleted entities', async () => {
+    // Create a temporary malware entity
+    const tempMalware = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware Temp', malware_types: ['backdoor'] } },
+    });
+    const tempMalwareId = tempMalware.data?.malwareAdd.id;
+
+    // Bookmark it
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: tempMalwareId, type: 'Malware' },
+    });
+
+    // Verify it appears in bookmarks
+    const beforeDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsBefore = beforeDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsBefore).toContain(tempMalwareId);
+
+    // Delete the entity directly without removing the bookmark
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: tempMalwareId } });
+
+    // Query bookmarks with first = 1
+    await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], first: 1 },
+    });
+
+    // Query bookmarks again - the stale bookmark should be automatically cleaned up
+    const afterDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsAfter = afterDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsAfter).not.toContain(tempMalwareId);
+
+    // Verify the other bookmarks are still intact
+    expect(idsAfter).toContain(malware1Id);
+    expect(idsAfter).toContain(malware2Id);
   });
 });

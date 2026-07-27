@@ -1,17 +1,16 @@
-import React, { ReactNode, Suspense, useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsPolarAreaDistributionQuery } from './__generated__/StixRelationshipsPolarAreaDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboard-viz-utils';
+import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 
 const stixRelationshipsPolarAreasDistributionQuery = graphql`
   query StixRelationshipsPolarAreaDistributionQuery(
@@ -187,7 +186,7 @@ const StixRelationshipsPolarArea = ({
 }: StixRelationshipsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -196,26 +195,6 @@ const StixRelationshipsPolarArea = ({
     config,
     buildQueryVariables,
   });
-
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsPolarAreaComponent
-          queryRef={queryRef}
-          dataSelection={resolvedDataSelection}
-          onMounted={(chart) => setChart(chart as ApexCharts)}
-        />
-      </Suspense>
-    );
-  };
 
   return (
     <WidgetContainer
@@ -227,7 +206,18 @@ const StixRelationshipsPolarArea = ({
       action={popover}
       showPreviewTag={isPreviewMode}
     >
-      {renderContent()}
+      <WidgetRenderContent
+        isMissingHostEntity={isMissingHostEntity}
+        isMissingSavedFilters={isMissingSavedFilters}
+        queryRef={queryRef}
+        host={host}
+      >
+        <StixRelationshipsPolarAreaComponent
+          queryRef={queryRef!}
+          dataSelection={resolvedDataSelection}
+          onMounted={(chart) => setChart(chart as ApexCharts)}
+        />
+      </WidgetRenderContent>
     </WidgetContainer>
   );
 };

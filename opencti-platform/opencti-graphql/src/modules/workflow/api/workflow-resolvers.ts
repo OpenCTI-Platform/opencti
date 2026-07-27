@@ -9,6 +9,7 @@ import {
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
   publishWorkflowDefinition,
+  restorePublishedWorkflowDefinition,
   setWorkflowDefinition,
   triggerWorkflowEvent,
 } from '../domain/workflow-domain';
@@ -33,6 +34,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublish: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowDefinitionRestorePublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType);
     },
     workflowDefinitionDelete: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return deleteWorkflowDefinition(context, context.user!, entityType);
@@ -78,7 +82,11 @@ const workflowResolvers = {
     pendingTransition: (instance: any) => instance.pendingTransition ?? null,
   },
   WorkflowSerializedTransition: {
-    from: (transition: any) => (Array.isArray(transition.from) ? transition.from : [transition.from]),
+    from: (transition: any) => {
+      if (transition.from === null || transition.from === undefined) return [];
+      return Array.isArray(transition.from) ? transition.from : [transition.from];
+    },
+    to: (transition: any) => transition.to ?? null,
   },
   WorkflowTransition: {
     toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),

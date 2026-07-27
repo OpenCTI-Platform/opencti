@@ -11,7 +11,6 @@ import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -140,8 +139,6 @@ const LOCAL_STORAGE_KEY = 'draftWorkspacesRestricted';
 
 const RestrictedDrafts = () => {
   const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
-  const { isFeatureEnable } = useHelper();
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
@@ -188,40 +185,6 @@ const RestrictedDrafts = () => {
     nodePath: ['draftWorkspacesRestricted', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
-
-  const dataColumnsWithoutMetadata: DataTableProps['dataColumns'] = {
-    name: {
-      percentWidth: 50,
-      isSortable: true,
-    },
-    creator: {
-      percentWidth: 15,
-      isSortable: true,
-    },
-    created_at: {
-      percentWidth: 15,
-      isSortable: true,
-    },
-    draft_status: {
-      id: 'draft_status',
-      label: 'Status',
-      percentWidth: 10,
-      isSortable: true,
-      render: (node) => (
-        <DraftStatusChip
-          draftStatus={node.draft_status}
-          workflowCurrentStatus={node.workflowInstance?.currentStatus}
-        />
-      ),
-    },
-    draft_validation_progress: {
-      id: 'draft_validation_progress',
-      label: 'Validation progress',
-      percentWidth: 10,
-      isSortable: false,
-      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
-    },
-  };
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
@@ -286,7 +249,7 @@ const RestrictedDrafts = () => {
         <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
             rootRef={ref}
-            dataColumns={isDraftWorkflowEnabled ? dataColumns : dataColumnsWithoutMetadata}
+            dataColumns={dataColumns}
             resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

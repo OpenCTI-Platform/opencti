@@ -7,7 +7,7 @@ import { loadAssignees, loadParticipants } from '../../../database/members';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { resolveUserById } from '../../../domain/user';
 import { createListTask } from '../../../domain/backgroundTask-common';
-import { type EditInput, FilterMode } from '../../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
@@ -34,8 +34,9 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { validateWorkflowDefinitionData } from '../workflow-validation';
+import { validateWorkflowDefinitionData, extractAllStatesFromDefinition } from '../workflow-validation';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -250,6 +251,7 @@ const getDefinitionData = async (
         id: workflowDefinitionEntity.id,
         name: workflowDefinitionEntity.name,
         published,
+        hasPublishedVersion: !!publishedVersion,
         errors,
       };
     }
@@ -571,6 +573,64 @@ export const publishWorkflowDefinition = async (
     });
   }
 
+  // Re-check at publish time: ensure the draft does not remove non-ending states that still have
+  // active workflow instances. The validation_errors on the draft were computed at save time and
+  // may be stale (instances may have moved into those states since the draft was saved).
+  if (workflowDefinitionEntity.published_version) {
+    let oldDef: any;
+    let newDef: any;
+    try {
+      const rawOld = workflowDefinitionEntity.published_version.content;
+      oldDef = typeof rawOld === 'string' ? JSON.parse(rawOld) : rawOld;
+      const rawNew = draftVersion.content;
+      newDef = typeof rawNew === 'string' ? JSON.parse(rawNew) : rawNew;
+    } catch (_) {
+      oldDef = null;
+      newDef = null;
+    }
+
+    if (oldDef && newDef) {
+      const oldStates = extractAllStatesFromDefinition(oldDef);
+      const newStates = extractAllStatesFromDefinition(newDef);
+      const removedStates = [...oldStates].filter((s) => !newStates.has(s));
+
+      if (removedStates.length > 0) {
+        // Ending states (no outgoing transitions) are safe to remove even with active instances.
+        const statesWithOutgoingTransitions = new Set<string>();
+        for (const transition of (oldDef.transitions ?? [])) {
+          const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
+          for (const s of fromStates) {
+            if (s && s !== '*') statesWithOutgoingTransitions.add(s);
+          }
+        }
+        const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
+
+        if (nonEndingRemovedStates.length > 0) {
+          // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
+          // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
+          // Instead, we filter by currentState in ES and post-filter by workflow_id.
+          const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+            filters: {
+              mode: FilterMode.And,
+              filters: [
+                { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
+              ],
+              filterGroups: [],
+            },
+          });
+          const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
+
+          if (conflictingInstances.length > 0) {
+            throw FunctionalError(
+              'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
+              { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
+            );
+          }
+        }
+      }
+    }
+  }
+
   // Validate consistency BEFORE publishing
   const allVersions = workflowDefinitionEntity.all_versions || [];
   const draftInHistory = allVersions.some((version: WorkflowVersion) => version.id === draftVersion.id);
@@ -599,6 +659,61 @@ export const publishWorkflowDefinition = async (
   validateVersionConsistency(updatedWorkflow);
 
   addWorkflowPublishCount();
+
+  const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
+  return {
+    id: entitySettingWithWorkflow.id,
+    workflow_id: entitySettingWithWorkflow.workflow_id,
+    target_type: entitySettingWithWorkflow.target_type,
+    errors: [],
+    published: true,
+  } as EntitySettingWithWorkflowResponse;
+};
+
+/**
+ * Restore the workflow draft to match the currently published version.
+ * Clears draft_version so getWorkflowDefinition(allowDraft: true) falls back to published_version.
+ */
+export const restorePublishedWorkflowDefinition = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<EntitySettingWithWorkflowResponse> => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting) {
+    throw FunctionalError('Entity setting not found for type', { entityType });
+  }
+
+  if (!entitySetting.workflow_id) {
+    throw FunctionalError('No workflow definition found', { entityType });
+  }
+
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+
+  const workflowDefinitionEntity = await storeLoadById(
+    executionContext,
+    executionUser,
+    entitySetting.workflow_id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ) as WorkflowDefinitionEntity | undefined;
+  if (!workflowDefinitionEntity) {
+    throw FunctionalError('Workflow definition not found', { workflowId: entitySetting.workflow_id });
+  }
+
+  if (!workflowDefinitionEntity.published_version) {
+    throw FunctionalError('No published version to restore', { entityType });
+  }
+
+  // Clearing draft_version causes getWorkflowDefinition(allowDraft: true) to fall back to
+  // published_version, effectively restoring the graph to the last published state.
+  await updateAttribute(
+    executionContext,
+    executionUser,
+    workflowDefinitionEntity.id,
+    ENTITY_TYPE_WORKFLOW_DEFINITION,
+    [{ key: 'draft_version', value: [] }],
+  );
 
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {

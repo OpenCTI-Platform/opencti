@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { Typography } from '@mui/material';
@@ -14,6 +14,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 import ItemBoolean from '../../../../../components/ItemBoolean';
+import Tag from '@common/tag/Tag';
 
 const headerFragment = graphql`
   fragment FintelTemplateHeader_template on FintelTemplate {
@@ -22,15 +23,17 @@ const headerFragment = graphql`
     description
     start_date
     template_content
+    default
   }
 `;
 
 interface FintelTemplateHeaderProps {
   entitySettingId: string;
   data: FintelTemplateHeader_template$key;
+  currentDefaultName?: string;
 }
 
-const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderProps) => {
+const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: FintelTemplateHeaderProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -82,13 +85,29 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
           />
         </div>
+        {template.default
+          && (
+            <div
+              style={{
+                float: 'left',
+                margin: '0 0 0 5px',
+              }}
+            >
+              <Tag
+                color={theme.palette.success.main}
+                label={t_i18n('Default')}
+              />
+            </div>
+          )
+        }
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
           <FintelTemplatePopover
-            onUpdate={() => setFormOpen(true)}
             entitySettingId={entitySettingId}
             templateId={template.id}
+            isDefault={!!template.default}
             inline={false}
             onDeleteComplete={() => navigate(subTypeLink)}
+            currentDefaultName={template.default ? undefined : currentDefaultName}
           />
           <Button
             onClick={onSubmit}
@@ -97,18 +116,24 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           >
             {t_i18n('Save template')}
           </Button>
+          <Button disableElevation onClick={() => setFormOpen(true)}>
+            {t_i18n('Update')}
+          </Button>
         </div>
       </div>
 
       <FintelTemplateFormDrawer
         entitySettingId={entitySettingId}
         isOpen={isFormOpen}
+        entityType={subTypeId}
         template={{
           id: template.id,
           name: template.name,
           description: template.description ?? null,
           published: !!template.start_date,
+          default: !!template.default,
         }}
+        currentDefaultName={template.default ? undefined : currentDefaultName}
         onClose={() => setFormOpen(false)}
       />
     </>

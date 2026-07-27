@@ -27,8 +27,6 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
   value: 'builtInHtmlToPdf',
@@ -97,6 +95,7 @@ const stixCoreObjectFileExportQuery = graphql`
         fintelTemplates {
           id
           name
+          default
         }
         filesFromTemplate(first: 500) {
           edges {
@@ -178,8 +177,6 @@ const StixCoreObjectFileExportComponent = ({
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
-  const { isOldEditorEnable } = useHelper();
-  const oldEditorEnabled = isOldEditorEnable();
 
   const {
     connectorsForExport,
@@ -220,10 +217,13 @@ const StixCoreObjectFileExportComponent = ({
     })),
   });
 
-  const templateOptions: FieldOption[] = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
+  const templateOptions = (stixCoreObject?.fintelTemplates ?? []).map((t) => ({
     value: t.id,
     label: t.name,
+    isDefault: t.default,
   }));
+
+  const defaultTemplate = templateOptions.find((t) => t.isDefault);
 
   // Keep only active connectors.
   const activeConnectors: ConnectorOption[] = (connectorsForExport ?? [])
@@ -316,7 +316,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
           const blob = await PDF.getBlob();
           uploadFile({
             id: scoId,
@@ -341,8 +341,8 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, !oldEditorEnabled)
-          : htmlToPdf(fileId, fileData, !oldEditorEnabled);
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
+          : htmlToPdf(fileId, fileData);
         const blob = await PDF.getBlob();
         uploadFile({
           id: scoId,
@@ -424,6 +424,7 @@ const StixCoreObjectFileExportComponent = ({
           connectors={activeConnectors}
           fileOptions={fileOptions}
           templates={templateOptions}
+          defaultTemplate={defaultTemplate}
           defaultFileMarkings={(stixCoreObject?.objectMarking ?? []).map((o) => ({
             value: o.id,
             label: getMainRepresentative(o),

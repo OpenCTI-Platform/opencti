@@ -28,11 +28,17 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from 'src/utils/widget/widgetUtils';
+import {
+  getCurrentAvailableParameters,
+  getCurrentCategory,
+  getCurrentIsRelationships,
+  isWidgetListOrTimeline,
+  getMaxResultCount,
+  getWidgetInterval,
+} from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
 import Grid from '@mui/material/Grid2';
 import { Box, Typography } from '@mui/material';
@@ -45,9 +51,6 @@ const WidgetCreationParameters = () => {
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  // TODO(DRAFT_WORKFLOW): remove isDraftWorkflowEnabled and related checks when flag is removed
-  const isDraftWorkflowEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
@@ -84,7 +87,7 @@ const WidgetCreationParameters = () => {
     { value: 'objectParticipant', label: 'Participant' },
     { value: 'creator', label: 'Creator' },
     { value: 'createdBy', label: 'Author' },
-    ...(isDraftWorkflowEnabled ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
+    { value: 'workflowInstance', label: 'Workflow status' },
   ];
 
   const AUDIT_WIDGET_ATTRIBUTES = [
@@ -406,7 +409,7 @@ const WidgetCreationParameters = () => {
           <Select
             labelId="relative"
             fullWidth={true}
-            value={parameters.interval ?? 'day'}
+            value={getWidgetInterval(parameters)}
             onChange={(event) => handleChangeParameter('interval', event.target.value)
             }
           >
@@ -530,7 +533,7 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {(isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
                           ? draftWorkspaceSortByValues
                           : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
                         ).map(({ value, label }) => (
@@ -576,63 +579,65 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute', 'custom-attributes'].includes(type) && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      marginTop: 20,
-                    }}
-                  >
-                    <FormControl fullWidth={true} style={{ flex: 1 }}>
-                      <InputLabel id="relative" size="small">
-                        {isNotEmptyField(dataSelection[i].label)
-                          ? dataSelection[i].label
-                          : t_i18n('Date attribute')}
-                      </InputLabel>
-                      <Select
-                        labelId="relative"
-                        size="small"
-                        fullWidth={true}
-                        value={dataSelection[i].date_attribute ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
-                      >
-                        <MenuItem value="created_at">
-                          created_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="updated_at">
-                          updated_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="created">
-                          created ({t_i18n('Functional date')})
-                        </MenuItem>
-                        <MenuItem value="modified">
-                          modified ({t_i18n('Functional date')})
-                        </MenuItem>
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="start_time">
-                            start_time ({t_i18n('Functional date')})
+                {dataSelection[i].perspective !== 'audits'
+                  && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
+                  && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t_i18n('Date attribute')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].date_attribute ?? 'created_at'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
+                        >
+                          <MenuItem value="created_at">
+                            created_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="stop_time">
-                            stop_time ({t_i18n('Functional date')})
+                          <MenuItem value="updated_at">
+                            updated_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="first_seen">
-                            first_seen ({t_i18n('Functional date')})
+                          <MenuItem value="created">
+                            created ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="last_seen">
-                            last_seen ({t_i18n('Functional date')})
+                          <MenuItem value="modified">
+                            modified ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </div>
-                )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="start_time">
+                              start_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="stop_time">
+                              stop_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="first_seen">
+                              first_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="last_seen">
+                              last_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
@@ -744,7 +749,7 @@ const WidgetCreationParameters = () => {
                           <InputLabel id="entities-attribute">
                             {t_i18n('Attribute')}
                           </InputLabel>
-                          {isDraftWorkflowEnabled && isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
+                          {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
                             <Select
                               labelId="entities-attribute"
                               fullWidth={true}
@@ -757,7 +762,7 @@ const WidgetCreationParameters = () => {
                                 { value: 'object-participant.internal_id', label: 'Participant' },
                                 { value: 'creator_id', label: 'Creator' },
                                 { value: 'created-by.internal_id', label: 'Author' },
-                                ...(isDraftWorkflowEnabled ? [{ value: 'workflowInstance', label: 'Workflow status' }] : []),
+                                { value: 'workflowInstance', label: 'Workflow status' },
                               ].map(({ value, label }) => (
                                 <MenuItem key={value} value={value}>
                                   {t_i18n(label)}

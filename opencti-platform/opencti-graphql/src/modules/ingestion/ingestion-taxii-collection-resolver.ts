@@ -1,4 +1,12 @@
-import { addIngestion, findTaxiiCollectionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-taxii-collection-domain';
+import {
+  addIngestion,
+  findTaxiiCollectionPaginated,
+  findById,
+  ingestionDelete,
+  ingestionEditField,
+  taxiiCollectionAddInputFromImport,
+  taxiiCollectionExport,
+} from './ingestion-taxii-collection-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { loadCreator } from '../../database/members';
@@ -7,10 +15,12 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
   Query: {
     ingestionTaxiiCollection: (_, { id }, context) => findById(context, context.user, id),
     ingestionTaxiiCollections: (_, args, context) => findTaxiiCollectionPaginated(context, context.user, args),
+    ingestionTaxiiCollectionAddInputFromImport: (_, { file }) => taxiiCollectionAddInputFromImport(file),
   },
   IngestionTaxiiCollection: {
     user: (ingestionTaxiiCollection, _, context) => loadCreator(context, context.user, ingestionTaxiiCollection.user_id),
     authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
+    toConfigurationExport: (ingestionTaxiiCollection) => taxiiCollectionExport(ingestionTaxiiCollection),
   },
   Mutation: {
     ingestionTaxiiCollectionAdd: (_, { input }, context) => {

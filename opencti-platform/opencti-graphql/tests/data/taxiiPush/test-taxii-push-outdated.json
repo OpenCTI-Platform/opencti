@@ -1,0 +1,5 @@
+{"openCTI_version":"6.9.4","type":"taxiiPushCollections","configuration": {
+  "name": "taxiiPushOutdated",
+  "description": "Exported by a platform older than the minimal compatible version",
+  "confidence_to_score": false
+}}

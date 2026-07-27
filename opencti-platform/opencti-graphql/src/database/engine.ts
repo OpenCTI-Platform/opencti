@@ -3586,12 +3586,15 @@ export const elAggregationCount = async (
 ): Promise<{ label: string; value: any; count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
+  const queryField = buildFieldForQuery(field);
+  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
+  const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
       terms: {
-        field: buildFieldForQuery(field),
+        field: queryField,
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -3604,6 +3607,9 @@ export const elAggregationCount = async (
       },
     },
   };
+  if (isKeywordField) {
+    body.aggs.genres.terms.missing = 'unknown';
+  }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,

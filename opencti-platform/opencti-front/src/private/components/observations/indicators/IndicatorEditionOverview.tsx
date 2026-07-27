@@ -197,6 +197,15 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
     if (!enableReferences) {
+      // Do not send a mutation if the numeric score value has not actually changed.
+      // HTML inputs always return strings from event.target.value, so we compare with
+      // type coercion to avoid triggering a false decay recalculation (see indicator-domain.ts).
+      if (name === 'x_opencti_score') {
+        const initialScore = indicator.x_opencti_score;
+        if (Number(value) === Number(initialScore)) {
+          return;
+        }
+      }
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as FieldOption).value;

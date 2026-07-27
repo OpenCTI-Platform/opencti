@@ -49,6 +49,7 @@ const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
+const WEBHOOK_TIMEOUT = conf.get('publisher_manager:webhook_timeout') || 300_000;
 const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 
@@ -229,7 +230,7 @@ export async function handleWebhookNotification(configurationString: string | un
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
 
-  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject };
+  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
   const httpClient = getHttpClient(httpClientOptions);
 
   await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });

@@ -54,6 +54,15 @@ const SDO_RESOLVERS_QUERY = gql`
   }
 `;
 
+const SET_DEFAULT_QUERY = gql`
+  mutation fintelTemplateFieldPatchSetDefault($id: ID!, $input: [EditInput!]!) {
+    fintelTemplateFieldPatch(id: $id, input: $input) {
+      id
+      default
+    }
+  }
+`;
+
 const READ_QUERY = gql`
   query fintelTemplate($id: ID!) {
     fintelTemplate(id: $id) {
@@ -65,6 +74,7 @@ const READ_QUERY = gql`
       instance_filters
       settings_types
       start_date
+      default
       fintel_template_widgets {
         variable_name
         widget {
@@ -133,6 +143,7 @@ describe('Fintel template resolver standard behavior', () => {
       description: 'My fintel template description',
       start_date: '2025-01-01T19:00:05.000Z',
       settings_types: ['Report'],
+      default: false,
     },
   };
   it('should fintel template created', async () => {
@@ -353,6 +364,91 @@ describe('Fintel template resolver standard behavior', () => {
     });
     expect(attributeQueryResult.errors?.length).toBe(1);
     expect(attributeQueryResult.errors?.[0].message).toEqual('Variable names should not contain spaces or special chars (except - and _)');
+  });
+  it('should be automatically set as default when created with default: true', async () => {
+    // First set template 1 as current default
+    await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: { id: fintelTemplateInternalId, input: [{ key: 'default', value: ['true'] }] },
+    });
+    const beforeRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(beforeRead.data?.fintelTemplate.default).toBe(true);
+
+    // Create a new template with default: true
+    const newDefault = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Fintel template created as default',
+          description: 'Created with default=true',
+          start_date: '2025-01-01T19:00:05.000Z',
+          settings_types: ['Report'],
+          default: true,
+        },
+      },
+    });
+    const newDefaultId = newDefault.data?.fintelTemplateAdd.id;
+    expect(newDefaultId).toBeDefined();
+
+    // New template should be default
+    const newRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: newDefaultId } });
+    expect(newRead.data?.fintelTemplate.default).toBe(true);
+
+    // Previous default should have been de-defaulted
+    const prevRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(prevRead.data?.fintelTemplate.default).toBe(false);
+
+    // Cleanup
+    const DELETE_QUERY = gql`
+      mutation fintelTemplateDelete($id: ID!) {
+        fintelTemplateDelete(id: $id)
+      }
+    `;
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: newDefaultId } });
+  });
+  it('should set fintel template as default', async () => {
+    const queryResult = await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: { id: fintelTemplateInternalId, input: [{ key: 'default', value: ['true'] }] },
+    });
+    expect(queryResult.data?.fintelTemplateFieldPatch.id).toEqual(fintelTemplateInternalId);
+    expect(queryResult.data?.fintelTemplateFieldPatch.default).toBe(true);
+    const readResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(readResult.data?.fintelTemplate.default).toBe(true);
+  });
+  it('should enforce uniqueness: setting a new default removes the previous one', async () => {
+    // Create a second template
+    const secondTemplate = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'Fintel template 2',
+          description: 'Second template',
+          start_date: '2025-01-01T19:00:05.000Z',
+          settings_types: ['Report'],
+          default: false,
+        },
+      },
+    });
+    const secondTemplateId = secondTemplate.data?.fintelTemplateAdd.id;
+    // Set the second template as default
+    await queryAsAdmin({
+      query: SET_DEFAULT_QUERY,
+      variables: { id: secondTemplateId, input: [{ key: 'default', value: ['true'] }] },
+    });
+    // First template should no longer be default
+    const firstRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
+    expect(firstRead.data?.fintelTemplate.default).toBe(false);
+    // Second template should be default
+    const secondRead = await queryAsAdmin({ query: READ_QUERY, variables: { id: secondTemplateId } });
+    expect(secondRead.data?.fintelTemplate.default).toBe(true);
+    // Cleanup second template
+    const DELETE_QUERY = gql`
+      mutation fintelTemplateDelete($id: ID!) {
+        fintelTemplateDelete(id: $id)
+      }
+    `;
+    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondTemplateId } });
   });
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`

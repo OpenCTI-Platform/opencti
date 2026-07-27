@@ -710,6 +710,17 @@ describe('Function findFilterFromKey: should return the filters of the specified
 });
 
 describe('Function normalizeFilterGroupForBackend', () => {
+  it('should not return null/undefined when an empty filter group is used as input', () => {
+    const result = normalizeFilterGroupForBackend(emptyFilterGroup);
+    expect(result).not.toBeNull();
+    expect(result).not.toBeUndefined();
+    expect(result).toStrictEqual({
+      mode: 'and',
+      filters: [],
+      filterGroups: [],
+    });
+  });
+
   it('should convert string keys to arrays', () => {
     const input: FilterGroup = {
       mode: 'and',

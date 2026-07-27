@@ -2022,12 +2022,8 @@ class OpenCTIStix2:
                 ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
-                        url = (
-                            self.opencti.api_url.replace("graphql", "storage/get/")
-                            + file["id"]
-                        )
-                        data = self.opencti.fetch_opencti_file(
-                            url, binary=True, serialize=True
+                        data = self.opencti.fetch_opencti_file_by_id(
+                            file["id"], binary=True, serialize=True
                         )
                         external_reference["x_opencti_files"].append(
                             {
@@ -2395,19 +2391,19 @@ class OpenCTIStix2:
             del entity["attribute_date"]
         # Artifact
         if entity["type"] == "artifact" and "importFiles" in entity:
-            first_file = entity["importFiles"][0]["id"]
-            url = self.opencti.api_url.replace("graphql", "storage/get/") + first_file
-            file = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
+            first_file_id = entity["importFiles"][0]["id"]
+            file = self.opencti.fetch_opencti_file_by_id(
+                first_file_id, binary=True, serialize=True
+            )
             if file:
                 entity["payload_bin"] = file
         # Files
         if "importFiles" in entity and len(entity["importFiles"]) > 0:
             entity["x_opencti_files"] = []
             for file in entity["importFiles"]:
-                url = (
-                    self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
+                data = self.opencti.fetch_opencti_file_by_id(
+                    file["id"], binary=True, serialize=True
                 )
-                data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
                 x_opencti_file = {
                     "name": file["name"],
                     "data": data,

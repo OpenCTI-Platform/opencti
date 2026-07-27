@@ -92,13 +92,14 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     const resolvedMembers = resolveDynamicAuthorizedMembers(entity, rawMembers);
 
     if (entity?.entity_type === 'DraftWorkspace') {
-      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers);
+      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers, { skipAdminValidation: true });
     } else {
       await editAuthorizedMembers(context, user, {
         entityId: entity.id ?? entity.internal_id,
         input: resolvedMembers,
         requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS],
         entityType: entity.entity_type,
+        skipAdminValidation: true,
       });
     }
   },

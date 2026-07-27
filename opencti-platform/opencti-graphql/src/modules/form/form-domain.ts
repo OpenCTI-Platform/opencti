@@ -9,7 +9,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { isFeatureEnabled, logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
@@ -473,20 +473,17 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      const isFormIntakeDefaultsEnabled = isFeatureEnabled('FORM_INTAKE_DEFAULT_VALUES');
       let createdBy: string | null = null;
       const {
         finalDraftName,
         finalDraftDescription,
         finalDraftAssignees,
         finalDraftParticipants,
-      } = isFormIntakeDefaultsEnabled
-        ? resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass)
-        : { finalDraftName: `${form.name} - ${nowTime()}`, finalDraftDescription: '', finalDraftAssignees: [], finalDraftParticipants: [] };
+      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
 
       // Apply draft defaults for author
-      const canOverrideDraftAuthor = isFormIntakeDefaultsEnabled && (isBypass || (schema.draftDefaults?.author?.isEditable !== false));
-      const isAuthorRequired = isFormIntakeDefaultsEnabled && schema.draftDefaults?.author?.isRequired === true;
+      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
       const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
       if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
@@ -494,7 +491,7 @@ export const formSubmit = async (
         // User explicitly cleared the field; it's editable and not required → honour the opt-out
         // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
         createdBy = null;
-      } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.author) {
+      } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'static') {
           createdBy = schema.draftDefaults.author.defaultValue || null;
         } else if (schema.draftDefaults.author.type === 'main_entity_author') {
@@ -506,11 +503,11 @@ export const formSubmit = async (
 
       // Apply explicit authorized members from form submission
       // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isFormIntakeDefaultsEnabled && (isBypass || schema.draftDefaults?.authorizedMembers?.isEditable);
+      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
       let authorized_members: MemberAccessInput[] = [];
       if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (isFormIntakeDefaultsEnabled && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
       }
 

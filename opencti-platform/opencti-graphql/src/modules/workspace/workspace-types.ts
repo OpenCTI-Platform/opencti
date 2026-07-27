@@ -11,6 +11,7 @@ export interface BasicStoreEntityWorkspace extends BasicStoreEntity {
   description: string;
   graph_data: string;
   manifest: string;
+  refresh_interval?: number | null;
   tags: Array<string>;
   type: string;
   restricted_members: Array<AuthorizedMember>;
@@ -23,6 +24,7 @@ export interface StoreEntityWorkspace extends StoreEntity {
   description: string;
   graph_data: string;
   manifest: string;
+  refresh_interval?: number | null;
   tags: Array<string>;
   type: string;
   restricted_members: Array<AuthorizedMember>;

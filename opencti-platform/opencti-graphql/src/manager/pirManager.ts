@@ -163,7 +163,7 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
 /**
  * Handler called every {PIR_MANAGER_INTERVAL} and studying a range of stream events.
  */
-const pirManagerHandler = async () => {
+export const pirManagerHandler = async () => {
   const context = executionContext(PIR_MANAGER_CONTEXT);
   const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 

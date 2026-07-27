@@ -11,6 +11,7 @@ import * as cacheModule from '../../../src/database/cache';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { OrderingMode } from '../../../src/generated/graphql';
+import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
 vi.mock('../../../src/database/middleware');
 vi.mock('../../../src/database/middleware-loader');
@@ -210,7 +211,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
     vi.spyOn(middlewareLoader, 'pageEntitiesConnection').mockResolvedValue({ edges: [], pageInfo: { globalCount: 0 } } as any);
     vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
 
-    const args: any = { orderBy: 'name', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const args: any = { orderBy: 'name', orderMode: 'asc', filters: emptyFilterGroup };
     await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
     expect(middlewareLoader.pageEntitiesConnection).toHaveBeenCalled();
@@ -222,7 +223,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
       .mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any); // DraftWorkspaces (unsorted)
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
 
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
     const ids = result.edges.map((e: any) => e.node.id);
@@ -235,7 +236,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
       .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
 
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'desc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'desc', filters: emptyFilterGroup };
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
     const ids = result.edges.map((e: any) => e.node.id);
@@ -248,7 +249,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
       .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
 
-    const args: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const args: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
     expect(result.edges).toHaveLength(2);
@@ -263,7 +264,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
 
     // First page
-    const firstArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const firstArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
     const firstPage = await findDraftWorkspacePaginated(mockContext, mockUser, firstArgs);
     const afterCursor = firstPage.pageInfo.endCursor;
 
@@ -272,7 +273,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
       .mockResolvedValueOnce(mockWorkflowInstances as any)
       .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
 
-    const secondArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', after: afterCursor, filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const secondArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', after: afterCursor, filters: emptyFilterGroup };
     const secondPage = await findDraftWorkspacePaginated(mockContext, mockUser, secondArgs);
 
     expect(secondPage.edges).toHaveLength(1);
@@ -286,7 +287,7 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
       .mockResolvedValueOnce([] as any); // no DraftWorkspaces
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue([] as any);
 
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: { mode: 'and', filters: [], filterGroups: [] } };
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
     const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
     expect(result.edges).toHaveLength(0);
@@ -313,7 +314,7 @@ describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)'
   const baseArgs: any = {
     field: 'workflowInstance',
     operation: 'count',
-    filters: { mode: 'and', filters: [], filterGroups: [] },
+    filters: emptyFilterGroup,
   };
 
   beforeEach(() => {
