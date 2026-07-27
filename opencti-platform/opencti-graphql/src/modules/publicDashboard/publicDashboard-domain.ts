@@ -432,7 +432,7 @@ export const publicStixCoreObjectsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
@@ -503,7 +503,7 @@ export const publicStixRelationshipsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
