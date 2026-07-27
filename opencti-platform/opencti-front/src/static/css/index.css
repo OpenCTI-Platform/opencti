@@ -148,3 +148,14 @@ input[type="file"] {
 .paper-for-grid {
   height: calc(100% - 25px); /* H4 size + 10 margin in MOST case, should be override sometimes */
 }
+
+.sr-only {
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+  } 

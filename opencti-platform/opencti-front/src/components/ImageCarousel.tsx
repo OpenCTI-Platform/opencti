@@ -5,7 +5,7 @@ import { ImageListItem, ImageListItemBar, Modal } from '@mui/material';
 import Skeleton from '@mui/material/Skeleton';
 import Paper from '@mui/material/Paper';
 import IconButton from '@common/button/IconButton';
-import { ZoomOutMapOutlined } from '@mui/icons-material';
+import { ZoomOutMapOutlined, CloseOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';
 import type { Theme } from './Theme';
@@ -150,13 +150,25 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
           </Paper>
         )}
       </Carousel>
-      <Modal open={currentImage !== null} onClose={() => setCurrentImage(null)}>
+      <Modal open={currentImage !== null}
+        role="dialog"
+        onClose={() => setCurrentImage(null)}
+      >
         <Box sx={modalStyle}>
-          <img
-            src={currentImage?.imageSrc}
-            alt={currentImage?.altText}
-            style={{ maxWidth: '80vw', maxHeight: '80vh' }}
-          />
+          <Box sx={{ position: "relative" }}>
+            <IconButton
+              sx={{ color: 'rgba(255, 255, 255, 0.54)', position: 'absolute', top: 10, right: 10 }}
+              onClick={() => setCurrentImage(null)}
+              size="small"
+              aria-label='Close'>
+              <CloseOutlined />
+            </IconButton>
+            <img
+              src={currentImage?.imageSrc}
+              alt={currentImage?.altText}
+              style={{ maxWidth: '80vw', maxHeight: '80vh' }}
+            />
+          </Box>
         </Box>
       </Modal>
     </>
