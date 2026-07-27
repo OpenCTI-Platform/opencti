@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "通知发布管理器",
   "Push queue": "推送队列",
   "Put in the embedded content of the entity": "放入实体的嵌入内容",
+  "QR code for two-factor authentication": "用于双因素身份验证的二维码",
   "Qualification": "资格",
   "Quarter": "季度",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "按计划查询远程 JSON API，并使用 JSON 映射器将其负载映射到实体。",

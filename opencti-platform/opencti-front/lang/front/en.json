@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "Notification publishing manager",
   "Push queue": "Push queue",
   "Put in the embedded content of the entity": "Put in the embedded content of the entity",
+  "QR code for two-factor authentication": "QR code for two-factor authentication",
   "Qualification": "Qualification",
   "Quarter": "Quarter",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.",

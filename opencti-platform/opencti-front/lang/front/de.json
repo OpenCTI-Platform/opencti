@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "Manager für die Veröffentlichung von Benachrichtigungen",
   "Push queue": "Push-Warteschlange",
   "Put in the embedded content of the entity": "Den eingebetteten Inhalt der Entität einfügen",
+  "QR code for two-factor authentication": "QR-Code zur Zwei-Faktor-Authentifizierung",
   "Qualification": "Qualifizierung",
   "Quarter": "Quartal",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "Fragen Sie eine entfernte JSON-API nach Zeitplan ab und ordnen Sie ihre Daten mit einem JSON-Mapper Entitäten zu.",

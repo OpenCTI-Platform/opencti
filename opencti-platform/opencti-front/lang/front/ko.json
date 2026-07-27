@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "알림 발행 관리자",
   "Push queue": "푸시 큐",
   "Put in the embedded content of the entity": "엔터티의 포함된 콘텐츠에 넣기",
+  "QR code for two-factor authentication": "이중 인증을 위한 QR 코드",
   "Qualification": "자격",
   "Quarter": "분기",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "원격 JSON API를 일정에 따라 쿼리하고 JSON 매퍼로 해당 페이로드를 엔터티에 매핑합니다.",

@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "M通知発行マネージャ",
   "Push queue": "プッシュキュー",
   "Put in the embedded content of the entity": "エンティティの埋め込みコンテンツを入れる",
+  "QR code for two-factor authentication": "二要素認証用のQRコード",
   "Qualification": "資格",
   "Quarter": "四半期",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "リモートのJSON APIをスケジュールに従ってクエリし、JSONマッパーでそのペイロードをエンティティにマッピングします。",

@@ -3647,6 +3647,7 @@
   "PUBLISHER_MANAGER": "МЕНЕДЖЕР ИЗДАТЕЛЯ",
   "Push queue": "Очередь отправки",
   "Put in the embedded content of the entity": "Вставьте встроенное содержимое сущности",
+  "QR code for two-factor authentication": "QR-код для двухфакторной аутентификации",
   "Qualification": "Квалификация",
   "Quarter": "Квартал",
   "Query a remote JSON API on a schedule and map its payload to entities with a JSON mapper.": "Запрашивайте удаленный JSON API по расписанию и сопоставляйте его данные с сущностями с помощью JSON-маппера.",
