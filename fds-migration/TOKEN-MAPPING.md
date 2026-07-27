@@ -179,6 +179,31 @@ completely different, much brighter color — that's actually the brand
 primary, not a blue-scale neighbor). Left untouched. See "Tokens à créer
 dans Figma".
 
+## 9. `ee` / `xtmhub` (top-level palette) — deferred, outside this pass's scope
+
+`ee` (`EE_COLOR`) itself was never in scope for this pass (not in
+`migration-state.json`'s `migratedZones`) and remains a hand-copied hex
+constant in both files (`#00f18d` dark / `#00BD94` light).
+
+`xtmhub` landed via the `master` → `design-system/current` sync merge on
+2026-07-27 (commit `b1f6459` / PR #17308-#17309, "rework Filigran Experience
+screen with hero-style EE and XTM Hub cards"), added right next to `ee` in
+both `ThemeDark.ts` and `ThemeLight.ts`, plus the corresponding
+`ExtendedPaletteOptions` entry in `Theme.d.ts`:
+
+| MUI key | FDS token | Value (dark) | Value (light) | Delta |
+|---|---|---|---|---|
+| `xtmhub.main` | *(none — hardcoded)* | `#00f1bd` | `#00f1bd` (same literal in both modes) | n/a — no FDS wiring attempted |
+
+Source comment in both files: "Aligned with the OpenAEV xtmhub token so the
+Filigran Experience screens share the same accent on both platforms."
+
+**Not tokenized now, by design.** `xtmhub` is a sibling of `ee` in the same
+"platform accent" family — tokenizing it in isolation before `ee` itself is
+migrated would produce an inconsistent half-migrated pair. Revisit both
+together once `palette.ee` is picked up in a future migration pass (check
+whether FDS has/gets an equivalent token before hand-copying a new hex).
+
 ---
 
 ## Tokens à créer dans Figma
