@@ -31787,6 +31787,7 @@ export type StixCoreRelationshipToStixArgs = {
 export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
