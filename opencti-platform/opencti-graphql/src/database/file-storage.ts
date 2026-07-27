@@ -836,7 +836,7 @@ export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, 
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
     const folder = ALL_ROOT_FOLDERS[i];
-    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true, dontThrow: true });
+    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true, dontThrow: true }) as LoadedFile[];
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
