@@ -1,10 +1,9 @@
 import { Environment, Observable, RecordSource, Store } from 'relay-runtime';
-import type { GraphQLTaggedNode } from 'relay-runtime';
+import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
-import React, { Component, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { commitLocalUpdate as CLU, commitMutation as CM, fetchQuery as FQ, QueryRenderer as QR, requestSubscription as RS } from 'react-relay';
-import * as PropTypes from 'prop-types';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import type { SubscribeFunction } from 'react-relay-network-modern';
 import * as R from 'ramda';
@@ -115,35 +114,26 @@ export const environment = new Environment({ network, store, getDataID });
 
 // Components
 interface QueryRendererProps {
-  variables: Record<string, unknown>;
+  variables?: Record<string, unknown>;
   query: GraphQLTaggedNode;
-  render: (data: { error: Error | null; props: unknown }) => ReactNode;
+  render: (data: any) => ReactNode;
 }
 
-export class QueryRenderer extends Component<QueryRendererProps> {
-  render() {
-    const { variables, query, render } = this.props;
-    return (
-      <QR
-        environment={environment}
-        query={query}
-        variables={variables}
-        render={(data) => {
-          const { error } = data;
-          if (error) {
-            throw new ApplicationError(error);
-          }
-          return render(data);
-        }}
-      />
-    );
-  }
-}
-
-QueryRenderer.propTypes = {
-  variables: PropTypes.object,
-  render: PropTypes.func,
-  query: PropTypes.object,
+export const QueryRenderer = ({ variables, query, render }: QueryRendererProps) => {
+  return (
+    <QR
+      environment={environment}
+      query={query}
+      variables={variables ?? {}}
+      render={(data) => {
+        const { error } = data;
+        if (error) {
+          throw new ApplicationError(error);
+        }
+        return render(data);
+      }}
+    />
+  );
 };
 
 const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
@@ -163,8 +153,12 @@ export const defaultCommitMutation = {
   setSubmitting: undefined,
 };
 
-export const relayErrorHandling = (error, setSubmitting, onError) => {
-  if (setSubmitting) setSubmitting(false);
+export const relayErrorHandling = (
+  error,
+  setSubmitting?: (submitted: boolean) => void,
+  onError?: (e, message) => void,
+) => {
+  if (setSubmitting) setSubmitting?.(false);
   if (error && error.res && error.res.errors) {
     const passwordChangeRequired = error.res.errors.some(
       (e) => e?.extensions?.code === 'PASSWORD_CHANGE_REQUIRED',
@@ -222,11 +216,17 @@ export const commitMutation = ({
 
 export const requestSubscription = (args) => RS(environment, args);
 
-export const fetchQuery = (query, args) => FQ(environment, query, args);
+export const fetchQuery = <T extends OperationType>(
+  query: GraphQLTaggedNode,
+  args: T['variables'] = {},
+) => FQ<T>(environment, query, args);
 
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
 
-export const handleErrorInForm = (error: RelayError, setErrors) => {
+export const handleErrorInForm = (
+  error: RelayError,
+  setErrors: (e) => void,
+) => {
   const formattedError = R.head(error.res.errors ?? []);
   if (formattedError?.data && formattedError.data.field) {
     setErrors({
