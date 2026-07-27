@@ -77,7 +77,6 @@ export const transformHasCoveredFromId = async (
       }],
     },
   });
-  console.log(edges);
   if (edges.length !== 1) {
     throw FunctionalError('Cannot find SecurityCoverageResult for this has-covered relationship');
   }
