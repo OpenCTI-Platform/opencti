@@ -2,10 +2,11 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
-import { fetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis';
+import { rawFetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis-stream';
 import { loadedFilesListing } from '../database/file-storage';
 import { deleteFileFromStorage } from '../database/raw-file-storage';
 import type { AuthContext } from '../types/user';
+import type { ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -20,11 +21,17 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
   if (nextRedisStreamFilesGarbageTime < currentTime) {
     nextRedisStreamFilesGarbageTime += 86400000;
 
-    const { firstEventId } = await fetchStreamInfo();
+    const { firstEventId } = await rawFetchStreamInfo();
     const timestamp = firstEventId.split('-')[0];
-    const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true });
-    for (let i = 0; i < allRedisLargeEventFiles.length; i += 1) {
-      const file = allRedisLargeEventFiles[0];
+    const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true }) as ListObjectsV2CommandOutput;
+    if (!allRedisLargeEventFiles || !allRedisLargeEventFiles.KeyCount || !allRedisLargeEventFiles.Contents) {
+      return;
+    }
+    for (let i = 0; i < allRedisLargeEventFiles?.KeyCount; i += 1) {
+      const file = allRedisLargeEventFiles?.Contents[0];
+      if (!file.Key) {
+        continue;
+      }
       const currentTimestamp = file.Key.slice(STREAM_FILE_DIRECTORY.length).split('-')[0];
       if (currentTimestamp < timestamp) {
         await deleteFileFromStorage(file.Key);

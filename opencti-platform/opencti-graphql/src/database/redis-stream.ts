@@ -108,7 +108,7 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
   await callback(events, lastEventId);
   return lastEventId;
 };
-const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
+export const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const redisStreamName = convertStreamName(streamName);
   const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
   const info: any = R.fromPairs(R.splitEvery(2, res) as any);

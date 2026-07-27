@@ -2,7 +2,7 @@ import path, { join } from 'node:path';
 import crypto from 'node:crypto';
 import mime from 'mime-types';
 import nconf from 'nconf';
-import type { _Object } from '@aws-sdk/client-s3';
+import type { _Object, ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
 import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -402,9 +402,9 @@ export const loadedFilesListing = async (
   context: AuthContext,
   user: AuthUser,
   directory: string,
-  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean } = {},
-): Promise<LoadedFile[]> => {
-  const { recursive = false, callback = null, dontThrow = false } = opts;
+  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean; rawFormat?: boolean } = {},
+): Promise<LoadedFile[] | ListObjectsV2CommandOutput> => {
+  const { recursive = false, callback = null, dontThrow = false, rawFormat = false } = opts;
   const files: LoadedFile[] = [];
   if (isNotEmptyField(directory) && (directory as string).startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
@@ -417,6 +417,9 @@ export const loadedFilesListing = async (
   while (truncated) {
     try {
       const response = await rawListObjects(directory, recursive ?? false, continuationToken);
+      if (rawFormat) {
+        return response;
+      }
       const resultFiles = filesAdaptation(response.Contents ?? []);
       const resultLoaded = await promiseMap(
         resultFiles,
