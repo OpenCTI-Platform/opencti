@@ -55,8 +55,7 @@ export default defineConfig(({ mode }) => {
             .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
             .replace(/%APP_TITLE%/g, 'OpenCTI Dev')
             .replace(/%APP_DESCRIPTION%/g, 'OpenCTI Development platform')
-            .replace(/%APP_FAVICON%/g, `${basePath}/assets/static/favicon.png`)
-            .replace(/%APP_MANIFEST%/g, `${basePath}/assets/static/manifest.json`),
+            .replace(/%APP_FAVICON%/g, `./assets/static/favicon.png`),
       },
       react(),
       relay,

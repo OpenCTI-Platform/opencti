@@ -33,11 +33,11 @@ As for the `ImportFileStix` connector and the CSV mappers, there is no identific
 
 1. Upload file: Navigate to the desired location, such as the "Data" tabs of an entity or the "Data import and analyst workbenches" panel. Then, upload the file containing the relevant data by clicking on the small cloud with the arrow inside next to "Uploaded files".
 2. Entity identification: For a CSV file, select the connector and CSV mapper to be used by clicking on the icon with an upward arrow in a circle. If it's not a CSV file, the connector will launch automatically. Then, the file import connectors or CSV mappers will identify entities within the uploaded document.
-3. Workbench review and validation: Entities identified by connectors are not immediately integrated into the platform's knowledge base. Instead, they are thoughtfully placed in a workbench, awaiting review and validation by an analyst. Workbenches function as draft spaces, ensuring that no data is officially entered into the platform until the workbench has undergone the necessary validation process. For more information on workbenches, refer to the [Analyst workbench](workbench.md) documentation page.
+3. Review and validation: Entities identified by connectors are not immediately integrated into the platform's knowledge base. Instead, they are placed in a draft (or a workbench, depending on the selected validation mode), awaiting review and validation by an analyst. By default, a draft is created. For more information on drafts, refer to the [Draft workspaces](draftWorkspaces.md) documentation page, or for workbenches, the [Analyst workbench](workbench.md) page.
 
-!!! warning "Review workbenches"
+!!! warning "Review imported data"
 
-    Import connectors may introduce errors in identifying object types or add "unknown" entities. Workbenches were established with the intent of reviewing the output of connectors before validation. Therefore, it is crucial to be vigilant when examining the workbench to prevent the import of incorrect data into the platform.
+    Import connectors may introduce errors in identifying object types or add "unknown" entities. Drafts and workbenches were established with the intent of reviewing the output of connectors before validation. Therefore, it is crucial to be vigilant when examining the draft or workbench to prevent the import of incorrect data into the platform.
 
 ![Global import panel](assets/global-import-panel.png)
 
@@ -52,8 +52,8 @@ It's essential to note that CSV mappers operate differently from other import me
 
 When importing a document directly from an entity's "Data" tab, there can be an automatic addition of relationships between the objects identified by connectors and the entity in focus. The process differs depending on the type of entity in which the import occurs:
 
-- If the entity is a container (e.g., Report, Grouping, and Cases), the identified objects in the imported file will be linked to the entity (upon workbench validation). In the context of a container, the object is said to be "contained".
-- For entities that are not containers, a distinct behavior unfolds. In this scenario, the identified objects are not linked to the entity, except for Observables. `Related to` relationships between the Observables and the entity are automatically added to the workbench and created after validation of this one.
+- If the entity is a container (e.g., Report, Grouping, and Cases), the identified objects in the imported file will be linked to the entity (upon draft or workbench validation). In the context of a container, the object is said to be "contained".
+- For entities that are not containers, a distinct behavior unfolds. In this scenario, the identified objects are not linked to the entity, except for Observables. `Related to` relationships between the Observables and the entity are automatically added to the draft or workbench and created after validation.
 
 
 ### File import in Content tab

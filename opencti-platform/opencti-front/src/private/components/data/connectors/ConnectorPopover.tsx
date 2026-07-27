@@ -138,7 +138,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
       },
       onCompleted: () => {
         handleCloseDelete();
-        navigate('/dashboard/data/ingestion/connectors');
+        navigate('/dashboard/integrations/deployed');
       },
     });
   };

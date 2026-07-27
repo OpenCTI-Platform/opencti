@@ -307,7 +307,8 @@ describe('Report resolver standard behavior', () => {
         operation: 'count',
       },
     });
-    expect(queryResult.data.reportsDistribution.length).toEqual(2);
+    // 2 distinct creators + 1 'unknown' bucket for reports with no created-by (added by the missing-value aggregation)
+    expect(queryResult.data.reportsDistribution.length).toEqual(3);
   });
   it('should reports distribution by entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({

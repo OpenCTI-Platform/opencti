@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { isFeatureEnabled } from '../config/conf';
 import { telemetry } from '../config/tracing';
 import { buildPagination } from '../database/utils';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -29,11 +28,8 @@ export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: 
       ABSTRACT_STIX_CYBER_OBSERVABLE,
       ENTITY_TYPE_EXTERNAL_REFERENCE,
       ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+      ENTITY_TYPE_DRAFT_WORKSPACE,
     ];
-
-    if (isFeatureEnabled('DRAFT_WORKFLOW')) {
-      customTypes.push(ENTITY_TYPE_DRAFT_WORKSPACE);
-    }
 
     const allTypes = [...domainObjectTypes, ...customTypes].map((id) => ({ node: { id, label: id } }));
 

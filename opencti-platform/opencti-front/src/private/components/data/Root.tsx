@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
@@ -19,29 +19,34 @@ import Loader from '../../../components/Loader';
 const CsvMappers = lazy(() => import('./CsvMappers'));
 const JsonMappers = lazy(() => import('./JsonMappers'));
 const Security = lazy(() => import('../../../utils/Security'));
-const Connectors = lazy(() => import('./Connectors'));
-const IngestionCsv = lazy(() => import('./IngestionCsv'));
-const IngestionJson = lazy(() => import('./IngestionJson'));
-const Forms = lazy(() => import('./Forms'));
-const FormView = lazy(() => import('./forms/view/FormView'));
 const Entities = lazy(() => import('./Entities'));
 const Relationships = lazy(() => import('./Relationships'));
 const Tasks = lazy(() => import('./Tasks'));
 const Taxii = lazy(() => import('./Taxii'));
-const RootConnector = lazy(() => import('./connectors/Root'));
 const Stream = lazy(() => import('./Stream'));
 const Feed = lazy(() => import('./Feed'));
-const Sync = lazy(() => import('./Sync'));
-const IngestionRss = lazy(() => import('./IngestionRss'));
-const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
-const IngestionTaxiiCollections = lazy(() => import('./IngestionTaxiiCollections'));
-const IngestionCatalog = lazy(() => import('./IngestionCatalog'));
-const IngestionCatalogConnector = lazy(() => import('./IngestionCatalog/IngestionCatalogConnector'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
 const Management = lazy(() => import('./restriction/Root'));
 const Health = lazy(() => import('./health/Root'));
+
+// Legacy /dashboard/data/ingestion/* URLs redirect to the Integrations
+// section, preserving any query params of the deep link.
+const LegacyConnectorRedirect = () => {
+  const { connectorId } = useParams();
+  return <Navigate to={{ pathname: `/dashboard/integrations/connectors/${connectorId}`, search: window.location.search }} replace={true} />;
+};
+
+const LegacyCatalogConnectorRedirect = () => {
+  const { connectorSlug } = useParams();
+  return <Navigate to={{ pathname: `/dashboard/integrations/catalog/${connectorSlug}`, search: window.location.search }} replace={true} />;
+};
+
+const LegacyFormRedirect = () => {
+  const { formId } = useParams();
+  return <Navigate to={{ pathname: `/dashboard/integrations/feeds/form/${formId}`, search: window.location.search }} replace={true} />;
+};
 
 const Root = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -51,22 +56,25 @@ const Root = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
 
-  let redirect: string | null = null;
+  let redirect: string;
   if (isGrantedToKnowledge) {
-    redirect = 'entities';
-  } else if (isGrantedToIngestion) {
-    redirect = 'ingestion';
+    redirect = '/dashboard/data/entities';
   } else if (isGrantedToImport) {
-    redirect = 'import';
+    redirect = '/dashboard/data/import';
   } else if (isGrantedToProcessing) {
-    redirect = 'processing';
+    redirect = '/dashboard/data/processing';
   } else if (isGrantedToSharing) {
-    redirect = 'sharing';
+    redirect = '/dashboard/data/sharing';
   } else if (isGrantedToManage) {
-    redirect = 'restriction';
+    redirect = '/dashboard/data/restriction';
+  } else if (isGrantedToIngestion) {
+    // Ingestion-only users have no Data screen anymore: the ingestion section
+    // moved to the top-level Integrations menu.
+    redirect = '/dashboard/integrations';
+  } else {
+    redirect = '/dashboard';
   }
 
-  const isConnectorReader = useGranted([MODULES]);
   const isGrantedToAutomation = useGranted([AUTOMATION_AUTMANAGE]);
   const { isFeatureEnable } = useHelper();
   const isDataSanityManagerEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
@@ -75,7 +83,7 @@ const Root = () => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/data/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/entities"
@@ -87,79 +95,55 @@ const Root = () => {
         />
         <Route
           path="/ingestion"
-          element={(
-            <Security
-              needs={[INGESTION]}
-              placeholder={(
-                <Security
-                  needs={[MODULES]}
-                  placeholder={(
-                    <Navigate to="/dashboard" />
-                  )}
-                >
-                  <Navigate to="/dashboard/data/ingestion/connectors" />
-                </Security>
-              )}
-            >
-              <Navigate to={isConnectorReader ? '/dashboard/data/ingestion/connectors' : '/dashboard/data/ingestion/sync'} />
-            </Security>
-          )}
+          element={<Navigate to="/dashboard/integrations" replace={true} />}
         />
         <Route
           path="/ingestion/sync"
-          element={boundaryWrapper(Sync)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=sync" replace={true} />}
         />
         <Route
           path="/ingestion/rss"
-          element={boundaryWrapper(IngestionRss)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=rss" replace={true} />}
         />
         <Route
           path="/ingestion/taxii"
-          element={boundaryWrapper(IngestionTaxiis)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=taxii" replace={true} />}
         />
         <Route
           path="/ingestion/catalog"
-          element={boundaryWrapper(IngestionCatalog)}
+          element={<Navigate to="/dashboard/integrations/available" replace={true} />}
         />
         <Route
           path="/ingestion/catalog/:connectorSlug"
-          element={boundaryWrapper(IngestionCatalogConnector)}
+          element={<LegacyCatalogConnectorRedirect />}
         />
         <Route
           path="/ingestion/collection"
-          element={boundaryWrapper(IngestionTaxiiCollections)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=taxii-push" replace={true} />}
         />
         <Route
           path="/ingestion/csv"
-          element={boundaryWrapper(IngestionCsv)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=csv" replace={true} />}
         />
         <Route
           path="/ingestion/json"
-          element={boundaryWrapper(IngestionJson)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=json" replace={true} />}
         />
         <Route
           path="/ingestion/forms"
-          element={boundaryWrapper(Forms)}
+          element={<Navigate to="/dashboard/integrations/deployed?kind=form" replace={true} />}
         />
         <Route
           path="/ingestion/forms/:formId"
-          element={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
-              placeholder={<Navigate to="/dashboard" />}
-            >
-              <FormView />
-            </Security>
-          )}
+          element={<LegacyFormRedirect />}
         />
         <Route
           path="/ingestion/connectors"
-          element={boundaryWrapper(Connectors)}
+          element={<Navigate to="/dashboard/integrations/deployed" replace={true} />}
         />
         <Route
           path="/ingestion/connectors/:connectorId/*"
-          element={<RootConnector />}
+          element={<LegacyConnectorRedirect />}
         />
         <Route
           path="/import/*"

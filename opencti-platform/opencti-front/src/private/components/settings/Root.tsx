@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import {
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
@@ -20,6 +20,7 @@ import {
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
+import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const Settings = lazy(() => import('./Settings'));
@@ -29,6 +30,23 @@ const RootAccesses = lazy(() => import('./accesses/Root'));
 const RootActivity = lazy(() => import('./activity/Root'));
 const RootCustomization = lazy(() => import('./customization/Root'));
 const RootVocabularies = lazy(() => import('./vocabularies/Root'));
+
+const ExperienceUnauthorizedRedirect = ({ fallbackUrl }: { fallbackUrl: string }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const shouldAutoRegister = searchParams.get(XTM_HUB_AUTO_REGISTER_QUERY_PARAM) === 'true';
+    if (shouldAutoRegister) {
+      sessionStorage.setItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY, 'true');
+    }
+    const redirectUrl = shouldAutoRegister ? '/dashboard' : fallbackUrl;
+    navigate(redirectUrl, { replace: true });
+  }, [fallbackUrl, location.search, navigate]);
+
+  return null;
+};
 
 const Root = () => {
   const fallbackUrl = useSettingsFallbackUrl();
@@ -78,7 +96,10 @@ const Root = () => {
           <Route
             path="/experience"
             element={(
-              <Security needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security
+                needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
+                placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}
+              >
                 <Experience />
               </Security>
             )}

@@ -4,7 +4,7 @@ import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, ImageDefinition, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
-import { APP_BASE_PATH, fileUri } from '../../relay/environment';
+import { APP_BASE_PATH } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
 import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
@@ -181,7 +181,7 @@ export const htmlToPdfReport = async (
   }
 
   if (!logo) {
-    logo = await getBase64ImageFromURL(fileUri(logoWhite));
+    logo = await getBase64ImageFromURL(logoWhite);
   }
 
   let htmlData = removeUnnecessaryHtml(content);

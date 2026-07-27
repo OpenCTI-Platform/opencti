@@ -9713,8 +9713,10 @@ type Query {
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
+  ingestionTaxiiLogs(id: String!): [IngestionEntry]
   ingestionTaxiiCollection(id: String!): IngestionTaxiiCollection
   ingestionTaxiiCollections(first: Int, after: ID, orderBy: IngestionTaxiiCollectionOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiCollectionConnection
+  ingestionTaxiiCollectionAddInputFromImport(file: Upload!): IngestionTaxiiCollectionAddInputFromImport!
   ingestionCsv(id: String!): IngestionCsv
   ingestionCsvs(first: Int, after: ID, orderBy: IngestionCsvOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionCsvConnection
   csvFeedAddInputFromImport(file: Upload!): CSVFeedAddInputFromImport!
@@ -10472,6 +10474,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
@@ -10633,6 +10636,7 @@ type Mutation {
   ingestionCsvDelete(id: ID!): ID
   ingestionCsvFieldPatch(id: ID!, input: [EditInput!]!): IngestionCsv
   ingestionCsvAddAutoUser(id: ID!, input: IngestionCsvAddAutoUserInput!): IngestionCsv
+  ingestionJsonAddInputFromImport(file: Upload!): IngestionJsonAddInputFromImport!
   ingestionJsonTester(input: IngestionJsonAddInput!): JsonMapperTestResult
   ingestionJsonAdd(input: IngestionJsonAddInput!): IngestionJson
   ingestionJsonResetState(id: ID!): IngestionJson
@@ -10700,9 +10704,8 @@ type Mutation {
   exclusionListFileAdd(input: ExclusionListFileAddInput!): ExclusionList
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
-  smtpConfigurationAdd(input: SmtpConfigurationAddInput!): SmtpConfiguration
-  smtpConfigurationUpdate(id: ID!, input: SmtpConfigurationEditInput!): SmtpConfiguration
-  smtpConfigurationDelete(id: ID!): ID
+  smtpConfigurationEdit(input: SmtpConfigurationAddInput!): SmtpConfiguration
+  smtpConfigurationDelete: Boolean
   smtpConfigurationTest(email: String!): Boolean
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
@@ -10814,7 +10817,7 @@ type WorkflowSerializedState {
 
 type WorkflowSerializedTransition {
   from: [String!]!
-  to: String!
+  to: String
   event: String!
   asyncActions: [WorkflowActionConfig!]
   syncActions: [WorkflowActionConfig!]
@@ -10826,6 +10829,7 @@ type WorkflowSchema {
   id: ID!
   name: String!
   published: Boolean!
+  hasPublishedVersion: Boolean!
   errors: [WorkflowValidationError!]
   initialState: String!
   states: [WorkflowSerializedState!]!
@@ -13877,6 +13881,8 @@ type IngestionTaxii implements InternalObject & BasicObject {
   added_after_start: DateTime
   ingestion_running: Boolean
   last_execution_date: DateTime
+  last_execution_status: String
+  ingestionLogs: [IngestionEntry]
   confidence_to_score: Boolean
   ssl_verify: Boolean
   toConfigurationExport: String!
@@ -13911,6 +13917,22 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   added_after_start: String
+}
+
+enum IngestionLogLevel {
+  success
+  info
+  warn
+  error
+}
+
+type IngestionEntry {
+  timestamp: DateTime!
+  level: IngestionLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
 }
 
 input IngestionTaxiiAddInput {
@@ -13958,6 +13980,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   user_id: String
   user: Creator
   authorized_members: [MemberAccess!]
+  toConfigurationExport: String!
 }
 
 enum IngestionTaxiiCollectionOrdering {
@@ -13975,6 +13998,12 @@ type IngestionTaxiiCollectionConnection {
 type IngestionTaxiiCollectionEdge {
   cursor: String!
   node: IngestionTaxiiCollection!
+}
+
+type IngestionTaxiiCollectionAddInputFromImport {
+  name: String!
+  description: String
+  confidence_to_score: Boolean
 }
 
 input IngestionTaxiiCollectionAddInput {
@@ -14125,6 +14154,29 @@ type IngestionJson implements InternalObject & BasicObject {
   last_execution_date: DateTime
   markings: [String!]
   ssl_verify: Boolean
+  toConfigurationExport: String!
+}
+
+type IngestionJsonMapperFromImport {
+  id: String!
+  name: String!
+}
+
+type IngestionJsonAddInputFromImport {
+  name: String!
+  description: String
+  scheduling_period: String
+  uri: String
+  verb: String
+  body: String
+  pagination_with_sub_page: Boolean
+  pagination_with_sub_page_attribute_path: String
+  pagination_with_sub_page_query_verb: String
+  headers: [IngestionHeader!]
+  query_attributes: [IngestionQueryAttribute!]
+  authentication_type: IngestionAuthType
+  ssl_verify: Boolean
+  jsonMapper: IngestionJsonMapperFromImport!
 }
 
 enum IngestionJsonOrdering {
@@ -15232,9 +15284,9 @@ input ExclusionListFileAddInput {
 }
 
 type SmtpConfiguration {
-  id: ID!
   smtp_enabled: Boolean!
   use_db_config: Boolean!
+  forced_sender_email: Boolean!
   sender_email_address: String
   hostname: String
   port: Int
@@ -15254,26 +15306,6 @@ enum SmtpAuthType {
 }
 
 input SmtpConfigurationAddInput {
-  smtp_enabled: Boolean
-  use_db_config: Boolean
-  sender_email_address: String
-  hostname: String
-  port: Int
-  use_ssl: Boolean
-  reject_unauthorized: Boolean
-  auth_type: SmtpAuthType
-  username: String
-  password: String
-  oauth_user: String
-  oauth_client_id: String
-  oauth_client_secret: String
-  oauth_issuer: String
-  oauth_access_token: String
-  oauth_refresh_token: String
-  oauth_refresh_token_expires_at: DateTime
-}
-
-input SmtpConfigurationEditInput {
   smtp_enabled: Boolean
   use_db_config: Boolean
   sender_email_address: String
@@ -15408,6 +15440,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidget!]!
   toConfigurationExport: String!
+  default: Boolean
 }
 
 input FintelTemplateWidgetAddInput {
@@ -15425,6 +15458,7 @@ input FintelTemplateAddInput {
   template_content: String
   start_date: DateTime
   fintel_template_widgets: [FintelTemplateWidgetAddInput!]
+  default: Boolean
 }
 
 type FintelTemplateEdge {
@@ -16584,6 +16618,7 @@ type CustomViewsConnection {
 enum CustomViewsOrdering {
   name
   enabled
+  default
 }
 
 type CustomViewsSettings {

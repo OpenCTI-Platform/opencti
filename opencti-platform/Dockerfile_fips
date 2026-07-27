@@ -122,4 +122,4 @@ EOT
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "build/back.js"]
+CMD ["node", "build/back.mjs"]

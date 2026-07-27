@@ -3,15 +3,15 @@
  * calls the real node-gyp-build with the correct bundle directory.
  */
 
-const path = require('path');
+import {fileURLToPath} from 'node:url';
 
 const nodeGypBuildShimPlugin = () => ({
   name: 'node-gyp-build-shim',
   setup: (build) => {
     build.onResolve({ filter: /^node-gyp-build$/ }, () => ({
-      path: path.resolve(__dirname, 'node-gyp-build-shim.js'),
+      path: fileURLToPath(new URL('node-gyp-build-shim.cjs', import.meta.url)),
     }));
   },
 });
 
-module.exports = nodeGypBuildShimPlugin;
+export default nodeGypBuildShimPlugin;

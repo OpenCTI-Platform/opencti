@@ -10,6 +10,7 @@ import {
   getAllowedTransitions,
   getWorkflowInstance,
   deleteWorkflowDefinition,
+  restorePublishedWorkflowDefinition,
   triggerWorkflowEvent,
   clearWorkflowPendingState,
   getWorkflowPublishedVersionId,
@@ -845,6 +846,72 @@ describe('Workflow Domain', () => {
 
     expect(updateAttribute).not.toHaveBeenCalled();
     expect(result).toBe(entitySetting);
+  });
+
+  // Tests for restorePublishedWorkflowDefinition
+  it('should restore published workflow by clearing draft_version', async () => {
+    const publishedVersion = {
+      id: 'published-1',
+      content: '{"name":"Published","initialState":"open","states":[],"transitions":[]}',
+    };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id', target_type: 'Incident' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      published_version: publishedVersion,
+      draft_version: { id: 'draft-1' },
+    });
+    (updateAttribute as any).mockResolvedValue({ element: {} });
+
+    const result = await restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockContext.user,
+      'workflow-id',
+      'WorkflowDefinition',
+      [{ key: 'draft_version', value: [] }],
+    );
+    expect(result).toEqual(expect.objectContaining({
+      id: 'entity-setting-id',
+      workflow_id: 'workflow-id',
+      target_type: 'Incident',
+      errors: [],
+      published: true,
+    }));
+  });
+
+  it('should fail to restore when entity setting is not found', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    await expect(restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Entity setting not found for type');
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should fail to restore when no workflow is linked', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: null });
+
+    await expect(restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('No workflow definition found');
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should fail to restore when workflow definition entity is not found', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue(undefined);
+
+    await expect(restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Workflow definition not found');
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should fail to restore when there is no published version', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      published_version: undefined,
+      draft_version: { id: 'draft-1' },
+    });
+
+    await expect(restorePublishedWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('No published version to restore');
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   // Tests for getAllowedTransitions (lines 469-490)
