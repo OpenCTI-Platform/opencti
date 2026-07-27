@@ -15771,6 +15771,7 @@ type FintelDesignConnection {
 enum FintelDesignOrdering {
   _score
   name
+  default
   created_at
 }
 

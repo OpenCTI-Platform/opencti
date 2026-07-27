@@ -54,7 +54,7 @@ export const fintelDesignsFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "FintelDesignOrdering", defaultValue: name }
+    orderBy: { type: "FintelDesignOrdering", defaultValue: default }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
   ) @refetchable(queryName: "FintelDesignsLinesRefetchQuery") {
@@ -111,8 +111,8 @@ const FintelDesigns = () => {
   setTitle(t_i18n('Fintel design | Customization | Settings'));
   const initialValues = {
     searchTerm: '',
-    sortBy: 'name',
-    orderAsc: true,
+    sortBy: 'default',
+    orderAsc: false,
     openExports: false,
     filters: emptyFilterGroup,
   };
@@ -158,7 +158,7 @@ const FintelDesigns = () => {
       id: 'default',
       label: t_i18n('Default'),
       percentWidth: 20,
-      isSortable: false,
+      isSortable: true,
       render: ({ default: isDefault }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
@@ -206,23 +206,11 @@ const FintelDesigns = () => {
                   const nodes = (data.fintelDesigns?.edges ?? [])
                     .map((n) => n?.node)
                     .filter((node): node is OuterNode => Boolean(node));
-                  const { defaultDesigns, otherDesigns } = nodes.reduce(
-                    (acc, node) => {
-                      if (node.default) {
-                        acc.defaultDesigns.push(node);
-                      } else {
-                        acc.otherDesigns.push(node);
-                      }
-                      return acc;
-                    },
-                    { defaultDesigns: [] as OuterNode[], otherDesigns: [] as OuterNode[] },
-                  );
-                  const currentDefaultName = defaultDesigns[0]?.name;
-                  return [...defaultDesigns, ...otherDesigns]
-                    .map((node) => ({
-                      ...node,
-                      currentDefaultName: node.default ? undefined : currentDefaultName,
-                    }));
+                  const currentDefaultName = nodes.find((node) => node.default)?.name;
+                  return nodes.map((node) => ({
+                    ...node,
+                    currentDefaultName: node.default ? undefined : currentDefaultName,
+                  }));
                 }}
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
