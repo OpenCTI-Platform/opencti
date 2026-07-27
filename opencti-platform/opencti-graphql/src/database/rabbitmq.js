@@ -722,8 +722,9 @@ export const buildSplitMessages = (message) => {
   let parsedBundle;
   try {
     parsedBundle = JSON.parse(bundleContent);
-  } catch (e) {
-    throw DatabaseError('Invalid stix bundle content', { cause: e });
+  } catch (error) {
+    logApp.warn('[RABBITMQ] Unable to parse bundle content, forwarding unsplit', { cause: error });
+    return unsplit(null);
   }
   const objectCount = Array.isArray(parsedBundle.objects) ? parsedBundle.objects.length : 0;
   // Mirror the worker's own pre-check (push_handler.py): never attempt to split single-object
