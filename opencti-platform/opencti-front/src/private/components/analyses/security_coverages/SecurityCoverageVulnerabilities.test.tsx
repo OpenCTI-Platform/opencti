@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import React from 'react';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
@@ -10,6 +11,15 @@ vi.mock('../../common/stix_core_relationships/StixCoreRelationshipPopover', () =
 vi.mock('./SecurityCoverageScores', () => ({
   default: () => (<></>),
 }));
+// jsdom reports zero size, so react-virtualized's AutoSizer would render no rows.
+// Provide a fixed width so the virtualized list mounts its rows during tests.
+vi.mock('react-virtualized', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('react-virtualized')>();
+  return {
+    ...actual,
+    AutoSizer: ({ children }: { children: (size: { width: number; height: number }) => React.ReactNode }) => children({ width: 1000, height: 570 }),
+  };
+});
 
 const buildData = (globalCount: number): SecurityCoverageVulnerabilities_securityCoverage$key => ({
   ' $fragmentType': 'SecurityCoverageVulnerabilities_securityCoverage',
@@ -18,18 +28,16 @@ const buildData = (globalCount: number): SecurityCoverageVulnerabilities_securit
   parent_types: [],
   entity_type: 'Security-Coverage',
   vulnerabilities: {
-    pageInfo: { globalCount },
-    edges: [
+    count: globalCount,
+    entities: [
       {
-        node: {
-          id: 'relationship-id',
-          coverage_information: [],
-          to: {
-            id: 'vulnerability-id',
-            parent_types: [],
-            name: 'Vuln1',
-            description: '',
-          },
+        relationship_id: 'relationship-id',
+        coverage_information: [],
+        to: {
+          id: 'vulnerability-id',
+          parent_types: [],
+          name: 'Vuln1',
+          description: '',
         },
       },
     ],
@@ -49,10 +57,10 @@ describe('Component: SecurityCoverageVulnerabilities', () => {
 
   it('should display a warning when there are more vulnerabilities than the fetch cap', () => {
     testRender(
-      <SecurityCoverageVulnerabilities securityCoverage={buildData(501)} />,
+      <SecurityCoverageVulnerabilities securityCoverage={buildData(5001)} />,
     );
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText('Showing 500 of 501 vulnerabilities. Some results are not displayed.')).toBeInTheDocument();
+    expect(screen.getByText('Showing 5000 of 5001 vulnerabilities. Some results are not displayed.')).toBeInTheDocument();
   });
 });

@@ -6,8 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import React, { useEffect, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import List from '@mui/material/List';
+import { createRefetchContainer, graphql, RelayRefetchProp, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
 import { Box, IconButton, ListItemButton, Stack, Tooltip } from '@mui/material';
@@ -17,8 +16,9 @@ import ListItemText from '@mui/material/ListItemText';
 import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import { useTheme } from '@mui/styles';
 import { InformationOutline } from 'mdi-material-ui';
+import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
-import { SecurityCoverageAttackPatternsFragment$key } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
+import { SecurityCoverageAttackPatternsFragment$data } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
@@ -29,42 +29,7 @@ import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
 
-const MAX_ATTACK_PATTERNS = 500;
-
-const securityCoverageAttackPatternsFragment = graphql`
-  fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
-    id
-    attPatterns: stixCoreRelationshipsFromResults(
-        orderBy: created_at
-        orderMode: asc
-        relationship_type: "has-covered"
-        toTypes: ["Attack-Pattern"]
-        first: 500
-    ) @connection(key: "Pagination_attPatterns") {
-        pageInfo {
-            globalCount
-        }
-        edges {
-            node {
-                id
-                coverage_information {
-                    coverage_name
-                    coverage_score
-                }
-                to {
-                    ... on AttackPattern {
-                        id
-                        parent_types
-                        name
-                        description
-                    }
-                }
-            }
-        }
-    }
-    ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-  }
-`;
+const MAX_ATTACK_PATTERNS = 5000;
 
 const securityCoverageKillChainPhasesFragment = graphql`
   fragment SecurityCoverageAttackPatternsKillChainPhasesFragment on Query {
@@ -81,13 +46,15 @@ const securityCoverageKillChainPhasesFragment = graphql`
 `;
 
 interface SecurityCoverageAttackPatternsProps {
-  data: SecurityCoverageAttackPatternsFragment$key;
+  securityCoverage: SecurityCoverageAttackPatternsFragment$data;
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
+  relay: RelayRefetchProp;
 }
 
-const SecurityCoverageAttackPatterns = ({
-  data,
+const SecurityCoverageAttackPatternsComponent = ({
+  securityCoverage,
   dataKillChains,
+  relay,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -95,13 +62,6 @@ const SecurityCoverageAttackPatterns = ({
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
   const [isModeOnlyActive, setIsModeOnlyActive] = useState(false);
   const theme = useTheme<Theme>();
-  const paginationOptions = {
-    orderBy: 'created_at',
-    orderMode: 'asc',
-    relationship_type: 'has-covered',
-    toTypes: ['Attack-Pattern'],
-  };
-  const securityCoverage = useFragment(securityCoverageAttackPatternsFragment, data);
   const killChainsData = useFragment(securityCoverageKillChainPhasesFragment, dataKillChains);
 
   // Extract unique kill chains from all attack patterns
@@ -222,13 +182,13 @@ const SecurityCoverageAttackPatterns = ({
         </Stack>
       )}
     >
-      {(securityCoverage.attPatterns?.pageInfo?.globalCount ?? 0) > MAX_ATTACK_PATTERNS && (
+      {(securityCoverage.attPatterns?.count ?? 0) > MAX_ATTACK_PATTERNS && (
         <Alert
           severity="warning"
           style={{ marginBottom: 10 }}
           content={t_i18n(
             'Showing {max} of {count} attack patterns. Some results are not displayed.',
-            { values: { max: MAX_ATTACK_PATTERNS, count: securityCoverage.attPatterns?.pageInfo?.globalCount ?? 0 } },
+            { values: { max: MAX_ATTACK_PATTERNS, count: securityCoverage.attPatterns?.count ?? 0 } },
           )}
         />
       )}
@@ -242,30 +202,31 @@ const SecurityCoverageAttackPatterns = ({
       ) : (
         <>
           <div className="clearfix" />
-          <List style={{ marginTop: -10 }} sx={{ maxHeight: 10 * 44, overflowY: 'auto' }}>
-            <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
-              {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
-                const attackPattern = attackPatternEdge.node.to;
-                const coverage = attackPatternEdge.node.coverage_information || [];
+          <FieldOrEmpty source={securityCoverage.attPatterns?.entities || []}>
+            <SecurityCoverageCoveredList
+              entities={securityCoverage.attPatterns?.entities ?? []}
+              style={{ marginTop: -10 }}
+              rowRenderer={(attackPatternEntity) => {
+                const attackPattern = attackPatternEntity.to;
+                const coverage = attackPatternEntity.coverage_information || [];
                 return (
                   <ListItem
-                    key={attackPatternEdge.node.id}
+                    key={attackPatternEntity.relationship_id}
                     dense={true}
                     divider={true}
                     disablePadding={true}
                     secondaryAction={(
                       <StixCoreRelationshipPopover
                         objectId={securityCoverage.id}
-                        connectionKey="Pagination_attPatterns"
-                        stixCoreRelationshipId={attackPatternEdge.node.id}
-                        paginationOptions={paginationOptions}
+                        stixCoreRelationshipId={attackPatternEntity.relationship_id}
+                        onDelete={() => relay.refetch({ id: securityCoverage.id })}
                         isCoverage={true}
                       />
                     )}
                   >
                     <ListItemButton
                       component={Link}
-                      to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEdge.node.id}`}
+                      to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEntity.relationship_id}`}
                       style={{ width: '100%' }}
                     >
                       <ListItemIcon>
@@ -274,7 +235,7 @@ const SecurityCoverageAttackPatterns = ({
                       <ListItemText
                         primary={(
                           <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                            <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
+                            <Typography variant="body2" component="span" noWrap sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
                             <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
                               <SecurityCoverageScores
                                 coverage_information={coverage}
@@ -287,13 +248,52 @@ const SecurityCoverageAttackPatterns = ({
                     </ListItemButton>
                   </ListItem>
                 );
-              })}
-            </FieldOrEmpty>
-          </List>
+              }}
+            />
+          </FieldOrEmpty>
         </>
       )}
     </Card>
   );
 };
+
+const SecurityCoverageAttackPatterns = createRefetchContainer(
+  SecurityCoverageAttackPatternsComponent,
+  {
+    securityCoverage: graphql`
+      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
+        id
+        attPatterns: coveredAttackPatterns(
+          orderBy: created_at
+          orderMode: asc
+          first: 5000
+        ) {
+          count
+          entities {
+            relationship_id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+            to {
+              id
+              parent_types
+              name
+              description
+            }
+          }
+        }
+        ...SecurityCoverageAttackPatternsMatrix_securityCoverage
+      }
+    `,
+  },
+  graphql`
+    query SecurityCoverageAttackPatternsRefetchQuery($id: String!) {
+      securityCoverage(id: $id) {
+        ...SecurityCoverageAttackPatternsFragment
+      }
+    }
+  `,
+);
 
 export default SecurityCoverageAttackPatterns;

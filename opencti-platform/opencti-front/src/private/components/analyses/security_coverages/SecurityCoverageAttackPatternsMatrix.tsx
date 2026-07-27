@@ -21,14 +21,12 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
 }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
-  const attackPatterns = ((securityCoverage.attackPatterns?.edges ?? [])
-    .map((edge) => edge.node)
+  const attackPatterns = ((securityCoverage.attackPatterns?.entities ?? [])
     .filter((node) => node?.to !== null && node?.to !== undefined)
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
   const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();
-  (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
-    const { node } = edge;
+  (securityCoverage.attackPatterns?.entities ?? []).forEach((node) => {
     if (node && node.to?.id) {
       attackPatternsCoverageMap.set(node.to.id, node.coverage_information || []);
     }
@@ -92,42 +90,33 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       fragment SecurityCoverageAttackPatternsMatrix_securityCoverage on SecurityCoverage 
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 200 }
-        cursor: { type: "ID" }
+        count: { type: "Int", defaultValue: 5000 }
       ) {
         id
-        attackPatterns: stixCoreRelationshipsFromResults(
-          relationship_type: "has-covered"
-          toTypes: ["Attack-Pattern"]
+        attackPatterns: coveredAttackPatterns(
           search: $search
           first: $count
-          after: $cursor
-        ) @connection(key: "Pagination_attackPatterns") {
-          edges {
-            node {
+        ) {
+          entities {
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+            to {
               id
-              coverage_information {
-                coverage_name
-                coverage_score
-              }
-              to {
-                ... on AttackPattern {
-                  id
-                  entity_type
-                  parent_types
-                  name
-                  description
-                  x_mitre_id
-                  isSubAttackPattern
-                  x_mitre_platforms
-                  x_mitre_permissions_required
-                  x_mitre_detection
-                  killChainPhases {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
+              entity_type
+              parent_types
+              name
+              description
+              x_mitre_id
+              isSubAttackPattern
+              x_mitre_platforms
+              x_mitre_permissions_required
+              x_mitre_detection
+              killChainPhases {
+                id
+                phase_name
+                x_opencti_order
               }
             }
           }
@@ -140,11 +129,10 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       $id: String!
       $search: String
       $count: Int
-      $cursor: ID
     ) {
       securityCoverage(id: $id) {
         ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-          @arguments(search: $search, count: $count, cursor: $cursor)
+          @arguments(search: $search, count: $count)
       }
     }
   `,
