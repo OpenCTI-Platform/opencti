@@ -9,6 +9,7 @@ import { FintelTemplatesManager_templates$data } from './__generated__/FintelTem
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material';
 import { EMPTY_VALUE } from 'src/utils/String';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 
 export type TemplateType = NonNullable<FintelTemplatesManager_templates$data['fintelTemplates']>['edges'][0]['node'];
 type TemplateEdges = FintelTemplatesManager_templates$data['fintelTemplates'];
@@ -31,26 +32,32 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
-  const { defaultTemplates, otherTemplates } = (fintelTemplates?.edges ?? []).reduce(
-    (acc, { node }) => {
-      if (node.default) {
-        acc.defaultTemplates.push(node);
-      } else {
-        acc.otherTemplates.push(node);
-      }
-      return acc;
-    },
-    { defaultTemplates: [] as TemplateType[], otherTemplates: [] as TemplateType[] },
-  );
+  const storageKey = `fintel-templates-${targetType}`;
+  const initialValues = { sortBy: 'default', orderAsc: false };
+  const { viewStorage, helpers } = usePaginationLocalStorage(storageKey, initialValues);
+  const { sortBy = 'default', orderAsc = false } = viewStorage;
+
+  const templates = (fintelTemplates?.edges ?? []).map(({ node }) => node);
+  const sortedTemplates = [...templates].sort((a, b) => {
+    let result: number;
+    if (sortBy === 'name') {
+      result = (a.name ?? '').localeCompare(b.name ?? '');
+    } else if (sortBy === 'start_date') {
+      result = (a.start_date ?? '').localeCompare(b.start_date ?? '');
+    } else {
+      result = Number(!!a.default) - Number(!!b.default);
+    }
+    return orderAsc ? result : -result;
+  });
 
   const dataColumns = {
-    name: { percentWidth: 35, isSortable: false },
+    name: { percentWidth: 35, isSortable: true },
     description: { percentWidth: 35, isSortable: false },
     default: {
       id: 'default',
       label: 'Default',
       percentWidth: 15,
-      isSortable: false,
+      isSortable: true,
       render: ({ default: isDefault }) => isDefault ? (
         <Tag
           color={theme.palette.success.main}
@@ -60,7 +67,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
     },
     start_date: {
       percentWidth: 15,
-      isSortable: false,
+      isSortable: true,
       label: t_i18n('Published'),
       render: ({ start_date }: { start_date?: string }) => (
         <ItemBoolean
@@ -71,17 +78,19 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
     },
   };
 
-  const currentDefaultName = defaultTemplates[0]?.name;
+  const currentDefaultName = templates.find((node) => node.default)?.name;
 
   return (
     <DataTableWithoutFragment
       dataColumns={dataColumns}
-      storageKey={`fintel-templates-${targetType}`}
+      storageKey={storageKey}
+      initialValues={initialValues}
+      onSort={helpers.handleSort}
       getComputeLink={(t: TemplateType) => {
         return `${resolveLink(t.entity_type)}/${targetType}/templates/${t.id}`;
       }}
-      globalCount={fintelTemplates?.edges.length ?? 0}
-      data={[...defaultTemplates, ...otherTemplates]}
+      globalCount={sortedTemplates.length}
+      data={sortedTemplates}
       rootRef={dataTableRef ?? undefined}
       variant={DataTableVariant.inline}
       actions={(template: TemplateType) => (

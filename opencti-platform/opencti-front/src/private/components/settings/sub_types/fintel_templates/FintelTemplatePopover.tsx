@@ -40,20 +40,20 @@ const FintelTemplatePopover = ({
   const [commitEditMutation] = useFintelTemplateEdit();
 
   const fintelTemplatesRefetchQuery = graphql`
-  query FintelTemplatePopoverRefetchQuery($id: String!) {
-    entitySetting(id: $id) {
-      id
-      fintelTemplates(orderBy: name, orderMode: asc) {
-        edges {
-          node {
-            id
-            default
+      query FintelTemplatePopoverRefetchQuery($id: String!) {
+          entitySetting(id: $id) {
+              id
+              fintelTemplates(orderBy: name, orderMode: asc) {
+                  edges {
+                      node {
+                          id
+                          default
+                      }
+                  }
+              }
           }
-        }
       }
-    }
-  }
-`;
+  `;
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
   const {

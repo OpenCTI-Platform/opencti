@@ -368,6 +368,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
     template_content,
     start_date,
     fintel_template_widgets,
+    default: isDefault,
   } = template;
 
   const widgets = fintel_template_widgets.map(({ widget }) => ({
@@ -396,6 +397,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
       template_content,
       start_date,
       fintel_template_widgets: exportWidgets,
+      default: isDefault ?? false,
     },
   });
 };
