@@ -47,23 +47,26 @@ export const resolveSavedFiltersInDataSelection = async (
     await Promise.all(dataSelection.map(async (selection: any) => {
       if (isNotEmptyField(selection.filters_id)) {
         const savedFilter = await findSavedFilter(context, user, selection.filters_id as string);
-        if (savedFilter) {
-          selection.filters = JSON.parse(savedFilter.filters);
+        if (!savedFilter) {
+          throw FunctionalError('Saved filter not found', { widget: widgetDefinition.id, savedFilter: selection.filters_id });
         }
+        selection.filters = JSON.parse(savedFilter.filters);
         selection.filters_id = undefined;
       }
       if (isNotEmptyField(selection.dynamicFrom_id)) {
         const savedFilter = await findSavedFilter(context, user, selection.dynamicFrom_id);
-        if (savedFilter) {
-          selection.dynamicFrom = JSON.parse(savedFilter.filters);
+        if (!savedFilter) {
+          throw FunctionalError('Saved filter not found', { widget: widgetDefinition.id, dynamicFromSavedFilter: selection.dynamicFrom_id });
         }
+        selection.dynamicFrom = JSON.parse(savedFilter.filters);
         selection.dynamicFrom_id = undefined;
       }
       if (isNotEmptyField(selection.dynamicTo_id)) {
         const savedFilter = await findSavedFilter(context, user, selection.dynamicTo_id);
-        if (savedFilter) {
-          selection.dynamicTo = JSON.parse(savedFilter.filters);
+        if (!savedFilter) {
+          throw FunctionalError('Saved filter not found', { widget: widgetDefinition.id, dynamicToSavedFilter: selection.dynamicTo_id });
         }
+        selection.dynamicTo = JSON.parse(savedFilter.filters);
         selection.dynamicTo_id = undefined;
       }
     }));

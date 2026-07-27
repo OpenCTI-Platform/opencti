@@ -105,7 +105,7 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
 
   const onDownloadError = () => {
     navigate('/dashboard/integrations/deployed?kind=csv');
-    MESSAGING$.notifyError('An error occurred while importing CSV Feed configuration.');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing CSV Feed configuration.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({
