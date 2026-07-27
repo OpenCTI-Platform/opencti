@@ -26,6 +26,8 @@ class MeterManager {
 
   private lockContentions: Counter | null = null;
 
+  private upserts: Counter | null = null;
+
   private directBulkGauge: Gauge | null = null;
 
   private sideBulkGauge: Gauge | null = null;
@@ -58,6 +60,10 @@ class MeterManager {
     this.lockContentions?.add(1, attributes);
   }
 
+  upsert(outcome: 'write' | 'noop', entityType: string) {
+    this.upserts?.add(1, { outcome, entity_type: entityType });
+  }
+
   directBulk(val: number, attributes: any) {
     this.directBulkGauge?.record(val, attributes);
   }
@@ -84,6 +90,10 @@ class MeterManager {
     this.lockContentions = meter.createCounter('opencti_lock_contentions', {
       valueType: ValueType.INT,
       description: 'Counts lock acquisitions that needed more than one attempt',
+    });
+    this.upserts = meter.createCounter('opencti_upserts', {
+      valueType: ValueType.INT,
+      description: 'Counts upsert resolutions by outcome (write = attributes changed, noop = nothing to do)',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {

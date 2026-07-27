@@ -211,7 +211,7 @@ import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttrib
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
@@ -3316,9 +3316,11 @@ const upsertElement = async (
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
+    meterManager.upsert('write', type);
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
+  meterManager.upsert('noop', type);
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
