@@ -166,6 +166,7 @@ const Labels = () => {
           contextFilters={contextFilters}
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
+          taskScope="SETTINGS"
           actions={(label) => <LabelPopover label={label} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Label'] }}
           disableNavigation

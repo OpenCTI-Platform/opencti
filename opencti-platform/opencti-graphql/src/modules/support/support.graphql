@@ -3,6 +3,7 @@ type SupportPackage implements InternalObject & BasicObject {
     name: String!
     standard_id: String!
     entity_type: String!
+    representative: Representative!
     parent_types: [String!]!
     metrics:[Metric]
     created_at: DateTime!

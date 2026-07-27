@@ -36,12 +36,17 @@ import {
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_INSTANCE_STATUS_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM, isStixObjectAliased } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../modules/malwareAnalysis/malwareAnalysis-types';
@@ -411,6 +416,31 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
     });
+    // add workflow filters
+    filterDefinitionsMap.set(WORKFLOW_USER_FILTER, {
+      filterKey: WORKFLOW_USER_FILTER,
+      type: 'id',
+      label: 'User is',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_USER],
+    });
+    filterDefinitionsMap.set(WORKFLOW_GROUP_FILTER, {
+      filterKey: WORKFLOW_GROUP_FILTER,
+      type: 'id',
+      label: 'Is in group',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
+    });
+    filterDefinitionsMap.set(WORKFLOW_ORGANIZATION_FILTER, {
+      filterKey: WORKFLOW_ORGANIZATION_FILTER,
+      type: 'id',
+      label: 'Is in organization',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    });
   }
   if (type === ENTITY_TYPE_USER) {
     // add context filters
@@ -429,6 +459,16 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
+    });
+  }
+  if (type === ENTITY_TYPE_DRAFT_WORKSPACE) {
+    filterDefinitionsMap.set(WORKFLOW_INSTANCE_STATUS_FILTER, {
+      filterKey: WORKFLOW_INSTANCE_STATUS_FILTER,
+      type: 'id',
+      label: 'Workflow status',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
     });
   }
   if (isStixRelationshipExceptRef(type)) {

@@ -32,11 +32,12 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
     customViewTargetEntityType: entityType,
     customViewTargetEntityId: previewEntityId ?? undefined,
     previewMode: Boolean(previewEntityId),
-    missingHosttEntityFiller: <CustomViewEditionMissingHostEntityFiller />,
+    missingHostEntityFiller: <CustomViewEditionMissingHostEntityFiller />,
   }), [entityType, previewEntityId]);
   if (!customView) {
     return <ErrorNotFound />;
   }
+
   return (
     <Stack gap={2}>
       <Stack gap={2}>

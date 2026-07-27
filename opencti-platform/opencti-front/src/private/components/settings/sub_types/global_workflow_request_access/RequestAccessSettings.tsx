@@ -1,0 +1,91 @@
+import Typography from '@mui/material/Typography';
+import React, { CSSProperties } from 'react';
+import SubTypeStatusPopover from '@components/settings/sub_types/SubTypeWorkflowPopover';
+import { graphql, useFragment } from 'react-relay';
+import RequestAccessConfigurationPopover from '@components/settings/sub_types/global_workflow_request_access/RequestAccessConfigurationPopover';
+import RequestAccessStatus from '@components/settings/sub_types/global_workflow_request_access/RequestAccessStatus';
+import Paper from '@mui/material/Paper';
+import { useTheme } from '@mui/styles';
+import { useFormatter } from '../../../../../components/i18n';
+import { StatusScopeEnum } from '../../../../../utils/statusConstants';
+import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
+import type { Theme } from '../../../../../components/Theme';
+import { Stack } from '@mui/material';
+import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
+import { RequestAccessSettings_requestAccess$key } from './__generated__/RequestAccessSettings_requestAccess.graphql';
+
+const requestAccessSettingsFragment = graphql`
+  fragment RequestAccessSettings_requestAccess on SubType {
+    statusesRequestAccess {
+      id
+      order
+      scope
+      template {
+        id
+        name
+        color
+      }
+    }
+  }
+`;
+
+interface RequestAccessSettingsProps {
+  subTypeId: string;
+  data: RequestAccessSettings_requestAccess$key;
+  dataConfiguration: RequestAccessConfigurationEdition_requestAccess$key;
+}
+
+const RequestAccessSettings = ({ subTypeId, data, dataConfiguration }: RequestAccessSettingsProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+
+  const statusesData = useFragment(requestAccessSettingsFragment, data);
+  const statusList = statusesData.statusesRequestAccess.map((statusData) => ({
+    id: statusData.id,
+    order: statusData.order,
+    template: {
+      id: statusData.template?.id ?? '',
+      color: statusData.template?.color ?? '#fff',
+      name: statusData.template?.name ?? 'unknown',
+    },
+  }));
+  const requestAccessWorkflowDisabled = statusList.length === 0;
+
+  const paperStyle: CSSProperties = {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
+    borderRadius: theme.spacing(0.5),
+    position: 'relative',
+  };
+  return (
+    <>
+      <div>
+        <Stack direction="row" alignItems="center" gap={1}>
+          <Typography variant="h3" sx={{ marginBottom: 0 }}>
+            {t_i18n('Specific Workflow for Request Access')}
+          </Typography>
+          <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.REQUEST_ACCESS} />
+        </Stack>
+        <ItemStatusTemplate
+          statuses={statusList}
+          disabled={requestAccessWorkflowDisabled}
+        />
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <Paper
+          style={paperStyle}
+          variant="outlined"
+          className="paper-for-grid"
+        >
+          <Typography variant="h3" gutterBottom={true}>
+            {t_i18n('Request access actions configuration')}
+            <RequestAccessConfigurationPopover data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
+            <RequestAccessStatus data={dataConfiguration} requestAccessWorkflowDisabled={requestAccessWorkflowDisabled} />
+          </Typography>
+        </Paper>
+      </div>
+    </>
+  );
+};
+
+export default RequestAccessSettings;

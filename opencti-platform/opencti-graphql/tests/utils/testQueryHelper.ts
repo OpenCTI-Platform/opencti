@@ -1,7 +1,6 @@
 import { expect } from 'vitest';
 import readline from 'node:readline';
 import fs from 'node:fs';
-import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
 import createSchema from '../../src/graphql/schema';
@@ -234,7 +233,7 @@ export const readCsvFromFileStream = async (filePath: string, fileName: string) 
 
 export const createUploadFromTestDataFile = async (filePathRelativeFromData: string, fileName: string, mimetype: string, encoding?: string) => {
   const file = fs.createReadStream(
-    path.resolve(__dirname, `../data/${filePathRelativeFromData}`),
+    new URL(`../data/${filePathRelativeFromData}`, import.meta.url),
   );
   const upload = new Upload();
   const fileUpload = {

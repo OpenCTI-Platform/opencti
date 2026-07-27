@@ -63,6 +63,7 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
       user_id: convertUser(ingestionTaxiiData, 'user'),
       added_after_start: ingestionTaxiiData.added_after_start,
       confidence_to_score: ingestionTaxiiData.confidence_to_score,
+      ssl_verify: ingestionTaxiiData.ssl_verify ?? true,
       automatic_user: true,
     },
     ...(ingestionTaxiiData.authentication_type === BEARER_AUTH
@@ -125,6 +126,7 @@ export const ingestionTaxiiEditionFragment = graphql`
       name
     }
     confidence_to_score
+    ssl_verify
   }
 `;
 
@@ -154,6 +156,7 @@ export interface IngestionTaxiiEditionForm {
   user_id: string | FieldOption | null | undefined;
   added_after_start: Date | null | undefined;
   confidence_to_score: boolean | null | undefined;
+  ssl_verify: boolean | null | undefined;
 }
 
 const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
@@ -185,6 +188,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     confidence_to_score: Yup.bool().nullable(),
+    ssl_verify: Yup.bool().required(t_i18n('This field is required')),
   };
 
   const ingestionTaxiiValidator = useSchemaEditionValidation('IngestionTaxii', basicShape);
@@ -457,6 +461,14 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             type="checkbox"
             name="confidence_to_score"
             label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={SwitchField}
+            onChange={handleSubmitField}
+            type="checkbox"
+            name="ssl_verify"
+            label={t_i18n('Verify SSL certificate')}
             containerstyle={fieldSpacingContainerStyle}
           />
         </Form>

@@ -385,7 +385,6 @@ const ContainerAddStixCoreObjects = (props) => {
       return (
         <Tooltip title={t_i18n('Add an entity to this container')}>
           <IconButton
-            aria-label="Add"
             onClick={() => setOpen(true)}
             variant="tertiary"
             size="small"

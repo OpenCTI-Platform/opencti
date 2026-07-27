@@ -15,6 +15,7 @@ import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { useFormatter } from 'src/components/i18n';
 
 interface AddThreatActorIndividualDemographicComponentProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
@@ -36,6 +37,7 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
   paginationOptions,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
+  const { t_i18n } = useFormatter();
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -48,6 +50,7 @@ const AddThreatActorIndividualDemographicComponent: FunctionComponent<
   return (
     <div>
       <IconButton
+        aria-label={t_i18n('Add')}
         color="primary"
         onClick={handleOpen}
       >

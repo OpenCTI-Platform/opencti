@@ -54,7 +54,7 @@ python3 -m pytest --cov=pycti --no-header -vv
 **Worker**:
 ```bash
 cd opencti-worker
-pip3 install -r src/requirements.txt
+pip3 install -r requirements.txt
 # Set ENV: OPENCTI_URL, OPENCTI_TOKEN, WORKER_LOG_LEVEL=INFO
 python3 src/worker.py
 ```

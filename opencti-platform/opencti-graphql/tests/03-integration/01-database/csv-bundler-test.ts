@@ -3,14 +3,14 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   indicatorsWithExternalReferencesCsvContent,
   indicatorsWithExternalReferencesCsvMapper,
-  indicatorsWithExternalReferencesExpectedBundle
+  indicatorsWithExternalReferencesExpectedBundle,
 } from '../../data/csv-bundler/external-references-constants';
 import { type CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import { indicatorsWithLabelsCsvContent, indicatorsWithLabelsCsvMapper, indicatorsWithLabelsExpectedBundle } from '../../data/csv-bundler/labels-constants';
 import {
   indicatorsWithKillChainPhasesCsvContent,
   indicatorsWithKillChainPhasesCsvMapper,
-  indicatorsWithKillChainPhasesExpectedBundle
+  indicatorsWithKillChainPhasesExpectedBundle,
 } from '../../data/csv-bundler/kill-chains-constants';
 import { citiesWithTwoLabelsCsvMapper } from '../../data/csv-bundler/cities-with-two-labels-constants';
 import { BundleBuilder } from '../../../src/parser/bundle-creator';
@@ -26,9 +26,9 @@ describe('CSV bundler', () => {
       // because csv has_header=true is managed outside
       const csvLines = indicatorsWithExternalReferencesCsvContent;
       csvLines.shift();
-      const bundlerOpts : CsvBundlerTestOpts = {
+      const bundlerOpts: CsvBundlerTestOpts = {
         applicantUser: ADMIN_USER,
-        csvMapper: indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed
+        csvMapper: indicatorsWithExternalReferencesCsvMapper as CsvMapperParsed,
       };
       const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
       expect(allBundleBuilder.length).toBe(1);
@@ -39,18 +39,18 @@ describe('CSV bundler', () => {
       const { id: _actualId, ...actualRest } = indicatorsWithExternalReferencesActualBundle;
       const indicatorsWithExternalReferencesActualBundleWithoutId = { ...actualRest };
       expect(
-        indicatorsWithExternalReferencesActualBundleWithoutId
+        indicatorsWithExternalReferencesActualBundleWithoutId,
       ).toStrictEqual(
-        indicatorsWithExternalReferencesExpectedBundleWithoutId
+        indicatorsWithExternalReferencesExpectedBundleWithoutId,
       );
     });
     it('Should list labels', async () => {
       const csvLines = indicatorsWithLabelsCsvContent;
       csvLines.shift();
 
-      const bundlerOpts : CsvBundlerTestOpts = {
+      const bundlerOpts: CsvBundlerTestOpts = {
         applicantUser: ADMIN_USER,
-        csvMapper: indicatorsWithLabelsCsvMapper as CsvMapperParsed
+        csvMapper: indicatorsWithLabelsCsvMapper as CsvMapperParsed,
       };
 
       const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
@@ -62,18 +62,18 @@ describe('CSV bundler', () => {
       const { id: _actualId, ...actualRest } = indicatorsWithLabelsActualBundle;
       const indicatorsWithLabelsActualBundleWithoutId = { ...actualRest };
       expect(
-        indicatorsWithLabelsActualBundleWithoutId
+        indicatorsWithLabelsActualBundleWithoutId,
       ).toStrictEqual(
-        indicatorsWithLabelsExpectedBundleWithoutId
+        indicatorsWithLabelsExpectedBundleWithoutId,
       );
     });
     it('Should list kill chain phases', async () => {
       const csvLines = indicatorsWithKillChainPhasesCsvContent;
       csvLines.shift();
 
-      const bundlerOpts : CsvBundlerTestOpts = {
+      const bundlerOpts: CsvBundlerTestOpts = {
         applicantUser: ADMIN_USER,
-        csvMapper: indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed
+        csvMapper: indicatorsWithKillChainPhasesCsvMapper as CsvMapperParsed,
       };
 
       const allBundleBuilder = await generateTestBundle(testContext, csvLines, bundlerOpts);
@@ -83,22 +83,22 @@ describe('CSV bundler', () => {
       const { id: _actualId, ...actualRest } = indicatorsWithKillChainPhasesActualBundle;
       const indicatorsWithKillChainPhasesActualBundleWithoutId = { ...actualRest };
       expect(
-        indicatorsWithKillChainPhasesActualBundleWithoutId
+        indicatorsWithKillChainPhasesActualBundleWithoutId,
       ).toStrictEqual(
-        indicatorsWithKillChainPhasesExpectedBundleWithoutId
+        indicatorsWithKillChainPhasesExpectedBundleWithoutId,
       );
     });
     it('Should split same city with different label in 2 valid bundles (testing SDO)', async () => {
       // duplicate should be removed, unless label are different.
-      const citiesWithTwoLabels:string[] = [
+      const citiesWithTwoLabels: string[] = [
         'Lyon,label1,#ffffff',
         'Lyon,label2,#000000',
         'Grenoble,label2,#000000',
         'Grenoble,label2,#000000',
       ];
-      const bundlerOpts : CsvBundlerTestOpts = {
+      const bundlerOpts: CsvBundlerTestOpts = {
         applicantUser: ADMIN_USER,
-        csvMapper: citiesWithTwoLabelsCsvMapper as CsvMapperParsed
+        csvMapper: citiesWithTwoLabelsCsvMapper as CsvMapperParsed,
       };
       const bundleResult: BundleBuilder[] = await generateTestBundle(testContext, citiesWithTwoLabels, bundlerOpts);
 
@@ -111,13 +111,13 @@ describe('CSV bundler', () => {
     });
     it('Should split same email address with different label in 2 valid bundles (testing SCO)', async () => {
       // duplicate should be removed, unless descriptions are different.
-      const emailsWithTwoDescriptions:string[] = [
+      const emailsWithTwoDescriptions: string[] = [
         'ada.lovelace@opencti.io,First programmer ever',
         'ada.lovelace@opencti.io,First programmer ever on top of Turing work.',
       ];
-      const bundlerOpts : CsvBundlerTestOpts = {
+      const bundlerOpts: CsvBundlerTestOpts = {
         applicantUser: ADMIN_USER,
-        csvMapper: emailWithTwoDescCsvMapper as CsvMapperParsed
+        csvMapper: emailWithTwoDescCsvMapper as CsvMapperParsed,
       };
       const bundleResult: BundleBuilder[] = await generateTestBundle(testContext, emailsWithTwoDescriptions, bundlerOpts);
 
@@ -137,7 +137,7 @@ describe('CSV bundler', () => {
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
           spec_version: '2.1',
           type: 'label',
-          value: 'label2'
+          value: 'label2',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -147,8 +147,8 @@ describe('CSV bundler', () => {
           longitude: 6.498147193,
           name: 'ville du pont',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
 
       // For exemple different label
@@ -158,7 +158,7 @@ describe('CSV bundler', () => {
           id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
           spec_version: '2.1',
           type: 'label',
-          value: 'label1'
+          value: 'label1',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -168,8 +168,8 @@ describe('CSV bundler', () => {
           longitude: 6.498147193,
           name: 'ville du pont',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
 
       const bundleBuilder = new BundleBuilder();
@@ -183,7 +183,7 @@ describe('CSV bundler', () => {
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
           spec_version: '2.1',
           type: 'label',
-          value: 'label2'
+          value: 'label2',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -194,8 +194,8 @@ describe('CSV bundler', () => {
           name: 'ville du pont',
           spec_version: '2.1',
           type: 'location',
-          description: 'new data in the same entity id'
-        } as unknown as StixLocation
+          description: 'new data in the same entity id',
+        } as unknown as StixLocation,
       ];
 
       expect(bundleBuilder.canAddObjects(newObjectsDesc)).toBeFalsy();
@@ -208,7 +208,7 @@ describe('CSV bundler', () => {
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
           spec_version: '2.1',
           type: 'label',
-          value: 'label2'
+          value: 'label2',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -218,8 +218,8 @@ describe('CSV bundler', () => {
           longitude: 6.498147193,
           name: 'ville du pont',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
 
       const newObjects: StixObject[] = [
@@ -228,7 +228,7 @@ describe('CSV bundler', () => {
           id: 'label--1c284682-f33e-5c37-9bad-9820cb37ee2a',
           spec_version: '2.1',
           type: 'label',
-          value: 'label1'
+          value: 'label1',
         } as unknown as StixLabel,
         {
           city: 'ville du pont2',
@@ -238,8 +238,8 @@ describe('CSV bundler', () => {
           longitude: 5.498147193,
           name: 'ville du pont2',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
       const bundleBuilder = new BundleBuilder();
       bundleBuilder.addObjects(objectsInBundle, 'ville du pont;label2');
@@ -253,7 +253,7 @@ describe('CSV bundler', () => {
           id: 'label--ad140703-c0bd-5572-818e-b480708034b5',
           spec_version: '2.1',
           type: 'label',
-          value: 'label2'
+          value: 'label2',
         } as unknown as StixLabel,
         {
           city: 'ville du pont',
@@ -263,8 +263,8 @@ describe('CSV bundler', () => {
           longitude: 6.498147193,
           name: 'ville du pont',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
 
       const newObjects: StixObject[] = [
@@ -283,8 +283,8 @@ describe('CSV bundler', () => {
           longitude: 6.498147193,
           name: 'ville du pont',
           spec_version: '2.1',
-          type: 'location'
-        } as unknown as StixLocation
+          type: 'location',
+        } as unknown as StixLocation,
       ];
 
       const bundleBuilder = new BundleBuilder();

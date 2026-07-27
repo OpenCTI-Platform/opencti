@@ -154,32 +154,28 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
           <>
             {!directDownload && !isFail && (
               <Tooltip title={t_i18n('Download this file')}>
-                <span>
-                  <IconButton
-                    disabled={isProgress}
-                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                      file.id,
-                    )}`}
-                    aria-haspopup="true"
-                    color={nested ? 'inherit' : 'primary'}
-                    size="small"
-                  >
-                    <GetAppOutlined fontSize="small" />
-                  </IconButton>
-                </span>
+                <IconButton
+                  disabled={isProgress}
+                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                    file.id,
+                  )}`}
+                  aria-haspopup="true"
+                  color={nested ? 'inherit' : 'primary'}
+                  size="small"
+                >
+                  <GetAppOutlined fontSize="small" />
+                </IconButton>
               </Tooltip>
             )}
             <Tooltip title={t_i18n('Delete this workbench')}>
-              <span>
-                <IconButton
-                  disabled={isProgress}
-                  color={nested ? 'inherit' : 'primary'}
-                  onClick={handleOpenDelete}
-                  size="small"
-                >
-                  <DeleteOutlined fontSize="small" />
-                </IconButton>
-              </span>
+              <IconButton
+                disabled={isProgress}
+                color={nested ? 'inherit' : 'primary'}
+                onClick={handleOpenDelete}
+                size="small"
+              >
+                <DeleteOutlined fontSize="small" />
+              </IconButton>
             </Tooltip>
           </>
         )}

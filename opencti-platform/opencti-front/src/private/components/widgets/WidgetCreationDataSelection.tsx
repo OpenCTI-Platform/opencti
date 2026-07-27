@@ -100,6 +100,11 @@ const WidgetCreationDataSelection = () => {
 
   const showRelationCountWarning = type && isWidgetUsingRelationsAggregation(type);
 
+  // A widget that only allows a single data selection should not display
+  // the "add" buttons at all, as they would be permanently disabled and
+  // never clickable (e.g. the Number widget). See issue #16360.
+  const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
+
   return (
     <div style={{ marginTop: 20 }}>
       {
@@ -159,9 +164,10 @@ const WidgetCreationDataSelection = () => {
         })
       }
 
-      {perspective === 'entities' && (
+      {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
           <IconButton
+            aria-label={t_i18n('Add')}
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
             color="secondary"
             size="small"
@@ -177,7 +183,7 @@ const WidgetCreationDataSelection = () => {
         </div>
       )}
 
-      {perspective === 'relationships' && (
+      {perspective === 'relationships' && canAddDataSelection && (
         <Stack direction="row">
           <Button
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
@@ -208,7 +214,7 @@ const WidgetCreationDataSelection = () => {
         </Stack>
       )}
 
-      {perspective === 'audits' && (
+      {perspective === 'audits' && canAddDataSelection && (
         <Stack direction="row">
           <Button
             disabled={

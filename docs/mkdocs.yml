@@ -100,8 +100,8 @@ markdown_extensions:
       pygments_lang_class: false
       auto_title: false
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.snippets:
@@ -117,11 +117,12 @@ nav:
       - Configuration: deployment/configuration.md
       - Authentication:
         - Authentication via environment variables: deployment/authentication.md
-      - Telemetry: deployment/telemetry.md
+      - Observability metrics: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - MCP server (via XTM One): deployment/mcp-server.md
       - Manager:
         - Overview: deployment/integration-manager.md
         - Quick start: deployment/integration-manager/quick-start.md
@@ -134,14 +135,15 @@ nav:
         - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
       - Other resources: deployment/resources.md
     - Advanced:
-      - Platform managers: deployment/managers.md
-      - Liveness probe: deployment/liveness-probe.md
-      - Clustering: deployment/clustering.md
-      - Indices and rollover: deployment/rollover.md
-      - On-premise map server: deployment/map.md
-      - On-premise AI extraction: deployment/ai-import-document.md
-      - Rate limiting: deployment/rate-limiting.md
-      - Troubleshooting: deployment/troubleshooting.md
+      - Platform managers: deployment/advanced/managers.md
+      - Security configuration: deployment/advanced/security-configuration.md
+      - Liveness probe: deployment/advanced/liveness-probe.md
+      - Clustering: deployment/advanced/clustering.md
+      - Indices and rollover: deployment/advanced/rollover.md
+      - On-premise map server: deployment/advanced/map.md
+      - On-premise AI extraction: deployment/advanced/ai-import-document.md
+      - Rate limiting: deployment/advanced/rate-limiting.md
+      - Troubleshooting: deployment/advanced/troubleshooting.md
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
@@ -189,6 +191,7 @@ nav:
           - RSS Feed: usage/import/rss-feed.md
           - CSV Feed: usage/import/csv-feed.md
           - JSON Feed: usage/import/json-feed.md
+          - Advanced feed configuration: usage/import/advanced-feed-configuration.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Create via form: usage/form-intake.md
@@ -209,7 +212,9 @@ nav:
         - Widget creation: usage/widgets.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
-      - Workflows and assignation: usage/workflows.md
+      - Workflows:
+         - Draft workflow: usage/draft-workflow.md
+         - Entities workflow: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Playbook automation:
         - Introduction: usage/playbook-automation.md
@@ -233,6 +238,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - SMTP configuration: administration/smtp-configuration.md
         - Cookies: administration/cookies.md
         - Policies: administration/policies.md
         - Users and RBAC:

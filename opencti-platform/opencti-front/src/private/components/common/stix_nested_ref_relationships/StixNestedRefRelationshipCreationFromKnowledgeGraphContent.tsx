@@ -36,15 +36,13 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraphContent: FunctionCompon
 
   return (
     <Tooltip title={t_i18n('Create a nested relationship')}>
-      <span>
-        <IconButton
-          color="primary"
-          onClick={() => handleOpenCreateNested()}
-          disabled={!nestedRelationExist}
-        >
-          <ReadMoreOutlined />
-        </IconButton>
-      </span>
+      <IconButton
+        color="primary"
+        onClick={() => handleOpenCreateNested()}
+        disabled={!nestedRelationExist}
+      >
+        <ReadMoreOutlined />
+      </IconButton>
     </Tooltip>
   );
 };

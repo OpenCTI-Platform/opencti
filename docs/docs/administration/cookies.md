@@ -65,5 +65,5 @@ Cookies are removed in the following scenarios:
 
 - [Configuration](../deployment/configuration.md) — Full platform configuration reference.
 - [Authentication](../deployment/authentication.md) — Configure authentication providers.
-- [Clustering](../deployment/clustering.md) — Deploy OpenCTI in a clustered setup (requires `session_manager: shared`).
-
+- [Clustering](../deployment/advanced/clustering.md) — Deploy OpenCTI in a clustered setup (requires `session_manager: shared`).
+- [Authentication Strategies](../deployment/authentication.md) — Choose how users log in.

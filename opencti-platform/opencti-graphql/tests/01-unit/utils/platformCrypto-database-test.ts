@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { encryptIngestionCredential, decryptIngestionCredential, isIngestionCredentialEncrypted } from '../../../src/modules/ingestion/ingestion-common';
+import { encryptSynchronizerCredential, decryptSynchronizerCredential, isSynchronizerCredentialEncrypted } from '../../../src/domain/connector-sync-crypto';
 
 // Mock nconf with a valid 32-byte encryption key (base64-encoded)
 // "0123456789abcdef0123456789abcdef" = 32 bytes
@@ -12,15 +14,18 @@ vi.mock('nconf', () => ({
 }));
 
 vi.mock('../../../src/config/conf', () => ({
+  default: {
+    get: (key: string) => {
+      if (key === 'app:encryption_key') return 'MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=';
+      return undefined;
+    },
+  },
   confNameToEnvName: () => 'APP__ENCRYPTION_KEY',
 }));
 
 vi.mock('../../../src/config/credentials', () => ({
   enrichWithRemoteCredentials: vi.fn().mockResolvedValue({ value: undefined }),
 }));
-
-import { encryptIngestionCredential, decryptIngestionCredential, isIngestionCredentialEncrypted } from '../../../src/modules/ingestion/ingestion-common';
-import { encryptSynchronizerCredential, decryptSynchronizerCredential, isSynchronizerCredentialEncrypted } from '../../../src/domain/connector-sync-crypto';
 
 describe('platformCrypto – encryptIngestionCredential / decryptIngestionCredential', () => {
   it('should encrypt and decrypt a value round-trip', async () => {

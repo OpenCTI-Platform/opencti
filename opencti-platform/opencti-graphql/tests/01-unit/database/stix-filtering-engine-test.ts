@@ -42,6 +42,41 @@ describe('Filter Boolean logic engine ', () => {
       expect(engine.testGenericFilter({ mode: FilterMode.And, operator: FilterOperator.NotNil }, ['id'], [])).toEqual(false);
       expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotNil }, [], ['id1', 'id2', 'id3'])).toEqual(true);
     });
+
+    it('tests has_changed with eventContext (update event, attribute changed)', () => {
+      const changeContext = { filterKey: 'confidence', eventContext: { changedAttributes: ['confidence', 'workflow_id'] } };
+      // has_changed returns true when the filter key is in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['high'], changeContext)).toEqual(true);
+      // not_has_changed returns false when the filter key is in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['high'], changeContext)).toEqual(false);
+    });
+
+    it('tests has_changed with eventContext (update event, attribute NOT changed)', () => {
+      const changeContext = { filterKey: 'description', eventContext: { changedAttributes: ['confidence', 'workflow_id'] } };
+      // has_changed returns false when the filter key is NOT in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['some text'], changeContext)).toEqual(false);
+      // not_has_changed returns true when the filter key is NOT in changedAttributes
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['some text'], changeContext)).toEqual(true);
+    });
+
+    it('tests has_changed without eventContext (e.g. delete event)', () => {
+      // Without changeContext, has_changed defaults to false
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['value'])).toEqual(false);
+      // Without changeContext, not_has_changed defaults to true
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['value'])).toEqual(true);
+    });
+
+    it('tests has_changed with isCreation context', () => {
+      // Creation: has_changed is true if the field has a non-null value (stixCandidates non-empty)
+      const creationCtxWithValue = { filterKey: 'confidence', eventContext: { changedAttributes: [], isCreation: true } };
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], ['high'], creationCtxWithValue)).toEqual(true);
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], ['high'], creationCtxWithValue)).toEqual(false);
+
+      // Creation: has_changed is false if the field has no value (stixCandidates empty)
+      const creationCtxNoValue = { filterKey: 'description', eventContext: { changedAttributes: [], isCreation: true } };
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.HasChanged }, [], [], creationCtxNoValue)).toEqual(false);
+      expect(engine.testGenericFilter({ mode: FilterMode.Or, operator: FilterOperator.NotHasChanged }, [], [], creationCtxNoValue)).toEqual(true);
+    });
   });
 
   describe('testBooleanFilter', () => {
@@ -264,15 +299,15 @@ describe('Filter Boolean logic engine ', () => {
   describe('testFilterGroup', () => {
     // fake testers for our dummy data (a simplistic version)
     const testerByFilterKeyMap = {
-      id: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.id]),
-      refs: (data: any, filter: Filter) => engine.testStringFilter(filter, data.refs),
-      score: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.score),
-      labels: (data: any, filter: Filter) => engine.testStringFilter(filter, data.labels),
-      color: (data: any, filter: Filter) => engine.testStringFilter(filter, [data.color]),
-      height: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.height),
-      posX: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posX),
-      posY: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.posY),
-      options: (data: any, filter: Filter) => engine.testNumericFilter(filter, data.options),
+      id: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, [data.id], changeContext),
+      refs: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, data.refs, changeContext),
+      score: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.score, changeContext),
+      labels: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, data.labels, changeContext),
+      color: (data: any, filter: Filter, changeContext?: any) => engine.testStringFilter(filter, [data.color], changeContext),
+      height: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.height, changeContext),
+      posX: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.posX, changeContext),
+      posY: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.posY, changeContext),
+      options: (data: any, filter: Filter, changeContext?: any) => engine.testNumericFilter(filter, data.options, changeContext),
     };
 
     it('handles empty filters', () => {
@@ -289,17 +324,17 @@ describe('Filter Boolean logic engine ', () => {
             filters: [
               { mode: FilterMode.And, key: ['id'], operator: FilterOperator.NotEq, values: ['aa', 'bb'] }, // F1
               { mode: FilterMode.Or, key: ['refs'], operator: FilterOperator.Eq, values: ['ref1', 'ref2'] }, // F2
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] } // F3
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Gt, values: ['100'] }, // F3
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG2
             mode: FilterMode.And,
             filters: [
               { mode: FilterMode.And, key: ['options'], operator: FilterOperator.Nil, values: [] }, // F4
-              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] } // F5
+              { mode: FilterMode.And, key: ['score'], operator: FilterOperator.Lt, values: ['100'] }, // F5
             ],
-            filterGroups: []
+            filterGroups: [],
           },
           { // FG3
             mode: FilterMode.Or,
@@ -309,21 +344,21 @@ describe('Filter Boolean logic engine ', () => {
                 mode: FilterMode.Or,
                 filters: [
                   { mode: FilterMode.And, key: ['color'], operator: FilterOperator.NotEq, values: ['red', 'yellow'] }, // F6
-                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] } // F7
+                  { mode: FilterMode.And, key: ['height'], operator: FilterOperator.Gt, values: ['100'] }, // F7
                 ],
-                filterGroups: []
+                filterGroups: [],
               },
               { // FG5
                 mode: FilterMode.And,
                 filters: [
                   { mode: FilterMode.And, key: ['posX'], operator: FilterOperator.Lt, values: ['50'] }, // F8
-                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] } // F9
+                  { mode: FilterMode.And, key: ['posY'], operator: FilterOperator.Lt, values: ['10'] }, // F9
                 ],
-                filterGroups: []
-              }
-            ]
-          }
-        ]
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
       };
 
       // ----> (F1- or F2+ or F3-) --> FG1+
@@ -349,7 +384,7 @@ describe('Filter Boolean logic engine ', () => {
       // failing F4 will propagate to failing FG
       const dataNoMatch1 = {
         ...dataMatch,
-        options: ['opt1']
+        options: ['opt1'],
       };
       expect(engine.testFilterGroup(dataNoMatch1, filterGroup, testerByFilterKeyMap)).toEqual(false);
 
@@ -367,6 +402,176 @@ describe('Filter Boolean logic engine ', () => {
         posY: 8,
       };
       expect(engine.testFilterGroup(dataMatch2, filterGroup, testerByFilterKeyMap)).toEqual(true);
+    });
+
+    it('handles has_changed on update event (attribute changed)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+      const eventContextChanged = { changedAttributes: ['score', 'description'] };
+      const eventContextNotChanged = { changedAttributes: ['description'] };
+
+      // score changed → has_changed should be true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(true);
+      // score NOT changed → has_changed should be false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(false);
+    });
+
+    it('handles not_has_changed on update event', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+      const eventContextChanged = { changedAttributes: ['score'] };
+      const eventContextNotChanged = { changedAttributes: ['description'] };
+
+      // score changed → not_has_changed should be false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextChanged)).toEqual(false);
+      // score NOT changed → not_has_changed should be true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContextNotChanged)).toEqual(true);
+    });
+
+    it('handles has_changed without eventContext (e.g. delete event)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // No eventContext → has_changed defaults to false
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(false);
+    });
+
+    it('handles not_has_changed without eventContext (e.g. delete event)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // No eventContext → not_has_changed defaults to true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap)).toEqual(true);
+    });
+
+    it('handles has_changed with isCreation context (field has value)', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const creationContext = { changedAttributes: [], isCreation: true };
+
+      // score has a value → has_changed = true
+      const dataWithScore = { id: 'x', score: 80 };
+      expect(engine.testFilterGroup(dataWithScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(true);
+
+      // score is null → has_changed = false
+      const dataNoScore = { id: 'x', score: null };
+      expect(engine.testFilterGroup(dataNoScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(false);
+    });
+
+    it('handles not_has_changed with isCreation context', () => {
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.NotHasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const creationContext = { changedAttributes: [], isCreation: true };
+
+      // score has a value → not_has_changed = false
+      const dataWithScore = { id: 'x', score: 80 };
+      expect(engine.testFilterGroup(dataWithScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(false);
+
+      // score is null → not_has_changed = true
+      const dataNoScore = { id: 'x', score: null };
+      expect(engine.testFilterGroup(dataNoScore, filterGroup, testerByFilterKeyMap, creationContext)).toEqual(true);
+    });
+
+    it('handles has_changed on key without tester (returns false)', () => {
+      // "name" is NOT in testerByFilterKeyMap → returns false (unsupported key)
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['name'], operator: FilterOperator.HasChanged, values: [] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', name: 'something' };
+      const eventContext = { changedAttributes: ['name'] };
+
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, eventContext)).toEqual(false);
+    });
+
+    it('handles has_changed combined with other filters (AND mode)', () => {
+      // has_changed on score AND score > 50: both must be true
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.And,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.Gt, values: ['50'] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // score changed AND score > 50 → true
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(true);
+      // score NOT changed AND score > 50 → false (has_changed fails)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(false);
+
+      // score changed but score < 50 → false (gt fails)
+      const dataLow = { id: 'x', score: 30 };
+      expect(engine.testFilterGroup(dataLow, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(false);
+    });
+
+    it('handles has_changed combined with other filters (OR mode)', () => {
+      // has_changed on score OR id == 'x': at least one must be true
+      const filterGroup: FilterGroup = {
+        mode: FilterMode.Or,
+        filters: [
+          { mode: FilterMode.Or, key: ['score'], operator: FilterOperator.HasChanged, values: [] },
+          { mode: FilterMode.Or, key: ['id'], operator: FilterOperator.Eq, values: ['x'] },
+        ],
+        filterGroups: [],
+      };
+
+      const data = { id: 'x', score: 80 };
+
+      // score not changed but id == 'x' → true (second filter matches)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(true);
+      // score changed → true (first filter matches)
+      expect(engine.testFilterGroup(data, filterGroup, testerByFilterKeyMap, { changedAttributes: ['score'] })).toEqual(true);
+
+      // neither matches
+      const dataOther = { id: 'y', score: 80 };
+      expect(engine.testFilterGroup(dataOther, filterGroup, testerByFilterKeyMap, { changedAttributes: ['description'] })).toEqual(false);
     });
   });
 });

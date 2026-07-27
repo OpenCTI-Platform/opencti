@@ -10,7 +10,7 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_CREATED_BY,
   INPUT_KILLCHAIN,
-  INPUT_LABELS
+  INPUT_LABELS,
 } from '../../../src/schema/general';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
@@ -19,7 +19,7 @@ import {
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
-  STIX_CYBER_OBSERVABLES
+  STIX_CYBER_OBSERVABLES,
 } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
 import {
@@ -30,7 +30,7 @@ import {
   INSTANCE_REGARDING_OF,
   RELATION_FROM_FILTER,
   RELATION_TO_TYPES_FILTER,
-  TYPE_FILTER
+  TYPE_FILTER,
 } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_HISTORY } from '../../../src/schema/internalObject';
 import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-object';
@@ -38,6 +38,9 @@ import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-c
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import indicatorFilterKeys from '../../data/filter-keys-schema/indicatorFilterKeys';
 
+import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 
 describe('Filter keys schema generation testing', async () => {
@@ -45,7 +48,7 @@ describe('Filter keys schema generation testing', async () => {
   const filterKeysSchema = new Map(filterKeysSchemaArray
     .map((n) => [
       n.entity_type,
-      new Map(n.filters_schema.map((m) => [m.filterKey, m.filterDefinition]))
+      new Map(n.filters_schema.map((m) => [m.filterKey, m.filterDefinition])),
     ]));
   it('should generate a filter keys schema for Stix core object filterable attributes only', () => {
     const stixCoreObjectFilterDefinitionMap = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT) ?? new Map<string, FilterDefinition>();
@@ -230,7 +233,7 @@ describe('Filter keys schema generation testing', async () => {
 
     // Stix Core Relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(RELATION_FROM_FILTER);
-    expect(filterDefinition?.subEntityTypes.length).toEqual(59); // 58 stix core relationship types + abstract type 'stix-core-relationships'
+    expect(filterDefinition?.subEntityTypes.length).toEqual(60); // 59 stix core relationship types + abstract type 'stix-core-relationships'
     // Stix Cyber Observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables
     expect(filterDefinition?.subEntityTypes.length).toEqual(STIX_CYBER_OBSERVABLES.length + 1); // 31 observables + abstract type 'Stix-Cyber-Observable'
@@ -248,5 +251,16 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.type).toEqual('string');
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get('indicator_types');
     expect(filterDefinition?.type).toEqual('vocabulary');
+  });
+  it('should construct correct filter definition for DraftWorkspace workflow instance status', () => {
+    const filterDefinition = filterKeysSchema.get(ENTITY_TYPE_DRAFT_WORKSPACE)?.get(WORKFLOW_INSTANCE_STATUS_FILTER);
+    expect(filterDefinition?.filterKey).toEqual(WORKFLOW_INSTANCE_STATUS_FILTER);
+    expect(filterDefinition?.type).toEqual('id');
+    expect(filterDefinition?.label).toEqual('Workflow status');
+    expect(filterDefinition?.multiple).toEqual(true);
+    expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(1);
+    expect(filterDefinition?.elementsForFilterValuesSearch[0]).toEqual(ENTITY_TYPE_STATUS_TEMPLATE);
+    expect(filterDefinition?.subEntityTypes.length).toEqual(1);
+    expect(filterDefinition?.subEntityTypes[0]).toEqual(ENTITY_TYPE_DRAFT_WORKSPACE);
   });
 });

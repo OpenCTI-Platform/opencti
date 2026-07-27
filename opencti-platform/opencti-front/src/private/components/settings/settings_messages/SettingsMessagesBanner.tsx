@@ -12,6 +12,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SettingsMessagesBannerQuery } from './__generated__/SettingsMessagesBannerQuery.graphql';
 import { MessageFromLocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { isEmptyField } from '../../../../utils/utils';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
 import { extractUrlsFromText } from '../../../../utils/String';
 
 export const settingsMessagesQuery = graphql`
@@ -131,6 +133,9 @@ const SettingsMessagesBannerComponent = ({
   queryRef: PreloadedQuery<SettingsMessagesBannerQuery>;
 }) => {
   const classes = useStyles();
+  const { bannerSettings } = useAuth();
+  const { height: topBannerHeight } = useTopBanner();
+  const topOffset = topBannerHeight + bannerSettings.bannerHeightNumber;
   const { settings } = usePreloadedQuery<SettingsMessagesBannerQuery>(
     settingsMessagesQuery,
     queryRef,
@@ -208,6 +213,7 @@ const SettingsMessagesBannerComponent = ({
       id={BANNER_DIV}
       className={classes.container}
       style={{
+        top: `${topOffset}px`,
         backgroundColor,
         borderLeft,
       }}

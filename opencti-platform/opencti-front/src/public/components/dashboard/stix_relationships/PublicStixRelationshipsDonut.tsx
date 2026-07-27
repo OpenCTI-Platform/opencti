@@ -4,7 +4,7 @@ import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsDonutQuery } from './__generated__/PublicStixRelationshipsDonutQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -106,7 +106,7 @@ const PublicStixRelationshipsDonut = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsDonutQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsDonutQuery>(
     publicStixRelationshipsDonutQuery,
     {
       uriKey,

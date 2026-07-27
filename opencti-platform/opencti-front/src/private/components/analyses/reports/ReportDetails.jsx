@@ -52,10 +52,22 @@ const ReportDetails = ({ report }) => {
         mode: 'and',
         filters: [
           {
+            key: 'fromId',
+            values: [reportData.id],
+            operator: 'eq',
+            mode: 'or',
+          },
+          {
             key: 'relationship_type',
             values: [
               'object',
             ],
+            operator: 'eq',
+            mode: 'or',
+          },
+          {
+            key: 'toTypes',
+            values: ['Stix-Core-Object'],
             operator: 'eq',
             mode: 'or',
           },
@@ -96,15 +108,13 @@ const ReportDetails = ({ report }) => {
             style={{ minHeight: 200, maxHeight: height }}
           >
             <StixRelationshipsHorizontalBars
-              isWidget={false}
-              fromId={reportData.id}
-              startDate={null}
-              endDate={null}
-              relationshipType="object"
+              config={{
+                startDate: null,
+                endDate: null,
+              }}
               dataSelection={entitiesDistributionDataSelection}
-              parameters={{ title: 'Entities distribution' }}
+              parameters={{ title: t_i18n('Entities distribution') }}
               variant="inEntity"
-              isReadOnly={true}
             />
           </Grid>
         </Grid>

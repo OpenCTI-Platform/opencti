@@ -17,6 +17,7 @@ import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../.
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const ingestionRssMutationFieldPatch = graphql`
   mutation IngestionRssEditionFieldPatchMutation(
@@ -55,6 +56,7 @@ const ingestionRssValidation = (t) => Yup.object().shape({
   current_state_date: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
+  ssl_verify: Yup.bool().required(t('This field is required')),
 });
 
 const IngestionRssEditionContainer = ({
@@ -77,6 +79,9 @@ const IngestionRssEditionContainer = ({
         if (name === 'user_id') {
           finalValue = value?.value;
         }
+        if (name === 'ssl_verify') {
+          finalValue = value ?? 'true';
+        }
         commitMutation({
           mutation: ingestionRssMutationFieldPatch,
           variables: {
@@ -98,6 +103,7 @@ const IngestionRssEditionContainer = ({
       'object_marking_refs',
       convertMarkingsWithoutEdges(ingestionRss, 'defaultMarkingDefinitions'),
     ),
+    R.assoc('ssl_verify', ingestionRss.ssl_verify ?? true),
     R.pick([
       'name',
       'description',
@@ -108,6 +114,7 @@ const IngestionRssEditionContainer = ({
       'object_marking_refs',
       'report_types',
       'current_state_date',
+      'ssl_verify',
     ]),
   )(ingestionRss);
   return (
@@ -203,6 +210,14 @@ const IngestionRssEditionContainer = ({
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
             />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="ssl_verify"
+              label={t('Verify SSL certificate')}
+              onChange={handleSubmitField}
+              containerstyle={fieldSpacingContainerStyle}
+            />
           </Form>
         )}
       </Formik>
@@ -231,6 +246,7 @@ const IngestionRssEditionFragment = createFragmentContainer(
         report_types
         ingestion_running
         current_state_date
+        ssl_verify
         user {
           id
           entity_type

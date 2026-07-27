@@ -14,7 +14,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, removeIdFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { toCamelCase } from '../../../../../utils/String';
@@ -176,9 +176,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           ...widget,
           dataSelection: widget.dataSelection.map((selection) => ({
             ...selection,
-            filters: JSON.stringify(removeIdFromFilterGroupObject(selection.filters)),
-            dynamicFrom: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicFrom)),
-            dynamicTo: JSON.stringify(removeIdFromFilterGroupObject(selection.dynamicTo)),
+            filters: serializeFilterGroupForBackend(selection.filters),
+            dynamicFrom: serializeFilterGroupForBackend(selection.dynamicFrom),
+            dynamicTo: serializeFilterGroupForBackend(selection.dynamicTo),
           })),
         },
       };

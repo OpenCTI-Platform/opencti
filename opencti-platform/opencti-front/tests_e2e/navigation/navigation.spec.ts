@@ -91,7 +91,7 @@ import PositionDetailsPage from '../model/positionDetails.pageModel';
 import DataEntitiesPage from '../model/DataEntities.pageModel';
 import DataManagementPage from '../model/dataManagement.pageModel';
 import TrashPage from '../model/trash.pageModel';
-import IngestionPage from '../model/ingestion.pageModel';
+import IntegrationsPage from '../model/integrations.pageModel';
 import ImportPage from '../model/dataImport.pageModel';
 import ProcessingPage from '../model/dataProcessing.pageModel';
 import SharingPage from '../model/dataSharing.pageModel';
@@ -1590,24 +1590,14 @@ const navigateDataRelationships = async (page: Page) => {
   await expect(dataRelationshipsPage.getPage()).toBeVisible();
 };
 
-const navigateIngestion = async (page: Page) => {
-  const ingestionPage = new IngestionPage(page);
-  await ingestionPage.navigateFromMenu();
-  await expect(ingestionPage.getIngestionPages('connectors-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('Connector catalog');
-  await expect(ingestionPage.getIngestionPages('catalog-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('OpenCTI Streams');
-  await expect(ingestionPage.getIngestionPages('streams-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('TAXII Feeds');
-  await expect(ingestionPage.getIngestionPages('taxii-feeds-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('TAXII Push');
-  await expect(ingestionPage.getIngestionPages('taxii-push-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('RSS Feeds');
-  await expect(ingestionPage.getIngestionPages('rss-feeds-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('CSV Feeds');
-  await expect(ingestionPage.getIngestionPages('csv-feeds-page')).toBeVisible();
-  await ingestionPage.navigateRightMenu('JSON Feeds');
-  await expect(ingestionPage.getIngestionPages('json-feeds-page')).toBeVisible();
+const navigateIntegrations = async (page: Page) => {
+  const integrationsPage = new IntegrationsPage(page);
+  await integrationsPage.navigateFromMenu();
+  await expect(integrationsPage.getPage()).toBeVisible();
+  await integrationsPage.switchToTab('available');
+  await expect(integrationsPage.getCatalogPage()).toBeVisible();
+  await integrationsPage.switchToTab('deployed');
+  await expect(integrationsPage.getPage()).toBeVisible();
 };
 
 const navigateDataImport = async (page: Page) => {
@@ -1848,8 +1838,8 @@ const navigateAllMenu = async (page: Page) => {
   // await leftBarPage.expectBreadcrumb('Data', 'Entities'); <-- COMPLEX FOR NOW BECAUSE WE HAVE TWO MENUS WITH THE SAME NAME
   await leftBarPage.clickOnMenu('Data', 'Relationships');
   await leftBarPage.expectBreadcrumb('Data', 'Relationships');
-  await leftBarPage.clickOnMenu('Data', 'Ingestion');
-  await leftBarPage.expectBreadcrumb('Data', 'Ingestion');
+  await leftBarPage.clickOnMenu('Integrations');
+  await leftBarPage.expectBreadcrumb('Integrations');
   await leftBarPage.clickOnMenu('Data', 'Import');
   await leftBarPage.expectBreadcrumb('Data', 'Import');
   await leftBarPage.clickOnMenu('Data', 'Processing');
@@ -1988,7 +1978,7 @@ test.describe('Navigation available on CE', { tag: ['@ce'] }, () => {
     await leftBarPage.open();
     await navigateDataEntities(page);
     await navigateDataRelationships(page);
-    await navigateIngestion(page);
+    await navigateIntegrations(page);
     await navigateDataImport(page);
     await navigateProcessing(page);
     await navigateDataSharing(page);

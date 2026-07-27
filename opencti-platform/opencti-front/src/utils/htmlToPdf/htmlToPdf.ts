@@ -4,7 +4,7 @@ import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { Content, ImageDefinition, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
-import { APP_BASE_PATH, fileUri } from '../../relay/environment';
+import { APP_BASE_PATH } from '../../relay/environment';
 import { capitalizeWords } from '../String';
 import logoWhite from '../../static/images/logo_text_white.png';
 import { getBase64ImageFromURL, isImageFromUrlSvg } from '../Image';
@@ -27,18 +27,15 @@ import { dateFormat } from '../Time';
  *
  * @param pdfMakeObject Definition of the PDF to generate.
  * @param checkOrientation True if check content to determine PDF orientation.
-
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF ready to be downloaded.
  */
 const generatePdf = (
   pdfMakeObject: TDocumentDefinitions,
   checkOrientation = false,
-  isTiptapEnabled = false,
 ) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
-    docDefinition.pageOrientation = determineOrientation(isTiptapEnabled);
+    docDefinition.pageOrientation = determineOrientation();
   }
   pdfMake.setTableLayouts(defaultTableLayout);
   pdfMake.setFonts(FONTS);
@@ -50,26 +47,33 @@ const generatePdf = (
  *
  * @param fileName name of the file to transform.
  * @param content The content of the file.
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdf = (
   fileName: string,
   content: string,
-  isTiptapEnabled = false,
 ) => {
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
 
   // Improve render for markdown files.
   if (fileName && fileName.endsWith('.md')) {
     htmlData = renderToString(compiler(htmlData, { wrapper: null }));
   }
 
+  // Detect CJK characters and pick a font that has CJK glyphs.
+  // Roboto (the pdfmake default) has no CJK glyphs, so Japanese/Korean text
+  // would otherwise be garbled in the exported PDF. See issue #15624.
+  const selectedFont = detectLanguage(htmlData);
+
   // Transform html string into a JS object that lib pdfmake can understand.
   const pdfMakeObject = htmlToPdfmake(htmlData, {
     imagesByReference: true,
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
+    defaultStyles: {
+      th: { bold: true, fillColor: '', font: selectedFont },
+      td: { font: selectedFont },
+    },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
   pdfMakeObject.images = normalizePdfMakeImageReferences(
@@ -77,9 +81,13 @@ export const htmlToPdf = (
     resolvedEntityBaseUrl,
   );
 
-  return generatePdf(pdfMakeObject, false, isTiptapEnabled);
-};
+  pdfMakeObject.defaultStyle = {
+    ...(pdfMakeObject.defaultStyle ?? {}),
+    font: selectedFont,
+  };
 
+  return generatePdf(pdfMakeObject, false);
+};
 /**
  * Part to handle the embedded images of a file
  */
@@ -149,7 +157,6 @@ export const resolvePdfMakeEmbeddedImages = async (
  * @param templateName Name of the template used for PDF generation.
  * @param markingNames Markings of the outcome report.
  * @param fintelDesign Design of the template
- * @param isTiptapEnabled True if TipTap editor is enabled.
  * @returns PDF object ready to be downloaded.
  */
 export const htmlToPdfReport = async (
@@ -158,7 +165,6 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
-  isTiptapEnabled = false,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -175,11 +181,11 @@ export const htmlToPdfReport = async (
   }
 
   if (!logo) {
-    logo = await getBase64ImageFromURL(fileUri(logoWhite));
+    logo = await getBase64ImageFromURL(logoWhite);
   }
 
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
+  htmlData = setImagesWidth(htmlData);
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
@@ -282,5 +288,5 @@ export const htmlToPdfReport = async (
     pageBreakBefore: pdfPageBreaks,
   };
 
-  return generatePdf(docDefinition, false, isTiptapEnabled);
+  return generatePdf(docDefinition, false);
 };

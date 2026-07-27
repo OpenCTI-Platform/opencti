@@ -18,8 +18,9 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
 import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const ingestionRssCreationValidation = () => {
   const { t_i18n } = useFormatter();
@@ -57,18 +58,19 @@ interface IngestionRssAddInput {
   user_id: string | FieldOption;
   automatic_user?: boolean;
   confidence_level?: string;
+  ssl_verify?: boolean;
 }
 
 const IngestionRssCreationMutation = graphql`
   mutation IngestionRssCreationMutation($input: IngestionRssAddInput!) {
     ingestionRssAdd(input: $input) {
-      ...IngestionRssLine_node
+      ...IngestionRssLine_ingestionRss
     }
   }
 `;
 
 interface IngestionRssCreationProps {
-  paginationOptions?: PaginationOptions;
+  paginationOptions: IngestionRssLinesDataTableQuery$variables;
   handleClose?: () => void;
   ingestionRssData?: IngestionRssImportQuery$data['ingestionRssAddInputFromImport'];
   triggerButton?: boolean;
@@ -105,6 +107,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
       created_by_ref: values.created_by_ref?.value,
       object_marking_refs: values.object_marking_refs?.map((v) => v.value),
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+      ssl_verify: values.ssl_verify,
     };
     commit({
       variables: {
@@ -133,6 +136,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
       : [],
     user_id: '',
     automatic_user: true,
+    ssl_verify: true,
     current_state_date: ingestionRssData?.current_state_date ? new Date(ingestionRssData.current_state_date) : undefined,
     created_by_ref: undefined,
     object_marking_refs: ingestionRssData?.object_marking_refs
@@ -216,6 +220,13 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                 name="object_marking_refs"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t_i18n('Verify SSL certificate')}
+                containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>
                 <Button

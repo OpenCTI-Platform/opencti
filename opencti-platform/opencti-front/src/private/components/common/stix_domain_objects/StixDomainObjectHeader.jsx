@@ -557,7 +557,7 @@ const StixDomainObjectHeader = (props) => {
                 mutation={stixDomainObjectHeaderEditAuthorizedMembersMutation}
                 open={openAccessRestriction}
                 handleClose={handleCloseAccessRestriction}
-                isCanUseEnable={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type)}
+                customAccessRights={CAN_USE_ENTITY_TYPES.includes(stixDomainObject.entity_type) ? ['view', 'use', 'edit', 'admin'] : undefined}
                 canDeactivate={true}
               />
             )}

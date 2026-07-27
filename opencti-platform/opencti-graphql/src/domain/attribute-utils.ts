@@ -26,6 +26,8 @@ import {
 
 export const IDS_ATTRIBUTES = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
 
+export const KEYWORD_TERMS_ATTRIBUTES = ['contact_information'];
+
 export const INTERNAL_ATTRIBUTES = [
   // ID
   id.name,

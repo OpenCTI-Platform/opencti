@@ -7,7 +7,6 @@ import FintelTemplate from './fintel_templates/FintelTemplate';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
-import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
 import CustomViewEdition from './custom_views/CustomViewEdition';
 import CustomViewsSettings from './custom_views/CustomViewsSettings';
 import {
@@ -20,6 +19,8 @@ import {
   useSubTypeOutletContext,
 } from './SubTypeOutletContext';
 import SubType from './SubType';
+import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
+import SubTypeWorkflow from './SubTypeWorkflow';
 
 const SubTypeIndexRedirect = () => {
   const { tabs } = useSubTypeOutletContext();
@@ -44,12 +45,14 @@ const RootSubType = () => {
 
   if (!subTypeId) return <ErrorNotFound />;
 
+  const isDraftWorkspaceType = subTypeId === 'DraftWorkspace';
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path={SUBTYPE_TAB_WORKFLOW} element={<GlobalWorkflowSettingsCard />} />
+          <Route path={SUBTYPE_TAB_WORKFLOW} element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
           <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />

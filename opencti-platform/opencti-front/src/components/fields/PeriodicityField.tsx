@@ -60,7 +60,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
             if (setFieldValue) {
               // Generate ISO 8601 duration string
               // For weeks, use P format (e.g., P1W), for days use P format (e.g., P1D), for others use PT format (e.g., PT1H)
-              let durationString = null;
+              let durationString: string | null = null;
               if (value > 0) {
                 if (unit === 'W') {
                   durationString = `P${value}W`;

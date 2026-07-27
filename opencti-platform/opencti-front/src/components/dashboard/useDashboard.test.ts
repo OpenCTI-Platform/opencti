@@ -1,4 +1,4 @@
-import { assert, describe, it, expect, vi } from 'vitest';
+import { afterEach, assert, describe, it, expect, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import fileDownload from 'js-file-download';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
@@ -24,6 +24,10 @@ const fakeSerialize = (manifest: DashboardManifest) => manifest as unknown as st
 vi.mock('js-file-download');
 
 describe('useDashboard', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe('reading an empty dashboard', () => {
     it('returns empty data structures', () => {
       const entity = {
@@ -465,6 +469,7 @@ describe('useDashboard', () => {
 
   describe('using handleLayoutChange to edit the layout of the dashboard', () => {
     it('applies the layout change and calls onSave with noRefresh=true', () => {
+      vi.useFakeTimers();
       const existingWidget = {
         id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
         type: 'text',
@@ -505,6 +510,10 @@ describe('useDashboard', () => {
         x: 2,
         w: 7,
       }]));
+
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
       // Call twice to check noop when layouts are equal
       act(() => result.current.handleLayoutChange([{
         ...existingWidget.layout,

@@ -283,6 +283,7 @@ interface ExtendedPaletteOptions extends PaletteOptions {
   pagination: Partial<ExtendedColor>;
   ee: Partial<ExtendedColor>;
   ai: Partial<ExtendedColor>;
+  xtmhub?: Partial<ExtendedColor>;
   gradient: Partial<ExtendedColor>;
   secondary: Partial<ExtendedColor>;
   mode: PaletteMode;

@@ -3,6 +3,7 @@ import { resolveLink } from './Entity';
 import { truncate } from './String';
 import { isColorCloseToWhite } from './Colors';
 import { alpha } from '@mui/material/styles';
+import { shouldOpenInNewTabMouseEvent } from './domEvent';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -39,6 +40,18 @@ const toolbarOptions = {
       },
     },
   },
+};
+
+const handleNavigate = (event, navigate, link) => {
+  if (!link) return;
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (shouldOpenInNewTabMouseEvent(event)) {
+    window.open(link, '_blank');
+  } else {
+    navigate(link);
+  }
 };
 
 /**
@@ -409,7 +422,7 @@ export const horizontalBarsChartOptions = (
           const link = resolveLink(entityType);
           if (link) {
             const entityId = redirectionUtils[labelIndex].id;
-            navigate(`${link}/${entityId}`);
+            handleNavigate(event, navigate, `${link}/${entityId}`);
           }
         }
       },
@@ -455,7 +468,7 @@ export const horizontalBarsChartOptions = (
                 const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
                 if (link) {
                   const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
-                  navigate(`${link}/${entityId}`);
+                  handleNavigate(event, navigate, `${link}/${entityId}`);
                 }
               }
             } else {
@@ -465,7 +478,7 @@ export const horizontalBarsChartOptions = (
               const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
               if (link) {
                 const entityId = redirectionUtils[dataPointIndex].id;
-                navigate(`${link}/${entityId}`);
+                handleNavigate(event, navigate, `${link}/${entityId}`);
               }
             }
           }

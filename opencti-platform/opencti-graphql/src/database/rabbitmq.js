@@ -300,9 +300,12 @@ const publishWithConfirm = (channel, exchangeName, routingKey, message) => {
         });
       }
     } catch (err) {
-      // Channel might have been closed between getting it and publishing
-      // Reset channel and reject so caller can retry
-      persistentChannel = null;
+      // Channel might have been closed between getting it and publishing.
+      // Do not reset persistentChannel here: the channel 'error'/'close' handlers
+      // are the single source of truth that invalidate it and trigger a clean
+      // reconnection. Nulling it here (without closing the connection) races with
+      // those handlers and can leave the publisher stuck retrying on a zombie state.
+      // Just reject so the caller can retry.
       reject(err);
     }
   });

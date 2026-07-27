@@ -1,8 +1,7 @@
 import * as R from 'ramda';
-import { elCount, elPaginate, type PaginateOpts } from '../database/engine';
-import conf, { booleanConf } from '../config/conf';
+import { elCount, elPaginate, type PaginateOpts, elCardinalityCount } from '../database/engine';
 import { distributionHistory, timeSeriesHistory } from '../database/middleware';
-import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { OrderingMode, type QueryAuditsArgs, type QueryLogsArgs } from '../generated/graphql';
@@ -66,10 +65,17 @@ export const findAuditById = async (context: AuthContext, user: AuthUser, auditI
 
 export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) => {
   const finalArgs = { ...args, historyFiltering: true };
-  return {
-    count: elCount(context, user, READ_INDEX_HISTORY, finalArgs),
-    total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', finalArgs)),
-  };
+  if (args.unique) {
+    return {
+      count: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, finalArgs),
+      total: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, R.dissoc('endDate', finalArgs)),
+    };
+  } else {
+    return {
+      count: elCount(context, user, READ_INDEX_HISTORY, finalArgs),
+      total: elCount(context, user, READ_INDEX_HISTORY, R.dissoc('endDate', finalArgs)),
+    };
+  }
 };
 
 export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
@@ -85,17 +91,4 @@ export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
   return distributionHistory(context, user, { ...args, historyFiltering: true });
-};
-
-export const logsWorkerConfig = () => {
-  const elasticSearchUrl = conf.get('elasticsearch:url');
-  return {
-    elasticsearch_url: Array.isArray(elasticSearchUrl) ? elasticSearchUrl : [elasticSearchUrl],
-    elasticsearch_proxy: conf.get('elasticsearch:proxy') || null,
-    elasticsearch_index: INDEX_HISTORY,
-    elasticsearch_username: conf.get('elasticsearch:username') || null,
-    elasticsearch_password: conf.get('elasticsearch:password') || null,
-    elasticsearch_api_key: conf.get('elasticsearch:api_key') || null,
-    elasticsearch_ssl_reject_unauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
-  };
 };

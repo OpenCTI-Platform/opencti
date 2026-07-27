@@ -101,6 +101,7 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
             { name: 'message', label: 'Notification message', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
             { name: 'instance_id', label: 'Notification related instance', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
             { name: 'operation', label: 'Notification operation', type: 'string', format: 'enum', values: TRIGGER_EVENT_TYPES_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+            { name: 'entity_type', label: 'Notification entity type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
           ],
         },
       ],

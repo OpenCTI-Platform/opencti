@@ -50,12 +50,22 @@ interface AuthorizedMembersFieldProps
   enableAccesses?: boolean;
   hideInfo?: boolean;
   adminDefault?: boolean;
-  dynamicKeysForPlaybooks?: boolean;
-  isCanUseEnable?: boolean;
+  withDynamicKeys?: boolean;
+  allowDynamicGroupsRestriction?: boolean;
+  dynamicContextTypeLabel?: string;
+  dynamicBundleTypeLabel?: string;
+  dynamicAuthorOrgLabel?: string;
+  includeBundleOrganizationDynamicOption?: boolean;
+  dynamicGroupsRestrictionSupportedValues?: string[];
+  customAccessRights?: AccessRight[];
   customInfoMessage?: string;
   style?: CSSProperties;
   isDraftEntity?: boolean;
+  disabled?: boolean;
+  disableOwnerAccessRightsEdition?: boolean;
 }
+
+const DYNAMIC_GROUPS_RESTRICTION_SUPPORTED = ['AUTHOR', 'CREATORS'];
 
 // Type of data for internal form, not exposed to others.
 interface AuthorizedMembersFieldInternalValue {
@@ -91,11 +101,19 @@ const AuthorizedMembersField = ({
   enableAccesses = false,
   hideInfo = false,
   adminDefault = false,
-  dynamicKeysForPlaybooks = false,
-  isCanUseEnable = false,
+  withDynamicKeys = false,
+  allowDynamicGroupsRestriction = false,
+  dynamicContextTypeLabel = 'Dynamic from context',
+  dynamicBundleTypeLabel = 'Dynamic from bundle',
+  dynamicAuthorOrgLabel = 'Author (organization)',
+  includeBundleOrganizationDynamicOption = true,
+  dynamicGroupsRestrictionSupportedValues = DYNAMIC_GROUPS_RESTRICTION_SUPPORTED,
+  customAccessRights = ['view', 'edit', 'admin'],
   customInfoMessage,
   style,
   isDraftEntity,
+  disabled = false,
+  disableOwnerAccessRightsEdition = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -133,19 +151,25 @@ const AuthorizedMembersField = ({
     accessRight: accessForCreator?.accessRight ?? 'none',
   };
 
-  let accessRights = [
-    { label: t_i18n('can view'), value: 'view' },
-    { label: t_i18n('can edit'), value: 'edit' },
-    { label: t_i18n('can manage'), value: 'admin' },
-  ];
-  if (isCanUseEnable && featureFlagAccessRestriction) {
-    accessRights = [
-      { label: t_i18n('can view'), value: 'view' },
-      { label: t_i18n('can use'), value: 'use' },
-      { label: t_i18n('can edit'), value: 'edit' },
-      { label: t_i18n('can manage'), value: 'admin' },
-    ];
-  }
+  const accessRightLabels: Record<AccessRight, string> = {
+    none: t_i18n('no access'),
+    view: t_i18n('can view'),
+    use: t_i18n('can use'),
+    edit: t_i18n('can edit'),
+    admin: t_i18n('can manage'),
+  };
+
+  const buildAccessRights = (): { label: string; value: string }[] => {
+    // If 'use' is requested but 'access restriction' feature flag is disabled, filter it out
+    const rights = customAccessRights.includes('use') && !featureFlagAccessRestriction
+      ? customAccessRights.filter((r) => r !== 'use')
+      : customAccessRights;
+    return rights.map((right) => ({
+      label: accessRightLabels[right],
+      value: right,
+    }));
+  };
+  const accessRights = buildAccessRights();
 
   // Initialize the field with owner and/or current on enableAccesses truthly.
   useEffect(() => {
@@ -354,161 +378,182 @@ const AuthorizedMembersField = ({
           dirty,
           resetForm,
           setFieldValue: setField,
-        }) => (
-          <>
-            {(!hideInfo && !!accessInfoMessage) && (
-              <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
-            )}
-            {isDisabledInDraft && (
-              <Alert style={{ marginTop: 15 }} severity="warning">
-                {t_i18n('Not available in draft')}
-              </Alert>
-            )}
-            {canDeactivate && (
-              <Field
-                component={SwitchField}
-                containerstyle={{
-                  display: 'inline-block',
-                  marginTop: 15,
-                  paddingLeft: 10,
-                }}
-                type="checkbox"
-                name="applyAccesses"
-                label={t_i18n('Activate access restriction')}
-                disabled={isDisabledInDraft}
-                onChange={(_: string, val: string) => {
-                  changeApplyAccesses(val === 'true', resetForm, setField);
-                }}
-              />
-            )}
-            {applyAccesses && (
-              <Alert
-                sx={{
-                  mt: '16px',
-                  width: '100%',
-                  paddingBottom: '16px',
-                  '.MuiAlert-message': { width: '100%' },
-                }}
-                severity="info"
-                icon={false}
-                variant="outlined"
-              >
-                <AlertTitle>{t_i18n('Add new specific access')}</AlertTitle>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 16,
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <ObjectMembersField
-                      name="newAccessMember"
-                      disabled={!values.applyAccesses}
-                      dynamicKeysForPlaybooks={dynamicKeysForPlaybooks}
-                    />
-                    {value?.find(
-                      (a) => a.value === values.newAccessMember?.value,
-                    ) && (
-                      <FormHelperText style={{ position: 'absolute' }}>
-                        {t_i18n('Access already granted')}
-                      </FormHelperText>
-                    )}
-                  </div>
-                  <Field
-                    name="newAccessRight"
-                    component={SelectField}
-                    label={t_i18n('Access right')}
-                    style={{ m: 1, minWidth: 120 }}
-                    size="small"
-                    disabled={!values.applyAccesses}
-                  >
-                    {accessRights.map((accessRight) => (
-                      <MenuItem
-                        value={accessRight.value}
-                        key={accessRight.value}
-                      >
-                        {accessRight.label}
-                      </MenuItem>
-                    ))}
-                  </Field>
-                  <Button
-                    aria-label="More"
-                    onClick={() => handleSubmit()}
-                    disabled={
-                      !dirty
-                      || !isValid
-                      || doesNewMemberAlreadyExist(values)
-                      || !values.applyAccesses
-                    }
-                    style={{ marginTop: 10 }}
-                  >
-                    {t_i18n('Add')}
-                  </Button>
-                </div>
-                {values.newAccessMember && values.newAccessMember.type === 'Organization' && (
-                  <div style={fieldSpacingContainerStyle}>
-                    <Accordion>
-                      <AccordionSummary id="accordion-panel">
-                        <Typography>{t_i18n('Advanced options')}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails style={{ padding: 0 }}>
-                        <Alert severity="info" style={{ fontSize: 11 }}>
-                          {t_i18n('Restrict access by selecting groups to intersect with the organization\'s access rights')}
-                        </Alert>
-                        <div style={{ padding: '8px 16px 16px 16px' }}>
-                          <ObjectMembersField
-                            name="groupsRestriction"
-                            label={t_i18n('Groups restriction')}
-                            disabled={!values.applyAccesses}
-                            entityTypes={['Group']}
-                            multiple
-                          />
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
-                  </div>
-                )}
-              </Alert>
-            )}
-            {applyAccesses && (
-              <>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontSize: 14,
-                    fontWeight: 500,
-                    mt: '16px',
-                    mb: 0,
-                  }}
-                >
-                  {t_i18n('Current specific accesses')}
-                </Typography>
+        }) => {
+          const shouldShowGroupsRestriction = (() => {
+            if (!values.newAccessMember) {
+              return false;
+            }
+            if (values.newAccessMember.type === 'Organization') {
+              return true;
+            }
+            if (!allowDynamicGroupsRestriction) {
+              return false;
+            }
+            return dynamicGroupsRestrictionSupportedValues.includes(values.newAccessMember.value);
+          })();
 
-                <List sx={{ pb: 0 }}>
-                  {showAllMembersLine && (
-                    <AuthorizedMembersFieldListItem
-                      authorizedMember={allMembersOption}
-                      name="allAccessRight"
-                      accessRights={accessRights}
-                      ownerId={owner?.id}
-                      onChange={changeAllMembersAccess}
-                    />
+          return (
+            <>
+              {(!hideInfo && !!accessInfoMessage) && (
+                <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
+              )}
+              {isDisabledInDraft && (
+                <Alert style={{ marginTop: 15 }} severity="warning">
+                  {t_i18n('Not available in draft')}
+                </Alert>
+              )}
+              {canDeactivate && (
+                <Field
+                  component={SwitchField}
+                  containerstyle={{
+                    display: 'inline-block',
+                    marginTop: 15,
+                    paddingLeft: 10,
+                  }}
+                  type="checkbox"
+                  name="applyAccesses"
+                  label={t_i18n('Activate access restriction')}
+                  disabled={isDisabledInDraft || disabled}
+                  onChange={(_: string, val: string) => {
+                    changeApplyAccesses(val === 'true', resetForm, setField);
+                  }}
+                />
+              )}
+              {applyAccesses && !disabled && (
+                <Alert
+                  sx={{
+                    mt: '16px',
+                    width: '100%',
+                    paddingBottom: '16px',
+                    '.MuiAlert-message': { width: '100%' },
+                  }}
+                  severity="info"
+                  icon={false}
+                  variant="outlined"
+                >
+                  <AlertTitle>{t_i18n('Add new specific access')}</AlertTitle>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 16,
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <ObjectMembersField
+                        name="newAccessMember"
+                        disabled={!values.applyAccesses}
+                        withDynamicKeys={withDynamicKeys}
+                        dynamicContextTypeLabel={dynamicContextTypeLabel}
+                        dynamicBundleTypeLabel={dynamicBundleTypeLabel}
+                        dynamicAuthorOrgLabel={dynamicAuthorOrgLabel}
+                        includeBundleOrganizationDynamicOption={includeBundleOrganizationDynamicOption}
+                      />
+                      {value?.find(
+                        (a) => a.value === values.newAccessMember?.value,
+                      ) && (
+                        <FormHelperText style={{ position: 'absolute' }}>
+                          {t_i18n('Access already granted')}
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <Field
+                      name="newAccessRight"
+                      component={SelectField}
+                      label={t_i18n('Access right')}
+                      style={{ m: 1, minWidth: 120 }}
+                      size="small"
+                      disabled={!values.applyAccesses}
+                    >
+                      {accessRights.map((accessRight) => (
+                        <MenuItem
+                          value={accessRight.value}
+                          key={accessRight.value}
+                        >
+                          {accessRight.label}
+                        </MenuItem>
+                      ))}
+                    </Field>
+                    <Button
+                      aria-label="More"
+                      onClick={() => handleSubmit()}
+                      disabled={
+                        !dirty
+                        || !isValid
+                        || doesNewMemberAlreadyExist(values)
+                        || !values.applyAccesses
+                      }
+                      style={{ marginTop: 10 }}
+                    >
+                      {t_i18n('Add')}
+                    </Button>
+                  </div>
+                  {shouldShowGroupsRestriction && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails style={{ padding: 0 }}>
+                          <Alert severity="info" style={{ fontSize: 11 }}>
+                            {t_i18n('Restrict access by selecting groups to intersect with the selected member\'s access rights')}
+                          </Alert>
+                          <div style={{ padding: '8px 16px 16px 16px' }}>
+                            <ObjectMembersField
+                              name="groupsRestriction"
+                              label={t_i18n('Groups restriction')}
+                              disabled={!values.applyAccesses}
+                              entityTypes={['Group']}
+                              multiple
+                            />
+                          </div>
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
                   )}
-                  {showCreatorLine && (
-                    <AuthorizedMembersFieldListItem
-                      authorizedMember={creatorOption}
-                      name="creatorAccessRight"
-                      accessRights={accessRights}
-                      ownerId={owner?.id}
-                      onChange={changeCreatorAccess}
-                    />
-                  )}
-                </List>
-              </>
-            )}
-          </>
-        )}
+                </Alert>
+              )}
+              {applyAccesses && (
+                <>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      mt: '16px',
+                      mb: 0,
+                    }}
+                  >
+                    {t_i18n('Current specific accesses')}
+                  </Typography>
+
+                  <List sx={{ pb: 0 }}>
+                    {showAllMembersLine && (
+                      <AuthorizedMembersFieldListItem
+                        authorizedMember={allMembersOption}
+                        name="allAccessRight"
+                        accessRights={accessRights}
+                        ownerId={owner?.id}
+                        onChange={changeAllMembersAccess}
+                        disabled={disabled}
+                      />
+                    )}
+                    {showCreatorLine && (
+                      <AuthorizedMembersFieldListItem
+                        authorizedMember={creatorOption}
+                        name="creatorAccessRight"
+                        accessRights={accessRights}
+                        ownerId={owner?.id}
+                        onChange={changeCreatorAccess}
+                        disabled={disabled}
+                      />
+                    )}
+                  </List>
+                </>
+              )}
+            </>
+          );
+        }}
       </Formik>
       {applyAccesses && (
         <FieldArray
@@ -519,8 +564,8 @@ const AuthorizedMembersField = ({
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (
                     !isGenericOption(authorizedMember.value)
-                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
-                    ) ? (
+                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID)
+                      ? (
                           <AuthorizedMembersFieldListItem
                             key={index}
                             authorizedMember={authorizedMember}
@@ -528,8 +573,10 @@ const AuthorizedMembersField = ({
                             accessRights={accessRights}
                             ownerId={owner?.id}
                             onRemove={() => arrayHelpers.remove(index)}
+                            disabled={disableOwnerAccessRightsEdition && authorizedMember.value === owner?.id ? true : disabled}
                           />
-                        ) : null))}
+                        )
+                      : null))}
                 </List>
               )}
             </>

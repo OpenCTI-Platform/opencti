@@ -64,4 +64,4 @@ roles on the platform:
 
 !!! note "Clustering"
     
-    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](advanced/clustering.md).

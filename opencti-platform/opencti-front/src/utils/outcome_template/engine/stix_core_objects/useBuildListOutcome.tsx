@@ -1,8 +1,8 @@
-import { stixCoreObjectsListQuery } from '@components/common/stix_core_objects/StixCoreObjectsList';
+import { stixCoreObjectsListQuery } from '../../../../private/components/common/stix_core_objects/StixCoreObjectsList';
 import { StixCoreObjectsListQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsListQuery.graphql';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { stixRelationshipsListQuery } from '@components/common/stix_relationships/StixRelationshipsList';
+import { stixRelationshipsListQuery } from '../../../../private/components/common/stix_relationships/StixRelationshipsList';
 import { StixRelationshipsListQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';

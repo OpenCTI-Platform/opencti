@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { type StreamProcessor } from '../database/stream/stream-utils';
+import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -30,6 +30,7 @@ import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
+import { buildFilterEventContext } from './playbookManager/playbookManagerUtils';
 import { DigestPeriod, type FilterGroup, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
@@ -42,6 +43,13 @@ const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
 const NOTIFICATION_MANAGER_NAME = 'notification_manager';
 export const EVENT_NOTIFICATION_VERSION = '1';
+// Hard cap on the cumulative byte size of the notification events aggregated into a single digest. The
+// notification stream can hold a very large number of events (e.g. a broad live trigger during a massive
+// ingest) and individual events vary a lot in size, so the digest is bounded by the total bytes retained
+// rather than by a raw event count. Beyond this size the digest content is truncated and a warning is
+// logged. Configurable (in bytes) through notification_manager:max_digest_content_size.
+export const DEFAULT_MAX_DIGEST_CONTENT_SIZE = 500 * 1024 * 1024; // 500 MB
+const MAX_DIGEST_CONTENT_SIZE = conf.get('notification_manager:max_digest_content_size') || DEFAULT_MAX_DIGEST_CONTENT_SIZE;
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
@@ -175,11 +183,15 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
   // nativeTriggers
   for (let index = 0; index < platformUsers.length; index += 1) {
     const user = platformUsers[index];
-    notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    if (isAssigneeAutoTriggerEnabled) {
+      notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
+    }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
     if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
       notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
@@ -483,6 +495,8 @@ export const buildTargetEvents = async (
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
+    // Build event context for has_changed/not_has_changed filter evaluation
+    const eventContext = buildFilterEventContext(streamEvent.data as UpdateEvent);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -494,8 +508,8 @@ export const buildTargetEvents = async (
       const userHasAccessToUpdateEvent = await isUserCanAccessStreamUpdateEvent(user, streamEvent.data);
       if (userHasAccessToUpdateEvent) {
         // Check if the event matched/matches the trigger filters and the user rights
-        const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters);
-        const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
+        const isPreviousMatch = await isStixMatchFilterGroup(userContext, user, previous, finalFilters, eventContext);
+        const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters, eventContext);
         // Depending on the previous visibility, the displayed event type will be different
         if (!useSideEventMatching) { // Case classic live trigger & instance trigger direct events: user should be notified of the direct event
           const translatedType = eventTypeTranslater(isPreviousMatch, isCurrentlyMatch, eventType);
@@ -532,7 +546,10 @@ export const buildTargetEvents = async (
       const user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       const userContext = { ...context, user_inside_platform_organization };
       const notificationUser = convertToNotificationUser(user, notifiers);
-      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters);
+      // For creation events, pass isCreation context so has_changed evaluates to true when field is non-null
+      // For delete events, no eventContext: has_changed evaluates to false, not_has_changed to true
+      const eventContext = eventType === EVENT_TYPE_CREATE ? { changedAttributes: [], isCreation: true } : undefined;
+      const isCurrentlyMatch = await isStixMatchFilterGroup(userContext, user, data, finalFilters, eventContext);
       if (isCurrentlyMatch) {
         if (!useSideEventMatching) { // classic live trigger or instance trigger with direct event
           const message = await generateNotificationMessageForInstance(userContext, user, data);
@@ -603,7 +620,50 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
   }
 };
 
-const handleDigestNotifications = async (context: AuthContext) => {
+interface DigestContentAccumulator { content: Array<KnowledgeNotificationEvent>; byteSize: number; truncated: boolean }
+// Accumulate the digest-matching events of a notification batch into `acc`, bounded by the byte budget.
+// Returns false to stop the range iteration once the cumulative byte budget is reached.
+const collectDigestBatch = (
+  acc: DigestContentAccumulator,
+  events: Array<SizedNotifEvent<KnowledgeNotificationEvent>>,
+  triggerIds: Set<string>,
+  maxContentByteSize: number,
+): boolean => {
+  for (let i = 0; i < events.length; i += 1) {
+    const { event: notification, byteSize: notificationSize } = events[i];
+    if (triggerIds.has(notification.notification_id)) {
+      acc.content.push(notification);
+      acc.byteSize += notificationSize;
+      if (acc.byteSize >= maxContentByteSize) {
+        acc.truncated = true;
+        return false; // memory threshold reached, stop reading the range
+      }
+    }
+  }
+  return true;
+};
+
+// Read the notification events of the [fromDate, toDate] range that belong to the given digest triggers.
+// The range is consumed in batches and "only" the matching events are kept in memory (instead of loading the
+// whole range). The retained content is bounded by its cumulative byte size (events may vary a lot in size) to
+// protect against out-of-memory on huge ranges.
+export const collectDigestContent = async (
+  fromDate: Date,
+  toDate: Date,
+  triggerIds: Array<string>,
+  maxContentByteSize: number = MAX_DIGEST_CONTENT_SIZE,
+): Promise<DigestContentAccumulator> => {
+  const acc: DigestContentAccumulator = { content: [], byteSize: 0, truncated: false };
+  const triggerIdsSet = new Set(triggerIds);
+  await fetchRangeNotifications<KnowledgeNotificationEvent>(
+    fromDate,
+    toDate,
+    (events) => collectDigestBatch(acc, events, triggerIdsSet, maxContentByteSize),
+  );
+  return acc;
+};
+
+export const handleDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   // Get digest that need to be executed
   const digestNotifications = await getDigestNotifications(context, baseDate);
@@ -612,8 +672,11 @@ const handleDigestNotifications = async (context: AuthContext) => {
     const { trigger, users } = digestNotifications[index];
     const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
     const fromDate = baseDate.clone().subtract(1, period).toDate();
-    const rangeNotifications = await fetchRangeNotifications<KnowledgeNotificationEvent>(fromDate, baseDate.toDate());
-    const digestContent = rangeNotifications.filter((n) => triggerIds.includes(n.notification_id));
+    // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
+    const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
+    if (truncated) {
+      logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
+    }
     if (digestContent.length > 0) {
       // Range of results must filtered to keep only data related to the digest
       // And related to the users participating to the digest

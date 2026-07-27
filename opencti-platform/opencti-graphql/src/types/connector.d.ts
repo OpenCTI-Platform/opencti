@@ -24,6 +24,10 @@ export interface BasicStoreEntityConnector extends StoreEntity {
   connector_info: ConnectorInfo;
   playbook_compatible: boolean;
   xtm_one_intent: string | null;
+  // region composer (set only on composer-managed connectors)
+  catalog_id?: string;
+  manager_contract_image?: string;
+  // endregion
 }
 export interface BasicStoreEntityConnectorManager extends BasicStoreEntity {
   public_key: string;

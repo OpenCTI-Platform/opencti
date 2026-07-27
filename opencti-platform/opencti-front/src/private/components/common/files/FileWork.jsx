@@ -184,27 +184,23 @@ const FileWorkComponent = (props) => {
                 />
                 {!!work.draft_context && !draftContext && (
                   <Tooltip title={t('Navigate to draft')}>
-                    <span>
-                      <IconButton
-                        color="primary"
-                        onClick={() => navigateToDraft(work.draft_context)}
-                        size="small"
-                      >
-                        <ArchitectureOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
+                    <IconButton
+                      color="primary"
+                      onClick={() => navigateToDraft(work.draft_context)}
+                      size="small"
+                    >
+                      <ArchitectureOutlined fontSize="small" />
+                    </IconButton>
                   </Tooltip>
                 )}
                 <Tooltip title={!isCurrentContextWork ? t('Not available in draft') : t('Delete')}>
-                  <span>
-                    <IconButton
-                      onClick={() => isCurrentContextWork && handleDelete(work.id)}
-                      disabled={work.status === 'deleting'}
-                      size="small"
-                    >
-                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
-                    </IconButton>
-                  </span>
+                  <IconButton
+                    onClick={() => isCurrentContextWork && handleDelete(work.id)}
+                    disabled={work.status === 'deleting'}
+                    size="small"
+                  >
+                    <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
+                  </IconButton>
                 </Tooltip>
               </ListItem>
             </Tooltip>

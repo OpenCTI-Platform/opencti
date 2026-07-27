@@ -113,7 +113,7 @@ import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { refang } from '../utils/refang';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
   isBooleanAttribute,
@@ -189,7 +189,7 @@ import type {
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
-import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
+import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
@@ -220,6 +220,7 @@ const ES_INDEX_REPLICA_NUMBER: number = conf.get('elasticsearch:number_of_replic
 
 const ES_PRIMARY_SHARD_SIZE: string = conf.get('elasticsearch:max_primary_shard_size') || '50gb';
 const ES_MAX_DOCS: number = conf.get('elasticsearch:max_docs') || 75000000;
+const ES_CARDINALITY_THRESHOLD = 40000;
 
 const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
@@ -279,7 +280,7 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
   return !UNIMPACTED_ENTITIES_ROLE.includes(role);
 };
 
-let engine: ElkClient | OpenClient;
+export let engine: ElkClient | OpenClient;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
 
@@ -290,7 +291,7 @@ export const isAttachmentProcessorEnabled = () => {
 // The OpenSearch/ELK Body Parser (oebp)
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
-const oebp = (queryResult: any): any => {
+export const oebp = (queryResult: any): any => {
   if (engine instanceof ElkClient) {
     return queryResult;
   }
@@ -528,21 +529,55 @@ const elExecuteWithAbortSignal = async (
 const BULK_MAX_RETRIES = 5;
 const BULK_INITIAL_DELAY_MS = 500;
 
-const isTransitoryError = (error: any): boolean => {
-  const statusCode = error?.statusCode ?? error?.meta?.statusCode ?? error?.status;
+const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
+  const values = [
+    error?.[fieldName],
+    error?.cause?.[fieldName],
+    error?.cause?.meta?.body?.error?.[fieldName],
+    error?.originalError?.[fieldName],
+    error?.meta?.body?.error?.[fieldName],
+    error?.extensions?.data?.cause?.[fieldName],
+    error?.extensions?.data?.cause?.meta?.body?.error?.[fieldName],
+    error?.extensions?.exception?.[fieldName],
+  ];
+
+  return values
+    .filter((value): value is string => typeof value === 'string' && value.length > 0);
+};
+
+export const isTransitoryError = (error: any): boolean => {
+  const statusCode = error?.statusCode
+    ?? error?.meta?.statusCode
+    ?? error?.status
+    ?? error?.cause?.statusCode
+    ?? error?.cause?.meta?.statusCode
+    ?? error?.extensions?.data?.cause?.statusCode
+    ?? error?.extensions?.data?.cause?.meta?.statusCode;
   // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
   if (statusCode === 429 || statusCode === 503) {
     return true;
   }
-  const errorCode = error?.code ?? error?.cause?.code;
+
+  const errorCode = error?.code
+    ?? error?.cause?.code
+    ?? error?.originalError?.code
+    ?? error?.extensions?.data?.cause?.code;
   // All these error codes are commonly associated with transient issues that can occur in network communication
   // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
   if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
     return true;
   }
-  const errorMessage = error?.message ?? '';
+
+  const errorText = [
+    ...collectErrorFieldValues(error, 'message'),
+    ...collectErrorFieldValues(error, 'reason'),
+    ...collectErrorFieldValues(error, 'type'),
+    ...collectErrorFieldValues(error, 'name'),
+    ...collectErrorFieldValues(error, 'stack'),
+  ].join(' ');
+
   // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
-  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorText)) {
     return true;
   }
   return false;
@@ -2054,10 +2089,12 @@ const BASE_SEARCH_ATTRIBUTES = [
   'event_type',
   'event_scope',
   'context_data.message',
+  'context_data.search',
   // Add all other attributes
   'aliases',
   'x_opencti_aliases',
   'persona_name',
+  'source_name',
   'roles',
   'objective',
   'content',
@@ -2165,26 +2202,57 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const searchPhrase = R.uniq(querySearch).join(' ');
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|https?:/g, '')));
   if (args.historyFiltering) {
-    pushAll(shouldSearch, cleanExactSearch.map((ex) => [{
-      nested: {
-        path: 'context_data.history_changes',
-        query: {
-          bool: {
-            must: [
-              {
-                multi_match: {
-                  type: 'phrase',
-                  query: ex,
-                  lenient: true,
-                  fields: BASE_SEARCH_HISTORY,
-                },
+    pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+      {
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              multi_match: {
+                type: 'phrase',
+                query: ex,
+                lenient: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
               },
-            ],
+            },
+          ],
+        },
+      },
+      {
+        nested: {
+          path: 'context_data.history_changes',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_HISTORY,
+                  },
+                },
+              ],
+            },
           },
         },
       },
-    }]).flat());
+    ]).flat());
     if (searchPhrase) {
+      shouldSearch.push({
+        bool: {
+          must: [
+            { terms: { 'entity_type.keyword': [ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY] } },
+            {
+              query_string: {
+                query: searchPhrase,
+                analyze_wildcard: true,
+                fields: BASE_SEARCH_ATTRIBUTES,
+              },
+            },
+          ],
+        },
+      });
       shouldSearch.push({
         nested: {
           path: 'context_data.history_changes',
@@ -2564,7 +2632,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
     } else {
       // case where we would like to build a terms query
       const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
-        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || IDS_ATTRIBUTES.includes(k));
+        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || IDS_ATTRIBUTES.includes(k) || KEYWORD_TERMS_ATTRIBUTES.includes(k));
       if (isTermsQuery) {
         if (operator === 'eq') {
           for (let i = 0; i < arrayKeys.length; i += 1) {
@@ -3391,6 +3459,35 @@ export const elRawCount = async (query: any): Promise<number> => {
       return oebp(data).count;
     });
 };
+
+export const elCardinalityCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[] | undefined,
+  field: string,
+  options = {},
+): Promise<number> => {
+  const cardinalityAggs: any = {
+    cardinality_count: {
+      cardinality: {
+        field: `${field}.keyword`,
+        precision_threshold: ES_CARDINALITY_THRESHOLD,
+      },
+    },
+  };
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.aggs = cardinalityAggs;
+  const cardinalityQuery = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  const searchType = `Aggregations (${field})`;
+  const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
+    throw DatabaseError('Cardinality computing fail', { cause: err, cardinalityQuery });
+  });
+  return cardinalityData.aggregations.cardinality_count.value;
+};
+
 export const elCount = async (
   context: AuthContext,
   user: AuthUser,
@@ -3411,6 +3508,8 @@ export const elHistogramCount = async (
   user: AuthUser,
   indexName: string | string[] | undefined,
   options: HistogramCountOpts = {},
+  unique: boolean = false,
+  countField: string = '',
 ) => {
   const { interval, field, types = null } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
@@ -3434,6 +3533,21 @@ export const elHistogramCount = async (
     default:
       throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
   }
+  const uniqueAggregation = {
+    unique: {
+      cardinality: {
+        field: `${countField}.keyword`,
+      },
+    },
+  };
+  const sumAggregation = {
+    weight: {
+      sum: {
+        field: 'i_inference_weight',
+        missing: 1,
+      },
+    },
+  };
   body.aggs = {
     count_over_time: {
       date_histogram: {
@@ -3443,14 +3557,7 @@ export const elHistogramCount = async (
         format: dateFormat,
         keyed: true,
       },
-      aggs: {
-        weight: {
-          sum: {
-            field: 'i_inference_weight',
-            missing: 1,
-          },
-        },
-      },
+      aggs: unique ? uniqueAggregation : sumAggregation,
     },
   };
   const query = {
@@ -3462,7 +3569,7 @@ export const elHistogramCount = async (
   return elRawSearch(context, user, types, query).then((data) => {
     const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b).weight.value }), dataToPairs);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
   });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
@@ -3479,12 +3586,15 @@ export const elAggregationCount = async (
 ): Promise<{ label: string; value: any; count: number }[]> => {
   const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
+  const queryField = buildFieldForQuery(field);
+  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
+  const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {
       terms: {
-        field: buildFieldForQuery(field),
+        field: queryField,
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -3497,6 +3607,9 @@ export const elAggregationCount = async (
       },
     },
   };
+  if (isKeywordField) {
+    body.aggs.genres.terms.missing = 'unknown';
+  }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
@@ -4161,7 +4274,7 @@ export const elRemoveRelationConnection = async (
                   ctx._source[params.rel_key].remove(cleanupIndex);
                 }
             }
-          }  
+          }
           `;
           // Only impact the updated at on the from side of the ref relationship
           const fromSide = side === 'from';
@@ -4310,13 +4423,13 @@ export const elRemoveDraftIdFromElements = async (
   elementsIds: string[],
 ) => {
   const revertDraftIdSource = `
-    if (ctx._source.containsKey('draft_ids')) { 
+    if (ctx._source.containsKey('draft_ids')) {
       for (int i = 0; i < ctx._source.draft_ids.length; ++i){
         if(ctx._source.draft_ids[i] == params.draftId){
           ctx._source.draft_ids.remove(i);
         }
       }
-    }  
+    }
   `;
 
   if (elementsIds.length > 0) {
@@ -4366,15 +4479,15 @@ export const copyLiveElementToDraft = async (
   const addDraftIdScript = {
     script: {
       source: `
-        if (ctx._source.containsKey('draft_ids')) { 
+        if (ctx._source.containsKey('draft_ids')) {
           for (int i=ctx._source['draft_ids'].length-1; i>=0; i--) {
             if (!params.allDraftIds.contains(ctx._source['draft_ids'][i])) {
               ctx._source['draft_ids'].remove(i);
             }
           }
-          ctx._source['draft_ids'].add('${draftContext}'); 
-        } 
-        else 
+          ctx._source['draft_ids'].add('${draftContext}');
+        }
+        else
           {ctx._source.draft_ids = ['${draftContext}']}
       `,
       params: { allDraftIds },
@@ -4721,7 +4834,7 @@ export const elIndexElements = async (
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         if (isStixRefUnidirectionalRelationship(t.relation)) {
           // don't try to add unidirectional ref rel if already present (issue#7535)
-          script += `for(refId in params['${field}']) { 
+          script += `for(refId in params['${field}']) {
           if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;

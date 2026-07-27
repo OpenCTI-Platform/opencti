@@ -12,6 +12,8 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader
 import { interval } from 'rxjs';
 import ConnectorWorkLine from '@components/data/connectors/ConnectorWorkLine';
 import Paper from '@mui/material/Paper';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContentText from '@mui/material/DialogContentText';
 import ImportFilesContent from '@components/data/import/ImportFilesContent';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -24,9 +26,11 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
+import useDraftCommentPopup from './useDraftCommentPopup';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
-import useHelper from '../../../utils/hooks/useHelper';
+import Dialog from '@common/dialog/Dialog';
+import Button from '../../../components/common/button/Button';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -100,6 +104,12 @@ export const draftRootFragment = graphql`
         source
       }
     }
+    workflowInstance {
+      lastHistoryEntry {
+        comment
+        timestamp
+      }
+    }
   }
 `;
 
@@ -110,7 +120,6 @@ interface RootDraftComponentProps {
 }
 
 const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
-  const { isFeatureEnable } = useHelper();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -129,6 +138,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
     validationWork,
   } = draft;
   const isDraftReadOnly = draft_status !== 'open';
+
+  const { showCommentPopup, handleClose } = useDraftCommentPopup(draftId, draft.workflowInstance?.lastHistoryEntry);
 
   // switch to draft
   const { enterDraft } = useSwitchDraft();
@@ -165,6 +176,21 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const basePath = `/dashboard/data/import/draft/${draftId}`;
   return (
     <>
+      <Dialog
+        open={showCommentPopup}
+        onClose={handleClose}
+        title={t_i18n('Last workflow comment')}
+        size="large"
+      >
+        <DialogContentText sx={{ whiteSpace: 'pre-wrap' }}>
+          {draft.workflowInstance?.lastHistoryEntry?.comment}
+        </DialogContentText>
+        <DialogActions>
+          <Button onClick={handleClose}>
+            {t_i18n('Close')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {isDraftReadOnly && (
         <>
           <Breadcrumbs
@@ -190,6 +216,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
                 workExpectedNumber={validationWork.tracking?.import_processed_number}
                 workProcessedNumber={validationWork.tracking?.import_expected_number}
                 workErrors={validationWork.errors}
+                statusLabel={t_i18n('Validation progress')}
                 readOnly
               />
             </Paper>
@@ -207,16 +234,14 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           id="tabs-container"
           value={getCurrentTab(location.pathname, basePath)}
         >
-          {isFeatureEnable('DRAFT_WORKFLOW') && (
-            <Tab
-              component={Link}
-              to="overview"
-              value="overview"
-              label={
-                <span>{t_i18n('Overview')}</span>
-              }
-            />
-          )}
+          <Tab
+            component={Link}
+            to="overview"
+            value="overview"
+            label={
+              <span>{t_i18n('Overview')}</span>
+            }
+          />
           <Tab
             component={Link}
             to="entities"
@@ -278,12 +303,10 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
-        {isFeatureEnable('DRAFT_WORKFLOW') && (
-          <Route
-            path="/overview"
-            element={<DraftOverview draft={draft} />}
-          />
-        )}
+        <Route
+          path="/overview"
+          element={<DraftOverview draft={draft} />}
+        />
         <Route
           path="/entities"
           element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}

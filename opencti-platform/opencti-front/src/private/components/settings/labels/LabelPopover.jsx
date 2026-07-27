@@ -92,6 +92,7 @@ class LabelPopover extends Component {
     return (
       <div className={classes.container}>
         <IconButton
+          aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           color="primary"

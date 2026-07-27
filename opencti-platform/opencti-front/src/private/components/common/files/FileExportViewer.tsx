@@ -52,17 +52,15 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
             title={titleToUse}
             aria-label="generate-export"
           >
-            <span>
-              <IconButton
-                onClick={handleOpenExport}
-                disabled={!isExportPossible || !!draftContext}
-                aria-haspopup="true"
-                color="primary"
-                size="small"
-              >
-                <FileExportOutline fontSize="small" />
-              </IconButton>
-            </span>
+            <IconButton
+              onClick={handleOpenExport}
+              disabled={!isExportPossible || !!draftContext}
+              aria-haspopup="true"
+              color="primary"
+              size="small"
+            >
+              <FileExportOutline fontSize="small" />
+            </IconButton>
           </Tooltip>
         )}
       >

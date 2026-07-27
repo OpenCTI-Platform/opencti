@@ -40,10 +40,11 @@ interface ConnectorWorkLineProps {
   workProcessedNumber: number | null | undefined;
   workErrors: WorkMessages | null | undefined;
   readOnly?: boolean | undefined;
+  statusLabel?: string;
 }
 const ConnectorWorkLine: FunctionComponent<
   ConnectorWorkLineProps
-> = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly }) => {
+> = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly, statusLabel }) => {
   const { t_i18n, nsdt } = useFormatter();
 
   const [commit] = useApiMutation(connectorWorksWorkDeletionMutation);
@@ -96,7 +97,7 @@ const ConnectorWorkLine: FunctionComponent<
             </Grid>
             <Grid item xs={4}>
               <Label>
-                {t_i18n('Status')}
+                {statusLabel ?? t_i18n('Status')}
               </Label>
               <TaskStatus status={workStatus} label={t_i18n(workStatus)} />
             </Grid>

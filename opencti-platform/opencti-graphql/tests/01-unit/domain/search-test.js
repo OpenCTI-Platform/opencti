@@ -90,3 +90,32 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
   };
   expect(query).toEqual(expectedQuery);
 });
+
+it('should include source_name in search fields for external reference lookup', () => {
+  const shouldSearch = elGenerateFullTextSearchShould('IETF');
+  const allFields = shouldSearch.flatMap((clause) => [
+    ...(clause?.query_string?.fields ?? []),
+    ...(clause?.multi_match?.fields ?? []),
+  ]);
+  expect(allFields.some((f) => f === 'source_name' || f.startsWith('source_name'))).toBe(true);
+});
+
+it('should generate search clauses for both activity and history fields in historyFiltering mode', () => {
+  const shouldSearch = elGenerateFullTextSearchShould('login', { historyFiltering: true });
+  const topLevelActivityAndHistoryQueryString = shouldSearch.find(
+    (e) => e?.bool?.must?.some((m) => {
+      const values = m?.terms?.['entity_type.keyword'];
+      return Array.isArray(values) && values.includes('Activity') && values.includes('History');
+    })
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('event_scope'))
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.message'))
+    && e?.bool?.must?.some((m) => m?.query_string?.fields?.includes('context_data.search')),
+  );
+  const nestedHistoryQueryString = shouldSearch.find(
+    (e) => e?.nested?.path === 'context_data.history_changes'
+      && e?.nested?.query?.bool?.must?.[0]?.query_string,
+  );
+
+  expect(topLevelActivityAndHistoryQueryString).toBeDefined();
+  expect(nestedHistoryQueryString).toBeDefined();
+});

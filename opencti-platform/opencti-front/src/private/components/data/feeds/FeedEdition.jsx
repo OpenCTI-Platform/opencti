@@ -759,6 +759,7 @@ const FeedEditionContainer = (props) => {
                         })}
                         <div className={classes.add}>
                           <IconButton
+                            aria-label={t_i18n('Add')}
                             disabled={selectedTypes.length === 0}
                             size="small"
                             onClick={() => handleAddAttribute()}

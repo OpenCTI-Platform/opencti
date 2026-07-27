@@ -214,6 +214,80 @@ The behavior is similar to group mapping: you need to provide
 - the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. 
 
 
+## End-to-end example: OpenID Connect with group mapping
+
+The following example walks through a complete OIDC configuration where the Identity Provider (IdP) returns group membership inside the ID token using a **custom claim**. This is a common pattern with providers such as Auth0, Azure AD, or Okta.
+
+### Context
+
+When a user authenticates, the IdP returns a JSON object (the `user_info`). Inspect this payload via the authentication logs to understand which claims are available and where your group information is located.
+
+A typical `user_info` response looks like:
+
+```json
+{
+  "sub": "waad|<tenant>|<user-id>",
+  "given_name": "Jane",
+  "family_name": "Doe",
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "email_verified": true,
+  "https://your-idp.example.com/groups": [
+    "Engineering",
+    "Product"
+  ],
+  "<platform-tenant-id>_groups": [
+    "Admin"
+  ]
+}
+```
+
+!!! note "Custom claims"
+    Standard OIDC claims (`email`, `name`, `given_name`, `family_name`) are available directly under `user_info`. Custom claims added by your IdP — such as group membership — are usually namespaced (e.g. `https://your-idp.example.com/groups`) or prefixed with a tenant identifier (e.g. `<platform-tenant-id>_groups`). Use the authentication logs to find the exact claim path.
+
+### Step 1 – Configure the OIDC provider (Configuration tab)
+
+Fill in the mandatory fields and map the standard user attributes:
+
+| Field | Example value | Notes |
+|---|---|---|
+| Configuration name | `Login with MyIdP` | Appears on the login button |
+| Issuer | `https://your-idp.example.com` | The Identity Provider base URL |
+| Client ID | `<your-client-id>` | Application client ID from your IdP |
+| Client secret | `<your-client-secret>` | Set or reference an external secret |
+| Email expression | `user_info.email` | Standard OIDC claim |
+| Name expression | `user_info.name` | Standard OIDC claim |
+| First name expression | `user_info.given_name` | Standard OIDC claim |
+| Last name expression | `user_info.family_name` | Standard OIDC claim |
+
+![OIDC Configuration tab example](assets/sso-oidc-configuration-example.png)
+
+### Step 2 – Map groups (Groups tab)
+
+Switch to the **Groups** tab to define how IdP groups are mapped to OpenCTI groups.
+
+**Groups expression** — point to the claim that contains the group list. When the claim is nested in the ID token (rather than the `user_info` endpoint), prefix it with `tokens.id_token.`:
+
+```
+tokens.id_token.<platform-tenant-id>_groups
+```
+
+!!! tip "Finding the right expression"
+    Open the authentication logs and inspect the `Details` of a login attempt. The raw token payload shows all available keys. Use `user_info.<claim>` for claims from the userinfo endpoint, or `tokens.id_token.<claim>` for claims embedded in the ID token.
+
+**Groups mapping** — map each IdP group name to the corresponding OpenCTI group:
+
+| Provider group | Platform group |
+|---|---|
+| `Admin` | `Administrators` |
+| `Reader` | `Read Only` |
+| `Analyst` | `Senior Analyst` |
+
+![OIDC Groups tab example](assets/sso-oidc-groups-example.png)
+
+!!! warning "Exact group names"
+    Group names are case-sensitive. The **Provider group** value must match exactly what the IdP returns in the claim. The **Platform group** value must match exactly the group name as it exists in OpenCTI.
+
 ## Troubleshooting an authentication
 
 ### Use logs provided through UI

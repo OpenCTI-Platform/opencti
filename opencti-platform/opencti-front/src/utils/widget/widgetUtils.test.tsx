@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { renderHook } from '@testing-library/react';
 import {
   getCurrentCategory,
   getCurrentAvailableParameters,
@@ -7,11 +8,21 @@ import {
   isWidgetListOrTimeline,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
+  showEstimationWarningForUniqCount,
+  UNIQUE_COUNT_ESTIMATION_THRESHOLD,
   WidgetVisualizationTypes,
   workspacesWidgetVisualizationTypes,
   fintelTemplatesWidgetVisualizationTypes,
+  getWidgetInterval,
+  useGetNumberWidgetTitle,
 } from './widgetUtils';
-import type { WidgetDataSelection } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+
+vi.mock('src/utils/hooks/useEntityTranslation', () => ({
+  default: () => ({
+    translateEntityType: (label: string) => `translated_${label}`,
+  }),
+}));
 
 describe('widgetUtils', () => {
   describe('getCurrentCategory', () => {
@@ -324,6 +335,82 @@ describe('widgetUtils', () => {
     });
   });
 
+  describe('showEstimationWarning', () => {
+    const buildSeries = (values: number[]): WidgetMultiTimeSeries => ({
+      data: values.map((value) => ({
+        date: '2024-01-01T00:00:00Z',
+        value: value,
+      })),
+    });
+
+    it('should return true when a unique selection has at least one value above the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
+      ];
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(true);
+    });
+
+    it('should return false when no unique selection exceeds the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD]),
+      ];
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(false);
+    });
+
+    it('should return false when the selection is not flagged as unique even if values exceed the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: false, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1000]),
+      ];
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(false);
+    });
+
+    it('should return true if at least one of multiple selections triggers the warning', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: false, perspective: 'entities', filters: null },
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
+        buildSeries([5, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 2]),
+      ];
+      expect(showEstimationWarningForUniqCount(dataSelection, data)).toBe(true);
+    });
+
+    it('should return false for empty data selection', () => {
+      expect(showEstimationWarningForUniqCount([], [])).toBe(false);
+    });
+  });
+
+  describe('getWidgetInterval', () => {
+    it('should return "day" when parameters have no interval set or is undefined', () => {
+      const params = {} as WidgetParameters;
+      expect(getWidgetInterval(params)).toBe('day');
+      expect(getWidgetInterval(undefined)).toBe('day');
+    });
+
+    it('should return "day" when interval is undefined', () => {
+      const params = { interval: undefined } as WidgetParameters;
+      expect(getWidgetInterval(params)).toBe('day');
+    });
+
+    it('should return the configured interval when set', () => {
+      expect(getWidgetInterval({ interval: 'week' } as WidgetParameters)).toBe('week');
+      expect(getWidgetInterval({ interval: 'month' } as WidgetParameters)).toBe('month');
+      expect(getWidgetInterval({ interval: 'quarter' } as WidgetParameters)).toBe('quarter');
+      expect(getWidgetInterval({ interval: 'year' } as WidgetParameters)).toBe('year');
+      expect(getWidgetInterval({ interval: 'day' } as WidgetParameters)).toBe('day');
+    });
+  });
+
   describe('Type safety with as const', () => {
     it('should export valid WidgetVisualizationTypes', () => {
       const validTypes: WidgetVisualizationTypes[] = [
@@ -348,6 +435,28 @@ describe('widgetUtils', () => {
       ];
 
       expect(validTypes.length).toBe(18);
+    });
+  });
+
+  describe('useGetNumberWidgetTitle', () => {
+    it('should return translated custom title when parameters.title is set', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: 'My Custom Title' } as WidgetParameters, 'Default'));
+      expect(result.current).toBe('translated_My Custom Title');
+    });
+
+    it('should return translated default title when parameters.title is empty', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: '' } as WidgetParameters, 'Fallback Title'));
+      expect(result.current).toBe('translated_Fallback Title');
+    });
+
+    it('should return translated default title when parameters.title is null', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({ title: null } as WidgetParameters, 'Default Title'));
+      expect(result.current).toBe('translated_Default Title');
+    });
+
+    it('should return translated default title when parameters.title is undefined', () => {
+      const { result } = renderHook(() => useGetNumberWidgetTitle({} as WidgetParameters, 'Number of entities'));
+      expect(result.current).toBe('translated_Number of entities');
     });
   });
 });

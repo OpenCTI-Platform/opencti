@@ -13,6 +13,7 @@ import {
   isStreamPublishable,
   LIVE_STREAM_NAME,
   type RawStreamClient,
+  type SizedNotifEvent,
   STREAM_FULL_DEBUG_ACTIVATED,
   type StreamProcessor,
   type StreamProcessorOption,
@@ -156,8 +157,12 @@ export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
 export const storeNotificationEvent = async <T extends StreamNotifEvent>(_context: AuthContext, event: T) => {
   await streamClient.rawStoreNotificationEvent(event);
 };
-export const fetchRangeNotifications = async <T extends StreamNotifEvent>(start: Date, end: Date): Promise<Array<T>> => {
-  return streamClient.rawFetchRangeNotifications<T>(start, end);
+export const fetchRangeNotifications = async <T extends StreamNotifEvent>(
+  start: Date,
+  end: Date,
+  callback: (events: Array<SizedNotifEvent<T>>) => Promise<boolean | void> | boolean | void,
+): Promise<void> => {
+  return streamClient.rawFetchRangeNotifications<T>(start, end, callback);
 };
 // endregion
 // region opencti audit stream

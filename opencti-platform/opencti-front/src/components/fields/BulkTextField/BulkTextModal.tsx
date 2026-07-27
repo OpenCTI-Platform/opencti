@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { Alert, DialogActions, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { splitMultilines } from '../../../utils/String';
 import { useFormatter } from '../../i18n';
 
@@ -16,7 +16,7 @@ interface BulkTextModalProps {
   onSelectKey?: (key: string) => void;
 }
 
-const MAX_LINES = 50;
+const MAX_LINES = 150;
 
 const BulkTextModal = ({
   open,
@@ -30,7 +30,6 @@ const BulkTextModal = ({
 }: BulkTextModalProps) => {
   const { t_i18n } = useFormatter();
   const [value, setValue] = useState('');
-  const nbLines = splitMultilines(value).length;
 
   useEffect(() => {
     setValue(formValue);
@@ -41,14 +40,16 @@ const BulkTextModal = ({
     setValue(formValue);
   };
 
+  const noDuplicateNoEmptyValues = useMemo(() => Array.from(new Set(splitMultilines(value))), [value]);
+  const nbLines = noDuplicateNoEmptyValues.length;
+
   const validate = () => {
-    const noDuplicateNoEmpty = Array.from(new Set(splitMultilines(value)));
-    onValidate(noDuplicateNoEmpty.join('\n'));
+    onValidate(noDuplicateNoEmptyValues.join('\n'));
     close();
   };
 
-  const labelNbLines = nbLines > 0 ? `(${nbLines})` : '';
-  const label = `${t_i18n('Values (one per line)')} ${labelNbLines}`;
+  const isOverLimit = nbLines > MAX_LINES;
+  const label = t_i18n('Values (one per line)');
 
   return (
     <Dialog
@@ -59,7 +60,7 @@ const BulkTextModal = ({
       <Stack gap={2}>
         <Alert severity="info" variant="outlined">
           <Typography variant="body2">
-            {t_i18n('If you are adding more than 50 values, please upload them through')} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
+            {t_i18n('If you are adding more than {limit} values, please upload them through', { values: { limit: MAX_LINES } })} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
           </Typography>
         </Alert>
 
@@ -90,13 +91,9 @@ const BulkTextModal = ({
           fullWidth={true}
           multiline={true}
           rows="5"
+          error={nbLines > MAX_LINES}
+          helperText={t_i18n('{count} / {limit} entries detected', { values: { count: nbLines, limit: MAX_LINES } })}
         />
-
-        {nbLines > MAX_LINES && (
-          <Alert severity="error">
-            {t_i18n('You have more than 50 values')}
-          </Alert>
-        )}
       </Stack>
 
       <DialogActions>
@@ -105,9 +102,11 @@ const BulkTextModal = ({
         </Button>
         <Button
           onClick={validate}
-          disabled={nbLines === 0 || nbLines > MAX_LINES || (availableKeys && !selectedKey)}
+          disabled={nbLines === 0 || isOverLimit || (availableKeys && !selectedKey)}
         >
-          {t_i18n('Validate')}
+          {!isOverLimit && nbLines > 0
+            ? t_i18n('Create {count} objects', { values: { count: nbLines } })
+            : t_i18n('Create')}
         </Button>
       </DialogActions>
     </Dialog>

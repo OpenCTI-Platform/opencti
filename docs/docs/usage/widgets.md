@@ -78,7 +78,14 @@ This level of control ensures that your dashboard aligns precisely with your ana
 
 ![Widget parameters](assets/widget-parameters.png)
 
+For the "Activity & History" perspective there is the option to use the distinct values within the data when using a  "Number", "Line", or "Area" visualization. This enables the user to present additional insight into the usage of the application.
 
+- Checked: The widget will report the count of distinct values for the specified field
+
+!!! warning "Distinct values limitation"
+
+    Selecting to use distinct values for data sets with more than 40,000 distinct values may return results that are slightly different from actuals. In this case, to preserve performance, the query begins to estimate the count.
+    
 ## Prerequisite knowledge
 
 To successfully configure widgets in OpenCTI, having a solid understanding of the platform's data modeling is essential. Knowing specific relationships, entities, and their attributes helps refine filters accurately. Let's explore two examples.

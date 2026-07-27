@@ -24,6 +24,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import {
   AccessOperation,
   type AuthorizedMember,
+  BYPASS,
   isUserHasCapabilities,
   isValidMemberAccessRight,
   MEMBER_ACCESS_ALL,
@@ -131,8 +132,11 @@ export const containsValidAdmin = async (
 
 export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
   return input.filter((value, index, array) => {
-    if (!value.groups_restriction_ids) {
-      return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id) === index;
+    if (!value.groups_restriction_ids || value.groups_restriction_ids.length === 0) {
+      // Unrestricted entry: deduplicate only against other unrestricted entries with the same id,
+      // so that a restricted entry for the same id is kept as a separate rule.
+      return isValidMemberAccessRight(value.access_right)
+        && array.findIndex((e) => e.id === value.id && (!e.groups_restriction_ids || e.groups_restriction_ids.length === 0)) === index;
     }
 
     return isValidMemberAccessRight(value.access_right) && array.findIndex((e) => e.id === value.id
@@ -156,9 +160,10 @@ export const buildRestrictedMembers = async (
     input: MemberAccessInput[] | undefined | null;
     requiredCapabilities: string[];
     entityType: string;
+    skipAdminValidation?: boolean;
   },
 ): Promise<null | AuthorizedMember[]> => {
-  const { entityId, input, requiredCapabilities, entityType } = args;
+  const { entityId, input, requiredCapabilities, entityType, skipAdminValidation } = args;
 
   // Allow authorized members edition only on draft type but not for other entity types in draft
   const draftId = getDraftContext(context, user);
@@ -171,13 +176,19 @@ export const buildRestrictedMembers = async (
     if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {
       throw FunctionalError('You can\'t grant access to everyone in an organization sharing context');
     }
-    const hasValidAdmin = await containsValidAdmin(
-      context,
-      filteredInput,
-      requiredCapabilities,
-    );
-    if (!hasValidAdmin) {
-      throw FunctionalError('It should have at least one valid member with admin access');
+    // Skip the admin presence check only when explicitly requested by a privileged
+    // system actor (one with BYPASS capability, e.g. WORKFLOW_MANAGER_USER).
+    // This prevents accidental misuse of the flag by regular callers.
+    const bypassAllowed = skipAdminValidation && isUserHasCapabilities(user, [BYPASS]);
+    if (!bypassAllowed) {
+      const hasValidAdmin = await containsValidAdmin(
+        context,
+        filteredInput,
+        requiredCapabilities,
+      );
+      if (!hasValidAdmin) {
+        throw FunctionalError('It should have at least one valid member with admin access');
+      }
     }
     restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
       const member = { id, access_right, groups_restriction_ids };
@@ -199,15 +210,17 @@ export const editAuthorizedMembers = async (
     requiredCapabilities: string[];
     entityType: string;
     busTopicKey?: keyof typeof BUS_TOPICS; // TODO improve busTopicKey types
+    skipAdminValidation?: boolean;
   },
 ) => {
-  const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
+  const { entityId, input, requiredCapabilities, entityType, busTopicKey, skipAdminValidation } = args;
 
   const restricted_members = await buildRestrictedMembers(context, user, {
     entityId,
     input,
     requiredCapabilities,
     entityType,
+    skipAdminValidation,
   });
 
   const patch = { restricted_members };

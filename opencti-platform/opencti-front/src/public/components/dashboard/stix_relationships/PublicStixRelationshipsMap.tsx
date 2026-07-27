@@ -5,7 +5,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import { computeLevel } from '../../../../utils/Number';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsMapQuery } from './__generated__/PublicStixRelationshipsMapQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -107,7 +107,7 @@ const PublicStixRelationshipsMap = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixRelationshipsMapQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixRelationshipsMapQuery>(
     publicStixRelationshipsMapQuery,
     {
       uriKey,

@@ -13,7 +13,7 @@ import {
 } from '@components/common/stix_nested_ref_relationships/__generated__/StixNestedRefRelationshipCreationFromEntityLine_node.graphql';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
-import { APP_BASE_PATH } from '../../../../relay/environment';
+import { findFlagUrl } from '../../../../utils/flags';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -253,8 +253,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
 }) => {
   const classes = useStyles();
   const data = useFragment(stixNestedRefRelationshipCreationFromEntityLineFragment, node);
-  const flag = data.entity_type === 'Country'
-    && (data.x_opencti_aliases ?? []).filter((n) => n?.length === 2)[0];
+  const flagUrl = data.entity_type === 'Country' && findFlagUrl(data.x_opencti_aliases);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -282,10 +281,10 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        {flag ? (
+        {flagUrl ? (
           <img
             style={{ width: 20 }}
-            src={`${APP_BASE_PATH}/static/flags/4x3/${flag.toLowerCase()}.svg`}
+            src={flagUrl}
             alt={data.name}
           />
         ) : (

@@ -27,6 +27,7 @@ from pycti.api.opencti_api_trash import OpenCTIApiTrash
 from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.api.opencti_api_workspace import OpenCTIApiWorkspace
 from pycti.entities.opencti_attack_pattern import AttackPattern
+from pycti.entities.opencti_audit import Audit
 from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_capability import Capability
 from pycti.entities.opencti_case_incident import CaseIncident
@@ -50,6 +51,7 @@ from pycti.entities.opencti_kill_chain_phase import KillChainPhase
 from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_language import Language
 from pycti.entities.opencti_location import Location
+from pycti.entities.opencti_log import Log
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_malware_analysis import MalwareAnalysis
 from pycti.entities.opencti_marking_definition import MarkingDefinition
@@ -249,7 +251,8 @@ class OpenCTIApiClient:
 
         # Define API
         self.api_token = token
-        self.api_url = url.rstrip("/") + "/graphql"
+        self.base_url = url.rstrip("/")
+        self.api_url = self.base_url + "/graphql"
         if provider is not None:
             provider_pattern_checker = re.compile(
                 r"^[A-Za-z]+\/\d+(?:\.[a-z]*\d+){0,}$"
@@ -327,6 +330,8 @@ class OpenCTIApiClient:
         self.opinion = Opinion(self)
         self.grouping = Grouping(self)
         self.indicator = Indicator(self)
+        self.audit = Audit(self)
+        self.log = Log(self)
 
         # Admin functionality
         self.capability = Capability(self)
@@ -793,6 +798,24 @@ class OpenCTIApiClient:
             )
             return None
 
+    def fetch_opencti_file_by_id(self, file_id, binary=False, serialize=False):
+        """Get file from the OpenCTI API using its file id.
+
+        Builds the download URL from the platform base URL, avoiding the need
+        for callers to craft the storage URL themselves.
+
+        :param file_id: id of the file to fetch (e.g. an importFiles entry id)
+        :type file_id: str
+        :param binary: if True, returns raw bytes; if False, returns text, defaults to False
+        :type binary: bool, optional
+        :param serialize: if True, returns base64-encoded content, defaults to False
+        :type serialize: bool, optional
+        :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
+        :rtype: str, bytes, or None
+        """
+        fetch_uri = f"{self.base_url}/storage/get/{file_id}"
+        return self.fetch_opencti_file(fetch_uri, binary=binary, serialize=serialize)
+
     def health_check(self):
         """Submit an example request to the OpenCTI API.
 
@@ -814,30 +837,6 @@ class OpenCTIApiClient:
             self.app_logger.error(str(err))
             return False
         return False
-
-    def get_logs_worker_config(self):
-        """Get the logs worker configuration from the OpenCTI platform.
-
-        :return: the logs worker configuration including Elasticsearch settings
-        :rtype: dict
-        """
-
-        self.app_logger.info("Getting logs worker config...")
-        query = """
-            query LogsWorkerConfig {
-                logsWorkerConfig {
-                    elasticsearch_url
-                    elasticsearch_proxy
-                    elasticsearch_index
-                    elasticsearch_username
-                    elasticsearch_password
-                    elasticsearch_api_key
-                    elasticsearch_ssl_reject_unauthorized
-                }
-            }
-        """
-        result = self.query(query)
-        return result["data"]["logsWorkerConfig"]
 
     def not_empty(self, value):
         """Check if a value is empty for str, list and int.

@@ -52,7 +52,9 @@ const CreateIngestionTaxiiCollectionControlledDial = (props) => (
 );
 
 const IngestionTaxiiCollectionCreation = (props) => {
-  const { t } = props;
+  // importedInput carries prefilled values coming from a configuration import
+  // (JSON file upload); user and authorized members stay platform-specific.
+  const { t, open, handleClose, importedInput, drawerSettings } = props;
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const authorized_members = values.authorized_members.map(({ value }) => ({
@@ -89,16 +91,18 @@ const IngestionTaxiiCollectionCreation = (props) => {
 
   return (
     <Drawer
-      title={t('Create a TAXII Push ingester')}
-      controlledDial={CreateIngestionTaxiiCollectionControlledDial}
+      title={drawerSettings?.title ?? t('Create a TAXII Push ingester')}
+      open={open}
+      onClose={handleClose}
+      controlledDial={open === undefined ? CreateIngestionTaxiiCollectionControlledDial : undefined}
     >
       {({ onClose }) => (
         <Formik
           initialValues={{
-            name: '',
-            description: '',
+            name: importedInput?.name ?? '',
+            description: importedInput?.description ?? '',
             user_id: '',
-            confidence_to_score: false,
+            confidence_to_score: importedInput?.confidence_to_score ?? false,
           }}
           validationSchema={ingestionTaxiiCollectionCreationValidation(t)}
           onSubmit={onSubmit}
@@ -153,7 +157,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
                   onClick={submitForm}
                   disabled={isSubmitting}
                 >
-                  {t('Create')}
+                  {drawerSettings?.button ?? t('Create')}
                 </Button>
               </FormButtonContainer>
             </Form>
@@ -169,6 +173,10 @@ IngestionTaxiiCollectionCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  open: PropTypes.bool,
+  handleClose: PropTypes.func,
+  importedInput: PropTypes.object,
+  drawerSettings: PropTypes.object,
 };
 
 export default R.compose(

@@ -7,11 +7,11 @@ import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[];
+  data: readonly any[];
   publicWidget?: boolean;
   widgetId: string;
   rootRef: DataTableProps['rootRef'];
-  columns: WidgetColumn[];
+  columns: readonly WidgetColumn[];
 }
 
 const WidgetListRelationships = ({

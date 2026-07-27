@@ -50,6 +50,8 @@ interface IngestionTaxiiPopoverProps {
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables | null | undefined;
   setStateValue: Dispatch<string>;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
@@ -57,6 +59,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   running,
   paginationOptions,
   setStateValue,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -131,6 +134,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
   };
@@ -202,6 +206,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   return (
     <div style={{ margin: 0 }}>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}

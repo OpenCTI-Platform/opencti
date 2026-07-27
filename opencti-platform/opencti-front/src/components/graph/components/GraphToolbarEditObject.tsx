@@ -5,7 +5,7 @@ import StixCyberObservableEdition from '@components/observations/stix_cyber_obse
 import StixCoreRelationshipEdition from '@components/common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixSightingRelationshipEdition from '@components/events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import StixNestedRefRelationshipEdition from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
@@ -115,11 +115,13 @@ const GraphToolbarEditObject = ({
             stixSightingRelationshipId={objectToEdit.id}
             handleClose={closeEditionForm}
           />
-          <StixNestedRefRelationshipEdition
-            open={category === 'nested'}
-            stixNestedRefRelationshipId={objectToEdit.id}
-            handleClose={closeEditionForm}
-          />
+          {category === 'nested' && (
+            <StixNestedRefRelationshipEdition
+              open={category === 'nested'}
+              stixNestedRefRelationshipId={objectToEdit.id}
+              handleClose={closeEditionForm}
+            />
+          )}
         </>
       )}
     </>

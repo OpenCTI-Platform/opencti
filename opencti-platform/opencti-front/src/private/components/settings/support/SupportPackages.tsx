@@ -129,6 +129,7 @@ const SupportPackages = () => {
         sx={{
           maxHeight: '600px',
           overflowY: 'auto',
+          paddingTop: 1,
         }}
         action={(
           <Tooltip title={(

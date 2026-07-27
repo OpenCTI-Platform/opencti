@@ -330,7 +330,7 @@ const useSearchEntities = ({
   };
   const labelRelationshipType = {
     label: t_i18n('relationship_object-label'),
-    value: 'objectLabel',
+    value: 'object-label',
     type: 'stix-meta-relationship',
   };
 
@@ -644,6 +644,9 @@ const useSearchEntities = ({
       'members_user', // for audit TODO register in audit (not for now)
       'members_group', // for audit TODO register in audit (not for now)
       'members_organization', // for audit TODO register in audit (not for now)
+      'workflow_user', // for workflow
+      'workflow_group', // for workflow
+      'workflow_organization', // for workflow
       'id', // regardingOf subfilter
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
@@ -688,6 +691,17 @@ const useSearchEntities = ({
           break;
         case 'members_organization':
           buildOptionsFromMembersSearchQuery(filterKey, ['Organization']);
+          break;
+        // endregion
+        // region workflow
+        case 'workflow_user':
+          buildOptionsFromMembersSearchQuery(filterKey, ['User']);
+          break;
+        case 'workflow_group':
+          buildOptionsFromGroupSearchQuery(filterKey);
+          break;
+        case 'workflow_organization':
+          buildOptionsFromIdentitySearchQuery(filterKey, ['Organization']);
           break;
         // endregion
         // region user usage (with caching)
@@ -892,6 +906,21 @@ const useSearchEntities = ({
                 ...result,
                 objectRelationshipType,
               ];
+            }
+            // push additional concrete types not covered by abstract type loading (e.g., DraftWorkspace)
+            if (availableEntityTypes) {
+              const knownAbstractTypes = ['Stix-Cyber-Observable', 'Stix-Domain-Object', 'Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label', 'Container', 'Threat-Actor'];
+              const extraConcreteTypes = availableEntityTypes.filter((type) => !knownAbstractTypes.includes(type));
+              if (extraConcreteTypes.length > 0) {
+                result = [
+                  ...result,
+                  ...extraConcreteTypes.map((n) => ({
+                    label: t_i18n(displayEntityTypeForTranslation(n)),
+                    value: n,
+                    type: n,
+                  })),
+                ];
+              }
             }
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
             unionSetEntities(filterKey, entitiesTypes);

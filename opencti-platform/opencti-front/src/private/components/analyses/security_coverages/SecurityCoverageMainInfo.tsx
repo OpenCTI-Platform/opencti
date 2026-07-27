@@ -5,7 +5,7 @@ import Label from '../../../../components/common/label/Label';
 import { Stack, Typography } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '@components/analyses/security_coverages/SecurityCoverageScores';
 import { graphql, useFragment } from 'react-relay';
 import { SecurityCoverageMainInfo_securityCoverage$key } from './__generated__/SecurityCoverageMainInfo_securityCoverage.graphql';
 
@@ -55,7 +55,7 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
         </Stack>
 
         <Stack id="testname" sx={{ flexGrow: 1, alignItems: 'center' }}>
-          <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
+          <SecurityCoverageScores coverage_information={data.coverage_information ?? []} variant="details" />
         </Stack>
       </Stack>
     </Card>

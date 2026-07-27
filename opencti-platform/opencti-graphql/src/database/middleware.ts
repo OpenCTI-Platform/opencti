@@ -764,15 +764,21 @@ const convertAggregateDistributions = async (
   limit: number,
   orderingFunction: any,
   distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
-  // filter out unresolved data (like the SYSTEM user for instance)
-  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
+  // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
+  const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds: string[] = [];
   for (let i = 0; i < filteredData.length; i += 1) {
+    // The 'unknown' bucket has no real entity — skip resolution and access check
+    if (filteredData[i].label === 'unknown') {
+      grantedIds.push('unknown');
+      // eslint-disable-next-line no-continue
+      continue;
+    }
     const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
     const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
     if (canAccess) {
@@ -781,6 +787,10 @@ const convertAggregateDistributions = async (
   }
   return filteredData
     .map((n) => {
+      // The 'unknown' bucket has no backing entity
+      if (n.label === 'unknown') {
+        return { ...n, entity: null };
+      }
       const element = allResolveLabels[n.label.toLowerCase()];
       if (grantedIds.includes(n.label.toLowerCase())) {
         return {
@@ -797,7 +807,7 @@ const convertAggregateDistributions = async (
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
   const argsWithTypes = { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY] };
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes, args.unique, args.countField);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (
@@ -842,11 +852,11 @@ export const distributionHistory = async (context: AuthContext, user: AuthUser, 
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name' || field === 'context_data.id') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -863,7 +873,7 @@ export const distributionEntities = async (
   user: AuthUser,
   types: string | string[] | undefined | null,
   args: EntityFilters<BasicStoreEntity> & { limit?: number | null; order?: string | null; field: string } & { onlyInferred?: boolean },
-): Promise<{ label: string; value: number; entity: BasicStoreEntity }[]> => {
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
   const aggregationNotSupported = field.includes('.')
@@ -889,11 +899,11 @@ export const distributionEntities = async (
     return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
   }
   if (field === 'name') {
-    let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
+    let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
     await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
       .then((hits) => {
         result = hits.map((hit) => ({
-          label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
+          label: hit.entity?.name ?? extractEntityRepresentativeName(hit.entity),
           value: hit.value,
           entity: hit.entity,
         }));
@@ -3080,7 +3090,7 @@ const validateEntityAndRelationCreation = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
-  opts: { bypassValidation?: boolean } = {},
+  opts: { bypassValidation?: boolean; bypassMandatoryAttributes?: boolean } = {},
 ) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
@@ -3089,7 +3099,9 @@ const validateEntityAndRelationCreation = async (
         throw ValidationError('You must provide at least one external reference for this type of entity/relationship', 'externalReferences');
       }
     }
-    await validateInputCreation(context, user, type, input, entitySetting);
+    await validateInputCreation(context, user, type, input, entitySetting, {
+      bypassMandatoryAttributes: opts.bypassMandatoryAttributes === true,
+    });
   }
 };
 
@@ -3577,6 +3589,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRule?: string;
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
+  bypassMandatoryAttributes?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,

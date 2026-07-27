@@ -1,11 +1,14 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import TextFieldPageModel from './field/TextField.pageModel';
 
 export default class EntitiesTabPageModel {
-  private entireTab = this.page.getByRole('heading', { name: 'Add entities' }).locator('../../..');
-  private searchField = new TextFieldPageModel(this.page, 'Search', 'text-no-label', this.entireTab);
+  private entireTab: Locator;
+  private searchField: TextFieldPageModel;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.entireTab = this.page.getByRole('heading', { name: 'Add entities' }).locator('../../..');
+    this.searchField = new TextFieldPageModel(this.page, 'Search', 'text-no-label', this.entireTab);
+  }
 
   clickAddEntities() {
     return this.page.getByLabel('Add entity', { exact: true }).click();

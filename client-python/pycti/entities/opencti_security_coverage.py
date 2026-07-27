@@ -31,6 +31,10 @@ class SecurityCoverage:
             created_at
             updated_at
             external_uri
+            coverage_information {
+                coverage_name
+                coverage_score
+            }
             objectCovered {
                 __typename
                 ... on StixCoreObject {

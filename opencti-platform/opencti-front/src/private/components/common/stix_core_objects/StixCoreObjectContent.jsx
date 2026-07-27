@@ -6,7 +6,7 @@ import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
@@ -23,14 +23,13 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import RichTextEditor from '../../../../components/RichTextEditor';
-import CKEditor from '../../../../components/CKEditor';
+import { RichTextEditor } from '@filigran/rich-text-editor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
+import '../../../../utils/pdfWorker-setup';
 
 const styles = (theme) => ({
   container: {
@@ -249,6 +248,7 @@ class StixCoreObjectContentComponent extends Component {
       changed: false,
       isLoading,
       onProgressExportFileName,
+      blockedPdfPreviewFileId: null,
     };
   }
 
@@ -348,6 +348,7 @@ class StixCoreObjectContentComponent extends Component {
       currentFileId: null,
       changed: false,
       contentSelected: true,
+      blockedPdfPreviewFileId: null,
       currentContent: stixCoreObject.contentField ?? t('Write something awesome...'),
     }, () => {
       this.props.setMappingHeaderDisabled(false);
@@ -357,7 +358,12 @@ class StixCoreObjectContentComponent extends Component {
   }
 
   handleSelectFile(fileId) {
-    this.setState({ currentFileId: fileId, changed: false, contentSelected: false }, () => {
+    this.setState({
+      currentFileId: fileId,
+      changed: false,
+      contentSelected: false,
+      blockedPdfPreviewFileId: null,
+    }, () => {
       this.props.setMappingHeaderDisabled(true);
       this.loadFileContent();
       this.saveView();
@@ -373,14 +379,36 @@ class StixCoreObjectContentComponent extends Component {
       this.setState({
         currentFileId: null,
         contentSelected: isContainerWithContent(stixCoreObject.entity_type),
+        blockedPdfPreviewFileId: null,
         currentContent: isContainerWithContent(stixCoreObject.entity_type) ? stixCoreObject.contentField ?? t('Write something awesome...') : '',
       }, () => this.saveView());
     } else if (fileName && !isDelete) {
-      this.setState({ currentFileId: fileName, contentSelected: false }, () => {
+      this.setState({
+        currentFileId: fileName,
+        contentSelected: false,
+        blockedPdfPreviewFileId: null,
+      }, () => {
         this.loadFileContent();
         this.saveView();
       });
     }
+  }
+
+  handlePdfLoadError(error) {
+    if (!isPdfPasswordError(error)) {
+      return;
+    }
+    this.setState({ blockedPdfPreviewFileId: this.state.currentFileId });
+  }
+
+  handlePdfPasswordRequest(updatePassword) {
+    const { t } = this.props;
+    const password = window.prompt(t('This PDF is password protected. Enter password to preview it.'));
+    if (password === null) {
+      this.setState({ blockedPdfPreviewFileId: this.state.currentFileId });
+      return;
+    }
+    updatePassword(password);
   }
 
   // PDF SECTION
@@ -463,7 +491,7 @@ class StixCoreObjectContentComponent extends Component {
       .replaceAll(regex, '');
     const fragment = stixCoreObject.name.split('/');
     const currentName = R.last(fragment);
-    await htmlToPdf('content', htmlData, this.props.isTiptapEditorEnable).download(`${currentName}.pdf`);
+    await htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -477,6 +505,7 @@ class StixCoreObjectContentComponent extends Component {
       navOpen,
       changed,
       contentSelected,
+      blockedPdfPreviewFileId,
     } = this.state;
     const files = getFiles(stixCoreObject);
     const exportFiles = getExportFiles(stixCoreObject);
@@ -486,6 +515,7 @@ class StixCoreObjectContentComponent extends Component {
     const currentFile = currentFileId
       && [...files, ...exportFiles, ...filesFromTemplate].find((n) => n.id === currentFileId);
     const currentFileType = currentFile && currentFile.metaData.mimetype;
+    const isBlockedPdfPreview = currentFileType === 'application/pdf' && currentFileId === blockedPdfPreviewFileId;
     const { innerHeight } = window;
     const height = innerHeight - 320;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
@@ -592,27 +622,15 @@ class StixCoreObjectContentComponent extends Component {
                   className={classes.editorContainer}
                   style={{ minHeight: height, height }}
                 >
-                  {this.props.isTiptapEditorEnable ? (
-                    <RichTextEditor
-                      data={currentContent ?? ''}
-                      onChange={(_, adapter) => {
-                        this.setState({ currentContent: adapter.getData(), changed: true });
-                      }}
-                      onBlur={(_, adapter) => {
-                        this.onHtmlFieldChange(adapter.getData());
-                      }}
-                    />
-                  ) : (
-                    <CKEditor
-                      data={currentContent ?? ''}
-                      onChange={(_, editor) => {
-                        this.setState({ currentContent: editor.getData(), changed: true });
-                      }}
-                      onBlur={(_, editor) => {
-                        this.onHtmlFieldChange(editor.getData());
-                      }}
-                    />
-                  )}
+                  <RichTextEditor
+                    data={currentContent ?? ''}
+                    onChange={(_, adapter) => {
+                      this.setState({ currentContent: adapter.getData(), changed: true });
+                    }}
+                    onBlur={(_, adapter) => {
+                      this.onHtmlFieldChange(adapter.getData());
+                    }}
+                  />
                   <TextFieldAskAI
                     currentValue={currentContent ?? ''}
                     setFieldValue={(val) => {
@@ -686,7 +704,7 @@ class StixCoreObjectContentComponent extends Component {
                 </div>
               </>
             )}
-            {currentFileType === 'application/pdf' && (
+            {currentFileType === 'application/pdf' && !isBlockedPdfPreview && (
               <>
                 <StixCoreObjectContentBar
                   handleZoomIn={this.handleZoomIn.bind(this)}
@@ -703,6 +721,8 @@ class StixCoreObjectContentComponent extends Component {
                 >
                   <Document
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
+                    onLoadError={this.handlePdfLoadError.bind(this)}
+                    onPassword={this.handlePdfPasswordRequest.bind(this)}
                     loading={<Loader variant="inElement" />}
                     file={currentUrl}
                   >
@@ -717,6 +737,33 @@ class StixCoreObjectContentComponent extends Component {
                   </Document>
                 </div>
               </>
+            )}
+            {isBlockedPdfPreview && (
+              <div
+                className={
+                  navOpen
+                    ? classes.adjustedContainerNavOpen
+                    : classes.adjustedContainer
+                }
+              >
+                <div
+                  style={{
+                    display: 'table',
+                    height: '100%',
+                    width: '100%',
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'table-cell',
+                      verticalAlign: 'middle',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {t('Unable to preview this PDF. It may be password protected. Select another file to continue.')}
+                  </span>
+                </div>
+              </div>
             )}
             {!currentFile && !contentSelected && (
               <div
@@ -958,20 +1005,10 @@ const withAttributes = (Component) => {
   return WithAttributes;
 };
 
-const withHelperFF = (Component) => {
-  const WithHelperFF = (props) => {
-    const { isTiptapEditorEnable } = useHelper();
-    return <Component {...props} isTiptapEditorEnable={isTiptapEditorEnable()} />;
-  };
-  WithHelperFF.displayName = `WithHelperFF(${Component.displayName || Component.name || 'Component'})`;
-  return WithHelperFF;
-};
-
 export default R.compose(
   inject18n,
   withTheme,
   withRouter,
   withStyles(styles),
   withAttributes,
-  withHelperFF,
 )(StixCoreObjectContent);

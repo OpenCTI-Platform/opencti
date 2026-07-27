@@ -161,6 +161,7 @@ export interface DataTableProps {
   isLocalStorageEnabled?: boolean;
   emptyStateMessage?: string;
   trashOperationsEnabled?: boolean;
+  disableBulkEnroll?: boolean;
   deleteDisable?: boolean;
 }
 

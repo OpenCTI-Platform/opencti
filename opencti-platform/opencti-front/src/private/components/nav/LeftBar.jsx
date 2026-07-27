@@ -7,12 +7,12 @@ import {
   CasesOutlined,
   ChevronLeft,
   ConstructionOutlined,
-  DeleteOutlined,
   DescriptionOutlined,
   DiamondOutlined,
   DomainOutlined,
   EventOutlined,
   ExploreOutlined,
+  ExtensionOutlined,
   FlagOutlined,
   Home,
   InsertChartOutlinedOutlined,
@@ -120,6 +120,7 @@ import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
+import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
@@ -228,6 +229,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
+  const { isFeatureEnable } = useHelper();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -244,13 +246,14 @@ const LeftBarComponent = ({ queryRef }) => {
   const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
-  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
+  const isGrantedToDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH]);
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToExplore = useGranted([EXPLORE]);
   const hasXtmHubAccess = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
   const [selectedMenu, setSelectedMenu] = useState(
     JSON.parse(localStorage.getItem('selectedMenu') ?? '[]'),
@@ -302,7 +305,7 @@ const LeftBarComponent = ({ queryRef }) => {
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (event, link) => {
-    if (event.ctrlKey) {
+    if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
       navigate(link);
@@ -481,21 +484,21 @@ const LeftBarComponent = ({ queryRef }) => {
                 {...itemProps}
                 id="dashboards"
                 icon={<InsertChartOutlinedOutlined />}
-                label="Dashboards"
+                label={t_i18n('Dashboards')}
                 link="/dashboard/workspaces/dashboards"
                 subItems={[
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards',
-                    label: 'Custom dashboards',
+                    label: t_i18n('Custom dashboards'),
                     exact: true,
                   },
                   {
                     granted: isGrantedToExplore,
                     type: 'Dashboard',
                     link: '/dashboard/workspaces/dashboards_public',
-                    label: 'Public dashboards',
+                    label: t_i18n('Public dashboards'),
                     exact: true,
                   },
                 ]}
@@ -621,7 +624,7 @@ const LeftBarComponent = ({ queryRef }) => {
                   {
                     type: 'Threat-Actor-Individual',
                     link: '/dashboard/threats/threat_actors_individual',
-                    label: 'Threat actors (individual)',
+                    label: t_i18n('Threat actors (individual)'),
                     icon: <LaptopAccount fontSize="small" />,
                   },
                   { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
@@ -706,6 +709,18 @@ const LeftBarComponent = ({ queryRef }) => {
           <Separator />
 
           <MenuList component="nav">
+            <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
+              {!draftContext && (
+                <LeftBarItem
+                  {...itemProps}
+                  id="integrations"
+                  icon={<ExtensionOutlined />}
+                  label={t_i18n('Integrations')}
+                  link="/dashboard/integrations"
+                />
+              )}
+            </Security>
+
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
               <LeftBarItem
                 {...itemProps}
@@ -716,30 +731,15 @@ const LeftBarComponent = ({ queryRef }) => {
                 subItems={[
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
                   { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-                  { granted: isGrantedToIngestion && !draftContext, link: '/dashboard/data/ingestion', label: t_i18n('Ingestion') },
                   { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
                   { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
                   { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
                   { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
+                  { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
+                  { granted: isTrashEnable() && isGrantedToDelete && !draftContext, link: '/dashboard/trash', label: t_i18n('Trash') },
                 ]}
               />
             </Security>
-
-            {
-              isTrashEnable() && (
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  {!draftContext && (
-                    <LeftBarItem
-                      {...itemProps}
-                      id="trash"
-                      icon={<DeleteOutlined />}
-                      label={t_i18n('Trash')}
-                      link="/dashboard/trash"
-                    />
-                  )}
-                </Security>
-              )
-            }
           </MenuList>
         </Security>
 

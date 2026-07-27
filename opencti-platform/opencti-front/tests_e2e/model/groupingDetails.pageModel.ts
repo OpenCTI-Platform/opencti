@@ -2,8 +2,10 @@ import { Page } from '@playwright/test';
 import SDOTabs from './SDOTabs.pageModel';
 
 export default class GroupingDetailsPage {
-  tabs = new SDOTabs(this.page);
-  constructor(private page: Page) {}
+  tabs: SDOTabs;
+  constructor(private page: Page) {
+    this.tabs = new SDOTabs(this.page);
+  }
 
   getPage() {
     return this.page.getByTestId('grouping-details-page');

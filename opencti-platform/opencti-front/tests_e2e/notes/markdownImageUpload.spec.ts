@@ -6,14 +6,14 @@
  *  - Slice 2: Submit persists image to storage, re-read renders from backend URL
  */
 
-import path from 'path';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '../fixtures/baseFixtures';
 import NotesPage from '../model/note.pageModel';
 import NoteFormPage from '../model/form/noteForm.pageModel';
 import NoteDetailsPage from '../model/noteDetails.pageModel';
 import MarkdownImageFieldPageModel from '../model/field/MarkdownImageField.pageModel';
 
-const TEST_IMAGE_PATH = path.join(__dirname, 'assets', 'test-image.png');
+const TEST_IMAGE_PATH = fileURLToPath(new URL('assets/test-image.png', import.meta.url));
 
 test.describe('Markdown editor – image upload', { tag: ['@ce'] }, () => {
   test('Upload image via button shows local preview before submit', async ({ page }) => {

@@ -15,12 +15,14 @@ import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computeRelativeDate, dayStartDate, formatDate } from '../../utils/Time';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
+import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: DashboardConfig;
   host?: WidgetHost;
+  refreshRate?: number | null;
 }
 
 const DashboardAuditsViz = ({
@@ -28,6 +30,7 @@ const DashboardAuditsViz = ({
   popover,
   config,
   host,
+  refreshRate,
 }: DashboardAuditsVizProps) => {
   const startDate = config.relativeDate
     ? computeRelativeDate(config.relativeDate)
@@ -50,6 +53,8 @@ const DashboardAuditsViz = ({
           parameters={widget.parameters as object} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'list':
@@ -63,6 +68,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'distribution-list':
@@ -76,6 +83,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'vertical-bar':
@@ -89,6 +98,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'line':
@@ -102,6 +113,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'area':
@@ -115,6 +128,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'donut':
@@ -128,6 +143,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'polar-area':
@@ -141,6 +158,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'horizontal-bar':
@@ -154,6 +173,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'radar':
@@ -167,6 +188,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'heatmap':
@@ -180,6 +203,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'tree':
@@ -193,6 +218,8 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     case 'wordcloud':
@@ -206,10 +233,14 @@ const DashboardAuditsViz = ({
           height={undefined} // because calling js component in ts
           popover={popover}
           host={host}
+          config={config}
+          refreshRate={refreshRate}
         />
       );
     default:
-      return 'Not implemented yet';
+      return (
+        <WidgetNotImplemented popover={popover} />
+      );
   }
 };
 

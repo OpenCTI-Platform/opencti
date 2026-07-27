@@ -41,6 +41,7 @@ type Option = {
   onClick?: () => void; // individual click handler
   selected?: boolean;
   nestedOptions?: Option[];
+  keepMenuOpen?: boolean;
 };
 
 type NestedMenuProps = {
@@ -66,6 +67,8 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     options: new Array(menuLevels).fill(null),
   });
 
+  const [visibleMenuValue, setVisibleMenuValue] = React.useState<string | null>(null);
+
   const mouseEntered = React.useRef<Record<string, boolean>>({});
   const mouseLeftCoordinates = React.useRef<Array<number>>([]);
   const buttonRef = React.useRef(null);
@@ -75,9 +78,13 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
     level = 0,
     nestedOptions = options,
+    menuValue?: string,
   ) => {
     const target = event.target as HTMLElement;
 
+    if (menuValue) {
+      setVisibleMenuValue(menuValue);
+    }
     setAnchors((prevAnchors) => ({
       elements: prevAnchors.elements.map((element, index) => (index === level ? target : element)),
       options: prevAnchors.options.map((element, index) => (index === level ? nestedOptions : element)),
@@ -91,26 +98,64 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     }));
   };
 
+  // When the live `options` prop changes while a submenu is kept open
+  // (keepMenuOpen multi-select), refresh the rendered submenu so its selected
+  // state and labels stay in sync. The menu renders from `anchors.options`
+  // (a snapshot), so without this it would show stale data until reopened.
+  React.useEffect(() => {
+    if (!visibleMenuValue) {
+      return;
+    }
+    const parentOption = options.find((o) => o.value === visibleMenuValue);
+    if (!parentOption?.nestedOptions) {
+      return;
+    }
+    setAnchors((prevAnchors) => {
+      // Only refresh while the submenu is actually open, otherwise leave state untouched.
+      if (!prevAnchors.elements[1]) {
+        return prevAnchors;
+      }
+      // Refresh the top-level options (index 0) and the open submenu (index 1)
+      // from the latest props while preserving any deeper levels, so that
+      // anchors.options keeps its menuLevels-length invariant.
+      return {
+        ...prevAnchors,
+        options: prevAnchors.options.map((opt, index) => {
+          if (index === 0) return options;
+          if (index === 1) return parentOption.nestedOptions ?? null;
+          return opt;
+        }),
+      };
+    });
+  }, [options, visibleMenuValue]);
+
   const handleClickAway = (event: MouseEvent | TouchEvent) => {
     if (event.target === buttonRef.current) {
       handleClose(0);
       return;
     }
-
+    if (event.defaultPrevented) {
+      // A keepMenuOpen item was clicked: keep the menu open. The submenu is
+      // re-synced from the latest options by the effect above.
+      return;
+    }
     const optionWithoutSubMenu = anchors.elements.every(
       (element) => !element || !event.composedPath().includes(element),
     );
-
     if (optionWithoutSubMenu) {
       handleClose(0);
     }
   };
 
-  const handleClickOption = (option: Option) => {
-    if (!option.nestedOptions) {
+  const handleClickOption = (event: React.MouseEvent<HTMLElement>, option: Option) => {
+    if (option.keepMenuOpen) {
+      // Prevent default of closing the menu on click
+      event.preventDefault();
+    }
+    if (option.nestedOptions && !option.keepMenuOpen) {
+      return;
+    } else if (!option.keepMenuOpen) {
       handleClose(0);
-    } else {
-      return; // no handler on submenu's parent
     }
     option.onClick?.();
     onClick?.(option);
@@ -143,9 +188,9 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
           )
         ) {
           handleClose(option.menuLevel + 1);
-          handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+          handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
         } else {
-          handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+          handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
         }
       }
     };
@@ -205,7 +250,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
   ) => {
     if (option.nestedOptions) {
       if (event.key === 'ArrowRight' || event.key === 'Enter') {
-        handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+        handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
       }
     }
     if (event.key === 'ArrowLeft' && option.menuLevel > 0) {
@@ -266,7 +311,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                               )
                             : undefined
                         }
-                        onClick={() => handleClickOption(option)}
+                        onClick={(event) => handleClickOption(event, option)}
                         onMouseMove={(event) => handleMouseMove(event, option, optIndex)}
                         onMouseLeave={(event) => handleMouseLeave(event, option, optIndex)}
                         onKeyDown={(event) => handleKeyDown(event, option)}

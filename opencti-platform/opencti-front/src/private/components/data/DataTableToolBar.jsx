@@ -85,6 +85,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
+
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
@@ -99,7 +100,7 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 
 const styles = (theme) => ({
@@ -518,7 +519,8 @@ class DataTableToolBar extends Component {
       type: 'ENROLL_PLAYBOOK',
       context: { values: [{ id: playbookId, name: playbookName }] },
     }];
-    this.setState({ actions }, () => {
+    const description = `ENROLL IN PLAYBOOK ${playbookName}`;
+    this.setState({ description, actions }, () => {
       this.handleCloseEnrollPlaybook();
       this.handleOpenTask();
     });
@@ -615,6 +617,8 @@ class DataTableToolBar extends Component {
     if (key === 'field') {
       if (value === 'x_opencti_detection') {
         actionsInputs[i] = R.assoc('values', ['false'], actionsInputs[i] || {});
+      } else if (value === 'password_valid_until') {
+        actionsInputs[i] = R.assoc('values', [new Date().toISOString()], actionsInputs[i] || {});
       } else {
         const values = [];
         actionsInputs[i] = R.assoc('values', values, actionsInputs[i] || {});
@@ -970,7 +974,8 @@ class DataTableToolBar extends Component {
           ...options,
           { label: t('Account status'), value: 'account_status' },
           { label: t('Account expiration date'), value: 'account_lock_after_date' },
-        ];
+          { label: t('Force password change date'), value: 'password_valid_until' },
+        ].filter(Boolean);
       }
     } else {
       options = [
@@ -1554,6 +1559,7 @@ class DataTableToolBar extends Component {
               )}
             />
             <IconButton
+              aria-label={t('Create')}
               onClick={() => this.setState({ containerCreation: true })}
               edge="end"
               style={{ position: 'absolute', top: 80, right: 50 }}
@@ -2103,6 +2109,21 @@ class DataTableToolBar extends Component {
             format="yyyy-MM-dd hh:mm:ss a"
           />
         );
+      case 'password_valid_until':
+        return (
+          <>
+            <DateTimePicker
+              variant="inline"
+              disableToolbar={false}
+              autoOk={true}
+              allowKeyboardControl={true}
+              onChange={this.handleChangeDate.bind(this, i)}
+              onAccept={this.handleAcceptDate.bind(this, i)}
+              views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
+              format="yyyy-MM-dd hh:mm:ss a"
+            />
+          </>
+        );
       default:
         return (
           <TextField
@@ -2170,6 +2191,7 @@ class DataTableToolBar extends Component {
       deleteDisable,
       mergeDisable,
       trashOperationsEnabled,
+      disableBulkEnroll,
       removeAuthMembersEnabled,
       removeFromDraftEnabled,
       markAsReadEnabled,
@@ -2197,7 +2219,7 @@ class DataTableToolBar extends Component {
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
-          const isBulkEnrollEnabled = isFeatureEnable(settings, 'BULK_ENROLLMENT');
+
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -2559,22 +2581,25 @@ class DataTableToolBar extends Component {
                         </Security>
                       </>
                     )}
-                    {isBulkEnrollEnabled && (
-                      <Security needs={[AUTOMATION]}>
-                        <Tooltip title={t('Enroll in playbook')}>
-                          <span>
-                            <IconButton
-                              aria-label="enroll-playbook"
-                              disabled={numberOfSelectedElements === 0 || this.state.processing}
-                              onClick={this.handleOpenEnrollPlaybook.bind(this)}
-                              size="small"
-                            >
-                              <PrecisionManufacturingOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
+                    {!isInDraft
+                      && (!taskScope || taskScope === 'KNOWLEDGE')
+                      && !disableBulkEnroll
+                      && (
+                        <Security needs={[AUTOMATION]}>
+                          <Tooltip title={t('Enroll in playbook')}>
+                            <span>
+                              <IconButton
+                                aria-label="enroll-playbook"
+                                disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                onClick={this.handleOpenEnrollPlaybook.bind(this)}
+                                size="small"
+                              >
+                                <PrecisionManufacturingOutlined fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Security>
+                      )}
                     {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
                       <Security needs={[deleteCapability]}>
                         <Tooltip title={warningMessage || t('Delete')}>
@@ -2857,6 +2882,7 @@ class DataTableToolBar extends Component {
                     ))}
                   <div className={classes.add}>
                     <IconButton
+                      aria-label={t('Add step')}
                       disabled={!this.areStepValid()}
                       variant="secondary"
                       size="small"
@@ -3191,6 +3217,7 @@ class DataTableToolBar extends Component {
                   label={t('Also include first neighbours')}
                 />
                 <IconButton
+                  aria-label={t('Create container')}
                   onClick={() => this.setState({ containerCreation: true })}
                   edge="end"
                   style={{ position: 'absolute', top: 80, right: 50 }}
@@ -3286,6 +3313,7 @@ class DataTableToolBar extends Component {
                   disableClearable
                 />
                 <IconButton
+                  aria-label={t('Create organization')}
                   onClick={() => this.setState({ organizationCreation: true })}
                   edge="end"
                   style={{ position: 'absolute', top: 80, right: 50 }}
@@ -3383,6 +3411,11 @@ class DataTableToolBar extends Component {
                 open={this.state.displayEnrollPlaybook}
                 onClose={this.handleCloseEnrollPlaybook.bind(this)}
                 onLaunch={this.handleLaunchEnrollPlaybook.bind(this)}
+                entityIds={this.props.selectAll ? undefined : Object.keys(this.props.selectedElements || {})}
+                isSelectAll={this.props.selectAll}
+                filters={this.props.selectAll ? this.props.filters : undefined}
+                search={this.props.selectAll ? this.props.search : undefined}
+                excludedIds={this.props.selectAll ? Object.keys(this.props.deSelectedElements || {}) : undefined}
               />
             </>
           );
@@ -3412,6 +3445,7 @@ DataTableToolBar.propTypes = {
   rightOffset: PropTypes.number,
   mergeDisable: PropTypes.bool,
   trashOperationsEnabled: PropTypes.bool,
+  disableBulkEnroll: PropTypes.bool,
   removeAuthMembersEnabled: PropTypes.bool,
   removeFromDraft: PropTypes.bool,
   markAsReadEnabled: PropTypes.bool,

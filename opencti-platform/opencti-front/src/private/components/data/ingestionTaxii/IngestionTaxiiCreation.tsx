@@ -22,6 +22,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
 import { FormikHelpers } from 'formik/dist/types';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { handleErrorInForm } from '../../../../relay/environment';
 
 const IngestionTaxiiCreationMutation = graphql`
   mutation IngestionTaxiiCreationMutation($input: IngestionTaxiiAddInput!) {
@@ -73,6 +74,7 @@ interface IngestionTaxiiAddInput {
   key?: string;
   ca?: string;
   confidence_to_score?: boolean;
+  ssl_verify?: boolean;
 }
 
 interface IngestionTaxiiCreationProps {
@@ -106,7 +108,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
 
   const [commit] = useApiMutation(IngestionTaxiiCreationMutation);
 
-  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
+  const handleSubmit = (values: IngestionTaxiiAddInput, { setSubmitting, setErrors, resetForm }: FormikHelpers<IngestionTaxiiAddInput>) => {
     const authenticationValue = getAuthenticationValue(values);
     const userId
       = typeof values.user_id === 'object'
@@ -126,6 +128,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
       automatic_user: values.automatic_user ?? true,
       ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
       confidence_to_score: values.confidence_to_score,
+      ssl_verify: values.ssl_verify,
     };
 
     commit({
@@ -139,6 +142,10 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
           paginationOptions,
           'ingestionTaxiiAdd',
         );
+      },
+      onError: (error: Error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -159,6 +166,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     user_id: '',
     automatic_user: true,
     confidence_to_score: false,
+    ssl_verify: true,
   };
 
   return (
@@ -309,6 +317,13 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 type="checkbox"
                 name="confidence_to_score"
                 label={t_i18n('Copy confidence level to OpenCTI scores for indicators')}
+                containerstyle={fieldSpacingContainerStyle}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="ssl_verify"
+                label={t_i18n('Verify SSL certificate')}
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>

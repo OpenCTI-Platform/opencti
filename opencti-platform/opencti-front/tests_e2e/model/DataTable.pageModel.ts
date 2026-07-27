@@ -1,9 +1,11 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export default class DataTablePage {
-  container = this.page.locator('.datatable-container').first();
+  container: Locator;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.container = this.page.locator('.datatable-container').first();
+  }
 
   getNumberElements(nbElements: number) {
     return this.page.getByText(`/ ${nbElements}`, { exact: true });

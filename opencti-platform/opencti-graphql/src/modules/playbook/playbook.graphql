@@ -19,6 +19,7 @@ type PlayBookExecution {
 type Playbook implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     standard_id: String!
     parent_types: [String!]!
     metrics:[Metric]
@@ -105,7 +106,12 @@ type Query {
     ): PlaybookConnection @auth(for: [AUTOMATION])
     playbookComponents: [PlaybookComponent]! @auth(for: [AUTOMATION])
     playbooksForEntity(id: String!): [Playbook] @auth(for: [AUTOMATION])
-    playbooksForEnrollment: [Playbook] @auth(for: [AUTOMATION]) @ff(flags: ["BULK_ENROLLMENT"])
+    playbooksForEnrollment(ids: [String!]!): [Playbook] @auth(for: [AUTOMATION])
+    playbooksForEnrollmentByFilters(
+        filters: FilterGroup
+        search: String
+        excludedIds: [String!]
+    ): [Playbook!]! @auth(for: [AUTOMATION])
     playbookManagerInfo: PlaybookManager @auth(for: [AUTOMATION])
 }
 

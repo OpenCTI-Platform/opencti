@@ -5,6 +5,7 @@ import { FunctionalError } from '../../config/errors';
 export const validateFormSubmission = (
   schema: FormSchemaDefinition,
   values: Record<string, any>,
+  isBypass: boolean = false,
 ): void => {
   const errors: string[] = [];
 
@@ -14,7 +15,7 @@ export const validateFormSubmission = (
   }
   if (!schema.mainEntityLookup && schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-      if (field.isMandatory || field.required) {
+      if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
         if (isEmptyField(values.mainEntityGroups)) {
           errors.push('Required field "mainEntityGroups" is missing');
         } else {
@@ -34,7 +35,7 @@ export const validateFormSubmission = (
     }
     if (values.mainEntityFields) {
       schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-        if (field.isMandatory || field.required) {
+        if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
           const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName] ?? values.mainEntityFields[field.name];
           if (isEmptyField(fieldValue)) {
             errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -45,7 +46,7 @@ export const validateFormSubmission = (
   }
   if (!schema.mainEntityLookup && !schema.mainEntityMultiple) {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-      if (field.isMandatory || field.required) {
+      if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
         const fieldValue = values[field.name];
         if (isEmptyField(fieldValue)) {
           errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -63,7 +64,7 @@ export const validateFormSubmission = (
       }
       if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
         schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-          if (field.isMandatory || field.required) {
+          if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
             if (!values[`additional_${additionalEntity.id}_groups`]) {
               errors.push(`Required field "additional_${additionalEntity.id}_groups" is missing`);
             } else {
@@ -83,7 +84,7 @@ export const validateFormSubmission = (
         }
         if (values[`additional_${additionalEntity.id}_fields`]) {
           schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-            if (field.isMandatory || field.required) {
+            if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
               const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName] ?? values[`additional_${additionalEntity.id}_fields`][field.name];
               if (isEmptyField(fieldValue)) {
                 errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -106,7 +107,7 @@ export const validateFormSubmission = (
 
         if (additionalEntity.required || hasAnyFieldFilled) {
           entityFields.forEach((field) => {
-            if (field.isMandatory || field.required) {
+            if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
               const fieldValue = entityData ? entityData[field.name] : undefined;
               if (isEmptyField(fieldValue)) {
                 errors.push(`Required field "${field.label || field.name}" is missing`);

@@ -1,0 +1,28 @@
+name: Client Python feature request
+description: Request a new feature for the Python client (pycti).
+title: "feat(client-python): "
+labels:
+  - needs triage
+  - feature
+type: feature
+body:
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: "Describe the use case for which you need a solution."
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: "Describe the solution you would like pycti to provide."
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional information
+    validations:
+      required: false

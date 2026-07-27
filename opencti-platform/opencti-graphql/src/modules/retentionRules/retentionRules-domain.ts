@@ -10,21 +10,16 @@ import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
-import { FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
+import { emptyFilterGroup } from '../../utils/filtering/filtering-utils';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
-  if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
-    throw UnsupportedError('The history scope for retention rules is not enabled on this platform');
-  }
-  if (scope === 'activity' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
-    throw UnsupportedError('The activity scope for retention rules is not enabled on this platform');
-  }
   const before = utcDate().subtract(maxDays, unit ?? 'days');
   let result: any = [];
   // knowledge rule
@@ -65,7 +60,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
   // filters must be a valid json
   let { filters } = input;
   if (!filters) { // filters is undefined or an empty string
-    filters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+    filters = JSON.stringify(emptyFilterGroup);
   }
   try {
     JSON.parse(filters);

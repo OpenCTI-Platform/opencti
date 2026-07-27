@@ -209,7 +209,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
     setAttackPatternIdsToOverlap(attackPatternIds);
   };
 
-  let csvData = null;
+  let csvData: unknown[] | null = null;
   if (currentView === 'courses-of-action') {
     csvData = (data.attackPatterns?.edges ?? [])
       .map((n) => n.node.coursesOfAction?.edges ?? [])
@@ -346,14 +346,12 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                       : t_i18n('Display only used techniques')
                   }
                 >
-                  <span>
-                    <IconButton
-                      color={isModeOnlyActive ? 'secondary' : 'primary'}
-                      onClick={() => setIsModeOnlyActive((value) => !value)}
-                    >
-                      <VisibilityOutlined />
-                    </IconButton>
-                  </span>
+                  <IconButton
+                    color={isModeOnlyActive ? 'secondary' : 'primary'}
+                    onClick={() => setIsModeOnlyActive((value) => !value)}
+                  >
+                    <VisibilityOutlined />
+                  </IconButton>
                 </Tooltip>
               </Stack>
 

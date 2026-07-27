@@ -314,7 +314,7 @@ const LegacyAISummaryContainers = ({ busId, isContainer, filters, loading, setLo
   }, []);
 
   const refetch = useCallback((newFirst: number, newRelative: string) => {
-    let startDate = null;
+    let startDate: string | null = null;
     if (newRelative === 'days-1') {
       startDate = daysAgo(1);
     }

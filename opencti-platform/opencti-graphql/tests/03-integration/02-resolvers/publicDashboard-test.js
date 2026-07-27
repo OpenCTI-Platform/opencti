@@ -800,6 +800,40 @@ describe('PublicDashboard resolver', () => {
           expect(attacksData[0].value).toEqual(4); // same result as for '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7' widget
         });
 
+        it('should return the data for API: SCR Time series when filters are undefined', async () => {
+          const API_SCR_LIST_QUERY = gql`
+            query PublicStixRelationshipsMultiTimeSeries(
+              $startDate: DateTime
+              $endDate: DateTime
+              $uriKey: String!
+              $widgetId : String!
+            ) {
+              publicStixRelationshipsMultiTimeSeries(
+                startDate: $startDate
+                endDate: $endDate
+                uriKey: $uriKey
+                widgetId : $widgetId
+              ) {
+                data {
+                  date
+                  value
+                }
+              }
+            }
+          `;
+          const { data } = await queryAsAdmin({
+            query: API_SCR_LIST_QUERY,
+            variables: {
+              uriKey: publicDashboardUriKey,
+              widgetId: 'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb',
+            },
+          });
+          const { publicStixRelationshipsMultiTimeSeries } = data;
+          const attacksData = publicStixRelationshipsMultiTimeSeries[0].data;
+          expect(attacksData.length).toEqual(1);
+          expect(attacksData[0].value).toEqual(7);
+        });
+
         it('should return the data for API: SCO Distribution', async () => {
           const API_SCO_DONUT_QUERY = gql`
             query PublicStixCoreObjectsDistribution(

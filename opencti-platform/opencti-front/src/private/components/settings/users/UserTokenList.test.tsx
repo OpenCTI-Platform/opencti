@@ -43,7 +43,7 @@ describe('Component: UserTokenList', () => {
     const commitMutationMock = commitMutation as Mock;
 
     // Click revoke
-    const revokeButton = screen.getByLabelText('revoke');
+    const revokeButton = screen.getByLabelText('Revoke');
     await user.click(revokeButton);
 
     // Dialog should open

@@ -24,6 +24,7 @@ export const RELATION_BEACONS_TO = 'beacons-to';
 export const RELATION_EXFILTRATES_TO = 'exfiltrates-to';
 export const RELATION_DOWNLOADS = 'downloads';
 export const RELATION_DROPS = 'drops';
+export const RELATION_INTERPRETED_BY = 'interpreted-by';
 export const RELATION_EXPLOITS = 'exploits';
 export const RELATION_VARIANT_OF = 'variant-of';
 export const RELATION_CHARACTERIZES = 'characterizes';
@@ -75,6 +76,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_EXFILTRATES_TO,
   RELATION_COMPROMISES,
   RELATION_DOWNLOADS,
+  RELATION_INTERPRETED_BY,
   RELATION_EXPLOITS,
   RELATION_CHARACTERIZES,
   RELATION_ANALYSIS_OF,

@@ -61,7 +61,7 @@ const Groups = () => {
     navigate,
     location,
     LOCAL_STORAGE_KEY,
-  );
+  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
 
   const [groupState, setGroupState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
     sortBy: params.sortBy ?? 'name',

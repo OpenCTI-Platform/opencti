@@ -72,6 +72,7 @@ export class ExportButtons extends Component {
     const exportButtons = document.getElementById('export-buttons');
     const viewButtons = document.getElementById('container-view-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
+    const dashboardRefreshControl = document.getElementById('dashboard-refresh-control');
 
     try {
       this.setState({ exporting: true });
@@ -85,6 +86,9 @@ export class ExportButtons extends Component {
       const container = document.getElementById(domElementId);
 
       // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
+      if (dashboardRefreshControl) {
+        dashboardRefreshControl.setAttribute('style', 'display: none');
+      }
       if (dashboardButtons) {
         dashboardButtons.setAttribute('style', 'display: none');
       } else {
@@ -113,6 +117,9 @@ export class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
+      if (dashboardRefreshControl) {
+        restoreStyle(dashboardRefreshControl, { display: 'flex' });
+      }
       if (dashboardButtons) {
         restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {
@@ -137,6 +144,8 @@ export class ExportButtons extends Component {
     const { pixelRatio = 1, t, setExportTheme } = this.props;
     const exportButtons = document.getElementById('export-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
+    const dashbaordRefreshControl = document.getElementById('dashboard-refresh-control');
+
     try {
       this.setState({ exporting: true });
       this.handleClosePdf();
@@ -147,6 +156,10 @@ export class ExportButtons extends Component {
       setExportTheme(themeNode);
 
       // Hide buttons: dashboard-buttons wraps everything on dashboards
+      if (dashbaordRefreshControl) {
+        dashbaordRefreshControl.setAttribute('style', 'display: none');
+      }
+
       if (dashboardButtons) {
         dashboardButtons.setAttribute('style', 'display: none');
       } else {
@@ -168,6 +181,10 @@ export class ExportButtons extends Component {
     } finally {
       setExportTheme(null);
       this.setState({ exporting: false });
+
+      if (dashbaordRefreshControl) {
+        restoreStyle(dashbaordRefreshControl, { display: 'flex' });
+      }
       if (dashboardButtons) {
         restoreStyle(dashboardButtons, DASHBOARD_BUTTONS_STYLE);
       } else {

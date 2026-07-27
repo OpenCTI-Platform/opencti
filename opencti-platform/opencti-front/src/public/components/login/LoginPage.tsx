@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useRef, useState } from 'react';
 import LoginForm from './LoginForm';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import { isNotEmptyField } from '../../../utils/utils';
@@ -16,6 +16,7 @@ import AlertChangePwd from './AlertChangePwd';
 import { useLoginContext } from './loginContext';
 import AlertMfa from './AlertMfa';
 import { useFormatter } from '../../../components/i18n';
+import ForcePasswordChange from './ForcePasswordChange';
 
 interface LoginPageProps {
   settings: LoginRootPublicQuery$data['publicSettings'];
@@ -23,14 +24,24 @@ interface LoginPageProps {
 
 const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   const { t_i18n } = useFormatter();
-  const { resetPwdStep } = useLoginContext();
+  const { resetPwdStep, forcePasswordChange } = useLoginContext();
   const [checked, setChecked] = useState(false);
+
+  const loginMessageRef = useRef<HTMLElement>(null);
+  const [isLoginMessageOverflowing, setIsLoginMessageOverflowing] = useState(false);
+  const loginMessageMaxHeight = window.innerHeight * 0.25;
 
   const consentMessage = settings.platform_consent_message;
   const loginMessage = settings.platform_login_message;
   const providers = settings.platform_providers;
   const hasAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const hasConsentMessage = isNotEmptyField(consentMessage);
+
+  useEffect(() => {
+    if (loginMessageRef.current) {
+      setIsLoginMessageOverflowing(loginMessageRef.current.scrollHeight > loginMessageMaxHeight);
+    }
+  }, [loginMessage]);
 
   const handleChange = () => {
     setChecked(!checked);
@@ -42,7 +53,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
   };
 
   const consentOk = !hasConsentMessage || (hasConsentMessage && checked);
-  const showLoginForm = consentOk && hasAuthForm && !resetPwdStep;
+  const showLoginForm = consentOk && hasAuthForm && !resetPwdStep && !forcePasswordChange;
 
   return (
     <LoginLayout settings={settings}>
@@ -68,7 +79,15 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
         )}
 
         {!!loginMessage && (
-          <Typography textAlign="center" variant="body2">
+          <Typography
+            ref={loginMessageRef}
+            textAlign="center"
+            variant="body2"
+            sx={{
+              maxHeight: loginMessageMaxHeight,
+              overflowY: isLoginMessageOverflowing ? 'auto' : undefined,
+            }}
+          >
             <LoginMarkdown sx={{ mb: 2 }}>
               {loginMessage}
             </LoginMarkdown>
@@ -77,7 +96,7 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
 
         {consentOk
           && providers.filter((p) => p.type === 'FORM').length > 0
-          && (showLoginForm || !!resetPwdStep)
+          && (showLoginForm || !!resetPwdStep || !!forcePasswordChange)
           && (
             <Card
               sx={{
@@ -86,7 +105,32 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
               }}
             >
               <div style={{ minHeight: 170 }}>
-                {!!resetPwdStep && <ResetPassword />}
+                {!!resetPwdStep && (
+                  <ResetPassword
+                    policies={{
+                      minLength: settings.password_policy_min_length,
+                      maxLength: settings.password_policy_max_length,
+                      minSymbols: settings.password_policy_min_symbols,
+                      minNumbers: settings.password_policy_min_numbers,
+                      minWords: settings.password_policy_min_words,
+                      minLowercase: settings.password_policy_min_lowercase,
+                      minUppercase: settings.password_policy_min_uppercase,
+                    }}
+                  />
+                )}
+                {!!forcePasswordChange && (
+                  <ForcePasswordChange
+                    policies={{
+                      minLength: settings.password_policy_min_length,
+                      maxLength: settings.password_policy_max_length,
+                      minSymbols: settings.password_policy_min_symbols,
+                      minNumbers: settings.password_policy_min_numbers,
+                      minWords: settings.password_policy_min_words,
+                      minLowercase: settings.password_policy_min_lowercase,
+                      minUppercase: settings.password_policy_min_uppercase,
+                    }}
+                  />
+                )}
                 {showLoginForm && <LoginForm />}
               </div>
             </Card>

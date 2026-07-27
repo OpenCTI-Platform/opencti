@@ -1,4 +1,4 @@
-import * as path from 'path';
+import { fileURLToPath } from 'node:url';
 import { format } from 'date-fns';
 import { v4 as uuid } from 'uuid';
 import IncidentResponsePage from 'tests_e2e/model/incidentResponse.pageModel';
@@ -14,6 +14,9 @@ import ToolbarPageModel from '../model/toolbar.pageModel';
 import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 import CardPage from '../model/card.pageModel';
 
+const TEST_MD_PATH = fileURLToPath(new URL('assets/incidentResponse.test.md', import.meta.url));
+const TEST_PDF_PATH = fileURLToPath(new URL('assets/incidentResponse.test.pdf', import.meta.url));
+
 /**
  * Content of the test
  * -------------------
@@ -28,7 +31,7 @@ import CardPage from '../model/card.pageModel';
  * Delete incident response.
  * Check deletion.
  */
-test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
+test('Incident Response Creation', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const cardPage = new CardPage(page);
   const leftNavigation = new LeftBarPage(page);
@@ -114,7 +117,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   await incidentResponseForm.markingsAutocomplete.selectOption('TLP:GREEN');
   await expect(incidentResponseForm.markingsAutocomplete.getOption('TLP:GREEN')).toBeVisible();
 
-  await incidentResponseForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/incidentResponse.test.md'));
+  await incidentResponseForm.associatedFileField.uploadContentFile(TEST_MD_PATH);
   await expect(incidentResponseForm.associatedFileField.getByText('incidentResponse.test.md')).toBeVisible();
 
   await incidentResponseForm.getCreateButton().click();
@@ -292,7 +295,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
  * Delete incident response by background task.
  * Check deletion.
  */
-test('Incident response live entities creation and relationships', { tag: ['@ce'] }, async ({ page }) => {
+test('Incident response live entities creation and relationships', { tag: ['@ce', '@group1'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const incidentResponsePage = new IncidentResponsePage(page);
@@ -347,7 +350,7 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref incident response');
   await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/client-python');
-  await externalReferenceForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/incidentResponse.test.pdf'));
+  await externalReferenceForm.associatedFileField.uploadContentFile(TEST_PDF_PATH);
   await expect(externalReferenceForm.associatedFileField.getByText('incidentResponse.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
   await expect(incidentResponseForm.externalReferencesAutocomplete.getOption('external ref')).toBeVisible();

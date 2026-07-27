@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddVulnerabilities from './AddVulnerabilities';
 import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
-import SecurityCoverageInformation from './SecurityCoverageInformation';
+import SecurityCoverageScores from './SecurityCoverageScores';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
@@ -78,7 +78,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                         <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{vulnerability?.name}</Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
-                          <SecurityCoverageInformation
+                          <SecurityCoverageScores
                             coverage_information={coverage}
                             variant="header"
                           />

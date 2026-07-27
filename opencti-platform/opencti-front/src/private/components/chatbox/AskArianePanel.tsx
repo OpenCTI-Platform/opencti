@@ -7,7 +7,7 @@ import { LogoXtmOneIcon } from 'filigran-icon';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
-import { APP_BASE_PATH } from '../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import FiligranIcon from '@components/common/FiligranIcon';
@@ -135,6 +135,10 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       apiEndpoints={{
         agents: '/agents',
         messages: '/messages',
+        // Mid-run steering — must be set explicitly because the chatbot
+        // default ('/chat/messages/steer') assumes XTM One-style paths,
+        // while the OpenCTI proxy exposes '/messages/steer'.
+        steer: '/messages/steer',
         sessions: '/sessions',
         upload: '/upload',
         download: '/files',
@@ -154,6 +158,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       requestHeaders={requestHeaders}
       pageContext={pageContext}
       onRelativeLinkClick={handleRelativeLinkClick}
+      onTaskComplete={(_title, body) => MESSAGING$.notifySuccess(body)}
     />,
     container,
   );

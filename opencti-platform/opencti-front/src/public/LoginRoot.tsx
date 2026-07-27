@@ -58,6 +58,13 @@ export const rootPublicQuery = graphql`
           name
         }
       }
+      password_policy_min_length
+      password_policy_max_length
+      password_policy_min_symbols
+      password_policy_min_numbers
+      password_policy_min_words
+      password_policy_min_lowercase
+      password_policy_min_uppercase
     }
   }
 `;

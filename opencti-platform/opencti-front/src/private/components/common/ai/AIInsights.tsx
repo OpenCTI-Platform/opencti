@@ -150,6 +150,7 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEECh
         {onlyIcon ? (
           <IconButton
             size="small"
+            aria-label={buttonLabel}
             onClick={onClick}
             className={floating ? classes.chipFloating : classes.chip}
             disabled={disabled}

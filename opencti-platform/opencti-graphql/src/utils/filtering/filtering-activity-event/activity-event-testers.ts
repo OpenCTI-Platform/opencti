@@ -59,5 +59,8 @@ export const FILTER_WITH_EVENTS_KEY_TESTERS_MAP: Record<string, TesterFunction> 
   members_user: testMembersUser,
   members_group: testMembersGroup,
   members_organization: testMembersOrganization,
+  workflow_user: testMembersUser,
+  workflow_group: testMembersGroup,
+  workflow_organization: testMembersOrganization,
   activity_statuses: testActivityStatuses,
 };

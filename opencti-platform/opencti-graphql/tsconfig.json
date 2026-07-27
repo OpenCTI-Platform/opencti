@@ -2,9 +2,9 @@
   "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*", ".eslintrc.js"],
   "files": ["src/generated/graphql.ts"],
   "compilerOptions": {
-    "target": "es2020",
-    "module": "es2020",
-    "lib": ["es2022"],
+    "target": "es2023",
+    "module": "es2022",
+    "lib": ["es2023"],
     "strict": true,
     "allowJs": true,
     "noImplicitAny": true,

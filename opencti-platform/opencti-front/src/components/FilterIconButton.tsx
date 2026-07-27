@@ -1,6 +1,6 @@
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, GqlFilterGroup, isFilterGroupNotEmpty, removeIdFromFilterGroupObject } from '../utils/filters/filtersUtils';
+import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
@@ -66,7 +66,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     {
-      filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
+      filters: normalizeFilterGroupForBackend(filters),
       isMeValueForbidden: searchContext?.elementType === 'Playbook-Stix-Component',
     },
   );

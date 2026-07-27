@@ -11,6 +11,7 @@ import useGranted, {
 import Loader from '../../../../components/Loader';
 import AccessesMenu from '../AccessesMenu';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const Security = lazy(() => import('../../../../utils/Security'));
 const Groups = lazy(() => import('../Groups'));
@@ -28,6 +29,7 @@ const RootUser = lazy(() => import('../users/Root'));
 const DisseminationLists = lazy(() => import('../dissemination_lists/DisseminationLists'));
 const EmailTemplates = lazy(() => import('../email_template/EmailTemplates'));
 const EmailTemplate = lazy(() => import('../email_template/EmailTemplate'));
+const SmtpConfiguration = lazy(() => import('../smtp_configuration/SmtpConfiguration'));
 
 const AccessesRedirect = () => {
   const adminOrga = isOnlyOrganizationAdmin();
@@ -57,6 +59,8 @@ const AccessesRedirect = () => {
 
 const RootAccesses = () => {
   const fallbackUrl = useSettingsFallbackUrl();
+  const { isFeatureEnable } = useHelper();
+  const isSmtpConfigurationEnabled = isFeatureEnable('SMTP_CONFIGURATION');
 
   return (
     <>
@@ -236,6 +240,17 @@ const RootAccesses = () => {
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <SSODefinitions />
+              </Security>
+            )}
+          />
+          <Route
+            path="/smtp"
+            element={(
+              <Security
+                needs={[SETTINGS_SETACCESSES]}
+                placeholder={<Navigate to={fallbackUrl} />}
+              >
+                {isSmtpConfigurationEnabled ? <SmtpConfiguration /> : <Navigate to={fallbackUrl} />}
               </Security>
             )}
           />

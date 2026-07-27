@@ -277,6 +277,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
                   <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                     <span style={{ display: 'inline-flex', marginLeft: 4 }}>
                       <IconButton
+                        aria-label={t_i18n('Client certificate requires the platform to be configured with HTTPS')}
                         size="small"
                         disabled
                         sx={{

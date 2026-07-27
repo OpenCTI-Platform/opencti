@@ -68,7 +68,7 @@ const elements = [{ _index: 'opencti_stix_domain_objects-000001', _id: 'test-id'
 describe('buildCsvLines', () => {
   it('should convert elements to CSV expected format', () => {
     const expectedResultLines: string[] = [
-      `CSV test;Triggered risk rules:
+      `CSV test;"Triggered risk rules:
 
 |Rule|Severity|Score|
 |----|---|----|
@@ -79,9 +79,19 @@ describe('buildCsvLines', () => {
 
 *italic test*
 ~~strikethrough~~
-test`,
+test"`,
     ];
     const resultLines = buildCsvLines(elements, feed);
+    expect(resultLines).toEqual(expectedResultLines);
+  });
+
+  it('should quote fields containing newlines (CRLF) without separator or double quotes', () => {
+    const descriptionWithNewlines = 'line1\nline2\nline3';
+    const elementsWithNewlines = [{ ...elements[0], description: descriptionWithNewlines }];
+
+    const expectedResultLines: string[] = ['CSV test;"line1\nline2\nline3"'];
+
+    const resultLines = buildCsvLines(elementsWithNewlines, feed);
     expect(resultLines).toEqual(expectedResultLines);
   });
 

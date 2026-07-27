@@ -41,7 +41,7 @@ export const useDocumentFaviconModifier = (href?: string | null) => {
 
 export const useDocumentThemeModifier = (mode: string) => {
   useEffect(() => {
-    // CKEditor (and other components) rely on the lowercase mode
+    // Some components rely on the lowercase mode
     // (`dark` / `light`) to apply theme-specific CSS variables.
     // The attribute must also stay in sync if the theme changes at runtime.
     document.body.setAttribute('data-theme', mode);

@@ -2,6 +2,12 @@ import { IngestionAuthType } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
 import { decryptValue, encryptValue, getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
+import { verifyUriWithDenyList } from '../../utils/uriDenyList';
+import { uriDenyList } from '../../config/uriDenyList';
+
+export const verifyIngestionUri = (uri: string): void => {
+  verifyUriWithDenyList(uri, uriDenyList(), 'This URI is not allowed for ingestion.');
+};
 
 export const getIngestionKeyPair = memoize(async () => {
   const factory = await getPlatformCrypto();

@@ -83,16 +83,13 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
       onClose={onClose}
       header={(
         <Tooltip title={t_i18n('Refresh')}>
-          <span>
-            <IconButton
-              size="small"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              aria-label={t_i18n('Refresh')}
-            >
-              <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
-            </IconButton>
-          </span>
+          <IconButton
+            size="small"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
+          </IconButton>
         </Tooltip>
       )}
     >

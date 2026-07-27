@@ -37,6 +37,11 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
+import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/domain/user';
+import { getSettingsFromDatabase } from '../../../src/domain/settings';
+import { updateLocalAuth } from '../../../src/domain/setting-auth';
+import type { BasicStoreSettings } from '../../../src/types/settings';
+import { DateTime } from 'luxon';
 
 const LIST_QUERY = gql`
   query users(
@@ -842,7 +847,7 @@ describe('User has no settings capability and is organization admin query behavi
     `;
 
   const UPDATE_ORGANIZATION_QUERY = gql`
-    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+    mutation OrganizationEdit($id: ID!, $input: [EditInput!]!) {
       organizationFieldPatch(id: $id, input: $input) {
         id
         name
@@ -1082,7 +1087,6 @@ describe('meUser specific resolvers', async () => {
         language
         theme
         otp_activated
-        otp_qr
         description
       }
     }
@@ -1127,6 +1131,111 @@ describe('meUser specific resolvers', async () => {
     await queryAsUserIsExpectedError(USER_EDITOR, {
       query: ME_EDIT,
       variables,
+    });
+  });
+
+  it('User should change password WITHOUT current password when password is expired', async () => {
+    // Set password_valid_until to a past date (expire the password)
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const pastDate = new Date(Date.now() - 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [pastDate] } },
+    });
+
+    // Change password without providing current password (force-change scenario)
+    const ME_EDIT_WITH_VALIDITY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          password_valid_until
+        }
+      }
+    `;
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_WITH_VALIDITY,
+      variables: {
+        input: [{ key: 'password', value: [USER_EDITOR.password] }],
+      },
+    });
+    // password_valid_until should be reset (null if no policy, or future date if policy set)
+    const newValidity = queryResult.data?.meEdit.password_valid_until;
+    if (newValidity !== null) {
+      expect(new Date(newValidity).getTime()).toBeGreaterThan(Date.now());
+    }
+  });
+
+  it('User should NOT change password without current password when password is NOT expired', async () => {
+    // Ensure password_valid_until is null (not expired)
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+
+    // Try to change password without providing current password
+    const variables = {
+      input: [{ key: 'password', value: ['new_password_attempt'] }],
+    };
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables,
+    }, 'The current password you have provided is not valid');
+  });
+});
+
+describe('Password expiration - userEdit', async () => {
+  it('Admin should NOT set password_valid_until on external user', async () => {
+    // Create an external user
+    const CREATE_EXTERNAL_USER = gql`
+      mutation UserAdd($input: UserAddInput!) {
+        userAdd(input: $input) { id }
+      }
+    `;
+    const createResult = await queryAsAdminWithSuccess({
+      query: CREATE_EXTERNAL_USER,
+      variables: {
+        input: {
+          name: 'External Test User',
+          user_email: 'external-test-pwd@opencti.io',
+          password: 'external123',
+        },
+      },
+    });
+    const externalUserId = createResult.data?.userAdd.id;
+
+    // Mark the user as external
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: externalUserId, input: { key: 'external', value: [true] } },
+    });
+
+    // Try to set password_valid_until
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: externalUserId, input: { key: 'password_valid_until', value: [new Date().toISOString()] } },
+    });
+    expect(result.errors).toBeDefined();
+    expect(result.errors?.[0].message).toContain('Cannot force password change for external user');
+
+    // Cleanup
+    const DELETE_USER = gql`mutation { userEdit(id: "${externalUserId}") { delete } }`;
+    await queryAsAdmin({ query: DELETE_USER, variables: {} });
+  });
+
+  it('Admin should set password_valid_until on internal user', async () => {
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const futureDate = new Date(Date.now() + 30 * 86400000).toISOString();
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+    expect(queryResult.errors).toBeUndefined();
+
+    // Cleanup
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
     });
   });
 });
@@ -1325,5 +1434,705 @@ describe('User API Token Mutation', () => {
     });
 
     expect(queryResult.data?.userTokenAdd.expires_at).toBeDefined();
+  });
+});
+
+describe('Password expiration - isPasswordExpired', () => {
+  it('returns false when password_valid_until is null', () => {
+    expect(isPasswordExpired({ password_valid_until: null } as any)).toBe(false);
+  });
+
+  it('returns false when password_valid_until is undefined', () => {
+    expect(isPasswordExpired({} as any)).toBe(false);
+  });
+
+  it('returns false when password_valid_until is in the future', () => {
+    const future = DateTime.now().plus({ days: 6 }).toUTC().toString();
+    expect(isPasswordExpired({ password_valid_until: future } as any)).toBe(false);
+  });
+
+  it('returns true when password_valid_until is in the past', () => {
+    const past = DateTime.now().minus({ days: 1 }).toUTC().toString();
+    expect(isPasswordExpired({ password_valid_until: past } as any)).toBe(true);
+  });
+
+  it('returns true when password_valid_until is exactly now (inclusive boundary)', () => {
+    const now = DateTime.now().minus({ milliseconds: 1 }).toUTC().toString();
+    expect(isPasswordExpired({ password_valid_until: now } as any)).toBe(true);
+  });
+});
+
+describe('Password expiration - computePasswordValidUntilFromPolicy', () => {
+  let settings: BasicStoreSettings;
+  let originalValidityDays: number;
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    originalValidityDays = (settings as any).password_policy_validity_days ?? 0;
+  });
+
+  afterAll(async () => {
+    // Restore original policy
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: originalValidityDays,
+    });
+  });
+
+  it('returns null when policy validity days is 0', async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+    const result = await computePasswordValidUntilFromPolicy(testContext);
+    expect(result).toBeNull();
+  });
+
+  it('returns a date approximately now + N days when policy is set', async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 20,
+    });
+    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const result = await computePasswordValidUntilFromPolicy(testContext);
+    const after = DateTime.now().plus({ days: 20 }).toUTC();
+
+    expect(result).not.toBeNull();
+    const resultDate = DateTime.fromISO(result!);
+    expect(resultDate >= before.minus({ seconds: 1 })).toBe(true);
+    expect(resultDate <= after.plus({ seconds: 1 })).toBe(true);
+  });
+});
+
+describe('Password expiration - force change flow', () => {
+  let editorId: string;
+  let settings: BasicStoreSettings;
+
+  beforeAll(async () => {
+    editorId = await getUserIdByEmail(USER_EDITOR.email);
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    // Set policy to 0 (no expiry)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+  });
+
+  it('user is not expired when password_valid_until is null (no policy)', async () => {
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+    const user: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(isPasswordExpired(user)).toBe(false);
+  });
+
+  it('user becomes expired when admin forces password_valid_until to a past date', async () => {
+    const pastDate = DateTime.now().minus({ hours: 1 }).toISO();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [pastDate] } },
+    });
+    const user: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(isPasswordExpired(user)).toBe(true);
+  });
+
+  it('user can change password without current password when expired, and validity resets to null (policy=0)', async () => {
+    // Expire the user
+    const pastDate = DateTime.now().minus({ hours: 1 }).toISO();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [pastDate] } },
+    });
+
+    // Change password without current password
+    const ME_EDIT_VALIDITY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) { id, password_valid_until }
+      }
+    `;
+    const result = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_VALIDITY,
+      variables: { input: [{ key: 'password', value: [USER_EDITOR.password] }] },
+    });
+
+    // With policy = 0, password_valid_until should be null
+    expect(result.data?.meEdit.password_valid_until).toBeNull();
+  });
+});
+
+describe('Password policy propagation to all users', () => {
+  let editorId: string;
+  let participateId: string;
+
+  beforeAll(async () => {
+    editorId = await getUserIdByEmail(USER_EDITOR.email);
+    participateId = await getUserIdByEmail(USER_PARTICIPATE.email);
+    // Ensure users start with no password_valid_until
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: participateId, input: { key: 'password_valid_until', value: [null] } },
+    });
+  });
+
+  afterAll(async () => {
+    // Cleanup: clear password_valid_until and reset policy to 0
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [null] } },
+    });
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: participateId, input: { key: 'password_valid_until', value: [null] } },
+    });
+    const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+  });
+
+  it('adjustAllUsersPasswordValidUntil should shift existing dates and set dates for users without one', async () => {
+    // Setup: Set a date on editor, leave participate without one
+    const existingDate = new Date(Date.now() + 6 * 86400000).toISOString(); // +6 days
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [existingDate] } },
+    });
+
+    // Act: simulate policy change from 10 to 600 (diff = +590 days)
+    await adjustAllUsersPasswordValidUntil(testContext, 10, 600);
+
+    // Assert: editor date should be shifted by +590 days
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    const editorNewDate = new Date(editorAfter.password_valid_until).getTime();
+    const expectedEditorDate = new Date(existingDate).getTime() + 590 * 86400000;
+    expect(Math.abs(editorNewDate - expectedEditorDate)).toBeLessThan(60000); // within 1 minute
+
+    // Assert: participate (had no date) should now have now + 600 days
+    const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
+    expect(participateAfter.password_valid_until).not.toBeNull();
+    const participateNewDate = new Date(participateAfter.password_valid_until).getTime();
+    const expectedParticipateDate = Date.now() + 600 * 86400000;
+    expect(Math.abs(participateNewDate - expectedParticipateDate)).toBeLessThan(60000);
+  });
+
+  it('clearAllUsersPasswordValidUntil should clear dates on all internal users', async () => {
+    // Setup: ensure both users have a date
+    const futureDate = new Date(Date.now() + 100 * 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: participateId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+
+    // Act
+    await clearAllUsersPasswordValidUntil(testContext);
+
+    // Assert: both should now have no expiry (undefined after ES clear)
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
+    expect(editorAfter.password_valid_until == null).toBe(true);
+    expect(participateAfter.password_valid_until == null).toBe(true);
+  });
+
+  it('updateLocalAuth with validity 0 should clear all users dates (600 → 0)', async () => {
+    // Setup: set dates on users
+    const futureDate = new Date(Date.now() + 200 * 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: participateId, input: { key: 'password_valid_until', value: [futureDate] } },
+    });
+
+    // Set current policy to 600 days first
+    const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 600,
+    });
+
+    // Act: set policy to 0 (disable)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+
+    // Assert: all users should have password_valid_until cleared (undefined after ES clear)
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
+    expect(editorAfter.password_valid_until == null).toBe(true);
+    expect(participateAfter.password_valid_until == null).toBe(true);
+  });
+
+  it('updateLocalAuth with changed validity should shift dates (10 → 600)', async () => {
+    // Setup: set policy to 10, then set a date on editor (simulating password changed 4 days ago)
+    const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 10,
+    });
+    // Editor: password changed 4 days ago → expiry in 6 days
+    const editorExpiry = new Date(Date.now() + 6 * 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [editorExpiry] } },
+    });
+    // Participate: no date set (clear it)
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: participateId, input: { key: 'password_valid_until', value: [null] } },
+    });
+
+    // Act: change policy from 10 to 600
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 600,
+    });
+
+    // Assert: editor expiry shifted by +590 days
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    const editorNewDate = new Date(editorAfter.password_valid_until).getTime();
+    const expectedEditorDate = new Date(editorExpiry).getTime() + 590 * 86400000;
+    expect(Math.abs(editorNewDate - expectedEditorDate)).toBeLessThan(60000);
+
+    // Assert: participate (no date) should now have now + 600 days
+    const participateAfter: any = await storeLoadById(testContext, ADMIN_USER, participateId, ENTITY_TYPE_USER);
+    expect(participateAfter.password_valid_until).not.toBeNull();
+    const participateNewDate = new Date(participateAfter.password_valid_until).getTime();
+    const expectedParticipateDate = Date.now() + 600 * 86400000;
+    expect(Math.abs(participateNewDate - expectedParticipateDate)).toBeLessThan(60000);
+  });
+
+  it('updateLocalAuth 500→0→1 should give now+1', async () => {
+    // Setup: set policy to 500, set dates on users
+    const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 500,
+    });
+    // Set a date in the future (simulating password changed recently with 500 day policy)
+    const oldDate = new Date(Date.now() + 490 * 86400000).toISOString();
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: editorId, input: { key: 'password_valid_until', value: [oldDate] } },
+    });
+
+    // Step 1: set policy to 0 (should clear dates)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+    });
+
+    // Verify dates are cleared
+    const editorMid: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(editorMid.password_valid_until == null).toBe(true);
+
+    // Step 2: set policy to 1 (should give now+1 day)
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 1,
+    });
+
+    // Assert: editor should have now+1 day
+    const editorAfter: any = await storeLoadById(testContext, ADMIN_USER, editorId, ENTITY_TYPE_USER);
+    expect(editorAfter.password_valid_until).not.toBeNull();
+    const editorNewDate = new Date(editorAfter.password_valid_until).getTime();
+    const expectedDate = Date.now() + 1 * 86400000; // now + 1 day
+    // Should be within 1 minute of now+1day
+    expect(Math.abs(editorNewDate - expectedDate)).toBeLessThan(60000);
+    // Should NOT be close to old_date+1
+    const oldDatePlus1 = new Date(oldDate).getTime() + 1 * 86400000;
+    expect(Math.abs(editorNewDate - oldDatePlus1)).toBeGreaterThan(86400000); // at least 1 day away from old_date+1
+  });
+});
+
+describe('Bookmarks API', () => {
+  const BOOKMARKS_QUERY = gql`
+    query Bookmarks($first: Int, $after: ID, $types: [String], $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode, $filters: FilterGroup) {
+      bookmarks(first: $first, after: $after, types: $types, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
+        edges {
+          node {
+            id
+            entity_type
+            ... on Malware {
+              name
+              created
+            }
+            ... on Report {
+              name
+              published
+            }
+          }
+        }
+        pageInfo {
+          startCursor
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          globalCount
+        }
+      }
+    }
+  `;
+
+  const BOOKMARK_ADD_MUTATION = gql`
+    mutation BookmarkAdd($id: ID!, $type: String!) {
+      bookmarkAdd(id: $id, type: $type) {
+        id
+        entity_type
+      }
+    }
+  `;
+
+  const BOOKMARK_DELETE_MUTATION = gql`
+    mutation BookmarkDelete($id: ID!) {
+      bookmarkDelete(id: $id)
+    }
+  `;
+
+  const MALWARE_ADD_MUTATION = gql`
+    mutation MalwareAdd($input: MalwareAddInput!) {
+      malwareAdd(input: $input) {
+        id
+        name
+        entity_type
+      }
+    }
+  `;
+
+  const MALWARE_DELETE_MUTATION = gql`
+    mutation MalwareDelete($id: ID!) {
+      malwareEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  const REPORT_ADD_MUTATION = gql`
+    mutation ReportAdd($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+        name
+        entity_type
+      }
+    }
+  `;
+
+  const REPORT_DELETE_MUTATION = gql`
+    mutation ReportDelete($id: ID!) {
+      reportEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+
+  let malware1Id: string;
+  let malware2Id: string;
+  let reportId: string;
+
+  beforeAll(async () => {
+    // Create test malware entities
+    const malware1 = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware 1', malware_types: ['ransomware'] } },
+    });
+    malware1Id = malware1.data?.malwareAdd.id;
+
+    const malware2 = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware 2', malware_types: ['trojan'] } },
+    });
+    malware2Id = malware2.data?.malwareAdd.id;
+
+    // Create a test report
+    const report = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Report', published: '2024-01-01T00:00:00.000Z' } },
+    });
+    reportId = report.data?.reportAdd.id;
+
+    // Add all three as bookmarks
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: malware1Id, type: 'Malware' },
+    });
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: malware2Id, type: 'Malware' },
+    });
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: reportId, type: 'Report' },
+    });
+  });
+
+  afterAll(async () => {
+    // Clean up bookmarks
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: malware1Id } });
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: malware2Id } });
+    await queryAsAdmin({ query: BOOKMARK_DELETE_MUTATION, variables: { id: reportId } });
+    // Delete test entities
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: malware1Id } });
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: malware2Id } });
+    await queryAsAdmin({ query: REPORT_DELETE_MUTATION, variables: { id: reportId } });
+  });
+
+  it('should list all bookmarks regardless of type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: {},
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(3);
+    const ids = edges.map((e: any) => e.node.id);
+    expect(ids).toContain(malware1Id);
+    expect(ids).toContain(malware2Id);
+    expect(ids).toContain(reportId);
+  });
+
+  it('should list only Malware bookmarks when filtered by type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    const ids = edges.map((e: any) => e.node.id);
+    expect(ids).toContain(malware1Id);
+    expect(ids).toContain(malware2Id);
+    expect(ids).not.toContain(reportId);
+    edges.forEach((e: any) => {
+      expect(e.node.entity_type).toBe('Malware');
+    });
+  });
+
+  it('should list only Report bookmarks when filtered by type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Report'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(1);
+    expect(edges[0].node.id).toEqual(reportId);
+    expect(edges[0].node.entity_type).toBe('Report');
+  });
+
+  it('should filter bookmarks by entity type using filters parameter', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    edges.forEach((e: any) => {
+      expect(e.node.entity_type).toBe('Malware');
+    });
+  });
+
+  it('should order bookmarks by name ascending', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], orderBy: 'name', orderMode: 'asc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    const names = edges.map((e: any) => e.node.name);
+    expect(names[0]).toBe('Bookmark Malware 1');
+    expect(names[1]).toBe('Bookmark Malware 2');
+  });
+
+  it('should order bookmarks by name descending', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], orderBy: 'name', orderMode: 'desc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    const names = edges.map((e: any) => e.node.name);
+    expect(names[0]).toBe('Bookmark Malware 2');
+    expect(names[1]).toBe('Bookmark Malware 1');
+  });
+
+  it('should paginate bookmarks with first parameter', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { first: 2, orderBy: 'name', orderMode: 'asc' },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toEqual(2);
+    const pageInfo = queryResult.data?.bookmarks.pageInfo;
+    expect(pageInfo.hasNextPage).toBe(true);
+  });
+
+  it('should reject filters with unsupported keys', async () => {
+    await queryAsAdminWithError({
+      query: BOOKMARKS_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: ['objectLabel'], values: ['some-label-id'], operator: 'eq' }],
+          filterGroups: [],
+        },
+      },
+    }, 'Bookmarks widgets only support filter with key=entity_type.');
+  });
+
+  it('should return empty connection when no bookmarks match type', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Campaign'] },
+    });
+    const edges = queryResult.data?.bookmarks.edges;
+    expect(edges.length).toBe(0);
+  });
+
+  it('should clean up bookmarks that reference deleted entities', async () => {
+    // Create a temporary malware entity
+    const tempMalware = await queryAsAdminWithSuccess({
+      query: MALWARE_ADD_MUTATION,
+      variables: { input: { name: 'Bookmark Malware Temp', malware_types: ['backdoor'] } },
+    });
+    const tempMalwareId = tempMalware.data?.malwareAdd.id;
+
+    // Bookmark it
+    await queryAsAdminWithSuccess({
+      query: BOOKMARK_ADD_MUTATION,
+      variables: { id: tempMalwareId, type: 'Malware' },
+    });
+
+    // Verify it appears in bookmarks
+    const beforeDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsBefore = beforeDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsBefore).toContain(tempMalwareId);
+
+    // Delete the entity directly without removing the bookmark
+    await queryAsAdmin({ query: MALWARE_DELETE_MUTATION, variables: { id: tempMalwareId } });
+
+    // Query bookmarks with first = 1
+    await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'], first: 1 },
+    });
+
+    // Query bookmarks again - the stale bookmark should be automatically cleaned up
+    const afterDelete = await queryAsAdminWithSuccess({
+      query: BOOKMARKS_QUERY,
+      variables: { types: ['Malware'] },
+    });
+    const idsAfter = afterDelete.data?.bookmarks.edges.map((e: any) => e.node.id);
+    expect(idsAfter).not.toContain(tempMalwareId);
+
+    // Verify the other bookmarks are still intact
+    expect(idsAfter).toContain(malware1Id);
+    expect(idsAfter).toContain(malware2Id);
   });
 });

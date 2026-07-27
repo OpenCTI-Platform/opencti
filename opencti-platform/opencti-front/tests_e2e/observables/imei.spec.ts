@@ -68,7 +68,7 @@ test('IMEI CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await observableForm.chooseType('IMEI');
   await observableForm.openBulk();
   await observableForm.bulkValuesField.fill(`${bulkImei1}\n${bulkImei2}`);
-  await observableForm.validateBulk();
+  await observableForm.validateBulk(2);
   await observableForm.submit();
   await observableForm.closeBulk();
 

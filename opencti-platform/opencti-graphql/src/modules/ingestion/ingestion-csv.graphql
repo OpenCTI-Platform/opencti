@@ -2,6 +2,7 @@
 type IngestionCsv implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
+    representative: Representative!
     standard_id: String!
     parent_types: [String!]!
     metrics:[Metric]
@@ -19,6 +20,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     user_id: String!
     user: Creator
     ingestion_running: Boolean
+    ssl_verify: Boolean
     current_state_hash: String
     current_state_date: DateTime
     last_execution_date: DateTime
@@ -100,6 +102,7 @@ input IngestionCsvAddInput {
     automatic_user: Boolean
     confidence_level: Int
     markings: [String!]
+    ssl_verify: Boolean
 }
 
 input IngestionCsvAddAutoUserInput {

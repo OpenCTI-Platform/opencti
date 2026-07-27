@@ -125,7 +125,14 @@ export const computeValidPeriod = async (indicator: IndicatorAddInput, lifetimeI
 
 export const hasSameSourceAlreadyUpdateThisScore = (sourceId: string, score: number, decay_history: DecayHistory[]) => {
   if (score && decay_history && sourceId) {
-    return decay_history.find((decayPoint) => decayPoint.updated_by === sourceId && decayPoint.score === score) !== undefined;
+    // Note: the score coming from the frontend may be a string (HTML inputs always return strings via event.target.value)
+    // while the score stored in the decay history is a number. We convert both to Number before comparing
+    // to avoid a type mismatch causing this guard to always return false.
+    return decay_history.find((decayPoint) => {
+      const isSameSource = decayPoint.updated_by === sourceId;
+      const isSameScore = Number(decayPoint.score) === Number(score);
+      return isSameSource && isSameScore;
+    }) !== undefined;
   }
   return false;
 };

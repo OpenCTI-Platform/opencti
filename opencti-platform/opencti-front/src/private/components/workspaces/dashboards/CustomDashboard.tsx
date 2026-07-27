@@ -8,12 +8,16 @@ import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../.
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
+import useDashboardRefresh from '../../../../components/dashboard/useDashboardRefresh';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
+import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
+import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
+import { Box } from '@mui/material';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -49,6 +53,7 @@ const dashboardFragment = graphql`
     name
     description
     manifest
+    refresh_interval
     tags
     owner {
       id
@@ -147,6 +152,37 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   });
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
+
+  const {
+    localRefreshRateSeconds,
+    refreshRate,
+    refreshToken,
+    isAutoRefreshing,
+    handleManualRefresh,
+    handleRefreshRateChange,
+  } = useDashboardRefresh({
+    initialRefreshRateSeconds: workspace.refresh_interval ?? 0,
+    onRefreshRateChange: (refreshRateInSeconds: number) => {
+      commitMutation({
+        mutation: workspaceMutationFieldPatch,
+        variables: {
+          id: workspace.id,
+          input: {
+            key: 'refresh_interval',
+            value: refreshRateInSeconds,
+          },
+        },
+        // Remove these once commitMutation gets migrated to TS
+        onCompleted: undefined,
+        onError: undefined,
+        optimisticResponse: undefined,
+        optimisticUpdater: undefined,
+        setSubmitting: undefined,
+        updater: undefined,
+      });
+    },
+  });
+
   return (
     <Stack gap={2}>
       {!noToolbar && (
@@ -162,25 +198,44 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       )
       }
       <div id="container">
-        {!noToolbar && (
-          <Security
-            needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-            hasAccess={userCanEdit}
-          >
-            <div style={{ marginBottom: 12 }}>
-              <DashboardTimeFilters
-                config={config}
-                handleDateChange={handleDateChange}
-              />
-            </div>
-          </Security>
-        )}
-        <DashboardContent
-          helpers={helpers}
-          isEditable={userCanEdit}
-          entity={workspace}
-          host={WIDGET_WORKSPACE_HOST}
-        />
+        <DashboardRefreshProvider refreshToken={refreshToken}>
+          {!noToolbar && (
+            <Security
+              needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
+              hasAccess={userCanEdit}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 1.5,
+                }}
+              >
+                <DashboardTimeFilters
+                  config={config}
+                  handleDateChange={handleDateChange}
+                />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <DashboardRefreshControl
+                    onRefresh={handleManualRefresh}
+                    interval={localRefreshRateSeconds}
+                    onIntervalChange={handleRefreshRateChange}
+                    isRefreshing={isAutoRefreshing}
+                  />
+                </Box>
+              </Box>
+            </Security>
+          )
+          }
+          <DashboardContent
+            helpers={helpers}
+            isEditable={userCanEdit}
+            entity={workspace}
+            host={WIDGET_WORKSPACE_HOST}
+            refreshRate={refreshRate}
+          />
+        </DashboardRefreshProvider>
       </div>
     </Stack>
   );

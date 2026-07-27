@@ -162,6 +162,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
         }
       },
       onError: (error) => {
+        MESSAGING$.notifyRelayError(error as unknown as RelayError);
         handleErrorInForm(error, setErrors);
         setVerified(false);
       },
@@ -190,6 +191,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
         );
       },
       onError: (error) => {
+        MESSAGING$.notifyRelayError(error as unknown as RelayError);
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
@@ -220,6 +222,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
           })),
         ];
         if (resultStreams.length === 0) {
+          MESSAGING$.notifyError(t_i18n('No remote live stream available'));
           setErrors({
             ...currentErrors,
             uri: 'No remote live stream available',
@@ -230,10 +233,12 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
         }
       })
       .catch((e: RelayError) => {
-        const errors = e.res.errors.map((err) => ({
+        MESSAGING$.notifyRelayError(e);
+        const relayErrors = e?.res?.errors ?? [];
+        const errors = relayErrors.map((err) => ({
           [err.data?.field ?? 'unknownField']: err.data?.message,
         }));
-        const formError = R.mergeAll(errors);
+        const formError = errors.length > 0 ? R.mergeAll(errors) : { uri: t_i18n('Unable to validate remote OpenCTI URL') };
         setErrors({ ...currentErrors, ...formError });
         setStreams([]);
       });

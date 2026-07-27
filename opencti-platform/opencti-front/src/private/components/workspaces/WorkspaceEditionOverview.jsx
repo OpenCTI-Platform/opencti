@@ -62,7 +62,9 @@ export const workspaceEditionOverviewFocus = graphql`
 const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
   const { id } = workspace;
   const { t_i18n } = useFormatter();
-  const initialValues = pick(['name', 'description'], workspace);
+  const initialValues = {
+    ...pick(['name', 'description'], workspace),
+  };
 
   const workspaceValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -154,6 +156,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         name
         description
         type
+        refresh_interval
       }
     `,
   },

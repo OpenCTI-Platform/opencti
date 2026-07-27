@@ -46,6 +46,7 @@ import {
   updateAuthenticationFields,
 } from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 const ingestionJsonEditionPatch = graphql`
   mutation IngestionJsonEditionPatchMutation($id: ID!, $input: IngestionJsonAddInput!) {
@@ -94,6 +95,7 @@ export const ingestionJsonEditionFragment = graphql`
       name
     }
     markings
+    ssl_verify
   }
 `;
 
@@ -129,6 +131,7 @@ export interface IngestionJsonEditionForm {
   key?: string;
   ca?: string;
   markings: FieldOption[];
+  ssl_verify?: boolean;
 }
 
 const resolveHasUserChoiceJsonMapper = (option: JsonMapperFieldOption) => {
@@ -211,6 +214,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       markings: markings ?? [],
+      ssl_verify: values.ssl_verify,
     };
 
     commitUpdate({
@@ -240,6 +244,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
     user_id: convertUser(ingestionJsonData, 'user'),
     references: undefined,
+    ssl_verify: ingestionJsonData.ssl_verify ?? true,
     markings: me.allowed_marking?.filter(
       (marking) => ingestionJsonData.markings?.includes(marking.id),
     ).map((marking) => ({
@@ -522,6 +527,13 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               />
             </>
           )}
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="ssl_verify"
+            label={t_i18n('Verify SSL certificate')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}

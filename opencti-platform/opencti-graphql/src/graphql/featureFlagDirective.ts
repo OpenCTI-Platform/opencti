@@ -18,12 +18,18 @@ interface FeatureFlagDirectiveArgs {
   flags: string[];
   /**
    * If true indicates that a lack of enabled flag won't result
-   * in an error but in returning the value `null`.
+   * in an error but in returning the value defaultValue if provided, `null` otherwise.
    * Can be useful for instance when querying very early in the app lifecycle
    * before feature flags being available in the client.
    * Defaults to `false`.
    */
   softFail?: boolean;
+  /**
+   * Returned value if softFail = true.
+   * Should be a JSON string that will be parsed (e.g. "[]", "\"default\"", "null").
+   * Defaults to `null`
+   */
+  defaultValue?: string;
 }
 
 const FF_DIRECTIVE = 'ff';
@@ -38,7 +44,7 @@ export const makeFeatureFlagDirectiveTransformer = (): (schema: GraphQLSchema) =
         return fieldConfig;
       }
 
-      const { flags, softFail } = ffDirective;
+      const { flags, softFail, defaultValue } = ffDirective;
       if (!flags) {
         return fieldConfig;
       }
@@ -47,7 +53,7 @@ export const makeFeatureFlagDirectiveTransformer = (): (schema: GraphQLSchema) =
       fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
         if (!flags.some((flag) => isFeatureEnabled(flag))) {
           if (softFail) {
-            return null;
+            return defaultValue ? JSON.parse(defaultValue) : null;
           } else {
             throw ForbiddenAccess('Feature is disabled', { flags });
           }

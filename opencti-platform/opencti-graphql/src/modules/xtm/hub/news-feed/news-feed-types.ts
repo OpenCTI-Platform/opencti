@@ -7,6 +7,8 @@ export const NEWS_FEED_NUMBER = 'NewsFeedNumber';
 
 export enum NewsFeedItemType {
   RESOURCE_CUSTOM_DASHBOARD = 'RESOURCE_CUSTOM_DASHBOARD',
+  RESOURCE_PLAYBOOK = 'RESOURCE_PLAYBOOK',
+  RESOURCE_CUSTOM_VIEW = 'RESOURCE_CUSTOM_VIEW',
 }
 
 export interface NewsFeedItemMetadata {

@@ -4,11 +4,15 @@ import DataTablePage from './DataTable.pageModel';
 import SecurityCoverageTabsPage from './securityCoverageTabs.pageModel';
 
 export default class SecurityCoverageDetailsPage {
-  card = new CardPage(this.page);
-  tabs = new SecurityCoverageTabsPage(this.page);
-  dataTable = new DataTablePage(this.page);
+  card: CardPage;
+  tabs: SecurityCoverageTabsPage;
+  dataTable: DataTablePage;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.card = new CardPage(this.page);
+    this.tabs = new SecurityCoverageTabsPage(this.page);
+    this.dataTable = new DataTablePage(this.page);
+  }
 
   getTitle(name: string) {
     return this.page.getByRole('heading', { name });

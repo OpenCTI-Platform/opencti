@@ -27,8 +27,8 @@ const withCancel = (asyncIterator: AsyncIterableIterator<any>, onCancel: () => v
 export const subscribeToUserEvents = async (context: any, topics: string | string[]): Promise<AsyncIterable<any>> => {
   const asyncIterator = pubSubAsyncIterator(topics);
   const filtering = await withFilter(() => asyncIterator, (payload) => {
-    if (!payload) {
-      // When disconnected, an empty payload is dispatched.
+    // A throw here closes the socket (4500) and orphans the redis sub; guard all fields.
+    if (!payload || !payload.instance) {
       return false;
     }
     return [payload.instance.user_id, payload.instance.id].includes(context.user.id);
@@ -41,8 +41,8 @@ export const subscribeToUserEvents = async (context: any, topics: string | strin
 export const subscribeToAiEvents = async (context: any, id: string, topics: string | string[]): Promise<AsyncIterable<any>> => {
   const asyncIterator = pubSubAsyncIterator(topics);
   const filtering = await withFilter(() => asyncIterator, (payload) => {
-    if (!payload) {
-      // When disconnected, an empty payload is dispatched.
+    // A throw here closes the socket (4500) and orphans the redis sub; guard all fields.
+    if (!payload || !payload.user || !payload.instance) {
       return false;
     }
     return payload.user.id === context.user.id && payload.instance.bus_id === id;
@@ -71,11 +71,15 @@ export const subscribeToInstanceEvents = async (
   const filtering = await withFilter(
     () => pubSubAsyncIterator(topics),
     (payload) => {
-      if (!payload) {
-        // When disconnected, an empty payload is dispatched.
+      // A throw here closes the socket (4500) and orphans the redis sub; guard before deref.
+      if (!payload || !payload.instance) {
         return false;
       }
       if (!notifySelf) {
+        // Only this branch needs the event user; a user-less (system) event must still reach notifySelf subs.
+        if (!payload.user) {
+          return false;
+        }
         return payload.user.id !== context.user.id && payload.instance.id === id;
       }
       return payload.instance.id === id;
@@ -95,6 +99,10 @@ export const subscribeToPlatformSettingsEvents = async (context: any): Promise<A
   const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const filtering = await withFilter(() => asyncIterator, (payload) => {
+    // A throw here closes the socket (4500) and orphans the redis sub; guard all fields.
+    if (!payload || !payload.instance) {
+      return false;
+    }
     const oldMessages: BasicStoreSettingsMessage[] = getMessagesFilteredByRecipients(context.user, settings);
     const newMessages: BasicStoreSettingsMessage[] = getMessagesFilteredByRecipients(context.user, payload.instance);
     // If removed and was activated

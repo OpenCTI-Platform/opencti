@@ -27,6 +27,7 @@ interface AuthorizedMembersFieldListItemProps {
   onRemove?: () => void;
   onChange?: (val: AccessRight) => void;
   ownerId?: string;
+  disabled?: boolean;
 }
 
 const AuthorizedMembersFieldListItem = ({
@@ -36,6 +37,7 @@ const AuthorizedMembersFieldListItem = ({
   onRemove,
   onChange,
   ownerId,
+  disabled,
 }: AuthorizedMembersFieldListItemProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
@@ -109,7 +111,9 @@ const AuthorizedMembersFieldListItem = ({
         name={name}
         sx={{ m: 1, minWidth: 120 }}
         inputProps={{ 'aria-label': 'Without label' }}
-        disabled={authorizedMember.value === me.id || !authorizedMember.label}
+        disabled={
+          disabled || authorizedMember.value === me.id || !authorizedMember.label
+        }
         size="small"
         disableUnderline
         onChange={(_: string, val: AccessRight) => onChange?.(val)}
@@ -127,17 +131,19 @@ const AuthorizedMembersFieldListItem = ({
       {(
         authorizedMember.value !== me.id
         && !isGenericOption(authorizedMember.value)
-      ) ? (
+      )
+        ? (
             <IconButton
               color="primary"
               aria-label={t_i18n('Delete')}
               onClick={() => onRemove?.()}
+              disabled={disabled}
             >
               <Delete fontSize="small" />
             </IconButton>
-          ) : (
-            <div style={{ width: 36 }}></div>
-          )}
+          )
+        : <div style={{ width: 36 }}></div>
+      }
     </ListItem>
   );
 };

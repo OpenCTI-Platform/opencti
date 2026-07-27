@@ -6,26 +6,39 @@ import TextFieldPageModel from '../field/TextField.pageModel';
 import FileFieldPageModel from '../field/FileField.pageModel';
 
 export default class ReportFormPage {
-  nameField = new TextFieldPageModel(this.page, 'Name', 'text-no-label');
-  contentField = new TextFieldPageModel(this.page, 'Content', 'rich-content');
-  descriptionField = new TextFieldPageModel(this.page, 'Description', 'text-area');
+  nameField: TextFieldPageModel;
+  contentField: TextFieldPageModel;
+  descriptionField: TextFieldPageModel;
+  confidenceLevelField: ConfidenceFieldPageModel;
+  publicationDateField: DateFieldPageModel;
+  labelsAutocomplete: AutocompleteFieldPageModel;
+  markingsAutocomplete: AutocompleteFieldPageModel;
+  statusAutocomplete: AutocompleteFieldPageModel;
+  authorAutocomplete: AutocompleteFieldPageModel;
+  assigneesAutocomplete: AutocompleteFieldPageModel;
+  reportTypesAutocomplete: AutocompleteFieldPageModel;
+  participantsAutocomplete: AutocompleteFieldPageModel;
+  reliabilityAutocomplete: AutocompleteFieldPageModel;
+  externalReferencesAutocomplete: AutocompleteFieldPageModel;
+  associatedFileField: FileFieldPageModel;
 
-  confidenceLevelField = new ConfidenceFieldPageModel(this.page, 'Confidence level');
-
-  publicationDateField = new DateFieldPageModel(this.page, 'Publication date');
-
-  labelsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Labels', true);
-  markingsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Markings', true);
-  statusAutocomplete = new AutocompleteFieldPageModel(this.page, 'Status', false);
-  authorAutocomplete = new AutocompleteFieldPageModel(this.page, 'Author', false);
-  assigneesAutocomplete = new AutocompleteFieldPageModel(this.page, 'Assignee(s)', true);
-  reportTypesAutocomplete = new AutocompleteFieldPageModel(this.page, 'Report types', true);
-  participantsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Participant(s)', true);
-  reliabilityAutocomplete = new AutocompleteFieldPageModel(this.page, 'Reliability', false);
-  externalReferencesAutocomplete = new AutocompleteFieldPageModel(this.page, 'External references', true);
-  associatedFileField = new FileFieldPageModel(this.page, 'Associated file');
-
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.nameField = new TextFieldPageModel(this.page, 'Name', 'text-no-label');
+    this.contentField = new TextFieldPageModel(this.page, 'Content', 'rich-content');
+    this.descriptionField = new TextFieldPageModel(this.page, 'Description', 'text-area');
+    this.confidenceLevelField = new ConfidenceFieldPageModel(this.page, 'Confidence level');
+    this.publicationDateField = new DateFieldPageModel(this.page, 'Publication date');
+    this.labelsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Labels', true);
+    this.markingsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Markings', true);
+    this.statusAutocomplete = new AutocompleteFieldPageModel(this.page, 'Status', false);
+    this.authorAutocomplete = new AutocompleteFieldPageModel(this.page, 'Author', false);
+    this.assigneesAutocomplete = new AutocompleteFieldPageModel(this.page, 'Assignee(s)', true);
+    this.reportTypesAutocomplete = new AutocompleteFieldPageModel(this.page, 'Report types', true);
+    this.participantsAutocomplete = new AutocompleteFieldPageModel(this.page, 'Participant(s)', true);
+    this.reliabilityAutocomplete = new AutocompleteFieldPageModel(this.page, 'Reliability', false);
+    this.externalReferencesAutocomplete = new AutocompleteFieldPageModel(this.page, 'External references', true);
+    this.associatedFileField = new FileFieldPageModel(this.page, 'Associated file');
+  }
 
   getCreateTitle() {
     return this.page.getByRole('heading', { name: 'Create a report' });

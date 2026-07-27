@@ -13,10 +13,12 @@ import {
   IngestionTaxiiCollectionLinesPaginationQuery$variables,
 } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionLinesPaginationQuery.graphql';
 import { IngestionTaxiiCollectionPopoverEditionQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverEditionQuery.graphql';
+import { IngestionTaxiiCollectionPopoverExportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionPopoverExportQuery.graphql';
 import { PopoverProps } from '@mui/material/Popover';
+import fileDownload from 'js-file-download';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
+import { fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
@@ -40,16 +42,28 @@ const ingestionTaxiiEditionQuery = graphql`
   }
 `;
 
+const ingestionTaxiiCollectionExportQuery = graphql`
+  query IngestionTaxiiCollectionPopoverExportQuery($id: String!) {
+    ingestionTaxiiCollection(id: $id) {
+      name
+      toConfigurationExport
+    }
+  }
+`;
+
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables | null | undefined;
+  // Called after a successful deletion (e.g. to leave the detail page).
+  onDeleteComplete?: () => void;
 }
 
 const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   ingestionTaxiiId,
   running,
   paginationOptions,
+  onDeleteComplete,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -114,8 +128,21 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
+        onDeleteComplete?.();
       },
     });
+  };
+
+  const handleExport = async () => {
+    handleClose();
+    const data = await fetchQuery(ingestionTaxiiCollectionExportQuery, { id: ingestionTaxiiId }).toPromise();
+    const { ingestionTaxiiCollection } = data as IngestionTaxiiCollectionPopoverExportQuery$data;
+    if (ingestionTaxiiCollection) {
+      const blob = new Blob([ingestionTaxiiCollection.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_taxiiPush_${ingestionTaxiiCollection.name}.json`;
+      fileDownload(blob, fileName);
+    }
   };
 
   const [commitStart] = useApiMutation(ingestionTaxiiCollectionMutationFieldPatch);
@@ -151,6 +178,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   return (
     <div style={{ margin: 0 }}>
       <IconButton
+        aria-label={t_i18n('Open menu')}
         onClick={handleOpen}
         aria-haspopup="true"
         style={{ marginTop: 3 }}
@@ -175,6 +203,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         )}
         <MenuItem onClick={handleOpenUpdate}>
           {t_i18n('Update')}
+        </MenuItem>
+        <MenuItem onClick={handleExport}>
+          {t_i18n('Export')}
         </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}

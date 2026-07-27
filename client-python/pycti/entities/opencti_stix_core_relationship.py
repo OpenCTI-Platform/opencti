@@ -39,6 +39,10 @@ class StixCoreRelationship:
             lang
             created
             modified
+            coverage_information {
+                coverage_name
+                coverage_score
+            }
             status {
                 id
                 template {

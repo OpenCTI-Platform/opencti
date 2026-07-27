@@ -63,6 +63,7 @@ export interface NotificationContentEvent {
   operation: string;
   message: string;
   instance_id?: string | null;
+  entity_type?: string | null;
 }
 
 export interface NotificationAddInput {
@@ -75,6 +76,9 @@ export interface NotificationAddInput {
   }>;
   trigger_id?: string | string[];
   user_id: string;
+  created?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // region Database types

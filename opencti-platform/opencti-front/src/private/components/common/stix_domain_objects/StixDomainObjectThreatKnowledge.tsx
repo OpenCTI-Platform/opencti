@@ -201,14 +201,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
 
   const handleChangeTimeField = (event: SelectChangeEvent) => {
     setTimeField(event.target.value);
-    setNestedRelationships(
-      event.target.value === 'functional' ? false : nestedRelationships,
-    );
   };
 
   const handleChangeNestedRelationships = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNestedRelationships(event.target.checked);
-    setTimeField(event.target.checked ? 'technical' : timeField);
   };
 
   const handleOpenTimeField = (event: React.MouseEvent) => {
@@ -430,7 +426,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             handleAddFilter={helpers.handleAddFilter}
             searchContext={{ entityTypes: ['stix-core-relationship'] }}
           />
-          <IconButton color="primary" onClick={handleOpenTimeField} size="small">
+          <IconButton
+            aria-label={t_i18n('Open time field')}
+            color="primary"
+            onClick={handleOpenTimeField}
+            size="small"
+          >
             <SettingsOutlined fontSize="small" />
           </IconButton>
           <Popover

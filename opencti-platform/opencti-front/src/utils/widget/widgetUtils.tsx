@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import { Checklist, FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -18,7 +18,9 @@ import {
 } from 'mdi-material-ui';
 import React from 'react';
 
-import type { WidgetDataSelection } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
+import { isNotEmptyField } from '../utils';
+import useEntityTranslation from 'src/utils/hooks/useEntityTranslation';
 
 const widgetVisualizationTypes = [
   {
@@ -203,8 +205,20 @@ const widgetVisualizationTypes = [
   },
 ] as const;
 
+const customAttributesVisualizationType = {
+  key: 'custom-attributes',
+  name: 'Attributes',
+  dataSelectionLimit: undefined,
+  category: 'custom-attributes',
+  availableParameters: [],
+  isRelationships: false,
+  isEntities: false,
+  isAudits: false,
+} as const;
+
 export type WidgetVisualizationTypes
-  = (typeof widgetVisualizationTypes)[number]['key'];
+  = (typeof widgetVisualizationTypes)[number]['key']
+    | typeof customAttributesVisualizationType['key'];
 
 export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 
@@ -212,9 +226,17 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
-export const customViewsWidgetVisualizationTypes = workspacesWidgetVisualizationTypes;
+export const customViewsWidgetVisualizationTypes = [
+  customAttributesVisualizationType,
+  ...workspacesWidgetVisualizationTypes,
+];
 
-export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualizationTypes);
+const allVisualizationTypes = [
+  ...widgetVisualizationTypes,
+  customAttributesVisualizationType,
+];
+
+export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizationTypes);
 
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
@@ -238,8 +260,24 @@ export const isWidgetListOrTimeline = (type: string) => {
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
 };
 
+/**
+ * Returns the time interval to use in a widget.
+ */
+export const getWidgetInterval = (params?: WidgetParameters) => params?.interval ?? 'day';
+
+/**
+ * Construct the label title for a number widget.
+ */
+export const useGetNumberWidgetTitle = (parameters: WidgetParameters, defaultTitle: string) => {
+  const { translateEntityType } = useEntityTranslation();
+  const numberLabel = isNotEmptyField(parameters.title) ? parameters.title : defaultTitle;
+  return translateEntityType(numberLabel);
+};
+
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {
   switch (key) {
+    case 'custom-attributes':
+      return <Checklist fontSize={fontSize} color="primary" />;
     case 'attribute':
       return <TagTextOutline fontSize={fontSize} color="primary" />;
     case 'map':
@@ -323,4 +361,20 @@ export const isWidgetUsingRelationsAggregation = (
   ];
 
   return widgetTypesWithRelationsAggregation.includes(widgetType);
+};
+
+// value above which the unique count is estimated and may differ from the actual number of distinct values
+export const UNIQUE_COUNT_ESTIMATION_THRESHOLD = 40000;
+export const UNIQUE_COUNT_ESTIMATION_WARNING = 'Datasets with more than 40000 distinct values have estimated counts and may differ slightly from the amount of actual distinct values';
+
+/**
+ * Determines whether the estimation warning should be displayed for the given widget data.
+ * Returns `true` if any data selection flagged as `unique` contains at least one data point
+ * whose value exceeds `UNIQUE_COUNT_ESTIMATION_THRESHOLD`, indicating that counts are
+ * approximated and may differ from the actual number of distinct values.
+ */
+export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelection[], data: WidgetMultiTimeSeries[]) => {
+  return dataSelection.some((selection, i) => (
+    selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD)
+  ));
 };

@@ -26,7 +26,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 const organizationMutationFieldPatch = graphql`
   mutation SettingsOrganizationEditionMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
     $commitMessage: String
     $references: [String]
   ) {

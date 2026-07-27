@@ -99,6 +99,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       context_data: undefined,
       message: `Failed to send password reset code to ${input.email}`,
     });
+    throw UnsupportedError('Unable to send password reset code. Please try again later or contact your administrator.');
   }
   await addForgotPasswordCount();
 

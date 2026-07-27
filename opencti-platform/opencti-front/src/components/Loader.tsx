@@ -70,7 +70,7 @@ const Loader: FunctionComponent<LoaderProps> = ({
   const { settings } = useContext(UserContext);
   const [currentText, setCurrentText] = useState(0);
   // if you have EE and whitemark set, you can remove the loader
-  const hasFiligranLoader = theme && !(settings?.platform_enterprise_edition.license_validated && settings?.platform_whitemark);
+  const hasFiligranLoader = theme && !(settings?.platform_enterprise_edition?.license_validated && settings?.platform_whitemark);
   if (rotatingTexts && rotatingTexts.length > 0) {
     useEffect(() => {
       const subscription = interval$.subscribe(() => {

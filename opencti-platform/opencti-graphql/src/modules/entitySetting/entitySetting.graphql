@@ -38,6 +38,7 @@ type OverviewWidgetCustomization {
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
+  representative: Representative!
   standard_id: String! @auth
   parent_types: [String!]!
   metrics:[Metric] @auth
@@ -47,7 +48,11 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
   attributes_configuration: String @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  attributesDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  # Attribute definitions (name/label/mandatory/...) are schema metadata also needed by
+  # knowledge-level read views (e.g. the draft Review diff panel) to display field labels.
+  # The underlying data is already exposed through mandatoryAttributes / scaleAttributes /
+  # defaultValuesAttributes (all plain @auth), so this only requires authentication.
+  attributesDefinitions: [TypeAttribute!]! @auth
   mandatoryAttributes: [String!]! @auth
   scaleAttributes: [ScaleAttribute!]! @auth
   defaultValuesAttributes: [DefaultValueAttribute!]! @auth

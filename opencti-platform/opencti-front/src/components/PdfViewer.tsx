@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/TextLayer.css';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
+import { Document, Page } from 'react-pdf';
 import Loader from './Loader';
-import { APP_BASE_PATH } from '../relay/environment';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
+import '../utils/pdfWorker-setup';
 
 interface PdfViewerProps {
   pdf: File;

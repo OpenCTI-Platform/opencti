@@ -17,6 +17,7 @@ import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } f
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
+import PasswordPoliciesAlert, { PasswordPolicies } from '../../../components/PasswordPoliciesAlert';
 
 interface InternalFormProps extends PropsWithChildren {
   action?: ReactNode;
@@ -82,7 +83,11 @@ const FLASH_COOKIE = 'opencti_flash';
 
 const RESEND_COOLDOWN_MS = 30000;
 
-const ResetPassword = () => {
+interface ResetPasswordProps {
+  policies?: PasswordPolicies;
+}
+
+const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -96,7 +101,6 @@ const ResetPassword = () => {
     email,
     resetPwdStep,
     validateOtpInError,
-    resendCodeDisabled,
   } = useLoginContext();
 
   const flashError = cookies[FLASH_COOKIE] || '';
@@ -136,6 +140,8 @@ const ResetPassword = () => {
     undefined,
   );
 
+  const hasPasswordPolicies = Object.values(policies).some((value) => (value ?? 0) > 0);
+
   const startResendCooldown = (onComplete?: () => void) => {
     setValue('resendCodeDisabled', true);
 
@@ -145,6 +151,7 @@ const ResetPassword = () => {
 
     resendTimeoutRef.current = setTimeout(() => {
       setValue('resendCodeDisabled', false);
+      resendTimeoutRef.current = null;
       onComplete?.();
     }, RESEND_COOLDOWN_MS);
   };
@@ -219,7 +226,7 @@ const ResetPassword = () => {
 
   const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = (
     values,
-    { resetForm, setErrors },
+    { resetForm, setErrors, setSubmitting },
   ) => {
     changePasswordCommitMutation({
       variables: {
@@ -237,6 +244,7 @@ const ResetPassword = () => {
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setValue('changePasswordInError', true);
+        setSubmitting(false);
       },
     });
   };
@@ -274,7 +282,6 @@ const ResetPassword = () => {
             </Button>
             {validateOtpInError && (
               <Button
-                disabled={resendCodeDisabled}
                 variant="tertiary"
                 onClick={handleResendOtp}
               >
@@ -302,7 +309,7 @@ const ResetPassword = () => {
               <Form action={(
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !isValid || resendCodeDisabled}
+                  disabled={isSubmitting || !isValid}
                 >
                   {t_i18n('Send reset code')}
                 </Button>
@@ -313,9 +320,6 @@ const ResetPassword = () => {
                   name="email"
                   label={t_i18n('Email address')}
                   fullWidth={true}
-                  onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    setValue('email', e.currentTarget.value);
-                  }}
                 />
               </Form>
             );
@@ -377,12 +381,12 @@ const ResetPassword = () => {
       {resetPwdStep === ResetPwdStep.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
-          initialTouched={{ otp: !!flashError }}
-          initialErrors={{ otp: flashError ? t_i18n(flashError) : '' }}
+          initialTouched={{ password: !!flashError }}
+          initialErrors={{ password: flashError ? t_i18n(flashError) : '' }}
           validationSchema={passwordValidation(t_i18n)}
           initialValues={{ password: '', password_validation: '' }}
         >
-          {({ isSubmitting, isValid }) => (
+          {({ isSubmitting, isValid, values }) => (
             <Form action={(
               <Button
                 type="submit"
@@ -392,6 +396,14 @@ const ResetPassword = () => {
               </Button>
             )}
             >
+              {hasPasswordPolicies && (
+                <Box sx={{ width: '100%', mt: 2 }}>
+                  <PasswordPoliciesAlert
+                    policies={policies}
+                    value={values.password}
+                  />
+                </Box>
+              )}
               <Field
                 component={TextField}
                 name="password"

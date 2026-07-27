@@ -210,7 +210,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     // feed attributes must be eventually cleanup in case of types removal
     const attrValues = R.values(feedAttributes);
     // noinspection JSMismatchedCollectionQueryUpdate
-    const updatedFeedAttributes = [];
+    const updatedFeedAttributes: { attribute: unknown; mappings: Record<string, unknown> }[] = [];
     for (let index = 0; index < attrValues.length; index += 1) {
       const feedAttr = attrValues[index];
       const mappingEntries = isNotEmptyField(feedAttr)
@@ -810,6 +810,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           })}
                           <div className={classes.buttonAdd}>
                             <IconButton
+                              aria-label={t_i18n('Add')}
                               disabled={selectedTypes.length === 0}
                               size="small"
                               onClick={() => handleAddAttribute()}

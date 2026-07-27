@@ -1,3 +1,11 @@
-schema:
-  - ./opencti-graphql/config/schema/opencti.graphql
-  - ./opencti-graphql/src/modules/**/*.graphql
+projects:
+  opencti-graphql:
+    schema:
+      - './opencti-graphql/config/schema/opencti.graphql'
+      - './opencti-graphql/config/schema/lsp-directives.graphql'
+      - './opencti-graphql/src/modules/**/*.graphql'
+  opencti-front:
+    schema:
+      - './opencti-front/src/schema/relay.schema.graphql'
+      - './opencti-front/src/relay/relay.lsp-directives.graphql'
+    documents: './opencti-front/src/**/*.{ts,tsx,js,jsx}'

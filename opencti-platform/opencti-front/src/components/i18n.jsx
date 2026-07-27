@@ -327,11 +327,15 @@ export const useFormatter = () => {
     if (isNone(date)) {
       return EMPTY_VALUE;
     }
-    return intl.formatDate(date, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
+    try {
+      return intl.formatDate(date, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return EMPTY_VALUE;
+    }
   };
   const monthDate = (date) => {
     if (isNone(date)) {

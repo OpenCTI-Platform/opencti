@@ -1,16 +1,18 @@
 import { graphql } from 'relay-runtime';
 import Insights from '@mui/icons-material/Insights';
+import { useTheme } from '@mui/material';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
-import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+
 import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
 import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
 import type { CustomViewsSettingsDataTable_node$data } from './__generated__/CustomViewsSettingsDataTable_node.graphql';
 import CustomViewPopover from './CustomViewPopover';
-import { Tooltip } from '@mui/material';
+import Tag from '@common/tag/Tag';
+import { EMPTY_VALUE } from 'src/utils/String';
 
 interface CustomViewsSettingsDataTableProps {
   targetType: string;
@@ -27,7 +29,7 @@ const customViewFragment = graphql`
   }
 `;
 
-const customViewsLinesQuery = graphql`
+export const customViewsLinesQuery = graphql`
   query CustomViewsSettingsDataTablePaginationQuery(
     $count: Int
     $cursor: ID
@@ -78,29 +80,43 @@ const customViewsLinesFragment = graphql`
 `;
 
 const DATA_COLUMNS = {
-  name: { percentWidth: 35, isSortable: true },
-  description: { percentWidth: 50, isSortable: false },
+  name: { percentWidth: 30, isSortable: false },
+  description: { percentWidth: 40, isSortable: false },
+  customViewDefault: {
+    id: 'default',
+    label: 'Default',
+    percentWidth: 15,
+    isSortable: false,
+    render: ({ default: isDefault }: CustomViewsSettingsDataTable_node$data) => {
+      const DefaultCell = () => {
+        const theme = useTheme();
+        const { t_i18n } = useFormatter();
+        return isDefault ? (
+          <Tag color={theme.palette.success.main} label={t_i18n('Default')} />
+        ) : EMPTY_VALUE;
+      };
+      return <DefaultCell />;
+    },
+  },
   customViewEnabled: {
     id: 'enabled',
     label: 'Status',
     percentWidth: 15,
     isSortable: true,
     render: ({ enabled }: CustomViewsSettingsDataTable_node$data) => {
-      const { t_i18n } = useFormatter();
-      return (
-        <ItemBoolean
-          label={enabled ? t_i18n('View is enabled') : t_i18n('View is disabled')}
-          status={enabled}
-          labelTextTransform="none"
-        />
-      );
+      const StatusCell = () => {
+        const { t_i18n } = useFormatter();
+        return (
+          <ItemBoolean
+            label={enabled ? t_i18n('View is enabled') : t_i18n('View is disabled')}
+            status={enabled}
+            labelTextTransform="none"
+          />
+        );
+      };
+      return <StatusCell />;
     },
   },
-} as const;
-
-const DEFAULT_SORT_CONFIG = {
-  sortBy: 'name',
-  orderAsc: true,
 } as const;
 
 const resolvePath = (d: CustomViewsSettingsDataTable_data$data) =>
@@ -115,13 +131,10 @@ const CustomViewsSettingsDataTable = ({
   };
   const storageKey = `custom-views-${targetType}`;
 
-  const { paginationOptions } = usePaginationLocalStorage<typeof DEFAULT_SORT_CONFIG>(
-    storageKey,
-    DEFAULT_SORT_CONFIG,
-  );
-  const queryPaginationOptions = {
+  const queryPaginationOptions: CustomViewsSettingsDataTablePaginationQuery['variables'] = {
     entityType: targetType,
-    ...paginationOptions,
+    orderBy: 'default',
+    orderMode: 'desc',
   };
 
   const queryRef = useQueryLoading<CustomViewsSettingsDataTablePaginationQuery>(
@@ -142,7 +155,7 @@ const CustomViewsSettingsDataTable = ({
 
   return (
     <DataTable
-      initialValues={DEFAULT_SORT_CONFIG}
+      initialValues={{ sortBy: 'default', orderAsc: false }}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
       variant={DataTableVariant.inline}
@@ -155,15 +168,7 @@ const CustomViewsSettingsDataTable = ({
       hideFilters={true}
       disableLineSelection={true}
       actions={(row) => <CustomViewPopover data={row} paginationOptions={queryPaginationOptions} />}
-      icon={
-        ({ default: def }) => def ? (
-          <Tooltip title={t_i18n('Default')}>
-            <Insights sx={{ color: 'designSystem.tertiary.yellow.400' }} />
-          </Tooltip>
-        ) : (
-          <Insights sx={{ color: 'designSystem.tertiary.blue.500' }} />
-        )
-      }
+      icon={() => <Insights sx={{ color: 'designSystem.tertiary.blue.500' }} />}
     />
   );
 };

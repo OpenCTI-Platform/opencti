@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
-import { useTheme } from '@mui/material/styles';
 import {
   StixCoreObjectHistoryLinesQuery,
   StixCoreObjectHistoryLinesQuery$variables,
@@ -11,7 +10,6 @@ import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './S
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import type { Theme } from '../../../../components/Theme';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -22,7 +20,6 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   useInitCreateRelationshipContext();
 
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
   const [relationsSearchTerm, setRelationsSearchTerm] = useState<string>('');
@@ -108,9 +105,9 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
     <div style={{ height: '100%' }} data-testid="sco-history-content">
       <Grid
         container
-        spacing={3}
+        spacing={1}
         sx={{
-          marginBottom: theme.spacing(2),
+          marginBottom: 0,
         }}
       >
         <Grid

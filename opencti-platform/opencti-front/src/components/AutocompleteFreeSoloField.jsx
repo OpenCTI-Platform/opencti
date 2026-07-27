@@ -6,6 +6,7 @@ import MUIAutocomplete, { createFilterOptions } from '@mui/material/Autocomplete
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
+import { useFormatter } from './i18n';
 
 const filter = createFilterOptions();
 
@@ -22,6 +23,8 @@ const AutocompleteFreeSoloField = (props) => {
     createLabel,
   } = props;
   const [, meta] = useField(name);
+  const { t_i18n } = useFormatter();
+
   const internalOnChange = React.useCallback(
     (_, value) => {
       setFieldValue(name, value);
@@ -88,6 +91,7 @@ const AutocompleteFreeSoloField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
+          title={t_i18n('Add')}
         >
           <Add />
         </IconButton>

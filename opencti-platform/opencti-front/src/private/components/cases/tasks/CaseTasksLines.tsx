@@ -186,7 +186,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           <>
             <Tooltip title={t_i18n('Add a task to this container')}>
               <IconButton
-                aria-label="Add"
                 onClick={handleOpen}
               >
                 <AddOutlined fontSize="small" />
@@ -194,7 +193,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             </Tooltip>
             <Tooltip title={t_i18n('Apply a new case template')}>
               <IconButton
-                aria-label="Apply"
                 onClick={() => setOpenCaseTemplate(true)}
               >
                 <ContentPasteGoOutlined fontSize="small" />

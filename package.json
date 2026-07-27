@@ -1,8 +1,10 @@
 {
   "name": "opencti",
-  "packageManager": "yarn@4.15.0+sha512.07ec708ac11e2eaa4ea2b04cfbb272812f7e74a753f1595eaef4486c663a98306a30cca3e6fc40f7a0b168dcfb3a2490b6a5e0501e20fb69cc36f563dd161c53",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@4.17.1+sha512.ccbfabf7d7b6b32075088be9386fb9a2e00bb6887ef07fa56effabc890a56d53da1ccc4128d62db245fcbd3961b236d75335bdf7d5320ed6eafb7588b7ad4697",
   "devDependencies": {
-    "nx": "22.7.2"
+    "nx": "23.1.0"
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
@@ -21,7 +23,7 @@
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "resolutions": {
-    "axios": "1.16.1"
+    "axios": "1.18.1"
   },
   "dependenciesMeta": {
     "nx": {

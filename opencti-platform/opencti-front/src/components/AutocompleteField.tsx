@@ -177,6 +177,7 @@ const AutocompleteField = <
             right: 25,
           }}
           title={t_i18n('Add')}
+          aria-label={t_i18n('Add')}
         >
           <Add fontSize="small" />
         </IconButton>

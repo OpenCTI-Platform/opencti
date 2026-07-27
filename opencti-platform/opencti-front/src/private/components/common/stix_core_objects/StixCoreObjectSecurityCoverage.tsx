@@ -7,7 +7,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ShieldCheckOutline } from 'mdi-material-ui';
-import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import SecurityCoverageScores from '../../analyses/security_coverages/SecurityCoverageScores';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -159,7 +159,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
               },
             }}
           >
-            <SecurityCoverageInformation coverage_information={coverage?.coverage_information} />
+            <SecurityCoverageScores coverage_information={coverage?.coverage_information} />
           </Button>
         )}
       </div>

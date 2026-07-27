@@ -126,7 +126,22 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
-    if (resolvedElement.decay_applied_rule) {
+    // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,
+    // revoked and x_opencti_score. Mirrors the editField early-return in indicator-domain.ts
+    // for excluded indicators (asymmetry reported in issue #16365).
+    if (resolvedElement.decay_exclusion_applied_rule) {
+      const isLiveScoreUnchanged = updatePatch.x_opencti_score === resolvedElement.x_opencti_score;
+      if (isLiveScoreUnchanged) {
+        logApp.debug(
+          '[OPENCTI][DECAY] on upsert excluded indicator, skip valid_until/revoked update, keep existing values',
+          { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score },
+        );
+        updatePatch.x_opencti_score = resolvedElement.x_opencti_score;
+        updatePatch.valid_from = resolvedElement.valid_from;
+        updatePatch.valid_until = resolvedElement.valid_until;
+        updatePatch.revoked = resolvedElement.revoked;
+      }
+    } else if (resolvedElement.decay_applied_rule) {
       // Do not compute decay again when:
       // - base score does not change (indicator is still at its initial score, decay not started yet)
       const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;

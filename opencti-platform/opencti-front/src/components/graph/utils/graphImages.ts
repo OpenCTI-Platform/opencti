@@ -43,8 +43,8 @@ import Task from '../../../static/images/entities/task.svg';
 import Unknown from '../../../static/images/entities/unknown.svg';
 import StixCyberObservable from '../../../static/images/entities/stix-cyber-observable.svg';
 import Relationship from '../../../static/images/entities/relationship.svg';
-import { fileUri } from '../../../relay/environment';
 import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
+import SecurityCoverage from '../../../static/images/entities/security-coverage.svg';
 
 interface GraphImage {
   img: HTMLImageElement;
@@ -57,7 +57,7 @@ type GraphImages = {
 
 const generateHtmlImageElement = (src: string) => {
   const img = new Image();
-  img.src = fileUri(src);
+  img.src = src;
   return img;
 };
 
@@ -141,6 +141,10 @@ const GRAPH_IMAGES: GraphImages = {
   Organization: {
     rawImg: Organization,
     img: generateHtmlImageElement(Organization),
+  },
+  'Security-Coverage': {
+    rawImg: SecurityCoverage,
+    img: generateHtmlImageElement(SecurityCoverage),
   },
   SecurityPlatform: {
     rawImg: SecurityPlatform,

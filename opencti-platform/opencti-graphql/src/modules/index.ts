@@ -42,6 +42,7 @@ import './case/case-rfi/case-rfi';
 import './case/case-rft/case-rft';
 import './case/feedback/feedback';
 import './entitySetting/entitySetting';
+import './workflow/workflow';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './managerConfiguration/managerConfiguration';
@@ -81,6 +82,7 @@ import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
+import './dataSanity/dataSanity';
 import './xtm/hub/news-feed/news-feed';
 
 // incomplete modules
@@ -143,6 +145,7 @@ import './ai/ai-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
+import './smtpConfiguration/smtpConfiguration-graphql';
 import './draftWorkspace/draftWorkspace-graphql';
 import './fintelTemplate/fintelTemplate-graphql';
 import './disseminationList/disseminationList-graphql';
@@ -164,4 +167,6 @@ import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
+import './dataSanity/dataSanity-graphql';
+import './workflow/api/workflow-graphql';
 // endregion

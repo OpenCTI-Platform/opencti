@@ -26,6 +26,7 @@ const PlaybookFlowFieldAuthorizedMembers = () => {
       name="authorized_members"
       label={t_i18n('Targets')}
       style={fieldSpacingContainerStyle}
+      withDynamicKeys
     />
   );
 };

@@ -16,9 +16,10 @@ interface ItemParticipantsProps {
   }[];
   stixDomainObjectId: string;
   removeMutation?: GraphQLTaggedNode;
+  readOnly?: boolean;
 }
 
-const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId, removeMutation = stixDomainObjectMutation }) => {
+const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId, removeMutation = stixDomainObjectMutation, readOnly }) => {
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveParticipant = (removedId: string) => {
     const values = participants.filter((participant) => participant.id !== removedId);
@@ -42,7 +43,7 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
           <Tag
             key={participant.id}
             label={truncate(participant.name, 25)}
-            onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
+            onDelete={!readOnly && canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
           />
         </Tooltip>
       ))}

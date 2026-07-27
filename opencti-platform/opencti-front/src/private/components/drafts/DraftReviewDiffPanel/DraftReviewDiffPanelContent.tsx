@@ -63,6 +63,7 @@ const DraftReviewDiffPanelContentComponent: FunctionComponent<DraftReviewDiffPan
         </Typography>
         {link && (
           <IconButton
+            aria-label={t_i18n('Open link in new tab')}
             component={Link}
             to={`${link}/${entity.id}`}
             target="_blank"

@@ -11,6 +11,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isFilterGroupNotEmpty } from '../../utils/filters/filtersUtils';
+import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
@@ -94,9 +95,9 @@ const DataTableFilters = ({
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 
-  const exportFilterGroups = [];
+  const exportFilterGroups: FilterGroup[] = [];
   if (isFilterGroupNotEmpty(contextFilters)) {
-    exportFilterGroups.push(contextFilters);
+    exportFilterGroups.push(contextFilters!);
   }
   if (isFilterGroupNotEmpty(paginationOptions.filters)) {
     exportFilterGroups.push(paginationOptions.filters);

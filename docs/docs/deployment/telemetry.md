@@ -1,6 +1,10 @@
-# Telemetry
+# Observability metrics (platform monitoring)
 
-OpenCTI exposes metrics using the OpenTelemetry standard, which can be exported to various systems such as Prometheus or OTLP collectors. These metrics provide insights into the platform's performance, usage, and health.
+OpenCTI exposes operational metrics using the OpenTelemetry standard, which can be exported to various systems such as Prometheus or OTLP collectors. These metrics provide insights into the platform's performance and health, and are intended for **your own monitoring infrastructure**.
+
+!!! note "This is NOT anonymous usage telemetry"
+
+    This page documents the **operational metrics** you can scrape to monitor your OpenCTI deployment. If you are looking for information about the **anonymous product analytics** automatically sent to Filigran, see [Reference > Usage telemetry](../reference/usage-telemetry.md).
 
 ## Configuration
 

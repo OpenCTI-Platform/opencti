@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the current stable major release (ie. X.X) is supported for updates and bug fixes (as of October 2023, 5.11.X). Any previous versions are currently not supported and users are advised to use them "at their own risk".
+Only the current stable major release (ie. X.X) is supported for updates and bug fixes. Any previous versions are currently not supported and users are advised to use them "at their own risk".
 
 ## Reporting a Vulnerability
 

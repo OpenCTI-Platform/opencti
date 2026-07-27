@@ -205,7 +205,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
   };
   const handleSubmitField = (
     name: string,
-    value: string | string[] | number | number[] | null,
+    value: FieldOption | string | string[] | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue = value;

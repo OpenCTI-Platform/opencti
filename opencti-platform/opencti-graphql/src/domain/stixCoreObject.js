@@ -78,7 +78,7 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
-import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
+import { addFilter, emptyFilterGroup, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { AccessOperation, BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
@@ -114,6 +114,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { buildTranslatedIdsMap } from '../database/data-changes';
+import { addAskAiQueryCount } from '../manager/telemetryManager';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -489,11 +490,7 @@ export const stixCoreObjectsDistribution = async (context, user, args) => {
 };
 
 export const stixCoreObjectsDistributionByEntity = async (context, user, args) => {
-  const { objectId, types, filters = {
-    mode: 'and',
-    filters: [],
-    filterGroups: [],
-  } } = args;
+  const { objectId, types, filters = emptyFilterGroup } = args;
   let finalFilters = filters;
   const objectIds = Array.isArray(objectId) ? objectId : [objectId];
   // Here, we need to force regardingOf ID = objectID
@@ -1079,6 +1076,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // region ai
 export const aiActivity = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  addAskAiQueryCount('activity');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1119,6 +1117,7 @@ export const aiActivity = async (context, user, args) => {
 
 export const aiForecast = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  addAskAiQueryCount('forecast');
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1150,6 +1149,7 @@ export const aiForecast = async (context, user, args) => {
 
 export const aiHistory = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  addAskAiQueryCount('history');
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;

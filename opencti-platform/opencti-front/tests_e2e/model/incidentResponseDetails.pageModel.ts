@@ -4,11 +4,15 @@ import SDOOverview from './SDOOverview.pageModel';
 import SDOTabs from './SDOTabs.pageModel';
 
 export default class IncidentResponseDetailsPage {
-  labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
-  overview = new SDOOverview(this.page);
-  tabs = new SDOTabs(this.page);
+  labelsSelect: AutocompleteFieldPageModel;
+  overview: SDOOverview;
+  tabs: SDOTabs;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.labelsSelect = new AutocompleteFieldPageModel(this.page, 'Labels', true);
+    this.overview = new SDOOverview(this.page);
+    this.tabs = new SDOTabs(this.page);
+  }
 
   getIncidentResponseDetailsPage() {
     return this.page.getByTestId('incident-details-page');

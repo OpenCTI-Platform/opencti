@@ -26,6 +26,7 @@ import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
 import { buildRateLimiterOptions } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
+import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -33,6 +34,17 @@ const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
+
+const graphqlMethodRestriction = (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'OPTIONS') {
+    return next();
+  }
+  res.set('Allow', 'POST, OPTIONS');
+  return res.status(405).json({
+    name: 'MethodNotAllowedError',
+    message: 'Method Not Allowed. Use POST for GraphQL requests.',
+  });
+};
 
 export const extractWsSessionContext = async (context) => {
   const req = context.extra.request;
@@ -138,6 +150,9 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
+  // IP whitelist middleware — must be after session middleware to detect session-based auth
+  app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
+  app.use(`${basePath}/graphql`, graphqlMethodRestriction);
   app.use((req, res, next) => {
     // Skip graphql-upload for chatbot routes (they handle multipart themselves via Busboy)
     if (req.path.startsWith(`${basePath}/chatbot/`)) {

@@ -15,6 +15,7 @@ generates:
       useIndexSignature: true
       maybeValue: T | null | undefined
       inputMaybeValue: T | null
+      defaultScalarType: any
       mappers:
         BasicObject: ../types/store.d#BasicStoreBase
         Feed: ../types/store.d#BasicStoreEntityFeed

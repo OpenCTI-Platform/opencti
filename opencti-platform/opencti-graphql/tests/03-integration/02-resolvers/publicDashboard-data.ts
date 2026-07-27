@@ -205,6 +205,43 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false
       }
     },
+    'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb': {
+      id: 'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: '',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          filters: undefined,
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or'
+            }],
+            filterGroups: []
+          }
+        }
+      ],
+      parameters: {
+        title: 'Evolution of attacks without filters'
+      },
+      layout: {
+        w: 3,
+        h: 4,
+        x: 2,
+        y: 4,
+        i: 'f05b4f8f-9386-4890-9f9c-a6bd5b0913eb',
+        moved: false,
+        static: false
+      }
+    },
     '9865bec0-d8b1-4592-b14e-0e81e1645f59': {
       id: '9865bec0-d8b1-4592-b14e-0e81e1645f59',
       type: 'donut',

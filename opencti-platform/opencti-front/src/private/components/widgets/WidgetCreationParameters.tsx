@@ -8,29 +8,41 @@ import { stixCyberObservablesLinesAttributesQuery } from '@components/observatio
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
 import InputAdornment from '@mui/material/InputAdornment';
 import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetColumnsCustomizationInput from '@components/widgets/WidgetColumnsCustomizationInput';
-import { getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import { getCustomAttributesColumns, getDefaultCustomAttributesColumns, getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
-import { QueryRenderer } from '../../../relay/environment';
-import { isNotEmptyField } from '../../../utils/utils';
-import { capitalizeFirstLetter } from '../../../utils/String';
+import { QueryRenderer } from 'src/relay/environment';
+import { isNotEmptyField } from 'src/utils/utils';
+import { capitalizeFirstLetter } from 'src/utils/String';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
-import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { useFormatter } from 'src/components/i18n';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
-import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
+import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
+import {
+  getCurrentAvailableParameters,
+  getCurrentCategory,
+  getCurrentIsRelationships,
+  isWidgetListOrTimeline,
+  getMaxResultCount,
+  getWidgetInterval,
+} from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
-import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
+import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
+import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
+import Grid from '@mui/material/Grid2';
+import { Box, Typography } from '@mui/material';
+import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -67,6 +79,52 @@ const WidgetCreationParameters = () => {
     'opinions_metrics_total',
   ];
 
+  const draftWorkspaceSortByValues: { value: string; label: string }[] = [
+    { value: 'name', label: 'Name' },
+    { value: 'created_at', label: 'Creation date' },
+    { value: 'draft_status', label: 'Processing status' },
+    { value: 'objectAssignee', label: 'Assignee' },
+    { value: 'objectParticipant', label: 'Participant' },
+    { value: 'creator', label: 'Creator' },
+    { value: 'createdBy', label: 'Author' },
+    { value: 'workflowInstance', label: 'Workflow status' },
+  ];
+
+  const AUDIT_WIDGET_ATTRIBUTES = [
+    'entity_type',
+    'context_data.id',
+    'context_data.created_by_ref_id',
+    'context_data.labels_ids',
+    'context_data.marking_definitions',
+    'context_data.creator_ids',
+    'context_data.search',
+    'event_type',
+    'event_scope',
+    'user_id',
+    'group_ids',
+    'organization_ids',
+  ];
+
+  const ENTITIES_WIDGET_COMMON_ATTRIBUTES = [
+    'created-by.internal_id',
+    'object-label.internal_id',
+    'object-assignee.internal_id',
+    'object-marking.internal_id',
+    'kill-chain-phase.internal_id',
+    'x_opencti_workflow_id',
+  ];
+
+  const RELATIONSHIPS_WIDGET_ATTRIBUTES = [
+    { value: 'internal_id', label: 'Entity' },
+    { value: 'entity_type', label: 'Entity type' },
+    { value: 'relationship_type', label: 'Relationship type' },
+    { value: 'created-by.internal_id', label: 'Author' },
+    { value: 'object-marking.internal_id', label: 'Marking definition' },
+    { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
+    { value: 'creator_id', label: 'Creator' },
+    { value: 'x_opencti_workflow_id', label: 'Processing status' },
+  ];
+
   const {
     config,
     setConfigWidget,
@@ -85,8 +143,8 @@ const WidgetCreationParameters = () => {
   const handleChangeDataValidationParameter = (
     i: number,
     key: string,
-    value: string | null,
-    number = false,
+    value: string | boolean | null,
+    isNumber = false,
   ) => {
     if (value === null) {
       throw Error(t_i18n('This value cannot be null'));
@@ -95,7 +153,7 @@ const WidgetCreationParameters = () => {
       if (n === i) {
         return {
           ...data,
-          [key]: number ? parseInt(value, 10) : value,
+          [key]: isNumber && typeof value !== 'boolean' ? parseInt(value, 10) : value,
         };
       }
       return data;
@@ -170,6 +228,22 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex(newSelection, index);
   };
 
+  const setLayout = (index: number, newLayout: WidgetColumnsLayout) => {
+    const prevSelection = dataSelection[index];
+    const entityType = host.kind === 'custom-view'
+      ? host.customViewTargetEntityType
+      : undefined;
+
+    const newSelection = {
+      ...prevSelection,
+      layout: newLayout,
+      columns: prevSelection.columns?.length
+        ? prevSelection.columns
+        : getDefaultCustomAttributesColumns(entityType),
+    };
+    setDataSelectionWithIndex(newSelection, index);
+  };
+
   let varNameError = '';
   if (isWidgetVarNameAlreadyUsed) {
     varNameError = t_i18n('This name is already used for an other widget');
@@ -177,7 +251,100 @@ const WidgetCreationParameters = () => {
     varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
   }
 
+  const uniqueParameterEnabled = (
+    perspective: WidgetPerspective | null | undefined,
+    visualizationType: WidgetVisualizationTypes | '',
+  ): boolean => {
+    return perspective === 'audits'
+      && (['number', 'line', 'area'].includes(visualizationType))
+      && !getCurrentAvailableParameters(type).includes('attribute');
+  };
   const maxResultCount = getMaxResultCount(type);
+
+  const distinctLabel = (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Typography>{t_i18n('Distinct')}</Typography>
+      <Tooltip
+        title={t_i18n('Count the number of distinct values in a specified field')}
+      >
+        <InformationOutline
+          fontSize="small"
+          color="primary"
+        />
+      </Tooltip>
+    </Box>
+  );
+
+  /**
+   * Renders the attribute selection section for audit perspective widgets.
+   * Includes a "Distinct" checkbox when unique counting is enabled, and a dropdown to select the audit attribute.
+   */
+  const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
+    const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
+    const attributeSize = uniqueParameterEnabled ? 10 : 12;
+
+    const uniqueDataCheckbox = () => {
+      const inline = dataSelection.length === 1;
+      const checkbox = (
+        <Checkbox
+          sx={inline ? { ml: 0 } : { ml: -3 }}
+          onChange={(event) => handleChangeDataValidationParameter(
+            dataSelectionIndex,
+            'unique',
+            event.target.checked,
+          )}
+          checked={dataSelection[dataSelectionIndex].unique ?? undefined}
+        />
+      );
+      return (
+        <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {inline
+            ? (
+                <FormControlLabel
+                  control={checkbox}
+                  label={distinctLabel}
+                />
+              )
+            : checkbox}
+        </Grid>
+      );
+    };
+
+    return (
+      <Grid container spacing={4} sx={{ width: '100%' }}>
+        {uniqueParameterEnabled && uniqueDataCheckbox()}
+        <Grid size={attributeSize}>
+          <FormControl
+            fullWidth={true}
+          >
+            <InputLabel id="audits-attribute" disabled={isAttributeSelectionDisabled}>
+              {t_i18n('Attribute')}
+            </InputLabel>
+            <Select
+              labelId="audits-attribute"
+              value={dataSelection[dataSelectionIndex].attribute ?? 'entity_type'}
+              onChange={(event) => handleChangeDataValidationParameter(
+                dataSelectionIndex,
+                'attribute',
+                event.target.value,
+              )
+              }
+              disabled={isAttributeSelectionDisabled}
+            >
+              {AUDIT_WIDGET_ATTRIBUTES.map((value) => (
+                <MenuItem
+                  key={value}
+                  value={value}
+                >
+                  {t_i18n(capitalizeFirstLetter(value))}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+    );
+  };
 
   return (
     <div style={{ marginTop: 20 }}>
@@ -242,7 +409,7 @@ const WidgetCreationParameters = () => {
           <Select
             labelId="relative"
             fullWidth={true}
-            value={parameters.interval ?? 'day'}
+            value={getWidgetInterval(parameters)}
             onChange={(event) => handleChangeParameter('interval', event.target.value)
             }
           >
@@ -254,7 +421,16 @@ const WidgetCreationParameters = () => {
           </Select>
         </FormControl>
       )}
-
+      {uniqueParameterEnabled(dataSelection[0].perspective, type) && dataSelection.length > 1 && (
+        <Grid container sx={{ pt: 4 }} spacing={4}>
+          <Grid size={1.5}>
+            {distinctLabel}
+          </Grid>
+          <Grid size={10.5}>
+            <Typography>{t_i18n('Attributes')}</Typography>
+          </Grid>
+        </Grid>
+      )}
       <>
         {Array(dataSelection.length)
           .fill(0)
@@ -357,12 +533,15 @@ const WidgetCreationParameters = () => {
                         )
                         }
                       >
-                        {sortByValues.map((value) => (
+                        {(isDraftWorkspaceFilterGroup(dataSelection[i].filters)
+                          ? draftWorkspaceSortByValues
+                          : sortByValues.map((v) => ({ value: v, label: capitalizeFirstLetter(v) }))
+                        ).map(({ value, label }) => (
                           <MenuItem
                             key={value}
                             value={value}
                           >
-                            {t_i18n(capitalizeFirstLetter(value))}
+                            {t_i18n(label)}
                           </MenuItem>
                         ))}
                       </Select>
@@ -400,63 +579,65 @@ const WidgetCreationParameters = () => {
                   </div>
                 )}
 
-                {dataSelection[i].perspective !== 'audits' && !['text', 'attribute'].includes(type) && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      width: '100%',
-                      marginTop: 20,
-                    }}
-                  >
-                    <FormControl fullWidth={true} style={{ flex: 1 }}>
-                      <InputLabel id="relative" size="small">
-                        {isNotEmptyField(dataSelection[i].label)
-                          ? dataSelection[i].label
-                          : t_i18n('Date attribute')}
-                      </InputLabel>
-                      <Select
-                        labelId="relative"
-                        size="small"
-                        fullWidth={true}
-                        value={dataSelection[i].date_attribute ?? 'created_at'}
-                        onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
-                      >
-                        <MenuItem value="created_at">
-                          created_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="updated_at">
-                          updated_at ({t_i18n('Technical date')})
-                        </MenuItem>
-                        <MenuItem value="created">
-                          created ({t_i18n('Functional date')})
-                        </MenuItem>
-                        <MenuItem value="modified">
-                          modified ({t_i18n('Functional date')})
-                        </MenuItem>
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="start_time">
-                            start_time ({t_i18n('Functional date')})
+                {dataSelection[i].perspective !== 'audits'
+                  && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
+                  && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        marginTop: 20,
+                      }}
+                    >
+                      <FormControl fullWidth={true} style={{ flex: 1 }}>
+                        <InputLabel id="relative" size="small">
+                          {isNotEmptyField(dataSelection[i].label)
+                            ? dataSelection[i].label
+                            : t_i18n('Date attribute')}
+                        </InputLabel>
+                        <Select
+                          labelId="relative"
+                          size="small"
+                          fullWidth={true}
+                          value={dataSelection[i].date_attribute ?? 'created_at'}
+                          onChange={(event) => handleChangeDataValidationParameter(i, 'date_attribute', event.target.value)}
+                        >
+                          <MenuItem value="created_at">
+                            created_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && (
-                          <MenuItem value="stop_time">
-                            stop_time ({t_i18n('Functional date')})
+                          <MenuItem value="updated_at">
+                            updated_at ({t_i18n('Technical date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="first_seen">
-                            first_seen ({t_i18n('Functional date')})
+                          <MenuItem value="created">
+                            created ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                        {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
-                          <MenuItem value="last_seen">
-                            last_seen ({t_i18n('Functional date')})
+                          <MenuItem value="modified">
+                            modified ({t_i18n('Functional date')})
                           </MenuItem>
-                        )}
-                      </Select>
-                    </FormControl>
-                  </div>
-                )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="start_time">
+                              start_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && (
+                            <MenuItem value="stop_time">
+                              stop_time ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="first_seen">
+                              first_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                          {getCurrentIsRelationships(type) && !isWidgetListOrTimeline(type) && (
+                            <MenuItem value="last_seen">
+                              last_seen ({t_i18n('Functional date')})
+                            </MenuItem>
+                          )}
+                        </Select>
+                      </FormControl>
+                    </div>
+                  )}
 
                 {dataSelection[i].perspective === 'relationships'
                   && type === 'map' && (
@@ -517,7 +698,9 @@ const WidgetCreationParameters = () => {
                   />
                 )}
 
-                {getCurrentAvailableParameters(type).includes('attribute') && (
+                {(getCurrentAvailableParameters(type).includes('attribute')
+                  || (uniqueParameterEnabled(dataSelection[0].perspective, type)))
+                && (
                   <div
                     style={{ display: 'flex', width: '100%', marginTop: 20 }}
                   >
@@ -544,16 +727,7 @@ const WidgetCreationParameters = () => {
                           )
                           }
                         >
-                          {[
-                            { value: 'internal_id', label: 'Entity' },
-                            { value: 'entity_type', label: 'Entity type' },
-                            { value: 'relationship_type', label: 'Relationship type' },
-                            { value: 'created-by.internal_id', label: 'Author' },
-                            { value: 'object-marking.internal_id', label: 'Marking definition' },
-                            { value: 'kill-chain-phase.internal_id', label: 'Kill chain phase' },
-                            { value: 'creator_id', label: 'Creator' },
-                            { value: 'x_opencti_workflow_id', label: 'Processing status' },
-                          ].map((n) => (
+                          {RELATIONSHIPS_WIDGET_ATTRIBUTES.map((n) => (
                             <MenuItem key={n.value} value={n.value}>
                               {t_i18n(n.label)}
                             </MenuItem>
@@ -575,189 +749,158 @@ const WidgetCreationParameters = () => {
                           <InputLabel id="entities-attribute">
                             {t_i18n('Attribute')}
                           </InputLabel>
-                          <QueryRenderer
-                            query={stixCyberObservablesLinesAttributesQuery}
-                            variables={{
-                              elementType: getCurrentSelectedEntityTypes(i),
-                            }}
-                            render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
-                              if (resultProps
-                                && resultProps.schemaAttributeNames
-                              ) {
-                                let attributesValues = (resultProps.schemaAttributeNames.edges)
-                                  .map((n) => n.node.value)
-                                  .filter(
-                                    (n) => !R.includes(
-                                      n,
-                                      ignoredAttributesInDashboards,
-                                    ) && !n.startsWith('i_'),
-                                  );
-                                if (
-                                  attributesValues.filter((n) => n === 'hashes').length > 0
+                          {isDraftWorkspaceFilterGroup(dataSelection[i].filters) ? (
+                            <Select
+                              labelId="entities-attribute"
+                              fullWidth={true}
+                              value={dataSelection[i].attribute}
+                              onChange={(event) => handleChangeDataValidationParameter(i, 'attribute', event.target.value)}
+                            >
+                              {[
+                                { value: 'draft_status', label: 'Processing status' },
+                                { value: 'object-assignee.internal_id', label: 'Assignee' },
+                                { value: 'object-participant.internal_id', label: 'Participant' },
+                                { value: 'creator_id', label: 'Creator' },
+                                { value: 'created-by.internal_id', label: 'Author' },
+                                { value: 'workflowInstance', label: 'Workflow status' },
+                              ].map(({ value, label }) => (
+                                <MenuItem key={value} value={value}>
+                                  {t_i18n(label)}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          ) : (
+                            <QueryRenderer
+                              query={stixCyberObservablesLinesAttributesQuery}
+                              variables={{
+                                elementType: getCurrentSelectedEntityTypes(i),
+                              }}
+                              render={({ props: resultProps }: { props: StixCyberObservablesLinesAttributesQuery$data }) => {
+                                if (resultProps
+                                  && resultProps.schemaAttributeNames
                                 ) {
-                                  attributesValues = [
-                                    ...attributesValues,
-                                    'hashes.MD5',
-                                    'hashes.SHA-1',
-                                    'hashes.SHA-256',
-                                    'hashes.SHA-512',
-                                  ].filter((n) => n !== 'hashes').sort();
-                                }
-                                return (
-                                  <Select
-                                    labelId="entities-attribute"
-                                    fullWidth={true}
-                                    value={dataSelection[i].attribute}
-                                    onChange={(event) => handleChangeDataValidationParameter(
-                                      i,
-                                      'attribute',
-                                      event.target.value,
-                                    )
-                                    }
-                                  >
-                                    {[
+                                  let attributesValues = (resultProps.schemaAttributeNames.edges)
+                                    .map((n) => n.node.value)
+                                    .filter(
+                                      (n) => !R.includes(
+                                        n,
+                                        ignoredAttributesInDashboards,
+                                      ) && !n.startsWith('i_'),
+                                    );
+                                  if (
+                                    attributesValues.filter((n) => n === 'hashes').length > 0
+                                  ) {
+                                    attributesValues = [
                                       ...attributesValues,
-                                      'created-by.internal_id',
-                                      'object-label.internal_id',
-                                      'object-assignee.internal_id',
-                                      'object-marking.internal_id',
-                                      'kill-chain-phase.internal_id',
-                                      'x_opencti_workflow_id',
-                                    ].map((value) => (
-                                      <MenuItem
-                                        key={value}
-                                        value={value}
-                                      >
-                                        {t_i18n(
-                                          capitalizeFirstLetter(
-                                            value,
-                                          ),
-                                        )}
-                                      </MenuItem>
-                                    ))}
-                                  </Select>
-                                );
-                              }
-                              return <div />;
-                            }}
-                          />
+                                      'hashes.MD5',
+                                      'hashes.SHA-1',
+                                      'hashes.SHA-256',
+                                      'hashes.SHA-512',
+                                    ].filter((n) => n !== 'hashes').sort();
+                                  }
+                                  return (
+                                    <Select
+                                      labelId="entities-attribute"
+                                      fullWidth={true}
+                                      value={dataSelection[i].attribute}
+                                      onChange={(event) => handleChangeDataValidationParameter(
+                                        i,
+                                        'attribute',
+                                        event.target.value,
+                                      )
+                                      }
+                                    >
+                                      {[
+                                        ...attributesValues,
+                                        ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
+                                      ].map((value) => (
+                                        <MenuItem
+                                          key={value}
+                                          value={value}
+                                        >
+                                          {t_i18n(
+                                            capitalizeFirstLetter(
+                                              value,
+                                            ),
+                                          )}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  );
+                                }
+                                return <div />;
+                              }}
+                            />
+                          )}
                         </FormControl>
                       )}
 
                     {dataSelection[i].perspective === 'entities'
-                      && getCurrentSelectedEntityTypes(i).length === 0 && (
-                      <FormControl
-                        fullWidth={true}
-                        style={{
-                          flex: 1,
-                          marginRight: 20,
-                          width: '100%',
-                        }}
-                      >
-                        <InputLabel id="entities-attribute">
-                          {t_i18n('Attribute')}
-                        </InputLabel>
-                        <Select
-                          labelId="entities-attribute"
+                      && getCurrentSelectedEntityTypes(i).length === 0
+                      && (
+                        <FormControl
                           fullWidth={true}
-                          value={dataSelection[i].attribute ?? 'entity_type'}
-                          onChange={(event) => handleChangeDataValidationParameter(
-                            i,
-                            'attribute',
-                            event.target.value,
-                          )
-                          }
+                          style={{
+                            flex: 1,
+                            marginRight: 20,
+                            width: '100%',
+                          }}
                         >
-                          {[
-                            'entity_type',
-                            'created-by.internal_id',
-                            'object-label.internal_id',
-                            'object-assignee.internal_id',
-                            'object-marking.internal_id',
-                            'kill-chain-phase.internal_id',
-                            'x_opencti_workflow_id',
-                          ].map((value) => (
-                            <MenuItem
-                              key={value}
-                              value={value}
-                            >
-                              {t_i18n(capitalizeFirstLetter(value))}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
+                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                          <Select
+                            fullWidth={true}
+                            value={dataSelection[i].attribute ?? 'entity_type'}
+                            onChange={(event) => handleChangeDataValidationParameter(
+                              i,
+                              'attribute',
+                              event.target.value,
+                            )
+                            }
+                          >
+                            {[
+                              'entity_type',
+                              ...ENTITIES_WIDGET_COMMON_ATTRIBUTES,
+                            ].map((value) => (
+                              <MenuItem
+                                key={value}
+                                value={value}
+                              >
+                                {t_i18n(capitalizeFirstLetter(value))}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
 
-                    {dataSelection[i].perspective === 'audits' && (
-                      <FormControl
-                        fullWidth={true}
-                        style={{
-                          flex: 1,
-                          width: '100%',
-                        }}
-                      >
-                        <InputLabel id="audits-attribute">
-                          {t_i18n('Attribute')}
-                        </InputLabel>
-                        <Select
-                          labelId="audits-attribute"
-                          fullWidth={true}
-                          value={dataSelection[i].attribute ?? 'entity_type'}
-                          onChange={(event) => handleChangeDataValidationParameter(
-                            i,
-                            'attribute',
-                            event.target.value,
-                          )
-                          }
-                        >
-                          {['entity_type',
-                            'context_data.id',
-                            'context_data.created_by_ref_id',
-                            'context_data.labels_ids',
-                            'context_data.marking_definitions',
-                            'context_data.creator_ids',
-                            'context_data.search',
-                            'event_type',
-                            'event_scope',
-                            'user_id',
-                            'group_ids',
-                            'organization_ids',
-                          ].map((value) => (
-                            <MenuItem
-                              key={value}
-                              value={value}
-                            >
-                              {t_i18n(capitalizeFirstLetter(value))}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    )}
+                    {((dataSelection[i].perspective === 'audits' && getCurrentAvailableParameters(type).includes('attribute'))
+                      || uniqueParameterEnabled(dataSelection[0].perspective, type)) && (
+                      auditAttributeSelectionSection(uniqueParameterEnabled(dataSelection[0].perspective, type), i)
+                    )
+                    }
 
-                    {dataSelection[i].perspective === 'relationships' && (
-                      <FormControlLabel
-                        control={(
-                          <Switch
-                            onChange={() => handleToggleDataValidationIsTo(i)}
-                            checked={!dataSelection[i].isTo}
-                          />
-                        )}
-                        label={t_i18n('Display the source')}
-                      />
-                    )}
-
-                    {dataSelection[i].perspective === 'relationships' && (
-                      <Tooltip
-                        title={t_i18n(
-                          'Enable if the displayed data is the source of the relationships.',
-                        )}
-                      >
-                        <InformationOutline
-                          fontSize="small"
-                          color="primary"
-                          style={{ marginTop: 14 }}
+                    {dataSelection[i].perspective === 'relationships' && !['number', 'area', 'line'].includes(type) && (
+                      <>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              onChange={() => handleToggleDataValidationIsTo(i)}
+                              checked={!dataSelection[i].isTo}
+                            />
+                          )}
+                          label={t_i18n('Display the source')}
                         />
-                      </Tooltip>
+                        <Tooltip
+                          title={t_i18n(
+                            'Enable if the displayed data is the source of the relationships.',
+                          )}
+                        >
+                          <InformationOutline
+                            fontSize="small"
+                            color="primary"
+                            style={{ marginTop: 14 }}
+                          />
+                        </Tooltip>
+                      </>
                     )}
                   </div>
                 )}
@@ -837,6 +980,20 @@ const WidgetCreationParameters = () => {
             }
             return null;
           })}
+        {getCurrentCategory(type) === 'custom-attributes' && (() => {
+          const entityType = host.kind === 'custom-view' ? host.customViewTargetEntityType : undefined;
+          const allColumns = getCustomAttributesColumns(entityType);
+          return (
+            <WidgetCustomAttributesColumnsInput
+              layout={dataSelection[0]?.layout ?? '1'}
+              onLayoutChange={(newLayout) => setLayout(0, newLayout)}
+              availableColumns={allColumns}
+              defaultColumns={getDefaultCustomAttributesColumns(entityType)}
+              value={[...(dataSelection[0]?.columns ?? allColumns)]}
+              onChange={(newColumns) => setColumns(0, newColumns)}
+            />
+          );
+        })()}
       </div>
     </div>
   );

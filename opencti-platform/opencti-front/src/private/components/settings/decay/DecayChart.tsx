@@ -49,7 +49,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
     });
   }
 
-  const graphLinesAnnotations = [];
+  const graphLinesAnnotations: Record<string, unknown>[] = [];
   // Horizontal lines that shows reaction points
   if (reactionPoints) {
     const currentScoreIndex = reactionPoints.findLastIndex((reactionPoint) => reactionPoint === currentScore);
@@ -88,7 +88,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
     graphLinesAnnotations.push(revokeScoreArea);
   }
 
-  const pointAnnotations = [];
+  const pointAnnotations: Record<string, unknown>[] = [];
   if (decayCurvePoint && decayCurvePoint.length > 0) {
     // circle on the curve that show the live score
     pointAnnotations.push({

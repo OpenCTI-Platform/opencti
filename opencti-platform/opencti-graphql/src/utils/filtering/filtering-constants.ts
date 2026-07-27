@@ -54,6 +54,7 @@ export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
 export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const WORKFLOW_FILTER = 'workflow_id';
+export const WORKFLOW_INSTANCE_STATUS_FILTER = 'workflowInstanceCurrentState';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
 export const PATTERN_TYPE_FILTER = 'pattern_type';
@@ -110,6 +111,11 @@ export const PIR_IDS_SUBFILTER = 'pir_ids';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
+
+// for workflow
+export const WORKFLOW_USER_FILTER = 'workflow_user';
+export const WORKFLOW_GROUP_FILTER = 'workflow_group';
+export const WORKFLOW_ORGANIZATION_FILTER = 'workflow_organization';
 
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
@@ -169,6 +175,9 @@ export const SPECIAL_FILTER_KEYS = [
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   ...COMPLEX_CONVERSION_FILTER_KEYS,
 ];
@@ -196,8 +205,12 @@ export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   WORKFLOW_FILTER,
+  WORKFLOW_INSTANCE_STATUS_FILTER,
   INSTANCE_RELATION_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER,

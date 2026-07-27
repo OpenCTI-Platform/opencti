@@ -1,12 +1,10 @@
-import * as R from 'ramda';
-import { filter } from 'ramda';
 import { ConnectionHandler } from 'relay-runtime';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');
   const recordsIds = records.map((n) => n.getLinkedRecord('node').getValue('id'));
   const payloadId = payload.getValue('id');
-  return R.includes(payloadId, recordsIds);
+  return recordsIds.includes(payloadId);
 };
 
 export const insertNode = (
@@ -60,9 +58,10 @@ export const insertNode = (
       if (!Number.isInteger(globalCount)) return;
       pageInfo.setValue(globalCount + 1, 'globalCount');
     }
-  } else {
-    throw new Error(`Cant insert node on not found connection ${key} with filters ${JSON.stringify(params)}`);
   }
+  // When the connection is not mounted (e.g. the mutation is triggered from a
+  // screen that does not render the paginated list), there is nothing to
+  // update: the list will be refetched on its next mount.
 };
 
 export const deleteNodeFromId = (store, containerId, key, filters, id) => {
@@ -79,8 +78,11 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
     conn = ConnectionHandler.getConnection(record, key, params);
   }
 
+  // When the connection is not mounted (e.g. the mutation is triggered from a
+  // screen that does not render the paginated list), there is nothing to
+  // update: the list will be refetched on its next mount.
   if (!conn) {
-    throw new Error(`Delete node ${id}, connection ${key} not found.`);
+    return;
   }
 
   const edges = conn.getLinkedRecords('edges') || [];
@@ -90,7 +92,7 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   });
 
   if (!nodeExists) {
-    throw new Error(`Node with id ${id} not found, nothing to delete`);
+    return;
   }
 
   ConnectionHandler.deleteNode(conn, id);
@@ -117,11 +119,8 @@ export const deleteNodeFromContainer = (store, containerId, key, filters, id) =>
 export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
   const records = node.getLinkedRecord(path, params);
-  const edges = records.getLinkedRecords('edges');
-  const newEdges = filter(
-    (n) => n.getLinkedRecord('node').getValue('id') !== deleteId,
-    edges,
-  );
+  const edges = records.getLinkedRecords('edges') || [];
+  const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== deleteId);
   records.setLinkedRecords(newEdges, 'edges');
 };
 

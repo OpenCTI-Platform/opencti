@@ -51,6 +51,7 @@ const DataTableInternalFilters = ({
 }: DataTableInternalFiltersProps) => {
   const theme = useTheme<Theme>();
   const {
+    columns,
     availableFilterKeys,
     useDataTablePaginationLocalStorage: {
       viewStorage: { searchTerm },
@@ -58,7 +59,17 @@ const DataTableInternalFilters = ({
       paginationOptions,
     },
   } = useDataTableContext();
-
+  const extendedExportContext = React.useMemo(
+    () => (exportContext
+      ? {
+          ...exportContext,
+          visible_columns: columns
+            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
+            .map((c) => c.id),
+        }
+      : undefined),
+    [exportContext, columns],
+  );
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
@@ -90,7 +101,7 @@ const DataTableInternalFilters = ({
               availableEntityTypes={availableEntityTypes}
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
-              exportContext={exportContext}
+              exportContext={extendedExportContext}
               paginationOptions={paginationOptions}
               additionalHeaderButtons={additionalHeaderButtons}
               additionalHeaderToggleButtons={additionalToggleButtons}
@@ -121,6 +132,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'markAsReadEnabled'
   | 'entityTypes'
   | 'trashOperationsEnabled'
+  | 'disableBulkEnroll'
   | 'deleteDisable'
   | 'container'
 > & {
@@ -140,6 +152,7 @@ const DataTableInternalToolbar = ({
   entityTypes,
   displayEditButtons,
   trashOperationsEnabled,
+  disableBulkEnroll,
   deleteDisable,
   container,
 }: DataTableInternalToolbarProps) => {
@@ -171,7 +184,7 @@ const DataTableInternalToolbar = ({
         deSelectedElements={deSelectedElements}
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
-        search={searchTerm ?? globalSearch}
+        search={globalSearch ?? searchTerm}
         filters={contextFilters}
         types={entityTypes}
         handleClearSelectedElements={handleClearSelectedElements}
@@ -182,6 +195,7 @@ const DataTableInternalToolbar = ({
         markAsReadEnabled={markAsReadEnabled}
         displayEditButtons={displayEditButtons}
         trashOperationsEnabled={trashOperationsEnabled}
+        disableBulkEnroll={disableBulkEnroll}
         deleteDisable={deleteDisable}
         container={container}
       />
@@ -250,6 +264,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     removeFromDraftEnabled,
     markAsReadEnabled,
     trashOperationsEnabled,
+    disableBulkEnroll,
     deleteDisable,
     container,
   } = props;
@@ -311,6 +326,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             markAsReadEnabled={markAsReadEnabled}
             displayEditButtons={hasAuthorizedMembersCanEdit}
             trashOperationsEnabled={trashOperationsEnabled}
+            disableBulkEnroll={disableBulkEnroll}
             deleteDisable={deleteDisable}
           />
         )}

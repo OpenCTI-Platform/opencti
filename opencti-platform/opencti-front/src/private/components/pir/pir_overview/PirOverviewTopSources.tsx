@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import Grid from '@mui/material/Grid2';
 import { graphql, useFragment } from 'react-relay';
-import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
+import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import PirRelationshipsDonut from '@components/pir/PirRelationshipsDonut';
 import { PirOverviewTopSourcesFragment$key } from './__generated__/PirOverviewTopSourcesFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -55,6 +55,11 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
     },
   ];
 
+  const config = {
+    startDate: null,
+    endDate: null,
+  };
+
   return (
     <Grid container spacing={3}>
       <Grid size={{ xs: 6 }}>
@@ -66,11 +71,10 @@ const PirOverviewTopSources = ({ data }: PirOverviewTopSourcesProps) => {
             dataSelection={flaggedEntitiesTopSourcesDataSelection}
             variant="inLine"
             height={250}
-            startDate={null}
-            endDate={null}
             withoutTitle
             popover={undefined}
             host={undefined}
+            config={config}
           />
         </Card>
       </Grid>

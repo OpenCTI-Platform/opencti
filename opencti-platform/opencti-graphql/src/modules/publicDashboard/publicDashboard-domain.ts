@@ -30,7 +30,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { BasicStoreRelation, NumberResult, BasicConnection, StoreEntity, StoreMarkingDefinition } from '../../types/store';
+import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import {
   findStixCoreObjectPaginated,
@@ -182,6 +182,11 @@ export const addPublicDashboard = async (
   }
 
   const parsedManifest = fromB64(dashboard.manifest ?? '{}');
+  const dashboardRefreshInterval = dashboard.refresh_interval ?? 0;
+  parsedManifest.config = {
+    ...(parsedManifest.config ?? {}),
+    refresh_interval: dashboardRefreshInterval,
+  };
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     Object.keys(parsedManifest.widgets).forEach((widgetId) => {
       parsedManifest.widgets[widgetId].dataSelection = parsedManifest
@@ -326,14 +331,9 @@ export const publicStixRelationshipsMultiTimeSeries = async (
   const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
-    const filters = {
-      filterGroups: [selection.filters],
-      filters: [],
-      mode: 'and',
-    };
     return {
       field: selection.date_attribute,
-      filters,
+      filters: selection.filters,
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
     };
@@ -432,7 +432,7 @@ export const publicStixCoreObjectsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
@@ -503,7 +503,7 @@ export const publicStixRelationshipsDistribution = async (
   return BluePromise.map(
     mainDistribution,
     async (distributionItem) => {
-      if (!isStixCoreObject(distributionItem.entity.entity_type)) {
+      if (!distributionItem.entity || !isStixCoreObject(distributionItem.entity.entity_type)) {
         return distributionItem;
       }
 
@@ -593,9 +593,7 @@ export const publicStixCoreObjectsPaginated = async (
   const parameters = {
     startDate: args.startDate,
     endDate: args.endDate,
-    types: [
-      ABSTRACT_STIX_CORE_OBJECT,
-    ],
+    types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
     orderBy: selection.date_attribute,
     orderMode: 'desc',

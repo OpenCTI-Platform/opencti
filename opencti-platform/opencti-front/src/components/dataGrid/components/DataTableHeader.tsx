@@ -117,6 +117,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
       {hasColumnMenu && (
         <IconButton
           disableRipple
+          aria-label={t_i18n('View more')}
           className={classes.icon}
           onClick={openColumnMenu}
           style={{

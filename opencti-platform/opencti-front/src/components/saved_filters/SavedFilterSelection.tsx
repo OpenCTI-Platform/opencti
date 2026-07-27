@@ -1,9 +1,10 @@
-import React, { useState, useEffect, SyntheticEvent } from 'react';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
 import SavedFilterDeleteDialog from 'src/components/saved_filters/SavedFilterDeleteDialog';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import { SavedFiltersQuery$data } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersAutocomplete';
 import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
+import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
@@ -12,29 +13,37 @@ type SavedFilterSelectionProps = {
   data: SavedFiltersSelectionData[];
   currentSavedFilter?: SavedFiltersSelectionData;
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  onRefetch: () => void;
 };
 
-export type AutocompleteOptionType = {
+export type SavedFiltersAutocompleteOptionType = {
   label: string;
   value: SavedFiltersSelectionData;
+  isOwner: boolean;
+  ownerName?: string;
+  canManage: boolean;
 };
 
-const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrentSavedFilter }: SavedFilterSelectionProps) => {
+const SavedFilterSelection = ({
+  isDisabled,
+  data,
+  currentSavedFilter,
+  setCurrentSavedFilter,
+  onRefetch,
+}: SavedFilterSelectionProps) => {
   const {
     useDataTablePaginationLocalStorage: {
+      localStorageKey,
       helpers,
       viewStorage: { savedFilters },
     },
   } = useDataTableContext();
 
-  const [selectedSavedFilter, setSelectedSavedFilter] = useState<AutocompleteOptionType>();
+  const [selectedSavedFilter, setSelectedSavedFilter] = useState<SavedFiltersAutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
-  const [savedFilterToDelete, setSavedFilterToDelete] = useState<string>();
+  const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
-  const options = data.map((item) => ({
-    label: item.name,
-    value: item,
-  }));
+  const options = useBuildSavedFiltersOptions(data);
 
   const handleReset = () => {
     setSelectedSavedFilter(undefined);
@@ -59,16 +68,28 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   useEffect(() => {
     if (currentSavedFilter && !selectedSavedFilter) {
-      setSelectedSavedFilter({
-        label: currentSavedFilter.name,
-        value: currentSavedFilter,
-      });
-      setInputValue(currentSavedFilter.name);
+      const found = options.find((o) => o.value.id === currentSavedFilter.id);
+      if (found) {
+        setSelectedSavedFilter(found);
+        setInputValue(found.label);
+      }
     }
     if (!currentSavedFilter && selectedSavedFilter) {
       handleReset();
     }
   }, [currentSavedFilter]);
+
+  // Sync local state when the underlying data changes (e.g. after a name edit)
+  useEffect(() => {
+    if (selectedSavedFilter) {
+      const updated = options.find((o) => o.value.id === selectedSavedFilter.value.id);
+      if (updated && updated.label !== selectedSavedFilter.label) {
+        setSelectedSavedFilter(updated);
+        setInputValue(updated.label);
+        setCurrentSavedFilter(updated.value);
+      }
+    }
+  }, [data]);
 
   useEffect(() => {
     if (isDisabled && !!selectedSavedFilter) {
@@ -76,7 +97,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
     }
   }, [isDisabled]);
 
-  const handleChange = (selectionOption: AutocompleteOptionType) => {
+  const handleChange = (selectionOption: SavedFiltersAutocompleteOptionType) => {
     setSelectedSavedFilter(selectionOption);
     setCurrentSavedFilter(selectionOption.value);
     setInputValue(selectionOption.label);
@@ -89,7 +110,7 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
 
   const resetSavedFilterToDelete = () => setSavedFilterToDelete(undefined);
 
-  const handleDelete = (option: SavedFiltersSelectionData) => setSavedFilterToDelete(option.id);
+  const handleDelete = (option: SavedFiltersSelectionData) => setSavedFilterToDelete(option);
 
   return (
     <>
@@ -101,13 +122,15 @@ const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrent
         onInputChange={onInputChange}
         value={selectedSavedFilter}
         inputValue={inputValue}
+        localStorageKey={localStorageKey}
+        onRefetch={onRefetch}
       />
       {!!savedFilterToDelete && (
         <SavedFilterDeleteDialog
           savedFilterToDelete={savedFilterToDelete}
           onClose={resetSavedFilterToDelete}
           onReset={handleReset}
-          shouldResetFilters={savedFilterToDelete === selectedSavedFilter?.value.id}
+          shouldResetFilters={savedFilterToDelete.id === selectedSavedFilter?.value.id}
         />
       )}
     </>

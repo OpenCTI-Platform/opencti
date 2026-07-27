@@ -52,8 +52,11 @@ const getYupValidationForField = (
       validation = Yup.string();
   }
 
-  // Add required validation if field is mandatory
-  if (field.isMandatory) {
+  // Add required validation if field is mandatory or required and not read-only.
+  // `isMandatory` reflects schema-level mandatory attributes; `required` is the form designer's setting.
+  // Read-only fields are hidden for non-bypass users and pre-populated by the form schema,
+  // so client-side required validation must not block submission.
+  if ((field.isMandatory || field.required) && !field.isReadOnly) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
       || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
       validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
@@ -356,7 +359,7 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: Record<string, string | string[] | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
+  values: Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
   schema: FormSchemaDefinition,
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};
@@ -446,9 +449,18 @@ export const formatFormDataForSubmission = (
   // If main entity lookup is enabled, include the selected entities
   if (schema.mainEntityLookup && values.mainEntityLookup) {
     if (schema.mainEntityMultiple) {
-      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }[]).map((n) => n.value);
+      const lookupArr = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+      const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
+      const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+      if (existingIds.length > 0) formattedData.mainEntityLookup = existingIds;
+      if (pendingEntities.length > 0) formattedData.mainEntityLookupPending = pendingEntities;
     } else {
-      formattedData.mainEntityLookup = (values.mainEntityLookup as { value: string }).value;
+      const single = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+      if (single.isPendingCreation && single.pendingInputData) {
+        formattedData.mainEntityLookupPending = [single.pendingInputData];
+      } else {
+        formattedData.mainEntityLookup = single.value;
+      }
     }
   }
 
@@ -512,13 +524,22 @@ export const formatFormDataForSubmission = (
       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
 
       if (entity.lookup) {
-        // Handle lookup mode
+        // Handle lookup mode – split existing entities (by ID) from pending creations.
         const lookupValue = values[`additional_${entity.id}_lookup`];
         if (lookupValue) {
           if (entity.multiple) {
-            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }[]).map((n) => n.value);
+            const lookupArr = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+            const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
+            const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+            if (existingIds.length > 0) formattedData[`additional_${entity.id}_lookup`] = existingIds;
+            if (pendingEntities.length > 0) formattedData[`additional_${entity.id}_lookup_pending`] = pendingEntities;
           } else {
-            formattedData[`additional_${entity.id}_lookup`] = (lookupValue as { value: string }).value;
+            const single = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+            if (single.isPendingCreation && single.pendingInputData) {
+              formattedData[`additional_${entity.id}_lookup_pending`] = [single.pendingInputData];
+            } else {
+              formattedData[`additional_${entity.id}_lookup`] = single.value;
+            }
           }
         }
       } else if (entity.multiple && entity.fieldMode === 'parsed') {
@@ -663,6 +684,56 @@ export const formatFormDataForSubmission = (
     if (relationshipsData.length > 0) {
       formattedData.relationships = relationshipsData;
     }
+  }
+
+  // Handle draft fields
+  const normalizeDraftSelectionIds = (entries: unknown[]): string[] => {
+    return entries
+      .map((entry) => {
+        if (typeof entry === 'string') {
+          return entry;
+        }
+        if (typeof entry === 'object' && entry !== null) {
+          const option = entry as { value?: string; id?: string };
+          return option.value || option.id || '';
+        }
+        return '';
+      })
+      .filter((id) => typeof id === 'string' && id.length > 0);
+  };
+
+  if (Object.hasOwn(values, 'draftName') && typeof values.draftName === 'string') {
+    formattedData.draftName = values.draftName.trim();
+  }
+
+  if (Object.hasOwn(values, 'draftDescription') && typeof values.draftDescription === 'string') {
+    formattedData.draftDescription = values.draftDescription.trim();
+  }
+
+  if (Object.hasOwn(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
+    const draftObjectAssignee = values.draftObjectAssignee as unknown[];
+    formattedData.draftObjectAssignee = normalizeDraftSelectionIds(draftObjectAssignee);
+  }
+
+  if (Object.hasOwn(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
+    const draftObjectParticipant = values.draftObjectParticipant as unknown[];
+    formattedData.draftObjectParticipant = normalizeDraftSelectionIds(draftObjectParticipant);
+  }
+
+  if (Object.hasOwn(values, 'draftAuthor')) {
+    const selectedDraftAuthor = values.draftAuthor as { value: string } | null | undefined;
+    if (selectedDraftAuthor?.value) {
+      formattedData.draftAuthor = selectedDraftAuthor.value;
+    } else {
+      formattedData.draftAuthor = null; // explicit opt-out signal
+    }
+  }
+
+  if (Object.hasOwn(values, 'draftAuthorizedMembers') && Array.isArray(values.draftAuthorizedMembers)) {
+    const members = values.draftAuthorizedMembers as { value: string }[];
+    // Pass the full member objects to support access rights and group restrictions,
+    // including empty arrays so users can explicitly clear members.
+    formattedData.draftAuthorizedMembers = members;
   }
 
   return formattedData;

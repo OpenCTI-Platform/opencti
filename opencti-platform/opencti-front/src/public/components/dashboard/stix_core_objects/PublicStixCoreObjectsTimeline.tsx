@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePublicDashboardViz from '../usePublicDashboardViz';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixCoreObjectsTimelineQuery } from './__generated__/PublicStixCoreObjectsTimelineQuery.graphql';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
@@ -110,7 +110,7 @@ const PublicStixCoreObjectsTimeline = ({
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters, dataSelection } = widget;
-  const queryRef = useQueryLoading<PublicStixCoreObjectsTimelineQuery>(
+  const queryRef = usePublicDashboardViz<PublicStixCoreObjectsTimelineQuery>(
     publicStixCoreObjectsTimelineQuery,
     {
       uriKey,

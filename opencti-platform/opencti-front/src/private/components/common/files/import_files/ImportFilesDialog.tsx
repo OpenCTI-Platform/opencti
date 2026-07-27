@@ -45,6 +45,7 @@ import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySet
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
 import useCreateDraft from './useCreateDraft';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -147,6 +148,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     queryRef,
     selectedFormId,
   } = useImportFilesContext();
+  const { xtmOneConfigured } = useChatbot();
 
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
   const { stixCoreObject: entity, connectorsForImport } = useImportFilesData(queryRef);
@@ -331,15 +333,15 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     return files.length > 0 && (importMode === 'auto' || files.every((file) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
       if (hasCsvMapperConnector) return !!file.configuration;
-      // XTM One connectors require an agent selection (stored in configuration as JSON with agent_slug)
+      // XTM One connectors require an agent selection only when XTM One is configured.
       const hasXtmOneConnector = file.connectors?.some((connector) => {
         const fullConnector = connectorsForImport?.find((c) => c?.id === connector?.id);
         return !!fullConnector?.xtm_one_intent;
       });
-      if (hasXtmOneConnector) return !!file.configuration;
+      if (hasXtmOneConnector && xtmOneConfigured) return !!file.configuration;
       return true;
     }));
-  }, [files, importMode, selectedFormId, connectorsForImport]);
+  }, [files, importMode, selectedFormId, connectorsForImport, xtmOneConfigured]);
 
   const isValidImport = useMemo(() => {
     const { values } = optionsContext;

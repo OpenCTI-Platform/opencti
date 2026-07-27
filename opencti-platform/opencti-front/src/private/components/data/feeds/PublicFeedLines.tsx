@@ -123,18 +123,14 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
       secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
-            <span>
-              <IconButton onClick={copyClick} color="primary">
-                <ContentCopy />
-              </IconButton>
-            </span>
+            <IconButton onClick={copyClick} color="primary">
+              <ContentCopy />
+            </IconButton>
           </Tooltip>
           <Tooltip title={t_i18n('Access CSV feeds directly in your browser')}>
-            <span>
-              <IconButton onClick={browseClick} color="primary">
-                <OpenInNew />
-              </IconButton>
-            </span>
+            <IconButton onClick={browseClick} color="primary">
+              <OpenInNew />
+            </IconButton>
           </Tooltip>
         </>
       )}

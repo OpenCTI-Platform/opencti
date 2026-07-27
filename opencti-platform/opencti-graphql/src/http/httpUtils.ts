@@ -18,7 +18,19 @@ import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 
 export const setCookieError = (res: Response, message: string) => {
-  res.cookie('opencti_flash', message || 'Unknown error', {
+  // Map error messages to safe, non-sensitive codes exposed to the client.
+  const normalized = (message || '').toLowerCase();
+  let flashCode: string;
+  if (normalized.includes('ip address is not allowed')) {
+    flashCode = 'IP_NOT_ALLOWED';
+  } else if (normalized.includes('authentication is not available') || normalized.includes('authentication strategy is not available')) {
+    flashCode = 'PROVIDER_NOT_AVAILABLE';
+  } else if (normalized.includes('enterprise edition')) {
+    flashCode = 'ENTERPRISE_EDITION_REQUIRED';
+  } else {
+    flashCode = 'AUTH_ERROR';
+  }
+  res.cookie('opencti_flash', flashCode, {
     maxAge: 10000,
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),

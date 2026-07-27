@@ -63,7 +63,7 @@ export const organizationEditionOverviewFragment = graphql`
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
     $commitMessage: String
     $references: [String]
   ) {

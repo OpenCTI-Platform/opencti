@@ -1,6 +1,6 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
 import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
@@ -16,6 +16,15 @@ const savedFiltersQuery = graphql`
           name
           filters
           scope
+          creator_id
+          currentUserAccessRight
+          authorizedMembers {
+            id
+            name
+            entity_type
+            access_right
+            member_id
+          }
         }
       }
     }
@@ -26,9 +35,10 @@ type SavedFiltersComponentProps = {
   queryRef: PreloadedQuery<SavedFiltersQuery>;
   currentSavedFilter?: SavedFiltersSelectionData;
   setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  onRefetch: () => void;
 };
 
-const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
+const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter, onRefetch }: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
@@ -37,6 +47,7 @@ const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFi
       data={savedFilters?.edges?.map(({ node }) => node) ?? []}
       currentSavedFilter={currentSavedFilter}
       setCurrentSavedFilter={setCurrentSavedFilter}
+      onRefetch={onRefetch}
     />
   );
 };
@@ -56,7 +67,11 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
   const filters = getSavedFilterScopeFilter(localStorageKey);
   const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
-  const queryRef = useQueryLoading<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
+
+  const handleRefetch = useCallback(() => {
+    loadQuery(queryOptions, { fetchPolicy: 'network-only' });
+  }, [loadQuery, localStorageKey]);
 
   const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
   if (isRestrictedStorageKey) return null;
@@ -70,6 +85,7 @@ const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFilter
                 queryRef={queryRef}
                 currentSavedFilter={currentSavedFilter}
                 setCurrentSavedFilter={setCurrentSavedFilter}
+                onRefetch={handleRefetch}
               />
             </Suspense>
           )

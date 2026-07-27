@@ -28,6 +28,9 @@ class AuthBoundaryComponent extends React.Component {
       if (includes('AUTH_REQUIRED', types)) {
         return <LoginRoot type="LOGIN" />;
       }
+      if (includes('IP_FORBIDDEN', types)) {
+        return <LoginRoot type="LOGIN" />;
+      }
       if (includes('OTP_REQUIRED_ACTIVATION', types)) {
         return <LoginRoot type="2FA_ACTIVATION" />;
       }

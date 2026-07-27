@@ -5,9 +5,6 @@
   ],
   "workspaces": {
     ".": {
-      "entry": [
-        "src/static/ext/pdf.worker.mjs"
-      ],
       "ignoreDependencies": [
         "i18n-auto-translation",
         "@rjsf/validator-ajv8"
