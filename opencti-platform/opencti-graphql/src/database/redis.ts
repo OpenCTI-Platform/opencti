@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
-import { meterManager } from '../config/tracing';
 import { mergeDeepRightAll, now } from '../utils/format';
 import type { BasicStoreCommon } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -427,13 +426,12 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   // Get the lock
   const acquireStart = performance.now(); // monotonic: immune to system clock adjustments
   let lock = await redlock.acquire(locks, maxTtl); // Force unlock after maxTtl
-  // A contended acquisition waits in silent retry polls (retry_delay); without these metrics that
-  // wait is invisible: it inflates operation latency but emits no signal until full retry
-  // exhaustion throws a LOCK_ERROR.
-  meterManager.lockWait(Math.round(performance.now() - acquireStart));
-  if (lock.attempts.length > 1) {
-    meterManager.lockContention();
-  }
+  // A contended acquisition waits in silent retry polls (retry_delay) and emits no signal until full
+  // retry exhaustion throws a LOCK_ERROR. Expose the measured wait and the attempt count on the
+  // returned lock: recording is done by the caller (master-lock) in the MAIN process, because with
+  // app:child_locking_process this code runs in the lock child, where no metric exporter lives.
+  const acquireWaitMs = Math.round(performance.now() - acquireStart);
+  const acquireAttempts = lock.attempts.length;
   const queue = () => {
     timeout = setTimeout(
       () => {
@@ -476,6 +474,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   return {
     signal,
     extend,
+    acquireWaitMs,
+    acquireAttempts,
     unlock: async () => {
       // First, wait for an in-flight extension to finish.
       if (extension) {
