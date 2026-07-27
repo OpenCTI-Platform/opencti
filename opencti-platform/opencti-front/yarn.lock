@@ -7737,12 +7737,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"extract-files@npm:13.0.0":
-  version: 13.0.0
-  resolution: "extract-files@npm:13.0.0"
+"extract-files@npm:14.0.0":
+  version: 14.0.0
+  resolution: "extract-files@npm:14.0.0"
   dependencies:
     is-plain-obj: "npm:^4.1.0"
-  checksum: 10c0/ee1e6e37f24fcb7de5019c0dc054f3e075664f63b5a9bd38c9ba1a32481ed1e77fd237adf826a7f6c7a1db406d9db4428f8ae4395fb2dfb602235b15f8f4bc3e
+  checksum: 10c0/8aae5b7daef4e1fb80b2c289d1702cdf350e7c12f4b60889f5120f0dfeee7bec9be7c1db049606947a6f03b06a11c2476dda117225f6766c09e56e46581d5c4f
   languageName: node
   linkType: hard
 
@@ -11811,7 +11811,7 @@ __metadata:
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
     eslint-plugin-react: "npm:7.37.5"
-    extract-files: "npm:13.0.0"
+    extract-files: "npm:14.0.0"
     filigran-icon: "npm:0.21.0"
     formik: "npm:2.4.9"
     formik-mui: "npm:5.0.0-alpha.0"
