@@ -127,7 +127,7 @@ export const computeRangeIntersection = (a, b) => {
   }
   // No range intersection, get min/max to build the range
   const minStart = moment.min([a.start, b.start]);
-  const maxStop = moment.max([b.end, b.end]);
+  const maxStop = moment.max([a.end, b.end]);
   return { start: minStart.toISOString(), end: maxStop.toISOString() };
 };
 

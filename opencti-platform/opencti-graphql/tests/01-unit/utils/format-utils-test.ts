@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { checkScore } from '../../../src/utils/format';
+import { buildPeriodFromDates, checkScore, computeRangeIntersection } from '../../../src/utils/format';
+
+describe('computeRangeIntersection tests', () => {
+  it('should return the overlapping window when the two ranges intersect', () => {
+    const a = buildPeriodFromDates('2020-01-01T00:00:00.000Z', '2020-06-01T00:00:00.000Z');
+    const b = buildPeriodFromDates('2020-03-01T00:00:00.000Z', '2020-09-01T00:00:00.000Z');
+    const result = computeRangeIntersection(a, b);
+    expect(result.start).toEqual('2020-03-01T00:00:00.000Z');
+    expect(result.end).toEqual('2020-06-01T00:00:00.000Z');
+  });
+
+  it('should span both ranges (min start, max end) when they do not intersect', () => {
+    // a ends AFTER b: the max end must be a.end, not b.end.
+    const a = buildPeriodFromDates('2020-01-01T00:00:00.000Z', '2020-06-01T00:00:00.000Z');
+    const b = buildPeriodFromDates('2019-01-01T00:00:00.000Z', '2019-03-01T00:00:00.000Z');
+    const result = computeRangeIntersection(a, b);
+    expect(result.start).toEqual('2019-01-01T00:00:00.000Z');
+    expect(result.end).toEqual('2020-06-01T00:00:00.000Z');
+  });
+});
 
 describe('checkScoreValue tests', () => {
   it('should throw validationError for score > 100', () => {
