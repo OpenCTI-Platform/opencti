@@ -46,7 +46,7 @@
   },
   "packageManager": "yarn@4.17.1",
   "engines": {
-    "node": ">= 20.0.0"
+    "node": ">= 22.0.0"
   },
   "dependencies": {
     "@apollo/server": "5.5.1",
