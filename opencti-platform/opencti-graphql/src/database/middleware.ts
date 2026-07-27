@@ -2481,6 +2481,7 @@ type UpdateAttributeMetaResolvedOpts = {
   commitMessage?: string;
   bypassIndividualUpdate?: boolean;
   bypassValidation?: boolean;
+  upsert?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2814,6 +2815,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       impactedInputs.push(attributesAtInput);
     }
     // endregion
+    // Upsert outcome: an upsert that impacts nothing (no attribute reindex, no meta relation
+    // change) still paid the full lock acquisition; inputs-level emptiness cannot detect it
+    // because structural add inputs (creator_id, x_opencti_stix_ids) are pushed unconditionally.
+    if (opts.upsert) {
+      const hasEsImpact = impactedInputs.length > 0 || relationsToCreate.length > 0 || relationsToDelete.length > 0;
+      meterManager.upsert(hasEsImpact ? 'write' : 'noop', initial.entity_type);
+    }
     // Impacting information
     if ((getDraftContext(context, user) && isDraftSupportedEntity(initial))) {
       const lastElementVersion = await internalLoadById(context, user, initial.internal_id);
@@ -3316,7 +3324,6 @@ const upsertElement = async (
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    meterManager.upsert('write', type);
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
