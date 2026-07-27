@@ -77,9 +77,9 @@ export const exportDashboardWidget = async (context: AuthContext, user: AuthUser
   const parsedManifest = fromB64(manifest ?? '{}');
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
     const widgetDefinition = parsedManifest.widgets[widgetId];
-    delete widgetDefinition.id; // Remove current widget id
     await resolveSavedFiltersInDataSelection(context, user, widgetDefinition);
     await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
+    delete widgetDefinition.id; // Remove current widget id
     const exportConfigration = {
       openCTI_version: pjson.version,
       type: 'widget',

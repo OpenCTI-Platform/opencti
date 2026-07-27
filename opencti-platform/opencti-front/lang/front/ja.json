@@ -3231,7 +3231,7 @@
   "Number of operations": "操作回数",
   "Number of paragraphs": "段落数",
   "Number of paragraphs should be a number": "段落数は数値である必要があります",
-  "Number of paragraphs should be greather than 0": "段落数は0より大きい値である必要があります",
+  "Number of paragraphs should be greater than 0": "段落数は0より大きい値である必要があります",
   "Number of recipients": "受給者数",
   "Number of relationships": "リレーションシップの数",
   "Number of results": "結果数",

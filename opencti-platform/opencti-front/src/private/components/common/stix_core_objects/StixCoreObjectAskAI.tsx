@@ -147,7 +147,7 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
       if (Number.isNaN(paragraphs)) {
         MESSAGING$.notifyError(t_i18n('Number of paragraphs should be a number'));
       } else if (paragraphs <= 0) {
-        MESSAGING$.notifyError(t_i18n('Number of paragraphs should be greather than 0'));
+        MESSAGING$.notifyError(t_i18n('Number of paragraphs should be greater than 0'));
       } else {
         handleAskAiContent();
       }
