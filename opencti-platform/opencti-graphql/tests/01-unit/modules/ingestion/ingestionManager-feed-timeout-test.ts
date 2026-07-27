@@ -267,4 +267,53 @@ describe('Ingestion manager feed timeout behavior', () => {
       expect.objectContaining({ timeout: 50 }),
     );
   });
+
+  it('should continue JSON iteration when one feed fails and another is healthy', async () => {
+    const baseIngestion = {
+      user_id: 'user--1',
+      scheduling_period: 'auto',
+      last_execution_date: undefined,
+      query_attributes: [],
+    };
+    const failingIngestion = {
+      ...baseIngestion,
+      id: 'json--fail',
+      internal_id: 'json-internal--fail',
+      name: 'Failing JSON',
+    };
+    const healthyIngestion = {
+      ...baseIngestion,
+      id: 'json--ok',
+      internal_id: 'json-internal--ok',
+      name: 'Working JSON',
+    };
+    // The failing feed is processed first: before the fix, its throw aborted the loop and the
+    // healthy feed was never reached.
+    findAllJsonIngestionMock.mockResolvedValue([failingIngestion, healthyIngestion]);
+    executeJsonQueryMock.mockImplementation((_ctx: unknown, ingestion: { internal_id: string }) => {
+      if (ingestion.internal_id === 'json-internal--fail') {
+        return Promise.reject(new Error('remote feed is down'));
+      }
+      return Promise.resolve({ objects: [], variables: {}, nextExecutionState: {} });
+    });
+
+    const { jsonExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    // A single failing feed must not stop the whole JSON iteration.
+    await expect(jsonExecutor({} as any)).resolves.toBeUndefined();
+
+    // The healthy feed after the failing one is still processed.
+    expect(executeJsonQueryMock).toHaveBeenCalledWith(
+      expect.anything(),
+      healthyIngestion,
+      expect.objectContaining({ timeout: 50 }),
+    );
+    // The failing feed's last_execution_date is updated so it respects its scheduling period.
+    expect(patchJsonIngestionMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'json-internal--fail',
+      expect.objectContaining({ last_execution_date: expect.any(String) }),
+    );
+  });
 });
