@@ -981,6 +981,47 @@ interface StixRelationshipsTimelineComponentProps {
   dataSelection: WidgetDataSelection[];
 }
 
+export const RELATIONSHIP_TIMELINE_DATE_KEY = 'relTimelineDate';
+
+type TimelineEdges = NonNullable<
+  NonNullable<StixRelationshipsTimelineStixRelationshipQuery['response']['stixRelationships']>['edges']
+>;
+
+type TimelineRelationshipNode = TimelineEdges[number]['node'];
+type TimelineRemoteNode = NonNullable<TimelineRelationshipNode['from']> | NonNullable<TimelineRelationshipNode['to']>;
+
+export const buildStixRelationshipsTimelineData = (
+  edges: TimelineEdges,
+  selection: WidgetDataSelection,
+  dateAttribute: string,
+  dateKey: string = RELATIONSHIP_TIMELINE_DATE_KEY,
+) => {
+  const fromId
+    = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
+  return edges.flatMap((edge) => {
+    const rel = edge.node;
+    const remoteNode: TimelineRemoteNode | null | undefined
+      = rel.from
+        && fromId
+        && fromId.includes(rel.from.id)
+        && selection.isTo !== false
+        ? rel.to
+        : rel.from;
+    if (!remoteNode) return [];
+    const restricted = rel.from === null || rel.to === null;
+    const link = restricted
+      ? undefined
+      : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}/knowledge/relations/${rel.id}`;
+    return [{
+      value: {
+        ...remoteNode,
+        [dateKey]: rel[dateAttribute as keyof TimelineRelationshipNode],
+      },
+      link,
+    }];
+  });
+};
+
 const StixRelationshipsTimelineComponent = ({
   queryRef,
   dataSelection,
@@ -997,37 +1038,16 @@ const StixRelationshipsTimelineComponent = ({
   const selection = dataSelection[0];
   const dateAttribute
     = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
-  const fromId
-    = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
-  const edges = data.stixRelationships.edges;
-  const timelineData = edges.flatMap((edge) => {
-    const rel = edge.node;
-    const remoteNode
-      = rel.from
-        && fromId
-        && fromId.includes(rel.from.id)
-        && selection.isTo !== false
-        ? rel.to
-        : rel.from;
-    if (!remoteNode) return [];
-    const restricted = rel.from === null || rel.to === null;
-    const link = restricted
-      ? undefined
-      : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}/knowledge/relations/${rel.id}`;
-    return {
-      value: {
-        ...remoteNode,
-        created:
-            rel[dateAttribute as keyof typeof rel] ?? rel.created,
-      },
-      link,
-    };
-  });
+  const timelineData = buildStixRelationshipsTimelineData(
+    data.stixRelationships.edges,
+    selection,
+    dateAttribute,
+  );
 
   return (
     <WidgetTimeline
       data={timelineData}
-      dateAttribute={dateAttribute}
+      dateAttribute={RELATIONSHIP_TIMELINE_DATE_KEY}
     />
   );
 };
