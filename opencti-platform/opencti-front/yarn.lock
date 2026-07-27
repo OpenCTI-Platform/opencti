@@ -8559,9 +8559,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.1.1":
-  version: 6.1.1
-  resolution: "graphql-ws@npm:6.1.1"
+"graphql-ws@npm:6.2.0":
+  version: 6.2.0
+  resolution: "graphql-ws@npm:6.2.0"
   peerDependencies:
     "@fastify/websocket": ^10 || ^11
     crossws: ~0.3
@@ -8574,7 +8574,7 @@ __metadata:
       optional: true
     ws:
       optional: true
-  checksum: 10c0/13bbe0d0aace0becb01ab665e225d318961e84d68e71b3ecc0b9379f47c37d041c0c281e8b555b4e072461f9bf048665ab4cc20c194d38ec640402febaa74a08
+  checksum: 10c0/8037420e955a69f6af5244edf0931eb6e91556e24c77086fd1540a04969ab62c10b539f3967bd81baafee6e6ef7d436279d3ccb0e45cb85d26d7f5edf9e15e10
   languageName: node
   linkType: hard
 
@@ -11818,7 +11818,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     globals: "npm:17.7.0"
     graphiql: "npm:5.2.4"
-    graphql-ws: "npm:6.1.1"
+    graphql-ws: "npm:6.2.0"
     html-react-parser: "npm:6.1.5"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.33"
