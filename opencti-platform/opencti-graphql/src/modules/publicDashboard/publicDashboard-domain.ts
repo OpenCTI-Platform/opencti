@@ -161,10 +161,9 @@ const createPrivateManifest = async (
  */
 const createPublicManifest = (parsedManifest: any) => {
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    Object.keys(parsedManifest.widgets).forEach((widgetId) => {
-      parsedManifest.widgets[widgetId].dataSelection = parsedManifest
-        .widgets[widgetId]
-        .dataSelection.map((selection: any) => {
+    const publicWidgets = Object.fromEntries(
+      Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
+        const publicDataSelection = widget.dataSelection.map((selection: any) => {
           return {
             ...(selection.label && { label: selection.label }),
             ...(selection.attribute && { attribute: selection.attribute }),
@@ -176,7 +175,11 @@ const createPublicManifest = (parsedManifest: any) => {
             ...(selection.columns && { columns: selection.columns }),
           };
         });
-    });
+        return [widgetId, { ...widget, dataSelection: publicDataSelection }];
+      }),
+    );
+    const publicManifest = { ...parsedManifest, widgets: publicWidgets };
+    return toB64(publicManifest);
   }
   return toB64(parsedManifest ?? '{}');
 };
