@@ -9987,7 +9987,7 @@ __metadata:
     re2: "npm:1.26.1"
     semver: "npm:7.8.5"
     set-interval-async: "npm:3.0.3"
-    slug: "npm:11.0.1"
+    slug: "npm:12.0.1"
     source-map: "npm:0.8.0"
     tough-cookie: "npm:6.0.2"
     turndown: "npm:7.2.4"
@@ -11320,12 +11320,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slug@npm:11.0.1":
-  version: 11.0.1
-  resolution: "slug@npm:11.0.1"
+"slug@npm:12.0.1":
+  version: 12.0.1
+  resolution: "slug@npm:12.0.1"
   bin:
     slug: cli.js
-  checksum: 10c0/96e89626de676d069ffed91bde3400d2bf8e6c344e20be2f33cc192d0b90dc59b4b0b22d6a048a43c665518a5ffecc92fe8b954f9390c69c8adee8894f3782a8
+  checksum: 10c0/30a084b372d02f874800b128c09c8ae9b83fcf5cb9795830013c1c96745f63b5d80750d5a8eb253b1346702ea25dae0e46662a1aadb1eec4f4edd23fb05b0000
   languageName: node
   linkType: hard
 
