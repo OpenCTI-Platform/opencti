@@ -193,13 +193,13 @@ export class TelemetryMeterManager {
   // Number of form intakes submitted
   formIntakeSubmittedCount = 0;
 
-  // Number security coverages
+  // Number of security coverages
   securityCoveragesCount = 0;
 
-  // Number security coverages
+  // Number of security coverage results
   securityCoverageResultsCount = 0;
 
-  // Number of relationships has-covered
+  // Number of has-covered relationships
   relationshipsHasCoveredCount = 0;
 
   // Number of decay rules created
