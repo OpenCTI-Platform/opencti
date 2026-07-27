@@ -169,10 +169,10 @@ const createPublicManifest = (parsedManifest: any) => {
             ...(selection.label && { label: selection.label }),
             ...(selection.attribute && { attribute: selection.attribute }),
             ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
-            ...(selection.number && { number: selection.number }),
-            ...(selection.centerLat && { centerLat: selection.centerLat }),
-            ...(selection.centerLng && { centerLng: selection.centerLng }),
-            ...(selection.zoom && { zoom: selection.zoom }),
+            ...(isNotEmptyField(selection.number) && { number: selection.number }),
+            ...(isNotEmptyField(selection.centerLat) && { centerLat: selection.centerLat }),
+            ...(isNotEmptyField(selection.centerLng) && { centerLng: selection.centerLng }),
+            ...(isNotEmptyField(selection.zoom) && { zoom: selection.zoom }),
             ...(selection.columns && { columns: selection.columns }),
           };
         });
