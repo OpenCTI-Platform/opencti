@@ -994,6 +994,7 @@ const StixRelationshipsTimelineComponent = ({
     return <WidgetNoData />;
   }
 
+  const dateKey = 'relDate';
   const selection = dataSelection[0];
   const dateAttribute
     = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
@@ -1017,8 +1018,7 @@ const StixRelationshipsTimelineComponent = ({
     return {
       value: {
         ...remoteNode,
-        created:
-            rel[dateAttribute as keyof typeof rel] ?? rel.created,
+        [dateKey]: rel[dateAttribute as keyof typeof rel],
       },
       link,
     };
@@ -1027,7 +1027,7 @@ const StixRelationshipsTimelineComponent = ({
   return (
     <WidgetTimeline
       data={timelineData}
-      dateAttribute={dateAttribute}
+      dateAttribute={dateKey}
     />
   );
 };
