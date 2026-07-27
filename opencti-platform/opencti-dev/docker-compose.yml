@@ -22,7 +22,6 @@ services:
       - discovery.type=single-node
       - xpack.ml.enabled=false
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms2G -Xmx2G"
     restart: unless-stopped
     ulimits:
       memlock:
@@ -70,7 +69,6 @@ services:
       - discovery.type=single-node
       - plugins.security.disabled=true
       - bootstrap.memory_lock=true
-      - OPENSEARCH_JAVA_OPTS=-Xms2G -Xmx2G
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD=GraceH00per! # minimum 8 character password and must contain at least one uppercase letter, one lowercase letter, one digit, and one special character that is strong.
     ulimits:
       memlock:
@@ -171,8 +169,6 @@ services:
       - "3100:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    depends_on:
-      - opencti-dev-telemetry-prometheus
 
   # SAML / OpenId provider with keycloak - disabled by default
   # docker compose --profile keycloak up -d
