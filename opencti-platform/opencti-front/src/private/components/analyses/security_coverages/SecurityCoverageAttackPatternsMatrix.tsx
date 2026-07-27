@@ -3,6 +3,7 @@ import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import { buildAverageCoverageMap } from './securityCoverageAggregation';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
   securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
@@ -21,16 +22,18 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
 }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
-  const attackPatterns = ((securityCoverage.attackPatterns?.entities ?? [])
-    .filter((node) => node?.to !== null && node?.to !== undefined)
+  const coveredEntities = securityCoverage.attackPatterns?.entities ?? [];
+  const seenAttackPatternIds = new Set<string>();
+  const attackPatterns = (coveredEntities
+    .filter((node) => {
+      const id = node?.to?.id;
+      if (!id || seenAttackPatternIds.has(id)) return false;
+      seenAttackPatternIds.add(id);
+      return true;
+    })
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
-  const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>();
-  (securityCoverage.attackPatterns?.entities ?? []).forEach((node) => {
-    if (node && node.to?.id) {
-      attackPatternsCoverageMap.set(node.to.id, node.coverage_information || []);
-    }
-  });
+  const attackPatternsCoverageMap = buildAverageCoverageMap(coveredEntities);
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);

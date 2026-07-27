@@ -63,4 +63,35 @@ describe('Component: SecurityCoverageVulnerabilities', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Showing 5000 of 5001 vulnerabilities. Some results are not displayed.')).toBeInTheDocument();
   });
+
+  it('should merge the same vulnerability covered by several results into a single row', () => {
+    const data = {
+      ' $fragmentType': 'SecurityCoverageVulnerabilities_securityCoverage',
+      id: 'security-coverage-id',
+      name: 'SC',
+      parent_types: [],
+      entity_type: 'Security-Coverage',
+      vulnerabilities: {
+        count: 2,
+        entities: [
+          {
+            relationship_id: 'relationship-1',
+            coverage_information: [{ coverage_name: 'Prevention', coverage_score: 40 }],
+            to: { id: 'vulnerability-id', parent_types: [], name: 'Vuln1', description: '' },
+          },
+          {
+            relationship_id: 'relationship-2',
+            coverage_information: [{ coverage_name: 'Prevention', coverage_score: 60 }],
+            to: { id: 'vulnerability-id', parent_types: [], name: 'Vuln1', description: '' },
+          },
+        ],
+      },
+    } as unknown as SecurityCoverageVulnerabilities_securityCoverage$key;
+
+    testRender(
+      <SecurityCoverageVulnerabilities securityCoverage={data} />,
+    );
+
+    expect(screen.getAllByText('Vuln1')).toHaveLength(1);
+  });
 });

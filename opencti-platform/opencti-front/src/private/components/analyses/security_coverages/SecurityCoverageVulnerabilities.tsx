@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
 import Alert from '../../../../components/Alert';
+import { dedupeCoveredEntities } from './securityCoverageAggregation';
 
 const MAX_VULNERABILITIES = 5000;
 
@@ -33,6 +34,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const globalCount = securityCoverage.vulnerabilities?.count ?? 0;
+  const vulnerabilityEntities = dedupeCoveredEntities(securityCoverage.vulnerabilities?.entities ?? []);
   return (
     <div>
       <Label
@@ -54,9 +56,9 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
           )}
         />
       )}
-      <FieldOrEmpty source={securityCoverage.vulnerabilities?.entities}>
+      <FieldOrEmpty source={vulnerabilityEntities}>
         <SecurityCoverageCoveredList
-          entities={securityCoverage.vulnerabilities?.entities ?? []}
+          entities={vulnerabilityEntities}
           rowRenderer={(vulnerabilityEntity) => {
             const vulnerability = vulnerabilityEntity.to;
             const coverage = vulnerabilityEntity.coverage_information || [];

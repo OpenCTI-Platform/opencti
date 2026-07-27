@@ -28,6 +28,7 @@ import type { Theme } from '../../../../components/Theme';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
+import { dedupeCoveredEntities } from './securityCoverageAggregation';
 
 const MAX_ATTACK_PATTERNS = 5000;
 
@@ -204,7 +205,7 @@ const SecurityCoverageAttackPatternsComponent = ({
           <div className="clearfix" />
           <FieldOrEmpty source={securityCoverage.attPatterns?.entities || []}>
             <SecurityCoverageCoveredList
-              entities={securityCoverage.attPatterns?.entities ?? []}
+              entities={dedupeCoveredEntities(securityCoverage.attPatterns?.entities ?? [])}
               style={{ marginTop: -10 }}
               rowRenderer={(attackPatternEntity) => {
                 const attackPattern = attackPatternEntity.to;
