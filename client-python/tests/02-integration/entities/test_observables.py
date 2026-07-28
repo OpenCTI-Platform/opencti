@@ -15,9 +15,7 @@ def test_windows_registry_key_values_creation(api_client):
 
     key_without_values, key_with_values = bundle["objects"]
 
-    registry_key_1 = api_client.stix_cyber_observable.read(
-        id=key_without_values["id"]
-    )
+    registry_key_1 = api_client.stix_cyber_observable.read(id=key_without_values["id"])
     assert registry_key_1["attribute_key"] == key_without_values["key"]
 
     registry_key_2 = api_client.stix_cyber_observable.read(id=key_with_values["id"])
