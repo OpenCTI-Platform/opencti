@@ -130,7 +130,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@faker-js/faker": "10.5.0",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.62.0",
     "@stylistic/eslint-plugin": "5.10.0",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "7.0.0",
@@ -151,7 +151,7 @@
     "@vitest/coverage-v8": "4.1.10",
     "babel-plugin-relay": "21.0.1",
     "esbuild": "0.28.1",
-    "eslint": "10.7.0",
+    "eslint": "10.8.0",
     "eslint-import-resolver-typescript": "4.4.5",
     "eslint-plugin-custom-rules": "workspace:*",
     "eslint-plugin-import": "2.32.0",
