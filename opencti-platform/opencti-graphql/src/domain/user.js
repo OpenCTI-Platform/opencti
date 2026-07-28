@@ -1122,7 +1122,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         const draftWorkspaces = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
         const draftWorkspace = draftWorkspaces.get(draftContext);
         if (!draftWorkspace) throw DraftLockedError('Could not find draft workspace');
-        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft not in an open state');
+        if (draftWorkspace.draft_status !== DRAFT_STATUS_OPEN) throw DraftLockedError('Can not move to a draft that is not in an open state');
       }
     }
     if (input.key === 'unit_system') {
