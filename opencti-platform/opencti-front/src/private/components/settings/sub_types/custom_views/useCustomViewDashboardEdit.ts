@@ -7,6 +7,7 @@ import { useCustomViewDashboardEdit_LayoutMutation } from './__generated__/useCu
 import { useCustomViewDashboardEdit_WidgetImportMutation } from './__generated__/useCustomViewDashboardEdit_WidgetImportMutation.graphql';
 import { useCustomViewDashboardEdit_WidgetExportQuery$data } from './__generated__/useCustomViewDashboardEdit_WidgetExportQuery.graphql';
 import { useCustomViewDashboardEdit_Query$data } from './__generated__/useCustomViewDashboardEdit_Query.graphql';
+import { useFormatter } from 'src/components/i18n';
 
 export const customViewQuery = graphql`
   query useCustomViewDashboardEdit_Query($id: ID!) {
@@ -61,21 +62,10 @@ const customViewExportWidgetQuery = graphql`
   }
 `;
 
-const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
-  const data = await fetchQuery(customViewExportWidgetQuery, { id, widgetId: widget.id })
-    .toPromise();
-  const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
-  const exportString = result.customView?.toWidgetExport;
-  if (!exportString) {
-    MESSAGING$.notifyError('Failed to export widget');
-    return null;
-  }
-  return exportString;
-};
-
 const useCustomViewDashboardEdit = ({ customView }: {
   customView: useCustomViewDashboardEdit_Query$data['customView'];
 }) => {
+  const { t_i18n } = useFormatter();
   const [commitSaveMutation] = useApiMutation<useCustomViewDashboardEdit_Mutation>(customViewMutation);
   const [commitSaveLayoutMutation] = useApiMutation<useCustomViewDashboardEdit_LayoutMutation>(customViewLayoutMutation);
   const [commitImportWidgetMutation] = useApiMutation<useCustomViewDashboardEdit_WidgetImportMutation>(customViewImportWidgetMutation);
@@ -109,6 +99,19 @@ const useCustomViewDashboardEdit = ({ customView }: {
       },
     });
   };
+
+  const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
+    const data = await fetchQuery(customViewExportWidgetQuery, { id, widgetId: widget.id })
+      .toPromise();
+    const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
+    const exportString = result.customView?.toWidgetExport;
+    if (!exportString) {
+      MESSAGING$.notifyError(t_i18n('Failed to export widget'));
+      return null;
+    }
+    return exportString;
+  };
+
   const onImportWidget = (id: string, widgetConfig: unknown, manifestEncoded: string) => {
     commitImportWidgetMutation({
       variables: {

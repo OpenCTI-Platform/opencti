@@ -153,7 +153,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           MESSAGING$.notifySuccess('Force zip launched. Your download will start shortly.');
           window.location.href = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(res.supportPackageForceZip.package_url)}`;
         } else {
-          MESSAGING$.notifyError('No download URL available.');
+          MESSAGING$.notifyError(t_i18n('No download URL available.'));
         }
       },
     });
