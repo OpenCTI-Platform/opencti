@@ -19,6 +19,7 @@ export default defineConfig([
       '**/src/generated/**',
       '**/__generated__/**',
       '**/extract-i18n-keyword.js',
+      'eslint.config.js',
       'playwright.config.ts',
       'vite.config.ts',
       'vitest.config.ts',
