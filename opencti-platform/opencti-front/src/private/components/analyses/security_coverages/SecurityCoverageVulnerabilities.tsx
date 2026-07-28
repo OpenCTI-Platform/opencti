@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
@@ -34,7 +34,10 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const globalCount = securityCoverage.vulnerabilities?.count ?? 0;
-  const vulnerabilityEntities = dedupeCoveredEntities(securityCoverage.vulnerabilities?.entities ?? []);
+  const vulnerabilityEntities = useMemo(
+    () => dedupeCoveredEntities(securityCoverage.vulnerabilities?.entities ?? []),
+    [securityCoverage.vulnerabilities?.entities],
+  );
   return (
     <div>
       <Label

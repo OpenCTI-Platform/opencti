@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
@@ -23,17 +23,22 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
   const coveredEntities = securityCoverage.attackPatterns?.entities ?? [];
-  const seenAttackPatternIds = new Set<string>();
-  const attackPatterns = (coveredEntities
-    .filter((node) => {
-      const id = node?.to?.id;
-      if (!id || seenAttackPatternIds.has(id)) return false;
-      seenAttackPatternIds.add(id);
-      return true;
-    })
-    .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
+  const attackPatterns = useMemo(() => {
+    const seenAttackPatternIds = new Set<string>();
+    return (coveredEntities
+      .filter((node) => {
+        const id = node?.to?.id;
+        if (!id || seenAttackPatternIds.has(id)) return false;
+        seenAttackPatternIds.add(id);
+        return true;
+      })
+      .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
+  }, [coveredEntities]);
 
-  const attackPatternsCoverageMap = buildAverageCoverageMap(coveredEntities);
+  const attackPatternsCoverageMap = useMemo(
+    () => buildAverageCoverageMap(coveredEntities),
+    [coveredEntities],
+  );
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);

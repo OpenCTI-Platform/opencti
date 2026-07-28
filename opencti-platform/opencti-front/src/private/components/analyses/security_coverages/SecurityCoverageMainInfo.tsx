@@ -37,7 +37,7 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
       title={(
         <Stack direction="row" spacing={1} alignItems="center">
           <span>{t_i18n('Coverage information')}</span>
-          <Tooltip title={t_i18n('Average coverage information score from Security Coverage Result(s)')}>
+          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>

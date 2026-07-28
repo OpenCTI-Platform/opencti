@@ -489,7 +489,6 @@
   "Available columns": "利用可能な列",
   "Available for manual enrollment / trigger": "手動登録/トリガーで利用可能",
   "Available playbooks": "利用可能なプレイブック",
-  "Average coverage information score from Security Coverage Result(s)": "セキュリティカバレッジ結果からの平均カバレッジ情報スコア",
   "Average coverage score from Security Coverage Result(s)": "セキュリティカバレッジ結果からの平均カバレッジスコア",
   "Averages of context relations": "コンテキストリレーションの平均",
   "Avoid dependencies resolution": "避免依賴解析",

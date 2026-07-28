@@ -5,7 +5,7 @@ import { ViewListOutlined, ViewModuleOutlined, VisibilityOutlined } from '@mui/i
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
@@ -64,6 +64,10 @@ const SecurityCoverageAttackPatternsComponent = ({
   const [isModeOnlyActive, setIsModeOnlyActive] = useState(false);
   const theme = useTheme<Theme>();
   const killChainsData = useFragment(securityCoverageKillChainPhasesFragment, dataKillChains);
+  const dedupedAttPatterns = useMemo(
+    () => dedupeCoveredEntities(securityCoverage.attPatterns?.entities ?? []),
+    [securityCoverage.attPatterns?.entities],
+  );
 
   // Extract unique kill chains from all attack patterns
   const killChainsSet = new Set<string>();
@@ -205,7 +209,7 @@ const SecurityCoverageAttackPatternsComponent = ({
           <div className="clearfix" />
           <FieldOrEmpty source={securityCoverage.attPatterns?.entities || []}>
             <SecurityCoverageCoveredList
-              entities={dedupeCoveredEntities(securityCoverage.attPatterns?.entities ?? [])}
+              entities={dedupedAttPatterns}
               style={{ marginTop: -10 }}
               rowRenderer={(attackPatternEntity) => {
                 const attackPattern = attackPatternEntity.to;
