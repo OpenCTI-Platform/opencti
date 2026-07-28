@@ -136,13 +136,12 @@ const StixRelationshipsMapComponent = ({
 
   return (
     <LocationMiniMapTargets
-      center={[
-        selection.centerLat ?? 48.8566969,
-        selection.centerLng ?? 2.3514616,
-      ]}
+      zoom={selection.zoom ?? 2}
+      center={selection.centerLat && selection.centerLng
+        ? { latitude: selection.centerLat, longitude: selection.centerLng }
+        : undefined}
       countries={countries}
       cities={cities}
-      zoom={selection.zoom ?? 2}
     />
   );
 };

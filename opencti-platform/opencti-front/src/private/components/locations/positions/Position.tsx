@@ -15,7 +15,6 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import { getValidatedCenter } from '../../../../utils/position.utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -61,9 +60,9 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
-            center={getValidatedCenter(position)}
-            position={position}
             zoom={8}
+            location={position}
+            locationType="position"
           />
         </Grid>
         <Grid item xs={4}>

@@ -102,6 +102,18 @@ COPY --from=builder-back /opt/opencti/opencti-graphql/config/ ./config/
 COPY --from=builder-back /opt/opencti/opencti-graphql/src/python/runtime/ ./src/python/runtime/
 COPY --from=builder-front /opt/opencti/opencti-front/dist/ ./public/
 
+# Download bundled map file
+ARG MAP_FILE_URL=""
+RUN <<EOT
+  set -euxo pipefail
+
+  if [ -n "${MAP_FILE_URL}" ]; then
+    curl -sSfL -o /opt/opencti/world.pmtiles "${MAP_FILE_URL}"
+  else
+    echo "WARNING: MAP_FILE_URL build-arg not set - no bundled map file included, map rendering will 404 unless a custom file is uploaded" >&2
+  fi
+EOT
+
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
 ENV NODE_ENV="production"
