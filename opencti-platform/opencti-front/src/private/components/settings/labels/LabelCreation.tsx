@@ -72,8 +72,11 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   const labelValidation = Yup.object().shape({
     value: Yup.string().required(t_i18n('This field is required')),
     color: Yup.string()
-      .matches(HEX_COLOR_REGEX, t_i18n('Invalid hexa color code'))
-      .required(t_i18n('This field is required')),
+      .required(t_i18n('This field is required'))
+      .matches(HEX_COLOR_REGEX, {
+        message: t_i18n('Invalid hexa color code'),
+        excludeEmptyString: true,
+      }),
   });
   const initialValues: LabelAddInput = {
     value: contextual ? inputValueContextual : '',

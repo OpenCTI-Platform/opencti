@@ -43,8 +43,11 @@ const labelEditionFocus = graphql`
 const labelValidation = (t) => Yup.object().shape({
   value: Yup.string().required(t('This field is required')),
   color: Yup.string()
-    .matches(HEX_COLOR_REGEX, t('Invalid hexa color code'))
-    .required(t('This field is required')),
+    .required(t('This field is required'))
+    .matches(HEX_COLOR_REGEX, {
+      message: t('Invalid hexa color code'),
+      excludeEmptyString: true,
+    }),
 });
 
 class LabelEditionContainer extends Component {
