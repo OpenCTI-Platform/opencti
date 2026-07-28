@@ -102,7 +102,7 @@ export const addStixCoreRelationship = async (context, user, stixCoreRelationshi
   // To be able to manage OAEV bundles correctly
   // (sending a fromId to a securityCoverage instead of securityCoverageResult)
   if (shouldHandleHasCoveredRel(stixCoreRelationship)) {
-    stixCoreRelationship = transformHasCoveredFromId(context, user, stixCoreRelationship);
+    stixCoreRelationship = await transformHasCoveredFromId(context, user, stixCoreRelationship);
   }
   const created = await createRelation(context, user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);

@@ -215,7 +215,7 @@ export const getSecurityCoverageResults = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
-) => {
+): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
   return loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
 };
 

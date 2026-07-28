@@ -1,8 +1,8 @@
 import { FunctionalError } from '../../../config/errors';
-import { FilterMode, type StixCoreRelationshipAddInput } from '../../../generated/graphql';
+import { type StixCoreRelationshipAddInput } from '../../../generated/graphql';
 import { RELATION_HAS_COVERED } from '../../../schema/stixCoreRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { findSecurityCoverageResultPaginated } from './securityCoverageResult-domain';
+import { findById, getSecurityCoverageResults } from '../securityCoverage-domain';
 import type { StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 
 /**
@@ -67,21 +67,14 @@ export const transformHasCoveredFromId = async (
   user: AuthUser,
   relInput: StixCoreRelationshipAddInput,
 ) => {
-  const { edges } = await findSecurityCoverageResultPaginated(context, user, {
-    filters: {
-      filterGroups: [],
-      mode: FilterMode.Or,
-      filters: [{
-        key: ['external_uri'],
-        values: [relInput.external_uri],
-      }],
-    },
-  });
-  if (edges.length !== 1) {
+  const securityCoverage = await findById(context, user, relInput.fromId);
+  const securityCoverageResults = await getSecurityCoverageResults(context, user, securityCoverage);
+  const matchingSCR = securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri);
+  if (matchingSCR.length !== 1) {
     throw FunctionalError('Cannot find SecurityCoverageResult for this has-covered relationship');
   }
   return {
     ...relInput,
-    fromId: edges[0].node.standard_id,
+    fromId: matchingSCR[0].standard_id,
   };
 };
