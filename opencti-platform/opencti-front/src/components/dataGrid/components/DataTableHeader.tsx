@@ -8,6 +8,7 @@ import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
 import Tooltip from '@mui/material/Tooltip';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant } from '../dataTableTypes';
 import { useDataTableContext } from './DataTableContext';
+import Button from '@common/button/Button';
 
 export const SELECT_COLUMN_SIZE = 42;
 export const ICON_COLUMN_SIZE = 56;
@@ -35,6 +36,10 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     },
   },
   label: {
+    background: 'none',
+    border: 'none',
+    color: theme.palette.text.primary,
+    fontWeight: 700,
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
     display: 'flex',
@@ -107,13 +112,14 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
       className={classes.headerContainer}
       style={{ width: cellWidth }}
     >
-      <div className={classes.label} onClick={throttleSortColumn}>
-        <Tooltip title={t_i18n(column.label)}>
-          <span>{t_i18n(column.label)}</span>
-        </Tooltip>
-        {sortBy && column.isSortable && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
-      </div>
-
+      <th style={{ overflow: 'hidden' }} role="columnheader" aria-sort={sortBy ? (orderAsc ? 'ascending' : 'descending') : 'none'}>
+        <button type="button" className={classes.label} onClick={throttleSortColumn}>
+          <Tooltip title={t_i18n(column.label)}>
+            <span>{t_i18n(column.label)}</span>
+          </Tooltip>
+          {sortBy && column.isSortable && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
+        </button>
+      </th>
       {hasColumnMenu && (
         <IconButton
           disableRipple
