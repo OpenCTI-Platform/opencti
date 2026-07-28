@@ -593,8 +593,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
               || showDraftObjectParticipant
               || showDraftAuthor
               || showDraftAuthorizedMembers;
-            const draftAuthorInheritanceHelper = t_i18n('', {
-              id: 'Default: Reuse {entityType} author (leave empty to inherit)',
+            const draftAuthorInheritanceHelper = t_i18n('Default: Reuse {entityType} author (leave empty to inherit)', {
               values: { entityType: t_i18n(schema.mainEntityType || 'main entity') },
             });
             return (

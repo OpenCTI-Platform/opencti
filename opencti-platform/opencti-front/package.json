@@ -30,6 +30,9 @@
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test",
     "knip": "knip"
   },
+  "gitHooks": {
+    "pre-push": "yarn verify-translation"
+  },
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",

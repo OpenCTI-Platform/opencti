@@ -19,8 +19,7 @@ const InfrastructureDeletionDeleteMutation = graphql`
 const InfrastructureDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
     values: { entity_type: t_i18n('entity_Infrastructure') },
   });
   const [commit] = useApiMutation(

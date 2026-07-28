@@ -41,8 +41,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       return t_i18n('The values must be different.');
     }
     if (!RELATIVE_DATE_REGEX.test(newValue) && !isValidDate(newValue)) {
-      return t_i18n('', {
-        id: 'The value must be a datetime or a relative date expressed in date math. See our documentation for more information.',
+      return t_i18n('The value must be a datetime or a relative date expressed in date math. See our documentation for more information.', {
         values: {
           link: (
             <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
