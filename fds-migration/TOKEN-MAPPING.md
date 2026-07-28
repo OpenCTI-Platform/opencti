@@ -262,124 +262,152 @@ section further below.
   **this decision hasn't been explicitly confirmed with Sandy yet**, flagging
   here for Phase 5 sign-off alongside the color deltas.
 
-## Pending design arbitration — no existing FDS token
+## Pending design arbitration — no existing FDS token (all 5 resolved 2026-07-28)
 
-Five confirmed color families where the wiring pass found **no matching FDS
-token at all** (not a naming mismatch, not a "close enough" candidate — an
-actual absence, verified by grepping every `--color-*`/`--gray-*`/`--darkblue-*`
-entry of both `colorsDark`/`colorsLight` blocks in the generated bridge).
-Each was left as a hardcoded literal, exactly as it was before this pilot —
-**no rendering change**. All five are declared out of scope for this PR by
-design: fixing them requires a design decision (does a token get added to
-Figma/`theme.css`, or is the literal accepted as permanent?), not a wiring
-change.
+Five confirmed color families where the original wiring pass found **no
+matching FDS token at all** (not a naming mismatch, not a "close enough"
+candidate — an actual absence, verified by grepping every
+`--color-*`/`--gray-*`/`--darkblue-*` entry of both `colorsDark`/`colorsLight`
+blocks in the generated bridge). **Update 2026-07-28**: the lib's
+`TOKEN-MIGRATION-GUIDE.md` now has a mapping for all five (2 added directly by
+lib PR #52 — border-secondary and `primary.light` root-palette rows — the
+other 3 were already present from an earlier, unattributed lib change, not
+#52 itself). Re-verified each against the current guide/bridge and **wired
+all 5** (see each subsection). 4 of 5 use the guide's proposed token exactly;
+the 5th (`tertiary.blue`, §2) uses the guide's proposed token's **opaque
+sibling** instead of the exact token proposed — flagged for Thibault's review
+in §2, not applied silently. Tracked (now empty of these 5) in
+`migration-state.json`'s `notMigrated` array.
 
 **Cross-product significance**: the same five gaps exist in OpenAEV's theme
-files (same underlying FDS token set, same absence). Rather than have each
-product's pilot propose its own ad hoc fix, these are logged here as a single
-list awaiting **one** design/Figma arbitration that resolves both products at
-once — whatever token (or explicit "no token, stays hardcoded") gets decided
-applies identically to OpenCTI and OpenAEV. Tracked in `migration-state.json`'s
-`notMigrated` array.
+files. The resolutions below are the tokens OpenAEV should use for parity;
+the `tertiary.blue` deviation (§2) should be reviewed once, here, rather than
+re-litigated per product.
 
-### 1. `severity.none` / `severity.default`
+### 1. `severity.none` / `severity.default` — ✅ RESOLVED 2026-07-28
 
 Neutral/unset severity state — no member of the FDS feedback family
 (`error`/`warning`/`alert`/`success`/`info`) represents "no severity", so
-there's nothing to map to.
+there was nothing to map to until now.
 
-| Key | Dark | Light |
+| Key | Dark (before → after) | Light (before → after) |
 |---|---|---|
-| `severity.none` | `#424242` | `#424242` |
-| `severity.default` | `#1C2F49` | `#DDE1FE` |
+| `severity.none` | `#424242` → `--color-feedback-neutral-primary` (`#7a9cd6`) | `#424242` → `--color-feedback-neutral-primary` (`#afb0b6`) |
+| `severity.default` | `#1C2F49` → `--color-feedback-neutral-primary` (`#7a9cd6`) | `#DDE1FE` → `--color-feedback-neutral-primary` (`#afb0b6`) |
 
-Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
-> "none/default have no FDS equivalent (neutral/unset states) and are left as-is."
+Both keys now resolve to the **same** token (both are semantically "no
+severity set") — `none` and `default` become visually identical for the first
+time (previously two different hardcoded colors, coincidentally). This is the
+mapping the lib guide proposes; flagged here for visibility, not held back,
+since it's a deliberate semantic consolidation rather than an accident.
 
 Usage: `ItemSeverity.tsx`, `ItemPriority.tsx`, `ItemCvssScore.tsx` (×2),
 `ItemMarkings.tsx`.
 
-### 2. `designSystem.tertiary.blue.500` / `.900`
+### 2. `designSystem.tertiary.blue.500` / `.900` — ✅ RESOLVED 2026-07-28 (deviates from guide — flagged to Thibault)
 
 Two rungs of the raw hue-scale table with no FDS scale neighbor — every other
 `tertiary.*` family (`grey`, `darkBlue`, `turquoise`, `green`, `red`, `orange`,
-`yellow`) matched an FDS scalar exactly; `blue` is the sole exception.
+`yellow`) matched an FDS scalar exactly; `blue` was the sole exception.
 
-| Key | Dark | Light |
+| Key | Dark (before → after) | Light (before → after) |
 |---|---|---|
-| `tertiary.blue.500` | `#0099CC` | `#0099CC` |
-| `tertiary.blue.900` | `#003242` | `#003242` |
+| `tertiary.blue.500` | `#0099CC` → `--color-feedback-info-secondary` (`#0079a8`) | `#0099CC` → `--color-feedback-info-secondary` (`#42caff`) |
+| `tertiary.blue.900` | `#003242` → `--color-feedback-info-secondary` (`#0079a8`) | `#003242` → `--color-feedback-info-secondary` (`#42caff`) |
 
-(Identical across modes — consistent with `tertiary.*` being a mode-invariant
-raw scale, same as its FDS-backed siblings.)
+**⚠ Deviation from the guide, for Thibault's review**: `TOKEN-MIGRATION-GUIDE.md`
+(lines 109-110) proposes `--color-feedback-info-secondary-transparency` for
+both rungs, not the plain `--color-feedback-info-secondary` used here. Checked
+both in the bridge: the guide's proposed token resolves to an **8-digit hex
+with ~30% alpha** (dark `#0079a84d`, light `#42caff4d`, a
+`color-mix(..., transparent)` token) — a translucent color — whereas
+`.blue[500]` has a real, opaque consumer (`ScaleBar.tsx`, a configurable
+scale/decay-chart rail-color default) that would visibly wash out/blend with
+the page background if wired to a translucent fill. **`--color-feedback-info-secondary`
+is the exact opaque sibling of the guide's proposed token** (same base color,
+`theme.css` lines 145/550/651, just without the `color-mix` alpha applied) —
+same semantic family the guide already chose, opacity fixed.
 
-Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
-> "No FDS scale matches these two values, left as-is."
+Two residual trade-offs, both considered and accepted as lower-risk than the
+alpha issue: (a) `.500`/`.900` now resolve to the **same** value — the guide
+itself already flags `.900` as *"⚠ Dormant (0 consommateur produit) —
+candidat à retrait plutôt qu'à mapping"*, independently confirmed here (only
+`.500` has live consumers: `ScaleBar.tsx`, `CustomViewsSettingsDataTable.tsx`
+icon color) — so this collapse has zero visible impact today; (b) unlike the
+rest of the mode-invariant `tertiary.*` family, this token is
+mode-*dependent* (dark `#0079a8` vs. light `#42caff`), a real, larger-than-
+before shift for the one live consumer (`.500`) in both modes — current
+`#0099CC` sits roughly between the two new mode values. This is the one
+point worth a second look from design/Thibault: a mode-invariant scalar
+alternative exists and stays closer to the current value in both modes —
+`FDS.scalars['--blue-600']` = `#009edb` for `.500` (Δ≈imperceptible vs.
+current, both modes) and `FDS.scalars['--blue-900']` = `#003042` for `.900`
+(2/255 delta) — flagged here in case the opaque-but-mode-dependent choice
+made in this pass is reconsidered.
 
-Usage: `ScaleBar.tsx` (`.blue[500]`), `CustomViewsSettingsDataTable.tsx`
-(`.blue.500`).
+Usage: `ScaleBar.tsx` (`.blue[500]`, default rail-segment fill),
+`CustomViewsSettingsDataTable.tsx` (`.blue.500`, `Insights` icon color).
+`.900` has no current consumer (per the guide's own note and independently
+confirmed by grep).
 
-### 3. `designSystem.background.bg1`–`bg4` / `.disabled`
+### 3. `designSystem.background.bg1`–`bg4` / `.disabled` — ✅ RESOLVED 2026-07-28
 
 Five elevation-adjacent surfaces beyond `background.main` (the only member of
-this block with an FDS/`THEME_*_DEFAULT_BACKGROUND` match).
+this block with an FDS/`THEME_*_DEFAULT_BACKGROUND` match). The bridge
+resolves per-layer elevation tokens distinctly, so each `bgN` maps to its own
+`-layer-(N-1)` key rather than collapsing to one shared value.
 
-| Key | Dark | Light |
+| Key | Dark (before → after) | Light (before → after) |
 |---|---|---|
-| `background.bg1` | `#0C1524` | `#F7F7F7` |
-| `background.bg2` | `#0D182A` | `#FFFFFF` |
-| `background.bg3` | `#253348` | `#E4E4E4` |
-| `background.bg4` | `#1C2F49` | `#DDE1FE` |
-| `background.disabled` | `#363B46` | `#DFDFDF` |
-
-Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
-> "bg1-bg4/disabled: no confident 1:1 FDS token found, left as-is."
+| `background.bg1` | `#0C1524` → `--bg-elevation-default-layer-0` (`#070d18`) | `#F7F7F7` → `--bg-elevation-default-layer-0` (`#f2f2f3`) |
+| `background.bg2` | `#0D182A` → `--bg-elevation-default-layer-1` (`#0d172b`) | `#FFFFFF` → `--bg-elevation-default-layer-1` (`#ffffff`, exact match) |
+| `background.bg3` | `#253348` → `--bg-elevation-default-layer-2` (`#13213e`) | `#E4E4E4` → `--bg-elevation-default-layer-2` (`#f4f4f6`) |
+| `background.bg4` | `#1C2F49` → `--bg-elevation-default-layer-3` (`#1f3965`) | `#DDE1FE` → `--bg-elevation-default-layer-3` (`#e4e5e7`) |
+| `background.disabled` | `#363B46` → `--bg-elevation-disabled` (`#18191b`) | `#DFDFDF` → `--bg-elevation-disabled` (`#c8d6ee`) |
 
 Usage: `bg1` → `TopBar.tsx`; `bg4` → `DraftToolbar.tsx`. `bg2`/`bg3`/`disabled`
 are declared on the theme but no direct consumer was found in this sweep —
-still real gaps (the values are live on `theme.palette.designSystem.background`
-and could be consumed at any point), just not currently rendered anywhere.
+still real, now-tokenized properties that could be consumed at any point.
 
-### 4. `designSystem.border.main` / `.border1` / `.border2`
+### 4. `designSystem.border.main` / `.border1` / `.border2` — ✅ RESOLVED 2026-07-28
 
 Neutral/grey border tones — no "border" concept currently exists in the FDS
 token set (as opposed to `palette.border.*`, the top-level MUI border block,
 which is a separate, already-classified property).
 
-| Key | Dark | Light |
+| Key | Dark (before → after) | Light (before → after) |
 |---|---|---|
-| `border.main` | `#2B3447` | `#D2D2D2` |
-| `border.border1` | `#424751` | `#C2C2C2` |
-| `border.border2` | `#1C253A` | `#999797` |
+| `border.main` | `#2B3447` → `--border-elevation-default` (`#3665b4`) | `#D2D2D2` → `--border-elevation-default` (`#7a7c85`) |
+| `border.border1` | `#424751` → `--border-elevation-subtle` (`#1f3965`) | `#C2C2C2` → `--border-elevation-subtle` (`#cacbce`) |
+| `border.border2` | `#1C253A` → `--border-elevation-subtle` (`#1f3965`) | `#999797` → `--border-elevation-subtle` (`#cacbce`) |
 
-Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
-> "No confident FDS token found for any of these three, left as-is."
+`border1`/`border2` now resolve to the **same** token (both previously
+different hardcoded grays); per the completeness sweep, neither has a live
+consumer today, so this consolidation has zero current visual impact.
 
 Usage: `main` → `StixCoreObjectQuickSubscription.tsx`. `border1`/`border2` are
-declared but no direct consumer was found in this sweep — same caveat as
-`bg2`/`bg3`/`disabled` above.
+declared but no direct consumer was found in this sweep.
 
-### 5. `primary.light` fallback, **dark mode only** (`#B2ECFF`)
+### 5. `primary.light` fallback (`#B2ECFF` dark, `#7587FF` light) — ✅ RESOLVED 2026-07-28 (both modes)
 
 Top-level `palette.primary.light` (not `designSystem.primary.light`, which
 **is** wired to `brand-secondary` — see section 5 above) falls back to a
-hardcoded literal when no DB-override `primary` is supplied:
-`primary ? alpha(primary, 0.08) : '#B2ECFF'`. Grepped the full generated
-bridge (`fds-tokens.generated.ts`): `#B2ECFF`/`b2ecff` has **zero** matches
-anywhere in either `colorsDark` or `colorsLight`.
+hardcoded literal when no DB-override `primary` is supplied. Both modes now
+reference `--color-filigran-brand-secondary`:
 
-Light mode's equivalent fallback (`#7587FF`) is deliberately **not** included
-here: it does have exact matches in the bridge (`--color-filigran-brand-secondary`
-and `--darkblue-300`, both `#7587ff`) — a token exists, this code path just
-doesn't reference it yet. That's a wiring opportunity, not a gap, so it's out
-of this list.
-
-| Key | Dark (no FDS match) | Light (for reference — matches exist, not a gap) |
+| Key | Dark (before → after) | Light (before → after) |
 |---|---|---|
-| `primary.light` (fallback) | `#B2ECFF` | `#7587FF` |
+| `primary.light` (fallback) | `#B2ECFF` → `--color-filigran-brand-secondary` (`#a8e7ff`) | `#7587FF` → `--color-filigran-brand-secondary` (`#7587ff`, exact match) |
 
-No inline code comment admits this one (unlike gaps 1-4 above) — it surfaced
-during the completeness sweep (`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`,
+⚠ **Dark-mode note**: the lib guide itself flags this as an *approximate*
+match ("`#B2ECFF`≈`blue-200`"), not exact — `#a8e7ff` is a real, if minor,
+color shift from the current `#B2ECFF` (R -10, G -5, B 0). Light mode is an
+**exact** match (`#7587FF` = `#7587ff`), confirming the pre-existing note
+below that it was "a wiring opportunity, not a gap" — now wired for
+consistency with the dark-mode fix.
+
+No inline code comment admitted this one (unlike gaps 1, 3, 4 above) — it
+surfaced during the completeness sweep (`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`,
 section 9.1: *"`primary.light` (fallback without override) — 🔴 HARDCODED
 (the `main` is 🟢/🟡, this `.light` fallback is not)"*), not from a
 pre-existing code annotation.

@@ -35,6 +35,46 @@
       "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
       "pattern": "00719E",
       "reason": "Old hand-copied designSystem.alert.info.primary value (pre-FDS). Its presence means the designSystem block wiring was reverted."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "B2ECFF",
+      "reason": "Old hand-copied palette.primary.light dark-mode fallback (pre-FDS gap, resolved 2026-07-28 to --color-filigran-brand-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "1C253A",
+      "reason": "Old hand-copied designSystem.border.border2 value (pre-FDS gap, resolved 2026-07-28 to --border-elevation-subtle)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "7587FF",
+      "reason": "Old hand-copied palette.primary.light fallback (pre-FDS gap, resolved 2026-07-28 to --color-filigran-brand-secondary — was already an exact bridge match, just not yet expressed as a token reference)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "999797",
+      "reason": "Old hand-copied designSystem.border.border2 value (pre-FDS gap, resolved 2026-07-28 to --border-elevation-subtle)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "0099CC",
+      "reason": "Old hand-copied designSystem.tertiary.blue.500 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeDark.ts",
+      "pattern": "003242",
+      "reason": "Old hand-copied designSystem.tertiary.blue.900 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "0099CC",
+      "reason": "Old hand-copied designSystem.tertiary.blue.500 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
+    },
+    {
+      "file": "opencti-platform/opencti-front/src/components/ThemeLight.ts",
+      "pattern": "003242",
+      "reason": "Old hand-copied designSystem.tertiary.blue.900 value (pre-FDS gap, resolved 2026-07-28 to --color-feedback-info-secondary)."
     }
   ],
   "migratedZones": [
@@ -51,12 +91,11 @@
   "notMigrated": [
     "typography (h1-h6, subtitle1/2, body1/2, caption, button, overline) — see fds-migration/TYPO-MAPPING-TODO.md, arbitration pending with Thibault",
     "spacing/borderRadius — still hardcoded MUI defaults (borderRadius: 4, theme.spacing(N)), no FDS spacing tokens consumed anywhere in ThemeDark.ts/ThemeLight.ts",
-    "palette.ee / palette.xtmhub — both still hand-copied hex (EE_COLOR pre-existing; xtmhub ('#00f1bd', both modes) arrived via the 2026-07-27 master sync merge, commit b1f6459 / PR #17308-#17309). Deferred as a pair until palette.ee is picked up in a future migration pass — see fds-migration/TOKEN-MAPPING.md section 9.",
-    "palette.severity.{none,default}, designSystem.tertiary.blue.{500,900}, designSystem.background.{bg1,bg2,bg3,bg4,disabled}, designSystem.border.{main,border1,border2}, and the top-level palette.primary.light dark-mode fallback (#B2ECFF) — 5 confirmed color families with no matching FDS token anywhere in the generated bridge (verified 2026-07-27). Same gaps also present in OpenAEV; pending a single cross-product design/Figma arbitration rather than two separate ad hoc fixes. See fds-migration/TOKEN-MAPPING.md, 'Pending design arbitration — no existing FDS token' section."
+    "palette.ee / palette.xtmhub — both still hand-copied hex (EE_COLOR pre-existing; xtmhub ('#00f1bd', both modes) arrived via the 2026-07-27 master sync merge, commit b1f6459 / PR #17308-#17309). Deferred as a pair until palette.ee is picked up in a future migration pass — see fds-migration/TOKEN-MAPPING.md section 9."
   ],
   "knownCaveats": [
     "background/paper/nav/primary/secondary/accent/text_color are passed into ThemeDark()/ThemeLight() as function params sourced from the DB's Theme.theme_* fields (AppThemeProvider.tsx), falling back to the FDS-backed constants only when the DB field is null. The built-in Dark/Light Theme rows in every real deployment have these fields explicitly populated with the pre-FDS hex values, so the new FDS values for these 7 properties are invisible until those DB rows are updated separately (proven via GraphQL query + pixel-exact screenshot comparison, see fds-migration/reports/targeted-captures/README.md). error/warn/success/dangerZone/severity are plain FDS constants with no DB override and ARE visually live today.",
     "check-fds-conformity.mjs's bridge-freshness check will report STALE in this specific multi-repo collection workspace even though the bridge IS fresh. Root cause: the check reads theme.css from a hardcoded sibling path (../filigran-design-system relative to the product) which resolves to a local main checkout of the lib repo that is behind origin/main (missing merged PRs) in this environment — not this workspace's actual, up-to-date session worktree. Verified by hashing theme.css at every relevant lib commit and by byte-for-byte diffing a fresh regeneration from the correct worktree against the committed bridge: identical. Do NOT 'fix' this by regenerating from the stale sibling checkout — that silently reintroduces older token values (this happened once during this pilot and was reverted, commit 89dad4c). Only regenerate if you've confirmed the sibling lib checkout is actually up to date with origin/main."
   ],
-  "lastReconciled": "2025 pilot — colors wired + visually checkpointed (Phase 5) + targeted-capture deep dive; typography intentionally deferred (TYPO-MAPPING-TODO.md); DB theme-row update deferred, coordinated separately by product owner."
+  "lastReconciled": "2025 pilot — colors wired + visually checkpointed (Phase 5) + targeted-capture deep dive; typography intentionally deferred (TYPO-MAPPING-TODO.md); DB theme-row update deferred, coordinated separately by product owner. 2026-07-28 — all 5 documented color gaps rewired: severity.none/default, designSystem.background.bg1-4/disabled, designSystem.border.main/border1/border2, palette.primary.light dark+light fallback (all --> direct guide-proposed tokens), and designSystem.tertiary.blue.{500,900} (--> --color-feedback-info-secondary, the guide's proposed token's opaque sibling — the guide's own -transparency proposal was rejected as a rendering regression for ScaleBar.tsx; deviation flagged to Thibault for review, see TOKEN-MAPPING.md)."
 }
