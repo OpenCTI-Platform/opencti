@@ -8,7 +8,6 @@ import { Theme as MuiTheme } from '@mui/material/styles/createTheme';
 import Tooltip from '@mui/material/Tooltip';
 import { DataTableColumn, DataTableHeaderProps, DataTableVariant } from '../dataTableTypes';
 import { useDataTableContext } from './DataTableContext';
-import Button from '@common/button/Button';
 
 export const SELECT_COLUMN_SIZE = 42;
 export const ICON_COLUMN_SIZE = 56;
