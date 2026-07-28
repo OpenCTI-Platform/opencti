@@ -48,7 +48,17 @@ import {
   WRITE_PLATFORM_INDICES,
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
-import { ComplexSearchError, ConfigurationError, DatabaseError, EngineShardsError, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import {
+  ClientAbortError,
+  ComplexSearchError,
+  ConfigurationError,
+  DatabaseError,
+  EngineShardsError,
+  FunctionalError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+  UnsupportedError,
+} from '../config/errors';
 import {
   isStixRefRelationship,
   isStixRefUnidirectionalRelationship,
@@ -581,6 +591,24 @@ export const isTransitoryError = (error: any): boolean => {
     return true;
   }
   return false;
+};
+
+// Aborts happen before the engine is ever reached, so they must not be
+// logged as an engine failure (see elExecuteWithAbortSignal). Both checks
+// are needed: node-fetch's AbortError class, and the `.name` fallback for
+// the native AbortError/DOMException that OpenSearch's own abort path can throw.
+export const isClientAbortError = (err: any): boolean => {
+  return err instanceof AbortError || err?.name === 'AbortError';
+};
+
+// Use this instead of throwing DatabaseError directly when catching an error
+// from an abort-signal-aware engine call, so a client abort isn't misclassified
+// as a genuine engine failure.
+export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): Error => {
+  if (isClientAbortError(err)) {
+    return ClientAbortError(reason, { cause: err, ...data });
+  }
+  return DatabaseError(reason, { cause: err, ...data });
 };
 
 export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
@@ -1992,7 +2020,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${types ? (types as string[]).join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-      throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
+      throw wrapEngineError('Find direct ids fail', err, { query, searchType });
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
@@ -3343,7 +3371,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
   } catch (err: any) {
     const root_cause = err.meta?.body?.error?.caused_by?.type;
     if (root_cause === TOO_MANY_CLAUSES) throw ComplexSearchError();
-    throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
+    throw wrapEngineError('Fail to execute engine pagination', err, { root_cause, query, queryArguments: options });
   }
 };
 export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
@@ -3483,7 +3511,7 @@ export const elCardinalityCount = async (
   };
   const searchType = `Aggregations (${field})`;
   const cardinalityData = await elRawSearch(context, user, searchType, cardinalityQuery).catch((err) => {
-    throw DatabaseError('Cardinality computing fail', { cause: err, cardinalityQuery });
+    throw wrapEngineError('Cardinality computing fail', err, { cardinalityQuery });
   });
   return cardinalityData.aggregations.cardinality_count.value;
 };
@@ -3876,7 +3904,7 @@ export const elAggregationsList = async (
   };
   const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
   const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-    throw DatabaseError('Aggregations computing list fail', { cause: err, query });
+    throw wrapEngineError('Aggregations computing list fail', err, { query });
   });
   const aggsMap = Object.keys(data.aggregations);
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b: { key: string }) => b.key))));
@@ -4108,7 +4136,7 @@ export const elUpdate = async (
         () => (engine as OpenClient).update(updateRequest),
       );
     } catch (err: any) {
-      throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+      throw wrapEngineError('Update indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
     }
   };
   return retryElOperations(updateOperation);

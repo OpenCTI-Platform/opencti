@@ -80,7 +80,7 @@ export const AUTH_ERRORS = [
 // endregion
 
 // region CATEGORY_TECHNICAL
-const DATABASE_ERROR = 'DATABASE_ERROR';
+export const DATABASE_ERROR = 'DATABASE_ERROR';
 export const DatabaseError = (reason, data) => error(DATABASE_ERROR, reason || 'A database error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
@@ -193,6 +193,17 @@ export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Ex
   ...data,
 });
 
+// Thrown when the caller (browser/proxy/connector) disconnects before an
+// engine (e.g. Elasticsearch) call is even issued. This is NOT an engine
+// failure: the engine is never reached, so it must not be logged/alerted on
+// with the same severity as a real DATABASE_ERROR.
+export const CLIENT_ABORT_ERROR = 'CLIENT_ABORT_ERROR';
+export const ClientAbortError = (reason, data) => error(CLIENT_ABORT_ERROR, reason || 'Client disconnected before the operation completed', {
+  http_status: 499, // Conventionally used (nginx) for "Client Closed Request"
+  genre: CATEGORY_BUSINESS,
+  ...data,
+});
+
 export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
 export const DraftLockedError = (data) => error(DRAFT_LOCKED_ERROR, 'Draft is in a locked state, no request can be done within this draft', {
   http_status: 400,
@@ -213,5 +224,6 @@ export const FUNCTIONAL_ERRORS = [
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
   TYPE_LOCK_ERROR,
+  CLIENT_ABORT_ERROR,
 ];
 // endregion
