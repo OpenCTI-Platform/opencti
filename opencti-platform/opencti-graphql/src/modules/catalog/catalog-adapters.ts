@@ -24,7 +24,12 @@ export interface CatalogSourceAdapter {
 }
 
 const CATALOG_PRODUCT = 'opencti';
-const CATALOG_INTEGRATION_TYPE = 'connectors';
+const CATALOG_INTEGRATION_TYPE = 'connector';
+
+const buildDefaultRemoteCatalogUri = (xtmHubUrl: string) => {
+  const normalizedBaseUrl = xtmHubUrl.replace(/\/+$/, '');
+  return `${normalizedBaseUrl}/${CATALOG_PRODUCT}/${PLATFORM_VERSION}/${CATALOG_INTEGRATION_TYPE}/manifests/latest`;
+};
 
 const isHttpUri = (value: string) => value.startsWith('http://') || value.startsWith('https://');
 
@@ -33,7 +38,7 @@ export const resolveCatalogSource = (uri?: string | null): CatalogResolutionConf
 
   if (!configuredUri) {
     const xtmHubUrl = conf.get('xtm:xtmhub_url');
-    const remoteUri = `${xtmHubUrl}/${CATALOG_PRODUCT}/${PLATFORM_VERSION}/${CATALOG_INTEGRATION_TYPE}/manifests/latest`;
+    const remoteUri = buildDefaultRemoteCatalogUri(xtmHubUrl);
     return {
       source: { kind: 'remote', uri: remoteUri },
       originalUri: remoteUri,
