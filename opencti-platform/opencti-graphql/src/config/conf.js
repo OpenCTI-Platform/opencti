@@ -325,8 +325,7 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
-      // Add support package entries starting at info level.
-      if (['info', 'warn', 'error'].includes(level)) {
+      if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
       }
     }
