@@ -21,6 +21,7 @@ export default defineConfig([
       '**/fds-tokens.generated.ts',
       '**/fds-tokens.generated.meta.json',
       '**/extract-i18n-keyword.js',
+      'eslint.config.js',
       'playwright.config.ts',
       'vite.config.ts',
       'vitest.config.ts',
