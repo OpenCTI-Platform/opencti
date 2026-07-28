@@ -224,9 +224,10 @@
     "cookie": "1.1.1",
     "cross-fetch": "4.1.0",
     "ioredis": "5.8.2",
-    "openid-clientv5/jose": "5.10.0",
     "json5": "2.2.3",
+    "openid-clientv5/jose": "5.10.0",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
+    "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
   },

@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 
@@ -15,9 +14,6 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
       clean: false,
-    },
-    alias: {
-      graphql: fileURLToPath(new URL('node_modules/graphql/index.js', import.meta.url)),
     },
   },
 });
