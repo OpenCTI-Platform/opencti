@@ -24,3 +24,20 @@ Not scoped yet. See fds-migration/AGENTS.md rule 5 — do not start component
 migration under this phase without an explicit go-ahead. When it starts,
 order by filigran-design-system `ROADMAP.json` `priority`; readiness for
 this product is COMPONENT-MAPPING.md's "Product status" column.
+
+### Planned: Navbar
+
+- Status: **planned** — not started (no branch, no owner, no go-ahead yet;
+  still bound by rule 5 above). No implementation happens in this pass.
+- Coverage audit already done: `COMPONENT-MAPPING.md` (generated from the
+  lib, do not hand-edit) already carries the row
+  `| Navbar | todo | todo | — | — | — |` — lib status `todo`, this product's
+  status `todo`, no MUI identifiers/occurrences resolved yet (distinct from
+  the separate `Header` row — `AppBar`/`Toolbar`, 4 occurrences / 2 files —
+  in the same audit).
+  Cross-checked against filigran-design-system `ROADMAP.json` `components[]`
+  (`name: "Navbar"`): `status: "todo"`, `figmaDesigned: true`,
+  `figmaNodeId: null`, `priority: 24` (of 25 components — second-lowest).
+  Notes there flag it as "composant structurel, peu de levier de
+  réutilisation cross-produit attendu" — same `todo` status tracked
+  identically for `opencti`, `openaev`, and `opengrc`.
