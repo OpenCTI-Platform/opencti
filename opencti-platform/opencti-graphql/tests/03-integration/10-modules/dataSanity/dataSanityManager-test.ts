@@ -6,7 +6,10 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
 import type { StoreEntityDataSanity } from '../../../../src/modules/dataSanity/dataSanity-types';
+import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from '../../../../src/modules/dataSanity/dataSanity-types';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import { updateAttribute } from '../../../../src/database/middleware';
+import { utcDate } from '../../../../src/utils/format';
 
 describe('Data sanity manager handler test coverage', () => {
   afterEach(() => {
@@ -121,6 +124,39 @@ describe('Data sanity manager handler test coverage', () => {
     expect(operationRun).not.toHaveBeenCalled();
     const runningOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockAlreadyRunningOperation');
     expect(runningOp?.is_running).toBe(true);
+    expect(runningOp?.running_since).toBeDefined();
+  });
+
+  it('should execute an operation whose running lock is stale (running_since older than threshold)', async () => {
+    const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
+    vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
+      {
+        identifier: 'mockStaleRunningOperation',
+        dryRun: async () => ({ impact: { total: 1, detail: { Malware: 1 } } }),
+        operationRun,
+        execution_type: 'run_once',
+        description: '',
+        display_name: '',
+        eligibleEntityTypes: [ENTITY_TYPE_MALWARE],
+      },
+    ]);
+
+    // GIVEN an operation stuck as running since 25 hours ago (simulating a crashed node)
+    await markOperationAsRunning(testContext, ADMIN_USER, 'mockStaleRunningOperation');
+    const staleEntity = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStaleRunningOperation');
+    const twentyFiveHoursAgo = utcDate().subtract(25, 'hours').toISOString();
+    await updateAttribute(testContext, ADMIN_USER, staleEntity!.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
+      { key: 'running_since', value: [twentyFiveHoursAgo] },
+    ]);
+
+    // WHEN the scheduler runs
+    await dataSanityHandler();
+
+    // THEN the stale operation is executed again and the lock is released
+    expect(operationRun).toHaveBeenCalled();
+    const executedOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStaleRunningOperation');
+    expect(executedOp?.is_running).toBe(false);
+    expect(executedOp?.last_run_success).toBe(true);
   });
 
   it('should convert a DataSanity entity to STIX format', async () => {

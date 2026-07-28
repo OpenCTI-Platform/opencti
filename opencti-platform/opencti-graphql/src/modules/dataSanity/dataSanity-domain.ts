@@ -5,7 +5,12 @@ import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import type { BasicStoreEntityDataSanity } from './dataSanity-types';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
+import conf, { logApp } from '../../config/conf';
 import { type SanityOperation, sanityOperationList, type SanityOperationRunOutput } from './dataSanity-operations';
+
+// If an operation stays marked as "running" longer than this, it is considered stale
+// (e.g. the node running it crashed/restarted before it could complete) and is allowed to run again.
+const STALE_RUNNING_THRESHOLD_MS = conf.get('data_sanity_manager:stale_running_threshold') ?? 86400000; // 24 hours
 
 /**
  * Find a DataSanity entity by operation_name.
@@ -28,7 +33,7 @@ export const findDataSanityByOperationName = async (context: AuthContext, user: 
 
 /**
  * Determine if a sanity operation should be skipped by the scheduler, and why.
- * Skip when currently running, or when already executed and no force_run has been requested.
+ * Skip when currently running (and not stale), or when already executed and no force_run has been requested.
  * @returns the skip reason, or undefined if the operation should run.
  */
 export const getOperationSkipReason = async (context: AuthContext, user: AuthUser, operationName: string): Promise<string | undefined> => {
@@ -37,7 +42,15 @@ export const getOperationSkipReason = async (context: AuthContext, user: AuthUse
     return undefined;
   }
   if (entity.is_running) {
-    return 'operation is already running';
+    const runningSinceMs = entity.running_since ? new Date(entity.running_since).getTime() : undefined;
+    const isStale = runningSinceMs === undefined || (Date.now() - runningSinceMs) > STALE_RUNNING_THRESHOLD_MS;
+    if (!isStale) {
+      return 'operation is already running';
+    }
+    logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing running_since or older than threshold), allowing it to run again', {
+      operation: operationName,
+      running_since: entity.running_since,
+    });
   }
   if (!entity.force_run) {
     return 'operation has already been executed';
@@ -54,6 +67,7 @@ export const markOperationAsRunning = async (context: AuthContext, user: AuthUse
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'is_running', value: [true] },
+      { key: 'running_since', value: [utcDate().toISOString()] },
     ]);
   } else {
     await createEntity(context, user, {
@@ -64,6 +78,7 @@ export const markOperationAsRunning = async (context: AuthContext, user: AuthUse
       last_run_message: '',
       force_run: false,
       is_running: true,
+      running_since: utcDate().toISOString(),
     }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   }
 };
@@ -95,6 +110,7 @@ export const markOperationAsExecuted = async (
       { key: 'last_run_output', value: [lastRunOutput] },
       { key: 'force_run', value: [false] },
       { key: 'is_running', value: [false] },
+      { key: 'running_since', value: [null] },
     ]);
   } else {
     await createEntity(context, user, {
@@ -106,6 +122,7 @@ export const markOperationAsExecuted = async (
       last_run_output: lastRunOutput,
       force_run: false,
       is_running: false,
+      running_since: null,
     }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   }
 };
@@ -174,6 +191,7 @@ export const listAllSanityOperations = async (context: AuthContext, user: AuthUs
       description: operation.description,
       eligible_entity_types: operation.eligibleEntityTypes,
       is_running: execution?.is_running ?? false,
+      running_since: execution?.running_since ?? null,
       force_run: execution?.force_run ?? false,
       last_run_date: execution?.last_run_date ?? null,
       last_execution_time: execution?.last_execution_time ?? null,

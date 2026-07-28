@@ -13,6 +13,7 @@ export interface BasicStoreEntityDataSanity extends BasicStoreEntity {
   last_run_output: string; // JSON-serialized SanityOperationRunOutput
   force_run: boolean;
   is_running: boolean;
+  running_since: Date | null;
 }
 
 export interface StoreEntityDataSanity extends StoreEntity {
@@ -24,6 +25,7 @@ export interface StoreEntityDataSanity extends StoreEntity {
   last_run_output: string;
   force_run: boolean;
   is_running: boolean;
+  running_since: Date | null;
 }
 
 export interface StixDataSanity extends StixObject {

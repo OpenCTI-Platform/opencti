@@ -6829,6 +6829,7 @@ export type DataSanityOperation = {
   last_run_message?: Maybe<Scalars['String']['output']>;
   last_run_output?: Maybe<Scalars['String']['output']>;
   last_run_success?: Maybe<Scalars['Boolean']['output']>;
+  running_since?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -43970,6 +43971,7 @@ export type DataSanityOperationResolvers<ContextType = any, ParentType extends R
   last_run_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_run_output?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_run_success?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  running_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
 export type DataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSource'] = ResolversParentTypes['DataSource']> = ResolversObject<{

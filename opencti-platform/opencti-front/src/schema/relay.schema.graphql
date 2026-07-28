@@ -16933,6 +16933,7 @@ type DataSanityOperation {
   description: String!
   eligible_entity_types: [String!]!
   is_running: Boolean!
+  running_since: DateTime
   force_run: Boolean!
   last_run_date: DateTime
   last_execution_time: Int

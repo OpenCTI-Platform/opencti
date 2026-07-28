@@ -26,6 +26,7 @@ const DATA_SANITY_DEFINITION: ModuleDefinition<StoreEntityDataSanity, StixDataSa
     { name: 'last_run_output', label: 'Last run output', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'force_run', label: 'Force run', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'is_running', label: 'Is running', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'running_since', label: 'Running since', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixDataSanity) => {
