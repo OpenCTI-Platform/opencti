@@ -30117,6 +30117,8 @@ export type SecurityCoverageAddInput = {
   platforms_affinity?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
+  tenant_id?: InputMaybe<Scalars['String']['input']>;
+  tenant_name?: InputMaybe<Scalars['String']['input']>;
   type_affinity?: InputMaybe<Scalars['String']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -31787,12 +31789,12 @@ export type StixCoreRelationshipToStixArgs = {
 export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
-  external_uri?: InputMaybe<Scalars['String']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
   fromId: Scalars['StixRef']['input'];
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;

@@ -65,6 +65,10 @@ describe('SecurityCoverage domain', () => {
       expect(results.length).toEqual(0);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
+
+    it('should create a SCR with name = tenant_name when tenant name is defined', async () => {
+      // TODO
+    });
   });
 
   describe('Function getSecurityCoverageResults()', () => {
