@@ -1,4 +1,5 @@
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider, type IMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
@@ -381,6 +382,11 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   try {
     const connectivityQuery = await getHttpClient({ responseType: 'json' }).post(FILIGRAN_OTLP_TELEMETRY, {});
     if (connectivityQuery.status === 200) {
+      if (DEV_MODE) {
+        // To get filigran metrics on Prometheus during development
+        const prometheusExporter = new PrometheusExporter({ port: 14270 });
+        filigranMetricReaders.push(prometheusExporter);
+      }
       // OtlpExporterReader can be deactivated if connectivity fail at manager start.
       const OtlpExporterReader = new BatchExportingMetricReader({
         exporter: new OTLPMetricExporter({
