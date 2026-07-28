@@ -28,3 +28,10 @@ venv
 
 # Copilot
 thoughts/
+# FDS migration: local-only validation artifacts (screenshots, raw DB dumps).
+.fds-validation-artifacts/
+
+# FDS migration: ephemeral reports/captures regenerated on demand by tooling
+# (conformity checks, visual-validation notes, screenshots) — not versioned.
+# Root-level fds-migration/*.md docs and migration-state.json stay tracked.
+fds-migration/reports/

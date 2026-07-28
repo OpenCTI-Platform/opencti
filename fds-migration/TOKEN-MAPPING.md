@@ -31,9 +31,9 @@ are also exactly the 7 tokens cross-checked against Sandy's reference file
 | `..._PAPER` | `--color-elevation-background-layer-1` | dark `#09101e` / light `#ffffff` | `#0d172b` | minor | `#ffffff` | none |
 | `..._TEXT` | `--color-text-default-primary` | dark `#f2f2f3` / light `#18191b` | `#f2f2f3` | none | `#18191b` | none |
 | `..._NAV` (local) | `--color-elevation-surface-heading-layer-0` | dark `#070d19` / light `#ffffff` | `#070d18` | none | `#f2f2f3` | **notable** (was pure white) |
+| `..._BODY_END_GRADIENT` (local) | `--color-elevation-background-layer-0-gradient` | dark `#08101D` (hardcoded, unwired) / light `#F7F7F7` (hardcoded, unwired) | `#0c1527` | **notable** (see §6 sign-off) | `#ffffff` | **notable** (see §6 sign-off) |
 
-Left untouched (no confident FDS match): `THEME_DARK_DEFAULT_BODY_END_GRADIENT`,
-`THEME_DARK_DIALOG_BACKGROUND`, `THEME_LIGHT_DEFAULT_BODY_END_GRADIENT`,
+Left untouched (no confident FDS match): `THEME_DARK_DIALOG_BACKGROUND`,
 `THEME_LIGHT_DIALOG_BACKGROUND`.
 
 Added `text_color: string` explicit type annotation on both `ThemeDark`/
@@ -126,14 +126,33 @@ Figma token added for this specific light-mode tonic sub-shade pairing.
 | `gradient.ia` | `--gradient-ia` | `linear-gradient(90deg, #D6C2FA 0.67%, #B286FF 100.67%)` | `linear-gradient(90deg, #e3d6fa 0.0%, #a47af0 100.0%)` | `linear-gradient(90deg, #3C108C 0.67%, #5E1AD5 100.67%)` | `linear-gradient(90deg, #3c108c 0.0%, #651fe5 100.0%)` | minor |
 | `gradient.focus` | `--gradient-focus` | `linear-gradient(90deg, #0FBCFF -3.68%, #00F1BD 106.62%)` | `linear-gradient(90deg, #0fbcff 0.0%, #00f0bc 100.0%)` | `linear-gradient(90deg, #0015A8 -3.68%, #00BD94 106.62%)` | `linear-gradient(90deg, #0015a8 0.0%, #00f0bc 100.0%)` | minor |
 
-**⚠️ Flag for Phase 5 review**: `gradient.background`'s FDS token resolves to
-the *same color at both stops* (`--gradient-background` is defined as a
-135° gradient from a color to itself in the current `theme.css`), so this
-is no longer a visible gradient — it will render as a flat fill. The old
-value was a genuine (if subtle) 2-stop diagonal gradient. The end colors are
-close enough that the practical visual delta is likely small, but this is a
-structural change (gradient → flat), not just a color shift, so it needs
-explicit sign-off rather than being bucketed as "minor".
+**✅ Signed off (see `fds-migration/reports/custom-theme-investigation/RAPPORT.md`
+for the full investigation).** `gradient.background` (`palette.gradient.*`,
+this row) is **dead code** — `MuiCssBaseline`'s actual rendered body/html
+background never reads `palette.gradient`, it builds its own
+`linear-gradient(100deg, background 0%, getAppBodyGradientEndColor(background)
+100%)` inline in `ThemeDark.ts`/`ThemeLight.ts`, driven by the
+`..._BODY_END_GRADIENT` constants (see §1 table above). So the flat-fill risk
+this row flagged never actually reached the screen through this field; the
+*real* bug was that `..._BODY_END_GRADIENT` was hardcoded to an
+approximate, unwired value (`#08101D`/`#F7F7F7`) instead of the FDS
+`layer-0-gradient` token (`#0c1527`/`#ffffff`), which was already exposed in
+the generated bridge (`fds-tokens.generated.ts`) — no lib change needed.
+
+Decision: **real two-stop gradient**, delivered by wiring `..._BODY_END_GRADIENT`
+to `FDS.colors.<mode>['--color-elevation-background-layer-0-gradient']` (same
+pattern as every other `THEME_*_DEFAULT_*` constant). `getAppBodyGradientEndColor`'s
+`lighten(background, 0.05)` branch — the only mechanism that renders a body
+gradient for a user's **custom** theme, since no form field lets a user author
+that end-stop directly — is left **strictly untouched**; only the
+default/fallback constant changes. A DB-column-based approach (adding a
+persisted gradient-end field to the `Theme` entity) was considered and
+**rejected**: the existing `lighten()` derivation already covers custom themes
+correctly (verified live via `getComputedStyle`), so the only real gap was
+the unwired fallback constant — no schema change warranted.
+
+This row's `--gradient-background` / `palette.gradient.background` wiring
+itself is left as-is (dead code, harmless, out of scope for this sign-off).
 
 `background.bg1`–`bg4`/`disabled` and all of `designSystem.border.*` (both
 modes): no confident 1:1 FDS token found — left untouched. Candidates for
@@ -206,11 +225,25 @@ whether FDS has/gets an equivalent token before hand-copying a new hex).
 
 ---
 
+## Balayage de complétude (câblé / en dur / dérivé)
+
+Audit exhaustif, propriété par propriété, des 3 fichiers non-générés
+touchés (`ThemeDark.ts`, `ThemeLight.ts`, `theme-constants.ts`) :
+[`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`](reports/constants-completeness-sweep/RAPPORT.md).
+Couvre aussi les zones hors du périmètre §1-8 (palette décorative diverse,
+`components.*`, `tag`, `typography`, `button`). Un constat en a émergé et a
+été arbitré et fixé : `leftBar.popoverItem` (valeur fantôme du même piège
+1-caractère que le fix background) est désormais câblé sur
+`THEME_*_DEFAULT_BACKGROUND`.
+
 ## Tokens à créer dans Figma
 
 Confirmed gaps — no FDS token found after an exhaustive grep of the
 generated bridge (`fds-tokens.generated.ts`, both `colorsDark`/`colorsLight`
-blocks) and the full raw hue scales:
+blocks) and the full raw hue scales. Four of the bullets below (`tertiary.blue`,
+`border.*`, `background.bg1-4/disabled`) are formalized with dark/light values,
+usage sites, and cross-product framing in the "Pending design arbitration"
+section further below.
 
 - `designSystem.tertiary.blue` (`#0099CC` / `#003242`) — both modes,
   identical values, no scale neighbor at all.
@@ -229,6 +262,131 @@ blocks) and the full raw hue scales:
   **this decision hasn't been explicitly confirmed with Sandy yet**, flagging
   here for Phase 5 sign-off alongside the color deltas.
 
+## Pending design arbitration — no existing FDS token
+
+Five confirmed color families where the wiring pass found **no matching FDS
+token at all** (not a naming mismatch, not a "close enough" candidate — an
+actual absence, verified by grepping every `--color-*`/`--gray-*`/`--darkblue-*`
+entry of both `colorsDark`/`colorsLight` blocks in the generated bridge).
+Each was left as a hardcoded literal, exactly as it was before this pilot —
+**no rendering change**. All five are declared out of scope for this PR by
+design: fixing them requires a design decision (does a token get added to
+Figma/`theme.css`, or is the literal accepted as permanent?), not a wiring
+change.
+
+**Cross-product significance**: the same five gaps exist in OpenAEV's theme
+files (same underlying FDS token set, same absence). Rather than have each
+product's pilot propose its own ad hoc fix, these are logged here as a single
+list awaiting **one** design/Figma arbitration that resolves both products at
+once — whatever token (or explicit "no token, stays hardcoded") gets decided
+applies identically to OpenCTI and OpenAEV. Tracked in `migration-state.json`'s
+`notMigrated` array.
+
+### 1. `severity.none` / `severity.default`
+
+Neutral/unset severity state — no member of the FDS feedback family
+(`error`/`warning`/`alert`/`success`/`info`) represents "no severity", so
+there's nothing to map to.
+
+| Key | Dark | Light |
+|---|---|---|
+| `severity.none` | `#424242` | `#424242` |
+| `severity.default` | `#1C2F49` | `#DDE1FE` |
+
+Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
+> "none/default have no FDS equivalent (neutral/unset states) and are left as-is."
+
+Usage: `ItemSeverity.tsx`, `ItemPriority.tsx`, `ItemCvssScore.tsx` (×2),
+`ItemMarkings.tsx`.
+
+### 2. `designSystem.tertiary.blue.500` / `.900`
+
+Two rungs of the raw hue-scale table with no FDS scale neighbor — every other
+`tertiary.*` family (`grey`, `darkBlue`, `turquoise`, `green`, `red`, `orange`,
+`yellow`) matched an FDS scalar exactly; `blue` is the sole exception.
+
+| Key | Dark | Light |
+|---|---|---|
+| `tertiary.blue.500` | `#0099CC` | `#0099CC` |
+| `tertiary.blue.900` | `#003242` | `#003242` |
+
+(Identical across modes — consistent with `tertiary.*` being a mode-invariant
+raw scale, same as its FDS-backed siblings.)
+
+Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
+> "No FDS scale matches these two values, left as-is."
+
+Usage: `ScaleBar.tsx` (`.blue[500]`), `CustomViewsSettingsDataTable.tsx`
+(`.blue.500`).
+
+### 3. `designSystem.background.bg1`–`bg4` / `.disabled`
+
+Five elevation-adjacent surfaces beyond `background.main` (the only member of
+this block with an FDS/`THEME_*_DEFAULT_BACKGROUND` match).
+
+| Key | Dark | Light |
+|---|---|---|
+| `background.bg1` | `#0C1524` | `#F7F7F7` |
+| `background.bg2` | `#0D182A` | `#FFFFFF` |
+| `background.bg3` | `#253348` | `#E4E4E4` |
+| `background.bg4` | `#1C2F49` | `#DDE1FE` |
+| `background.disabled` | `#363B46` | `#DFDFDF` |
+
+Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
+> "bg1-bg4/disabled: no confident 1:1 FDS token found, left as-is."
+
+Usage: `bg1` → `TopBar.tsx`; `bg4` → `DraftToolbar.tsx`. `bg2`/`bg3`/`disabled`
+are declared on the theme but no direct consumer was found in this sweep —
+still real gaps (the values are live on `theme.palette.designSystem.background`
+and could be consumed at any point), just not currently rendered anywhere.
+
+### 4. `designSystem.border.main` / `.border1` / `.border2`
+
+Neutral/grey border tones — no "border" concept currently exists in the FDS
+token set (as opposed to `palette.border.*`, the top-level MUI border block,
+which is a separate, already-classified property).
+
+| Key | Dark | Light |
+|---|---|---|
+| `border.main` | `#2B3447` | `#D2D2D2` |
+| `border.border1` | `#424751` | `#C2C2C2` |
+| `border.border2` | `#1C253A` | `#999797` |
+
+Code admission (`ThemeDark.ts`/`ThemeLight.ts`, identical comment in both):
+> "No confident FDS token found for any of these three, left as-is."
+
+Usage: `main` → `StixCoreObjectQuickSubscription.tsx`. `border1`/`border2` are
+declared but no direct consumer was found in this sweep — same caveat as
+`bg2`/`bg3`/`disabled` above.
+
+### 5. `primary.light` fallback, **dark mode only** (`#B2ECFF`)
+
+Top-level `palette.primary.light` (not `designSystem.primary.light`, which
+**is** wired to `brand-secondary` — see section 5 above) falls back to a
+hardcoded literal when no DB-override `primary` is supplied:
+`primary ? alpha(primary, 0.08) : '#B2ECFF'`. Grepped the full generated
+bridge (`fds-tokens.generated.ts`): `#B2ECFF`/`b2ecff` has **zero** matches
+anywhere in either `colorsDark` or `colorsLight`.
+
+Light mode's equivalent fallback (`#7587FF`) is deliberately **not** included
+here: it does have exact matches in the bridge (`--color-filigran-brand-secondary`
+and `--darkblue-300`, both `#7587ff`) — a token exists, this code path just
+doesn't reference it yet. That's a wiring opportunity, not a gap, so it's out
+of this list.
+
+| Key | Dark (no FDS match) | Light (for reference — matches exist, not a gap) |
+|---|---|---|
+| `primary.light` (fallback) | `#B2ECFF` | `#7587FF` |
+
+No inline code comment admits this one (unlike gaps 1-4 above) — it surfaced
+during the completeness sweep (`fds-migration/reports/constants-completeness-sweep/RAPPORT.md`,
+section 9.1: *"`primary.light` (fallback without override) — 🔴 HARDCODED
+(the `main` is 🟢/🟡, this `.light` fallback is not)"*), not from a
+pre-existing code annotation.
+
+Usage: `Button.utils.ts` (×2, `focus` color), `ImportFilesDropzone.tsx`
+(drag-over background tint).
+
 ## Deferred to a later phase (confirmed with Sandy)
 
 `OPENCTI_TO_FILIGRAN_TOKENS.ts` (Sandy's reference file) defines a
@@ -240,6 +398,27 @@ class is ever applied (the existing `useDocumentThemeModifier` only sets a
 `data-theme` attribute on `<body>`, for CKEditor, unrelated to FDS). Sandy
 confirmed this pilot should be limited to the static JS wiring done above;
 the CSS-variable runtime sync is real follow-up work, not an oversight.
+
+### Generator output isn't lint-conformant (lib-side follow-up)
+
+`fds-tokens.generated.ts` fails `opencti-front`'s ESLint config as-is: 1216
+problems, 1211 of them `@stylistic/quotes` (the generator emits
+double-quoted string literals; this codebase's style requires single
+quotes), plus a handful of `comma-dangle`/`indent`/naming-convention/import
+findings. Worked around on the consuming side for now — added
+`fds-tokens.generated.ts` + `fds-tokens.generated.meta.json` to
+`opencti-front/eslint.config.js`'s `ignores` (same treatment as
+`__generated__/**`, the Relay-generated files), since hand-fixing or
+`--fix`-ing a generated file is pointless: the next regeneration would
+reintroduce every violation.
+
+**Real fix belongs in the `mui-bridge` generator** (separate lib micro-PR,
+not urgent, not blocking this PR): either emit single-quoted strings (and
+match this repo's other stylistic conventions — trailing commas, indent)
+directly, or emit a `/* eslint-disable */` header so consuming repos don't
+need their own ignore-list entry. Either approach removes the need for
+every downstream consumer to special-case this file in their own lint
+config.
 
 ---
 
