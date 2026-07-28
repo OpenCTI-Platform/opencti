@@ -27,11 +27,22 @@ export const findDataSanityByOperationName = async (context: AuthContext, user: 
 };
 
 /**
- * Check if a sanity operation has already been executed (stored in ElasticSearch).
+ * Determine if a sanity operation should be skipped by the scheduler, and why.
+ * Skip when currently running, or when already executed and no force_run has been requested.
+ * @returns the skip reason, or undefined if the operation should run.
  */
-export const hasOperationBeenExecuted = async (context: AuthContext, user: AuthUser, operationName: string): Promise<boolean> => {
+export const getOperationSkipReason = async (context: AuthContext, user: AuthUser, operationName: string): Promise<string | undefined> => {
   const entity = await findDataSanityByOperationName(context, user, operationName);
-  return entity !== undefined && !entity.force_run && !entity.is_running;
+  if (!entity) {
+    return undefined;
+  }
+  if (entity.is_running) {
+    return 'operation is already running';
+  }
+  if (!entity.force_run) {
+    return 'operation has already been executed';
+  }
+  return undefined;
 };
 
 /**

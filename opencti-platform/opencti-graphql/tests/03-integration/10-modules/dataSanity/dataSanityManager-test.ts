@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as sanityManagerConfigMock from '../../../../src/modules/dataSanity/dataSanity-operations';
 import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
-import { findDataSanityByOperationName, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
+import { findDataSanityByOperationName, markOperationAsRunning, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
@@ -99,6 +99,28 @@ describe('Data sanity manager handler test coverage', () => {
     expect(onDemandOpAfterRun?.last_execution_time).toBeGreaterThanOrEqual(0);
     expect(onDemandOpAfterRun?.last_run_message).toBe('This is raising error - mockRunOnceOperationThatFails');
     expect(onDemandOpAfterRun?.force_run).toBe(false); // should be back to false
+  });
+
+  it('should not execute an operation already marked as running', async () => {
+    const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
+    vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
+      {
+        identifier: 'mockAlreadyRunningOperation',
+        dryRun: async () => ({ impact: { total: 1, detail: { Malware: 1 } } }),
+        operationRun,
+        execution_type: 'run_once',
+        description: '',
+        display_name: '',
+        eligibleEntityTypes: [ENTITY_TYPE_MALWARE],
+      },
+    ]);
+
+    await markOperationAsRunning(testContext, ADMIN_USER, 'mockAlreadyRunningOperation');
+    await dataSanityHandler();
+
+    expect(operationRun).not.toHaveBeenCalled();
+    const runningOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockAlreadyRunningOperation');
+    expect(runningOp?.is_running).toBe(true);
   });
 
   it('should convert a DataSanity entity to STIX format', async () => {
