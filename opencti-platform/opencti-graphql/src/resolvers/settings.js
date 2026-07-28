@@ -15,6 +15,9 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
+  uploadMapCustomFile,
+  deleteMapCustomFile,
+  getMapCustomFileInfo,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -74,6 +77,15 @@ const settingsResolvers = {
     caller_ip: (_, __, context) => context.req?.ip ?? null,
     metrics_definition: () => getEntityMetricsConfiguration(),
     is_authentication_by_env: () => isAuthenticationForcedFromEnv(),
+    platform_map_custom_file: async () => {
+      const meta = await getMapCustomFileInfo();
+      if (!meta) return null;
+      const nameMatch = meta.contentDisposition?.match(/filename="([^"]+)"/);
+      return {
+        name: nameMatch ? nameMatch[1] : 'world.pmtiles',
+        size: meta.contentLength ?? 0,
+      };
+    },
   },
   AppInfo: {
     memory: getMemoryStatistics(),
@@ -93,6 +105,8 @@ const settingsResolvers = {
       updateLocalAuth: ({ input }) => updateLocalAuth(context, context.user, id, input),
       updateCertAuth: ({ input }) => updateCertAuth(context, context.user, id, input),
       updateHeaderAuth: ({ input }) => updateHeaderAuth(context, context.user, id, input),
+      uploadMapCustomFile: ({ file }) => uploadMapCustomFile(context, context.user, file),
+      deleteMapCustomFile: () => deleteMapCustomFile(context, context.user),
     }),
   },
   Subscription: {
