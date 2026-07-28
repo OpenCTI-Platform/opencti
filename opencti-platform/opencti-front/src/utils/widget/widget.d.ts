@@ -52,6 +52,12 @@ export interface WidgetMultiTimeSeries {
   data: WidgetTimeSeriesData[];
 }
 
+export interface WidgetVariableBinding {
+  variableId: string;
+  variableName: string;
+  filterKeyType: string;
+}
+
 export interface WidgetDataSelection {
   label?: string | null;
   number?: number | null;
@@ -73,6 +79,7 @@ export interface WidgetDataSelection {
   relationship_type?: string;
   layout?: WidgetColumnsLayout | null;
   unique?: boolean;
+  variableBindings?: WidgetVariableBinding[] | null;
 }
 
 type GqlWidgetDataSelection = WidgetDataSelection & {

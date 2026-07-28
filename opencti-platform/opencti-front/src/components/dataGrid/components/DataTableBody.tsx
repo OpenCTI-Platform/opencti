@@ -95,9 +95,10 @@ const DataTableBody = ({
 
   const [tableHeight, setTableHeight] = useState(0);
   useLayoutEffect(() => {
-    if (variant === DataTableVariant.widget && !rootRef) {
-      throw Error('Invalid configuration for widget list');
-    }
+    // During fast widget reconfiguration (for example when filters/variables change),
+    // rootRef can be transiently null for one render pass. Fallback to default sizing
+    // instead of crashing the whole widget tree.
+    const shouldUseDefaultComputation = variant === DataTableVariant.widget && !rootRef;
 
     const hasFilters = (filters?.filters ?? []).length > 0;
     let filtersHeight = hasFilterComponent ? 54 : 0;
@@ -124,7 +125,7 @@ const DataTableBody = ({
       }
     };
 
-    if (rootRef) {
+    if (!shouldUseDefaultComputation && rootRef) {
       rootComputation();
       observer = callbackResizeObserver(rootRef, rootComputation);
     } else {

@@ -1,6 +1,11 @@
+import { useMemo, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import TuneOutlined from '@mui/icons-material/TuneOutlined';
 import DashboardTimeFilters from '../../../../components/dashboard/DashboardTimeFilters';
+import { useFormatter } from '../../../../components/i18n';
+import VariablesManagementDrawer from './variables/VariablesManagementDrawer';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
@@ -14,6 +19,9 @@ import DashboardRefreshControl from '../../../../components/dashboard/DashboardR
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
+import DashboardVariablesBar from './variables/DashboardVariablesBar';
+import { DashboardVariablesProvider } from './variables/DashboardVariablesContext';
+import useDashboardPermissions from '../../../../utils/hooks/useDashboardPermissions';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery$data } from './__generated__/CustomDashboardExportQuery.graphql';
@@ -55,6 +63,13 @@ const dashboardFragment = graphql`
     manifest
     refresh_interval
     tags
+    variables {
+      id
+      name
+      filterKey
+      filterKeyType
+      defaultValue
+    }
     owner {
       id
       name
@@ -63,6 +78,7 @@ const dashboardFragment = graphql`
     currentUserAccessRight
     ...WorkspaceEditionContainer_workspace
     ...WorkspaceHeaderFragment
+    ...DashboardVariablesBar_workspace
   }
 `;
 
@@ -95,17 +111,28 @@ const onExport = async (id: string) => {
 
 interface CustomDashboardProps {
   data: CustomDashboard_workspace$key;
+  userVariableValues?: string | null;
   noToolbar?: boolean;
 }
 
-const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
+const CustomDashboard = ({ data, userVariableValues, noToolbar = false }: CustomDashboardProps) => {
   const workspace = useFragment(dashboardFragment, data);
+  const normalizedUserVariableValues = useMemo(() => {
+    const parsedUserVariableValues: Record<string, string> = userVariableValues
+      ? (JSON.parse(userVariableValues) as Record<string, string>)
+      : {};
+    return Object.fromEntries(
+      Object.entries(parsedUserVariableValues).filter(([, value]) => typeof value === 'string' && value.length > 0),
+    );
+  }, [userVariableValues]);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
+  const [variablesDrawerOpen, setVariablesDrawerOpen] = useState(false);
+  const { t_i18n } = useFormatter();
 
-  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
-    || workspace.currentUserAccessRight === 'edit';
+  const { canSwitchValues, canEditStructure } = useDashboardPermissions(workspace.currentUserAccessRight);
+  const userHasEditAccess = canSwitchValues;
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
-  const userCanEdit = userHasEditAccess && userHasUpdateCapa;
+  const userCanEdit = canEditStructure;
 
   const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
@@ -183,7 +210,62 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     },
   });
 
+  const usedVariableIds = useMemo(() => {
+    const VARIABLE_SENTINEL_PREFIX = '__var__:';
+    const ids = new Set<string>();
+
+    const collectVariableIds = (input: unknown) => {
+      if (!input) {
+        return;
+      }
+      if (typeof input === 'string') {
+        if (input.startsWith(VARIABLE_SENTINEL_PREFIX)) {
+          ids.add(input.slice(VARIABLE_SENTINEL_PREFIX.length));
+        }
+        return;
+      }
+      if (Array.isArray(input)) {
+        input.forEach((value) => collectVariableIds(value));
+        return;
+      }
+      if (typeof input === 'object') {
+        const obj = input as Record<string, unknown>;
+        Object.values(obj).forEach((value) => collectVariableIds(value));
+      }
+    };
+
+    helpers.widgetsArray.forEach((widget) => {
+      widget.dataSelection.forEach((selection) => {
+        collectVariableIds(selection.filters);
+        collectVariableIds(selection.dynamicFrom);
+        collectVariableIds(selection.dynamicTo);
+        (selection.variableBindings ?? []).forEach((binding) => {
+          ids.add(binding.variableId);
+        });
+      });
+    });
+    return Array.from(ids);
+  }, [helpers.widgetsArray]);
+
+  const handleApplyPresetTime = (presetTime: {
+    startDate: string | null;
+    endDate: string | null;
+    relativeDate: string | null;
+  }) => {
+    if (presetTime.relativeDate) {
+      handleDateChange('relativeDate', presetTime.relativeDate);
+      return;
+    }
+    handleDateChange('relativeDate', 'none');
+    handleDateChange('startDate', presetTime.startDate);
+    handleDateChange('endDate', presetTime.endDate);
+  };
+
   return (
+    <DashboardVariablesProvider
+      variables={workspace.variables ?? []}
+      initialVariableValues={normalizedUserVariableValues}
+    >
     <Stack gap={2}>
       {!noToolbar && (
         <Stack gap={1}>
@@ -197,37 +279,54 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
         </Stack>
       )
       }
+      {!noToolbar && (
+        <DashboardVariablesBar
+          data={workspace}
+          userVariableValues={userVariableValues}
+          timeConfig={config}
+          onApplyPresetTime={handleApplyPresetTime}
+          usedVariableIds={usedVariableIds}
+          canEditStructure={canEditStructure}
+          canSwitchValues={canSwitchValues}
+        />
+      )}
       <div id="container">
         <DashboardRefreshProvider refreshToken={refreshToken}>
-          {!noToolbar && (
-            <Security
-              needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-              hasAccess={userCanEdit}
+          {!noToolbar && userHasUpdateCapa && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 1.5,
+              }}
             >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: 1.5,
-                }}
-              >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <DashboardTimeFilters
                   config={config}
                   handleDateChange={handleDateChange}
                 />
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <DashboardRefreshControl
-                    onRefresh={handleManualRefresh}
-                    interval={localRefreshRateSeconds}
-                    onIntervalChange={handleRefreshRateChange}
-                    isRefreshing={isAutoRefreshing}
-                  />
-                </Box>
+                {canEditStructure && (
+                  <Button
+                    startIcon={<TuneOutlined />}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setVariablesDrawerOpen(true)}
+                  >
+                    {t_i18n('Variables')}
+                  </Button>
+                )}
               </Box>
-            </Security>
-          )
-          }
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <DashboardRefreshControl
+                  onRefresh={handleManualRefresh}
+                  interval={localRefreshRateSeconds}
+                  onIntervalChange={handleRefreshRateChange}
+                  isRefreshing={isAutoRefreshing}
+                />
+              </Box>
+            </Box>
+          )}
           <DashboardContent
             helpers={helpers}
             isEditable={userCanEdit}
@@ -237,7 +336,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
           />
         </DashboardRefreshProvider>
       </div>
+      <VariablesManagementDrawer
+        open={variablesDrawerOpen}
+        onClose={() => setVariablesDrawerOpen(false)}
+        workspaceId={workspace.id}
+        variables={workspace.variables}
+        userVariableValues={userVariableValues}
+      />
     </Stack>
+    </DashboardVariablesProvider>
   );
 };
 

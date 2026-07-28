@@ -18,6 +18,8 @@ export interface BasicStoreEntityPublicDashboard extends BasicStoreEntity {
   uri_key: string;
   allowed_markings_ids: Array<string>;
   allowed_markings: Array<StoreMarkingDefinition>;
+  preset_id?: string | null;
+  frozen_variable_values?: string | null;
 }
 
 export interface StoreEntityPublicDashboard extends StoreEntity {
@@ -32,6 +34,8 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
   uri_key: string;
   allowed_markings_ids: Array<string>;
   allowed_markings: Array<StoreMarkingDefinition>;
+  preset_id?: string | null;
+  frozen_variable_values?: string | null;
 }
 // endregion
 

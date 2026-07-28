@@ -143,6 +143,90 @@ describe('resolvedDataSelection', () => {
     );
   });
 
+  it('substitutes variable sentinels in nested regardingOf filter values', () => {
+    const variableId = 'var-sector';
+    const resolvedEntityId = '8a9f70bd-2e10-40f7-a1f6-b418969611cd';
+    const dataSelection: WidgetDataSelection[] = [{
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'regardingOf',
+          operator: 'eq',
+          mode: 'or',
+          values: [
+            {
+              key: 'relationship_type',
+              values: ['targets'],
+            },
+            {
+              key: 'id',
+              values: [`__var__:${variableId}`],
+            },
+          ],
+        }],
+        filterGroups: [],
+      },
+      dynamicFrom: null,
+      dynamicTo: null,
+    }];
+
+    const { resolvedDataSelection } = resolveDataSelection({
+      filterKeysSchema,
+      dataSelection,
+      perspective: 'entities',
+      variableValues: {
+        [variableId]: resolvedEntityId,
+      },
+    });
+
+    expect(
+      (resolvedDataSelection[0].filters?.filters?.[0]?.values as Array<{ key: string; values: string[] }>)[1].values[0],
+    ).toBe(resolvedEntityId);
+  });
+
+  it('removes unresolved variable sentinels from nested regardingOf values', () => {
+    const variableId = 'var-missing';
+    const dataSelection: WidgetDataSelection[] = [{
+      filters: {
+        mode: 'and',
+        filters: [{
+          key: 'regardingOf',
+          operator: 'eq',
+          mode: 'or',
+          values: [
+            {
+              key: 'relationship_type',
+              values: ['targets'],
+            },
+            {
+              key: 'id',
+              values: [`__var__:${variableId}`],
+            },
+          ],
+        }],
+        filterGroups: [],
+      },
+      dynamicFrom: null,
+      dynamicTo: null,
+    }];
+
+    const { resolvedDataSelection } = resolveDataSelection({
+      filterKeysSchema,
+      dataSelection,
+      perspective: 'entities',
+      variableValues: {},
+    });
+
+    expect(
+      resolvedDataSelection[0].filters?.filters?.[0]?.values,
+    ).toStrictEqual([
+      {
+        key: 'relationship_type',
+        values: ['targets'],
+      },
+    ]);
+  });
+
   it('removes id and incorrect keys from FilterGroup entries when a Relationships perspective widget', () => {
     const dataSelection: WidgetDataSelection[] = [{
       filters: makeFilterGroup(relationshipsAvailableFilterKey, randomObjectIdValue),

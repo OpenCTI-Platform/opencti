@@ -1523,6 +1523,7 @@ type Group implements InternalObject & BasicObject {
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
+  default_dashboard_preset_id: ID
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   created_at: DateTime
   updated_at: DateTime
@@ -1812,6 +1813,7 @@ type MeUser implements BasicObject & InternalObject {
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
+  default_dashboard_preset_id: ID
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime
@@ -9686,6 +9688,7 @@ type Query {
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, includeObservables: Boolean): EntitySettingConnection
   workspace(id: String!): Workspace
   workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): WorkspaceConnection
+  myDashboardVariableState(workspaceId: ID!): WorkspaceUserState
   malwareAnalysis(id: String!): MalwareAnalysis
   malwareAnalyses(first: Int, after: ID, orderBy: MalwareAnalysesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): MalwareAnalysisConnection
   managerConfiguration(id: String!): ManagerConfiguration
@@ -10578,6 +10581,15 @@ type Mutation {
   workspaceContextClean(id: ID!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
+  workspaceVariableAdd(id: ID!, input: DashboardVariableInput!): Workspace
+  workspaceVariableFieldPatch(id: ID!, variableId: ID!, input: [EditInput!]!): Workspace
+  workspaceVariableDelete(id: ID!, variableId: ID!): ID
+  workspacePresetAdd(id: ID!, input: DashboardPresetInput!): Workspace
+  workspacePresetFieldPatch(id: ID!, presetId: ID!, input: [EditInput!]!): Workspace
+  workspacePresetDelete(id: ID!, presetId: ID!): ID
+  workspaceVariableSetValue(workspaceId: ID!, variableId: ID!, value: String): WorkspaceUserState
+  workspaceVariableResetValue(workspaceId: ID!, variableId: ID!): WorkspaceUserState
+  workspacePresetApply(workspaceId: ID!, presetId: ID!): WorkspaceUserState
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
@@ -13185,6 +13197,52 @@ type Workspace implements InternalObject & BasicObject {
   toConfigurationExport: String!
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
+  variables: [DashboardVariable!]!
+  presets: [DashboardPreset!]!
+}
+
+enum DashboardFilterKeyType {
+  entity_ref
+  vocabulary
+  kill_chain
+  boolean
+  numeric
+  date
+  text
+}
+
+type DashboardVariable {
+  id: ID!
+  name: String!
+  filterKey: String!
+  filterKeyType: DashboardFilterKeyType!
+  defaultValue: String
+}
+
+input DashboardVariableInput {
+  name: String!
+  filterKey: String!
+  filterKeyType: DashboardFilterKeyType!
+  defaultValue: String
+}
+
+type DashboardPreset {
+  id: ID!
+  name: String!
+  variable_values: String!
+}
+
+input DashboardPresetInput {
+  name: String!
+  variable_values: String!
+}
+
+type WorkspaceUserState {
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  workspace_id: ID!
+  variable_values: String
 }
 
 enum WorkspacesOrdering {

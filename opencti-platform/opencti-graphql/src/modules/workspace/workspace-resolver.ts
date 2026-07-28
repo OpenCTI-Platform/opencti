@@ -7,6 +7,8 @@ import {
   generateWorkspaceExportConfiguration,
   getCurrentUserAccessRight,
   getOwnerId,
+  getWorkspacePresets,
+  getWorkspaceVariables,
   isDashboardShared,
   objects,
   workspaceCleanContext,
@@ -16,6 +18,12 @@ import {
   workspaceEditField,
   workspaceImportConfiguration,
   workspaceImportWidgetConfiguration,
+  workspacePresetAdd,
+  workspacePresetDelete,
+  workspacePresetFieldPatch,
+  workspaceVariableAdd,
+  workspaceVariableDelete,
+  workspaceVariableFieldPatch,
 } from './workspace-domain';
 import { fetchEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -43,6 +51,8 @@ const workspaceResolvers: Resolvers = {
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
+    variables: (workspace: any) => getWorkspaceVariables(workspace),
+    presets: (workspace: any) => getWorkspacePresets(workspace),
   },
   Mutation: {
     workspaceAdd: (_, { input }, context) => {
@@ -72,6 +82,26 @@ const workspaceResolvers: Resolvers = {
     workspaceWidgetConfigurationImport: (_, { id, input }, context) => {
       return workspaceImportWidgetConfiguration(context, context.user, id, input);
     },
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    workspaceVariableAdd: ((_: any, { id, input }: any, context: any) => {
+      return workspaceVariableAdd(context, context.user, id, input);
+    }) as any,
+    workspaceVariableFieldPatch: ((_: any, { id, variableId, input }: any, context: any) => {
+      return workspaceVariableFieldPatch(context, context.user, id, variableId, input);
+    }) as any,
+    workspaceVariableDelete: ((_: any, { id, variableId }: any, context: any) => {
+      return workspaceVariableDelete(context, context.user, id, variableId);
+    }) as any,
+    workspacePresetAdd: ((_: any, { id, input }: any, context: any) => {
+      return workspacePresetAdd(context, context.user, id, input);
+    }) as any,
+    workspacePresetFieldPatch: ((_: any, { id, presetId, input }: any, context: any) => {
+      return workspacePresetFieldPatch(context, context.user, id, presetId, input);
+    }) as any,
+    workspacePresetDelete: ((_: any, { id, presetId }: any, context: any) => {
+      return workspacePresetDelete(context, context.user, id, presetId);
+    }) as any,
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   },
   Subscription: {
     workspace: {

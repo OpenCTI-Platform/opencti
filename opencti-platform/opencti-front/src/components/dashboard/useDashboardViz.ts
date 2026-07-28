@@ -7,6 +7,7 @@ import { DashboardConfig } from './dashboard-types';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import { useQueryLoader } from 'react-relay';
 import { OperationType } from 'relay-runtime';
+import { useDashboardVariables } from '../../private/components/workspaces/dashboards/variables/DashboardVariablesContext';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -34,12 +35,14 @@ const useDashboardViz = <TQuery extends OperationType>({
   const setQueryPending = useDashboardSetQueryPending();
   const queryIdRef = useRef(`dashboard-viz-${Math.random().toString(36).slice(2)}`);
   const { filterKeysSchema } = useAuth().schema;
+  const { variableValues } = useDashboardVariables();
   const { resolvedDataSelection, isMissingHostEntity, isPreviewMode } = useMemo(() => resolveDataSelection({
     filterKeysSchema,
     dataSelection,
     perspective,
     host,
-  }), [filterKeysSchema, dataSelection, perspective, host]);
+    variableValues,
+  }), [filterKeysSchema, dataSelection, perspective, host, variableValues]);
 
   const queryVariables = useMemo(
     () => (buildQueryVariables && config

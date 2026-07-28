@@ -35,6 +35,45 @@ type Workspace implements InternalObject & BasicObject {
     toConfigurationExport: String!
     toWidgetExport(widgetId: ID!): String!
     isShared: Boolean
+    variables: [DashboardVariable!]!
+    presets: [DashboardPreset!]!
+}
+
+# Dashboard variables
+enum DashboardFilterKeyType {
+    entity_ref
+    vocabulary
+    kill_chain
+    boolean
+    numeric
+    date
+    text
+}
+
+type DashboardVariable {
+    id: ID!
+    name: String!
+    filterKey: String!
+    filterKeyType: DashboardFilterKeyType!
+    defaultValue: String
+}
+
+input DashboardVariableInput {
+    name: String! @constraint(minLength: 1)
+    filterKey: String!
+    filterKeyType: DashboardFilterKeyType!
+    defaultValue: String
+}
+
+type DashboardPreset {
+    id: ID!
+    name: String!
+    variable_values: String!
+}
+
+input DashboardPresetInput {
+    name: String! @constraint(minLength: 1)
+    variable_values: String!
 }
 
 # Ordering
@@ -111,6 +150,14 @@ type Mutation {
     workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
+    # Variable structure mutations (requires EXPLORE_EXUPDATE capability)
+    workspaceVariableAdd(id: ID!, input: DashboardVariableInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceVariableFieldPatch(id: ID!, variableId: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceVariableDelete(id: ID!, variableId: ID!): ID @auth(for: [EXPLORE_EXUPDATE])
+    # Preset structure mutations (requires EXPLORE_EXUPDATE capability)
+    workspacePresetAdd(id: ID!, input: DashboardPresetInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspacePresetFieldPatch(id: ID!, presetId: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspacePresetDelete(id: ID!, presetId: ID!): ID @auth(for: [EXPLORE_EXUPDATE])
 }
 
 # Subscriptions

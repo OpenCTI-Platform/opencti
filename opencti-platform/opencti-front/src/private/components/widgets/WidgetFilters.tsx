@@ -1,5 +1,5 @@
 import Filters from '@components/common/lists/Filters';
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
@@ -8,8 +8,11 @@ import useFiltersState from '../../../utils/filters/useFiltersState';
 import { isFilterGroupNotEmpty, isDraftWorkspaceFilterGroup, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
-import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
+import type { WidgetDataSelection, WidgetPerspective, WidgetVariableBinding } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
+import { useDashboardVariables } from '../workspaces/dashboards/variables/DashboardVariablesContext';
+import { FilterVariableSelectionProvider } from './FilterVariableSelectionContext';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -28,6 +31,69 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
+  const { variables } = useDashboardVariables();
+
+  const VARIABLE_SENTINEL_PREFIX = '__var__:';
+
+  const collectVariableIds = (input: unknown, result: Set<string>) => {
+    if (!input) {
+      return;
+    }
+    if (typeof input === 'string') {
+      if (input.startsWith(VARIABLE_SENTINEL_PREFIX)) {
+        result.add(input.slice(VARIABLE_SENTINEL_PREFIX.length));
+      }
+      return;
+    }
+    if (Array.isArray(input)) {
+      input.forEach((value) => collectVariableIds(value, result));
+      return;
+    }
+    if (typeof input === 'object') {
+      const obj = input as {
+        values?: unknown;
+        filters?: unknown;
+        filterGroups?: unknown;
+      };
+      collectVariableIds(obj.values, result);
+      collectVariableIds(obj.filters, result);
+      collectVariableIds(obj.filterGroups, result);
+    }
+  };
+
+  const extractVariableIdsFromFilterGroup = (filterGroup?: FilterGroup | null): Set<string> => {
+    const result = new Set<string>();
+    if (!filterGroup) {
+      return result;
+    }
+    collectVariableIds(filterGroup, result);
+    return result;
+  };
+
+  const hasVariableInFilters = useMemo(
+    () => extractVariableIdsFromFilterGroup(filters).size > 0,
+    [filters],
+  );
+
+  const computedVariableBindings = useMemo(() => {
+    const ids = new Set<string>();
+    extractVariableIdsFromFilterGroup(filters).forEach((id) => ids.add(id));
+    extractVariableIdsFromFilterGroup(filtersDynamicFrom).forEach((id) => ids.add(id));
+    extractVariableIdsFromFilterGroup(filtersDynamicTo).forEach((id) => ids.add(id));
+    const bindings: WidgetVariableBinding[] = [];
+    ids.forEach((variableId) => {
+      const variable = variables.find((v) => v.id === variableId);
+      if (!variable) {
+        return;
+      }
+      bindings.push({
+        variableId,
+        variableName: variable.name,
+        filterKeyType: variable.filterKeyType,
+      });
+    });
+    return bindings;
+  }, [filters, filtersDynamicFrom, filtersDynamicTo, variables]);
 
   useEffect(() => {
     setDataSelection({
@@ -35,8 +101,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       filters,
       dynamicTo: filtersDynamicTo,
       dynamicFrom: filtersDynamicFrom,
+      variableBindings: computedVariableBindings,
     });
-  }, [filters, filtersDynamicFrom, filtersDynamicTo]);
+  }, [computedVariableBindings, filters, filtersDynamicFrom, filtersDynamicTo]);
 
   let availableEntityTypes;
   let searchContext;
@@ -68,7 +135,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const bookmarkAvailableEntityTypes = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
 
+  const handleVariableSelectedInFilter = () => {};
+
   return (
+    <FilterVariableSelectionProvider onVariableSelected={handleVariableSelectedInFilter}>
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', paddingTop: 2 }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -157,6 +227,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         <FilterIconButton
           filters={filters}
           helpers={helpers}
+          chipColor={hasVariableInFilters ? 'primary' : undefined}
           searchContext={searchContext}
           availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
           entityTypes={searchContext.entityTypes}
@@ -164,6 +235,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         />
       </Box>
     </>
+    </FilterVariableSelectionProvider>
   );
 };
 
