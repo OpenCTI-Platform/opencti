@@ -62,7 +62,7 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
 };
 
 export const STREAM_FILE_DIRECTORY = `streams/${REDIS_LIVE_STREAM_NAME}/`;
-const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
   const redisClient = getClientBase();
   let eventStreamData = mapJSToStream(event);
   const eventStreamDataBlob = new Blob(eventStreamData);
@@ -82,7 +82,7 @@ const rawPushToStream = async <T extends BaseEvent> (event: T) => {
     await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventStreamData);
   }
 };
-const processStreamData = async ([id, data]: any) => {
+export const processStreamData = async ([id, data]: any) => {
   if (data.includes(streamMaxEventFileKey)) {
     const filePath = data[1];
     try {
