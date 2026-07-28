@@ -109,13 +109,8 @@ const AdministrativeArea = ({
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
-            center={
-              administrativeArea.latitude && administrativeArea.longitude
-                ? [administrativeArea.latitude, administrativeArea.longitude]
-                : [48.8566969, 2.3514616]
-            }
-            administrativeArea={administrativeArea}
             zoom={5}
+            location={administrativeArea}
           />
         </Grid>
         <Grid item xs={4}>

@@ -1300,8 +1300,8 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_banner_text: String
   platform_banner_level: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_whitemark: Boolean
   platform_language: String
   platform_translations: String
@@ -1412,8 +1412,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_user_statuses: [UserStatus!]!
   platform_language: String
   platform_theme: Theme
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
+  platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
+  platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_openaev_url: String
   platform_opengrc_url: String
   platform_xtmhub_url: String
@@ -1479,6 +1479,12 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_ai_has_token: Boolean!
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  platform_map_custom_file: MapCustomFile
+}
+
+type MapCustomFile {
+  name: String!
+  size: Float!
 }
 
 enum GroupsOrdering {
@@ -9920,6 +9926,8 @@ type SettingsEditMutations {
   updateLocalAuth(input: LocalAuthConfigInput!): Settings
   updateCertAuth(input: CertAuthConfigInput!): Settings
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings
+  uploadMapCustomFile(file: Upload!): Settings
+  deleteMapCustomFile: Settings
 }
 
 type SubTypeEditMutations {
