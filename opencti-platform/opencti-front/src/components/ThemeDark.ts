@@ -56,7 +56,7 @@ const ThemeDark = (
       contrastText: '#000000',
       text: { primary: FDS.colors.dark['--color-feedback-error-tertiary'] } },
     success: { main: FDS.colors.dark['--color-feedback-success-primary'], dark: FDS.colors.dark['--color-feedback-success-secondary'] },
-    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : '#B2ECFF' },
+    primary: { main: primary || THEME_DARK_DEFAULT_PRIMARY, light: primary ? alpha(primary, 0.08) : FDS.colors.dark['--color-filigran-brand-secondary'] },
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
@@ -122,15 +122,16 @@ const ThemeDark = (
     },
     severity: {
       // critical/high/medium/low/info mapped to the closest FDS feedback
-      // token (not 1:1 — see TOKEN-MAPPING.md). none/default have no FDS
-      // equivalent (neutral/unset states) and are left as-is.
+      // token (not 1:1 — see TOKEN-MAPPING.md). none/default now share the
+      // neutral feedback token (both are semantically "no severity set");
+      // this makes the two visually identical for the first time.
       critical: FDS.colors.dark['--color-feedback-error-primary'],
       high: FDS.colors.dark['--color-feedback-warning-primary'],
       medium: FDS.colors.dark['--color-feedback-alert-primary'],
       low: FDS.colors.dark['--color-feedback-success-primary'],
       info: FDS.colors.dark['--color-feedback-info-primary'],
-      none: '#424242',
-      default: '#1C2F49',
+      none: FDS.colors.dark['--color-feedback-neutral-primary'],
+      default: FDS.colors.dark['--color-feedback-neutral-primary'],
     },
     // This block used to be hand-copied from Figma exports — every value
     // below is now sourced from the generated FDS bridge (fds-tokens.generated.ts).
@@ -164,18 +165,20 @@ const ThemeDark = (
       },
       background: {
         main: THEME_DARK_DEFAULT_BACKGROUND,
-        // bg1-bg4/disabled: no confident 1:1 FDS token found, left as-is.
-        bg1: '#0C1524',
-        bg2: '#0D182A',
-        bg3: '#253348',
-        bg4: '#1C2F49',
-        disabled: '#363B46',
+        // bg1-bg4 map to the elevation-layer scale (layer-0..3, darkest to
+        // lightest); disabled uses the dedicated disabled-elevation token.
+        bg1: FDS.colors.dark['--bg-elevation-default-layer-0'],
+        bg2: FDS.colors.dark['--bg-elevation-default-layer-1'],
+        bg3: FDS.colors.dark['--bg-elevation-default-layer-2'],
+        bg4: FDS.colors.dark['--bg-elevation-default-layer-3'],
+        disabled: FDS.colors.dark['--bg-elevation-disabled'],
       },
-      // No confident FDS token found for any of these three, left as-is.
+      // main uses the default elevation border; border1/border2 share the
+      // subtle elevation border (see TOKEN-MAPPING.md).
       border: {
-        main: '#2B3447',
-        border1: '#424751',
-        border2: '#1C253A',
+        main: FDS.colors.dark['--border-elevation-default'],
+        border1: FDS.colors.dark['--border-elevation-subtle'],
+        border2: FDS.colors.dark['--border-elevation-subtle'],
       },
       gradient: {
         background: FDS.gradients.dark['--gradient-default'],
@@ -211,10 +214,13 @@ const ThemeDark = (
           700: FDS.scalars['--gray-700'],
           800: FDS.scalars['--gray-800'],
         },
-        // No FDS scale matches these two values, left as-is.
+        // Mapped to the opaque feedback-info-secondary token (not its
+        // -transparency sibling proposed by the guide — see TOKEN-MAPPING.md,
+        // ScaleBar.tsx needs a solid fill). .500/.900 now share one value;
+        // .900 has zero live consumers today (same note in the guide itself).
         blue: {
-          500: '#0099CC',
-          900: '#003242',
+          500: FDS.colors.dark['--color-feedback-info-secondary'],
+          900: FDS.colors.dark['--color-feedback-info-secondary'],
         },
         darkBlue: {
           300: FDS.scalars['--darkblue-300'],
