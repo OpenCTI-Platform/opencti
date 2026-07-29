@@ -1,18 +1,29 @@
+import { isFeatureEnabled } from '../../config/conf';
+import { getCatalogVersionInfo, isCatalogManagerEnabled } from '../../manager/catalogManager';
+import { findCatalogFromES } from './catalog-repository';
 import { findCatalog, findById, findContractBySlug } from './catalog-domain';
 import type { Resolvers } from '../../generated/graphql';
 
+const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
+
 const catalogResolver: Resolvers = {
   Query: {
-    catalog: (_, { id }, context) => {
+    catalog: (_: unknown, { id }: { id: string }, context: any) => {
       return findById(context, context.user, id);
     },
-    catalogs: (_, args, context) => {
+    catalogs: (_: unknown, _args: unknown, context: any) => {
+      if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && isCatalogManagerEnabled()) {
+        return findCatalogFromES(context, context.user);
+      }
       return findCatalog(context, context.user);
     },
-    contract: (_, { slug }, context) => {
+    contract: (_: unknown, { slug }: { slug: string }, context: any) => {
       return findContractBySlug(context, context.user, slug);
     },
+    catalogVersionInfo: () => {
+      return getCatalogVersionInfo();
+    },
   },
-};
+} as unknown as Resolvers;
 
 export default catalogResolver;

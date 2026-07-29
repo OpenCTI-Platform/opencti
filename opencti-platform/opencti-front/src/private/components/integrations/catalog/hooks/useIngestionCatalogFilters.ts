@@ -351,6 +351,39 @@ const useIngestionCatalogFilters = ({
     return [...new Set(items.flatMap((item) => (item.licenseType ? [item.licenseType] : [])))].sort();
   }, [items]);
 
+  useEffect(() => {
+    const validTypeSet = new Set(availableTypes);
+    const validUseCaseSet = new Set(availableUseCases);
+    const validSolutionCategorySet = new Set(availableSolutionCategories);
+    const validLicenseTypeSet = new Set(availableLicenseTypes);
+    setFilters((prev) => {
+      const nextTypes = prev.types.filter((type) => validTypeSet.has(type as IngestionConnectorType));
+      const nextUseCases = prev.useCases.filter((useCase) => validUseCaseSet.has(useCase));
+      const nextSolutionCategories = prev.solutionCategories.filter((category) => validSolutionCategorySet.has(category));
+      const nextLicenseTypes = prev.licenseTypes.filter((licenseType) => validLicenseTypeSet.has(licenseType));
+
+      if (
+        nextTypes.length === prev.types.length
+        && nextUseCases.length === prev.useCases.length
+        && nextSolutionCategories.length === prev.solutionCategories.length
+        && nextLicenseTypes.length === prev.licenseTypes.length
+      ) {
+        return prev;
+      }
+
+      // Catalog payload can change at runtime (fallback -> remote or manifest switch).
+      // Drop URL-carried facets that no longer exist in the current catalog to prevent
+      // the UI from getting stuck in an empty filtered state.
+      return {
+        ...prev,
+        types: nextTypes,
+        useCases: nextUseCases,
+        solutionCategories: nextSolutionCategories,
+        licenseTypes: nextLicenseTypes,
+      };
+    });
+  }, [availableTypes, availableUseCases]);
+
   const filteredItems = useMemo(
     () => items.filter((item) => matchesFilters(item, filters)),
     [items, filters],
