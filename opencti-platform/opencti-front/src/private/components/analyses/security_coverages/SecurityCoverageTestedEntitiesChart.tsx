@@ -2,6 +2,8 @@ import { useFormatter } from '../../../../components/i18n';
 import Card from '@common/card/Card';
 import { graphql, useFragment } from 'react-relay';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Stack, Tooltip } from '@mui/material';
+import { InformationOutline } from 'mdi-material-ui';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../../../utils/Charts';
@@ -125,7 +127,16 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   );
 
   return (
-    <Card title={t_i18n('Tested entities')}>
+    <Card
+      title={(
+        <Stack direction="row" spacing={1} alignItems="center">
+          <span>{t_i18n('Tested entities')}</span>
+          <Tooltip title={t_i18n('Total count of entities tested in Security Coverage Result(s)')}>
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        </Stack>
+      )}
+    >
       {categories.length === 0
         ? <WidgetNoData /> : (
             <Chart

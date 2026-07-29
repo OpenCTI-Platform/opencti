@@ -9,7 +9,9 @@ import {
   averageCoverageInformation,
   mostRecentLastCoverageResult,
   getSecurityCoverageResults,
+  findCoveredEntities,
 } from './securityCoverage-domain';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -42,6 +44,10 @@ const SecurityCoverageResolvers: Resolvers = {
     coveredEntitiesDistribution: (securityCoverage, args, context) =>
       distributionRelations(context, context.user, { ...args, fromOrToId: securityCoverage[RELATION_RESULT_OF] } as any),
     stixCoreRelationshipsFromResults: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
+    coveredAttackPatterns: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_ATTACK_PATTERN, args),
+    coveredVulnerabilities: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_VULNERABILITY, args),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
