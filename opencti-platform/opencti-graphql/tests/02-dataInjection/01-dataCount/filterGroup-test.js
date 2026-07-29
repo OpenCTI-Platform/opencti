@@ -1336,7 +1336,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 45 entities - 11 entities with a source reliability = 34
+    expect(queryResult.data.globalSearch.edges.length).toEqual(36); // 47 entities - 11 entities with a source reliability = 34
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
