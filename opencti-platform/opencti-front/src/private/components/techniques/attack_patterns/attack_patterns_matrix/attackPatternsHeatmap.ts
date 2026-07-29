@@ -2,9 +2,11 @@
 //
 // The scale is relative to the current dataset: the minimum frequency maps to
 // the low end and the maximum frequency maps to the high end, with all values
-// in between interpolated linearly. A soft pastel palette (pale yellow ->
-// peach -> coral) is used so the cells read cleanly against the dark matrix
-// background instead of the muddy fully-saturated yellow/red spectrum.
+// in between interpolated linearly. The palette runs from amber-yellow (a
+// technique used by a single linked entity) up to the platform's error-red
+// (the most frequently used technique). Green is intentionally NOT used here:
+// it is reserved for a future iteration that will overlay an assessment of our
+// mitigation coverage.
 
 export interface HeatmapScale {
   min: number;
@@ -20,11 +22,19 @@ export interface HeatmapCellColors {
 
 type RGB = [number, number, number];
 
-// Pastel stops from low usage (pale yellow) through peach to high usage (coral).
+// Yellow -> red risk stops anchored at the 0 / 25 / 50 / 75 / 100 % marks of
+// the linear scale. The low end is amber-yellow (a single linked entity) and
+// the high end is the theme's error red (#F14337, the same red used by the
+// coverage score percentages). Five evenly-spaced stops make `colorForRatio`
+// place the band boundaries exactly at 0.25, 0.5 and 0.75, so each quarter of
+// the scale (0-25, 25-50, 50-75, 75-100) is a clean linear gradient between two
+// anchors: yellow -> amber -> orange -> red-orange -> red.
 const HEATMAP_STOPS: RGB[] = [
-  [253, 246, 179], // pale yellow
-  [252, 205, 144], // peach
-  [245, 150, 137], // coral
+  [245, 215, 66], // amber-yellow   (0%, single linked entity)
+  [243, 178, 52], // amber          (25%)
+  [240, 140, 40], // orange         (50%)
+  [238, 100, 44], // red-orange     (75%)
+  [241, 67, 55], // error red      (#F14337, 100%, maximum)
 ];
 
 // The palette stops as ready-to-use CSS colours, exposed so UI (e.g. the legend

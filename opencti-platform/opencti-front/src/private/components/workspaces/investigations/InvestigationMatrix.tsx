@@ -18,7 +18,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery } from '../../../../relay/environment';
 import { buildInvestigationMatrixUsage } from './investigationMatrixUsage';
 import useInvestigationCoverageMap from './useInvestigationCoverageMap';
-import InvestigationMatrixLegend from './InvestigationMatrixLegend';
 
 // Resolve the Attack-Patterns that the selected security platforms declare they
 // "should-cover". These ids drive the green tick / red cross overlap indicator
@@ -39,10 +38,6 @@ const investigationMatrixOverlapQuery = graphql`
 interface InvestigationMatrixProps {
   // All objects currently present in the investigation graph.
   objects: ObjectToParse[];
-  // A/B testing variant. 'A' is the current control, 'B' is the alternate
-  // version being trialled. Currently both render the same matrix; this prop
-  // is the hook to diverge the two experiences later.
-  variant?: 'A' | 'B';
   // Optional controls (e.g. the graph/matrix view switcher) rendered
   // right-aligned on the matrix toolbar line to save vertical space.
   headerActions?: React.ReactNode;
@@ -53,20 +48,20 @@ const DEFAULT_KILL_CHAIN = 'mitre-attack';
 // Read-only Techniques "Matrix" view for an investigation.
 // It only displays the Attack Patterns that are already present in the
 // investigation graph (no data is fetched or added from here).
-const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ objects, variant = 'A', headerActions }) => {
+const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ objects, headerActions }) => {
   const { t_i18n } = useFormatter();
 
   // Matrix view controls.
   const [selectedKillChain, setSelectedKillChain] = useState<string>(DEFAULT_KILL_CHAIN);
-  // Investigations focus on used techniques by default, but the user can show the whole matrix.
-  const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(true);
+  // Show the whole matrix by default (all techniques); the user can toggle to
+  // focus on used techniques only.
+  const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
   // "Compare with my security posture": selected security platforms and the
   // Attack-Pattern ids they should cover (drives the tick / cross overlay).
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
-  // Frequency heatmap (US.3) - variant A only. Colours techniques by how many
-  // investigation entities use them, on a relative yellow -> red scale.
-  const isHeatmapAvailable = variant === 'A';
+  // Frequency heatmap (US.3). Colours techniques by how many investigation
+  // entities use them, on a relative yellow -> red scale.
   const [isHeatmapActive, setIsHeatmapActive] = useState<boolean>(false);
 
   const attackPatterns = useMemo(
@@ -75,47 +70,17 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
   );
 
   // Which investigation entities use which attack pattern (via `uses` relationships).
-  const { usageByAttackPattern, legend } = useMemo(
+  const { usageByAttackPattern } = useMemo(
     () => buildInvestigationMatrixUsage(objects),
     [objects],
   );
 
-  // Entities the user has toggled off in the legend: their markers are hidden
-  // from the matrix cells while their relationships remain in the graph.
-  const [hiddenEntityIds, setHiddenEntityIds] = useState<Set<string>>(new Set());
-
-  const toggleEntity = (entityId: string) => {
-    setHiddenEntityIds((current) => {
-      const next = new Set(current);
-      if (next.has(entityId)) {
-        next.delete(entityId);
-      } else {
-        next.add(entityId);
-      }
-      return next;
-    });
-  };
-
-  // Usage map with the toggled-off entities removed, so only the selected
-  // entities' markers are rendered on the technique cells.
-  const visibleUsageByAttackPattern = useMemo(() => {
-    if (hiddenEntityIds.size === 0) return usageByAttackPattern;
-    const filtered = new Map<string, typeof legend>();
-    usageByAttackPattern.forEach((entities, attackPatternId) => {
-      const visible = entities.filter((entity) => !hiddenEntityIds.has(entity.id));
-      if (visible.length > 0) {
-        filtered.set(attackPatternId, visible);
-      }
-    });
-    return filtered;
-  }, [usageByAttackPattern, hiddenEntityIds]);
-
   // Frequency score per attack pattern = number of investigation entities that
-  // use it (respecting the entity legend toggles). Only entries with a score
-  // are kept. The relative colour scale spans min -> max of these scores.
+  // use it. Only entries with a score are kept. The relative colour scale spans
+  // min -> max of these scores.
   const { frequencyMap, heatmapScale } = useMemo(() => {
     const counts = new Map<string, number>();
-    visibleUsageByAttackPattern.forEach((entities, attackPatternId) => {
+    usageByAttackPattern.forEach((entities, attackPatternId) => {
       if (entities.length > 0) {
         counts.set(attackPatternId, entities.length);
       }
@@ -125,7 +90,7 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
       ? { min: Math.min(...values), max: Math.max(...values) }
       : undefined;
     return { frequencyMap: counts, heatmapScale: scale };
-  }, [visibleUsageByAttackPattern]);
+  }, [usageByAttackPattern]);
 
   // One legend swatch per distinct frequency value present in the dataset, each
   // coloured exactly like the matrix cells with that value. So a single value
@@ -137,7 +102,7 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
   }, [frequencyMap, heatmapScale]);
 
   // Heatmap can only be applied when there is at least one scored technique.
-  const heatmapActive = isHeatmapAvailable && isHeatmapActive && heatmapScale !== undefined;
+  const heatmapActive = isHeatmapActive && heatmapScale !== undefined;
 
   // Detection/prevention coverage scores from `has-covered` relationships present on the graph.
   const coverageOverlayMap = useInvestigationCoverageMap(objects);
@@ -236,7 +201,7 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
   const noop = (_entity: TargetEntity) => {};
 
   return (
-    <Box data-matrix-variant={variant} sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, paddingTop: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, paddingTop: 2 }}>
       <Stack direction="row" alignItems="center" gap={1} sx={{ paddingInline: 2, paddingBottom: 1 }}>
         <Stack direction="row" alignItems="center">
           <InputLabel style={{ paddingInlineEnd: 10, marginTop: 1 }}>
@@ -259,7 +224,7 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
         <Tooltip
           title={
             isModeOnlyActive
-              ? t_i18n('Display the whole matrix')
+              ? t_i18n('Display only techniques in the investigation')
               : t_i18n('Display only used techniques')
           }
         >
@@ -272,24 +237,19 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
             </IconButton>
           </span>
         </Tooltip>
-        {isHeatmapAvailable && (
-          <Tooltip title={t_i18n('Displays heat map of attack pattern use')}>
-            <span>
-              <IconButton
-                color={heatmapActive ? 'secondary' : 'primary'}
-                disabled={heatmapScale === undefined}
-                onClick={() => setIsHeatmapActive((value) => !value)}
-              >
-                <LocalFireDepartmentOutlined />
-              </IconButton>
-            </span>
-          </Tooltip>
-        )}
-        {isHeatmapAvailable && heatmapActive && heatmapScale && (
+        <Tooltip title={t_i18n('Displays heat map of attack pattern use')}>
+          <span>
+            <IconButton
+              color={heatmapActive ? 'secondary' : 'primary'}
+              disabled={heatmapScale === undefined}
+              onClick={() => setIsHeatmapActive((value) => !value)}
+            >
+              <LocalFireDepartmentOutlined />
+            </IconButton>
+          </span>
+        </Tooltip>
+        {heatmapActive && heatmapScale && (
           <Stack direction="row" alignItems="center" gap={0.75}>
-            <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              {t_i18n('Risk')}
-            </Typography>
             <Typography variant="caption">{heatmapScale.min}</Typography>
             <Box sx={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden' }}>
               {(heatmapStepColors.length > 0 ? heatmapStepColors : HEATMAP_STEP_COLORS).map((color, index) => (
@@ -330,7 +290,10 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
           // heatmap mode the columns still restrict sub-techniques to used ones.
           onlyActiveSubAttackPatterns={false}
           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
-          entityUsageMap={isHeatmapAvailable ? undefined : visibleUsageByAttackPattern}
+          // Provide the usage map so cells can drive the "linked entities"
+          // hover tooltip listing the entities linked to each technique /
+          // sub-technique.
+          entityUsageMap={usageByAttackPattern}
           coverageOverlayMap={coverageOverlayMap}
           heatmapActive={heatmapActive}
           frequencyMap={frequencyMap}
@@ -338,14 +301,6 @@ const InvestigationMatrix: FunctionComponent<InvestigationMatrixProps> = ({ obje
           fillContainer
         />
       </Box>
-      {!isHeatmapAvailable && (
-        <InvestigationMatrixLegend
-          legend={legend}
-          hasCoverage={coverageOverlayMap.size > 0}
-          hiddenEntityIds={hiddenEntityIds}
-          onToggleEntity={toggleEntity}
-        />
-      )}
     </Box>
   );
 };

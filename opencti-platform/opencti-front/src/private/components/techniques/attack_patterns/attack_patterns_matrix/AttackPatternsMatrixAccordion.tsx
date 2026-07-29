@@ -6,7 +6,7 @@ import IconButton from '@common/button/IconButton';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import Typography from '@mui/material/Typography';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { Box } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
@@ -15,12 +15,14 @@ import {
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import AttackPatternsMatrixColumnsElement from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumsElement';
-import MatrixEntityMarkers, { MatrixCellEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixEntityMarkers';
+import { MatrixCellEntity } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixEntityMarkers';
 import MatrixCoverageIndicator, { CoverageInformation } from '@components/techniques/attack_patterns/attack_patterns_matrix/MatrixCoverageIndicator';
+import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import { getHeatmapColors, HeatmapScale } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsHeatmap';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
@@ -52,6 +54,7 @@ const AccordionAttackPattern = ({
   heatmapScale,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [expanded, setExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -140,6 +143,10 @@ const AccordionAttackPattern = ({
         const colors = getHeatmapColors(maxSubCount, heatmapScale);
         border = `1px solid ${colors.border}`;
         backgroundColor = 'transparent';
+      } else {
+        // Technique is present in the graph but has no usage relationship
+        // (directly or via a sub-technique): leave it unshaded in heatmap mode.
+        backgroundColor = 'transparent';
       }
     }
   }
@@ -159,13 +166,14 @@ const AccordionAttackPattern = ({
   })();
 
   const cellCoverage = coverageOverlayMap?.get(attackPattern.attack_pattern_id) ?? [];
-  // "Compare with security posture": show the tick/cross in the top-right corner
-  // (alongside the coverage donuts) when comparison is active for a covered technique
-  // (directly or via one of its sub-techniques).
+  // "Compare with security posture": show the tick/cross inline next to the
+  // technique label (left aligned, vertically centred) when comparison is
+  // active for a covered technique (directly or via one of its sub-techniques).
   const showOverlap = !isCoverage
     && attackPatternIdsToOverlap?.length !== undefined
     && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern));
-  const hasCorner = cellCoverage.length > 0 || showOverlap;
+  // Only the coverage donuts occupy the top-right corner now.
+  const hasCorner = cellCoverage.length > 0;
 
   return (
     <MuiAccordion
@@ -219,15 +227,46 @@ const AccordionAttackPattern = ({
         <MatrixCoverageIndicator
           coverageInformation={cellCoverage}
           entities={aggregatedUsage}
-          showOverlap={showOverlap}
-          isOverlapping={attackPattern.isOverlapping || false}
         />
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
-            {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
-          </Typography>
-          {aggregatedUsage.length > 0 && (
-            <MatrixEntityMarkers entities={aggregatedUsage} />
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0.5, flex: 1, minWidth: 0 }}>
+          {aggregatedUsage.length > 0 ? (
+            <Tooltip
+              placement="top"
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: 'rgba(33, 33, 33, 0.98)',
+                    maxWidth: 360,
+                    boxShadow: 3,
+                  },
+                },
+                arrow: { sx: { color: 'rgba(33, 33, 33, 0.98)' } },
+              }}
+              title={(
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, py: 0.5 }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: 10 }}>
+                    {`${t_i18n('Linked entities')} (${aggregatedUsage.length})`}
+                  </Typography>
+                  {aggregatedUsage.map((entity) => (
+                    <Typography key={entity.id} sx={{ fontSize: 10 }}>{entity.name}</Typography>
+                  ))}
+                </Box>
+              )}
+            >
+              <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
+                {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
+              </Typography>
+            </Tooltip>
+          ) : (
+            <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
+              {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
+            </Typography>
+          )}
+          {showOverlap && (
+            <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+              <AttackPatternsMatrixShouldCoverIcon isOverlapping={attackPattern.isOverlapping || false} />
+            </Box>
           )}
         </Box>
 
@@ -259,6 +298,9 @@ const AccordionAttackPattern = ({
               entityId={entityId}
               entityUsageMap={entityUsageMap}
               coverageOverlayMap={coverageOverlayMap}
+              heatmapActive={heatmapActive}
+              frequencyMap={frequencyMap}
+              heatmapScale={heatmapScale}
             />
           );
         })}

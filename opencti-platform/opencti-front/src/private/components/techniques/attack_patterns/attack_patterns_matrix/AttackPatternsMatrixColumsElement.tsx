@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   FilteredAttackPattern,
@@ -9,10 +9,12 @@ import {
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
 import { hexToRGB } from '../../../../../utils/Colors';
-import MatrixEntityMarkers, { MatrixCellEntity } from './MatrixEntityMarkers';
+import { MatrixCellEntity } from './MatrixEntityMarkers';
 import MatrixCoverageIndicator, { CoverageInformation } from './MatrixCoverageIndicator';
+import AttackPatternsMatrixShouldCoverIcon from './AttackPatternsMatrixShouldCoverIcon';
 import { getHeatmapColors, HeatmapScale } from './attackPatternsHeatmap';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
@@ -43,6 +45,7 @@ const AttackPatternsMatrixColumnsElement = ({
   heatmapScale,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [isHovered, setIsHovered] = useState(false);
 
   // Get coverage information if in coverage mode
@@ -99,18 +102,44 @@ const AttackPatternsMatrixColumnsElement = ({
     const colors = getHeatmapColors(heatmapCount, heatmapScale);
     border = `1px solid ${colors.border}`;
     backgroundColor = colors.background;
+  } else if (heatmapActive && heatmapScale !== undefined) {
+    // Technique is present in the graph but has no usage relationship: leave it
+    // unshaded in heatmap mode instead of keeping the default cell fill.
+    backgroundColor = 'transparent';
   }
   // The pastel fills are light, so switch the label to dark text for contrast.
   const heatmapTextColor = isHeatmapFilled ? 'rgba(0, 0, 0, 0.87)' : undefined;
 
   const cellEntities = entityUsageMap?.get(attackPattern.attack_pattern_id) ?? [];
   const cellCoverage = coverageOverlayMap?.get(attackPattern.attack_pattern_id) ?? [];
-  // "Compare with security posture": show the tick/cross in the top-right corner
-  // (alongside the coverage donuts) when comparison is active for a covered technique.
+  // "Compare with security posture": show the tick/cross inline next to the
+  // technique label (left aligned, vertically centred) when comparison is
+  // active for a covered technique.
   const showOverlap = !isSecurityPlatform && !isCoverage
     && attackPatternIdsToOverlap?.length !== undefined
     && attackPattern.isCovered;
-  const hasCorner = cellCoverage.length > 0 || showOverlap;
+  // Only the coverage donuts occupy the top-right corner now.
+  const hasCorner = cellCoverage.length > 0;
+  // Let the analyst hover a technique / sub-technique to see the entities
+  // linked to it. The list reuses the entity markers so it mirrors what is
+  // shown in the cell and stays legible even when many entities are linked.
+  const linkedEntitiesTooltip = cellEntities.length > 0
+    ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, py: 0.5 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 10 }}>
+            {`${t_i18n('Linked entities')} (${cellEntities.length})`}
+          </Typography>
+          {cellEntities.map((entity) => (
+            <Typography key={entity.id} sx={{ fontSize: 10 }}>{entity.name}</Typography>
+          ))}
+        </Box>
+      )
+    : null;
+  const label = (
+    <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
+      {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
+    </Typography>
+  );
   return (
     <Box
       onMouseEnter={() => setIsHovered(true)}
@@ -134,13 +163,35 @@ const AttackPatternsMatrixColumnsElement = ({
       <MatrixCoverageIndicator
         coverageInformation={cellCoverage}
         entities={cellEntities}
-        showOverlap={showOverlap}
-        isOverlapping={attackPattern.isOverlapping || false}
       />
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'center' }}>
-        <Typography variant="body2" fontSize={10} sx={{ color: heatmapTextColor }}>
-          {attackPattern.x_mitre_id ? `${attackPattern.x_mitre_id} - ${attackPattern.name}` : attackPattern.name}
-        </Typography>
+        <Box sx={{ minWidth: 0 }}>
+          {linkedEntitiesTooltip ? (
+            <Tooltip
+              title={linkedEntitiesTooltip}
+              placement="top"
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    backgroundColor: 'rgba(33, 33, 33, 0.98)',
+                    maxWidth: 360,
+                    boxShadow: 3,
+                  },
+                },
+                arrow: { sx: { color: 'rgba(33, 33, 33, 0.98)' } },
+              }}
+            >
+              {label}
+            </Tooltip>
+          ) : label}
+        </Box>
+
+        {showOverlap && (
+          <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            <AttackPatternsMatrixShouldCoverIcon isOverlapping={attackPattern.isOverlapping || false} />
+          </Box>
+        )}
 
         {isCoverage && attackPattern.isCovered && (
           <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -151,10 +202,6 @@ const AttackPatternsMatrixColumnsElement = ({
           </Box>
         )}
       </Box>
-
-      {cellEntities.length > 0 && (
-        <MatrixEntityMarkers entities={cellEntities} />
-      )}
     </Box>
   );
 };

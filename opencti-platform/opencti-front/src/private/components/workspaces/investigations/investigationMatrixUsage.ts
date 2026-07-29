@@ -39,6 +39,13 @@ const isRelationship = (o: ObjectToParse): boolean => (o.parent_types ?? []).inc
 
 const isAttackPattern = (entityType?: string): boolean => entityType === 'Attack-Pattern';
 
+// Relationship types that link an investigation entity to an Attack-Pattern and
+// should surface an entity marker on the matrix:
+// - `uses`: a threat/tool/etc. uses the technique.
+// - `object` / `contains`: a container (Report, Grouping, Case...) references the
+//   technique through its object refs ("contains" relationship).
+const USAGE_RELATIONSHIP_TYPES = new Set(['uses', 'object', 'contains']);
+
 // Deterministically assign a colour + shape to an entity based on its index so
 // that the encoding stays stable across re-renders. Combining palette and shape
 // rotation yields palette.length * shapes.length unique combinations.
@@ -51,8 +58,9 @@ const buildMarker = (index: number): Pick<MatrixEntityUsage, 'color' | 'shape'> 
  * Build the "which entity uses which technique" model from the flat list of
  * investigation objects (nodes + relationships).
  *
- * Only STIX `uses` relationships are considered. The entity end of the
- * relationship (the one that is not the Attack-Pattern) is the "user".
+ * Only STIX `uses` relationships and container object refs (`object` /
+ * `contains` relationships) are considered. The entity end of the relationship
+ * (the one that is not the Attack-Pattern) is the "user".
  */
 export const buildInvestigationMatrixUsage = (
   objects: ObjectToParse[],
@@ -73,7 +81,7 @@ export const buildInvestigationMatrixUsage = (
   const seenEntityIds = new Set<string>();
 
   objects
-    .filter((o) => isRelationship(o) && o.relationship_type === 'uses' && o.from && o.to)
+    .filter((o) => isRelationship(o) && USAGE_RELATIONSHIP_TYPES.has(o.relationship_type) && o.from && o.to)
     .forEach((rel) => {
       const from = rel.from!;
       const to = rel.to!;

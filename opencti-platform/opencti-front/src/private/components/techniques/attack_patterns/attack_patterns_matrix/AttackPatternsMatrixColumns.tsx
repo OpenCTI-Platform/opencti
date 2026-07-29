@@ -62,7 +62,9 @@ const COLORS = {
   HIGHLIGHT_HOVER: '#d32f2f',
   HIGHLIGHT_SECURITY_POSTURE: '#1b5e20',
   HIGHLIGHT_SECURITY_POSTURE_HOVER: '#2e7d32',
-  BADGE: '#fa5e5e',
+  // Neutral black pill (white text) for the sub-technique count so it stays
+  // legible and does not clash with the yellow-to-red usage heatmap fills.
+  BADGE: '#000000',
   BADGE_SECURITY_POSTURE: '#79ed98',
 };
 
@@ -298,9 +300,13 @@ const AttackPatternsMatrixColumns = ({
                     return (
                       ap.subAttackPatterns?.length ? (
                         (() => {
-                          // Calculate badge color based on coverage
+                          // Calculate badge color based on coverage. The default
+                          // (usage) pill is a neutral black with white text; the
+                          // security-posture pill stays green with black text.
                           let badgeColor = isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE;
-                          let badgeTextColor = theme.palette.common.black || '#000000';
+                          let badgeTextColor = isSecurityPlatform
+                            ? (theme.palette.common.black || '#000000')
+                            : (theme.palette.common.white || '#ffffff');
 
                           if (isCoverage && coverageMap) {
                             // Check if parent or any sub-technique is covered

@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Tooltip, Typography } from '@mui/material';
 import SecurityCoverageScores from '../../../analyses/security_coverages/SecurityCoverageScores';
 import MatrixEntityMarker from './MatrixEntityMarker';
-import AttackPatternsMatrixShouldCoverIcon from './AttackPatternsMatrixShouldCoverIcon';
 import { MatrixCellEntity } from './MatrixEntityMarkers';
 import { useFormatter } from '../../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
@@ -16,17 +15,11 @@ interface MatrixCoverageIndicatorProps {
   coverageInformation: CoverageInformation;
   // Entities using this technique, listed alongside the coverage scores in the hover.
   entities?: MatrixCellEntity[];
-  // "Compare with security posture" overlap indicator (green tick / red cross).
-  // When set, it is pinned in the same top-right corner as the coverage donuts.
-  showOverlap?: boolean;
-  isOverlapping?: boolean;
 }
 
 // Compact detection/prevention coverage donuts pinned to the top-right corner of
 // a technique cell, with a full description shown on hover that also lists the
-// entities using the technique. When the "compare with security posture" mode is
-// active, the overlap tick/cross is rendered in the same corner, next to the
-// coverage donuts.
+// entities using the technique.
 //
 // The red -> green score scale is reserved for coverage only; entity "uses"
 // markers use a separate (red/green-free) categorical palette, so the two
@@ -34,13 +27,11 @@ interface MatrixCoverageIndicatorProps {
 const MatrixCoverageIndicator = ({
   coverageInformation,
   entities = [],
-  showOverlap = false,
-  isOverlapping = false,
 }: MatrixCoverageIndicatorProps) => {
   const { t_i18n } = useFormatter();
 
   const hasCoverage = coverageInformation && coverageInformation.length > 0;
-  if (!hasCoverage && !showOverlap) {
+  if (!hasCoverage) {
     return null;
   }
 
@@ -83,16 +74,11 @@ const MatrixCoverageIndicator = ({
         pointerEvents: 'auto',
       }}
     >
-      {showOverlap && (
-        <AttackPatternsMatrixShouldCoverIcon isOverlapping={isOverlapping} />
-      )}
-      {hasCoverage && (
-        <Tooltip title={description} placement="top" arrow>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <SecurityCoverageScores coverage_information={coverageInformation} variant="matrix" />
-          </Box>
-        </Tooltip>
-      )}
+      <Tooltip title={description} placement="top" arrow>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <SecurityCoverageScores coverage_information={coverageInformation} variant="matrix" />
+        </Box>
+      </Tooltip>
     </Box>
   );
 };

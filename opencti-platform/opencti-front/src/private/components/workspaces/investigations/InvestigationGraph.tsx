@@ -299,6 +299,37 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on StixRefRelationship {
               created_at
+              relationship_type
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
             }
             ... on StixCoreRelationship {
               relationship_type
@@ -585,12 +616,11 @@ const InvestigationGraphComponent = ({
         handleAddWidget={undefined}
         adjust={undefined}
       />
-      {view === 'matrix' || view === 'matrix-b' ? (
-        <div style={view === 'matrix' ? matrixContainerStyle : graphContainerStyle}>
+      {view === 'matrix' ? (
+        <div style={matrixContainerStyle}>
           <Suspense fallback={<Loader />}>
             <InvestigationMatrix
               objects={rawObjects}
-              variant={view === 'matrix-b' ? 'B' : 'A'}
               headerActions={<InvestigationViewSwitcher view={view} onChange={handleChangeView} />}
             />
           </Suspense>
