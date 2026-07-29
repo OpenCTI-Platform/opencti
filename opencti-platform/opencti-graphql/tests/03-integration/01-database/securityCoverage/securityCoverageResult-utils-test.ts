@@ -1,73 +1,56 @@
 import { describe, expect, it } from 'vitest';
-import { getAverageCoverageInformation, getMostRecentLastCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
-import type { StoreEntitySecurityCoverageResult } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { transformHasCoveredFromId } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-utils';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import { testContext } from '../../../utils/testQuery';
 
-describe('Function getMostRecentLastCoverageResult()', () => {
-  it('should result undefined if array is empty', async () => {
-    expect(await getMostRecentLastCoverageResult([])).toBeUndefined();
+describe('Function transformHasCoveredFromId', () => {
+  it('should replace security coverage id by security coverage result id when valid external_uri', async () => {
+    const newInput = await transformHasCoveredFromId(
+      testContext,
+      SYSTEM_USER,
+      {
+        relationship_type: 'has-covered',
+        external_uri: 'http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b',
+        fromId: 'security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f',
+        toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+      },
+    );
+    expect(newInput).toEqual({
+      relationship_type: 'has-covered',
+      external_uri: 'http://192.168.1.150:8080/admin/scenarios/001d6ae0-4344-4467-99d5-eb4b6962fd4b',
+      fromId: 'security-coverage-result--687bfcc3-4917-5ab9-8233-dfa1f3c69850',
+      toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+    });
   });
 
-  it('should result undefined if no result contains last_result date', async () => {
-    const results = [
-      { name: 'result 1' },
-      { name: 'result 2' },
-      { name: 'result 3' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getMostRecentLastCoverageResult(results)).toBeUndefined();
+  it('should throw an error if invalid external uri', async () => {
+    const call = () => transformHasCoveredFromId(
+      testContext,
+      SYSTEM_USER,
+      {
+        relationship_type: 'has-covered',
+        external_uri: 'http://192.168.1.150:8080/admin/scenarios/hello-there',
+        fromId: 'security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f',
+        toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+      },
+    );
+    await expect(call()).rejects.toThrow('Cannot find SecurityCoverageResult for this has-covered relationship');
   });
 
-  it('should return the only last_result date', async () => {
-    const results = [
-      { name: 'result 1' },
-      { name: 'result 2', coverage_last_result: '2026-07-07T15:16:08.223Z' },
-      { name: 'result 3' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getMostRecentLastCoverageResult(results)).toEqual(new Date('2026-07-07T15:16:08.223Z'));
-  });
-
-  it('should return the most recent last_result date', async () => {
-    const results = [
-      { name: 'result 1', coverage_last_result: '2026-07-07T15:16:08.223Z' },
-      { name: 'result 2', coverage_last_result: '2026-07-06T15:16:08.223Z' },
-      { name: 'result 3', coverage_last_result: '2026-07-05T15:16:08.223Z' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getMostRecentLastCoverageResult(results)).toEqual(new Date('2026-07-07T15:16:08.223Z'));
-  });
-});
-
-describe('Function getAverageCoverageInformation()', () => {
-  it('should an empty array if no results', async () => {
-    expect(await getAverageCoverageInformation([])).toEqual([]);
-  });
-
-  it('should an empty array if no coverage info', async () => {
-    const results = [
-      { name: 'result 1' },
-      { name: 'result 2' },
-      { name: 'result 3' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getAverageCoverageInformation(results)).toEqual([]);
-  });
-
-  it('should return the only coverage_information', async () => {
-    const results = [
-      { name: 'result 1' },
-      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 40 }] },
-      { name: 'result 3' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getAverageCoverageInformation(results))
-      .toEqual([{ coverage_name: 'vulnerability', coverage_score: 40 }]);
-  });
-
-  it('should return the average coverage_information', async () => {
-    const results = [
-      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 60 }, { coverage_name: 'detection', coverage_score: 15 }] },
-      { coverage_information: [{ coverage_name: 'vulnerability', coverage_score: 40 }, { coverage_name: 'detection', coverage_score: 20 }] },
-      { name: 'result 3' },
-    ] as StoreEntitySecurityCoverageResult[];
-    expect(await getAverageCoverageInformation(results)).toEqual([
-      { coverage_name: 'vulnerability', coverage_score: 50 },
-      { coverage_name: 'detection', coverage_score: 18 },
-    ]);
+  it('should replace security coverage id by security coverage result id when no external_uri', async () => {
+    const newInput = await transformHasCoveredFromId(
+      testContext,
+      SYSTEM_USER,
+      {
+        relationship_type: 'has-covered',
+        fromId: 'security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f',
+        toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+      },
+    );
+    expect(newInput).toEqual({
+      relationship_type: 'has-covered',
+      fromId: 'security-coverage-result--687bfcc3-4917-5ab9-8233-dfa1f3c69850',
+      toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+    });
   });
 });

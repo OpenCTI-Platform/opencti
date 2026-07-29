@@ -1316,7 +1316,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(45);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(47);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1336,7 +1336,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 45 entities - 11 entities with a source reliability = 34
+    expect(queryResult.data.globalSearch.edges.length).toEqual(36); // 47 entities - 11 entities with a source reliability = 36
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1396,7 +1396,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(39); // 45 entities - 6 entities with source reliability equals to A = 39
+    expect(queryResult.data.globalSearch.edges.length).toEqual(41); // 47 entities - 6 entities with source reliability equals to A = 41
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1499,7 +1499,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 45 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 47 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 34
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -2742,7 +2742,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(38);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
   });
   it('should list entities using complex regarding of filter', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
@@ -2790,7 +2790,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using complex regarding of filter with force direction', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
@@ -2911,7 +2911,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using multi relationships regarding of filter', async () => {
     const generateFilters = (withRegardingOf = true, relationships = [], regardingOfOperator = 'eq', mainMode = 'and') => {

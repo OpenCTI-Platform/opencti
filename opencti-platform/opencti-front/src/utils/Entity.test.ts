@@ -259,7 +259,7 @@ describe('Function: resolveLink', () => {
 
   // Other
   it('should return URL to connectors for Connectors type', () => {
-    expect(resolveLink('Connectors')).toEqual('/dashboard/data/ingestion/connectors');
+    expect(resolveLink('Connectors')).toEqual('/dashboard/integrations/connectors');
   });
 
   it('should return URL to automation for Playbook type', () => {
