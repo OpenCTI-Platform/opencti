@@ -84,4 +84,13 @@ describe('Testing support package filesystem tools - archiveFolderToZip', () => 
     // An archive with no entries only holds the end-of-central-directory record.
     expect(zipBuffer.subarray(0, 4)).toEqual(ZIP_END_OF_CENTRAL_DIR);
   });
+
+  it('should throw an error when the zip cannot be written', async () => {
+    fs.writeFileSync(join(sourceDir, 'support.2024-04-23'), 'first support log content');
+    // Target a path inside a non-existent directory so the output write stream emits an error.
+    const invalidZipFullpath = join(workDir, 'non-existent-dir', 'support.zip');
+
+    await expect(archiveFolderToZip(sourceDir, invalidZipFullpath)).rejects.toThrow();
+    expect(fs.existsSync(invalidZipFullpath)).toBe(false);
+  });
 });
