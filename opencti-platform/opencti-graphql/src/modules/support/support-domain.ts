@@ -104,6 +104,9 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
   if (streamError) {
     throw FilesystemError(streamError.message, { zipFullpath });
   }
+  if (!closed) {
+    throw FilesystemError('Zip creation timed out before completion', { zipFullpath, timeout: ZIP_TIMEOUT_MS });
+  }
 };
 
 /**
