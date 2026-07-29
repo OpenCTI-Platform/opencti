@@ -56,6 +56,14 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
           }}
           key={type}
           onClick={() => toggleType(type)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              toggleType(type);
+            }
+          }}
         >
           <div
             style={{

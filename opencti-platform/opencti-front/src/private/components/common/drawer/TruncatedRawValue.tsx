@@ -93,12 +93,19 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   return (
     <>
       <Tooltip title={t_i18n('Click to view full value')}>
-        <pre
+        <button
+          type="button"
           onClick={() => setOpen(true)}
-          style={codeStyle}
+          style={{
+            ...codeStyle,
+            border: 'none',
+            padding: 0,
+            background: 'none',
+            textAlign: 'left',
+          }}
         >
           {value.substring(0, MAX_LENGTH)}...
-        </pre>
+        </button>
       </Tooltip>
       {dialog}
     </>
