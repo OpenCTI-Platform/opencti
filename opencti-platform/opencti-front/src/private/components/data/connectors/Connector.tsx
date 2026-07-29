@@ -156,7 +156,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
         key="connector-works-in-progress"
         query={connectorWorksQuery}
         variables={optionsInProgress}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsInProgress]} inProgress={true} />;
@@ -169,7 +169,7 @@ export const ConnectorWorksSection: FunctionComponent<ConnectorWorksSectionProps
         key="connector-works-finished"
         query={connectorWorksQuery}
         variables={optionsFinished}
-        fetchPolicy="cache-and-network"
+        fetchPolicy="store-and-network"
         render={({ props }: { props: ConnectorWorksQuery$data | null }) => {
           if (props) {
             return <ConnectorWorks data={props} options={[optionsFinished]} />;

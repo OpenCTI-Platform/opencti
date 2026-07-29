@@ -1,4 +1,4 @@
-import { Environment, Observable, RecordSource, Store } from 'relay-runtime';
+import { Environment, FetchPolicy, Observable, RecordSource, Store } from 'relay-runtime';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -117,14 +117,21 @@ interface QueryRendererProps {
   variables?: Record<string, unknown>;
   query: GraphQLTaggedNode;
   render: (data: any) => ReactNode;
+  fetchPolicy?: FetchPolicy;
 }
 
-export const QueryRenderer = ({ variables, query, render }: QueryRendererProps) => {
+export const QueryRenderer = ({
+  variables,
+  query,
+  render,
+  fetchPolicy,
+}: QueryRendererProps) => {
   return (
     <QR
       environment={environment}
       query={query}
       variables={variables ?? {}}
+      fetchPolicy={fetchPolicy}
       render={(data) => {
         const { error } = data;
         if (error) {
@@ -224,9 +231,10 @@ export const fetchQuery = <T extends OperationType>(
 export const commitLocalUpdate = (updater) => CLU(environment, updater);
 
 export const handleErrorInForm = (
-  error: RelayError,
+  e: Error,
   setErrors: (e) => void,
 ) => {
+  const error = e as unknown as RelayError;
   const formattedError = R.head(error.res.errors ?? []);
   if (formattedError?.data && formattedError.data.field) {
     setErrors({
