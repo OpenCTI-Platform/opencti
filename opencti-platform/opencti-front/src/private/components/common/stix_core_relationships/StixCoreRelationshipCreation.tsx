@@ -479,6 +479,14 @@ const StixCoreRelationshipCreation = ({
               key={relation.node.id}
               className={classes.relation}
               onClick={() => handleSelectRelation(relation.node as unknown as ObjectToParse)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  handleSelectRelation(relation.node as unknown as ObjectToParse);
+                }
+              }}
             >
               <div
                 className={classes.item}
@@ -585,6 +593,14 @@ const StixCoreRelationshipCreation = ({
           <div
             className={classes.relationCreation}
             onClick={handleChangeStep}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                handleChangeStep();
+              }
+            }}
           >
             <div
               className={classes.item}

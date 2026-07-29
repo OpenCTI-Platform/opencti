@@ -1692,6 +1692,14 @@ const WorkbenchFileContentComponent = ({
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => reverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              reverseBy(field);
+            }
+          }}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
@@ -1719,6 +1727,14 @@ const WorkbenchFileContentComponent = ({
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => containerReverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              containerReverseBy(field);
+            }
+          }}
         >
           <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}

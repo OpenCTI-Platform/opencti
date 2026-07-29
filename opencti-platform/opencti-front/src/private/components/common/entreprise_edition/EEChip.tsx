@@ -1,4 +1,4 @@
-import React, { CSSProperties, MouseEvent, useState } from 'react';
+import React, { CSSProperties, SyntheticEvent, useState } from 'react';
 import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,7 +16,7 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
   const { settings: { id: settingsId } } = useAuth();
 
-  const onClick = (e: MouseEvent<HTMLDivElement>) => {
+  const onClick = (e: SyntheticEvent) => {
     e.stopPropagation();
     e.preventDefault();
     return clickable && setDisplayDialog(true);
@@ -59,6 +59,14 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
         ref={ref}
         style={divStyle}
         onClick={(e) => onClick(e)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(e);
+          }
+        }}
       >
         EE
       </div>

@@ -294,7 +294,7 @@ const SSODefinitions = () => {
                   : undefined
               }
             />
-            {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+            {!isEnterpriseEdition && <span onClickCapture={(e) => e.stopPropagation()}><EEChip /></span>}
           </Box>
         );
       },

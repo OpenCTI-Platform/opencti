@@ -142,6 +142,14 @@ class ListLines extends Component {
           className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={this.reverseBy.bind(this, field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              this.reverseBy(field);
+            }
+          }}
         >
           <div className={classes.headerItemText}>{t(label)}</div>
           {sortBy === field ? orderComponent : ''}

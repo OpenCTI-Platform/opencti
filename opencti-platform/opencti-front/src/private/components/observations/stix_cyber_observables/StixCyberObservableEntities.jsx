@@ -186,6 +186,14 @@ class StixCyberObservableEntities extends Component {
         <div
           style={inlineStylesHeaders[field]}
           onClick={this.handleSort.bind(this, field, !this.state.orderAsc)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              this.handleSort(field, !this.state.orderAsc);
+            }
+          }}
         >
           <span>{t(label)}</span>
           {this.state.sortBy === field ? sortComponent : ''}
