@@ -133,7 +133,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
           && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           pushAll(relToCreate, buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
-          // If user is not part of the platform organization, put its own organizations
+          // If user is not part of the platform organization or is a service account with organizations, put its own organizations
           pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
@@ -287,7 +287,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
       pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
-      // If user is not part of the platform organization, put its own organizations
+      // If user is not part of the platform organization  or is a service account with organizations, put its own organizations
       pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
     const markingsFiltered = await cleanMarkings(context, input.objectMarking);
