@@ -27,17 +27,22 @@ this product is COMPONENT-MAPPING.md's "Product status" column.
 
 ### Planned: Navbar
 
-- Status: **planned** — not started (no branch, no owner, no go-ahead yet;
-  still bound by rule 5 above). No implementation happens in this pass.
-- Coverage audit already done: `COMPONENT-MAPPING.md` (generated from the
-  lib, do not hand-edit) already carries the row
-  `| Navbar | todo | todo | — | — | — |` — lib status `todo`, this product's
-  status `todo`, no MUI identifiers/occurrences resolved yet (distinct from
-  the separate `Header` row — `AppBar`/`Toolbar`, 4 occurrences / 2 files —
-  in the same audit).
+- Status: **planned** — not started for this product (no branch, no owner,
+  no go-ahead yet for opencti adoption; still bound by rule 5 above). No
+  implementation happens in this pass.
+- Coverage audit: `COMPONENT-MAPPING.md` (generated from the lib, do not
+  hand-edit) carries the row `| Navbar | done | todo | — | — | — |` — lib
+  status **done**, this product's status still `todo` (opencti has not
+  adopted it yet), no MUI identifiers/occurrences resolved yet (distinct
+  from the separate `Header` row — `AppBar`/`Toolbar`, 4 occurrences / 2
+  files — in the same audit).
   Cross-checked against filigran-design-system `ROADMAP.json` `components[]`
-  (`name: "Navbar"`): `status: "todo"`, `figmaDesigned: true`,
-  `figmaNodeId: null`, `priority: 24` (of 25 components — second-lowest).
-  Notes there flag it as "composant structurel, peu de levier de
-  réutilisation cross-produit attendu" — same `todo` status tracked
-  identically for `opencti`, `openaev`, and `opengrc`.
+  (`name: "Navbar"`) and `Navbar.meta.ts`: `status: "done"`,
+  `figmaDesigned: true`, `figmaNodeId: "2843:4074"`, `priority: 24` (of 25
+  components — second-lowest). Implemented and merged via PR #43
+  ("feat(navbar): Navbar, NavbarItem, NavbarSubmenu, ProductSwitcher",
+  merged 2026-07-24); Navbar is a composition root, its sub-components
+  (NavbarItem, NavbarSubmenu, ProductSwitcher) are tracked as their own
+  `ROADMAP.json` entries. Notes there flag it as "structural component, low
+  cross-product reuse leverage expected" — product-level adoption is still
+  `todo` identically for `opencti`, `openaev`, and `opengrc`.
