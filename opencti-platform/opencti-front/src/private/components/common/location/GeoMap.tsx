@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useContext, useEffect, useRef, type ReactNode } from 'react';
 import { useTheme } from '@mui/material/styles';
 import * as maplibre from 'maplibre-gl';
 import type { StyleSpecification } from 'maplibre-gl';
@@ -7,7 +7,7 @@ import { Protocol } from 'pmtiles';
 import Card from '@common/card/Card';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { isValidCoordinates } from '../../../../utils/position.utils';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import allCountries from '../../../../static/geo/countries';
 
 // Configure MapLibre worker URL (must be set before creating any Map)
@@ -197,7 +197,9 @@ const GeoMap = ({
   markers,
 }: MapProps) => {
   const theme = useTheme();
-  const { locale } = useAuth();
+  // Read locale directly from the context (bypassing useAuth's full-session check) so
+  // GeoMap keeps working on public dashboards, which render outside of UserContext.Provider.
+  const { locale } = useContext(UserContext);
   const dark = theme.palette.mode === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
 
