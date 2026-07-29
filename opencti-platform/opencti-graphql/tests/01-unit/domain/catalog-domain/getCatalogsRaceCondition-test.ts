@@ -26,6 +26,9 @@ let catalogFilePath: string;
 const loadFreshCatalogDomain = async (customCatalogPaths: string[]) => {
   process.env.APP__CUSTOM_CATALOGS = JSON.stringify(customCatalogPaths);
   vi.resetModules();
+  vi.doMock('../../../../src/manager/catalogManager', () => ({
+    isCatalogManagerEnabled: () => false,
+  }));
   return import('../../../../src/modules/catalog/catalog-domain');
 };
 

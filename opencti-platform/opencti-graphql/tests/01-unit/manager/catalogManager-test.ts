@@ -77,7 +77,7 @@ const waitAsync = () => new Promise<void>((resolve) => {
 
 const loadManagerModule = async () => {
   vi.resetModules();
-  return import('../../../src/manager/catalogManager');
+  return import('../../../src/modules/catalog/catalogManager');
 };
 
 describe('catalogManager', () => {

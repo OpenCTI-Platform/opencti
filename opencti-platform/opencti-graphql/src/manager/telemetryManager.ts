@@ -490,7 +490,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // composer-managed connectors resolve to the catalog contract slug
     // through their stored container image; manually registered connectors
     // fall back to their registered name, flagged managed=false.
-    const contractsByImage = await getSupportedContractsByImage();
+    const contractsByImage = await getSupportedContractsByImage(context, TELEMETRY_MANAGER_USER);
     manager.setActiveConnectorsByIdentity(computeActiveConnectorsByIdentity(activeConnectors, contractsByImage));
     // endregion
 

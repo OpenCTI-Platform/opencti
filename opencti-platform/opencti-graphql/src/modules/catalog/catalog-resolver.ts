@@ -1,10 +1,9 @@
 import { isFeatureEnabled } from '../../config/conf';
-import { getCatalogVersionInfo, isCatalogManagerEnabled } from '../../manager/catalogManager';
+import { getCatalogVersionInfo, isCatalogManagerEnabled } from './catalogManager';
 import { findCatalogFromES } from './catalog-repository';
 import { findCatalog, findById, findContractBySlug } from './catalog-domain';
+import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 import type { Resolvers } from '../../generated/graphql';
-
-const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
 
 const catalogResolver: Resolvers = {
   Query: {

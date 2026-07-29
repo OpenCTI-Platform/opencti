@@ -32,7 +32,7 @@ import { shutdownAllManagers, startAllManagers } from './manager/managerModule';
 import clusterManager from './manager/clusterManager';
 import activityListener from './manager/activityListener';
 import activityManager from './manager/activityManager';
-import catalogManager from './manager/catalogManager';
+import catalogManager from './modules/catalog/catalogManager';
 import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-connector';
 import authenticationProviderListener from './modules/authenticationProvider/authenticationProvider-listener';
 import supportPackageListener from './modules/support/supportPackage-listener';

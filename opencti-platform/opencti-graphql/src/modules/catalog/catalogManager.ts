@@ -1,13 +1,12 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createHash } from 'node:crypto';
-import conf, { booleanConf, isFeatureEnabled, logApp } from '../config/conf';
-import { lockResources } from '../lock/master-lock';
-import { TYPE_LOCK_ERROR } from '../config/errors';
-import { NewManifestAdapter, resolveCatalogSource } from '../modules/catalog/catalog-adapters';
-import { persistCatalogSnapshot } from '../modules/catalog/catalog-repository';
-import { executionContext, SYSTEM_USER } from '../utils/access';
-
-const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
+import conf, { booleanConf, isFeatureEnabled, logApp } from '../../config/conf';
+import { lockResources } from '../../lock/master-lock';
+import { TYPE_LOCK_ERROR } from '../../config/errors';
+import { NewManifestAdapter, resolveCatalogSource } from './catalog-adapters';
+import { persistCatalogSnapshot } from './catalog-repository';
+import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
 
 const CATALOG_MANAGER_ENABLED = booleanConf('app:catalog_manager:enabled', true);
 const CATALOG_MANAGER_LOCK_KEY = conf.get('app:catalog_manager:lock_key') || 'catalog_manager_lock';

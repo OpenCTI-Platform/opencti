@@ -7,10 +7,14 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { logApp } from '../../config/conf';
+import conf, { isFeatureEnabled, logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
+import { isCatalogManagerEnabled } from './catalogManager';
+import { findCatalogFromES } from './catalog-repository';
+import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
 
 const validatorCache = new Map<string, ValidateFunction>();
 
@@ -112,6 +116,41 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
   return newCatalogMap;
 };
 
+const useCatalogFromES = () => isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS) && isCatalogManagerEnabled();
+
+const resolveCatalogReadAccess = (context?: AuthContext, user?: AuthUser): { context: AuthContext; user: AuthUser } => {
+  const resolvedUser = user ?? context?.user ?? SYSTEM_USER;
+  const resolvedContext = context ?? executionContext('catalog-domain', resolvedUser);
+  return { context: resolvedContext, user: resolvedUser };
+};
+
+const buildCatalogMapFromES = async (context: AuthContext, user: AuthUser): Promise<Record<string, CatalogType>> => {
+  const newCatalogMap: Record<string, CatalogType> = {};
+  const graphqlCatalogs = await findCatalogFromES(context, user);
+
+  for (let i = 0; i < graphqlCatalogs.length; i += 1) {
+    const graphqlCatalog = graphqlCatalogs[i];
+    const parsedContracts = graphqlCatalog.contracts.map((contract) => JSON.parse(contract) as CatalogContract);
+    const firstContract = parsedContracts[0];
+    const catalogId = firstContract?.slug ?? graphqlCatalog.id;
+
+    newCatalogMap[catalogId] = {
+      definition: {
+        id: catalogId,
+        name: graphqlCatalog.name,
+        description: graphqlCatalog.description,
+        contracts: parsedContracts,
+      },
+      graphql: {
+        ...graphqlCatalog,
+        id: catalogId,
+      },
+    };
+  }
+
+  return newCatalogMap;
+};
+
 // Enable custom catalogs - clears cache and enables live catalog loading
 export const resetCatalogs = () => {
   catalogMap = undefined;
@@ -119,7 +158,12 @@ export const resetCatalogs = () => {
   validatorCache.clear();
 };
 
-const getCatalogs = async (): Promise<Record<string, CatalogType>> => {
+const getCatalogs = async (context?: AuthContext, user?: AuthUser): Promise<Record<string, CatalogType>> => {
+  if (useCatalogFromES()) {
+    const readAccess = resolveCatalogReadAccess(context, user);
+    return buildCatalogMapFromES(readAccess.context, readAccess.user);
+  }
+
   if (!catalogMap) {
     // We memoize the Promise immediately (not after it resolves) so that
     // all concurrent calls share the same in-flight execution.
@@ -442,10 +486,16 @@ export const computeConnectorTargetContract = (
   return contractConfigurations;
 };
 
-export const getSupportedContractsByImage = async (): Promise<Map<string, CatalogContract>> => {
+export const getSupportedContractsByImage = async (context?: AuthContext, user?: AuthUser): Promise<Map<string, CatalogContract>> => {
+  if (useCatalogFromES()) {
+    const catalogDefinitions = await getCatalogs(context, user);
+    const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
+    return new Map(contracts.map((contract) => [contract.container_image, contract]));
+  }
+
   if (!contractsByImageCache) {
     contractsByImageCache = (async () => {
-      const catalogDefinitions = await getCatalogs();
+      const catalogDefinitions = await getCatalogs(context, user);
       const contracts = Object.values(catalogDefinitions).map((catalog) => catalog.definition.contracts).flat();
       return new Map(contracts.map((contract) => [contract.container_image, contract]));
     })().catch((err) => {
@@ -457,17 +507,17 @@ export const getSupportedContractsByImage = async (): Promise<Map<string, Catalo
 };
 
 export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {
-  const catalogDefinitions = await getCatalogs();
+  const catalogDefinitions = await getCatalogs(_context, _user);
   return catalogDefinitions[catalogId].graphql;
 };
 
 export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
-  const catalogDefinitions = await getCatalogs();
+  const catalogDefinitions = await getCatalogs(_context, _user);
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
 const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
-  const catalogDefinitions = await getCatalogs();
+  const catalogDefinitions = await getCatalogs(_context, _user);
   if (!catalogDefinitions) {
     return null;
   }
