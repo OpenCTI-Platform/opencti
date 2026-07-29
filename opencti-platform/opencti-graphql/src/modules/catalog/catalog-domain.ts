@@ -506,21 +506,18 @@ export const getSupportedContractsByImage = async (context?: AuthContext, user?:
   return contractsByImageCache;
 };
 
-export const findById = async (_context: AuthContext, _user: AuthUser, catalogId: string) => {
-  const catalogDefinitions = await getCatalogs(_context, _user);
+export const findById = async (context: AuthContext, user: AuthUser, catalogId: string) => {
+  const catalogDefinitions = await getCatalogs(context, user);
   return catalogDefinitions[catalogId].graphql;
 };
 
-export const findCatalog = async (_context: AuthContext, _user: AuthUser) => {
-  const catalogDefinitions = await getCatalogs(_context, _user);
+export const findCatalog = async (context: AuthContext, user: AuthUser) => {
+  const catalogDefinitions = await getCatalogs(context, user);
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-const findContract = async (_context: AuthContext, _user: AuthUser, predicate: (contract: any) => boolean) => {
-  const catalogDefinitions = await getCatalogs(_context, _user);
-  if (!catalogDefinitions) {
-    return null;
-  }
+const findContract = async (context: AuthContext, user: AuthUser, predicate: (contract: any) => boolean) => {
+  const catalogDefinitions = await getCatalogs(context, user);
 
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   const foundContract = catalogs
