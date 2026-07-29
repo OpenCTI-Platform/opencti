@@ -1,66 +1,81 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import Typography from '@mui/material/Typography';
-import List from '@mui/material/List';
 import { useTheme } from '@mui/styles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
-import { createFragmentContainer, graphql } from 'react-relay';
-import { Box, ListItemButton } from '@mui/material';
+import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { Box, ListItemButton, Tooltip } from '@mui/material';
+import { InformationOutline } from 'mdi-material-ui';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
-import AddVulnerabilities from './AddVulnerabilities';
 import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
 import SecurityCoverageScores from './SecurityCoverageScores';
+import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import Label from '../../../../components/common/label/Label';
+import Alert from '../../../../components/Alert';
+import { dedupeCoveredEntities } from './securityCoverageAggregation';
+
+const MAX_VULNERABILITIES = 5000;
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
+  relay: RelayRefetchProp;
 }
 
 const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCoverageVulnerabilitiesProps> = ({
   securityCoverage,
+  relay,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const paginationOptions = {
-    orderBy: 'created_at',
-    orderMode: 'asc',
-    relationship_type: 'has-covered',
-    toTypes: ['Vulnerability'],
-  };
+  const globalCount = securityCoverage.vulnerabilities?.count ?? 0;
+  const vulnerabilityEntities = useMemo(
+    () => dedupeCoveredEntities(securityCoverage.vulnerabilities?.entities ?? []),
+    [securityCoverage.vulnerabilities?.entities],
+  );
   return (
     <div>
-      <Label action={(
-        <AddVulnerabilities
-          securityCoverage={securityCoverage}
-          paginationOptions={paginationOptions}
-        />
-      )}
+      <Label
+        action={(
+          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        )}
       >
         {t_i18n('Vulnerabilities')}
       </Label>
-      <List>
-        <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
-          {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
-            const vulnerability = vulnerabilityEdge.node.to;
-            const coverage = vulnerabilityEdge.node.coverage_information || [];
+      {globalCount > MAX_VULNERABILITIES && (
+        <Alert
+          severity="warning"
+          style={{ marginBottom: 10 }}
+          content={t_i18n(
+            'Showing {max} of {count} vulnerabilities. Some results are not displayed.',
+            { values: { max: MAX_VULNERABILITIES, count: globalCount } },
+          )}
+        />
+      )}
+      <FieldOrEmpty source={vulnerabilityEntities}>
+        <SecurityCoverageCoveredList
+          entities={vulnerabilityEntities}
+          rowRenderer={(vulnerabilityEntity) => {
+            const vulnerability = vulnerabilityEntity.to;
+            const coverage = vulnerabilityEntity.coverage_information || [];
             return (
               <ListItem
-                key={vulnerabilityEdge.node.id}
+                key={vulnerabilityEntity.relationship_id}
                 dense={true}
                 divider={true}
                 disablePadding={true}
                 secondaryAction={(
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
-                    connectionKey="Pagination_vulnerabilities"
-                    stixCoreRelationshipId={vulnerabilityEdge.node.id}
-                    paginationOptions={paginationOptions}
+                    stixCoreRelationshipId={vulnerabilityEntity.relationship_id}
+                    onDelete={() => relay.refetch({ id: securityCoverage.id })}
                     isCoverage={true}
                   />
                 )}
@@ -76,7 +91,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                   <ListItemText
                     primary={(
                       <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{vulnerability?.name}</Typography>
+                        <Typography variant="body2" component="span" noWrap sx={{ flex: '1 1 10%' }}>{vulnerability?.name}</Typography>
                         <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
                           <SecurityCoverageScores
                             coverage_information={coverage}
@@ -89,14 +104,14 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 </ListItemButton>
               </ListItem>
             );
-          })}
-        </FieldOrEmpty>
-      </List>
+          }}
+        />
+      </FieldOrEmpty>
     </div>
   );
 };
 
-const SecurityCoverageVulnerabilities = createFragmentContainer(
+const SecurityCoverageVulnerabilities = createRefetchContainer(
   SecurityCoverageVulnerabilitiesComponent,
   {
     securityCoverage: graphql`
@@ -105,34 +120,36 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
         name
         parent_types
         entity_type
-        vulnerabilities: stixCoreRelationshipsFromResults(
-          relationship_type: "has-covered"
+        vulnerabilities: coveredVulnerabilities(
           orderBy: created_at
           orderMode: asc
-          toTypes: ["Vulnerability"]
-          first: 25
-        ) @connection(key: "Pagination_vulnerabilities") {
-          edges {
-            node {
+          first: 5000
+        ) {
+          count
+          entities {
+            relationship_id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+            to {
               id
-              coverage_information {
-                coverage_name
-                coverage_score
-              }
-              to {
-                ... on Vulnerability {
-                  id
-                  parent_types
-                  name
-                  description
-                }
-              }
+              parent_types
+              name
+              description
             }
           }
         }
       }
     `,
   },
+  graphql`
+    query SecurityCoverageVulnerabilitiesRefetchQuery($id: String!) {
+      securityCoverage(id: $id) {
+        ...SecurityCoverageVulnerabilities_securityCoverage
+      }
+    }
+  `,
 );
 
 export default SecurityCoverageVulnerabilities;
