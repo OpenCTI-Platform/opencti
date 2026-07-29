@@ -1229,8 +1229,12 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   // Check in case organization admins adds non-grantable group a user
   const myGrantableGroups = R.uniq(user.administrated_organizations.map((orga) => orga.grantable_groups).flat());
+  const myAdministratedOrganizationsIds = user.administrated_organizations.map((orga) => orga.id);
   if (isOnlyOrgaAdmin(user)) {
-    if (input.relationship_type === 'member-of' && !myGrantableGroups.includes(input.toId)) {
+    if (input.relationship_type === RELATION_MEMBER_OF && !myGrantableGroups.includes(input.toId)) {
+      throw ForbiddenAccess();
+    }
+    if (input.relationship_type === RELATION_PARTICIPATE_TO && !myAdministratedOrganizationsIds.includes(input.toId)) {
       throw ForbiddenAccess();
     }
   }
@@ -1267,12 +1271,14 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 };
 
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
-  // check the user is accessible
-  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
-
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
+  if (relationshipType === RELATION_PARTICIPATE_TO) {
+    return userDeleteOrganizationRelation(context, user, userId, toId);
+  }
+  // check the user is accessible
+  const userData = await loadUserToUpdateWithAccessCheck(context, user, userId);
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
 
