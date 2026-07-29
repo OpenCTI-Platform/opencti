@@ -49,6 +49,26 @@ const AccordionAttackPattern = ({
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
 
+  const getAvgCoverageScore = (): { avg: number; count: number } | null => {
+    if (!isCoverage) {
+      return null;
+    }
+    // Calculate coverage including sub-techniques
+    const parentCoverage = attackPattern.isCovered ? coverage : null;
+    const subCoverages = attackPattern.subAttackPatterns
+      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
+      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
+      .filter(Boolean)
+      .flat() || [];
+
+    const allCoverages = [...(parentCoverage || []), ...subCoverages];
+    // Get the average coverage score from all coverages (parent + sub-techniques)
+    let avgScore = 0;
+    if (allCoverages.length > 0) {
+      avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
+    }
+    return { avg: avgScore, count: allCoverages.length };
+  };
   // Calculate colors based on coverage score for active/covered boxes
   const getCoverageColors = () => {
     if (!isCoverage) {
@@ -66,18 +86,9 @@ const AccordionAttackPattern = ({
       return { backgroundColor: defaultStyles.backgroundColor, border: defaultStyles.border };
     }
 
-    // Calculate coverage including sub-techniques
-    const parentCoverage = attackPattern.isCovered ? coverage : null;
-    const subCoverages = attackPattern.subAttackPatterns
-      ?.filter((sub) => (sub as FilteredSubAttackPattern).isCovered)
-      ?.map((sub) => coverageMap?.get((sub as FilteredSubAttackPattern).attack_pattern_id))
-      .filter(Boolean)
-      .flat() || [];
-
-    const allCoverages = [...(parentCoverage || []), ...subCoverages];
-
+    const avgCoverageScore = getAvgCoverageScore();
     // Box is covered and we're in coverage mode
-    if (allCoverages.length === 0) {
+    if (avgCoverageScore?.count === 0) {
       // No coverage data but box is covered - use blue for unknown
       const bgColor = isHovered
         ? hexToRGB(theme.palette.primary.main, 0.3)
@@ -89,13 +100,14 @@ const AccordionAttackPattern = ({
       };
     }
 
-    // Get the average coverage score from all coverages (parent + sub-techniques)
-    const avgScore = allCoverages.reduce((sum, c) => sum + (c?.coverage_score || 0), 0) / allCoverages.length;
-
     // Calculate color based on score (0-100)
     // Green to red gradient
-    const red = Math.round(255 * (1 - avgScore / 100));
-    const green = Math.round(255 * (avgScore / 100));
+    let red = 255;
+    let green = 255;
+    if (avgCoverageScore) {
+      red = Math.round(255 * (1 - avgCoverageScore.avg / 100));
+      green = Math.round(255 * (avgCoverageScore.avg / 100));
+    }
     const bgOpacity = isHovered ? 0.25 : 0.15;
 
     return {
@@ -109,6 +121,16 @@ const AccordionAttackPattern = ({
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
   const { border, backgroundColor } = styles;
+
+  const a11yProps = () => {
+    const scoreValue = getAvgCoverageScore();
+    if (scoreValue) {
+      return {
+        'aria-label': `${Math.round(scoreValue.avg)}% ${t_i18n('Coverage')}`,
+      };
+    }
+    return undefined;
+  };
 
   return (
     <MuiAccordion
@@ -132,6 +154,7 @@ const AccordionAttackPattern = ({
     >
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
+        {...a11yProps()}
         expandIcon={(
           <IconButton
             aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
