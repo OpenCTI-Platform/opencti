@@ -14,7 +14,6 @@ import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
-import { RelayError } from '../../../relay/relayTypes';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../utils/store';
 import { DeleteOperationPopoverConfirmMutation } from './__generated__/DeleteOperationPopoverConfirmMutation.graphql';
@@ -89,8 +88,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         handleClose();
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
         setRestoring(false);
         handleCloseConfirm();
         handleClose();
@@ -113,8 +111,7 @@ const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEnt
         handleClose();
       },
       onError: (error) => {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
+        MESSAGING$.notifyRelayError(error);
         setDeleting(false);
         handleClose();
       },

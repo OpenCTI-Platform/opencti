@@ -70,7 +70,7 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
   const { t_i18n } = useFormatter();
   const { values, setFieldValue } = useFormikContext<Record<string, FintelDesignFieldOption | null>>();
 
-  const data = usePreloadedQuery(fintelDesignFieldQuery, queryRef);
+  const data = usePreloadedQuery<FintelDesignFieldQuery>(fintelDesignFieldQuery, queryRef);
   const fintelDesigns = data.fintelDesigns?.edges?.map(({ node }) => {
     return {
       value: node,

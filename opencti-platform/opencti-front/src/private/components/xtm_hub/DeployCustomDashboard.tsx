@@ -31,14 +31,14 @@ const DeployCustomDashboard = () => {
       },
       onError: () => {
         navigate('/dashboard');
-        MESSAGING$.notifyError('An error occurred while importing dashboard');
+        MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard'));
       },
     });
   };
 
   const onDownloadError = () => {
     navigate('/dashboard');
-    MESSAGING$.notifyError('An error occurred while importing dashboard. You have been redirected to home page.');
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing dashboard. You have been redirected to home page.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({

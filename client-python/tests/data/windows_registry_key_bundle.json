@@ -1,0 +1,30 @@
+{
+    "type": "bundle",
+    "id": "bundle--3ca62449-744e-4cad-96a2-5ff302b289bd",
+    "objects": [
+        {
+            "type": "windows-registry-key",
+            "spec_version": "2.1",
+            "id": "windows-registry-key--9d60798d-4e3e-5fe4-af8a-0e4986f0f90a",
+            "key": "HKEY_LOCAL_MACHINE\\System\\FooOnly\\BarOnly"
+        },
+        {
+            "type": "windows-registry-key",
+            "spec_version": "2.1",
+            "id": "windows-registry-key--2ba37ae7-2745-5082-9dfd-9486dad41016",
+            "key": "hkey_local_machine\\system\\bar\\foo",
+            "values": [
+                {
+                    "name": "first",
+                    "data": "qwerty",
+                    "data_type": "REG_SZ"
+                },
+                {
+                    "name": "second",
+                    "data": "azerty",
+                    "data_type": "REG_DWORD"
+                }
+            ]
+        }
+    ]
+}

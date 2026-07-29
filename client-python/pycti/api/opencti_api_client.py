@@ -4,6 +4,7 @@ import base64
 import datetime
 import io
 import json
+import mimetypes
 import os
 import re
 import shutil
@@ -12,7 +13,6 @@ import tempfile
 import threading
 from typing import Any, Dict, Optional, Tuple, Union
 
-import magic
 import requests
 
 from pycti import __version__
@@ -1052,7 +1052,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             query_vars = {"file": File(file_name, data, mime_type)}
             # optional file markings
             if file_markings is not None:
@@ -1133,7 +1135,9 @@ class OpenCTIApiClient:
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             return self.query(
                 query,
                 {
