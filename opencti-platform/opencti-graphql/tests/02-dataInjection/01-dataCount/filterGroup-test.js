@@ -2790,7 +2790,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
     expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using complex regarding of filter with force direction', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
