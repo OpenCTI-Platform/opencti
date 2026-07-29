@@ -888,7 +888,7 @@ describe('Elasticsearch pagination', () => {
     expect(stixMetaRelationshipsByType['object-marking'].length).toEqual(relationsCounter['object-marking']);
     expect(stixMetaRelationshipsByType['operating-system'].length).toEqual(relationsCounter['operating-system']);
     expect(stixMetaRelationshipsByType.object.length).toEqual(relationsCounter.object);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(129);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(131);
 
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(2);
 
