@@ -364,7 +364,7 @@ schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_DOMAIN_OBJECT, [
     mandatoryType: 'no',
     editDefault: false,
     multiple: true,
-    upsert: false,
+    upsert: true,
     isFilterable: false,
     featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
     mappings: [

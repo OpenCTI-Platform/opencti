@@ -1350,11 +1350,22 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // if the instance has not yet this key, we need to add the full key as a new array
           patch = [{ op: 'add' as const, path: `${preparedPath}`, value }];
         } else {
-          // otherwise we need to add the values to the existing array, using jsonpatch indexed path
-          patch = value.map((v, index) => {
-            const afterIndex = index + instanceKeyValues.length;
-            return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
-          });
+          // Reconcile entries sharing a stable `field_id` (e.g. custom_field_values) so an ADD acts
+          // as an upsert-by-field: an incoming entry replaces the existing entry for the same
+          // field_id instead of being appended as a duplicate.
+          const incomingFieldIds = (value as Array<Record<string, any>>).filter((v) => v?.field_id !== undefined).map((v) => v.field_id);
+          const preservedValues = incomingFieldIds.length > 0
+            ? instanceKeyValues.filter((c: Record<string, any>) => !incomingFieldIds.includes(c?.field_id))
+            : instanceKeyValues;
+          if (preservedValues.length !== instanceKeyValues.length) {
+            patch = [{ op: 'replace' as const, path: preparedPath, value: [...preservedValues, ...value] }];
+          } else {
+            // otherwise we need to add the values to the existing array, using jsonpatch indexed path
+            patch = value.map((v, index) => {
+              const afterIndex = index + instanceKeyValues.length;
+              return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
+            });
+          }
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
