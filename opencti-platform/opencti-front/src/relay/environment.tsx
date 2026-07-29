@@ -1,4 +1,4 @@
-import { Environment, FetchPolicy, Observable, RecordSource, Store } from 'relay-runtime';
+import { Environment, FetchPolicy, Observable, RecordSource, SelectorStoreUpdater, Store } from 'relay-runtime';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -116,6 +116,7 @@ export const environment = new Environment({ network, store, getDataID });
 interface QueryRendererProps {
   variables?: Record<string, unknown>;
   query: GraphQLTaggedNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render: (data: any) => ReactNode;
   fetchPolicy?: FetchPolicy;
 }
@@ -228,7 +229,7 @@ export const fetchQuery = <T extends OperationType>(
   args: T['variables'] = {},
 ) => FQ<T>(environment, query, args);
 
-export const commitLocalUpdate = (updater) => CLU(environment, updater);
+export const commitLocalUpdate = (updater: SelectorStoreUpdater) => CLU(environment, updater);
 
 export const handleErrorInForm = (
   e: Error,
