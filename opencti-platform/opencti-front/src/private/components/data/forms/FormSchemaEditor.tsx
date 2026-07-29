@@ -194,6 +194,19 @@ interface FormSchemaEditorProps {
   onSchemaChange?: (schema: string) => void;
 }
 
+function a11yPropsTab(index: number) {
+  return {
+    id: `form-schema-editor-tab-${index}`,
+    'aria-controls': `form-schema-editor-tabpanel-${index}`,
+  };
+}
+function a11yPropsTabPanel(index: number) {
+  return {
+    id: `form-schema-editor-tabpanel-${index}`,
+    'aria-labelledby': `form-schema-editor-tab-${index}`,
+  };
+}
+
 const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   initialValues,
   entitySettings,
@@ -1597,13 +1610,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   return (
     <div className={classes.container}>
       <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-        <Tab label={t_i18n('Main Entity')} />
-        <Tab label={t_i18n('Additional Entities')} />
-        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
+        <Tab label={t_i18n('Main Entity')} {...a11yPropsTab(0)} />
+        <Tab label={t_i18n('Additional Entities')} {...a11yPropsTab(1)} />
+        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} {...a11yPropsTab(2)} />}
       </Tabs>
 
       {currentTab === 0 && (
-        <div className={classes.tabPanel}>
+        <div
+          className={classes.tabPanel}
+          role="tabpanel"
+          {...a11yPropsTabPanel(currentTab)}
+        >
           <FormControl fullWidth variant="standard">
             <InputLabel>{t_i18n('Main Entity Type')}</InputLabel>
             <Select
@@ -1780,7 +1797,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       }
                     : null,
                 }}
-                onSubmit={() => {}}
+                onSubmit={() => { }}
                 enableReinitialize
               >
                 {({ setFieldValue }) => (
@@ -1974,7 +1991,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                               },
                             ),
                           }}
-                          onSubmit={() => {}}
+                          onSubmit={() => { }}
                         >
                           {() => (
                             <>
@@ -2210,7 +2227,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       )}
 
       {currentTab === 1 && (
-        <div className={classes.tabPanel}>
+        <div
+          className={classes.tabPanel}
+          role="tabpanel"
+          {...a11yPropsTabPanel(currentTab)}
+        >
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
             variant="secondary"
@@ -2224,7 +2245,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       )}
 
       {currentTab === 2 && hasAdditionalEntities && (
-        <div className={classes.tabPanel}>
+        <div
+          className={classes.tabPanel}
+          role="tabpanel"
+          {...a11yPropsTabPanel(currentTab)}
+        >
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}
           </Typography>

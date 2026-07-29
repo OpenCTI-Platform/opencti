@@ -9,6 +9,7 @@ import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import parse from 'html-react-parser';
 import { useFormatter } from '../../../../components/i18n';
 import { copyToClipboard } from '../../../../utils/utils';
+import AISummaryContent from './AISummaryContent';
 
 interface XtmOneAISummaryDisplayProps {
   disclaimerText: string; // Translated disclaimer shown in the info alert
@@ -50,7 +51,12 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
             {disclaimerText}
           </Alert>
           {loading && !content && <CircularProgress size={24} style={{ marginTop: 20 }} />}
-          {content && parse(content)}
+          {content
+            && (
+              <AISummaryContent loading={loading}>
+                {parse(content)}
+              </AISummaryContent>
+            )}
           {!loading && content && (
             <>
               <Divider />

@@ -5,6 +5,8 @@ import { KeyboardArrowLeft, KeyboardArrowRight, CloseOutlined } from '@mui/icons
 import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
 import { useFormatter } from '../i18n';
+import { Theme } from '../Theme';
+import { useTheme } from '@mui/styles';
 
 export type { MarkdownPreviewImage };
 
@@ -14,20 +16,6 @@ interface MarkdownImagePreviewModalProps {
   initialIndex: number;
   onClose: () => void;
 }
-
-const imageModalStyle: SxProps = {
-  position: 'fixed',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '90vw',
-  maxWidth: 1200,
-  height: '85vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  outline: 'none',
-};
 
 const navWrapperStyle: React.CSSProperties = {
   top: '50%',
@@ -55,6 +43,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
   initialIndex,
   onClose,
 }) => {
+  const theme = useTheme<Theme>();
   const prevActionRef = useRef<(() => void) | null>(null);
   const nextActionRef = useRef<(() => void) | null>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -96,7 +85,20 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
       }}
     >
       <Box
-        sx={imageModalStyle}
+        sx={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90vw',
+          maxWidth: 1200,
+          height: '85vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          outline: 'none',
+          '&:focus-visible': { boxShadow: `0 0 0 2px ${theme.palette.primary.main}` },
+        }}
         onClick={onClose}
       >
         <Box sx={{ position: 'relative', width: '100%' }}>

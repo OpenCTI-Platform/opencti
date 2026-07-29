@@ -567,7 +567,7 @@ const FeedEditionContainer = (props) => {
                     />
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>
-                        {Object.keys(feedAttributes).map((i) => {
+                        {Object.keys(feedAttributes).map((i, index) => {
                           const hasNeighborMapping = R.values(feedAttributes[i]?.mappings || {}).some(
                             (m) => !!m?.relationship_type,
                           );
@@ -595,8 +595,9 @@ const FeedEditionContainer = (props) => {
                                   {hasNeighborMapping && (
                                     <>
                                       <FormControl variant="standard" sx={{ minWidth: 140 }}>
-                                        <InputLabel>{t_i18n('Multi-match')}</InputLabel>
+                                        <InputLabel labelId={`multi-match-select-label-${index}`}>{t_i18n('Multi-match')}</InputLabel>
                                         <Select
+                                          labelId={`multi-match-select-label-${index}`}
                                           value={feedAttributes[i]?.multi_match_strategy || 'list'}
                                           onChange={(event) => handleChangeMultiMatchStrategy(i, event.target.value)}
                                         >
@@ -642,8 +643,9 @@ const FeedEditionContainer = (props) => {
                                         <Grid container spacing={2}>
                                           <Grid item xs={4}>
                                             <FormControl variant="standard" fullWidth>
-                                              <InputLabel>{t_i18n('Relationship type')}</InputLabel>
+                                              <InputLabel id={`relationship-type-select-label-${index}`}>{t_i18n('Relationship type')}</InputLabel>
                                               <Select
+                                                labelId={`relationship-type-select-label-${index}`}
                                                 value={currentMapping?.relationship_type || ''}
                                                 onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
                                               >
@@ -657,8 +659,9 @@ const FeedEditionContainer = (props) => {
                                           </Grid>
                                           <Grid item xs={4}>
                                             <FormControl variant="standard" fullWidth disabled={!currentMapping?.relationship_type}>
-                                              <InputLabel>{t_i18n('Target type')}</InputLabel>
+                                              <InputLabel id={`target-type-select-label-${index}`}>{t_i18n('Target type')}</InputLabel>
                                               <Select
+                                                labelId={`target-type-select-label-${index}`}
                                                 value={currentMapping?.target_entity_type || ''}
                                                 onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
                                               >
@@ -675,7 +678,7 @@ const FeedEditionContainer = (props) => {
                                           </Grid>
                                           <Grid item xs={4}>
                                             <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
-                                              <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                              <InputLabel id={`neighbor-attribute-select-label${index}`}>{t_i18n('Attribute')}</InputLabel>
                                               {currentMapping?.target_entity_type ? (
                                                 <QueryRenderer
                                                   query={stixCyberObservablesLinesAttributesQuery}
@@ -697,6 +700,7 @@ const FeedEditionContainer = (props) => {
                                                       }
                                                       return (
                                                         <Select
+                                                          labelId={`neighbor-attribute-select-label-${index}`}
                                                           value={currentMapping?.attribute || ''}
                                                           onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                         >
@@ -706,16 +710,16 @@ const FeedEditionContainer = (props) => {
                                                         </Select>
                                                       );
                                                     }
-                                                    return <Select disabled value="" />;
+                                                    return <Select labelId={`neighbor-attribute-select-label-${index}`} disabled value="" />;
                                                   }}
                                                 />
-                                              ) : <Select disabled value="" />}
+                                              ) : <Select labelId={`neighbor-attribute-select-label-${index}`} disabled value="" />}
                                             </FormControl>
                                           </Grid>
                                         </Grid>
                                       ) : (
                                         <FormControl variant="standard" fullWidth>
-                                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                          <InputLabel id={`attribute-select-label-${index}`}>{t_i18n('Attribute')}</InputLabel>
                                           <QueryRenderer
                                             query={stixCyberObservablesLinesAttributesQuery}
                                             variables={{ elementType: [selectedType] }}
@@ -736,6 +740,7 @@ const FeedEditionContainer = (props) => {
                                                 }
                                                 return (
                                                   <Select
+                                                    labelId={`attribute-select-label-${index}`}
                                                     value={currentMapping?.attribute || ''}
                                                     onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
                                                   >
@@ -745,7 +750,7 @@ const FeedEditionContainer = (props) => {
                                                   </Select>
                                                 );
                                               }
-                                              return <Select disabled value="" />;
+                                              return <Select labelId={`attribute-select-label-${index}`} disabled value="" />;
                                             }}
                                           />
                                         </FormControl>
