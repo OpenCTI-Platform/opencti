@@ -180,7 +180,6 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
           variant="outlined"
           size="small"
           fullWidth={true}
-          autoFocus={true}
           onFocus={triggerSearch}
         />
       )}

@@ -135,7 +135,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                     component={TextField}
                     variant="outlined"
                     name="newTag"
-                    autoFocus
                     placeholder={t_i18n('New tag')}
                     onChange={handleChangeNewTag}
                     value={newTag}
@@ -162,7 +161,6 @@ const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHead
                   component={TextField}
                   variant="outlined"
                   name="newTag"
-                  autoFocus
                   placeholder={t_i18n('New tag')}
                   onChange={handleChangeNewTag}
                   value={newTag}
