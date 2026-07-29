@@ -2,9 +2,8 @@
 
 import base64
 import json
+import mimetypes
 import os
-
-import magic
 
 from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
@@ -248,7 +247,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
             self.opencti.app_logger.info(
                 "Uploading a file in Stix-Cyber-Observable",
                 {"file": final_file_name, "id": id},
@@ -1666,7 +1667,9 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                 if file_name.endswith(".json"):
                     mime_type = "application/json"
                 else:
-                    mime_type = magic.from_file(file_name, mime=True)
+                    mime_type = (
+                        mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+                    )
 
             result = self.opencti.query(
                 query,
