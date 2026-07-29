@@ -4,6 +4,8 @@ import { Box, Modal, SxProps } from '@mui/material';
 import { KeyboardArrowLeft, KeyboardArrowRight, CloseOutlined } from '@mui/icons-material';
 import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
+import { useFormatter } from '../i18n';
+
 
 export type { MarkdownPreviewImage };
 
@@ -57,6 +59,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
   const prevActionRef = useRef<(() => void) | null>(null);
   const nextActionRef = useRef<(() => void) | null>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const { t_i18n } = useFormatter();
 
   useEffect(() => {
     if (open) {
@@ -81,6 +84,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
   return (
     <Modal
       role='dialog'
+      aria-label={t_i18n('Image preview')}
       open={open}
       onClose={onClose}
       onKeyDown={handleKeyDown}

@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import { convertImagesToCarousel } from '../utils/edition';
 import type { Theme } from './Theme';
 import { isNotEmptyField } from '../utils/utils';
+import { useFormatter } from './i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,6 +91,7 @@ const modalStyle = {
 const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
   const [currentImage, setCurrentImage] = useState<CarouselImage | null>(null);
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const images = convertImagesToCarousel(data);
   return (
     <>
@@ -152,6 +154,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
       </Carousel>
       <Modal open={currentImage !== null}
         role="dialog"
+        aria-label={t_i18n('Image preview')}
         onClose={() => setCurrentImage(null)}
       >
         <Box sx={modalStyle}>

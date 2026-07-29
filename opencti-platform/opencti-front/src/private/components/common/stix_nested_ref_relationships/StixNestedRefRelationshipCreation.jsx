@@ -609,7 +609,7 @@ class StixNestedRefRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>
         </div>
-        <List className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingRelations.map((relation) => (
             <ListItemButton
               focusVisibleClassName='focus-visible'

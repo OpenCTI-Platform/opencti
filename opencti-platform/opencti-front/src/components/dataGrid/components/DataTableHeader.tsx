@@ -111,14 +111,14 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
       className={classes.headerContainer}
       style={{ width: cellWidth }}
     >
-      <th style={{ overflow: 'hidden' }} role="columnheader" aria-sort={sortBy ? (orderAsc ? 'ascending' : 'descending') : 'none'}>
-        <button type="button" className={classes.label} onClick={throttleSortColumn}>
+      <div style={{ overflow: 'hidden' }} role="columnheader" aria-sort={sortBy ? (orderAsc ? 'ascending' : 'descending') : 'none'}>
+        <button type="button" className={classes.label} onClick={throttleSortColumn} disabled={!column.isSortable}>
           <Tooltip title={t_i18n(column.label)}>
             <span>{t_i18n(column.label)}</span>
           </Tooltip>
           {sortBy && column.isSortable && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
         </button>
-      </th>
+      </div>
       {hasColumnMenu && (
         <IconButton
           disableRipple

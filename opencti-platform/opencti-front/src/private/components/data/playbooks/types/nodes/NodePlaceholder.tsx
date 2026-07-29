@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
           ? '1px dashed rgba(255, 255, 255, 0.2)'
           : '1px dashed rgba(0, 0, 0, 0.2)',
     },
-    '&:focus': {
+    '&:focus-visible': {
       outline: '2px solid blue',
     },
   },

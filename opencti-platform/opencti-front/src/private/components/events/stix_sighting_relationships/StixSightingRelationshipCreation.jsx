@@ -402,7 +402,7 @@ class StixSightingRelationshipCreation extends Component {
           </IconButton>
           <Typography variant="h6">{t('Select a sighting')}</Typography>
         </div>
-        <List className={classes.container}>
+        <List component="div" className={classes.container}>
           {existingSightings.map((sighting) => (
             <ListItemButton
               focusVisibleClassName='focus-visible'

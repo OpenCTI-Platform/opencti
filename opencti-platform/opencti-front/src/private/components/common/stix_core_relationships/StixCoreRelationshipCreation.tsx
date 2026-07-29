@@ -474,7 +474,7 @@ const StixCoreRelationshipCreation = ({
           </IconButton>
           <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
         </div>
-        <List style={{ padding: '10px 20px 20px 20px' }}>
+        <List component="div" style={{ padding: '10px 20px 20px 20px' }}>
           {existingRelations.map((relation) => (
             <ListItemButton
               focusVisibleClassName='focus-visible'

@@ -17,6 +17,9 @@ import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
 import type { WidgetHost } from '../../utils/widget/widget';
+import makeStyles from '@mui/styles/makeStyles';
+import clsx from 'clsx';
+import type { Theme } from '../Theme';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -34,7 +37,23 @@ interface FilterValuesProps {
   filtersRestrictions?: FiltersRestrictions;
   host?: WidgetHost;
 }
-
+const useStyles = makeStyles((theme: Theme) => ({
+  label: {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    font: 'inherit',
+    color: 'inherit',
+  },
+  pointer: {
+    cursor: 'pointer',
+  },
+  underlineHover: {
+    '&:hover': {
+      textDecorationLine: 'underline',
+    },
+  }
+}));
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
   label,
   tooltip,
@@ -54,6 +73,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema: { scos } } = useSchema();
+  const classes = useStyles();
 
   const filterKey = currentFilter.key;
   const filterOperator = currentFilter.operator;
@@ -62,19 +82,6 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorChange = ['has_changed', 'not_has_changed'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => { } : onClickLabel;
-  const labelStyle = {
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    font: 'inherit',
-    color: 'inherit',
-    cursor: deactivatePopoverMenu ? 'default' : 'pointer',
-    ...(deactivatePopoverMenu ? {} : {
-      '&:hover': {
-        textDecorationLine: 'underline',
-      },
-    }),
-  };
 
   // special case for nil/not_nil
   if (isOperatorNil) {
@@ -82,7 +89,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <>
         <button
           type="button"
-          style={labelStyle}
+          className={clsx(classes.label, {
+            [classes.pointer]: !deactivatePopoverMenu,
+            [classes.underlineHover]: !deactivatePopoverMenu
+          })}
           onClick={onCLick}
         >
           <strong>
@@ -102,13 +112,15 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <>
         <button
           type="button"
-          style={labelStyle}
+          className={clsx(classes.label, {
+            [classes.pointer]: !deactivatePopoverMenu,
+            [classes.underlineHover]: !deactivatePopoverMenu
+          })}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-
         </button>{' '}
         <span>
           {filterOperator === 'has_changed' ? t_i18n('has changed') : t_i18n('has not changed')}
@@ -126,13 +138,15 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <>
         <button
           type="button"
-          style={labelStyle}
+          className={clsx(classes.label, {
+            [classes.pointer]: !deactivatePopoverMenu,
+            [classes.underlineHover]: !deactivatePopoverMenu
+          })}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-
         </button>{' '}
         <span>
           {relativeValue}
@@ -276,7 +290,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         )}
         <button
           type="button"
-          style={labelStyle}
+          className={clsx(classes.label, {
+            [classes.pointer]: !deactivatePopoverMenu,
+            [classes.underlineHover]: !deactivatePopoverMenu
+          })}
           onClick={onCLick}
         >
           <strong>
@@ -355,13 +372,15 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <>
         <button
           type="button"
-          style={labelStyle}
+          className={clsx(classes.label, {
+            [classes.pointer]: !deactivatePopoverMenu,
+            [classes.underlineHover]: !deactivatePopoverMenu
+          })}
           onClick={onCLick}
         >
           <strong>
             {label}
           </strong>
-
         </button>{' '}
         <Chip
           label={t_i18n('Dynamic filter')}
@@ -374,15 +393,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     <>
       <button
         type="button"
-        style={labelStyle}
+        className={clsx(classes.label, {
+          [classes.pointer]: !deactivatePopoverMenu,
+          [classes.underlineHover]: !deactivatePopoverMenu
+        })}
         onClick={onCLick}
       >
         <strong>
           {label}
         </strong>
-
       </button>{' '}
-
       {values}
     </>
   );
