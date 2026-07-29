@@ -3,63 +3,64 @@ import { GraphQLError } from 'graphql';
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
 
-export const error = (type, message, data) => {
+export const error = (type: string, message: string, data?: any) => {
   return new GraphQLError(message, { extensions: { code: type, data } });
 };
 
 const MUTED_ERROR = Symbol('mutedError');
-export const muteError = (e) => {
+type MutableError = Error & { [MUTED_ERROR]?: boolean };
+export const muteError = (e: MutableError) => {
   e[MUTED_ERROR] = true;
   return e;
 };
 
-export const isMutedError = (e) => e[MUTED_ERROR];
+export const isMutedError = (e: MutableError) => e[MUTED_ERROR];
 
 // region TYPE_AUTH
 export const AUTH_FAILURE = 'AUTH_FAILURE';
-export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reason || 'Bad login or password', {
+export const AuthenticationFailure = (reason?: string, data?: any) => error(AUTH_FAILURE, reason || 'Bad login or password', {
   http_status: 401,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const AUTH_REQUIRED = 'AUTH_REQUIRED';
-export const AuthRequired = (data) => error(AUTH_REQUIRED, 'You must be logged in to do this.', {
+export const AuthRequired = (data?: any) => error(AUTH_REQUIRED, 'You must be logged in to do this.', {
   http_status: 401,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const OTP_REQUIRED = 'OTP_REQUIRED';
-export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your account with 2FA.', {
+export const OtpRequired = (data?: any) => error(OTP_REQUIRED, 'You must validate your account with 2FA.', {
   http_status: 401,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const PASSWORD_CHANGE_REQUIRED = 'PASSWORD_CHANGE_REQUIRED';
-export const PasswordChangeRequired = (data) => error(PASSWORD_CHANGE_REQUIRED, 'You must change your password before continuing.', {
+export const PasswordChangeRequired = (data?: any) => error(PASSWORD_CHANGE_REQUIRED, 'You must change your password before continuing.', {
   http_status: 403,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const LTS_REQUIRED_ACTIVATION = 'LTS_REQUIRED_ACTIVATION';
-export const LtsRequiredActivation = (data) => error(LTS_REQUIRED_ACTIVATION, 'You must activate your LTS license.', {
+export const LtsRequiredActivation = (data?: any) => error(LTS_REQUIRED_ACTIVATION, 'You must activate your LTS license.', {
   http_status: 401,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const OTP_REQUIRED_ACTIVATION = 'OTP_REQUIRED_ACTIVATION';
-export const OtpRequiredActivation = (data) => error(OTP_REQUIRED_ACTIVATION, 'You must activate your account with 2FA.', {
+export const OtpRequiredActivation = (data?: any) => error(OTP_REQUIRED_ACTIVATION, 'You must activate your account with 2FA.', {
   http_status: 401,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const FORBIDDEN_ACCESS = 'FORBIDDEN_ACCESS';
-export const ForbiddenAccess = (message, data) => error(
+export const ForbiddenAccess = (message?: string, data?: any) => error(
   FORBIDDEN_ACCESS,
   message || 'You are not allowed to do this.',
   {
@@ -81,14 +82,14 @@ export const AUTH_ERRORS = [
 
 // region CATEGORY_TECHNICAL
 export const DATABASE_ERROR = 'DATABASE_ERROR';
-export const DatabaseError = (reason, data) => error(DATABASE_ERROR, reason || 'A database error has occurred', {
+export const DatabaseError = (reason?: string, data?: any) => error(DATABASE_ERROR, reason || 'A database error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 const FILESYSTEM_ERROR = 'FILESYSTEM_ERROR';
-export const FilesystemError = (reason, data) => {
+export const FilesystemError = (reason?: string, data?: any) => {
   return error(FILESYSTEM_ERROR, reason || 'A filesystem error has occurred', {
     http_status: 500,
     genre: CATEGORY_TECHNICAL,
@@ -97,41 +98,41 @@ export const FilesystemError = (reason, data) => {
 };
 
 const COMPLEX_SEARCH_ERROR = 'COMPLEX_SEARCH_ERROR';
-export const ComplexSearchError = (reason, data) => error(COMPLEX_SEARCH_ERROR, reason || 'A search error has occurred', {
+export const ComplexSearchError = (reason?: string, data?: any) => error(COMPLEX_SEARCH_ERROR, reason || 'A search error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 const CONFIGURATION_ERROR = 'CONFIGURATION_ERROR';
-export const ConfigurationError = (reason, data) => error(CONFIGURATION_ERROR, reason || 'A configuration error has occurred', {
+export const ConfigurationError = (reason?: string, data?: any) => error(CONFIGURATION_ERROR, reason || 'A configuration error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const UNKNOWN_ERROR = 'UNKNOWN_ERROR';
-export const UnknownError = (reason, data) => error(UNKNOWN_ERROR, reason || 'An unknown error has occurred', {
+export const UnknownError = (reason?: string, data?: any) => error(UNKNOWN_ERROR, reason || 'An unknown error has occurred', {
   http_status: 500,
   genre: CATEGORY_TECHNICAL,
   ...data,
 });
 
 export const ACCESS_REQUIRED = 'ACCESS_REQUIRED';
-export const AccessRequiredError = (reason, data) => error(ACCESS_REQUIRED, reason || 'Access required', {
+export const AccessRequiredError = (reason?: string, data?: any) => error(ACCESS_REQUIRED, reason || 'Access required', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
 
 export const UNSUPPORTED_ERROR = 'UNSUPPORTED_ERROR';
-export const UnsupportedError = (reason, data) => error(UNSUPPORTED_ERROR, reason || 'Unsupported operation', {
+export const UnsupportedError = (reason?: string, data?: any) => error(UNSUPPORTED_ERROR, reason || 'Unsupported operation', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
 
-export const EngineShardsError = (data) => error(DATABASE_ERROR, 'Engine execution fail, some shards are not available, please check your engine status', {
+export const EngineShardsError = (data?: any) => error(DATABASE_ERROR, 'Engine execution fail, some shards are not available, please check your engine status', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -151,28 +152,28 @@ export const TECHNICAL_ERRORS = [
 // region CATEGORY_FUNCTIONAL
 export const FUNCTIONAL_ERROR = 'FUNCTIONAL_ERROR';
 export const INSUFFICIENT_CONFIDENCE_LEVEL = 'INSUFFICIENT_CONFIDENCE_LEVEL';
-export const FunctionalError = (reason, data) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
+export const FunctionalError = (reason?: string, data?: any) => error('FUNCTIONAL_ERROR', reason || 'Business validation', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
 
 export const ALREADY_DELETED_ERROR = 'ALREADY_DELETED_ERROR';
-export const AlreadyDeletedError = (data) => error(ALREADY_DELETED_ERROR, 'Already deleted elements', {
+export const AlreadyDeletedError = (data?: any) => error(ALREADY_DELETED_ERROR, 'Already deleted elements', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
 
 export const MISSING_REF_ERROR = 'MISSING_REFERENCE_ERROR';
-export const MissingReferenceError = (data) => error(MISSING_REF_ERROR, 'Element(s) not found', {
+export const MissingReferenceError = (data?: any) => error(MISSING_REF_ERROR, 'Element(s) not found', {
   http_status: 404,
   genre: CATEGORY_BUSINESS,
   ...data,
 });
 
 export const VALIDATION_ERROR = 'VALIDATION_ERROR';
-export const ValidationError = (message, field, data) => error(VALIDATION_ERROR, message, {
+export const ValidationError = (message: string, field?: string | number, data?: any) => error(VALIDATION_ERROR, message, {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   field,
@@ -180,14 +181,14 @@ export const ValidationError = (message, field, data) => error(VALIDATION_ERROR,
 });
 
 export const RESOURCE_NOT_FOUND_ERROR = 'RESOURCE_NOT_FOUND';
-export const ResourceNotFoundError = (reason, data) => error(RESOURCE_NOT_FOUND_ERROR, reason || 'Resource not found', {
+export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESOURCE_NOT_FOUND_ERROR, reason || 'Resource not found', {
   http_status: 404,
   ...data,
 });
 
 const TYPE_LOCK = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data, reason) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
+export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -205,7 +206,7 @@ export const ClientAbortError = (reason, data) => error(CLIENT_ABORT_ERROR, reas
 });
 
 export const DRAFT_LOCKED_ERROR = 'DRAFT_LOCKED';
-export const DraftLockedError = (reason, data) => error(DRAFT_LOCKED_ERROR, reason ?? 'Draft is in a locked state, no request can be done within this draft', {
+export const DraftLockedError = (reason?: string, data?: any) => error(DRAFT_LOCKED_ERROR, reason ?? 'Draft is in a locked state, no request can be done within this draft', {
   http_status: 400,
   genre: CATEGORY_BUSINESS,
   ...data,

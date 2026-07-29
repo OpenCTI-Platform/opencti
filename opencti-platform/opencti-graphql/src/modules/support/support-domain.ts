@@ -82,7 +82,7 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
 
   let closed = false;
   output.on('error', (error) => {
-    throw FilesystemError(error, { zipFullpath });
+    throw FilesystemError(error.message, { error, zipFullpath });
   });
   output.on('close', () => {
     closed = true;
