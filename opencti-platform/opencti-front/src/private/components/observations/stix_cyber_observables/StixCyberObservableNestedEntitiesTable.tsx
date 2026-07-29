@@ -18,7 +18,6 @@ import ItemEntityType from '../../../../components/ItemEntityType';
 import ItemIcon from '../../../../components/ItemIcon';
 import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated__/StixCyberObservableNestedEntitiesTable_node.graphql';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import stopEvent from '../../../../utils/domEvent';
 import { useComputeLink, ComputeLinkNode } from '../../../../utils/hooks/useAppData';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
@@ -369,7 +368,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
-              <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>
+              <div style={{ marginLeft: -10 }}>
                 <StixNestedRefRelationshipPopover
                   stixNestedRefRelationshipId={data.id}
                   paginationOptions={{
