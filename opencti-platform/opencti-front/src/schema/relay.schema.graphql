@@ -15920,6 +15920,8 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   cases(first: Int): CaseConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   stixCoreRelationshipsFromResults(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  coveredAttackPatterns(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): AttackPatternCoverages
+  coveredVulnerabilities(first: Int, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): VulnerabilityCoverages
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
   coveredEntitiesDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String!], fromRole: String, fromTypes: [String], toId: [String!], toRole: String, toTypes: [String], relationship_type: [String!]!, confidences: [Int], search: String, filters: FilterGroup): [Distribution]
@@ -15980,6 +15982,28 @@ enum SecurityCoverageOrdering {
   objectMarking
   coverage_last_result
   _score
+}
+
+type AttackPatternCoverages {
+  count: Int!
+  entities: [AttackPatternCoverage!]!
+}
+
+type AttackPatternCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: AttackPattern
+}
+
+type VulnerabilityCoverages {
+  count: Int!
+  entities: [VulnerabilityCoverage!]!
+}
+
+type VulnerabilityCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: Vulnerability
 }
 
 type SecurityCoverageConnection {

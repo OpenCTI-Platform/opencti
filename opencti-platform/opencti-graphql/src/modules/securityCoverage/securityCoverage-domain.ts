@@ -1,16 +1,30 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  type EntityOptions,
+  fullRelationsList,
+  internalFindByIdsMapped,
+  loadEntityThroughRelationsPaginated,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED, type StoreEntitySecurityCoverage } from './securityCoverage-types';
+import {
+  type BasicStoreEntitySecurityCoverage,
+  type CoveredEntity,
+  ENTITY_TYPE_SECURITY_COVERAGE,
+  INPUT_COVERED,
+  RELATION_COVERED,
+  type StoreEntitySecurityCoverage,
+} from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import { type SecurityCoverageAddInput } from '../../generated/graphql';
-import type { BasicStoreEntity, StoreObject, StoreRelation } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject, BasicStoreRelation, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -26,10 +40,13 @@ import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResul
 import {
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   INPUT_RESULT_OF,
+  RELATION_RESULT_OF,
   type BasicStoreEntitySecurityCoverageResult,
+  type CoverageInformation,
   type StoreEntitySecurityCoverageResult,
 } from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
+import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
 import { getAverageCoverageInformation, getMostRecentLastCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
 
 export const COVERED_ENTITIES_TYPE = [
@@ -199,6 +216,30 @@ export const getSecurityCoverageResults = async (
   securityCoverage: BasicStoreEntitySecurityCoverage,
 ) => {
   return loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
+};
+
+type CoveredRelation = BasicStoreRelation & { coverage_information?: CoverageInformation[] };
+export const findCoveredEntities = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+  toType: string,
+  args: EntityOptions<BasicStoreEntity>,
+): Promise<{ count: number; entities: CoveredEntity[] }> => {
+  const relationships = await stixCoreRelationshipsPaginated(context, user, securityCoverage[RELATION_RESULT_OF], {
+    ...args,
+    relationship_type: RELATION_HAS_COVERED,
+    toTypes: [toType],
+  });
+  const nodes: CoveredRelation[] = (relationships.edges ?? []).map((edge: { node: CoveredRelation }) => edge.node);
+  const toIds = nodes.map((node) => node.toId);
+  const targetsById = await internalFindByIdsMapped<BasicStoreObject>(context, user, toIds, { type: toType });
+  const entities: CoveredEntity[] = nodes.map((node) => ({
+    relationship_id: node.id,
+    coverage_information: node.coverage_information,
+    to: targetsById[node.toId] ?? null,
+  }));
+  return { count: relationships.pageInfo?.globalCount ?? entities.length, entities };
 };
 
 export const getSecurityCoverageResultProperty = async (
