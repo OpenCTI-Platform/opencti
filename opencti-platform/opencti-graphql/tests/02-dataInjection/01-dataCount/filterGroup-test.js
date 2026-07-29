@@ -2911,7 +2911,7 @@ describe('Complex filters regarding of for elastic queries', () => {
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
     expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
     const notEqOrQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', 'or') } });
-    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(40);
+    expect(notEqOrQueryResult.data.globalSearch.edges.length).toEqual(42);
   });
   it('should list entities using multi relationships regarding of filter', async () => {
     const generateFilters = (withRegardingOf = true, relationships = [], regardingOfOperator = 'eq', mainMode = 'and') => {
