@@ -932,18 +932,6 @@ export const distributionEntities = async (
     if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
       return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
     }
-    if (field === 'name') {
-      let result: { label: string; value: number; entity: BasicStoreEntity }[] = [];
-      await convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData)
-        .then((hits) => {
-          result = hits.map((hit) => ({
-            label: hit.entity.name ?? extractEntityRepresentativeName(hit.entity),
-            value: hit.value,
-            entity: hit.entity,
-          }));
-        });
-      return result;
-    }
   }
   if (field === 'name') {
     let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
