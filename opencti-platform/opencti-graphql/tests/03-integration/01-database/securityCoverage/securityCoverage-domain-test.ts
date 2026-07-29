@@ -48,11 +48,14 @@ describe('SecurityCoverage domain', () => {
     it('should create coverage result if contains no information but external_uri', async () => {
       const input = {
         ...BASE_INPUT(),
+        tenant_name: 'Super Coverage',
         external_uri: 'http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a132',
       };
       const securityCoverage = await addSecurityCoverage(testContext, ADMIN_USER, input);
       const results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
       expect(results.length).toEqual(1);
+      // Name should be the tenant_name when it is defined
+      expect(results[0].name).toEqual('Super Coverage');
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
     });
 
@@ -64,10 +67,6 @@ describe('SecurityCoverage domain', () => {
       const results = await loadThroughDenormalized(testContext, ADMIN_USER, securityCoverage, INPUT_RESULT_OF);
       expect(results.length).toEqual(0);
       await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
-    });
-
-    it('should create a SCR with name = tenant_name when tenant name is defined', async () => {
-      // TODO
     });
   });
 
