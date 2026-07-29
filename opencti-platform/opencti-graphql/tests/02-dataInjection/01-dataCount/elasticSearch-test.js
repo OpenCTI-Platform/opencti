@@ -734,6 +734,8 @@ describe('Elasticsearch pagination', () => {
       { type: 'Country', size: entitiesCounter.Country },
       { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
       { type: 'Sector', size: entitiesCounter.Sector },
+      { type: 'Security-Coverage', size: entitiesCounter.SecurityCoverage },
+      { type: 'Security-Coverage-Result', size: entitiesCounter.SecurityCoverageResult },
       { type: 'Observed-Data', size: entitiesCounter.ObservedData },
       { type: 'Indicator', size: entitiesCounter.Indicator },
       { type: 'Campaign', size: entitiesCounter.Campaign },
