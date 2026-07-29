@@ -740,7 +740,7 @@ describe('computeWidgetFiltersForMultiSelection', () => {
     expect(result.timeSeriesParameters[1].types).toStrictEqual(['Stix-Core-Object']);
     firstLevelFilterKeys = result.timeSeriesParameters[1].filters?.filters.map((f) => f.key).flat();
     expect(firstLevelFilterKeys).toContain('updated_at');
-    secondLevelFilters = result.timeSeriesParameters[0].filters?.filterGroups;
+    secondLevelFilters = result.timeSeriesParameters[1].filters?.filterGroups;
     expect(secondLevelFilters).toEqual([{
       mode: 'and',
       filters: [{
