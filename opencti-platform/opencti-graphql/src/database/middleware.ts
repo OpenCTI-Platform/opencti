@@ -1475,14 +1475,15 @@ const ed = (date?: string) => isEmptyField(date) || date === FROM_START_STR || d
 const noDate = (
   e: { first_seen?: string; last_seen?: string; start_time?: string; stop_time?: string },
 ) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = async (
+// Exported for direct unit/benchmark testing of the merge relation filtering algorithm.
+export const filterTargetByExisting = async (
   context: AuthContext,
   targetEntity: BasicStoreBase,
   redirectSide: 'from' | 'to',
   sourcesDependencies: MergeEntitiesDependency,
   targetDependencies: MergeEntitiesDependency,
 ): Promise<{ deletions: BasicStoreRelation[]; redirects: MergeEntityDependency[] }> => {
-  const cache: string[] = [];
+  const cache = new Set<string>();
   const filtered: MergeEntityDependency[] = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
@@ -1492,14 +1493,25 @@ const filterTargetByExisting = async (
   const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
   const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
   const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
+  // Index targets by (relation type, internal id) so that each source lookup is O(1) instead of a full O(m) scan.
+  // This avoids the previous O(n x m) complexity that could hang for entities with a large number of relationships.
+  const targetsIndex = new Map<string, MergeEntityDependency[]>();
+  for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
+    const target = targets[targetIndex];
+    const targetKey = `${target.i_relation.entity_type}-${target.internal_id}`;
+    const bucket = targetsIndex.get(targetKey);
+    if (bucket) {
+      bucket.push(target);
+    } else {
+      targetsIndex.set(targetKey, [target]);
+    }
+  }
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
-    const finder = (t: MergeEntityDependency) => {
-      const sameTarget = t.internal_id === source.internal_id;
-      const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
-      return sameRelationType && sameTarget && noDate(t.i_relation as unknown as any);
-    };
+    const sourceTargetKey = `${source.i_relation.entity_type}-${source.internal_id}`;
+    const matchingTargets = targetsIndex.get(sourceTargetKey);
+    const hasExistingTarget = matchingTargets !== undefined && matchingTargets.some((t) => noDate(t.i_relation as unknown as any));
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
     const relationRefType = redirectSide === 'from' ? source.i_relation.fromType : source.i_relation.toType;
@@ -1515,9 +1527,9 @@ const filterTargetByExisting = async (
     // Markings duplication definition group
     const isMarkingToKeep = source.i_relation.entity_type === RELATION_OBJECT_MARKING ? filteredMarkingIds.includes(source.internal_id) : true;
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !hasExistingTarget && !cache.has(id)) {
       filtered.push(source);
-      cache.push(id);
+      cache.add(id);
     }
   }
   return { deletions: markingTargetDeletions, redirects: filtered };
