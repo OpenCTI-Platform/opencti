@@ -728,7 +728,7 @@ describe('computeWidgetFiltersForMultiSelection', () => {
       mode: 'and',
       filters: [{
         key: ['entity_type'],
-        values: ['Report'],
+        values: ['Malware'],
         operator: 'eq',
         mode: 'or',
       }],
