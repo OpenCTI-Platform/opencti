@@ -14,6 +14,7 @@
 > - `create-creation-form` — Scaffold a creation form drawer (Formik + Relay mutation)
 > - `create-playbook-component` — Add a new playbook automation component
 > - `create-workflow` — Scaffold a new GitHub Actions workflow
+> - `create-e2e-test` — Write/extend Playwright E2E tests, incl. browser-driven authoring workflow (VS Code integrated browser, or codegen/DevTools/Playwright MCP for IntelliJ/CLI)
 
 ## Project Overview
 
