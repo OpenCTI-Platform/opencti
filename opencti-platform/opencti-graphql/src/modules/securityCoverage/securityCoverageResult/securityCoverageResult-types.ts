@@ -8,7 +8,7 @@ export const RELATION_RESULT_OF = 'result-of';
 export const ATTRIBUTE_RESULT_OF = 'result_of_ref';
 export const INPUT_RESULT_OF = 'resultOf';
 
-interface CoverageInformation {
+export interface CoverageInformation {
   coverage_name: string;
   coverage_score: number;
 }
