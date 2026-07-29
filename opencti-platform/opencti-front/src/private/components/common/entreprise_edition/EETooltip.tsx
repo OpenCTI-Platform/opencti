@@ -62,11 +62,21 @@ const EETooltip = ({
     return (
       <>
         <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-          <span onClick={(e) => {
-            setOpenConfigAI(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              setOpenConfigAI(true);
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpenConfigAI(true);
+              }
+            }}
           >
             {children}
           </span>
@@ -90,11 +100,21 @@ const EETooltip = ({
   return (
     <>
       <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-        <span onClickCapture={(e) => {
-          setFeedbackCreation(true);
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            setFeedbackCreation(true);
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+              setFeedbackCreation(true);
+            }
+          }}
         >
           {children}
         </span>
