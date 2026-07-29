@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableBodyProps, DataTableLineProps, DataTableVariant } from '../dataTableTypes';
@@ -8,6 +8,9 @@ import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
+import useAuth from '../../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
+import DataTableSearchEmptyState from './DataTableSearchEmptyState';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -17,6 +20,7 @@ const DataTableBody = ({
   pageSize,
   hideHeaders = false,
   emptyStateMessage,
+  searchTerm,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -32,7 +36,7 @@ const DataTableBody = ({
       onToggleEntity,
     },
     useDataTablePaginationLocalStorage: {
-      viewStorage: { filters },
+      viewStorage: { filters, searchTerm: storedSearchTerm },
     },
     data,
     enableInfiniteScroll,
@@ -44,6 +48,10 @@ const DataTableBody = ({
     loadMore,
     hasMore,
   } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
+
+  const tableSearchTerm = searchTerm ?? storedSearchTerm;
+  const { settings } = useAuth();
+  const isImprovedSearchEnabled = isFeatureEnable(settings, 'IMPROVED_SEARCH');
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -180,6 +188,8 @@ const DataTableBody = ({
     return null;
   }
 
+  const isSearching = isImprovedSearchEnabled && (!!tableSearchTerm || (filters?.filters ?? []).length > 0);
+
   return (
     <>
       <div style={{ width: rowWidth }}>
@@ -189,6 +199,9 @@ const DataTableBody = ({
       </div>
 
       <div ref={scrollContainerRef} style={containerLinesStyle}>
+        {resolvedData.length === 0 && isSearching && (
+          <DataTableSearchEmptyState rawSearchTerm={tableSearchTerm} />
+        )}
         {resolvedData.length === 0 && !!emptyStateMessage && (
           <DataTableEmptyState message={emptyStateMessage} />
         )}
