@@ -64,6 +64,7 @@ const IncidentKnowledge = ({
               stixDomainObjectName={incident.name}
               stixDomainObjectType="Incident"
               displayObservablesStats={true}
+              showCorrelationTimeline={true}
             />
           )}
         />

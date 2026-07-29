@@ -54,6 +54,7 @@ import StixCoreObjectReportsHorizontalBar from '../../analyses/reports/StixCoreO
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import CardNumber from '../../../../components/common/card/CardNumber';
 import { useTheme } from '@mui/styles';
+import StixDomainObjectCorrelationTimeline from './StixDomainObjectCorrelationTimeline';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -119,6 +120,9 @@ interface StixDomainObjectThreatKnowledgeProps {
   stixDomainObjectType: string;
   displayObservablesStats?: boolean;
   stixDomainObjectName?: string;
+  // The correlation timeline is entity-agnostic and can be switched on for any
+  // entity using this component.
+  showCorrelationTimeline?: boolean;
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
@@ -129,11 +133,12 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   in fact, page update is complicated, if not impossible
   it could be interesting to use the relay provider and rework the uses of graphql queries
 */
-> = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats }) => {
+> = ({ stixDomainObjectId, stixDomainObjectName, stixDomainObjectType, displayObservablesStats, showCorrelationTimeline }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [viewType, setViewType] = useState('diamond');
+  const isCorrelationView = viewType === 'correlationTimeline';
   const [timeField, setTimeField] = useState('technical');
   const [nestedRelationships, setNestedRelationships] = useState(false);
   const [openTimeField, setOpenTimeField] = useState(false);
@@ -248,6 +253,9 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
   }
   if (viewType === 'killchain') {
     exportName = `${stixDomainObjectName ? `${stixDomainObjectName} - ${t_i18n('Global kill chain')}` : t_i18n('Global kill chain')}`;
+  }
+  if (viewType === 'correlationTimeline') {
+    exportName = `${stixDomainObjectName ? `${stixDomainObjectName} - ${t_i18n('Correlation timeline')}` : t_i18n('Correlation timeline')}`;
   }
   return (
     <>
@@ -410,8 +418,11 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         <Tab label={t_i18n('Diamond')} value="diamond" />
         <Tab label={t_i18n('Timeline')} value="timeline" />
         <Tab label={t_i18n('Global kill chain')} value="killchain" />
+        {showCorrelationTimeline && (
+          <Tab label={t_i18n('Correlation timeline')} value="correlationTimeline" />
+        )}
       </Tabs>
-      {viewType !== 'diamond' && (
+      {viewType !== 'diamond' && !isCorrelationView && (
         <div className={classes.filters}>
           <Filters
             helpers={helpers}
@@ -480,7 +491,7 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
         <ExportButtons domElementId="container" name={exportName} />
       </div>
       <div className="clearfix" />
-      {viewType !== 'diamond' && (
+      {viewType !== 'diamond' && !isCorrelationView && (
         <Box sx={{
           marginTop: theme.spacing(1),
         }}
@@ -495,7 +506,10 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
           />
         </Box>
       )}
-      {viewType === 'diamond' ? (
+      {viewType === 'correlationTimeline' && (
+        <StixDomainObjectCorrelationTimeline stixDomainObjectId={stixDomainObjectId} />
+      )}
+      {viewType === 'diamond' && (
         <QueryRenderer
           query={stixDomainObjectThreatDiamondQuery}
           variables={{ id: stixDomainObjectId }}
@@ -512,7 +526,8 @@ const StixDomainObjectThreatKnowledge: FunctionComponent<
             return <Loader variant={LoaderVariant.inElement} />;
           }}
         />
-      ) : (
+      )}
+      {(viewType === 'timeline' || viewType === 'killchain') && (
         <QueryRenderer
           query={stixDomainObjectThreatKnowledgeStixRelationshipsQuery}
           variables={{ first: 500, ...queryPaginationOptions }}

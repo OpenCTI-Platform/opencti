@@ -5,6 +5,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
+import ContainerCorrelationTimeline from '../../common/containers/ContainerCorrelationTimeline';
 import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
 import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -267,7 +268,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
         <ContainerHeader
           container={report}
           link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'timeline', 'correlation', 'matrix', 'correlation-timeline']}
           currentMode={mode}
           knowledge={true}
           enableSuggestions={true}
@@ -380,6 +381,10 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
               disableExport={false}
             />
           )}
+        />
+        <Route
+          path="/correlation-timeline"
+          element={<ContainerCorrelationTimeline containerId={report.id} />}
         />
         <Route
           path="/relations/:relationId"

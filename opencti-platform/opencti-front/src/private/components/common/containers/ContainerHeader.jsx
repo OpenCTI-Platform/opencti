@@ -6,7 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
-import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
+import { ChartSankeyVariant, ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate } from 'react-router-dom';
@@ -679,6 +679,25 @@ const ContainerHeader = (props) => {
                               <ViewColumnOutlined
                                 fontSize="small"
                                 color={currentMode === 'matrix' ? 'primary' : 'inherit'}
+                              />
+                            </ToggleButton>
+                          </Tooltip>
+                        )}
+                        {modes.includes('correlation-timeline') && (
+                          <Tooltip title={t_i18n('Correlation timeline view')}>
+                            <ToggleButton
+                              value="correlation-timeline"
+                              component={Link}
+                              to={`${link}/correlation-timeline`}
+                              selected={currentMode === 'correlation-timeline'}
+                            >
+                              <ChartSankeyVariant
+                                fontSize="small"
+                                color={
+                                  currentMode === 'correlation-timeline'
+                                    ? 'primary'
+                                    : 'inherit'
+                                }
                               />
                             </ToggleButton>
                           </Tooltip>

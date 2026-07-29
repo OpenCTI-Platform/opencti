@@ -8,6 +8,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
+import ContainerCorrelationTimeline from '../../common/containers/ContainerCorrelationTimeline';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
 import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -61,7 +62,7 @@ class GroupingKnowledgeComponent extends Component {
           <ContainerHeader
             container={grouping}
             link={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'correlation', 'matrix']}
+            modes={['graph', 'correlation', 'matrix', 'correlation-timeline']}
             currentMode={mode}
             knowledge={true}
             enableSuggestions={true}
@@ -130,6 +131,10 @@ class GroupingKnowledgeComponent extends Component {
                 entityType={grouping.entity_type}
               />
             )}
+          />
+          <Route
+            path="/correlation-timeline"
+            element={<ContainerCorrelationTimeline containerId={grouping.id} />}
           />
           <Route
             path="/relations/:relationId"

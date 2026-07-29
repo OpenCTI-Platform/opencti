@@ -8,6 +8,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
+import ContainerCorrelationTimeline from '../../common/containers/ContainerCorrelationTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
@@ -164,7 +165,7 @@ class CaseRfiKnowledgeComponent extends Component {
           <ContainerHeader
             container={caseData}
             link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'timeline', 'correlation', 'matrix', 'correlation-timeline']}
             currentMode={mode}
             knowledge={true}
             enableSuggestions={true}
@@ -283,6 +284,10 @@ class CaseRfiKnowledgeComponent extends Component {
                 entityType={caseData.entity_type}
               />
             )}
+          />
+          <Route
+            path="/correlation-timeline"
+            element={<ContainerCorrelationTimeline containerId={caseData.id} />}
           />
           <Route
             path="/relations/:relationId"

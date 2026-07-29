@@ -63,6 +63,7 @@ const CampaignKnowledgeComponent = ({
               stixDomainObjectId={campaign.id}
               stixDomainObjectName={campaign.name}
               stixDomainObjectType="Campaign"
+              showCorrelationTimeline={true}
             />
           )}
         />
