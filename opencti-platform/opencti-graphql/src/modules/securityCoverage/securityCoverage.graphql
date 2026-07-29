@@ -76,6 +76,20 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): StixCoreRelationshipConnection
+  coveredAttackPatterns(
+    first: Int
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): AttackPatternCoverages
+  coveredVulnerabilities(
+    first: Int
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): VulnerabilityCoverages
   stixCoreObjectsDistribution(
     relationship_type: [String]
     toTypes: [String]
@@ -218,6 +232,32 @@ enum SecurityCoverageOrdering {
   objectMarking
   coverage_last_result
   _score
+}
+
+# Concrete covered-entity projections (avoid StixCoreRelationship.to union expansion).
+# Not a Relay connection: a single bounded list plus the total count for the
+# "showing X of N" warning. Each entity carries the has-covered relationship id,
+# its coverage_information, and the eagerly-resolved concrete target.
+# `relationship_id` is intentionally not named `id`: that keeps Relay from
+# normalizing these wrapper nodes into global records keyed by the relationship
+# id, which would collide with the StixCoreRelationship record of the same id.
+type AttackPatternCoverages {
+  count: Int!
+  entities: [AttackPatternCoverage!]!
+}
+type AttackPatternCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: AttackPattern
+}
+type VulnerabilityCoverages {
+  count: Int!
+  entities: [VulnerabilityCoverage!]!
+}
+type VulnerabilityCoverage {
+  relationship_id: String!
+  coverage_information: [CoverageResult!]
+  to: Vulnerability
 }
 
 # Relay connections

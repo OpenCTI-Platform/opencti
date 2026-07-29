@@ -43,7 +43,7 @@ import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFi
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
-import type { BasicStoreEntitySecurityCoverage } from '../modules/securityCoverage/securityCoverage-types';
+import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityForm } from '../modules/form/form-types';
@@ -1237,6 +1237,19 @@ export type AttackPatternConnection = {
   __typename?: 'AttackPatternConnection';
   edges: Array<AttackPatternEdge>;
   pageInfo: PageInfo;
+};
+
+export type AttackPatternCoverage = {
+  __typename?: 'AttackPatternCoverage';
+  coverage_information?: Maybe<Array<CoverageResult>>;
+  relationship_id: Scalars['String']['output'];
+  to?: Maybe<AttackPattern>;
+};
+
+export type AttackPatternCoverages = {
+  __typename?: 'AttackPatternCoverages';
+  count: Scalars['Int']['output'];
+  entities: Array<AttackPatternCoverage>;
 };
 
 export type AttackPatternEdge = {
@@ -30080,7 +30093,9 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_to?: Maybe<Scalars['DateTime']['output']>;
+  coveredAttackPatterns?: Maybe<AttackPatternCoverages>;
   coveredEntitiesDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  coveredVulnerabilities?: Maybe<VulnerabilityCoverages>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -30167,6 +30182,15 @@ export type SecurityCoverageContainersArgs = {
 };
 
 
+export type SecurityCoverageCoveredAttackPatternsArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
 export type SecurityCoverageCoveredEntitiesDistributionArgs = {
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
@@ -30187,6 +30211,15 @@ export type SecurityCoverageCoveredEntitiesDistributionArgs = {
   toId?: InputMaybe<Array<Scalars['String']['input']>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type SecurityCoverageCoveredVulnerabilitiesArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -33251,7 +33284,7 @@ export type StixObjectOrStixRelationshipEdge = {
   node: StixObjectOrStixRelationship;
 };
 
-export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
+export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | DraftWorkspace | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
 export type StixObjectOrStixRelationshipRefConnection = {
   __typename?: 'StixObjectOrStixRelationshipRefConnection';
@@ -38226,6 +38259,19 @@ export type VulnerabilityConnection = {
   pageInfo: PageInfo;
 };
 
+export type VulnerabilityCoverage = {
+  __typename?: 'VulnerabilityCoverage';
+  coverage_information?: Maybe<Array<CoverageResult>>;
+  relationship_id: Scalars['String']['output'];
+  to?: Maybe<Vulnerability>;
+};
+
+export type VulnerabilityCoverages = {
+  __typename?: 'VulnerabilityCoverages';
+  count: Scalars['Int']['output'];
+  entities: Array<VulnerabilityCoverage>;
+};
+
 export type VulnerabilityEdge = {
   __typename?: 'VulnerabilityEdge';
   cursor: Scalars['String']['output'];
@@ -40261,6 +40307,8 @@ export type ResolversTypes = ResolversObject<{
   AttackPattern: ResolverTypeWrapper<Omit<AttackPattern, 'avatar' | 'cases' | 'connectors' | 'containers' | 'coursesOfAction' | 'createdBy' | 'dataComponents' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentAttackPatterns' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subAttackPatterns' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, coursesOfAction?: Maybe<ResolversTypes['CourseOfActionConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, dataComponents?: Maybe<ResolversTypes['DataComponentConnection']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversTypes['FintelTemplate']>>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversTypes['KillChainPhase']>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentAttackPatterns?: Maybe<ResolversTypes['AttackPatternConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, subAttackPatterns?: Maybe<ResolversTypes['AttackPatternConnection']>, workflowInstance?: Maybe<ResolversTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: ResolverTypeWrapper<Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversTypes['AttackPatternEdge']> }>;
+  AttackPatternCoverage: ResolverTypeWrapper<CoveredEntity>;
+  AttackPatternCoverages: ResolverTypeWrapper<Omit<AttackPatternCoverages, 'entities'> & { entities: Array<ResolversTypes['AttackPatternCoverage']> }>;
   AttackPatternEdge: ResolverTypeWrapper<Omit<AttackPatternEdge, 'node'> & { node: ResolversTypes['AttackPattern'] }>;
   AttackPatternEditMutations: ResolverTypeWrapper<Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['AttackPattern']>, contextPatch?: Maybe<ResolversTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversTypes['AttackPattern']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['AttackPattern']> }>;
   AttackPatternForMatrix: ResolverTypeWrapper<AttackPatternForMatrix>;
@@ -41354,6 +41402,8 @@ export type ResolversTypes = ResolversObject<{
   Vulnerability: ResolverTypeWrapper<BasicStoreEntityVulnerability>;
   VulnerabilityAddInput: VulnerabilityAddInput;
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
+  VulnerabilityCoverage: ResolverTypeWrapper<CoveredEntity>;
+  VulnerabilityCoverages: ResolverTypeWrapper<Omit<VulnerabilityCoverages, 'entities'> & { entities: Array<ResolversTypes['VulnerabilityCoverage']> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
   VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
   Widget: ResolverTypeWrapper<Widget>;
@@ -41431,6 +41481,8 @@ export type ResolversParentTypes = ResolversObject<{
   AttackPattern: Omit<AttackPattern, 'avatar' | 'cases' | 'connectors' | 'containers' | 'coursesOfAction' | 'createdBy' | 'dataComponents' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'killChainPhases' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentAttackPatterns' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subAttackPatterns' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, coursesOfAction?: Maybe<ResolversParentTypes['CourseOfActionConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, dataComponents?: Maybe<ResolversParentTypes['DataComponentConnection']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<ResolversParentTypes['FileConnection']>, fintelTemplates?: Maybe<Array<ResolversParentTypes['FintelTemplate']>>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, killChainPhases?: Maybe<Array<ResolversParentTypes['KillChainPhase']>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentAttackPatterns?: Maybe<ResolversParentTypes['AttackPatternConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, subAttackPatterns?: Maybe<ResolversParentTypes['AttackPatternConnection']>, workflowInstance?: Maybe<ResolversParentTypes['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversParentTypes['AttackPatternEdge']> };
+  AttackPatternCoverage: CoveredEntity;
+  AttackPatternCoverages: Omit<AttackPatternCoverages, 'entities'> & { entities: Array<ResolversParentTypes['AttackPatternCoverage']> };
   AttackPatternEdge: Omit<AttackPatternEdge, 'node'> & { node: ResolversParentTypes['AttackPattern'] };
   AttackPatternEditMutations: Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['AttackPattern']>, contextPatch?: Maybe<ResolversParentTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversParentTypes['AttackPattern']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['AttackPattern']> };
   AttackPatternForMatrix: AttackPatternForMatrix;
@@ -42358,6 +42410,8 @@ export type ResolversParentTypes = ResolversObject<{
   Vulnerability: BasicStoreEntityVulnerability;
   VulnerabilityAddInput: VulnerabilityAddInput;
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
+  VulnerabilityCoverage: CoveredEntity;
+  VulnerabilityCoverages: Omit<VulnerabilityCoverages, 'entities'> & { entities: Array<ResolversParentTypes['VulnerabilityCoverage']> };
   VulnerabilityEdge: Omit<VulnerabilityEdge, 'node'> & { node: ResolversParentTypes['Vulnerability'] };
   VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
   Widget: Widget;
@@ -42810,6 +42864,17 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
 export type AttackPatternConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternConnection'] = ResolversParentTypes['AttackPatternConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['AttackPatternEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type AttackPatternCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternCoverage'] = ResolversParentTypes['AttackPatternCoverage']> = ResolversObject<{
+  coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType>;
+}>;
+
+export type AttackPatternCoveragesResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternCoverages'] = ResolversParentTypes['AttackPatternCoverages']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entities?: Resolver<Array<ResolversTypes['AttackPatternCoverage']>, ParentType, ContextType>;
 }>;
 
 export type AttackPatternEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternEdge'] = ResolversParentTypes['AttackPatternEdge']> = ResolversObject<{
@@ -51319,7 +51384,9 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_to?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  coveredAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternCoverages']>, ParentType, ContextType, Partial<SecurityCoverageCoveredAttackPatternsArgs>>;
   coveredEntitiesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageCoveredEntitiesDistributionArgs, 'field' | 'operation' | 'relationship_type'>>;
+  coveredVulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityCoverages']>, ParentType, ContextType, Partial<SecurityCoverageCoveredVulnerabilitiesArgs>>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -52273,7 +52340,7 @@ export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentT
 }>;
 
 export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] = ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
@@ -53911,6 +53978,17 @@ export type VulnerabilityConnectionResolvers<ContextType = any, ParentType exten
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
 }>;
 
+export type VulnerabilityCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityCoverage'] = ResolversParentTypes['VulnerabilityCoverage']> = ResolversObject<{
+  coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  relationship_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType>;
+}>;
+
+export type VulnerabilityCoveragesResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityCoverages'] = ResolversParentTypes['VulnerabilityCoverages']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entities?: Resolver<Array<ResolversTypes['VulnerabilityCoverage']>, ParentType, ContextType>;
+}>;
+
 export type VulnerabilityEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityEdge'] = ResolversParentTypes['VulnerabilityEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Vulnerability'], ParentType, ContextType>;
@@ -54398,6 +54476,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AssigneeEdge?: AssigneeEdgeResolvers<ContextType>;
   AttackPattern?: AttackPatternResolvers<ContextType>;
   AttackPatternConnection?: AttackPatternConnectionResolvers<ContextType>;
+  AttackPatternCoverage?: AttackPatternCoverageResolvers<ContextType>;
+  AttackPatternCoverages?: AttackPatternCoveragesResolvers<ContextType>;
   AttackPatternEdge?: AttackPatternEdgeResolvers<ContextType>;
   AttackPatternEditMutations?: AttackPatternEditMutationsResolvers<ContextType>;
   AttackPatternForMatrix?: AttackPatternForMatrixResolvers<ContextType>;
@@ -55080,6 +55160,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   VocabularyFieldDefinition?: VocabularyFieldDefinitionResolvers<ContextType>;
   Vulnerability?: VulnerabilityResolvers<ContextType>;
   VulnerabilityConnection?: VulnerabilityConnectionResolvers<ContextType>;
+  VulnerabilityCoverage?: VulnerabilityCoverageResolvers<ContextType>;
+  VulnerabilityCoverages?: VulnerabilityCoveragesResolvers<ContextType>;
   VulnerabilityEdge?: VulnerabilityEdgeResolvers<ContextType>;
   VulnerabilityEditMutations?: VulnerabilityEditMutationsResolvers<ContextType>;
   Widget?: WidgetResolvers<ContextType>;
