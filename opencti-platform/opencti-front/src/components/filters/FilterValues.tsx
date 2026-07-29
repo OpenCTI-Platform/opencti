@@ -240,6 +240,10 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         borderRadius: 0,
                         margin: '0 2px 0 0',
                         fontFamily: 'Consolas, monaco, monospace',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: operatorOnClick ? 'pointer' : 'default',
                       }}
                       onClick={operatorOnClick}
                     >
