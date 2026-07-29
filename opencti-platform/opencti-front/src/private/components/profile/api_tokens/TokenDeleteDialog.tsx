@@ -35,7 +35,6 @@ const TokenDeleteDialog = ({ open, token, onDelete, onClose }: TokenDeleteDialog
         <Button
           intent="destructive"
           onClick={onDelete}
-          autoFocus
         >
           {t_i18n('Revoke')}
         </Button>

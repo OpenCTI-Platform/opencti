@@ -74,7 +74,6 @@ const CustomViewForm = ({
           <Form>
             <Stack gap={1}>
               <Field
-                autoFocus
                 component={TextField}
                 name="name"
                 label={t_i18n('Name')}

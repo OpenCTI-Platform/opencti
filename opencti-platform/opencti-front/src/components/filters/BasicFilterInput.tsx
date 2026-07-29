@@ -28,7 +28,6 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       label={label}
       type={type}
       defaultValue={filterValues[0]}
-      autoFocus={true}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           helpers?.handleAddSingleValueFilter(

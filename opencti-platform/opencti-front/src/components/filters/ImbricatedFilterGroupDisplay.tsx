@@ -105,7 +105,7 @@ const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDispl
           />
         </DialogContent>
         <DialogActions sx={{ mr: 2, mb: 2 }}>
-          <Button onClick={handleClose} autoFocus>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>
