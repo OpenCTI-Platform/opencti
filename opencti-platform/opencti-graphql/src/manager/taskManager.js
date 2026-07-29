@@ -545,9 +545,9 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
 };
 
 // Cascade cleanup of a deleted custom field definition: for each entity still holding a value
-// for the deleted field, rebuild its custom_field_values without the removed field and patch it.
+// for the deleted field, remove that single value entry and patch it.
 const customFieldValuesRemoveOperationCallback = async (context, user, task, operations) => {
-  const fieldName = operations[0]?.context?.values?.[0];
+  const fieldId = operations[0]?.context?.values?.[0];
   let totalProcessed = task.task_processed_number;
   return async (elements) => {
     const objects = [];
@@ -559,9 +559,11 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
       await doYield();
       const element = loadedElements[index];
       const currentValues = element.custom_field_values ?? [];
-      const nextValues = currentValues.filter((value) => value.field_name !== fieldName);
-      // Only patch entities actually holding a value for the deleted field
-      if (nextValues.length !== currentValues.length) {
+      // Only patch entities actually holding a value for the deleted field. A targeted 'remove'
+      // (matched by field_id, not a pre-computed 'replace' snapshot) is used so the worker recomputes
+      // the diff against the LIVE custom_field_values at apply time, preserving any concurrent edit
+      // made to other custom field values while this task's message was queued.
+      if (currentValues.some((value) => value.field_id === fieldId)) {
         objects.push({
           id: element.standard_id,
           type: convertTypeToStixType(element.entity_type),
@@ -570,7 +572,7 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
               id: element.internal_id,
               type: element.entity_type,
               opencti_operation: 'patch',
-              opencti_field_patch: [{ key: 'custom_field_values', value: nextValues, operation: 'replace' }],
+              opencti_field_patch: [{ key: 'custom_field_values', value: [{ field_id: fieldId }], operation: 'remove' }],
             },
           },
         });

@@ -1382,8 +1382,11 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const current = jsonpatch.getValueByPointer(instance, preparedPath);
         if (Array.isArray(current) && value) {
           const toRemove = Array.isArray(value) ? value : [value];
-          // Filter out items in current that match items in toRemove
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
+          // Filter out items in current that match items in toRemove.
+          // `field_id` is a stable per-entry identifier used by nested object attributes that don't
+          // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
+          // against the live value at apply time instead of a stale pre-computed snapshot.
+          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];

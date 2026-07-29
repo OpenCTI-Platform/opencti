@@ -121,7 +121,7 @@ export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthU
  * Cascade deletion: schedules a background task that removes all stored values of a deleted
  * custom field definition from every entity referencing it (async, tracked like any other task).
  */
-const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, entityTypes: string[]): Promise<void> => {
+const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, fieldId: string, entityTypes: string[]): Promise<void> => {
   const systemContext = executionContext('custom_field_cascade_delete', SYSTEM_USER);
   // Nested sub-conditions go through `values` (completeSpecialFilterKeys moves them to `nested`);
   // this also avoids depending on the definition cache, already cleared by this point.
@@ -136,7 +136,9 @@ const scheduleCustomFieldValuesCleanupTask = async (fieldName: string, entityTyp
     filterGroups: [],
   };
   const input = {
-    actions: [{ type: ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES, context: { values: [fieldName] } }],
+    // fieldId (not fieldName) is carried through so the task manager can issue a targeted 'remove'
+    // of that single value entry, instead of a 'replace' of the whole array from a stale snapshot.
+    actions: [{ type: ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES, context: { values: [fieldId] } }],
     filters: JSON.stringify(taskFilters),
     scope: BackgroundTaskScope.Knowledge,
     excluded_ids: [],
@@ -160,7 +162,7 @@ export const customFieldDefinitionDelete = async (context: AuthContext, user: Au
     context_data: { id: customFieldDefinitionId, entity_type: ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, input: element },
   });
   // Cascade deletion: schedule a background task to clean stored values of this definition from all entities using it
-  await scheduleCustomFieldValuesCleanupTask(element.name, element.entity_types ?? []);
+  await scheduleCustomFieldValuesCleanupTask(element.name, element.id, element.entity_types ?? []);
   return customFieldDefinitionId;
 };
 
@@ -364,6 +366,6 @@ export const customFieldDefinitionRemoveEntityType = async (
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);
   // Remove the field's stored values from existing entities of the detached type
-  await scheduleCustomFieldValuesCleanupTask(definition.name, [entityType]);
+  await scheduleCustomFieldValuesCleanupTask(definition.name, definition.id, [entityType]);
   return updated;
 };
