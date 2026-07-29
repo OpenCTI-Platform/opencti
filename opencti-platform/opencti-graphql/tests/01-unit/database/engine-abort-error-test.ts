@@ -44,8 +44,9 @@ describe('wrapEngineError testing', () => {
 
     const wrapped = wrapEngineError('Find direct ids fail', abortCause, { searchType: 'Malware' });
 
-    expect(wrapped.extensions?.data.cause).toBe(abortCause);
-    expect(wrapped.extensions?.data.searchType).toBe('Malware');
+    const data = wrapped.extensions?.data as Record<string, any>;
+    expect(data.cause).toBe(abortCause);
+    expect(data.searchType).toBe('Malware');
   });
 
   it('should not misclassify a plain object without a name property as a client abort', () => {

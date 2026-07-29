@@ -1,3 +1,4 @@
+import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
@@ -604,7 +605,7 @@ export const isClientAbortError = (err: any): boolean => {
 // Use this instead of throwing DatabaseError directly when catching an error
 // from an abort-signal-aware engine call, so a client abort isn't misclassified
 // as a genuine engine failure.
-export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): Error => {
+export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): GraphQLError => {
   if (isClientAbortError(err)) {
     return ClientAbortError(reason, { cause: err, ...data });
   }
