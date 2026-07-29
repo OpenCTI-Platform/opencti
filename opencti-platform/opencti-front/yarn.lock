@@ -3447,64 +3447,64 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:6.7.0":
-  version: 6.7.0
-  resolution: "@rjsf/core@npm:6.7.0"
+"@rjsf/core@npm:6.7.1":
+  version: 6.7.1
+  resolution: "@rjsf/core@npm:6.7.1"
   dependencies:
     lodash: "npm:^4.18.1"
     lodash-es: "npm:^4.18.1"
     markdown-to-jsx: "npm:^9.8.2"
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^6.7.0
+    "@rjsf/utils": ^6.7.1
     react: ">=18"
-  checksum: 10c0/b4f9442ce508a8942885f8e234444072fb706dfd13866ad71e146ad662212f698b2c5920eef309ed9ca5bce44f6fab3afaffd74ea9bc3592d4275248e8108a4a
+  checksum: 10c0/2fac34f0265889ac6ffcefd8b5e24485705d83e354cb8e0ac97f66b5784b999341ac8cb6e51b693ddc90a6a22b8ad26521606a3ccbc8b42d8574410438f629cd
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:6.7.0":
-  version: 6.7.0
-  resolution: "@rjsf/mui@npm:6.7.0"
+"@rjsf/mui@npm:6.7.1":
+  version: 6.7.1
+  resolution: "@rjsf/mui@npm:6.7.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
     "@mui/icons-material": ^7.0.0 || ^9.0.0
     "@mui/material": ^7.0.0 || ^9.0.0
-    "@rjsf/core": ^6.7.0
-    "@rjsf/utils": ^6.7.0
+    "@rjsf/core": ^6.7.1
+    "@rjsf/utils": ^6.7.1
     react: ">=18"
-  checksum: 10c0/95727b7a47974be51775ab867d30a737a0624f03a68def7831086fd963050c268fb03925b41b3b392eadcb2c96efb324fb8ad6c8906fbafe40daa1a00d69c0e6
+  checksum: 10c0/bcd0fb4a086077426267289719883a47056907f4ff14ef1e13af4904519329f6990693688998ab35e371451e18bf56982ee540ca0da9b965a7117510cc69932c
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:6.7.0":
-  version: 6.7.0
-  resolution: "@rjsf/utils@npm:6.7.0"
+"@rjsf/utils@npm:6.7.1":
+  version: 6.7.1
+  resolution: "@rjsf/utils@npm:6.7.1"
   dependencies:
     "@x0k/json-schema-merge": "npm:^1.0.3"
     fast-equals: "npm:^6.0.0"
-    fast-uri: "npm:^4.0.0"
+    fast-uri: "npm:^4.1.1"
     jsonpointer: "npm:^5.0.1"
     lodash: "npm:^4.18.1"
     lodash-es: "npm:^4.18.1"
     react-is: "npm:^18.3.1"
   peerDependencies:
     react: ">=18"
-  checksum: 10c0/84d19175bc33b0ffbd9c60ce6c2a10b9295ed9dfff6fbff5122d1861709204ea000ddd8ce0e58fb0aae6523ae214b2d39991e23a1f73d5057fcb49459f9762be
+  checksum: 10c0/b0cb7877f0cee2588bcbf2d6c28a90c2041181273381572fb667c70b826416c1b03a786e751e08d7d34f04976c2a0f5351cadafd51e4a84a68ef6429cec010c3
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:6.7.0":
-  version: 6.7.0
-  resolution: "@rjsf/validator-ajv8@npm:6.7.0"
+"@rjsf/validator-ajv8@npm:6.7.1":
+  version: 6.7.1
+  resolution: "@rjsf/validator-ajv8@npm:6.7.1"
   dependencies:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
     lodash: "npm:^4.18.1"
     lodash-es: "npm:^4.18.1"
   peerDependencies:
-    "@rjsf/utils": ^6.7.0
-  checksum: 10c0/2e39b2065dd979c98dee21e866af812a6d369996890e242005b84d9dbfdfbe33d0a1b64fe8284d8fbe453ae2fde12898e7bee810a22e752e532da730e143251e
+    "@rjsf/utils": ^6.7.1
+  checksum: 10c0/af844e3ac205029e70815d810f8b75eec8267b1d7db14a393defa8359310c2ae8e1d75906084c72d42a045c126b35f95e5498986a64d0c4124223db0950d0231
   languageName: node
   linkType: hard
 
@@ -7802,7 +7802,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-uri@npm:^4.0.0":
+"fast-uri@npm:^4.1.1":
   version: 4.1.1
   resolution: "fast-uri@npm:4.1.1"
   checksum: 10c0/669e12d1e7c3ba931b93d94def9a0a7352288503f09479f62e31b7bd731fe73f9b62ff411724e2d452c39a57d756cdce4169ea6d1b80424c2c254c1eecde10e5
@@ -11771,10 +11771,10 @@ __metadata:
     "@mui/styles": "npm:6.5.0"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.62.0"
-    "@rjsf/core": "npm:6.7.0"
-    "@rjsf/mui": "npm:6.7.0"
-    "@rjsf/utils": "npm:6.7.0"
-    "@rjsf/validator-ajv8": "npm:6.7.0"
+    "@rjsf/core": "npm:6.7.1"
+    "@rjsf/mui": "npm:6.7.1"
+    "@rjsf/utils": "npm:6.7.1"
+    "@rjsf/validator-ajv8": "npm:6.7.1"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:7.0.0"

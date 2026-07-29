@@ -278,14 +278,14 @@ const auditLogger = winston.createLogger({
 export const SUPPORT_LOG_RELATIVE_LOCAL_DIR = '.support';
 export const SUPPORT_LOG_FILE_PREFIX = 'support';
 const supportLogger = winston.createLogger({
-  level: 'warn',
+  level: 'info',
   format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: [new DailyRotateFile({
     filename: SUPPORT_LOG_FILE_PREFIX,
     dirname: SUPPORT_LOG_RELATIVE_LOCAL_DIR,
     maxFiles: 3,
     maxSize: '10m',
-    level: 'warn',
+    level: 'info',
   })],
 });
 
@@ -325,8 +325,7 @@ export const logApp = {
     if (appLogTransports.length > 0 && appLogger.isLevelEnabled(level)) {
       const data = prepareLogMetadata(meta, { category: LOG_APP, source: 'backend' });
       appLogger.log(level, message, data);
-      // Only add in support package starting warn level
-      if (appLogger.isLevelEnabled('warn')) {
+      if (supportLogger.isLevelEnabled(level)) {
         supportLogger.log(level, message, data);
       }
     }
