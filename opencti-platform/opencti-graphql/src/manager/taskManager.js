@@ -111,10 +111,10 @@ export const taskRule = async (context, user, task, callback) => {
   }
 };
 
-export const taskQuery = async (context, user, task, callback) => {
+export const taskQuery = async (context, user, task, callback, baseFields = []) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
-  const finalOpts = { ...options, baseData: true, callback };
+  const finalOpts = { ...options, baseData: true, baseFields, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 
@@ -551,13 +551,11 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   let totalProcessed = task.task_processed_number;
   return async (elements) => {
     const objects = [];
-    const ids = elements.map((e) => e.internal_id);
-    // `elements` only carry the query's baseData fields (see taskQuery/elList options), which do
-    // NOT include custom_field_values. A full reload is required to read and filter that field.
-    const loadedElements = await internalFindByIds(context, user, ids);
-    for (let index = 0; index < loadedElements.length; index += 1) {
+    // `custom_field_values` is requested via taskQuery's baseFields (see workerTaskHandler), so
+    // `elements` already carry it — no need to reload them.
+    for (let index = 0; index < elements.length; index += 1) {
       await doYield();
-      const element = loadedElements[index];
+      const element = elements[index];
       const currentValues = element.custom_field_values ?? [];
       // Only patch entities actually holding a value for the deleted field. A targeted 'remove'
       // (matched by field_id, not a pre-computed 'replace' snapshot) is used so the worker recomputes
@@ -617,8 +615,11 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
   if (task.type === TASK_TYPE_QUERY) {
-    // Task query will be enlisted step by step except for sharing/un sharing
-    await taskQuery(context, user, task, callback);
+    // Task query will be enlisted step by step except for sharing/un sharing.
+    // custom_field_values isn't part of the base fields, but the removal callback needs it on
+    // every element; requesting it upfront here avoids a separate reload of all elements.
+    const baseFields = actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES ? ['custom_field_values'] : [];
+    await taskQuery(context, user, task, callback, baseFields);
   }
   if (task.type === TASK_TYPE_LIST) {
     // Task list is enlist in one shot
