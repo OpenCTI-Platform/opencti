@@ -9,6 +9,9 @@ import Loader from './components/Loader';
 const PublicRoot = lazy(() => import('./public/PublicRoot'));
 const PrivateRoot = lazy(() => import('./private/Root'));
 const RedirectByPath = lazy(() => import('./private/components/RedirectByPath'));
+// TEMPORARY SPIKE — not part of production navigation, safe to remove after
+// review. See src/_fdsSpike/FdsComponentsSpikeScreen.tsx for details.
+const FdsComponentsSpikeScreen = lazy(() => import('./_fdsSpike/FdsComponentsSpikeScreen'));
 
 const App = () => (
   <CookiesProvider>
@@ -20,6 +23,10 @@ const App = () => (
               <Route path="/dashboard/*" Component={PrivateRoot} />
               <Route path="/public/*" Component={PublicRoot} />
               <Route path="/redirect/*" element={<RedirectByPath />} />
+              {/* TEMPORARY SPIKE route — isolated design-system component
+                  visual test, not linked from any real menu/navigation.
+                  Safe to remove after review (see FdsComponentsSpikeScreen). */}
+              <Route path="/fds-spike" Component={FdsComponentsSpikeScreen} />
               {/* By default, redirect to dashboard */}
               <Route
                 path="/*"
