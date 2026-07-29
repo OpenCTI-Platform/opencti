@@ -500,11 +500,12 @@ export const filterValue = (
     return t_i18n(`relationship_${value}`);
   }
 
-  // Defensive check to prevent errors on string manipulation after this call
-  if (typeof value !== 'string') {
-    return null;
+  if (value === undefined || value === null) {
+    return value;
   }
-  return value;
+
+  // Defensive check to prevent errors on string manipulation after this call
+  return typeof value === 'string' ? value : String(value);
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
