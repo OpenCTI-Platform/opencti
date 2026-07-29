@@ -22,6 +22,7 @@ export type SavedFiltersAutocompleteOptionType = {
   isOwner: boolean;
   ownerName?: string;
   canManage: boolean;
+  scope?: string;
 };
 
 const SavedFilterSelection = ({

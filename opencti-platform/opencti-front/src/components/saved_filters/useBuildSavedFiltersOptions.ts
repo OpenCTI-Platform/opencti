@@ -14,6 +14,7 @@ const useBuildSavedFiltersOptions = (data): SavedFiltersAutocompleteOptionType[]
       isOwner,
       ownerName: isOwner ? undefined : ownerName,
       canManage: item.currentUserAccessRight === 'admin',
+      scope: item.scope,
     };
   });
 
