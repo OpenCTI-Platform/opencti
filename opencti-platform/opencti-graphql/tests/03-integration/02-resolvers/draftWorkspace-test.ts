@@ -762,8 +762,8 @@ describe('Drafts workspace resolver testing', () => {
         relationship_type: 'related-to',
       },
     });
-    const createdRelationStandardId = createdRelation.data?.stixCoreRelationshipAdd.standard_id;
-    expect(createdRelationStandardId).toBeDefined();
+    const createdRelationId = createdRelation.data?.stixCoreRelationshipAdd.id;
+    expect(createdRelationId).toBeDefined();
 
     // Removing the existing report from draft should revert its own field changes but keep it
     // as update_linked, since the draft-created relation still targets it.
@@ -778,7 +778,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(reportStillLinked.data?.report.draftVersion?.draft_operation).toBe('update_linked');
 
     // Removing the linking relation from draft should now cascade-clean the update_linked report
-    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_RELATIONSHIP_FROM_DRAFT_QUERY, { id: createdRelationStandardId });
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_RELATIONSHIP_FROM_DRAFT_QUERY, { id: createdRelationId });
     const reportAfterCascadeCleanup = await queryInitPlatformAsAdmin(READ_REPORT_DRAFT_VERSION_QUERY, { id: existingReportStandardId });
     expect(reportAfterCascadeCleanup.data?.report.draftVersion).toBeNull();
 
