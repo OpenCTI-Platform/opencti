@@ -291,7 +291,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
             : t_i18n('You can optionally add a comment before changing the status.')}
         </DialogContentText>
         <TextField
-          autoFocus
           fullWidth
           multiline
           minRows={3}

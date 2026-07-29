@@ -692,7 +692,6 @@ const StixDomainObjectHeader = (props) => {
                   component={TextField}
                   variant="outlined"
                   name="new_alias"
-                  autoFocus={true}
                   placeholder={t_i18n('New alias')}
                   onChange={handleChangeNewAlias}
                   value={newAlias}
@@ -767,7 +766,6 @@ const StixDomainObjectHeader = (props) => {
                     component={TextField}
                     variant="outlined"
                     name="new_alias"
-                    autoFocus={true}
                     fullWidth={true}
                     placeholder={t_i18n('New aliases')}
                     sx={{
