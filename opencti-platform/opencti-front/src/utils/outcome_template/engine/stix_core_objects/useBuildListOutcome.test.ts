@@ -33,7 +33,7 @@ describe('Hook: useBuildListOutcome', () => {
   it('should have a table containing data from query', async () => {
     const { hook, relayEnv } = testRenderHook(() => useBuildListOutcome());
     // We want fetchQuery function to use the test env of Relay.
-    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a));
+    vi.spyOn(env, 'fetchQuery').mockImplementation((q, a) => fetchQuery(relayEnv, q, a ?? {}));
     const { buildListOutcome } = hook.result.current;
 
     // Fake data returned by the query.
