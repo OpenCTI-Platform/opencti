@@ -1251,6 +1251,8 @@ describe('Connector Composer and Managed Connectors', () => {
     });
 
     it('should retrieve the manager contract excerpt for a managed connector', async () => {
+      const testConnector = catalogHelper.getTestSafeConnector();
+
       const result = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_EXCERPT_QUERY,
         variables: { id: managedConnectorId },
@@ -1259,9 +1261,9 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data).toBeDefined();
       const excerpt = result.data?.connector?.manager_contract_excerpt;
       expect(excerpt).toBeDefined();
-      expect(excerpt.title).toEqual('IPinfo');
-      expect(excerpt.slug).toEqual('ipinfo');
-      expect(excerpt.logo).toMatch(/^data:image\/.+;base64,[A-Za-z0-9+/]+=*$/);
+      expect(excerpt.title).toEqual(testConnector.title);
+      expect(excerpt.slug).toEqual(testConnector.slug);
+      expect(excerpt.logo).toEqual(testConnector.logo);
     });
 
     it('should edit managed connector', async () => {

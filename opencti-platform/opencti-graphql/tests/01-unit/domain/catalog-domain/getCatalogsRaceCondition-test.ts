@@ -26,7 +26,7 @@ let catalogFilePath: string;
 const loadFreshCatalogDomain = async (customCatalogPaths: string[]) => {
   process.env.APP__CUSTOM_CATALOGS = JSON.stringify(customCatalogPaths);
   vi.resetModules();
-  vi.doMock('../../../../src/manager/catalogManager', () => ({
+  vi.doMock('../../../../src/modules/catalog/catalogManager', () => ({
     isCatalogManagerEnabled: () => false,
   }));
   return import('../../../../src/modules/catalog/catalog-domain');

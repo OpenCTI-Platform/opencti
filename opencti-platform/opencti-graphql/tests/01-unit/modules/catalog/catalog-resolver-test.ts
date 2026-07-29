@@ -9,11 +9,15 @@ const findCatalogMock = vi.fn();
 const findByIdMock = vi.fn();
 const findContractBySlugMock = vi.fn();
 
-vi.mock('../../../../src/config/conf', () => ({
-  isFeatureEnabled: (...args: unknown[]) => isFeatureEnabledMock(...args),
-}));
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+  return {
+    ...actual,
+    isFeatureEnabled: (...args: unknown[]) => isFeatureEnabledMock(...args),
+  };
+});
 
-vi.mock('../../../../src/manager/catalogManager', () => ({
+vi.mock('../../../../src/modules/catalog/catalogManager', () => ({
   isCatalogManagerEnabled: (...args: unknown[]) => isCatalogManagerEnabledMock(...args),
   getCatalogVersionInfo: (...args: unknown[]) => getCatalogVersionInfoMock(...args),
 }));
