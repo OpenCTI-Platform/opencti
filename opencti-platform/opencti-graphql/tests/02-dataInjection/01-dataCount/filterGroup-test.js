@@ -1316,7 +1316,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(45);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(47);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
