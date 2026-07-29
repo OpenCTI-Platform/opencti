@@ -1,3 +1,4 @@
+import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import { type StixCoreRelationshipAddInput } from '../../../generated/graphql';
 import { RELATION_HAS_COVERED } from '../../../schema/stixCoreRelationship';
@@ -71,6 +72,7 @@ export const transformHasCoveredFromId = async (
   const securityCoverageResults = await getSecurityCoverageResults(context, user, securityCoverage);
   const matchingSCR = securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri);
   if (matchingSCR.length !== 1) {
+    logApp.error(`[SECURITY-COVERAGE-RESULT] Invalid number of SCR found: ${relInput.external_uri}`);
     throw FunctionalError('Cannot find SecurityCoverageResult for this has-covered relationship');
   }
   return {
