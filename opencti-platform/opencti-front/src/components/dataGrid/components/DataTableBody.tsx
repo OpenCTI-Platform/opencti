@@ -8,8 +8,6 @@ import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
 import DataTableEmptyState from './DataTableEmptyState';
-import useAuth from '../../../utils/hooks/useAuth';
-import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 import DataTableSearchEmptyState from './DataTableSearchEmptyState';
 
 const DataTableBody = ({
@@ -50,8 +48,6 @@ const DataTableBody = ({
   } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
 
   const tableSearchTerm = searchTerm ?? storedSearchTerm;
-  const { settings } = useAuth();
-  const isImprovedSearchEnabled = isFeatureEnable(settings, 'IMPROVED_SEARCH');
 
   const resolvedData = useMemo(() => {
     if (!queryData) {
@@ -188,7 +184,7 @@ const DataTableBody = ({
     return null;
   }
 
-  const isSearching = isImprovedSearchEnabled && (!!tableSearchTerm || (filters?.filters ?? []).length > 0);
+  const isSearching = !!tableSearchTerm || (filters?.filters ?? []).length > 0;
 
   return (
     <>
