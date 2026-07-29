@@ -98,7 +98,7 @@ const GroupingKnowledgeGraph = ({
         dataHeader={data}
         dataPositions={data}
         containerHeaderProps={{
-          modes: ['graph', 'content', 'correlation', 'matrix'],
+          modes: ['graph', 'content', 'correlation', 'matrix', 'correlation-timeline'],
           mode,
           link: `/dashboard/analyses/groupings/${id}/knowledge`,
         }}

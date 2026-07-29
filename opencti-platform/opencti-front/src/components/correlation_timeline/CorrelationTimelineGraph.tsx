@@ -19,6 +19,11 @@ interface CorrelationTimelineGraphProps {
   // Header of the left column: "Objects of this incident", "Objects of this
   // report"... depends on the entity the view is opened from.
   sourcesLabel: string;
+  // Hard caps on what gets drawn. Every hover re-renders the ribbons, and a
+  // large report can otherwise produce thousands of SVG nodes, which makes the
+  // view crawl. Beyond these counts the chart is unreadable anyway.
+  maxSources?: number;
+  maxTargets?: number;
 }
 
 const LABEL_WIDTH = 260;
@@ -40,9 +45,11 @@ const recencyOpacity = (date: Date, now: number) => {
 };
 
 const CorrelationTimelineGraph = ({
-  sources,
-  targets,
+  sources: allSources,
+  targets: allTargets,
   sourcesLabel,
+  maxSources = 60,
+  maxTargets = 80,
 }: CorrelationTimelineGraphProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsd, rd } = useFormatter();
@@ -50,6 +57,24 @@ const CorrelationTimelineGraph = ({
   const { ref, width } = useContainerWidth();
   const [hoveredSource, setHoveredSource] = useState<string | null>(null);
   const [hoveredTarget, setHoveredTarget] = useState<string | null>(null);
+
+  // Sources arrive sorted by number of correlations, so the head of the list is
+  // the interesting part.
+  const sources = useMemo(
+    () => allSources.slice(0, maxSources),
+    [allSources, maxSources],
+  );
+  // Targets arrive sorted by date: slicing would drop the most recent ones, so
+  // keep the most corroborated instead, then restore the chronological order.
+  const targets = useMemo(() => {
+    if (allTargets.length <= maxTargets) return allTargets;
+    return [...allTargets]
+      .sort((a, b) => b.sourceIds.length - a.sourceIds.length)
+      .slice(0, maxTargets)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [allTargets, maxTargets]);
+  const cappedSources = allSources.length - sources.length;
+  const cappedTargets = allTargets.length - targets.length;
 
   // Frozen once per mount, so that memoized layouts stay stable across renders.
   const now = useMemo(() => Date.now(), []);
@@ -219,6 +244,13 @@ const CorrelationTimelineGraph = ({
         ) : (
           <span>{t_i18n('Pinch or Ctrl + scroll to zoom the time axis, swipe horizontally to pan')}</span>
         )}
+        {(cappedSources > 0 || cappedTargets > 0) && (
+          <span style={{ color: theme.palette.warning?.main }}>
+            {/* Ratios rather than glued nouns: the two counts sit right under
+                the two column headers, so they read on their own. */}
+            {`· ${t_i18n('Chart capped, narrow the filters')} · ${sources.length}/${allSources.length} · ${targets.length}/${allTargets.length}`}
+          </span>
+        )}
       </Box>
       <svg
         width={width}
@@ -283,7 +315,7 @@ const CorrelationTimelineGraph = ({
                   {truncate(source.label, 32)}
                 </text>
                 <title>
-                  {`${t_i18n(source.entityType)} · ${source.label}\n${source.targetIds.length} ${t_i18n('correlated containers')} / ${source.containersTotal} ${t_i18n('in the platform')}`}
+                  {`${t_i18n(source.entityType)} · ${source.label}\n${source.targetIds.length} ${t_i18n('correlated targets')} / ${source.containersTotal} ${t_i18n('containers in the platform')}`}
                 </title>
               </g>
             );

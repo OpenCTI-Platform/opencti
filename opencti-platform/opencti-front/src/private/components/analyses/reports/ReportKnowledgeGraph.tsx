@@ -102,7 +102,7 @@ const ReportKnowledgeGraph = ({
         dataHeader={data}
         dataPositions={data}
         containerHeaderProps={{
-          modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
+          modes: ['graph', 'content', 'timeline', 'correlation', 'matrix', 'correlation-timeline'],
           mode,
           link: `/dashboard/analyses/reports/${id}/knowledge`,
         }}

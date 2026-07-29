@@ -233,7 +233,9 @@ const CorrelationTimelineToolbar = ({
                 }}
               >
                 <ListItemText
-                  primary={value === NO_LIMIT ? t_i18n('No limit') : `${value} ${t_i18n('containers')}`}
+                  // The menu header already says "present in more than", so the
+                  // bare number reads correctly and needs no noun.
+                  primary={value === NO_LIMIT ? t_i18n('No limit') : `${value}`}
                 />
               </MenuItem>
             )),
@@ -241,7 +243,7 @@ const CorrelationTimelineToolbar = ({
         </ToolbarMenu>
 
         <ToolbarMenu
-          label={`${t_i18n('Shared')} · ≥${minShared}`}
+          label={`${t_i18n('Minimum shared')} · ≥${minShared}`}
           icon={<HubOutlined fontSize="small" />}
           active={minShared > 1}
         >
@@ -318,7 +320,7 @@ const CorrelationTimelineToolbar = ({
         <div style={{ flex: 1 }} />
 
         <span style={{ color: theme.palette.text?.secondary, fontSize: 12, whiteSpace: 'nowrap' }}>
-          {`${n(sourcesCount)} ${t_i18n('objects')} · ${n(targetsCount)} ${t_i18n('correlated targets')}`}
+          {`${n(sourcesCount)} ${t_i18n('source objects')} · ${n(targetsCount)} ${t_i18n('correlated targets')}`}
         </span>
 
         {overCorrelated.length > 0 && (
@@ -363,7 +365,7 @@ const ToolbarMenuBadge = ({ objects }: { objects: OverCorrelatedObject[] }) => {
             <ListItemText
               sx={{ marginLeft: 1 }}
               primary={object.label}
-              secondary={`${object.total} ${t_i18n('containers')}`}
+              secondary={`${object.total} ${t_i18n('containers in the platform')}`}
             />
           </MenuItem>
         ))}

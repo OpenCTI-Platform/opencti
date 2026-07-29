@@ -98,7 +98,7 @@ const IncidentKnowledgeGraph = ({
         dataHeader={data}
         dataPositions={data}
         containerHeaderProps={{
-          modes: ['graph', 'content', 'timeline', 'correlation', 'matrix'],
+          modes: ['graph', 'content', 'timeline', 'correlation', 'matrix', 'correlation-timeline'],
           mode,
           link: `/dashboard/cases/incidents/${id}/knowledge`,
         }}

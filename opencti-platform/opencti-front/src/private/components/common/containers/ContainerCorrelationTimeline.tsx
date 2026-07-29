@@ -140,22 +140,29 @@ const ContainerCorrelationTimelineComponent = ({
   const [targetTypes, setTargetTypes] = useState<string[]>(CORRELATION_TARGET_TYPES);
   const [dateReference, setDateReference] = useState<DateReference>('functional');
 
-  // Everything is fetched once and filtered client-side, so toggling target
-  // types or the date reference never triggers a refetch.
-  const data = useLazyLoadQuery<ContainerCorrelationTimelineQuery>(
-    containerCorrelationTimelineQuery,
-    {
+  // Memoized: a fresh variables object on every render makes Relay rebuild the
+  // operation, which re-suspends the tree and makes the whole view blink.
+  const variables = useMemo(
+    () => ({
       id: containerId,
       count: OBJECTS_COUNT,
       containersCount: CONTAINERS_PER_OBJECT,
       containerTypes: CORRELATION_CONTAINER_TYPES,
       relationshipsCount: RELATIONSHIPS_PER_OBJECT,
       entityFilters: {
-        mode: 'and',
+        mode: 'and' as const,
         filters: [{ key: ['elementWithTargetTypes'], values: CORRELATION_ENTITY_TYPES }],
         filterGroups: [],
       },
-    },
+    }),
+    [containerId],
+  );
+
+  // Everything is fetched once and filtered client-side, so toggling target
+  // types or the date reference never triggers a refetch.
+  const data = useLazyLoadQuery<ContainerCorrelationTimelineQuery>(
+    containerCorrelationTimelineQuery,
+    variables,
   );
 
   const objects = useMemo<RawCorrelationObject[]>(() => {
