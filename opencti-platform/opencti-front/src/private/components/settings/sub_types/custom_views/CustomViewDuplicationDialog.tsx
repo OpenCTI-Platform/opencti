@@ -112,7 +112,6 @@ const CustomViewDuplicationDialog: FunctionComponent<
     >
       <Input
         error={!newName ? t_i18n('This field is required') : undefined}
-        autoFocus
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}
         type="text"
