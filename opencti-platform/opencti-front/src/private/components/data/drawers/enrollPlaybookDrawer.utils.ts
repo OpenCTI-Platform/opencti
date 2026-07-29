@@ -2,7 +2,7 @@ import { graphql } from 'react-relay';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import type { enrollPlaybookDrawerIdsQuery$data } from './__generated__/enrollPlaybookDrawerIdsQuery.graphql';
 import type { enrollPlaybookDrawerFiltersQuery$data } from './__generated__/enrollPlaybookDrawerFiltersQuery.graphql';
-import { GraphQLTaggedNode } from 'relay-runtime';
+import type { GraphQLTaggedNode } from 'relay-runtime';
 
 export const playbooksForEnrollmentIdsQuery = graphql`
   query enrollPlaybookDrawerIdsQuery($ids: [String!]!) {
