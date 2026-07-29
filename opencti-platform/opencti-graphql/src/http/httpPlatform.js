@@ -24,7 +24,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext, redisIsAlive } from '../database/redis';
-import { rabbitMQIsAlive } from '../database/rabbitmq';
+import { getIngestionUnits, rabbitMQIsAlive } from '../database/rabbitmq';
 import { getEngineUsedSize, isEngineAlive } from '../database/engine';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
@@ -544,8 +544,14 @@ const createApp = async (app, schema) => {
           if (withDetails) {
             const engineUsedSize = healthCheckTimeout(getEngineUsedSize(), 'Timeout checking elastic/opensearch used size').catch(() => null);
             const storageUsedSize = healthCheckTimeout(getStorageUsedSize(), 'Timeout checking storage used size').catch(() => null);
-            const [esUsedSize, s3UsedSize] = await Promise.all([engineUsedSize, storageUsedSize]);
-            res.status(200).send({ status: 'success', es_used_size: esUsedSize, s3_used_size: s3UsedSize });
+            const ingestionUnits = healthCheckTimeout(getIngestionUnits(executionContext('healthcheck'), SYSTEM_USER), 'Timeout checking ingestion units').catch(() => null);
+            const [esUsedSize, s3UsedSize, parallelIngestionUnits] = await Promise.all([engineUsedSize, storageUsedSize, ingestionUnits]);
+            res.status(200).send({
+              status: 'success',
+              es_used_size: esUsedSize,
+              s3_used_size: s3UsedSize,
+              ingestion_units: parallelIngestionUnits,
+            });
           } else {
             res.status(200).send({ status: 'success' });
           }
