@@ -81,8 +81,9 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
   const output = fs.createWriteStream(zipFullpath);
 
   let closed = false;
+  let streamError: Error | undefined;
   output.on('error', (error) => {
-    throw FilesystemError(error.message, { error, zipFullpath });
+    streamError = error;
   });
   output.on('close', () => {
     closed = true;
@@ -93,11 +94,15 @@ const archiveFolderToZip = async (zipLocalFolder: string, zipFullpath: string) =
   archive.directory('subdir/', 'new-subdir');
   await archive.finalize();
 
-  // Wait until zip is complete, or timeout.
+  // Wait until zip is complete, an error occurs, or timeout.
   let initWaitingTime = ZIP_TIMEOUT_MS;
-  while (!closed && initWaitingTime > 0) {
+  while (!closed && !streamError && initWaitingTime > 0) {
     await wait(500);
     initWaitingTime -= 500;
+  }
+
+  if (streamError) {
+    throw FilesystemError(streamError.message, { zipFullpath });
   }
 };
 
