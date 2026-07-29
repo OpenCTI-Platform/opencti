@@ -22,7 +22,6 @@ describe('Component: RelativeDateInput', () => {
         valueOrder={0}
         dateInput={dateInput}
         setDateInput={setDateInput}
-        autoFocus
       />,
     );
 

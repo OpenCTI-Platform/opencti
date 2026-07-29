@@ -39,7 +39,7 @@ const ConfirmationDialog: FunctionComponent<ConfirmationDialogProps> = ({
         <Button variant="secondary" onClick={onCancel} color="primary">
           {cancelButtonText}
         </Button>
-        <Button onClick={onConfirm} color="error" autoFocus>
+        <Button onClick={onConfirm} color="error">
           {confirmButtonText}
         </Button>
       </DialogActions>

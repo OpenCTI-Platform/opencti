@@ -16,8 +16,6 @@ interface RelativeDateInputProps {
   valueOrder: number;
   dateInput: string[];
   setDateInput: (value: string[]) => void;
-  /** Only ONE field in the popover may claim focus. */
-  autoFocus?: boolean;
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
@@ -28,7 +26,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
   valueOrder,
   dateInput,
   setDateInput,
-  autoFocus = false,
 }) => {
   const { t_i18n, smhd } = useFormatter();
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -144,7 +141,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
               size: 'small',
               variant: 'outlined',
               fullWidth: true,
-              autoFocus,
               error: errorMessage !== undefined,
               helperText: errorMessage,
             },
@@ -169,7 +165,6 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
           setDraft(event.target.value);
           handleChangeValue(event.target.value);
         }}
-        autoFocus={autoFocus}
         onFocus={() => setIsEditing(true)}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
