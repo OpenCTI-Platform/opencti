@@ -69,6 +69,8 @@ generates:
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
         SecurityCoverage: ../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage
         SecurityCoverageResult: ../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult
+        AttackPatternCoverage: ../modules/securityCoverage/securityCoverage-types#CoveredEntity
+        VulnerabilityCoverage: ../modules/securityCoverage/securityCoverage-types#CoveredEntity
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
         Form: ../modules/form/form-types#BasicStoreEntityForm
         AuthenticationProvider: ../modules/authenticationProvider/authenticationProvider-types#BasicStoreEntityAuthenticationProvider

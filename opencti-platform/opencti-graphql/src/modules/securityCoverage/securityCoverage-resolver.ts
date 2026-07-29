@@ -5,11 +5,13 @@ import {
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
-  getSecurityCoverageResultProperty,
-  averageCoverageInformation,
-  mostRecentLastCoverageResult,
-  getSecurityCoverageResults,
+  loadSecurityCoverageResultProperty,
+  loadAverageCoverageInformation,
+  loadMostRecentLastCoverageResult,
+  loadSecurityCoverageResults,
+  findCoveredEntities,
 } from './securityCoverage-domain';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -33,15 +35,19 @@ const SecurityCoverageResolvers: Resolvers = {
   SecurityCoverage: {
     objectCovered: (securityCoverage, _, context) => objectCovered<any>(context, context.user, securityCoverage.id),
     toStixBundle: (securityCoverage, _, context) => securityCoverageStixBundle(context, context.user, securityCoverage.id),
-    results: (securityCoverage, _, context) => getSecurityCoverageResults(context, context.user, securityCoverage),
+    results: (securityCoverage, _, context) => loadSecurityCoverageResults(context, context.user, securityCoverage),
     // security coverage result info
-    coverage_last_result: (securityCoverage, _, context) => mostRecentLastCoverageResult(context, context.user, securityCoverage),
-    coverage_valid_from: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
-    coverage_valid_to: (securityCoverage, _, context) => getSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
-    coverage_information: (securityCoverage, _, context) => averageCoverageInformation(context, context.user, securityCoverage),
+    coverage_last_result: (securityCoverage, _, context) => loadMostRecentLastCoverageResult(context, context.user, securityCoverage),
+    coverage_valid_from: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_from'),
+    coverage_valid_to: (securityCoverage, _, context) => loadSecurityCoverageResultProperty(context, context.user, securityCoverage, 'coverage_valid_to'),
+    coverage_information: (securityCoverage, _, context) => loadAverageCoverageInformation(context, context.user, securityCoverage),
     coveredEntitiesDistribution: (securityCoverage, args, context) =>
       distributionRelations(context, context.user, { ...args, fromOrToId: securityCoverage[RELATION_RESULT_OF] } as any),
     stixCoreRelationshipsFromResults: (securityCoverage, args, context) => stixCoreRelationshipsPaginated(context, context.user, securityCoverage[RELATION_RESULT_OF], args),
+    coveredAttackPatterns: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_ATTACK_PATTERN, args),
+    coveredVulnerabilities: (securityCoverage, args, context) =>
+      findCoveredEntities(context, context.user, securityCoverage, ENTITY_TYPE_VULNERABILITY, args),
   },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),

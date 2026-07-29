@@ -4,16 +4,10 @@ import { createEntity, deleteElementById } from '../../../database/middleware';
 import { pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../../database/middleware-loader';
 import { notify } from '../../../database/redis';
 import { type SecurityCoverageResultAddInput } from '../../../generated/graphql';
-import { loadThroughDenormalized } from '../../../resolvers/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } from '../securityCoverage-types';
-import {
-  ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-  INPUT_RESULT_OF,
-  type BasicStoreEntitySecurityCoverageResult,
-  type StoreEntitySecurityCoverageResult,
-} from './securityCoverageResult-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 
 /**
  * Find a security coverage results by its ID.
@@ -115,31 +109,4 @@ export const deleteSecurityCoverageResult = async (
   const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_SECURITY_COVERAGE_RESULT);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, id, user);
   return deleted.id;
-};
-
-/**
- * Delete all security coverage results for a security coverage.
- *
- * @param context
- * @param user User making the request.
- * @param resultOfId ID of the security coverage.
- * @returns List of IDs deleted results.
- */
-export const deleteSecurityCoverageResultsByResultOf = async (
-  context: AuthContext,
-  user: AuthUser,
-  securityCoverage: BasicStoreEntitySecurityCoverage,
-) => {
-  const deletedIds: string[] = [];
-  const results = await loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
-  for (const result of results) {
-    const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
-      context,
-      user,
-      result.id,
-      ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
-    );
-    deletedIds.push(deleted.standard_id);
-  }
-  return deletedIds;
 };

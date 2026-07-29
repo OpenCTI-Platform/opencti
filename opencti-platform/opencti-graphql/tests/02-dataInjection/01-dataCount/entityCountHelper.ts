@@ -46,6 +46,8 @@ export const entitiesCounter = {
   Vocabulary: 355,
   EmailTemplate: 1,
   RetentionRule: 4,
+  SecurityCoverage: 1,
+  SecurityCoverageResult: 1,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
@@ -63,12 +65,14 @@ export const relationsCounter = {
   'member-of': 13,
   mitigates: 1,
   object: 38,
+  'object-covered': 1,
   'object-label': 30,
   'object-marking': 28,
   'operating-system': 1,
   'participate-to': 4,
   'part-of': 6,
   'related-to': 2,
+  'result-of': 1,
   'stix-sighting-relationship': 2,
   targets: 2,
   uses: 3,
