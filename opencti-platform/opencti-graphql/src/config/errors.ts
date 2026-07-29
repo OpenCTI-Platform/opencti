@@ -8,13 +8,13 @@ export const error = (type: string, message: string, data?: any) => {
 };
 
 const MUTED_ERROR = Symbol('mutedError');
-type MutableError = Error & { [MUTED_ERROR]?: boolean };
-export const muteError = (e: MutableError) => {
+type MuteableError = Error & { [MUTED_ERROR]?: boolean };
+export const muteError = (e: MuteableError) => {
   e[MUTED_ERROR] = true;
   return e;
 };
 
-export const isMutedError = (e: MutableError) => e[MUTED_ERROR];
+export const isMutedError = (e: MuteableError): boolean => e[MUTED_ERROR] === true;
 
 // region TYPE_AUTH
 export const AUTH_FAILURE = 'AUTH_FAILURE';
