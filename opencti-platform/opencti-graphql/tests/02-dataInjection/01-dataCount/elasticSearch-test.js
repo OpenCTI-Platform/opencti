@@ -686,7 +686,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1); // because of created filter
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 25);
+    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 27);
     filters = {
       mode: 'and',
       filters: [

@@ -97,6 +97,7 @@ export const addSecurityCoverage = async (
     coverage_valid_to,
     external_uri,
     tenant_name,
+    tenant_id,
     ...onlySecurityCoverageInput
   } = securityCoverageInput;
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
@@ -119,7 +120,7 @@ export const addSecurityCoverage = async (
       x_opencti_modified_at,
     } = onlySecurityCoverageInput;
     const securityCoverageResultInput = {
-      name: tenant_name || external_uri || `Result of ${createdSecurityCoverage.name}`,
+      name: tenant_name || external_uri || tenant_id || `Result of ${createdSecurityCoverage.name}`,
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       coverage_information,
       coverage_last_result,
