@@ -13,10 +13,13 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { DEFAULT_ROLE } from '../../../src/utils/access';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 
 describe('Middleware test coverage on organization sharing verification', () => {
   let userInPlatformOrg: AuthUser;
   let userInExternalOrg: AuthUser;
+  let serviceAccountInExternalOrg: AuthUser;
   let externalOrganizationEntity: BasicStoreEntityOrganization;
   let platformOrganizationEntity: BasicStoreEntityOrganization;
 
@@ -41,6 +44,15 @@ describe('Middleware test coverage on organization sharing verification', () => 
     userInExternalOrg.roles = [DEFAULT_ROLE];
     userInExternalOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userInExternalOrg.organizations = [externalOrganizationEntity];
+
+    // Service accounts are always considered inside the platform organization,
+    // but their explicitly assigned organizations must still be applied on created data.
+    serviceAccountInExternalOrg = getFakeAuthUser('serviceAccountInExternalOrg');
+    serviceAccountInExternalOrg.groups = [greenGroup];
+    serviceAccountInExternalOrg.roles = [DEFAULT_ROLE];
+    serviceAccountInExternalOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
+    serviceAccountInExternalOrg.organizations = [externalOrganizationEntity];
+    serviceAccountInExternalOrg.user_service_account = true;
   });
 
   afterAll(async () => {
@@ -90,6 +102,23 @@ describe('Middleware test coverage on organization sharing verification', () => 
         const exception = e as GraphQLError;
         expect(exception.message).toBe('Restricted entity already exists');
       }
+      await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+    });
+  });
+
+  describe('Data created by a service account should be shared with its explicit organizations.', () => {
+    it('Should share created entity with the organization assigned to the service account.', async () => {
+      const input: ThreatActorIndividualAddInput = {
+        name: `Service account organization propagation ${now()}`,
+        description: 'Created by a service account member of an external organization',
+      };
+      const threatActor = await addThreatActorIndividual(inPlatformContext, serviceAccountInExternalOrg, input);
+      expect(threatActor.id).toBeDefined();
+
+      const createdThreatActor = await storeLoadById(testContext, ADMIN_USER, threatActor.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+      // The organization assigned to the service account should be granted on the created entity
+      expect(createdThreatActor[RELATION_GRANTED_TO]).toContain(externalOrganizationEntity.internal_id);
+
       await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     });
   });
