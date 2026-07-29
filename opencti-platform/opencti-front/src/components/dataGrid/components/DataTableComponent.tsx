@@ -293,6 +293,7 @@ const DataTableComponent = ({
     >
       {filtersComponent && <div>{filtersComponent}</div>}
       <div
+        role="grid"
         className="datatable-container"
         style={{ width: '100%', overflow: 'auto hidden' }}
         ref={tableRef}
