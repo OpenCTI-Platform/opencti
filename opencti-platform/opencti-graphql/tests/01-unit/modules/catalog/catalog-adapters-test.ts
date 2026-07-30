@@ -4,20 +4,25 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const confGetMock = vi.fn();
 const readFileMock = vi.fn();
 
-vi.mock('../../../../src/config/conf', () => ({
-  __esModule: true,
-  default: {
-    get: (...args: unknown[]) => confGetMock(...args),
-  },
-  TEST_MODE: false,
-  isFeatureEnabled: () => false,
-  logApp: {
-    warn: vi.fn(),
-    info: vi.fn(),
-    debug: vi.fn(),
-  },
-  PLATFORM_VERSION: '7.260722.0',
-}));
+vi.mock('../../../../src/config/conf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      get: (...args: unknown[]) => confGetMock(...args),
+    },
+    TEST_MODE: false,
+    isFeatureEnabled: () => false,
+    logApp: {
+      ...actual.logApp,
+      warn: vi.fn(),
+      info: vi.fn(),
+      debug: vi.fn(),
+    },
+    PLATFORM_VERSION: '7.260722.0',
+  };
+});
 
 vi.mock('node:fs/promises', () => ({
   readFile: (...args: unknown[]) => readFileMock(...args),
@@ -141,6 +146,58 @@ describe('catalog-adapters', () => {
 
     expect(() => adapter.toPersistableContracts({ contracts: [] })).toThrow('Catalog manifest is missing required fields: id and contracts');
     expect(() => adapter.toPersistableContracts({ id: 'catalog-1', contracts: 'not-array' })).toThrow('Catalog manifest is missing required fields: id and contracts');
+  });
+
+  it('NewManifestAdapter.toPersistableContracts enforces manager-supported required fields', async () => {
+    const { NewManifestAdapter } = await import('../../../../src/modules/catalog/catalog-adapters');
+    const adapter = new NewManifestAdapter();
+
+    const rawManifest = {
+      id: 'catalog-1',
+      contracts: [
+        {
+          title: 'Missing image manager contract',
+          slug: 'missing-image',
+          manager_supported: true,
+          config_schema: {
+            type: 'object',
+            properties: { key: { type: 'string' } },
+            required: ['key'],
+            additionalProperties: false,
+          },
+        },
+      ],
+    };
+
+    expect(() => adapter.toPersistableContracts(rawManifest)).toThrow('Contract must define container_image field');
+  });
+
+  it('NewManifestAdapter.toPersistableContracts validates manager config schema syntax', async () => {
+    const { NewManifestAdapter } = await import('../../../../src/modules/catalog/catalog-adapters');
+    const adapter = new NewManifestAdapter();
+
+    const rawManifest = {
+      id: 'catalog-1',
+      contracts: [
+        {
+          title: 'Invalid schema manager contract',
+          slug: 'invalid-schema',
+          manager_supported: true,
+          image_name: 'opencti/invalid-schema:1.0.0',
+          image_type: 'EXTERNAL_IMPORT',
+          config_schema: {
+            type: 'object',
+            properties: {
+              key: { type: 'not-a-real-json-schema-type' },
+            },
+            required: ['key'],
+            additionalProperties: false,
+          },
+        },
+      ],
+    };
+
+    expect(() => adapter.toPersistableContracts(rawManifest)).toThrow('Contract must be a valid json schema definition');
   });
 
   it('NewManifestAdapter.toPersistableContracts normalizes contracts and keeps all versions', async () => {

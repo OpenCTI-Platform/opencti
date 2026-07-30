@@ -1,9 +1,13 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import conf, { PLATFORM_VERSION } from '../../config/conf';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import type { ValidateFunction } from 'ajv';
+import conf, { PLATFORM_VERSION, logApp } from '../../config/conf';
 import type { CatalogContract, CatalogDefinition, IngestionConnectorType } from './catalog-types';
 import { UnsupportedError } from '../../config/errors';
 import { sanitizeManagerConfigSchema } from './catalog-config-schema';
+import { validateManagerSupportedContract } from './catalog-contract-validation';
 
 export type CatalogSourceConfig = {
   kind: 'remote' | 'local';
@@ -93,6 +97,19 @@ const defaultConfigSchema = {
   additionalProperties: true,
 } as CatalogContract['config_schema'];
 
+const adapterValidatorCache = new Map<string, ValidateFunction>();
+const adapterAjv = new Ajv({ coerceTypes: true });
+addFormats(adapterAjv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
+
+const getOrCompileAdapterValidator = (cacheKey: string, jsonValidation: object): ValidateFunction => {
+  let validate = adapterValidatorCache.get(cacheKey);
+  if (!validate) {
+    validate = adapterAjv.compile(jsonValidation);
+    adapterValidatorCache.set(cacheKey, validate);
+  }
+  return validate;
+};
+
 const sanitizeNewManifestConfigSchema = (schema: Record<string, any>) => {
   const sanitizedSchema = sanitizeManagerConfigSchema(schema);
 
@@ -141,10 +158,22 @@ const toCatalogDefinitionsFromNewManifest = (raw: Record<string, any>): CatalogD
     throw UnsupportedError('Catalog manifest is missing required fields: id and contracts');
   }
 
-  const contracts = raw.contracts.map((contract: Record<string, any>) => normalizeContractFromNewManifest(contract));
+  const catalogId = String(raw.id);
+  const contracts = raw.contracts.map((contract: Record<string, any>) => {
+    const normalized = normalizeContractFromNewManifest(contract);
+    validateManagerSupportedContract({
+      catalogId,
+      contract: normalized,
+      compileValidator: getOrCompileAdapterValidator,
+      onMissingConfigSchema: (contractTitle) => {
+        logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle });
+      },
+    });
+    return normalized;
+  });
 
   return [{
-    id: String(raw.id),
+    id: catalogId,
     name: String(raw.name ?? 'Connector Catalog'),
     description: String(raw.description ?? ''),
     contracts,

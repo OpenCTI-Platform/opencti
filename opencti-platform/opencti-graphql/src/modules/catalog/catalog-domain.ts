@@ -16,6 +16,7 @@ import { findCatalogFromES } from './catalog-repository';
 import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { sanitizeManagerConfigSchema } from './catalog-config-schema';
+import { validateManagerSupportedContract } from './catalog-contract-validation';
 
 const validatorCache = new Map<string, ValidateFunction>();
 
@@ -60,32 +61,14 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
     // Validate each contract
     for (let contractIndex = 0; contractIndex < catalog.contracts.length; contractIndex += 1) {
       const contract = catalog.contracts[contractIndex];
-      if (contract.manager_supported) {
-        if (!contract.config_schema) {
-          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
-        } else {
-          if (isEmptyField(contract.container_image)) {
-            throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
-          }
-          if (isEmptyField(contract.container_type)) {
-            throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
-          }
-
-          if (contract.config_schema) {
-            const jsonValidation = {
-              type: contract.config_schema.type,
-              properties: contract.config_schema.properties,
-              required: contract.config_schema.required,
-              additionalProperties: contract.config_schema.additionalProperties,
-            };
-            try {
-              getOrCompileValidator(`catalog-contract:${catalog.id}:${contract.slug}`, jsonValidation);
-            } catch (err) {
-              throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
-            }
-          }
-        }
-      }
+      validateManagerSupportedContract({
+        catalogId: catalog.id,
+        contract,
+        compileValidator: getOrCompileValidator,
+        onMissingConfigSchema: (contractTitle) => {
+          logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle });
+        },
+      });
     }
     newCatalogMap[catalog.id] = {
       definition: catalog,
