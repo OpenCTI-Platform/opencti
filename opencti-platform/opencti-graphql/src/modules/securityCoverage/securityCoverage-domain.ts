@@ -37,7 +37,6 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResult/securityCoverageResult-domain';
 import {
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   INPUT_RESULT_OF,
@@ -212,6 +211,33 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
   return securityCoverageId;
 };
 // endregion
+
+/**
+ * Delete all security coverage results for a security coverage.
+ *
+ * @param context
+ * @param user User making the request.
+ * @param resultOfId ID of the security coverage.
+ * @returns List of IDs deleted results.
+ */
+export const deleteSecurityCoverageResultsByResultOf = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+) => {
+  const deletedIds: string[] = [];
+  const results = await listSecurityCoverageResults(context, user, securityCoverage);
+  for (const result of results) {
+    const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
+      context,
+      user,
+      result.id,
+      ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+    );
+    deletedIds.push(deleted.standard_id);
+  }
+  return deletedIds;
+};
 
 export const listSecurityCoverageResults = (
   context: AuthContext,
