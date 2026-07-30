@@ -1,5 +1,6 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { isFeatureEnabled } from '../../config/conf';
 import { convertCatalogContractToStix, convertCatalogLogoToStix } from './catalog-entity-converter';
 import {
   type BasicStoreEntityCatalogContract,
@@ -11,6 +12,7 @@ import {
   type StoreEntityCatalogContract,
   type StoreEntityCatalogLogo,
 } from './catalog-entity-types';
+import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 
 // CatalogContract = one persisted entry per (slug, version).
 // All connector metadata lives here since any field can vary between versions.
@@ -60,7 +62,9 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
   converter_2_1: convertCatalogContractToStix,
 };
 
-registerDefinition<StoreEntityCatalogContract, StixCatalogContract>(CATALOG_CONTRACT_DEFINITION);
+if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+  registerDefinition<StoreEntityCatalogContract, StixCatalogContract>(CATALOG_CONTRACT_DEFINITION);
+}
 
 const CATALOG_LOGO_DEFINITION: ModuleDefinition<StoreEntityCatalogLogo, StixCatalogLogo> = {
   type: {
@@ -87,6 +91,8 @@ const CATALOG_LOGO_DEFINITION: ModuleDefinition<StoreEntityCatalogLogo, StixCata
   converter_2_1: convertCatalogLogoToStix,
 };
 
-registerDefinition<StoreEntityCatalogLogo, StixCatalogLogo>(CATALOG_LOGO_DEFINITION);
+if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+  registerDefinition<StoreEntityCatalogLogo, StixCatalogLogo>(CATALOG_LOGO_DEFINITION);
+}
 
 export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo };
