@@ -15,6 +15,7 @@ import { isCatalogManagerEnabled } from './catalogManager';
 import { findCatalogFromES } from './catalog-repository';
 import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
+import { sanitizeManagerConfigSchema } from './catalog-config-schema';
 
 const validatorCache = new Map<string, ValidateFunction>();
 
@@ -101,11 +102,7 @@ const buildCatalogMap = async (): Promise<Record<string, CatalogType>> => {
             if (!finalContract.config_schema) {
               logApp.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: finalContract.title });
             } else {
-              const EXCLUDED_CONFIG_VARS = ['OPENCTI_TOKEN', 'OPENCTI_URL', 'CONNECTOR_TYPE', 'CONNECTOR_RUN_AND_TERMINATE'];
-              EXCLUDED_CONFIG_VARS.forEach((property) => {
-                delete finalContract.config_schema.properties[property];
-              });
-              finalContract.config_schema.required = c.config_schema.required.filter((item) => !EXCLUDED_CONFIG_VARS.includes(item));
+              finalContract.config_schema = sanitizeManagerConfigSchema(finalContract.config_schema);
             }
           }
           return JSON.stringify(finalContract);

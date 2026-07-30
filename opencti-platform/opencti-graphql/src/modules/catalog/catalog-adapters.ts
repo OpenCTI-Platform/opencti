@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import conf, { PLATFORM_VERSION } from '../../config/conf';
-import filigranCatalog from '../../__generated__/opencti-manifest.json';
 import type { CatalogContract, CatalogDefinition, IngestionConnectorType } from './catalog-types';
 import { UnsupportedError } from '../../config/errors';
+import { sanitizeManagerConfigSchema } from './catalog-config-schema';
 
 export type CatalogSourceConfig = {
   kind: 'remote' | 'local';
@@ -93,31 +93,17 @@ const defaultConfigSchema = {
   additionalProperties: true,
 } as CatalogContract['config_schema'];
 
-const LEGACY_EXCLUDED_MANAGER_KEYS = new Set([
-  'OPENCTI_TOKEN',
-  'OPENCTI_URL',
-  'OPENCTI_URI',
-  'CONNECTOR_TYPE',
-  'CONNECTOR_RUN_AND_TERMINATE',
-]);
-
-const shouldExcludeManagerConfigKey = (key: string) => LEGACY_EXCLUDED_MANAGER_KEYS.has(key.toUpperCase());
-
 const sanitizeNewManifestConfigSchema = (schema: Record<string, any>) => {
-  const properties = { ...(schema?.properties ?? {}) };
-  const required = Array.isArray(schema?.required) ? [...schema.required] : [];
+  const sanitizedSchema = sanitizeManagerConfigSchema(schema);
 
-  Object.keys(properties).forEach((key) => {
-    if (shouldExcludeManagerConfigKey(key)) {
-      delete properties[key];
-    }
-  });
+  const properties = { ...(sanitizedSchema.properties ?? {}) };
+  const required = Array.isArray(sanitizedSchema.required) ? [...sanitizedSchema.required] : [];
 
   return {
     ...defaultConfigSchema,
-    ...schema,
+    ...sanitizedSchema,
     properties,
-    required: required.filter((key) => typeof key === 'string' && !shouldExcludeManagerConfigKey(key)),
+    required,
     additionalProperties: schema?.additionalProperties ?? true,
   };
 };
@@ -164,21 +150,6 @@ const toCatalogDefinitionsFromNewManifest = (raw: Record<string, any>): CatalogD
     contracts,
   }];
 };
-
-export class LegacyManifestAdapter implements CatalogSourceAdapter {
-  async fetch(_source: CatalogSourceConfig): Promise<RawManifest> {
-    const customCatalogs: string[] = conf.get('app:custom_catalogs') ?? [];
-    const definitions: CatalogDefinition[] = [filigranCatalog as unknown as CatalogDefinition];
-
-    for (let index = 0; index < customCatalogs.length; index += 1) {
-      const customCatalogPath = customCatalogs[index];
-      const content = await readFile(customCatalogPath, { encoding: 'utf8', flag: 'r' });
-      definitions.push(JSON.parse(content) as CatalogDefinition);
-    }
-
-    return definitions;
-  }
-}
 
 export class NewManifestAdapter implements CatalogSourceAdapter {
   async fetch(source: CatalogSourceConfig, options?: { signal?: AbortSignal }): Promise<RawManifest> {

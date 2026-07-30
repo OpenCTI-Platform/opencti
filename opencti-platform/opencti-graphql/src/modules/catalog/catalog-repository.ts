@@ -8,40 +8,9 @@ import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO } from './catalog-entity-types';
 import type { GraphqlCatalog } from './catalog-types';
+import { sanitizeManagerConfigSchema } from './catalog-config-schema';
 
 import type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo } from './catalog-entity';
-
-const LEGACY_EXCLUDED_MANAGER_KEYS = new Set([
-  'OPENCTI_TOKEN',
-  'OPENCTI_URL',
-  'OPENCTI_URI',
-  'CONNECTOR_TYPE',
-  'CONNECTOR_RUN_AND_TERMINATE',
-]);
-
-const shouldExcludeManagerConfigKey = (key: string) => LEGACY_EXCLUDED_MANAGER_KEYS.has(key.toUpperCase());
-
-const sanitizeManagerConfigSchema = (schema: unknown) => {
-  const rawSchema = (schema && typeof schema === 'object') ? schema as Record<string, unknown> : {};
-  const rawProperties = rawSchema.properties;
-  const propertiesSource = (rawProperties && typeof rawProperties === 'object')
-    ? rawProperties as Record<string, unknown>
-    : {};
-  const properties = { ...propertiesSource };
-  const requiredSource = Array.isArray(rawSchema.required) ? rawSchema.required : [];
-
-  Object.keys(properties).forEach((key) => {
-    if (shouldExcludeManagerConfigKey(key)) {
-      delete properties[key];
-    }
-  });
-
-  return {
-    ...rawSchema,
-    properties,
-    required: requiredSource.filter((key): key is string => typeof key === 'string' && !shouldExcludeManagerConfigKey(key)),
-  };
-};
 
 export interface CatalogContractInput {
   slug: string;

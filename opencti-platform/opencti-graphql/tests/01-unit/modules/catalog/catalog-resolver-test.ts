@@ -36,6 +36,21 @@ import catalogResolver from '../../../../src/modules/catalog/catalog-resolver';
 
 const DECOUPLING_CONNECTOR_VERSIONS = 'DECOUPLING_CONNECTOR_VERSIONS';
 const mockContext = { user: { id: 'user-1' } } as any;
+const queryResolvers = catalogResolver.Query as NonNullable<typeof catalogResolver.Query>;
+
+const invokeQueryResolver = async (
+  resolver: unknown,
+  args: Record<string, unknown> = {},
+  context: unknown = mockContext,
+) => {
+  if (typeof resolver === 'function') {
+    return resolver({}, args, context, {} as any);
+  }
+  if (resolver && typeof resolver === 'object' && 'resolve' in resolver && typeof resolver.resolve === 'function') {
+    return resolver.resolve({}, args, context, {} as any);
+  }
+  throw new TypeError('Query resolver is not callable');
+};
 
 describe('catalog-resolver routing', () => {
   beforeEach(() => {
@@ -51,7 +66,7 @@ describe('catalog-resolver routing', () => {
     isFeatureEnabledMock.mockImplementation((feature: string) => feature === DECOUPLING_CONNECTOR_VERSIONS ? false : false);
     isCatalogManagerEnabledMock.mockReturnValue(true);
 
-    const result = await catalogResolver.Query.catalogs({}, {}, mockContext);
+    const result = await invokeQueryResolver(queryResolvers.catalogs);
 
     expect(findCatalogMock).toHaveBeenCalledWith(mockContext, mockContext.user);
     expect(findCatalogFromESMock).not.toHaveBeenCalled();
@@ -62,7 +77,7 @@ describe('catalog-resolver routing', () => {
     isFeatureEnabledMock.mockImplementation((feature: string) => feature === DECOUPLING_CONNECTOR_VERSIONS);
     isCatalogManagerEnabledMock.mockReturnValue(false);
 
-    const result = await catalogResolver.Query.catalogs({}, {}, mockContext);
+    const result = await invokeQueryResolver(queryResolvers.catalogs);
 
     expect(findCatalogMock).toHaveBeenCalledWith(mockContext, mockContext.user);
     expect(findCatalogFromESMock).not.toHaveBeenCalled();
@@ -73,7 +88,7 @@ describe('catalog-resolver routing', () => {
     isFeatureEnabledMock.mockImplementation((feature: string) => feature === DECOUPLING_CONNECTOR_VERSIONS);
     isCatalogManagerEnabledMock.mockReturnValue(true);
 
-    const result = await catalogResolver.Query.catalogs({}, {}, mockContext);
+    const result = await invokeQueryResolver(queryResolvers.catalogs);
 
     expect(findCatalogFromESMock).toHaveBeenCalledWith(mockContext, mockContext.user);
     expect(findCatalogMock).not.toHaveBeenCalled();
@@ -84,8 +99,8 @@ describe('catalog-resolver routing', () => {
     isFeatureEnabledMock.mockImplementation((feature: string) => feature === DECOUPLING_CONNECTOR_VERSIONS);
     isCatalogManagerEnabledMock.mockReturnValue(true);
 
-    await catalogResolver.Query.catalog({}, { id: 'catalog-id' }, mockContext);
-    await catalogResolver.Query.contract({}, { slug: 'ipinfo' }, mockContext);
+    await invokeQueryResolver(queryResolvers.catalog, { id: 'catalog-id' });
+    await invokeQueryResolver(queryResolvers.contract, { slug: 'ipinfo' });
 
     expect(findByIdMock).toHaveBeenCalledWith(mockContext, mockContext.user, 'catalog-id');
     expect(findContractBySlugMock).toHaveBeenCalledWith(mockContext, mockContext.user, 'ipinfo');
@@ -94,7 +109,7 @@ describe('catalog-resolver routing', () => {
   it('exposes catalogVersionInfo from manager', async () => {
     getCatalogVersionInfoMock.mockReturnValue({ status: 'ready', revision: 'etag-1', updated_at: '2026-07-29T09:00:00.000Z' });
 
-    const result = await catalogResolver.Query.catalogVersionInfo();
+    const result = await invokeQueryResolver(queryResolvers.catalogVersionInfo);
 
     expect(result).toEqual({ status: 'ready', revision: 'etag-1', updated_at: '2026-07-29T09:00:00.000Z' });
   });

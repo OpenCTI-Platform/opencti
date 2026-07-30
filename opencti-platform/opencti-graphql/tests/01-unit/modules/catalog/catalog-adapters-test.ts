@@ -98,35 +98,6 @@ describe('catalog-adapters', () => {
     expect(() => resolveCatalogSource('ftp://catalog.json')).toThrow('Unsupported catalog source URI scheme: ftp://catalog.json');
   });
 
-  it('LegacyManifestAdapter.fetch returns embedded + custom catalogs', async () => {
-    confGetMock.mockImplementation((key: string) => {
-      if (key === 'app:custom_catalogs') return ['/tmp/custom1.json', '/tmp/custom2.json'];
-      if (key === 'xtm:xtmhub_url') return 'https://hub.filigran.io/';
-      return undefined;
-    });
-    readFileMock.mockImplementation((filePath: string) => {
-      if (filePath === '/tmp/custom1.json') {
-        return JSON.stringify({ id: 'custom-1', contracts: [] });
-      }
-      if (filePath === '/tmp/custom2.json') {
-        return JSON.stringify({ id: 'custom-2', contracts: [] });
-      }
-      throw new Error(`Unexpected file: ${filePath}`);
-    });
-
-    const { LegacyManifestAdapter } = await import('../../../../src/modules/catalog/catalog-adapters');
-    const adapter = new LegacyManifestAdapter();
-
-    const result = await adapter.fetch({ kind: 'local', uri: 'ignored' });
-
-    expect(result).toEqual([
-      expect.objectContaining({ id: 'embedded-catalog' }),
-      { id: 'custom-1', contracts: [] },
-      { id: 'custom-2', contracts: [] },
-    ]);
-    expect(readFileMock).toHaveBeenCalledTimes(2);
-  });
-
   it('NewManifestAdapter.fetch reads and parses local JSON manifest', async () => {
     readFileMock.mockResolvedValue('{"id":"manifest-1","contracts":[]}');
     const { NewManifestAdapter } = await import('../../../../src/modules/catalog/catalog-adapters');
