@@ -25,7 +25,9 @@ It complements — but is distinct from — OpenCTI's core RBAC system:
 
 Organizations are not a requirement of RBAC, but once organization segregation is switched on at the platform level, they become the primary mechanism for need-to-know access control across tenants sharing the same platform.
 
-> ⚠️ **License note:** Organization segregation requires OpenCTI Enterprise Edition. Refer to the Enterprise Edition documentation for licensing details before enabling it.
+!!! warning "License note"
+
+    Organization segregation requires OpenCTI Enterprise Edition. Refer to the Enterprise Edition documentation for licensing details before enabling it.
 
 ## 1.2 Prerequisites
 
