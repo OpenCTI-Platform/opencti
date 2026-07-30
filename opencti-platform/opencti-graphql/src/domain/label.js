@@ -38,15 +38,18 @@ export const stringToColour = (str) => {
 };
 
 export const addLabel = async (context, user, label) => {
+  // Check if a label with the same value (case-insensitive) already exists
+  const standardId = generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label.value) });
+  const existing = await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
+  if (existing) {
+    return existing;
+  }
   const finalLabel = pipe(
     assoc('value', label.value.trim()),
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value))),
   )(label);
-  const { element, isCreation } = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL, { complete: true });
-  if (isCreation) {
-    return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user);
-  }
-  return element;
+  const element = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
+  return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user);
 };
 
 export const labelDelete = async (context, user, labelId) => {
