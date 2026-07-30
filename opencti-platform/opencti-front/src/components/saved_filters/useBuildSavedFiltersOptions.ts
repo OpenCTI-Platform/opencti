@@ -30,7 +30,7 @@ const useBuildSavedFiltersOptions = (
       } else if (scope === 'History' && !item.scope.includes('audit')) {
         disabled = true;
       } else if (scope === 'Stix-Core-Object'
-        && (item.scope.includes('audit') || item.scope.includes === 'relationships')) {
+        && (item.scope.includes('audit') || item.scope === 'relationships')) {
         disabled = true;
       }
     }
