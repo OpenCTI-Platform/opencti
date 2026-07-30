@@ -233,7 +233,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
+    expect(R.head(data).value).toEqual(36 + TESTING_ORGS.length);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -558,29 +558,25 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     const testingSet = [
+      { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
       { type: 'Attack-Pattern', size: entitiesCounter.AttackPattern },
       { type: 'Campaign', size: entitiesCounter.Campaign },
       { type: 'Capability', size: entitiesCounter.Capability },
+      { type: 'City', size: entitiesCounter.City },
+      { type: 'Country', size: entitiesCounter.Country },
       { type: 'Course-Of-Action', size: entitiesCounter.CourseOfAction },
       { type: 'Credential', size: entitiesCounter.Credential },
       { type: 'DecayRule', size: entitiesCounter.DecayRule },
       { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
       { type: 'EntitySetting', size: entitiesCounter.EntitySetting },
       { type: 'External-Reference', size: entitiesCounter.ExternalReference },
-      { type: 'StixFile', size: entitiesCounter.StixFile },
       { type: 'Group', size: entitiesCounter.Group },
       { type: 'Individual', size: entitiesCounter.Individual },
-      { type: 'Sector', size: entitiesCounter.Sector },
-      { type: 'Organization', size: entitiesCounter.Organization },
       { type: 'Incident', size: entitiesCounter.Incident },
       { type: 'Indicator', size: entitiesCounter.Indicator },
       { type: 'Intrusion-Set', size: entitiesCounter.IntrusionSet },
       { type: 'Kill-Chain-Phase', size: entitiesCounter.KillChainPhase },
       { type: 'Label', size: entitiesCounter.Label },
-      { type: 'Region', size: entitiesCounter.Region },
-      { type: 'Country', size: entitiesCounter.Country },
-      { type: 'City', size: entitiesCounter.City },
-      { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
       { type: 'Malware', size: entitiesCounter.Malware },
       { type: 'Malware-Analysis', size: entitiesCounter.MalwareAnalysis },
       { type: 'ManagerConfiguration', size: entitiesCounter.ManagerConfiguration },
@@ -588,14 +584,20 @@ describe('Elasticsearch pagination', () => {
       { type: 'Notifier', size: entitiesCounter.Notifier },
       { type: 'Observed-Data', size: entitiesCounter.ObservedData },
       { type: 'Opinion', size: entitiesCounter.Opinion },
+      { type: 'Organization', size: entitiesCounter.Organization },
+      { type: 'Region', size: entitiesCounter.Region },
       { type: 'Report', size: entitiesCounter.Report },
       { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
       { type: 'Role', size: entitiesCounter.Role },
       { type: 'RuleManager', size: entitiesCounter.RuleManager },
+      { type: 'Sector', size: entitiesCounter.Sector },
+      { type: 'Security-Coverage', size: entitiesCounter.SecurityCoverage },
+      { type: 'Security-Coverage-Result', size: entitiesCounter.SecurityCoverageResult },
       { type: 'Settings', size: entitiesCounter.Settings },
       { type: 'Software', size: entitiesCounter.Software },
       { type: 'Status', size: entitiesCounter.Status },
       { type: 'StatusTemplate', size: entitiesCounter.StatusTemplate },
+      { type: 'StixFile', size: entitiesCounter.StixFile },
       { type: 'Theme', size: entitiesCounter.Theme },
       { type: 'Threat-Actor-Individual', size: entitiesCounter.ThreatActorIndividual },
       { type: 'Threat-Actor-Group', size: entitiesCounter.ThreatActorGroup },
@@ -684,7 +686,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1); // because of created filter
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 25);
+    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 27);
     filters = {
       mode: 'and',
       filters: [
@@ -732,6 +734,8 @@ describe('Elasticsearch pagination', () => {
       { type: 'Country', size: entitiesCounter.Country },
       { type: 'Administrative-Area', size: entitiesCounter.AdministrativeArea },
       { type: 'Sector', size: entitiesCounter.Sector },
+      { type: 'Security-Coverage', size: entitiesCounter.SecurityCoverage },
+      { type: 'Security-Coverage-Result', size: entitiesCounter.SecurityCoverageResult },
       { type: 'Observed-Data', size: entitiesCounter.ObservedData },
       { type: 'Indicator', size: entitiesCounter.Indicator },
       { type: 'Campaign', size: entitiesCounter.Campaign },
@@ -884,7 +888,7 @@ describe('Elasticsearch pagination', () => {
     expect(stixMetaRelationshipsByType['object-marking'].length).toEqual(relationsCounter['object-marking']);
     expect(stixMetaRelationshipsByType['operating-system'].length).toEqual(relationsCounter['operating-system']);
     expect(stixMetaRelationshipsByType.object.length).toEqual(relationsCounter.object);
-    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(129);
+    expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(131);
 
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_sighting_relationships-000001`].length).toEqual(2);
 

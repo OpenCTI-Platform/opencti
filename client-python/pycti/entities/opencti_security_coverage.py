@@ -247,6 +247,10 @@ class SecurityCoverage:
         :type auto_enrichment_disable: bool
         :param periodicity: (optional) periodicity
         :type periodicity: str
+        :param tenant_name: (optional) tenant name
+        :type tenant_name: str
+        :param tenant_id: (optional) tenant id
+        :type tenant_id: str
         :param duration: (optional) duration
         :type duration: str
         :param type_affinity: (optional) type affinity
@@ -275,6 +279,8 @@ class SecurityCoverage:
         coverage_information = kwargs.get("coverage_information", None)
         auto_enrichment_disable = kwargs.get("auto_enrichment_disable", None)
         periodicity = kwargs.get("periodicity", None)
+        tenant_name = kwargs.get("tenant_name", None)
+        tenant_id = kwargs.get("tenant_id", None)
         duration = kwargs.get("duration", None)
         type_affinity = kwargs.get("type_affinity", None)
         platforms_affinity = kwargs.get("platforms_affinity", None)
@@ -315,6 +321,8 @@ class SecurityCoverage:
                         "coverage_information": coverage_information,
                         "auto_enrichment_disable": auto_enrichment_disable,
                         "periodicity": periodicity,
+                        "tenant_name": tenant_name,
+                        "tenant_id": tenant_id,
                         "duration": duration,
                         "type_affinity": type_affinity,
                         "platforms_affinity": platforms_affinity,
@@ -387,6 +395,12 @@ class SecurityCoverage:
                 ),
                 periodicity=(
                     stix_object["periodicity"] if "periodicity" in stix_object else None
+                ),
+                tenant_name=(
+                    stix_object["tenant_name"] if "tenant_name" in stix_object else None
+                ),
+                tenant_id=(
+                    stix_object["tenant_id"] if "tenant_id" in stix_object else None
                 ),
                 duration=(
                     stix_object["duration"] if "duration" in stix_object else None
