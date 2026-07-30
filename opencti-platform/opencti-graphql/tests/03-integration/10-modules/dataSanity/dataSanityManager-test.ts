@@ -135,8 +135,8 @@ describe('Data sanity manager handler test coverage', () => {
         dryRun: async () => ({ impact: { total: 1, detail: { Malware: 1 } } }),
         operationRun,
         execution_type: 'run_once',
-        description: '',
-        display_name: '',
+        description: 'Operation that become stale',
+        display_name: 'stale-op',
         eligibleEntityTypes: [ENTITY_TYPE_MALWARE],
       },
     ]);
@@ -153,7 +153,7 @@ describe('Data sanity manager handler test coverage', () => {
     await dataSanityHandler();
 
     // THEN the stale operation is executed again and the lock is released
-    expect(operationRun).toHaveBeenCalled();
+    expect(operationRun).toHaveBeenCalledTimes(1);
     const executedOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStaleRunningOperation');
     expect(executedOp?.is_running).toBe(false);
     expect(executedOp?.last_run_success).toBe(true);

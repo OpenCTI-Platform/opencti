@@ -51,10 +51,12 @@ export const getOperationSkipReason = async (context: AuthContext, user: AuthUse
       operation: operationName,
       running_since: entity.running_since,
     });
+  } else {
+    if (!entity.force_run) {
+      return 'operation has already been executed';
+    }
   }
-  if (!entity.force_run) {
-    return 'operation has already been executed';
-  }
+
   return undefined;
 };
 
