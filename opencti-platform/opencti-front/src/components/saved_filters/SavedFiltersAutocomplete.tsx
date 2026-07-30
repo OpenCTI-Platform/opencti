@@ -109,6 +109,7 @@ const SavedFiltersAutocomplete = ({
         value={value}
         disabled={isDisabled}
         isOptionEqualToValue={(option, v) => option?.value.id === v.value.id}
+        getOptionDisabled={(option) => !!option.disabled}
         inputValue={inputValue}
         options={options ?? []}
         groupBy={(option) => handleFiltersGroupBy(option.isOwner)}

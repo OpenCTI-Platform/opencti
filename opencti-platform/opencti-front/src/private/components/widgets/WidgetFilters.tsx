@@ -14,6 +14,7 @@ import WidgetSavedFiltersSelection from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
 import Divider from '@mui/material/Divider';
+import { WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
 
 interface WidgetFiltersProps {
   perspective: WidgetPerspective | null;
@@ -50,7 +51,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   let availableEntityTypes;
   let searchContext;
-  let savedFiltersScope: string;
+  let savedFiltersScope: WidgetSavedFilterScope;
   if (perspective === 'relationships') {
     searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label'] };
     savedFiltersScope = 'stix-core-relationship';
