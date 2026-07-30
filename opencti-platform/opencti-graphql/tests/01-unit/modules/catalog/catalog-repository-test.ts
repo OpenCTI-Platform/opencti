@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO } from '../../../../src/modules/catalog/catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO, ENTITY_TYPE_CATALOG_MANIFEST } from '../../../../src/modules/catalog/catalog-entity-types';
 import {
   compareVersions,
+  findCatalogManifestBySourceUri,
   findContractBySlugAndVersion,
   findLatestContractBySlug,
   persistCatalogSnapshot,
+  upsertCatalogManifest,
   upsertCatalogContract,
 } from '../../../../src/modules/catalog/catalog-repository';
 
@@ -39,6 +41,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'catalog-1', slug: 'ipinfo', version: '1.0.0' });
 
     await upsertCatalogContract(mockContext, mockUser, {
+      catalog_id: 'filigran-catalog-id',
       slug: 'ipinfo',
       version: '1.0.0',
       title: 'IPinfo',
@@ -66,6 +69,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'contract-new', slug: 'ipinfo', version: '2.0.0' });
 
     await upsertCatalogContract(mockContext, mockUser, {
+      catalog_id: 'filigran-catalog-id',
       slug: 'ipinfo',
       version: '2.0.0',
       title: 'IPinfo',
@@ -97,6 +101,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'contract-1', slug: 'ipinfo', version: '1.0.0' });
 
     await upsertCatalogContract(mockContext, mockUser, {
+      catalog_id: 'filigran-catalog-id',
       slug: 'ipinfo',
       version: '1.0.0',
       title: 'IPinfo',
@@ -171,6 +176,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
+      catalogId: 'filigran-catalog-id',
       allContracts: [
         {
           slug: 'ipinfo',
@@ -217,6 +223,7 @@ describe('catalog-persistence', () => {
     });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
+      catalogId: 'filigran-catalog-id',
       allContracts: [
         {
           slug: 'ipinfo',
@@ -248,6 +255,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
+      catalogId: 'filigran-catalog-id',
       allContracts: [
         {
           slug: 'ipinfo',
@@ -281,6 +289,7 @@ describe('catalog-persistence', () => {
     mockCreateEntity.mockResolvedValue({ id: 'entity-id' });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
+      catalogId: 'filigran-catalog-id',
       allContracts: [
         {
           slug: 'shodan',
@@ -307,6 +316,58 @@ describe('catalog-persistence', () => {
     expect(contractCreates[0][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
     expect(contractCreates[1][2]).toEqual(expect.objectContaining({ logo_ref: expect.any(String) }));
     expect(contractCreates[0][2].logo_ref).toBe(contractCreates[1][2].logo_ref);
+  });
+
+  it('upsertCatalogManifest should persist metadata with CatalogManifest entity type', async () => {
+    mockCreateEntity.mockResolvedValue({ id: 'manifest-1', source_uri: 'https://hub.example/catalog' });
+
+    await upsertCatalogManifest(mockContext, mockUser, {
+      source_uri: 'https://hub.example/catalog',
+      catalog_id: 'filigran-catalog-id',
+      revision: 'etag-123',
+      manifest_version: 'connector-manifest-7.260728.0-260729083711',
+      version: '7.260728.0',
+      last_synced_at: '2026-07-30T00:00:00.000Z',
+    });
+
+    expect(mockCreateEntity).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      expect.objectContaining({
+        source_uri: 'https://hub.example/catalog',
+        catalog_id: 'filigran-catalog-id',
+        revision: 'etag-123',
+      }),
+      ENTITY_TYPE_CATALOG_MANIFEST,
+    );
+  });
+
+  it('findCatalogManifestBySourceUri should load metadata by source uri', async () => {
+    mockFullEntitiesList.mockResolvedValue([{ id: 'manifest-1', source_uri: 'https://hub.example/catalog', revision: 'etag-123' }]);
+
+    const result = await findCatalogManifestBySourceUri(mockContext, mockUser, 'https://hub.example/catalog');
+
+    expect(mockFullEntitiesList).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      [ENTITY_TYPE_CATALOG_MANIFEST],
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['source_uri'], values: ['https://hub.example/catalog'] }),
+          ]),
+        }),
+      }),
+    );
+    expect(result?.id).toBe('manifest-1');
+  });
+
+  it('findCatalogManifestBySourceUri should preserve quoted persisted etag revision as-is', async () => {
+    mockFullEntitiesList.mockResolvedValue([{ id: 'manifest-2', source_uri: 'https://hub.example/catalog', revision: '"connector-manifest-7.260728.0-260729083711"' }]);
+
+    const result = await findCatalogManifestBySourceUri(mockContext, mockUser, 'https://hub.example/catalog');
+
+    expect(result?.revision).toBe('"connector-manifest-7.260728.0-260729083711"');
   });
 
   it('persistCatalogSnapshot should delete orphan logos no longer referenced by contracts', async () => {
@@ -345,6 +406,7 @@ describe('catalog-persistence', () => {
     });
 
     await persistCatalogSnapshot(mockContext, mockUser, {
+      catalogId: 'filigran-catalog-id',
       allContracts: [
         {
           slug: 'ipinfo',

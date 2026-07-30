@@ -21,6 +21,12 @@ export type CatalogResolutionConfig = {
 
 export type RawManifest = unknown;
 
+export type PersistableManifestMetadata = {
+  catalogId: string;
+  manifestVersion?: string;
+  productVersion?: string;
+};
+
 export interface CatalogSourceAdapter {
   fetch(source: CatalogSourceConfig, options?: { signal?: AbortSignal }): Promise<RawManifest>;
 }
@@ -180,6 +186,18 @@ const toCatalogDefinitionsFromNewManifest = (raw: Record<string, any>): CatalogD
   }];
 };
 
+const toManifestMetadataFromNewManifest = (raw: Record<string, any>): PersistableManifestMetadata => {
+  if (!raw.id || !Array.isArray(raw.contracts)) {
+    throw UnsupportedError('Catalog manifest is missing required fields: id and contracts');
+  }
+
+  return {
+    catalogId: String(raw.id),
+    manifestVersion: raw.manifest_version ? String(raw.manifest_version) : undefined,
+    productVersion: raw.product_version ? String(raw.product_version) : undefined,
+  };
+};
+
 export class NewManifestAdapter implements CatalogSourceAdapter {
   async fetch(source: CatalogSourceConfig, options?: { signal?: AbortSignal }): Promise<RawManifest> {
     if (source.kind === 'local') {
@@ -198,5 +216,10 @@ export class NewManifestAdapter implements CatalogSourceAdapter {
     const manifest = raw as Record<string, any>;
     const normalized = toCatalogDefinitionsFromNewManifest(manifest);
     return normalized[0]?.contracts ?? [];
+  }
+
+  toPersistableManifestMetadata(raw: RawManifest): PersistableManifestMetadata {
+    const manifest = raw as Record<string, any>;
+    return toManifestMetadataFromNewManifest(manifest);
   }
 }

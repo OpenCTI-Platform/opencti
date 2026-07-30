@@ -6,8 +6,10 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 // All connector metadata lives here because every field can vary between versions.
 export const ENTITY_TYPE_CATALOG_CONTRACT = 'CatalogContract';
 export const ENTITY_TYPE_CATALOG_LOGO = 'CatalogLogo';
+export const ENTITY_TYPE_CATALOG_MANIFEST = 'CatalogManifest';
 
 interface CatalogContractEntityFields {
+  catalog_id: string;
   slug: string;
   version: string;
   // Connector metadata - all versioned, can differ between releases
@@ -49,6 +51,19 @@ export interface BasicStoreEntityCatalogLogo extends BasicStoreEntity, CatalogLo
 
 export interface StoreEntityCatalogLogo extends StoreEntity, CatalogLogoEntityFields {}
 
+interface CatalogManifestEntityFields {
+  source_uri: string;
+  catalog_id: string;
+  revision: string;
+  manifest_version?: string;
+  version?: string;
+  last_synced_at: Date;
+}
+
+export interface BasicStoreEntityCatalogManifest extends BasicStoreEntity, CatalogManifestEntityFields {}
+
+export interface StoreEntityCatalogManifest extends StoreEntity, CatalogManifestEntityFields {}
+
 // Internal object: never exported as a real STIX SDO.
 export interface StixCatalogContract extends StixObject {
   slug: string;
@@ -61,6 +76,15 @@ export interface StixCatalogContract extends StixObject {
 
 export interface StixCatalogLogo extends StixObject {
   hash: string;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
+}
+
+export interface StixCatalogManifest extends StixObject {
+  source_uri: string;
+  catalog_id: string;
+  revision: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

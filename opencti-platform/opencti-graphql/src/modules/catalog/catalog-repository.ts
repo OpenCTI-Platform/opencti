@@ -6,13 +6,14 @@ import { createEntity, deleteElementById, patchAttribute } from '../../database/
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
-import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO } from './catalog-entity-types';
+import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO, ENTITY_TYPE_CATALOG_MANIFEST } from './catalog-entity-types';
 import type { GraphqlCatalog } from './catalog-types';
 import { sanitizeManagerConfigSchema } from './catalog-config-schema';
 
-import type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo } from './catalog-entity';
+import type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo, BasicStoreEntityCatalogManifest } from './catalog-entity';
 
 export interface CatalogContractInput {
+  catalog_id: string;
   slug: string;
   version: string;
   title: string;
@@ -44,6 +45,15 @@ export interface CatalogLogoInput {
   last_synced_at: string;
 }
 
+export interface CatalogManifestInput {
+  source_uri: string;
+  catalog_id: string;
+  revision: string;
+  manifest_version?: string;
+  version?: string;
+  last_synced_at: string;
+}
+
 // -- Writes --
 
 // Maintains "exactly one is_latest per slug" at write time - not left for a reader to
@@ -56,13 +66,28 @@ export const upsertCatalogContract = async (
   if (input.is_latest) {
     const currentLatest = await findLatestContractBySlug(context, user, input.slug);
     if (currentLatest && currentLatest.version !== input.version) {
-      logApp.debug('[OPENCTI-MODULE] Catalog persistence demoting previous latest contract', { slug: input.slug, previousVersion: currentLatest.version, newVersion: input.version });
+      logApp.debug('[OPENCTI-MODULE] Catalog persistence demoting previous latest contract', {
+        catalogId: input.catalog_id,
+        slug: input.slug,
+        previousVersion: currentLatest.version,
+        newVersion: input.version,
+      });
       await patchAttribute(context, user, currentLatest.id, ENTITY_TYPE_CATALOG_CONTRACT, { is_latest: false });
     }
   }
-  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting CatalogContract', { slug: input.slug, version: input.version, is_latest: input.is_latest });
+  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting CatalogContract', {
+    catalogId: input.catalog_id,
+    slug: input.slug,
+    version: input.version,
+    is_latest: input.is_latest,
+  });
   const result = await createEntity(context, user, input, ENTITY_TYPE_CATALOG_CONTRACT);
-  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserted CatalogContract', { slug: input.slug, version: input.version, id: result.id });
+  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserted CatalogContract', {
+    catalogId: input.catalog_id,
+    slug: input.slug,
+    version: input.version,
+    id: result.id,
+  });
   return result;
 };
 
@@ -72,6 +97,26 @@ export const upsertCatalogLogo = async (
   input: CatalogLogoInput,
 ): Promise<BasicStoreEntityCatalogLogo> => {
   return createEntity(context, user, input, ENTITY_TYPE_CATALOG_LOGO);
+};
+
+export const upsertCatalogManifest = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: CatalogManifestInput,
+): Promise<BasicStoreEntityCatalogManifest> => {
+  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting CatalogManifest', {
+    sourceUri: input.source_uri,
+    catalogId: input.catalog_id,
+    revision: input.revision,
+  });
+  const result = await createEntity(context, user, input, ENTITY_TYPE_CATALOG_MANIFEST);
+  logApp.debug('[OPENCTI-MODULE] Catalog persistence upserted CatalogManifest', {
+    sourceUri: result.source_uri,
+    catalogId: result.catalog_id,
+    revision: result.revision,
+    id: result.id,
+  });
+  return result;
 };
 
 // -- Reads --
@@ -112,6 +157,32 @@ export const findAllCatalogLogos = async (
   user: AuthUser,
 ): Promise<BasicStoreEntityCatalogLogo[]> => {
   return fullEntitiesList<BasicStoreEntityCatalogLogo>(context, user, [ENTITY_TYPE_CATALOG_LOGO]);
+};
+
+export const findCatalogManifestBySourceUri = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceUri: string,
+): Promise<BasicStoreEntityCatalogManifest | undefined> => {
+  const results = await fullEntitiesList<BasicStoreEntityCatalogManifest>(context, user, [ENTITY_TYPE_CATALOG_MANIFEST], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['source_uri'], values: [sourceUri], operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+  });
+  const manifest = results[0];
+  if (manifest) {
+    logApp.debug('[OPENCTI-MODULE] Catalog persistence found CatalogManifest by source URI', {
+      sourceUri,
+      catalogId: manifest.catalog_id,
+      revision: manifest.revision,
+      id: manifest.id,
+    });
+  } else {
+    logApp.debug('[OPENCTI-MODULE] Catalog persistence found no CatalogManifest by source URI', { sourceUri });
+  }
+  return manifest;
 };
 
 export const findLatestContractBySlug = async (
@@ -183,6 +254,7 @@ export interface AdapterCatalogContract {
 }
 
 export interface AdapterInternalCatalog {
+  catalogId: string;
   allContracts?: AdapterCatalogContract[];
 }
 
@@ -226,6 +298,7 @@ export const persistCatalogSnapshot = async (
   user: AuthUser,
   internalCatalog: AdapterInternalCatalog,
 ): Promise<void> => {
+  const { catalogId } = internalCatalog;
   const contracts = internalCatalog.allContracts ?? [];
   if (contracts.length === 0) {
     logApp.info('[OPENCTI-MODULE] Catalog persistence skipping snapshot (no contracts)');
@@ -275,6 +348,7 @@ export const persistCatalogSnapshot = async (
       const configSchema = sanitizeManagerConfigSchema(parsedSchema);
 
       await upsertCatalogContract(context, user, {
+        catalog_id: catalogId,
         slug,
         version,
         title: contract.title,

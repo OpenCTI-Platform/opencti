@@ -1,15 +1,19 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { isFeatureEnabled } from '../../config/conf';
-import { convertCatalogContractToStix, convertCatalogLogoToStix } from './catalog-entity-converter';
+import { convertCatalogContractToStix, convertCatalogLogoToStix, convertCatalogManifestToStix } from './catalog-entity-converter';
 import {
   type BasicStoreEntityCatalogContract,
   type BasicStoreEntityCatalogLogo,
+  type BasicStoreEntityCatalogManifest,
+  ENTITY_TYPE_CATALOG_MANIFEST,
   ENTITY_TYPE_CATALOG_CONTRACT,
   ENTITY_TYPE_CATALOG_LOGO,
   type StixCatalogContract,
+  type StixCatalogManifest,
   type StixCatalogLogo,
   type StoreEntityCatalogContract,
+  type StoreEntityCatalogManifest,
   type StoreEntityCatalogLogo,
 } from './catalog-entity-types';
 import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
@@ -30,6 +34,7 @@ const CATALOG_CONTRACT_DEFINITION: ModuleDefinition<StoreEntityCatalogContract, 
     resolvers: {},
   },
   attributes: [
+    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'slug', label: 'Slug', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'version', label: 'Version', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     // Connector metadata - versioned
@@ -95,4 +100,36 @@ if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
   registerDefinition<StoreEntityCatalogLogo, StixCatalogLogo>(CATALOG_LOGO_DEFINITION);
 }
 
-export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo };
+const CATALOG_MANIFEST_DEFINITION: ModuleDefinition<StoreEntityCatalogManifest, StixCatalogManifest> = {
+  type: {
+    id: 'catalogManifests',
+    name: ENTITY_TYPE_CATALOG_MANIFEST,
+    category: ABSTRACT_INTERNAL_OBJECT,
+    aliased: false,
+  },
+  identifier: {
+    definition: {
+      [ENTITY_TYPE_CATALOG_MANIFEST]: [{ src: 'source_uri' }],
+    },
+    resolvers: {},
+  },
+  attributes: [
+    { name: 'source_uri', label: 'Source URI', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'catalog_id', label: 'Catalog ID', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'revision', label: 'Revision', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'manifest_version', label: 'Manifest version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'version', label: 'Product version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'last_synced_at', label: 'Last synced at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  ],
+  relations: [],
+  representative: (stix: StixCatalogManifest) => {
+    return stix.catalog_id;
+  },
+  converter_2_1: convertCatalogManifestToStix,
+};
+
+if (isFeatureEnabled(DECOUPLING_CONNECTOR_VERSIONS)) {
+  registerDefinition<StoreEntityCatalogManifest, StixCatalogManifest>(CATALOG_MANIFEST_DEFINITION);
+}
+
+export type { BasicStoreEntityCatalogContract, BasicStoreEntityCatalogLogo, BasicStoreEntityCatalogManifest };

@@ -4,7 +4,7 @@ import conf, { booleanConf, isFeatureEnabled, logApp } from '../../config/conf';
 import { lockResources } from '../../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { NewManifestAdapter, resolveCatalogSource } from './catalog-adapters';
-import { persistCatalogSnapshot } from './catalog-repository';
+import { findCatalogManifestBySourceUri, persistCatalogSnapshot, upsertCatalogManifest } from './catalog-repository';
 import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 
@@ -15,7 +15,7 @@ const CUSTOM_CATALOG_SOURCE_URI = conf.get('app:catalog_manager:custom_catalog_r
 const CATALOG_MANAGER_REQUEST_TIMEOUT = conf.get('app:catalog_manager:request_timeout');
 
 let scheduler: SetIntervalAsyncTimer<[]> | undefined;
-let currentEtag: string | undefined;
+let currentRevision: string | undefined;
 let managerCatalogStatus: 'loading' | 'ready' | 'error' = 'loading';
 let managerCatalogRevision: string | null = null;
 let managerCatalogUpdatedAt: string | null = null;
@@ -89,19 +89,44 @@ const isCatalogRequestTimeout = (error: unknown): boolean => {
 const refreshCatalogInternal = async () => {
   const sourceConfig = resolveCatalogSource(CUSTOM_CATALOG_SOURCE_URI).source;
   const shouldCheckEtag = sourceConfig.kind === 'remote';
+  const context = executionContext('catalog_manager');
   let nextEtag: string | undefined;
 
   try {
+    if (!currentRevision) {
+      const persistedManifest = await findCatalogManifestBySourceUri(context, SYSTEM_USER, sourceConfig.uri);
+      if (persistedManifest?.revision) {
+        currentRevision = persistedManifest.revision;
+        logApp.info('[OPENCTI-MODULE] Catalog manager hydrated revision from persisted catalog manifest', {
+          sourceUri: sourceConfig.uri,
+        });
+      } else {
+        logApp.info('[OPENCTI-MODULE] Catalog manager found no persisted revision for source', {
+          sourceUri: sourceConfig.uri,
+        });
+      }
+    }
+
     if (shouldCheckEtag) {
       logApp.info('[OPENCTI-MODULE] Catalog manager checking remote manifest via HEAD', { uri: sourceConfig.uri });
       const headResponse = await fetch(sourceConfig.uri, { method: 'HEAD', signal: createRequestTimeoutSignal() });
       if (headResponse.ok) {
         nextEtag = headResponse.headers.get('etag') ?? undefined;
-        if (nextEtag && currentEtag && nextEtag === currentEtag) {
-          setCatalogVersionInfo('ready', currentEtag);
-          logApp.info('[OPENCTI-MODULE] Catalog manager skipping fetch, remote manifest unchanged (ETag match)', { etag: currentEtag });
+        if (!nextEtag) {
+          logApp.info('[OPENCTI-MODULE] Catalog manager HEAD response has no ETag header, falling back to manifest-based revision', {
+            uri: sourceConfig.uri,
+          });
+        }
+        if (nextEtag && currentRevision && nextEtag === currentRevision) {
+          setCatalogVersionInfo('ready', currentRevision);
+          logApp.info('[OPENCTI-MODULE] Catalog manager skipping fetch, remote manifest unchanged (ETag match)', { revision: currentRevision });
           return;
         }
+      } else {
+        logApp.info('[OPENCTI-MODULE] Catalog manager HEAD check returned non-success status, falling back to manifest fetch', {
+          uri: sourceConfig.uri,
+          status: headResponse.status,
+        });
       }
     }
 
@@ -113,14 +138,36 @@ const refreshCatalogInternal = async () => {
     }
 
     const persistableContracts = newManifestAdapter.toPersistableContracts(rawManifest);
+    const manifestMetadata = newManifestAdapter.toPersistableManifestMetadata(rawManifest);
     const revision = computeCatalogRevision(rawManifest, nextEtag);
 
-    // NEW — persist before anything else observes this cycle as "done". If this
-    // throws, we fall into the catch block below with currentEtag/in-memory cache
+    if (currentRevision && revision === currentRevision) {
+      setCatalogVersionInfo('ready', revision);
+      logApp.info('[OPENCTI-MODULE] Catalog manager manifest unchanged (revision match)', {
+        sourceUri: sourceConfig.uri,
+        catalogId: manifestMetadata.catalogId,
+        revision,
+      });
+      return;
+    }
+
+    // Persist before anything else observes this cycle as "done". If this
+    // throws, we fall into the catch block below with currentRevision/in-memory cache
     // still at their last-good values, so the next tick naturally retries instead
     // of silently treating a half-applied update as current.
     try {
-      await persistCatalogSnapshot(executionContext('catalog_manager'), SYSTEM_USER, { allContracts: persistableContracts });
+      await persistCatalogSnapshot(context, SYSTEM_USER, {
+        catalogId: manifestMetadata.catalogId,
+        allContracts: persistableContracts,
+      });
+      await upsertCatalogManifest(context, SYSTEM_USER, {
+        source_uri: sourceConfig.uri,
+        catalog_id: manifestMetadata.catalogId,
+        manifest_version: manifestMetadata.manifestVersion,
+        version: manifestMetadata.productVersion,
+        revision,
+        last_synced_at: new Date().toISOString(),
+      });
     } catch (persistError) {
       setCatalogVersionInfo('error');
       logApp.warn('[OPENCTI-MODULE] Catalog manager fetched manifest but failed to persist it to ES', { cause: persistError });
@@ -129,9 +176,7 @@ const refreshCatalogInternal = async () => {
 
     logApp.info('[OPENCTI-MODULE] Catalog manager persisted catalog snapshot', { revision });
 
-    if (shouldCheckEtag && nextEtag) {
-      currentEtag = nextEtag;
-    }
+    currentRevision = revision;
     setCatalogVersionInfo('ready', revision);
   } catch (error) {
     setCatalogVersionInfo('error');
