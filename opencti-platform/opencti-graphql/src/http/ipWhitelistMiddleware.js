@@ -2,6 +2,7 @@ import ipaddr from 'ipaddr.js';
 import { parse } from 'graphql';
 import { getEntityFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import conf, { logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
@@ -72,8 +73,14 @@ export const ipMatchesWhitelist = (sourceIp, whitelist) => {
  * Checks if the authenticated user is in the exclusion list (by user ID, group ID, or org ID).
  */
 export const isUserExcluded = (user, exclusionIds) => {
-  if (!exclusionIds || exclusionIds.length === 0) return false;
   if (!user) return false;
+
+  // Always exclude platform superadmin
+  if (user.id === OPENCTI_ADMIN_UUID || user.internal_id === OPENCTI_ADMIN_UUID) {
+    return true;
+  }
+
+  if (!exclusionIds || exclusionIds.length === 0) return false;
 
   // Check user ID directly
   if (exclusionIds.includes(user.id) || exclusionIds.includes(user.internal_id)) {

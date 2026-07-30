@@ -4,6 +4,7 @@ import * as cache from '../../../src/database/cache';
 import * as userDomain from '../../../src/domain/user';
 import * as listener from '../../../src/listener/UserActionListener';
 import { logApp } from '../../../src/config/conf';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
@@ -223,6 +224,21 @@ describe('isUserExcluded', () => {
         organizations: [{ internal_id: 'org-other' }],
       };
       expect(isUserExcluded(user, ['org-1'])).toBe(false);
+    });
+  });
+
+  describe('super admin', () => {
+    it('should always return true for the platform super admin (matching id)', () => {
+      const user = { id: OPENCTI_ADMIN_UUID, internal_id: 'admin-int', groups: [], organizations: [] };
+      // Excluded even when no exclusion ids are configured
+      expect(isUserExcluded(user, [])).toBe(true);
+      expect(isUserExcluded(user, null)).toBe(true);
+      expect(isUserExcluded(user, ['someone-else'])).toBe(true);
+    });
+
+    it('should always return true for the platform super admin (matching internal_id)', () => {
+      const user = { id: 'admin', internal_id: OPENCTI_ADMIN_UUID, groups: [], organizations: [] };
+      expect(isUserExcluded(user, [])).toBe(true);
     });
   });
 
