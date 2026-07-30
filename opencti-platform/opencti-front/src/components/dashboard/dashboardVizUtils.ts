@@ -19,6 +19,20 @@ export const savedFilterQuery = graphql`
 `;
 
 /**
+ * Fetches a saved filter by ID and returns its parsed filters content.
+ * Returns null if the filter could not be resolved.
+ */
+const fetchSavedFilterContent = async (filterId: string) => {
+  try {
+    const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
+    if (!result?.savedFilter) return null;
+    return JSON.parse(result.savedFilter.filters);
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Resolves widget data selections by cleaning filters based on the widget perspective,
  * substituting host entity IDs for custom views, and removing unavailable filter keys.
  * Returns the resolved selections along with flags indicating missing host entity or preview mode.
@@ -48,40 +62,16 @@ export const resolveDataSelection = async ({
     dataSelection.map(async (data) => {
       const filters = [data.filters, data.dynamicFrom, data.dynamicTo];
       // Handle eventual saved filters
-      if (data.filters_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.filters_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
+      const savedFilterIds = [data.filters_id, data.dynamicFrom_id, data.dynamicTo_id];
+      for (let i = 0; i < savedFilterIds.length; i += 1) {
+        const savedFilterId = savedFilterIds[i];
+        if (savedFilterId) { // if a saved filter id is defined
+          const resolved = await fetchSavedFilterContent(savedFilterId); // fetch the saved filter content
+          if (!resolved) { // the saved filter is missing or not accessible
             isMissingSavedFilters = true;
           } else {
-            filters[0] = JSON.parse(result.savedFilter.filters);
+            filters[i] = resolved; // replace the associated filter by the saved filter content
           }
-        } catch {
-          isMissingSavedFilters = true;
-        }
-      }
-      if (data.dynamicFrom_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicFrom_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[1] = JSON.parse(result.savedFilter.filters);
-          }
-        } catch {
-          isMissingSavedFilters = true;
-        }
-      }
-      if (data.dynamicTo_id) {
-        try {
-          const result = await fetchQuery(savedFilterQuery, { id: data.dynamicTo_id }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
-          if (!result?.savedFilter) {
-            isMissingSavedFilters = true;
-          } else {
-            filters[2] = JSON.parse(result.savedFilter.filters);
-          }
-        } catch {
-          isMissingSavedFilters = true;
         }
       }
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID

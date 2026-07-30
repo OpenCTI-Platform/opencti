@@ -942,6 +942,7 @@
   "Size": "大小",
   "Skip line character": "跳行符",
   "Slug": "蛞蝓",
+  "SMTP configuration": "SMTP配置",
   "SMTP enabled": "已启用 SMTP",
   "Sophistication": "复杂性",
   "Source": "来源",
@@ -1145,6 +1146,5 @@
   "XTM Hub Token": "XTM 中枢令牌",
   "XTM One intent": "XTM 一个意图",
   "XTM One registration manager": "XTM One 注册管理器",
-  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态",
-  "SMTP configuration": "SMTP配置"
+  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态"
 }

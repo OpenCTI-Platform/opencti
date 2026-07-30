@@ -44,7 +44,7 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
             value: '',
           }]);
         }
-        throw DraftLockedError('Can not execute request in a draft not in an open state');
+        throw DraftLockedError('Cannot execute request in a draft that is not in an open state');
       }
     } else {
       throw FunctionalError('User cannot be found');
