@@ -1,11 +1,10 @@
 import { loadEntity } from '../database/middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import conf, { logMigration } from '../config/conf';
-import { elRawDelete, elRawGet, elRawIndex, elRawSearch } from '../database/engine';
+import { elRawDelete, elRawGet, elRawIndex } from '../database/engine';
 import { type EntityOptions, fullEntitiesList } from '../database/middleware-loader';
-import { isNotEmptyField, READ_INDEX_INTERNAL_RELATIONSHIPS } from '../database/utils';
-import { RELATION_MIGRATES } from '../schema/internalRelationship';
-import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_THEME } from '../schema/internalObject';
+import { isNotEmptyField } from '../database/utils';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_THEME } from '../schema/internalObject';
 import { THEME_DARK_ID, THEME_LIGHT_ID } from '../modules/theme/theme-domain';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
 import { RETENTION_RULE_ACTIVITY_ID, RETENTION_RULE_FILES_ID, RETENTION_RULE_HISTORY_ID, RETENTION_RULE_WORKBENCHES_ID } from '../modules/retentionRules/retentionRules-domain';
@@ -25,7 +24,6 @@ import {
   FINTEL_TEMPLATE_INCIDENT_RESPONSE_ID,
 } from '../modules/fintelTemplate/fintelTemplate-domain';
 import { OPENCTI_PLATFORM_UUID } from '../schema/general';
-import { MIGRATION_STATUS_ID } from '../database/migration';
 import type { AuthContext } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import { type FilterGroup, FilterMode } from '../generated/graphql';
@@ -34,33 +32,10 @@ type MigrationNext = () => void;
 
 type StoreLikeEntity = BasicStoreEntity & { name?: string };
 
-interface RelConnection {
-  internal_id: string;
-  role: string;
-  types?: string[];
-  [key: string]: unknown;
-}
-
-interface RelSource {
-  fromId: string;
-  connections?: RelConnection[];
-  [key: string]: unknown;
-}
-
 interface ElRawGetResponse<T = Record<string, unknown>> {
   _index: string;
   _id: string;
   _source: T;
-}
-
-interface ElHit<T = Record<string, unknown>> {
-  _index: string;
-  _id: string;
-  _source: T;
-}
-interface ElSearchResponse<T = Record<string, unknown>> {
-  hits?: { hits: ElHit<T>[] };
-  body?: { hits?: { hits: ElHit<T>[] } };
 }
 
 // Generic helper: reindex a single-instance-by-type internal object.
@@ -161,63 +136,6 @@ const fixSingletonByName = async (
   return oldId;
 };
 
-// MigrationStatus special case: after reindexing the entity itself, every
-// existing "migrates" relationship pointing FROM the old id must be rewritten
-// to point FROM the new fixed id, otherwise migration history breaks.
-const fixMigrationStatusRelations = async (
-  context: AuthContext,
-  oldId: string | null,
-  newId: string,
-): Promise<void> => {
-  if (!oldId || oldId === newId) {
-    logMigration.info('[MIGRATION] MigrationStatus relations: nothing to rewrite');
-    return;
-  }
-  logMigration.info(`[MIGRATION] MigrationStatus relations: rewriting "migrates" relationships from ${oldId} to ${newId}`);
-
-  const searchResult = await elRawSearch(
-    context,
-    SYSTEM_USER,
-    READ_INDEX_INTERNAL_RELATIONSHIPS,
-    {
-      size: 10000,
-      query: {
-        bool: {
-          must: [
-            { term: { 'entity_type.keyword': RELATION_MIGRATES } },
-            { term: { 'fromId.keyword': oldId } },
-          ],
-        },
-      },
-    },
-  ) as ElSearchResponse<RelSource>;
-
-  const hits: ElHit<RelSource>[] = (searchResult.hits && searchResult.hits.hits)
-    || (searchResult.body && searchResult.body.hits && searchResult.body.hits.hits)
-    || [];
-  logMigration.info(`[MIGRATION] MigrationStatus relations: ${hits.length} relationship(s) to fix`);
-
-  for (let i = 0; i < hits.length; i += 1) {
-    const hit = hits[i];
-    const relId = hit._id;
-    const source = hit._source;
-    const patchedConnections: RelConnection[] = (source.connections || []).map((connection) => (
-      connection.internal_id === oldId ? { ...connection, internal_id: newId } : connection
-    ));
-    await elRawIndex({
-      index: hit._index,
-      id: relId,
-      body: {
-        ...source,
-        fromId: newId,
-        connections: patchedConnections,
-      },
-      refresh: true,
-    });
-  }
-  logMigration.info('[MIGRATION] MigrationStatus relations: done');
-};
-
 // Declarative list of the "fix by name" singletons (8 groups / 26 instances:
 // Theme x2, RetentionRule x4, Notifier x2, DecayRule x4, EmailTemplate x1,
 // FintelTemplate x6 - Settings and MigrationStatus are handled separately below
@@ -308,17 +226,12 @@ const BY_NAME_ROWS: ByNameRow[] = [
 export const up = async (next: MigrationNext): Promise<void> => {
   const context = executionContext('migration');
 
-  // 1) Settings (true singleton, by type)
   await fixSettingsSingleton(context);
 
   for (let i = 0; i < BY_NAME_ROWS.length; i += 1) {
     const row = BY_NAME_ROWS[i];
     await fixSingletonByName(context, row.entityType, row.name, row.expectedId, row.label, row.settingsType);
   }
-
-  // 3) MigrationStatus (true singleton, by type) + relationship rewrite.
-  const oldMigrationStatusId = await fixSingletonByType(context, ENTITY_TYPE_MIGRATION_STATUS, MIGRATION_STATUS_ID, 'MigrationStatus');
-  await fixMigrationStatusRelations(context, oldMigrationStatusId, MIGRATION_STATUS_ID);
 
   logMigration.info('[MIGRATION] fix_singleton_internal_ids: completed');
   next();

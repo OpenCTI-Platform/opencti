@@ -1,4 +1,5 @@
 // Admin user initialization
+import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
@@ -6,7 +7,7 @@ import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
-import { applyMigration, lastAvailableMigrationTime, MIGRATION_STATUS_ID } from './database/migration';
+import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
@@ -42,7 +43,7 @@ const initializeMigration = async (context: AuthContext) => {
   logApp.info('[INIT] Creating migration structure');
   const time = lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
-  const migrationStatus = { internal_id: MIGRATION_STATUS_ID, lastRun };
+  const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
