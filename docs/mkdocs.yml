@@ -246,7 +246,10 @@ nav:
           - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
-          - Organization segregation: administration/organization-segregation.md
+          - Organization segregation:
+            - Organization-Based Segregation Concept Installation & RBAC Setup: Part 1 - Organization-Based Segregation: Concept, Installation & RBAC Setup.md
+            - Customizing the Platform as the Main Organization: Part 2 — Customizing the Platform as the Main Organization.md
+            - How to Share Data With Organizations: Part 3 — How to Share Data With Organizations.md
           - Authorized members: administration/authorized-members.md
           - Request access: administration/request-access.md
         - Dissemination list: administration/dissemination-list.md
