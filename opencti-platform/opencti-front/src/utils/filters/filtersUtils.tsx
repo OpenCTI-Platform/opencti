@@ -499,7 +499,13 @@ export const filterValue = (
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);
   }
-  return value;
+
+  if (value === undefined || value === null) {
+    return value;
+  }
+
+  // Defensive check to prevent errors on string manipulation after this call
+  return typeof value === 'string' ? value : String(value);
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
