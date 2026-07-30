@@ -39,7 +39,7 @@ Starting from 7.260728.0, each OpenCTI release includes an SBOM file in the [rel
 
 A typical file name is `sbom-opencti-platform-<release version>.cdx.json`.
 
-The SBOM format is json [cyclone dx](https://cyclonedx.org/).
+The SBOM format is the [CycloneDX](https://cyclonedx.org/) JSON format.
 
 You can use this SBOM to:
 
@@ -49,7 +49,7 @@ You can use this SBOM to:
 
 The SBOM uses a nested (hierarchical) component structure: a top-level OpenCTI component contains child components (for example platform, frontend, GraphQL API, and worker), each with its own dependencies.
 
-There is one SBOM asset per docker image base.
+There is one SBOM asset per Docker image base (for example: standard, FIPS, and UBI9).
 
 
 ## Using Docker
