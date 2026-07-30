@@ -93,12 +93,11 @@ describe('IP Whitelist Middleware Integration', () => {
       await disableWhitelist();
     });
 
-    it('should block authenticated user when IP is not in whitelist', async () => {
+    it('should allow authenticated admin user when IP is not in whitelist', async () => {
       await enableWhitelist(['10.99.99.99']);
       const result = await queryInitPlatformAsAdmin(ME_QUERY);
-      expect(result.errors).toBeDefined();
-      expect(result.errors.length).toBe(1);
-      expect(result.errors[0].extensions.code).toBe('IP_FORBIDDEN');
+      expect(result.data?.me).toBeDefined();
+      expect(result.data.me.user_email).toBe('admin@opencti.io');
     });
 
     it('should block non-admin user when IP is not in whitelist', async () => {
