@@ -8,9 +8,9 @@
 
 ---
 
-# Part 1 — Organization-Based Segregation: Concept, Installation & RBAC Setup
+## Part 1 — Organization-Based Segregation: Concept, Installation & RBAC Setup
 
-## 1.1 What it is
+### 1.1 What it is
 
 Organization-based segregation is an **OpenCTI Enterprise Edition** feature that lets a single OpenCTI platform serve multiple organizations (internal business units, external partners, ISAC members, customers, etc.) while controlling, per organization, which pieces of knowledge each group of users can see.
 
@@ -29,7 +29,7 @@ Organizations are not a requirement of RBAC, but once organization segregation i
 
     Organization segregation requires OpenCTI Enterprise Edition. Refer to the Enterprise Edition documentation for licensing details before enabling it.
 
-## 1.2 Prerequisites
+### 1.2 Prerequisites
 
 Before enabling segregation, confirm the following, since activation has platform-wide consequences:
 
@@ -38,7 +38,7 @@ Before enabling segregation, confirm the following, since activation has platfor
 - A "**main organization**" must be designated in the platform settings (see 1.3). Users belonging to it get unrestricted visibility over all platform data; everyone else only sees what has been explicitly shared with their organization(s).
 - Decide in advance which groups will exist and what roles/capabilities they need — particularly who is allowed to share knowledge with other organizations (**Restrict organization access** capability, see 1.5).
 
-## 1.3 Where to enable it
+### 1.3 Where to enable it
 
 Organization segregation is enabled from:
 
@@ -49,13 +49,15 @@ Organization segregation is enabled from:
 1. Navigate to **Settings > Security > Policies**.
 2. Locate the **Platform main organization** section.
 3. Select (or create beforehand, under **Organizations** in the left menu / **Settings > Security > Organizations**) the organization that will act as the platform's "home" organization.
+
 4. Save. From this point on:
+
    - Users in the main organization see all data in the platform.
    - Users in any other organization only see data explicitly shared with that organization (directly, or inherited via containers/authorized members — see Part 3).
 
 Organizations themselves are created as entities under the **Organizations** menu (left navigation), not directly under Settings > Security. This is because an Organization in OpenCTI plays a dual role: it is both a trackable knowledge entity (e.g., a threat actor's targeted sector, a partner company) and an administrative container of users. Once created, it automatically appears under **Settings > Security > Organizations** for administration purposes.
 
-## 1.4 RBAC setup for a segregated platform
+### 1.4 RBAC setup for a segregated platform
 
 A typical configuration workflow:
 
@@ -75,11 +77,11 @@ A typical configuration workflow:
 4. Assign **Users** to their Organization(s) and Group(s). A user can belong to several organizations and several groups simultaneously; their effective visibility is the union of what each grants.
 5. Designate **Organization Administrators** where relevant (see 1.7) to delegate day-to-day user management without granting full platform admin rights.
 
-## 1.5 What sharing actually grants
+### 1.5 What sharing actually grants
 
 Once segregation is active, every shareable entity/relationship displays a "**Share with an Organization**" action (in the entity overview, in graph views of containers, or automated via playbooks — see Part 3). Sharing an object with an organization makes that object visible to all users of that organization who otherwise have sufficient group/role/marking rights to see it. It does not duplicate the object, and it does not, by itself, share anything connected to that object (see Part 3 for the full mechanics).
 
-## 1.6 Authorized Members vs. Organization Segregation
+### 1.6 Authorized Members vs. Organization Segregation
 
 **Authorized Members** is a separate, complementary access-restriction mechanism available on Custom Dashboards, Investigations, Feedbacks, Reports, Groupings, Incident Response, Requests for Information/Takedown, and Organizations themselves. It lets you restrict an object to specific users, groups, or organizations — useful, for example, to hide a sensitive incident-response case from the rest of the platform, including from the main organization.
 
@@ -92,7 +94,7 @@ Once segregation is active, every shareable entity/relationship displays a "**Sh
 - In other words, AM is not an additional restriction layered on top of organization sharing — it's a **replacement access mechanism** for that entity: whoever/whatever is listed in AM (users, groups, or organizations) has access, and organization-based sharing becomes irrelevant for that specific object.
 - Since OpenCTI 6.7, Authorized Members can also be applied to Organization entities themselves, so that as a platform/main organization you can control who is even allowed to see the list of organizations in your database (**Can View / Can Edit / Can Manage**).
 
-## 1.7 Organization Administration
+### 1.7 Organization Administration
 
 Platform administrators can promote a member of an organization to "**Organization administrator**". This role:
 
@@ -102,7 +104,7 @@ Platform administrators can promote a member of an organization to "**Organizati
 
 This is promoted/demoted from the user's edit form by a platform administrator, and is especially useful for ISAC-style deployments or MSSP/customer setups where you want partner organizations to self-manage their own users without granting them platform admin rights.
 
-## 1.8 Requesting access to restricted knowledge
+### 1.8 Requesting access to restricted knowledge
 
 Because segregation can cause a user to be unable to see (or re-create) knowledge that already exists but belongs to another organization, OpenCTI surfaces a generic **Restricted entity already exists** error in that case. Administrators can configure a Request Access workflow so users can formally request visibility instead of hitting a dead end:
 
@@ -112,7 +114,7 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
 4. Users who are both members of the owning organization and the configured validator group receive the RFI (automatically placed under Authorized Members for confidentiality) with **Validate / Decline** actions. Validating shares the requested knowledge immediately.
 5. To disable the feature, remove all statuses from the "Specific Workflow for Request Access" section, or remove the group from Validator membership.
 
-## 1.9 Best practices
+### 1.9 Best practices
 
 - Design your organization tree before switching segregation on. Retrofitting is possible but harder once users and knowledge already exist.
 - **Always use a Service Account for connectors** — never a regular user account. Service Accounts are technical users designed specifically for connectors and integrations: they have no password (cannot log in via UI), authenticate only via API token, and do not receive emails. Create them in **Settings > Security > Users** (or convert an existing user into a Service Account from its overview or via mass operations).
@@ -139,7 +141,7 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
 - Periodically audit **Data > Restrictions** (authorized members) and the Organizations list to ensure segregation is behaving as intended.
 - Communicate the "**single shared object**" model to all analysts — this is the single biggest source of confusion and support tickets in multi-organization deployments.
 
-## 1.10 What segregation implies (at a glance)
+### 1.10 What segregation implies (at a glance)
 
 - A platform with segregation enabled behaves as **one shared knowledge graph with per-organization visibility filters**, not as isolated tenants.
 - Visibility is **additive** across a user's organizations and groups: the most permissive combination the user is a member of wins.
@@ -152,11 +154,11 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
 
 Being the main organization gives you unrestricted visibility across the whole platform, and it comes with a set of administrative levers to shape the experience for every other organization sharing the platform.
 
-## 2.1 Confirm / change the main organization
+### 2.1 Confirm / change the main organization
 
 **Settings > Security > Policies > Platform main organization** — this is a platform-wide switch and should only be changed deliberately (re-read the prerequisites in 1.2 first).
 
-## 2.2 Control what other organizations' users can see about each other
+### 2.2 Control what other organizations' users can see about each other
 
 By default, once segregation is active, visibility of other users (in filters, assignee/author/participant pickers, access-restriction dialogs, etc.) is limited. As the main organization, you can decide the policy:
 
@@ -169,11 +171,11 @@ By default, once segregation is active, visibility of other users (in filters, a
 
 - Use **Authorized Members** on Organization entities (since 6.7) if you want to control, at a finer grain, who can even see a given organization in lists/filters — grant **Can View** to expose it in pickers, **Can Edit** to allow editing it, **Can Manage** to allow managing its own access restrictions.
 
-## 2.3 Delegate user management via Organization Administrators
+### 2.3 Delegate user management via Organization Administrators
 
 As the main organization, you decide which members of each partner/customer organization can be promoted to Organization Administrator (see 1.7). You also define which groups an org admin is allowed to assign to the users they create — this is your safety rail against privilege escalation by delegated admins. Use this to let large customers or ISAC members onboard their own users without opening a support ticket to main-org admins every time.
 
-## 2.4 Customize behavior per Group / per Organization
+### 2.4 Customize behavior per Group / per Organization
 
 As the main organization, you can tailor the platform experience differently for each population:
 
@@ -193,7 +195,7 @@ As the main organization, you can tailor the platform experience differently for
 
 - **Confidence level ceilings** — a user's max confidence is the highest across their groups; use this to keep external-organization contributions from overriding your own analysts' confidence by default.
 
-## 2.5 Decide the sharing model you will operate
+### 2.5 Decide the sharing model you will operate
 
 As the main organization you typically choose (and can combine) one of the following operating models, detailed fully in Part 3:
 
@@ -218,20 +220,20 @@ As the main organization you typically choose (and can combine) one of the follo
 - A global "**public**" distribution channel using a dedicated **ALL_SUB_ORG** organization for TLP:CLEAR data.
 - **Per-organization dedicated playbooks** for organization-specific, non-public data.
 
-## 2.6 Set up the Request Access workflow for your users
+### 2.6 Set up the Request Access workflow for your users
 
 As the main organization holding most of the knowledge, you will likely be the one validating access requests from partner organizations (see 1.8). Configure the RFI-based workflow so requests route to the right internal validator group, and assign that group deliberately — it is effectively your "data release" gate.
 
-## 2.7 Governance checklist for the main organization
+### 2.7 Governance checklist for the main organization
 
-- [ ] Main organization designated and all connector users placed in it.
-- [ ] Groups/roles reviewed so only intended roles hold Restrict organization access.
-- [ ] Default dashboards/triggers/hidden menus configured per group for each partner organization.
-- [ ] Organization Administrators promoted where delegation is desired, with a bounded group list.
-- [ ] Apply Authorized Members (AM) on constituent/constituent/sub organization Organization entities — for MSSP setups where the main organization manages multiple constituents, restrict each Organization object's Authorized Members to the MSSP admins and that organization's own members only. This ensures constituents cannot see each other or know of each other's existence on the platform. Do this at onboarding time, before any data is shared with the constituent.
-- [ ] Request Access workflow configured with the correct validator group.
-- [ ] Sharing model chosen (manual vs. playbook-driven vs. hybrid) and documented internally.
-- [ ] ALL-style organization created if a public/TLP:CLEAR distribution channel is needed.
+- Main organization designated and all connector users placed in it.
+- Groups/roles reviewed so only intended roles hold Restrict organization access.
+- Default dashboards/triggers/hidden menus configured per group for each partner organization.
+- Organization Administrators promoted where delegation is desired, with a bounded group list.
+- Apply Authorized Members (AM) on constituent/constituent/sub organization Organization entities — for MSSP setups where the main organization manages multiple constituents, restrict each Organization object's Authorized Members to the MSSP admins and that organization's own members only. This ensures constituents cannot see each other or know of each other's existence on the platform. Do this at onboarding time, before any data is shared with the constituent.
+- Request Access workflow configured with the correct validator group.
+- Sharing model chosen (manual vs. playbook-driven vs. hybrid) and documented internally.
+- ALL-style organization created if a public/TLP:CLEAR distribution channel is needed.
 
 ---
 
@@ -239,7 +241,7 @@ As the main organization holding most of the knowledge, you will likely be the o
 
 This section explains, in practical terms, how sharing actually works once an organization is designated as the platform's main organization, and how to design reliable, automated sharing workflows. Understanding the points below is essential — most of the "why can't organization X see the dashboard/relationship/etc." support cases trace back to one of these mechanics being misunderstood.
 
-## 3.1 Organization-based segregation is not multi-tenancy
+### 3.1 Organization-based segregation is not multi-tenancy
 
 **This is the single most important concept to internalize.**
 
@@ -249,7 +251,7 @@ When an entity is shared with several organizations, there is still only **one v
 
 **Practical consequence:** sharing controls *who can see* an object, it does not create isolated copies of it. If a comment or analysis should be visible to only one organization, do not add it to the shared entity itself — create a separate **Note**, and share that Note independently of the main entity.
 
-## 3.2 An entity and a relationship are two distinct objects
+### 3.2 An entity and a relationship are two distinct objects
 
 In OpenCTI's data model, a statement like:
 
@@ -267,17 +269,17 @@ Sharing one of these objects does not automatically share the others. If you onl
 
 The recipient organization may therefore see the system, but not the objects connected to it — and may not even know they exist.
 
-## 3.3 Why dashboards can appear empty
+### 3.3 Why dashboards can appear empty
 
 This exact scenario has been observed in practice: recipients could see the shared System and the shared Observable, but **not** the relationship linking them.
 
-OpenCTI's dashboards and visualizations, however, are largely built on relationships, not on isolated entities. The result:
+OpenCTI's dashboards and visualizations, however, are largely built on relationships, not on isolated entities. 
 
-> **Visible entities + Invisible relationships = Empty or incomplete dashboard**
+The result: **Visible entities + Invisible relationships = Empty or incomplete dashboard**
 
 If a widget or dashboard looks empty for a partner organization even though the underlying entities are shared, the relationship graph connecting those entities is the first thing to check.
 
-## 3.4 The special case of containers
+### 3.4 The special case of containers
 
 OpenCTI distinguishes two categories of objects:
 
@@ -293,7 +295,7 @@ This difference has a direct impact on sharing behavior:
 
 In other words, sharing a Report is safe by default (its contents travel with it); sharing a bare System, Malware, or Indicator is not — you must explicitly extend the share to its neighborhood.
 
-## 3.5 Using the "Resolve Neighbors" playbook pattern to close the gap
+### 3.5 Using the "Resolve Neighbors" playbook pattern to close the gap
 
 To correctly share a standard entity together with everything connected to it, build a playbook using this pattern:
 
@@ -317,7 +319,7 @@ The **Share With Organizations** component is then applied to this enriched bund
 
 > **Note:** Share With Organizations performs a direct database query before the "Send for ingestion" step. If an entity is created earlier in the same playbook (e.g., via a container-creation step) and shared in that same run, the playbook will fail because the entity does not exist yet in the database. In that case, run the creation and the sharing in two separate playbooks.
 
-## 3.6 "All elements in the bundle" is mandatory for neighborhood sharing
+### 3.6 "All elements in the bundle" is mandatory for neighborhood sharing
 
 Every scope-controlled playbook component (including Share With Organizations) can be applied to:
 
@@ -327,7 +329,7 @@ Every scope-controlled playbook component (including Share With Organizations) c
 
 If Share With Organizations is left on its default "Main element only" scope, the playbook will keep re-sharing just the System — the relationships and neighboring observables collected by Resolve Neighbors will never actually be shared. To share the full neighborhood retrieved by Resolve Neighbors, the scope must be changed to "**All elements in the bundle**" (or "All except main element" where the main element is already shared/handled separately).
 
-## 3.7 Filtering what actually gets shared
+### 3.7 Filtering what actually gets shared
 
 Sharing everything connected to an entity is not always desirable. After a Resolve Neighbors step, insert a **Reduce Knowledge** component to keep only the part of the graph that should be released — for example, sharing only Observables, or explicitly excluding Incidents.
 
@@ -337,7 +339,7 @@ System → Resolve Neighbors → Reduce Knowledge (filter) → Share With Organi
 
 This turns a "share everything nearby" playbook into a selective, governed sharing workflow — the recommended pattern whenever a mix of sensitive and shareable objects surrounds the same entity.
 
-## 3.8 Global distribution of public information (TLP:CLEAR)
+### 3.8 Global distribution of public information (TLP:CLEAR)
 
 For information that is meant to reach every consuming organization (TLP:CLEAR / fully public data), the recommended pattern is **not** to run one playbook per recipient, but to create a single dedicated distribution organization, e.g. **ALL_SUB_ORG**.
 
@@ -350,7 +352,7 @@ TLP:CLEAR entity  →  Share With Organizations (ALL_SUB_ORG)
 
 - Because every constituent/sub organization belongs to that organization, all of them automatically receive anything marked as publicly shareable, without maintaining a per-organization rule for public data.
 
-## 3.9 Sharing with one specific organization
+### 3.9 Sharing with one specific organization
 
 For knowledge that should go to a single named partner (e.g., Organization A) rather than everyone, combine a manual first step with a recurring automated one:
 
@@ -370,7 +372,7 @@ Query Knowledge (systems shared with Organization A)
 
 This scheduled playbook re-queries everything already shared with Organization A, resolves each system's current neighborhood, and shares any newly connected relationships/entities that appeared since the last run — keeping the organization's view continuously in sync as the knowledge graph evolves, without requiring an analyst to remember to re-share every update manually.
 
-## 3.10 Why you generally need one playbook per organization
+### 3.10 Why you generally need one playbook per organization
 
 The Share With Organizations component targets a **fixed** organization configured inside the node itself. As a result, a distinct target organization requires a distinct playbook:
 
@@ -382,7 +384,7 @@ Organization C → Playbook C
 
 This pattern is perfectly manageable for a handful of organizations (roughly up to ten), but the maintenance overhead grows linearly with the number of organizations and becomes harder to sustain at larger scale. When designing for many recipient organizations, weigh this against the ALL_SUB_ORG pattern (3.8) for anything that doesn't actually need per-organization differentiation, and reserve dedicated playbooks for genuinely organization-specific data.
 
-## 11. Sharing to All Organizations or a Subset of Organizations (Clustering via Participation)
+### 3.11. Sharing to All Organizations or a Subset of Organizations (Clustering via Participation)
 
 The playbook-per-organization approach described above works well for individual, targeted sharing, but it doesn't scale efficiently when the goal is to share information with all organizations at once, or with a logical subset of organizations (e.g., all organizations belonging to the energy sector). Building and maintaining one playbook per organization for this purpose would be error-prone and easy to forget.
 
@@ -407,7 +409,7 @@ As a platform organization, I want to share information with a group of constitu
 
 Because every user in a participating organization inherits access through the cluster, any data shared with the cluster organization becomes visible to all members of every organization that is part of it. This clustering approach should be reserved for information that is genuinely intended for the entire sector/group — not for organization-specific or sensitive data, which should still follow the dedicated organization + dedicated playbook pattern described in section 9.
 
-## 12. Executive Summary
+### 3.12. Executive Summary
 
 - An **entity** is not the same as a **relationship**.
 - Sharing an entity does not automatically share its relationships.
