@@ -221,8 +221,6 @@
   "resolutions": {
     "axios": "1.19.0",
     "chokidar": "5.0.0",
-    "cookie": "1.1.1",
-    "cross-fetch": "4.1.0",
     "ioredis": "5.8.2",
     "json5": "2.2.3",
     "openid-clientv5/jose": "5.10.0",
