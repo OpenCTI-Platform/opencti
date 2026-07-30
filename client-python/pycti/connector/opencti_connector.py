@@ -5,6 +5,7 @@ used to register and configure connectors with the OpenCTI platform.
 """
 
 from enum import Enum
+from typing import List, Union
 
 
 class ConnectorType(Enum):
@@ -48,7 +49,7 @@ class OpenCTIConnector:
     :param connector_type: Type of connector (see :class:`ConnectorType`)
     :type connector_type: str
     :param scope: Connector scope as a comma-separated string (e.g., "Report,Indicator")
-    :type scope: str
+    :type scope: str or list[str]
     :param auto: Whether the connector runs automatically on matching entities
     :type auto: bool
     :param only_contextual: Whether the connector only processes contextual data
@@ -83,7 +84,7 @@ class OpenCTIConnector:
         connector_id: str,
         connector_name: str,
         connector_type: str,
-        scope: str,
+        scope: Union[str, List[str]],
         auto: bool,
         only_contextual: bool,
         playbook_compatible: bool,
@@ -100,7 +101,9 @@ class OpenCTIConnector:
         :type connector_name: str
         :param connector_type: Type of connector (see :class:`ConnectorType`)
         :type connector_type: str
-        :param scope: Connector scope as a comma-separated string
+        :param scope: Connector scope, either as a comma-separated string
+        (e.g. ``"Artifact,Url"``) or as a list of strings
+        (e.g. ``["Artifact", "Url"]``. Both forms are normalized to a list.
         :type scope: str
         :param auto: Whether the connector runs automatically
         :type auto: bool
@@ -120,10 +123,13 @@ class OpenCTIConnector:
         self.id = connector_id
         self.name = connector_name
         self.type = ConnectorType(connector_type)
-        if scope:
+        if not scope:
+            self.scope = []
+        elif isinstance(scope, str):
             self.scope = scope.split(",")
         else:
-            self.scope = []
+            # already a list/tuple (e.g. from the ListFromString Pydantic model)
+            self.scope = list(scope)
         self.auto = auto
         self.auto_update = auto_update
         self.enrichment_resolution = enrichment_resolution
