@@ -1712,6 +1712,11 @@ const checkIpWhitelistOnLogin = async (context, loggedUser) => {
   // If IP matches whitelist, allow
   if (ipMatchesWhitelist(sourceIp, whitelist)) return;
 
+  // Always exclude platform superadmin
+  if (loggedUser.id === OPENCTI_ADMIN_UUID) {
+    return;
+  }
+
   // Check exclusion list
   const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
   if (isNotEmptyField(exclusionIds)) {

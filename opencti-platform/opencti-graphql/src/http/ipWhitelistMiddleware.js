@@ -219,6 +219,11 @@ const ipWhitelistMiddleware = async (req, res, next) => {
       });
     }
 
+    // Always exclude platform superadmin
+    if (authenticatedUser.id === OPENCTI_ADMIN_UUID || authenticatedUser.internal_id === OPENCTI_ADMIN_UUID) {
+      return next();
+    }
+
     // Authenticated (session or token): check exclusion list
     const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
     if (isNotEmptyField(exclusionIds)) {
@@ -277,6 +282,11 @@ export const checkIpWhitelistForRequest = async (req, userId) => {
     if (!whitelist || whitelist.length === 0) return false;
 
     if (ipMatchesWhitelist(sourceIp, whitelist)) return false;
+
+    // Always exclude platform superadmin
+    if (userId === OPENCTI_ADMIN_UUID) {
+      return false;
+    }
 
     // Check exclusion list
     const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
