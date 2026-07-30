@@ -79,6 +79,21 @@ const sendErrorStatus = (_req, res, httpStatus) => {
   }
 };
 
+// Ensure that OTP has been validated
+export const isOtpValidationPending = (context) => {
+  const { user, otp_mandatory, user_otp_validated } = context;
+  if (!user) {
+    return false;
+  }
+  // By default user_otp_validated is true for direct API usage (token based).
+  // It is only set to false for session based users that have not validated OTP yet.
+  if (otp_mandatory) {
+    return !user_otp_validated;
+  }
+  // If user self activated OTP, the session must be validated.
+  return user.otp_activated === true && !user_otp_validated;
+};
+
 const createBroadcastClient = (channel) => {
   return {
     id: channel.id,
@@ -97,6 +112,11 @@ const authenticate = async (req, res, next) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'stream');
     if (context.user) {
+      if (isOtpValidationPending(context)) {
+        res.statusMessage = 'You must validate your two-factor authentication to access this resource';
+        sendErrorStatus(req, res, 401);
+        return;
+      }
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -188,6 +208,9 @@ export const authenticateForPublic = async (req, res, next) => {
   });
   if (error || (!collection?.stream_public && !context.user)) {
     res.statusMessage = 'You are not authenticated, please check your credentials';
+    sendErrorStatus(req, res, 401);
+  } else if (!collection?.stream_public && isOtpValidationPending(context)) {
+    res.statusMessage = 'You must validate your two-factor authentication to access this resource';
     sendErrorStatus(req, res, 401);
   } else {
     try {
