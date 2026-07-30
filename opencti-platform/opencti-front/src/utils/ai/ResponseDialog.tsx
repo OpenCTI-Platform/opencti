@@ -203,13 +203,13 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   };
   const subConfig = useMemo<
     GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
-    () => ({
-      subscription,
-      variables: { id },
-      onNext: handleResponse,
-    }),
-    [id],
-  );
+      () => ({
+        subscription,
+        variables: { id },
+        onNext: handleResponse,
+      }),
+      [id],
+    );
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   useSubscription(subConfig);
@@ -236,6 +236,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         renderInput={(params) => (
           <TextField
             {...params}
+            label={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
             variant="outlined"
             size="small"
             placeholder={noAgents ? t_i18n('No agent available') : t_i18n('Select agent')}
