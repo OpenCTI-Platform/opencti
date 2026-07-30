@@ -1495,22 +1495,27 @@ export const filterTargetByExisting = async (
   const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
   // Index targets by (relation type, internal id) so that each source lookup is O(1) instead of a full O(m) scan.
   // This avoids the previous O(n x m) complexity that could hang for entities with a large number of relationships.
-  const targetsIndex = new Map<string, MergeEntityDependency[]>();
+  // Nested by entity_type then internal_id (rather than a single concatenated string key) so that values
+  // containing hyphens (both fields can) can never collide across different (entity_type, internal_id) pairs.
+  const targetsIndex = new Map<string, Map<string, MergeEntityDependency[]>>();
   for (let targetIndex = 0; targetIndex < targets.length; targetIndex += 1) {
     const target = targets[targetIndex];
-    const targetKey = `${target.i_relation.entity_type}-${target.internal_id}`;
-    const bucket = targetsIndex.get(targetKey);
+    let byInternalId = targetsIndex.get(target.i_relation.entity_type);
+    if (!byInternalId) {
+      byInternalId = new Map<string, MergeEntityDependency[]>();
+      targetsIndex.set(target.i_relation.entity_type, byInternalId);
+    }
+    const bucket = byInternalId.get(target.internal_id);
     if (bucket) {
       bucket.push(target);
     } else {
-      targetsIndex.set(targetKey, [target]);
+      byInternalId.set(target.internal_id, [target]);
     }
   }
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
-    const sourceTargetKey = `${source.i_relation.entity_type}-${source.internal_id}`;
-    const matchingTargets = targetsIndex.get(sourceTargetKey);
+    const matchingTargets = targetsIndex.get(source.i_relation.entity_type)?.get(source.internal_id);
     const hasExistingTarget = matchingTargets !== undefined && matchingTargets.some((t) => noDate(t.i_relation as unknown as any));
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
