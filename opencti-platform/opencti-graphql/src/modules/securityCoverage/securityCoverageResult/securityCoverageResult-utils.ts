@@ -1,11 +1,10 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
-import { internalFindByIds } from '../../../database/middleware-loader';
 import { type StixCoreRelationshipAddInput } from '../../../generated/graphql';
 import { RELATION_HAS_COVERED } from '../../../schema/stixCoreRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { findById } from '../securityCoverage-domain';
-import type { BasicStoreEntitySecurityCoverageResult, StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+import { findById, listSecurityCoverageResults } from '../securityCoverage-domain';
+import type { StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 
 /**
  * Compute the average coverage information of an array of securityCoverageResult.
@@ -69,7 +68,7 @@ export const transformHasCoveredFromId = async (
   relInput: StixCoreRelationshipAddInput,
 ) => {
   const securityCoverage = await findById(context, user, relInput.fromId);
-  const securityCoverageResults = await internalFindByIds(context, user, securityCoverage['result-of']) as BasicStoreEntitySecurityCoverageResult[];
+  const securityCoverageResults = await listSecurityCoverageResults(context, user, securityCoverage);
   const matchingSCR = relInput.external_uri
     ? securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri)
     // Retro compatibility : only for old OEAV version without external_uri

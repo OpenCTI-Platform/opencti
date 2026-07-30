@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   type EntityOptions,
   fullRelationsList,
+  internalFindByIds,
   internalFindByIdsMapped,
   loadEntityThroughRelationsPaginated,
   pageEntitiesConnection,
@@ -211,6 +212,14 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
   return securityCoverageId;
 };
 // endregion
+
+export const listSecurityCoverageResults = (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
+  return internalFindByIds(context, user, securityCoverage[RELATION_RESULT_OF]) as Promise<BasicStoreEntitySecurityCoverageResult[]>;
+};
 
 export const loadSecurityCoverageResults = async (
   context: AuthContext,
