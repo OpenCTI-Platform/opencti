@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   type EntityOptions,
   fullRelationsList,
+  internalFindByIds,
   internalFindByIdsMapped,
   loadEntityThroughRelationsPaginated,
   pageEntitiesConnection,
@@ -36,7 +37,6 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { deleteSecurityCoverageResultsByResultOf } from './securityCoverageResult/securityCoverageResult-domain';
 import {
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
   INPUT_RESULT_OF,
@@ -96,6 +96,8 @@ export const addSecurityCoverage = async (
     coverage_valid_from,
     coverage_valid_to,
     external_uri,
+    tenant_name,
+    tenant_id,
     ...onlySecurityCoverageInput
   } = securityCoverageInput;
   const createdSecurityCoverage: BasicStoreEntitySecurityCoverage = await createEntity(
@@ -118,7 +120,7 @@ export const addSecurityCoverage = async (
       x_opencti_modified_at,
     } = onlySecurityCoverageInput;
     const securityCoverageResultInput = {
-      name: external_uri || `Result of ${createdSecurityCoverage.name}`,
+      name: tenant_name || external_uri || tenant_id || `Result of ${createdSecurityCoverage.name}`,
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       coverage_information,
       coverage_last_result,
@@ -141,9 +143,15 @@ export const addSecurityCoverage = async (
       securityCoverageResultInput,
       ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
     );
-    // Manually add it here to be able to resolve dynamyc attributes
+    // Manually add it here to be able to resolve dynamic attributes
     createdSecurityCoverage['result-of'] = [result.id];
-    logApp.debug(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
+    logApp.info(
+      `[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`,
+      {
+        result: JSON.stringify(result),
+        input: JSON.stringify(securityCoverageInput),
+      },
+    );
   }
 
   return notify(
@@ -210,11 +218,46 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
 };
 // endregion
 
-export const getSecurityCoverageResults = async (
+/**
+ * Delete all security coverage results for a security coverage.
+ *
+ * @param context
+ * @param user User making the request.
+ * @param resultOfId ID of the security coverage.
+ * @returns List of IDs deleted results.
+ */
+export const deleteSecurityCoverageResultsByResultOf = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
 ) => {
+  const deletedIds: string[] = [];
+  const results = await listSecurityCoverageResults(context, user, securityCoverage);
+  for (const result of results) {
+    const deleted = await deleteElementById<StoreEntitySecurityCoverageResult>(
+      context,
+      user,
+      result.id,
+      ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
+    );
+    deletedIds.push(deleted.standard_id);
+  }
+  return deletedIds;
+};
+
+export const listSecurityCoverageResults = (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
+  return internalFindByIds(context, user, securityCoverage[RELATION_RESULT_OF]) as Promise<BasicStoreEntitySecurityCoverageResult[]>;
+};
+
+export const loadSecurityCoverageResults = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverage: BasicStoreEntitySecurityCoverage,
+): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
   return loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
 };
 
@@ -242,7 +285,7 @@ export const findCoveredEntities = async (
   return { count: relationships.pageInfo?.globalCount ?? entities.length, entities };
 };
 
-export const getSecurityCoverageResultProperty = async (
+export const loadSecurityCoverageResultProperty = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
@@ -253,7 +296,7 @@ export const getSecurityCoverageResultProperty = async (
   return results[0][property];
 };
 
-export const mostRecentLastCoverageResult = async (
+export const loadMostRecentLastCoverageResult = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
@@ -267,7 +310,7 @@ export const mostRecentLastCoverageResult = async (
   return getMostRecentLastCoverageResult(results);
 };
 
-export const averageCoverageInformation = async (
+export const loadAverageCoverageInformation = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
