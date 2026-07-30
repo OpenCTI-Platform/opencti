@@ -1358,7 +1358,22 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
             ? instanceKeyValues.filter((c: Record<string, any>) => !incomingFieldIds.includes(c?.field_id))
             : instanceKeyValues;
           if (preservedValues.length !== instanceKeyValues.length) {
-            patch = [{ op: 'replace' as const, path: preparedPath, value: [...preservedValues, ...value] }];
+            // For multi_select custom fields, `select_values` is itself an array: merge/union it with
+            // the previous entry instead of discarding already-selected options on every new upsert.
+            // Other sub-fields (int_value, string_value, ...) keep last-write-wins semantics.
+            const existingByFieldId = new Map<string, Record<string, any>>(
+              instanceKeyValues
+                .filter((c: Record<string, any>) => c?.field_id !== undefined)
+                .map((c: Record<string, any>) => [c.field_id, c] as [string, Record<string, any>]),
+            );
+            const mergedValue = (value as Array<Record<string, any>>).map((v) => {
+              const existing = v?.field_id !== undefined ? existingByFieldId.get(v.field_id) : undefined;
+              if (existing && Array.isArray(existing.select_values) && Array.isArray(v.select_values)) {
+                return { ...v, select_values: R.uniq([...existing.select_values, ...v.select_values]) };
+              }
+              return v;
+            });
+            patch = [{ op: 'replace' as const, path: preparedPath, value: [...preservedValues, ...mergedValue] }];
           } else {
             // otherwise we need to add the values to the existing array, using jsonpatch indexed path
             patch = value.map((v, index) => {
