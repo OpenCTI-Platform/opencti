@@ -116,6 +116,11 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
     } : null,
+    default_dashboard_preset_id: group.default_dashboard_preset_id ? {
+      value: group.default_dashboard_preset_id,
+      label: group.default_dashboard?.presets?.find((preset) => preset?.id === group.default_dashboard_preset_id)?.name
+        ?? group.default_dashboard_preset_id,
+    } : null,
   };
 
   return (
@@ -160,6 +165,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
             <DashboardField
               onChange={editor.changeField}
               context={context}
+              includePresetSelector={true}
             />
             <GroupHiddenTypesField groupData={group} />
             <Field
@@ -262,11 +268,16 @@ const GroupEditionOverview = createFragmentContainer(
         default_dashboard {
           id
           name
+          presets {
+            id
+            name
+          }
           authorizedMembers {
             id
             member_id
           }
         }
+        default_dashboard_preset_id
         ...GroupHiddenTypesField_group
       }
     `,

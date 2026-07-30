@@ -1,11 +1,12 @@
 import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import pjson from '../../../package.json';
 import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
+import { type BasicStoreEntityWorkspace, type DashboardManifest, type DashboardPreset, type DashboardVariable, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
 import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
@@ -19,18 +20,31 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
 } from '../../generated/graphql';
-import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { EXPLORE_EXUPDATE, getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { buildPagination, isEmptyField, fromBase64, toBase64, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+
+// Local input types until graphql codegen is run against the new schema
+interface DashboardVariableInput {
+  name: string;
+  filterKey: string;
+  filterKeyType: string;
+  defaultValue?: string | null;
+}
+
+interface DashboardPresetInput {
+  name: string;
+  variable_values: string;
+}
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -404,3 +418,228 @@ export const isDashboardShared = async (context: AuthContext, workspace: BasicSt
     publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled
   ));
 };
+
+// region Dashboard variable management
+
+const parseManifest = (manifest: string | undefined | null): DashboardManifest => {
+  if (!manifest) return {};
+  try {
+    // Manifest is stored as base64(json) by the frontend.
+    const decoded = fromBase64(manifest);
+    if (!decoded) return {};
+    return JSON.parse(decoded) as DashboardManifest;
+  } catch {
+    // Fallback: try raw JSON (legacy / migration path)
+    try {
+      return JSON.parse(manifest) as DashboardManifest;
+    } catch {
+      return {};
+    }
+  }
+};
+
+/** Re-encode a parsed manifest as base64(json), matching the frontend's serializeDashboardManifestForBackend. */
+const serializeManifest = (manifest: DashboardManifest): string => toBase64(JSON.stringify(manifest)) as string;
+
+/**
+ * Guard for dashboard variable / preset structural changes.
+ *
+ * requireStructural = true  → needs EXPLORE_EXUPDATE capability AND AM role edit|admin
+ * requireStructural = false → needs only AM role edit|admin (no platform capability)
+ */
+export const checkDashboardEditRights = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspace: BasicStoreEntityWorkspace,
+  { requireStructural }: { requireStructural: boolean },
+): Promise<void> => {
+  const accessRight = await getUserAccessRight(user, workspace);
+  if (accessRight === MEMBER_ACCESS_RIGHT_VIEW || accessRight === null) {
+    throw ForbiddenAccess('You need at least edit access to this dashboard');
+  }
+  if (requireStructural && !isUserHasCapability(user, EXPLORE_EXUPDATE)) {
+    throw ForbiddenAccess('You need the EXPLORE_EXUPDATE capability to modify dashboard structure');
+  }
+};
+
+export const getWorkspaceVariables = (workspace: BasicStoreEntityWorkspace): DashboardVariable[] => {
+  return parseManifest(workspace.manifest).variables ?? [];
+};
+
+export const workspaceVariableAdd = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  input: DashboardVariableInput,
+): Promise<BasicStoreEntityWorkspace> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const newVariable: DashboardVariable = {
+    id: uuidv4(),
+    name: input.name,
+    filterKey: input.filterKey,
+    filterKeyType: input.filterKeyType as DashboardVariable['filterKeyType'],
+    defaultValue: input.defaultValue ?? null,
+  };
+  const updatedManifest: DashboardManifest = {
+    ...manifest,
+    variables: [...(manifest.variables ?? []), newVariable],
+  };
+  return editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+};
+
+export const workspaceVariableFieldPatch = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  variableId: string,
+  inputs: EditInput[],
+): Promise<BasicStoreEntityWorkspace> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const variables = manifest.variables ?? [];
+  const idx = variables.findIndex((v) => v.id === variableId);
+  if (idx === -1) throw FunctionalError('Variable not found', { variableId });
+
+  const updated = { ...variables[idx] };
+  for (const { key, value } of inputs) {
+    (updated as Record<string, unknown>)[key] = value?.[0] ?? null;
+  }
+  const updatedVariables = [...variables];
+  updatedVariables[idx] = updated;
+  const updatedManifest: DashboardManifest = { ...manifest, variables: updatedVariables };
+  return editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+};
+
+export const workspaceVariableDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  variableId: string,
+): Promise<string> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const variables = (manifest.variables ?? []).filter((v) => v.id !== variableId);
+  const updatedManifest: DashboardManifest = { ...manifest, variables };
+  await editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+  return variableId;
+};
+
+// region Dashboard preset management
+
+export const getWorkspacePresets = (workspace: BasicStoreEntityWorkspace): DashboardPreset[] => {
+  return parseManifest(workspace.manifest).presets ?? [];
+};
+
+export const workspacePresetAdd = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  input: DashboardPresetInput,
+): Promise<BasicStoreEntityWorkspace> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const newPreset: DashboardPreset = {
+    id: uuidv4(),
+    name: input.name,
+    variable_values: input.variable_values,
+  };
+  const updatedManifest: DashboardManifest = {
+    ...manifest,
+    presets: [...(manifest.presets ?? []), newPreset],
+  };
+  return editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+};
+
+export const workspacePresetFieldPatch = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  presetId: string,
+  inputs: EditInput[],
+): Promise<BasicStoreEntityWorkspace> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const presets = manifest.presets ?? [];
+  const idx = presets.findIndex((p) => p.id === presetId);
+  if (idx === -1) throw FunctionalError('Preset not found', { presetId });
+
+  const updated = { ...presets[idx] };
+  for (const { key, value } of inputs) {
+    (updated as Record<string, unknown>)[key] = value?.[0] ?? null;
+  }
+  const updatedPresets = [...presets];
+  updatedPresets[idx] = updated;
+  const updatedManifest: DashboardManifest = { ...manifest, presets: updatedPresets };
+  return editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+};
+
+export const workspacePresetDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  presetId: string,
+): Promise<string> => {
+  const workspace = await findById(context, user, workspaceId);
+  if (!workspace) throw FunctionalError('Workspace not found', { id: workspaceId });
+  await checkDashboardEditRights(context, user, workspace, { requireStructural: true });
+
+  const manifest = parseManifest(workspace.manifest);
+  const presets = (manifest.presets ?? []).filter((p) => p.id !== presetId);
+  const updatedManifest: DashboardManifest = { ...manifest, presets };
+  await editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    [{ key: 'manifest', value: [serializeManifest(updatedManifest)] }],
+  );
+  return presetId;
+};
+
+// endregion

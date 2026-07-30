@@ -50,7 +50,18 @@ export const deserializeDashboardManifestForFrontend = (
       config: {},
     };
   }
-  const manifest = JSON.parse(manifestStr);
+  let manifest: DashboardManifest;
+  try {
+    manifest = JSON.parse(manifestStr);
+  } catch {
+    // Fallback: manifest may have been stored as raw JSON (not base64) by a backend mutation.
+    // Try parsing the original string directly.
+    try {
+      manifest = JSON.parse(manifestB64Str);
+    } catch {
+      return { widgets, config: {} };
+    }
+  }
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];

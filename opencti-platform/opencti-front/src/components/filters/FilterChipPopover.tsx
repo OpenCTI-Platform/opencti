@@ -36,6 +36,8 @@ import BasicFilterInput from './BasicFilterInput';
 import DateRangeFilter from './DateRangeFilter';
 import { FilterRepresentative } from './FiltersModel';
 import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
+import { useDashboardVariables } from '../../private/components/workspaces/dashboards/variables/DashboardVariablesContext';
+import { useFilterVariableSelection } from '../../private/components/widgets/FilterVariableSelectionContext';
 
 import FilterFiltersInput from './FilterFiltersInput';
 
@@ -116,7 +118,39 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
   const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
+
+  // ── Dashboard variable injection ──────────────────────────────────────────
+  const { variables: dashboardVariables } = useDashboardVariables();
+  const { onVariableSelected } = useFilterVariableSelection();
+  const resolveVariableTypeForFilter = (defType: string | undefined): string | null => {
+    switch (defType) {
+      case 'id': return 'entity_ref';
+      case 'vocabulary':
+      case 'enum': return 'vocabulary';
+      case 'boolean': return 'boolean';
+      case 'integer':
+      case 'float': return 'numeric';
+      case 'string':
+      case 'text': return 'text';
+      default: return null;
+    }
+  };
+  const buildVariableOptions = (defType: string | undefined): FilterOptionValue[] => {
+    const matchedVarType = resolveVariableTypeForFilter(defType);
+    if (!onVariableSelected || !matchedVarType) return [];
+    return dashboardVariables
+      .filter((v) => v.filterKeyType === matchedVarType)
+      .map((v) => ({
+        value: `__var__:${v.id}`,
+        label: v.name,
+        type: 'Variable',
+        group: t_i18n('Variables'),
+      }));
+  };
+  // ─────────────────────────────────────────────────────────────────────────
   const [autocompleteInputValues, setAutocompleteInputValues] = useState<Record<string, string>>({});
+  const [numericUseVariable, setNumericUseVariable] = useState<Record<string, boolean>>({});
+  const [textUseVariable, setTextUseVariable] = useState<Record<string, boolean>>({});
 
   const [inputValues, setInputValues] = useState<{
     key: string;
@@ -245,9 +279,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     />
   );
 
-  const buildAutocompleteFilter = (fKey: string, fLabel?: string, subKey?: string, disabled = false): ReactNode => {
+  const buildAutocompleteFilter = (
+    fKey: string,
+    fLabel?: string,
+    subKey?: string,
+    disabled = false,
+    effectiveFilterType?: string,
+  ): ReactNode => {
     const getEntitiesOptions = getOptionsFromEntities(entities, searchScope, fKey);
     const optionsValues = subKey ? (filterValues.find((f) => f.key === subKey)?.values ?? []) : filterValues;
+    const variableOptions = buildVariableOptions(effectiveFilterType);
+    const hasVariableTypeMatch = variableOptions.length > 0;
 
     const completedTypesWithFintelTemplates = typesWithFintelTemplates.concat(['Container', 'Stix-Domain-Object', 'Stix-Core-Object']);
     const shouldAddSelfIdInFintelTemplates = host?.kind === 'fintelTemplate'
@@ -272,15 +314,56 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       : getEntitiesOptions;
 
     const entitiesOptions = getOptions.filter((option) => !optionsValues.includes(option.value));
-    const selectedOptions: FilterOptionValue[] = getSelectedOptions(getOptions, optionsValues, filtersRepresentativesMap, t_i18n);
+    const selectedOptionsRaw: FilterOptionValue[] = getSelectedOptions(
+      [...variableOptions, ...getOptions],
+      optionsValues,
+      filtersRepresentativesMap,
+      t_i18n,
+    );
+    const sourceOptionsByValue = new Map(
+      [...variableOptions, ...getOptions].map((option) => [option.value, option]),
+    );
+    const selectedOptions: FilterOptionValue[] = selectedOptionsRaw.map((option) => {
+      const sourceOption = sourceOptionsByValue.get(option.value);
+      if (!sourceOption) {
+        return option;
+      }
+      return {
+        ...option,
+        label: sourceOption.label ?? option.label,
+        type: sourceOption.type ?? option.type,
+        color: sourceOption.color ?? option.color,
+        group: sourceOption.group ?? option.group,
+      };
+    });
 
-    const options = [...selectedOptions, ...entitiesOptions];
+    const selectedValues = new Set(selectedOptions.map((option) => option.value));
+    const remainingVariableOptions = variableOptions.filter((option) => !selectedValues.has(option.value));
+    const remainingEntityOptions = entitiesOptions.filter((option) => !selectedValues.has(option.value));
+
+    const options = [...selectedOptions, ...remainingVariableOptions, ...remainingEntityOptions];
 
     const groupByEntities = (option: FilterOptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
     };
 
     const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
+      // Handle dashboard variable selection
+      if (reason === AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION && onVariableSelected && hasVariableTypeMatch) {
+        const varOption = newValue.find((v) => v.value?.startsWith('__var__:'));
+        if (varOption) {
+          const variableId = varOption.value.slice('__var__:'.length);
+          const variable = dashboardVariables.find((v) => v.id === variableId);
+          const fkt = variable?.filterKeyType ?? (effectiveFilterType ? resolveVariableTypeForFilter(effectiveFilterType) : null);
+          // Set a sentinel filter value so the runtime substitution in resolveDataSelection
+          // can replace it with the variable's current value.
+          handleChange(true, `__var__:${variableId}`, subKey);
+          if (variable && fkt) {
+            onVariableSelected(variableId, variable.name, fkt);
+          }
+          return;
+        }
+      }
       const newValues = newValue.map((v) => v.value);
 
       if (reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
@@ -438,26 +521,177 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       );
     }
     if (isNumericFilter(fDefinition?.type)) {
+      const numericModeKey = `${filter?.id ?? filterKey}:${subKey ?? fDefinition?.filterKey ?? filterKey}`;
+      const firstValue = computedValues[0];
+      const currentValue = typeof firstValue === 'string' ? firstValue : '';
+      const isVariableSentinel = currentValue.startsWith('__var__:');
+      const variableOptions = buildVariableOptions(fDefinition?.type);
+      const canUseVariable = variableOptions.length > 0 && !!onVariableSelected;
+      const useVariableMode = canUseVariable && (numericUseVariable[numericModeKey] ?? isVariableSentinel);
+
+      const clearCurrentNumericValue = () => {
+        if (subKey) {
+          const childFilters = (filter?.values ?? []).filter((val) => val.key === subKey) as Filter[];
+          const childFilter = childFilters.length > 0 ? childFilters[0] : undefined;
+          helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, undefined);
+        } else {
+          helpers?.handleReplaceFilterValues(filter?.id ?? '', []);
+        }
+      };
+
+      const selectedVariableOption = variableOptions.find((option) => option.value === currentValue) ?? null;
+
       return (
-        <BasicFilterInput
-          filter={filter}
-          filterKey={filterKey}
-          filterValues={computedValues}
-          helpers={helpers}
-          label={filterLabel}
-          type="number"
-        />
+        <>
+          {canUseVariable && (
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <Checkbox
+                size="small"
+                checked={useVariableMode}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setNumericUseVariable((prev) => ({ ...prev, [numericModeKey]: checked }));
+                  if (checked && !isVariableSentinel && computedValues.length > 0) {
+                    clearCurrentNumericValue();
+                  }
+                  if (!checked && isVariableSentinel) {
+                    clearCurrentNumericValue();
+                  }
+                }}
+              />
+              <span>{t_i18n('Use variable')}</span>
+            </div>
+          )}
+
+          {useVariableMode ? (
+            <Autocomplete
+              key={`${numericModeKey}-variable`}
+              value={selectedVariableOption}
+              options={variableOptions}
+              getOptionLabel={(option) => option.label ?? ''}
+              noOptionsText={t_i18n('No available options')}
+              isOptionEqualToValue={(option, val) => option.value === val.value}
+              onChange={(_event, option) => {
+                if (!option) {
+                  clearCurrentNumericValue();
+                  return;
+                }
+                const variableId = option.value.slice('__var__:'.length);
+                const variable = dashboardVariables.find((v) => v.id === variableId);
+                const fkt = variable?.filterKeyType ?? (fDefinition?.type ? resolveVariableTypeForFilter(fDefinition.type) : null);
+                handleChange(true, `__var__:${variableId}`, subKey);
+                if (variable && fkt) {
+                  onVariableSelected?.(variableId, variable.name, fkt);
+                }
+              }}
+              renderInput={(paramsInput) => (
+                <TextField
+                  {...paramsInput}
+                  label={t_i18n('Variable')}
+                  variant="outlined"
+                  size="small"
+                  fullWidth={true}
+                />
+              )}
+            />
+          ) : (
+            <BasicFilterInput
+              filter={filter}
+              filterKey={filterKey}
+              filterValues={computedValues}
+              helpers={helpers}
+              label={filterLabel}
+              type="number"
+            />
+          )}
+        </>
       );
     }
     if (isBasicTextFilter(filterDefinition)) {
+      const textModeKey = `${filter?.id ?? filterKey}:${subKey ?? fDefinition?.filterKey ?? filterKey}`;
+      const computedValues = filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? filterValues;
+      const firstValue = computedValues[0];
+      const currentValue = typeof firstValue === 'string' ? firstValue : '';
+      const isVariableSentinel = currentValue.startsWith('__var__:');
+      const variableOptions = buildVariableOptions(fDefinition?.type);
+      const canUseVariable = variableOptions.length > 0 && !!onVariableSelected;
+      const useVariableMode = canUseVariable && (textUseVariable[textModeKey] ?? isVariableSentinel);
+
+      const clearCurrentTextValue = () => {
+        if (subKey) {
+          const childFilters = (filter?.values ?? []).filter((val) => val.key === subKey) as Filter[];
+          const childFilter = childFilters.length > 0 ? childFilters[0] : undefined;
+          helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, undefined);
+        } else {
+          helpers?.handleReplaceFilterValues(filter?.id ?? '', []);
+        }
+      };
+
+      const selectedVariableOption = variableOptions.find((option) => option.value === currentValue) ?? null;
+
       return (
-        <BasicFilterInput
-          filter={filter}
-          filterKey={filterKey}
-          filterValues={filterValues}
-          helpers={helpers}
-          label={filterLabel}
-        />
+        <>
+          {canUseVariable && (
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+              <Checkbox
+                size="small"
+                checked={useVariableMode}
+                onChange={(event) => {
+                  const checked = event.target.checked;
+                  setTextUseVariable((prev) => ({ ...prev, [textModeKey]: checked }));
+                  if (checked && !isVariableSentinel && computedValues.length > 0) {
+                    clearCurrentTextValue();
+                  }
+                  if (!checked && isVariableSentinel) {
+                    clearCurrentTextValue();
+                  }
+                }}
+              />
+              <span>{t_i18n('Use variable')}</span>
+            </div>
+          )}
+
+          {useVariableMode ? (
+            <Autocomplete
+              key={`${textModeKey}-variable`}
+              value={selectedVariableOption}
+              options={variableOptions}
+              getOptionLabel={(option) => option.label ?? ''}
+              noOptionsText={t_i18n('No available options')}
+              isOptionEqualToValue={(option, val) => option.value === val.value}
+              onChange={(_event, option) => {
+                if (!option) {
+                  clearCurrentTextValue();
+                  return;
+                }
+                const variableId = option.value.slice('__var__:'.length);
+                const variable = dashboardVariables.find((v) => v.id === variableId);
+                const fkt = variable?.filterKeyType ?? (fDefinition?.type ? resolveVariableTypeForFilter(fDefinition.type) : null);
+                handleChange(true, `__var__:${variableId}`, subKey);
+                if (variable && fkt) {
+                  onVariableSelected?.(variableId, variable.name, fkt);
+                }
+              }}
+              renderInput={(paramsInput) => (
+                <TextField
+                  {...paramsInput}
+                  label={t_i18n('Variable')}
+                  variant="outlined"
+                  size="small"
+                  fullWidth={true}
+                />
+              )}
+            />
+          ) : (
+            <BasicFilterInput
+              filter={filter}
+              filterKey={filterKey}
+              filterValues={filterValues}
+              helpers={helpers}
+              label={filterLabel}
+            />
+          )}
+        </>
       );
     }
     return null;
@@ -491,7 +725,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}
         {noValueOperator && !isSpecificFilter(finalFilterDefinition) && (
-          <>{buildAutocompleteFilter(subKey ?? fKey, finalFilterDefinition?.label ?? t_i18n(fKey), subKey, disabled)}</>
+          <>{buildAutocompleteFilter(
+            subKey ?? fKey,
+            finalFilterDefinition?.label ?? t_i18n(fKey),
+            subKey,
+            disabled,
+            finalFilterDefinition?.type,
+          )}</>
         )}
       </>
     );

@@ -497,14 +497,34 @@ const dashboardCustomDashboardQuery = graphql`
     }
   }
 `;
-const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
+const WorkspaceDashboardComponent = ({ queryRef, timeField, defaultPresetId }) => {
   const data = usePreloadedQuery(dashboardCustomDashboardQuery, queryRef);
   if (data.workspace) {
-    return <CustomDashboard data={data.workspace} noToolbar={true} />;
+    let userVariableValues = '{}';
+    if (defaultPresetId) {
+      const preset = (data.workspace.presets ?? []).find((candidate) => candidate.id === defaultPresetId);
+      if (preset?.variable_values) {
+        try {
+          const parsedValues = JSON.parse(preset.variable_values);
+          const filteredValues = Object.fromEntries(
+            Object.entries(parsedValues).filter(([key, value]) => !key.startsWith('__preset_') && typeof value === 'string'),
+          );
+          userVariableValues = JSON.stringify(filteredValues);
+        } catch {
+          userVariableValues = '{}';
+        }
+      }
+    } else {
+      const disabledAllVariables = Object.fromEntries(
+        (data.workspace.variables ?? []).map((variable) => [`__enabled__:${variable.id}`, 'false']),
+      );
+      userVariableValues = JSON.stringify(disabledAllVariables);
+    }
+    return <CustomDashboard data={data.workspace} userVariableValues={userVariableValues} noToolbar={true} />;
   }
   return <DefaultDashboard timeField={timeField} />;
 };
-const WorkspaceDashboard = ({ dashboard, timeField }) => {
+const WorkspaceDashboard = ({ dashboard, timeField, defaultPresetId }) => {
   const queryRef = useQueryLoading(dashboardCustomDashboardQuery, {
     id: dashboard,
   });
@@ -514,6 +534,7 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <WorkspaceDashboardComponent
             timeField={timeField}
+            defaultPresetId={defaultPresetId}
             queryRef={queryRef}
           />
         </React.Suspense>
@@ -521,7 +542,7 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
     </>
   );
 };
-const CustomHomeDashboard = ({ dashboard, timeField }) => {
+const CustomHomeDashboard = ({ dashboard, timeField, defaultPresetId }) => {
   const { t_i18n } = useFormatter();
   return (
     <Security
@@ -531,7 +552,7 @@ const CustomHomeDashboard = ({ dashboard, timeField }) => {
       )}
     >
       <Suspense fallback={<Loader />}>
-        <WorkspaceDashboard dashboard={dashboard} timeField={timeField} />
+        <WorkspaceDashboard dashboard={dashboard} timeField={timeField} defaultPresetId={defaultPresetId} />
       </Suspense>
     </Security>
   );
@@ -551,6 +572,7 @@ const dashboardMeFragment = graphql`
     default_dashboard {
       id
     }
+    default_dashboard_preset_id
     default_time_field
   }
 `;
@@ -565,7 +587,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(dashboardQuery, queryRef);
   const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
-  const { default_time_field, default_dashboard } = me;
+  const { default_time_field, default_dashboard, default_dashboard_preset_id } = me;
   const { viewStorage: localTimeFieldPreferences } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {},
@@ -592,6 +614,7 @@ const HomeDashboardComponent = ({ queryRef }) => {
           <CustomHomeDashboard
             dashboard={defaultDashboard}
             timeField={default_time_field}
+            defaultPresetId={default_dashboard_preset_id}
           />
         ) : (
           <DefaultDashboard timeField={default_time_field} />

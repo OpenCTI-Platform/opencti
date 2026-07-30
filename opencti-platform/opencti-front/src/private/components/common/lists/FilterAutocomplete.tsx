@@ -8,6 +8,9 @@ import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import type { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import { useDashboardVariables } from '../../workspaces/dashboards/variables/DashboardVariablesContext';
+import { useFilterVariableSelection } from '../../widgets/FilterVariableSelectionContext';
+import { getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
 
 export interface FilterOption {
   id?: string;
@@ -150,7 +153,56 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   } else if (entities[filterKey]) {
     options = entities[filterKey];
   }
+
+  // ── Dashboard variable injection ──────────────────────────────────────────
+  // Variables are injected as options only inside the widget config dialog
+  // (when FilterVariableSelectionProvider is active).
+  const { variables: dashboardVariables } = useDashboardVariables();
+  const { onVariableSelected } = useFilterVariableSelection();
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(searchContext.entityTypes);
+  const filterDef = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+  // Map from FilterDefinition.type to DashboardFilterKeyType enum
+  const resolveVariableType = (defType: string | undefined): string | null => {
+    switch (defType) {
+      case 'id': return 'entity_ref';
+      case 'vocabulary':
+      case 'enum': return 'vocabulary';
+      case 'boolean': return 'boolean';
+      case 'integer':
+      case 'float': return 'numeric';
+      case 'string':
+      case 'text': return 'text';
+      default: return null;
+    }
+  };
+  const matchedVarType = resolveVariableType(filterDef?.type);
+  const variableOptions: FilterOptionValue[] = (onVariableSelected && matchedVarType)
+    ? dashboardVariables
+      .filter((v) => v.filterKeyType === matchedVarType)
+      .map((v) => ({
+        value: `__var__:${v.id}:${encodeURIComponent(v.name)}:${v.filterKeyType}`,
+        label: v.name,
+        type: 'Variable',
+        group: t_i18n('Variables'),
+      }))
+    : [];
+  const allOptions = variableOptions.length > 0 ? [...variableOptions, ...options] : options;
+  // ─────────────────────────────────────────────────────────────────────────
+
   const input = inputValues.filter((f) => f.key === filterKey)?.[0]?.values?.[0] ?? '';
+
+  const handleChangeWithVariable = (event: SyntheticEvent, value: FilterOptionValue | null) => {
+    if (value?.value?.startsWith('__var__:') && onVariableSelected) {
+      const parts = value.value.split(':');
+      const variableId = parts[1];
+      const variableName = decodeURIComponent(parts[2]);
+      const fkt = parts[3];
+      onVariableSelected(variableId, variableName, fkt);
+      return;
+    }
+    handleChange(event, value);
+  };
+
   return (
     <MUIAutocomplete
       key={filterKey}
@@ -161,13 +213,13 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       autoHighlight={true}
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t_i18n('No available options')}
-      options={options}
+      options={allOptions}
       onInputChange={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
       inputValue={input}
-      onChange={handleChange}
+      onChange={handleChangeWithVariable}
       groupBy={
         isStixObjectTypes
-          ? (option) => option.type
+          ? (option) => (option.group ? t_i18n(option.group) : option.type)
           : (option) => (option.group ? t_i18n(option.group) : filterLabel)
       }
       isOptionEqualToValue={(option, value) => option.value === value.value}

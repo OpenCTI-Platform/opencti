@@ -295,6 +295,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
       ],
     },
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'default_dashboard_preset_id', label: 'Default dashboard preset', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     {
       name: 'max_shareable_markings',

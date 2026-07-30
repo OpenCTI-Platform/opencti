@@ -2344,6 +2344,25 @@ export const findDefaultDashboards = async (context, user, currentUser) => {
   return dashboards.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 };
 
+export const findDefaultDashboardPresetId = (currentUser) => {
+  const selectedDashboardId = currentUser.default_dashboard;
+  const groups = currentUser.groups ?? [];
+  const organizations = currentUser.organizations ?? [];
+
+  if (selectedDashboardId) {
+    const matchingGroup = groups.find((group) => group.default_dashboard === selectedDashboardId);
+    return matchingGroup?.default_dashboard_preset_id ?? null;
+  }
+
+  const firstOrganizationWithDashboard = organizations.find((organization) => !!organization.default_dashboard);
+  if (firstOrganizationWithDashboard) {
+    return null;
+  }
+
+  const firstGroupWithDashboard = groups.find((group) => !!group.default_dashboard);
+  return firstGroupWithDashboard?.default_dashboard_preset_id ?? null;
+};
+
 // region context
 export const userCleanContext = async (context, user, userId) => {
   await loadUserToUpdateWithAccessCheck(context, user, userId);

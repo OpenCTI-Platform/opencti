@@ -13,6 +13,7 @@ import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
+import { useDashboardVariables } from '../../private/components/workspaces/dashboards/variables/DashboardVariablesContext';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';
@@ -127,6 +128,14 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
 
   // general cases
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
+  const { variables: dashboardVariables } = useDashboardVariables();
+  const resolveVariableSentinel = (id: unknown): string | null => {
+    if (typeof id !== 'string') return null;
+    if (!id.startsWith('__var__:')) return null;
+    const variableId = id.slice('__var__:'.length);
+    const variable = dashboardVariables.find((v) => v.id === variableId);
+    return variable ? `[${variable.name}]` : `[${t_i18n('variable')}]`;
+  };
   const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode
@@ -157,10 +166,13 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           fontFamily: 'Consolas, monaco, monospace',
         };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
-    const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
+    const stringId = typeof id === 'string' ? id : null;
+    const value = resolveVariableSentinel(id)
+      ?? (stringId && filtersRepresentativesMap.get(stringId) ? filtersRepresentativesMap.get(stringId)?.value : id);
+    const itemKey = stringId ?? JSON.stringify(id);
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
     return (
-      <Fragment key={id}>
+      <Fragment key={itemKey}>
         {filterOperator === 'within'
           ? (
               <>

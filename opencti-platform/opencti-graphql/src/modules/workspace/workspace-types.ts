@@ -2,8 +2,34 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { AuthorizedMember } from '../../utils/access';
+import { DashboardFilterKeyType } from '../../generated/graphql';
+
+export { DashboardFilterKeyType };
 
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
+
+// region Dashboard variable / manifest types
+export interface DashboardVariable {
+  id: string;
+  name: string;
+  filterKey: string;
+  filterKeyType: DashboardFilterKeyType;
+  defaultValue: string | null;
+}
+
+export interface DashboardPreset {
+  id: string;
+  name: string;
+  /** Serialised JSON: Record<variableId, value> */
+  variable_values: string;
+}
+
+export interface DashboardManifest {
+  widgets?: Record<string, unknown>;
+  variables?: DashboardVariable[];
+  presets?: DashboardPreset[];
+}
+// endregion
 
 // region Database types
 export interface BasicStoreEntityWorkspace extends BasicStoreEntity {

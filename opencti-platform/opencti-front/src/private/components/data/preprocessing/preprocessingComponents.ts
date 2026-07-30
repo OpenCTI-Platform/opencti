@@ -20,7 +20,7 @@ export const PREPROCESSING_COMPONENTS: PreprocessingComponentDef[] = [
   { id: 'REMOVE_ACCESS_RESTRICTION', name: 'Remove access restriction',   description: 'Remove existing access restrictions',                        category: 'Share & Access Actions', icon: 'lock-open',                ports: [{ id: 'out', type: 'out' }] },
   { id: 'SHARE_TO_ORG',              name: 'Share to organization',       description: 'Share the entity with a specific organization',              category: 'Share & Access Actions', icon: 'domain',                   ports: [{ id: 'out', type: 'out' }] },
   { id: 'UNSHARE_FROM_ORG',          name: 'Unshare from organization',   description: 'Revoke sharing with an organization',                        category: 'Share & Access Actions', icon: 'domain-remove',            ports: [{ id: 'out', type: 'out' }] },
-  { id: 'DO_NOT_INGEST',             name: 'Do not ingest',               description: 'Discard the entity — stop processing here',                  category: 'End Actions',            icon: 'cancel',        isNew: true, ports: [] },
+  { id: 'DO_NOT_INGEST',             name: 'Do not ingest',               description: 'Discard the entity - stop processing here',                  category: 'End Actions',            icon: 'cancel',        isNew: true, ports: [] },
   { id: 'SEND_FOR_INGESTION',        name: 'Send for ingestion',          description: 'Forward the entity for standard ingestion',                  category: 'End Actions',            icon: 'check-circle',             ports: [] },
 ];
 export const findComponent = (id: string): PreprocessingComponentDef | undefined =>

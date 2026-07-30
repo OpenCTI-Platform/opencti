@@ -1,0 +1,17 @@
+type WorkspaceUserState {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    workspace_id: ID!
+    variable_values: String
+}
+
+type Query {
+    myDashboardVariableState(workspaceId: ID!): WorkspaceUserState @auth(for: [EXPLORE])
+}
+
+type Mutation {
+    workspaceVariableSetValue(workspaceId: ID!, variableId: ID!, value: String): WorkspaceUserState @auth(for: [EXPLORE])
+    workspaceVariableResetValue(workspaceId: ID!, variableId: ID!): WorkspaceUserState @auth(for: [EXPLORE])
+    workspacePresetApply(workspaceId: ID!, presetId: ID!): WorkspaceUserState @auth(for: [EXPLORE])
+}

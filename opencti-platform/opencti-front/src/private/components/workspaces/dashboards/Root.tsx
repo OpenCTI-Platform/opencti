@@ -17,10 +17,14 @@ const subscription = graphql`
 `;
 
 const dashboardQuery = graphql`
-  query RootCustomDashboardQuery($id: String!) {
+  query RootCustomDashboardQuery($id: String!, $workspaceId: ID!) {
     workspace(id: $id) {
       id
       ...CustomDashboard_workspace
+    }
+    myDashboardVariableState(workspaceId: $workspaceId) {
+      id
+      variable_values
     }
   }
 `;
@@ -30,7 +34,7 @@ interface RootCustomDashboardComponentProps {
 }
 
 const RootCustomDashboardComponent = ({ queryRef }: RootCustomDashboardComponentProps) => {
-  const { workspace } = usePreloadedQuery(dashboardQuery, queryRef);
+  const { workspace, myDashboardVariableState } = usePreloadedQuery(dashboardQuery, queryRef);
   if (!workspace) return <ErrorNotFound />;
 
   useEffect(() => {
@@ -52,7 +56,7 @@ const RootCustomDashboardComponent = ({ queryRef }: RootCustomDashboardComponent
         height: '100%',
       }}
     >
-      <CustomDashboard data={workspace} />
+      <CustomDashboard data={workspace} userVariableValues={myDashboardVariableState?.variable_values} />
     </div>
   );
 };
@@ -63,7 +67,7 @@ const RootCustomDashboard = () => {
 
   const queryRef = useQueryLoading<RootCustomDashboardQuery>(
     dashboardQuery,
-    { id: workspaceId },
+    { id: workspaceId, workspaceId },
   );
 
   return (

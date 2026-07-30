@@ -5,12 +5,28 @@ const nativeNodePlugin = require('../plugin/native.node.plugin');
 const nodeGypBuildShimPlugin = require('../plugin/node-gyp-build-shim.plugin');
 const {copy} = require('esbuild-plugin-copy');
 
+// On Windows with OneDrive, the native .node binary may be a reparse point that
+// esbuild's Rust-based resolver cannot follow. Mark the package and its internal
+// native-binary path as external so Node.js handles them at runtime instead.
+const nodeCallsPythonExternalPlugin = () => ({
+  name: 'node-calls-python-external',
+  setup(build) {
+    build.onResolve({ filter: /^node-calls-python$/ }, (args) => {
+      return { path: args.path, external: true };
+    });
+    build.onResolve({ filter: /nodecallspython|build\/Release\/nodecallspython/ }, (args) => {
+      return { path: args.path, external: true };
+    });
+  },
+});
+
 esbuild.build({
     logLevel: 'info',
     define: {'process.env.NODE_ENV': '\"production\"'},
     plugins: [
         importGlobPlugin(),
         graphqlLoaderPlugin(),
+        nodeCallsPythonExternalPlugin(),
         nativeNodePlugin(),
         nodeGypBuildShimPlugin(),
         copy({
@@ -46,5 +62,6 @@ esbuild.build({
     outdir: 'build',
     external: [
       'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
+      'node-calls-python', // native addon - load via require() at runtime to avoid esbuild bundling issues on Windows/OneDrive
     ],
 });

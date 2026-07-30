@@ -68,11 +68,16 @@ const groupFragment = graphql`
     default_dashboard {
       id
       name
+      presets {
+        id
+        name
+      }
       authorizedMembers {
         id  
         member_id
       }
     }
+    default_dashboard_preset_id
     roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
       edges {
         node {
@@ -138,6 +143,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   ).some(({ member_id }) => {
     return member_id === 'ALL' || member_id === group.id;
   });
+  const defaultPresetName = group.default_dashboard?.presets?.find(
+    (preset) => preset?.id === group.default_dashboard_preset_id,
+  )?.name;
 
   return (
     <div className={classes.container} data-testid="group-details-page">
@@ -234,6 +242,14 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     )}
                   </ListItemButton>
                 </FieldOrEmpty>
+              </Grid>
+              <Grid item xs={12}>
+                <Label>
+                  {t_i18n('Default preset')}
+                </Label>
+                <Typography variant="body2" color="textSecondary">
+                  {defaultPresetName ?? t_i18n('-')}
+                </Typography>
               </Grid>
               <Grid item xs={12}>
                 <Label>
