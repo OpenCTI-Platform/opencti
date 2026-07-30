@@ -145,7 +145,13 @@ export const addSecurityCoverage = async (
     );
     // Manually add it here to be able to resolve dynamic attributes
     createdSecurityCoverage['result-of'] = [result.id];
-    logApp.debug(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
+    logApp.info(
+      `[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`,
+      {
+        result: JSON.stringify(result),
+        input: JSON.stringify(securityCoverageInput),
+      },
+    );
   }
 
   return notify(
