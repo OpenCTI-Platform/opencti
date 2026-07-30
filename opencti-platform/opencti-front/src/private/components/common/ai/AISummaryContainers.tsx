@@ -27,6 +27,7 @@ import XtmOneAISummaryDisplay from './XtmOneAISummaryDisplay';
 import { type AgentOption, callAgent, callAgentStream, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 import useAgentStream from '../../../../utils/ai/useAgentStream';
 import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
+import AISummaryContent from './AISummaryContent';
 
 const subscription = graphql`
     subscription AISummaryContainersSubscription($id: ID!) {
@@ -160,7 +161,9 @@ const AISummaryContainersComponent = ({
           </Grid>
         )}
       </Alert>
-      {parse(content)}
+      <AISummaryContent loading={loading}>
+        {parse(content)}
+      </AISummaryContent>
       {!loading && (
         <>
           <Divider />
