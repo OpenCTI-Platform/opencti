@@ -1,3 +1,11 @@
+# Organization segregation
+
+!!! tip "Enterprise edition"
+
+    Platform segregation by organization is available under the "OpenCTI Enterprise Edition" license. Please read the [dedicated page](enterprise.md) to have all the information.
+
+*A reference guide covering setup, RBAC configuration, best practices, main-organization customization, and data-sharing patterns.*
+
 ## Part 1 — Organization-Based Segregation: Concept, Installation & RBAC Setup
 
 ### 1.1 What it is
