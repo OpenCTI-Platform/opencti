@@ -190,12 +190,12 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
     let url = toUrlString(getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData));
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
-      verifyIngestionUri(url as string);
+      verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
       const { data: paginationData } = await httpClient.call({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
-        url: url as string,
+        url,
         data: ingestion.body,
       });
       const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
