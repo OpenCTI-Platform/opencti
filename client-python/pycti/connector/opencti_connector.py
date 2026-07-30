@@ -48,7 +48,9 @@ class OpenCTIConnector:
     :type connector_name: str
     :param connector_type: Type of connector (see :class:`ConnectorType`)
     :type connector_type: str
-    :param scope: Connector scope as a comma-separated string (e.g., "Report,Indicator")
+    :param scope: Connector scope, either as a comma-separated string
+    (e.g. ``"Artifact,Url"``) or as a list of strings
+    (e.g. ``["Artifact", "Url"]``. Both forms are normalized to a list.
     :type scope: str or list[str]
     :param auto: Whether the connector runs automatically on matching entities
     :type auto: bool
@@ -104,7 +106,7 @@ class OpenCTIConnector:
         :param scope: Connector scope, either as a comma-separated string
         (e.g. ``"Artifact,Url"``) or as a list of strings
         (e.g. ``["Artifact", "Url"]``. Both forms are normalized to a list.
-        :type scope: str
+        :type scope: str or list[str]
         :param auto: Whether the connector runs automatically
         :type auto: bool
         :param only_contextual: Whether to process only contextual data
@@ -128,7 +130,7 @@ class OpenCTIConnector:
         elif isinstance(scope, str):
             self.scope = scope.split(",")
         else:
-            # already a list/tuple (e.g. from the ListFromString Pydantic model)
+            # already a list/tuple
             self.scope = list(scope)
         self.auto = auto
         self.auto_update = auto_update
