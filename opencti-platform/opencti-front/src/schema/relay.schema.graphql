@@ -9003,6 +9003,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
+  external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
@@ -16180,6 +16181,8 @@ input SecurityCoverageAddInput {
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
+  tenant_id: String
+  tenant_name: String
 }
 
 type CoverageResult {
