@@ -34,8 +34,11 @@ Organizations are not a requirement of RBAC, but once organization segregation i
 Before enabling segregation, confirm the following, since activation has platform-wide consequences:
 
 - Every **user** must belong to at least one organization. Users without an organization will not be able to log in once segregation is active.
+
 - **Connectors users must be Service Accounts.** They will pertain dynamically to the main platform org, without having the admin to make them part of the platform org. This also avoids issues related to Entities having Authorized members (AM), since Service Account bypass by default AM (they are able to edit if if not granted the right to, to ensure for instance that an enrichement connector can enrich data contained in a report with AM).
+
 - A "**main organization**" must be designated in the platform settings (see 1.3). Users belonging to it get unrestricted visibility over all platform data; everyone else only sees what has been explicitly shared with their organization(s).
+
 - Decide in advance which groups will exist and what roles/capabilities they need — particularly who is allowed to share knowledge with other organizations (**Restrict organization access** capability, see 1.5).
 
 ### 1.3 Where to enable it
@@ -62,7 +65,9 @@ Organizations themselves are created as entities under the **Organizations** men
 A typical configuration workflow:
 
 1. Create the **Organizations** that will use the platform (e.g., Filigran, Customer A, Customer B, Partner X).
+
 2. Create **Groups** that define default behavior and marking access (e.g., default dashboards, default triggers/digests, hidden menus/entities can all be defined per group, and also per organization).
+
 3. Create/assign **Roles** to those groups, granting only the capabilities each population needs. Key capabilities relevant to segregation:
 
 | Capability | Effect |
@@ -75,6 +80,7 @@ A typical configuration workflow:
 | Manage credentials | Manage roles, groups, users, organizations, security policies (admin-level) |
 
 4. Assign **Users** to their Organization(s) and Group(s). A user can belong to several organizations and several groups simultaneously; their effective visibility is the union of what each grants.
+
 5. Designate **Organization Administrators** where relevant (see 1.7) to delegate day-to-day user management without granting full platform admin rights.
 
 ### 1.5 What sharing actually grants
@@ -88,10 +94,14 @@ Once segregation is active, every shareable entity/relationship displays a "**Sh
 **Key interactions to know:**
 
 - For containers (Report, Grouping, Incident Response, Case RFI, Case RFT), if organization segregation is enabled and the container is shared with an organization, you can additionally define Authorized Members to further restrict who — within or outside that organization — can access it.
+
 - This restriction only applies to the container itself; it does not cascade to the entities contained within it.
+
 - **Authorized Members (AM) override organization-based segregation for that entity.** Once AM is activated on a specific entity, standard organization sharing rules no longer apply to it — access is governed exclusively by the AM list, and the "Share with an Organization" button is deactivated.
  * ⚠️ **Important — AM grants access directly, no prior sharing required:** if Organization A does not currently have access to a Report (it was never shared with them via organization sharing), you can still grant Organization A access simply by adding it directly to the Report's Authorized Members with view rights. There is no need to first share the entity with that organization — applying AM is sufficient on its own to grant access, independent of any prior sharing state.
+
 - In other words, AM is not an additional restriction layered on top of organization sharing — it's a **replacement access mechanism** for that entity: whoever/whatever is listed in AM (users, groups, or organizations) has access, and organization-based sharing becomes irrelevant for that specific object.
+
 - Since OpenCTI 6.7, Authorized Members can also be applied to Organization entities themselves, so that as a platform/main organization you can control who is even allowed to see the list of organizations in your database (**Can View / Can Edit / Can Manage**).
 
 ### 1.7 Organization Administration
@@ -99,7 +109,9 @@ Once segregation is active, every shareable entity/relationship displays a "**Sh
 Platform administrators can promote a member of an organization to "**Organization administrator**". This role:
 
 - Can create, edit, and delete users within that organization only.
+
 - Can be restricted to a defined list of groups that they are allowed to grant to the members they create (so an org admin cannot escalate privileges beyond what the platform admin intended).
+
 - Has otherwise restricted access to Settings — they cannot manage platform-wide configuration, only their organization's membership.
 
 This is promoted/demoted from the user's edit form by a platform administrator, and is especially useful for ISAC-style deployments or MSSP/customer setups where you want partner organizations to self-manage their own users without granting them platform admin rights.
@@ -109,9 +121,13 @@ This is promoted/demoted from the user's edit form by a platform administrator, 
 Because segregation can cause a user to be unable to see (or re-create) knowledge that already exists but belongs to another organization, OpenCTI surfaces a generic **Restricted entity already exists** error in that case. Administrators can configure a Request Access workflow so users can formally request visibility instead of hitting a dead end:
 
 1. Open the entity settings for **Request for Information**.
+
 2. Configure the "**Specific workflow for request access**": define the status list to use (the RFI is created with the first status), the status used when accepted, the status used when declined, and the group allowed to see the auto-created RFIs.
+
 3. Once configured, users who hit the restriction see a "**Request Access**" button, letting them state a reason and select the organization to request access from.
+
 4. Users who are both members of the owning organization and the configured validator group receive the RFI (automatically placed under Authorized Members for confidentiality) with **Validate / Decline** actions. Validating shares the requested knowledge immediately.
+
 5. To disable the feature, remove all statuses from the "Specific Workflow for Request Access" section, or remove the group from Validator membership.
 
 ### 1.9 Best practices
@@ -124,9 +140,13 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
   **How to define a default group for Service Accounts** (so they inherit the right access automatically):
 
   1. Go to **Settings > Security > Groups**.
+
   2. Create (or select) the group intended for technical/connector accounts (e.g., *Connectors* or *Service Accounts*).
+
   3. In that group's configuration, enable **Default membership**. Any new user — including newly created Service Accounts, whether created manually or provisioned via SSO — will automatically be added to this group upon creation.
+
   4. Configure this group's **Roles/capabilities**, **Allowed markings**, and **Max confidence level** to match what connectors need (typically: Access knowledge, Create/update knowledge, appropriate TLP markings, and a high confidence level so ingested data isn't rejected).
+
   5. If the connector's data must also reach specific partner organizations by default (see the connector/service-account sharing model above), additionally assign the Service Account to those target organizations — on top of its automatic main-organization membership.
 
   **Best practice:** treat "Service Account + default group" as the standard onboarding pattern for every connector, so ingestion and visibility behave predictably without manual, per-connector configuration.
@@ -144,8 +164,11 @@ Because segregation can cause a user to be unable to see (or re-create) knowledg
 ### 1.10 What segregation implies (at a glance)
 
 - A platform with segregation enabled behaves as **one shared knowledge graph with per-organization visibility filters**, not as isolated tenants.
+
 - Visibility is **additive** across a user's organizations and groups: the most permissive combination the user is a member of wins.
+
 - Segregation interacts with, but does not replace, marking-based (TLP) access control — a user still needs both organization access **and** sufficient marking clearance to see an object.
+
 - Segregation and Authorized Members can combine, but **Authorized Members takes precedence** and effectively opts an entity out of organization-based sharing once activated.
 
 ---
@@ -208,10 +231,12 @@ As the main organization you typically choose (and can combine) one of the follo
   Because objects are shared by default with the organizations of the user/service account that creates them, this makes sharing happen automatically at ingestion time — no playbook, no Resolve Neighbors step, no risk of missing a relationship or observable.
 
   **When to use this model**
+
   - The entire output of a connector or integration should go to one (or several) specific organizations, with no partial/selective sharing needed.
   - You want to avoid maintaining a dedicated playbook per organization just to replicate what a connector already produces.
 
   **When not to use this model**
+
   - You need selective or conditional sharing (e.g., only certain entity types, or only TLP:CLEAR data) — use the playbook-based approach with Reduce Knowledge instead.
   - The same connector's data must be split differently across organizations depending on content — a single service account can only default-share to a fixed set of organizations, so it can't apply per-object logic.
 
@@ -227,12 +252,19 @@ As the main organization holding most of the knowledge, you will likely be the o
 ### 2.7 Governance checklist for the main organization
 
 - Main organization designated and all connector users placed in it.
+
 - Groups/roles reviewed so only intended roles hold Restrict organization access.
+
 - Default dashboards/triggers/hidden menus configured per group for each partner organization.
+
 - Organization Administrators promoted where delegation is desired, with a bounded group list.
+
 - Apply Authorized Members (AM) on constituent/constituent/sub organization Organization entities — for MSSP setups where the main organization manages multiple constituents, restrict each Organization object's Authorized Members to the MSSP admins and that organization's own members only. This ensures constituents cannot see each other or know of each other's existence on the platform. Do this at onboarding time, before any data is shared with the constituent.
+
 - Request Access workflow configured with the correct validator group.
+
 - Sharing model chosen (manual vs. playbook-driven vs. hybrid) and documented internally.
+
 - ALL-style organization created if a public/TLP:CLEAR distribution channel is needed.
 
 ---
