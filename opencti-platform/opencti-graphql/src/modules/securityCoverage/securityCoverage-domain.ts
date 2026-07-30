@@ -143,7 +143,7 @@ export const addSecurityCoverage = async (
       securityCoverageResultInput,
       ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
     );
-    // Manually add it here to be able to resolve dynamyc attributes
+    // Manually add it here to be able to resolve dynamic attributes
     createdSecurityCoverage['result-of'] = [result.id];
     logApp.debug(`[SECURITY-COVERAGE-RESULT][${createdSecurityCoverage.id}] SCR created: ${result.standard_id}`);
   }
@@ -212,7 +212,7 @@ export const securityCoverageDelete = async (context: AuthContext, user: AuthUse
 };
 // endregion
 
-export const getSecurityCoverageResults = async (
+export const loadSecurityCoverageResults = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
@@ -244,7 +244,7 @@ export const findCoveredEntities = async (
   return { count: relationships.pageInfo?.globalCount ?? entities.length, entities };
 };
 
-export const getSecurityCoverageResultProperty = async (
+export const loadSecurityCoverageResultProperty = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
@@ -255,7 +255,7 @@ export const getSecurityCoverageResultProperty = async (
   return results[0][property];
 };
 
-export const mostRecentLastCoverageResult = async (
+export const loadMostRecentLastCoverageResult = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
@@ -269,7 +269,7 @@ export const mostRecentLastCoverageResult = async (
   return getMostRecentLastCoverageResult(results);
 };
 
-export const averageCoverageInformation = async (
+export const loadAverageCoverageInformation = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,

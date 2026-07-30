@@ -1,10 +1,11 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
+import { internalFindByIds } from '../../../database/middleware-loader';
 import { type StixCoreRelationshipAddInput } from '../../../generated/graphql';
 import { RELATION_HAS_COVERED } from '../../../schema/stixCoreRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { findById, getSecurityCoverageResults } from '../securityCoverage-domain';
-import type { StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
+import { findById } from '../securityCoverage-domain';
+import type { BasicStoreEntitySecurityCoverageResult, StoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 
 /**
  * Compute the average coverage information of an array of securityCoverageResult.
@@ -51,7 +52,6 @@ export const getMostRecentLastCoverageResult = async (results: StoreEntitySecuri
  */
 export const shouldHandleHasCoveredRel = (relInput: StixCoreRelationshipAddInput): boolean => {
   return relInput.relationship_type === RELATION_HAS_COVERED
-    && !!relInput.external_uri
     && relInput.fromId.startsWith('security-coverage--');
 };
 
@@ -69,10 +69,20 @@ export const transformHasCoveredFromId = async (
   relInput: StixCoreRelationshipAddInput,
 ) => {
   const securityCoverage = await findById(context, user, relInput.fromId);
-  const securityCoverageResults = await getSecurityCoverageResults(context, user, securityCoverage);
-  const matchingSCR = securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri);
+  const securityCoverageResults = await internalFindByIds(context, user, securityCoverage['result-of']) as BasicStoreEntitySecurityCoverageResult[];
+  const matchingSCR = relInput.external_uri
+    ? securityCoverageResults.filter((scr) => scr.external_uri === relInput.external_uri)
+    // Retro compatibility : only for old OEAV version without external_uri
+    : securityCoverageResults;
+
   if (matchingSCR.length !== 1) {
-    logApp.error(`[SECURITY-COVERAGE-RESULT] Invalid number of SCR found: ${relInput.external_uri}`);
+    logApp.error(
+      `[SECURITY-COVERAGE-RESULT] Invalid number of SCR found: ${relInput.external_uri}`,
+      {
+        relInput,
+        matchingSCRStandardIds: matchingSCR.map((scr) => scr.standard_id),
+      },
+    );
     throw FunctionalError('Cannot find SecurityCoverageResult for this has-covered relationship');
   }
   return {

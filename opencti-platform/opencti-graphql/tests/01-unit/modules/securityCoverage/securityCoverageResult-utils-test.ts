@@ -86,14 +86,6 @@ describe('Function shouldHandleHasCoveredRel()', () => {
     })).toEqual(false);
   });
 
-  it('should return false if no external_uri', () => {
-    expect(shouldHandleHasCoveredRel({
-      relationship_type: 'has-covered',
-      fromId: 'security-coverage--c76bfcfe-2be5-500f-9b81-367457f1088f',
-      toId: 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084',
-    })).toEqual(false);
-  });
-
   it('should return false if not securityCoverage', () => {
     expect(shouldHandleHasCoveredRel({
       relationship_type: 'has-covered',
