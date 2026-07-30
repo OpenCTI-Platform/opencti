@@ -3482,39 +3482,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/core@npm:6.8.0"
+"@rjsf/core@npm:6.8.1":
+  version: 6.8.1
+  resolution: "@rjsf/core@npm:6.8.1"
   dependencies:
     lodash: "npm:^4.18.1"
     lodash-es: "npm:^4.18.1"
     markdown-to-jsx: "npm:^9.8.2"
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^6.8.0
+    "@rjsf/utils": ^6.8.1
     react: ">=18"
   checksum: 10c0/dc79591f99f8fc93073820ae967dca82733db6e9c1fc7cb6cbeba54571308f8a2f914d0fb7ed874122832d808011006acd61743f527ef02cd3493e974fd8fa2c
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/mui@npm:6.8.0"
+"@rjsf/mui@npm:6.8.1":
+  version: 6.8.1
+  resolution: "@rjsf/mui@npm:6.8.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
     "@mui/icons-material": ^7.0.0 || ^9.0.0
     "@mui/material": ^7.0.0 || ^9.0.0
-    "@rjsf/core": ^6.8.0
-    "@rjsf/utils": ^6.8.0
+    "@rjsf/core": ^6.8.1
+    "@rjsf/utils": ^6.8.1
     react: ">=18"
   checksum: 10c0/5a4f21477cc820108f1fbd7d39bad64478e59e8be154baef2169c4ddef91b73e5e595482a0166c7628d0609c2852b2faa0a518bf822cefada658d5c1e55b68f7
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/utils@npm:6.8.0"
+"@rjsf/utils@npm:6.8.1":
+  version: 6.8.1
+  resolution: "@rjsf/utils@npm:6.8.1"
   dependencies:
     "@x0k/json-schema-merge": "npm:^1.0.3"
     fast-equals: "npm:^6.0.0"
@@ -3529,9 +3529,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:6.8.0":
-  version: 6.8.0
-  resolution: "@rjsf/validator-ajv8@npm:6.8.0"
+"@rjsf/validator-ajv8@npm:6.8.1":
+  version: 6.8.1
+  resolution: "@rjsf/validator-ajv8@npm:6.8.1"
   dependencies:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
@@ -11585,10 +11585,10 @@ __metadata:
     "@mui/styles": "npm:6.5.0"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.62.1"
-    "@rjsf/core": "npm:6.8.0"
-    "@rjsf/mui": "npm:6.8.0"
-    "@rjsf/utils": "npm:6.8.0"
-    "@rjsf/validator-ajv8": "npm:6.8.0"
+    "@rjsf/core": "npm:6.8.1"
+    "@rjsf/mui": "npm:6.8.1"
+    "@rjsf/utils": "npm:6.8.1"
+    "@rjsf/validator-ajv8": "npm:6.8.1"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:7.0.1"
