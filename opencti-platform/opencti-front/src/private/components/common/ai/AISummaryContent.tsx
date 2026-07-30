@@ -11,7 +11,7 @@ const AISummaryContent = ({ loading, children }: AISummaryContentProps) => {
     return (
         <div aria-live="polite" role="status">
             {loading
-                ? <span className="visually-hidden">{t_i18n('Loading AI summary...')}</span>
+                ? <span className="sr-only">{t_i18n('Loading AI summary...')}</span>
                 : children
             }
         </div>
