@@ -24444,6 +24444,10 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
+  /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
+  platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
+  /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
+  platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
   platform_providers: Array<PublicProvider>;
   platform_theme?: Maybe<Theme>;
   platform_title?: Maybe<Scalars['String']['output']>;
@@ -30449,6 +30453,10 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_language?: Maybe<Scalars['String']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_custom_file?: Maybe<MapCustomFile>;
+  /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
+  platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
+  /** @deprecated Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null. */
+  platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
   platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
   platform_no_access_message?: Maybe<Scalars['String']['output']>;
@@ -49475,6 +49483,8 @@ export type PublicSettingsResolvers<ContextType = any, ParentType extends Resolv
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['PublicProvider']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['Theme']>, ParentType, ContextType>;
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50763,6 +50773,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
+  platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_no_access_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -129,6 +129,9 @@ export const getSettings = async (context) => {
     platform_demo: ENABLED_DEMO_MODE,
     platform_modules: clusterInfo.modules,
     platform_reference_attachment: conf.get('app:reference_attachment'),
+    // Deprecated: kept in the GraphQL schema for API backward-compatibility, no longer configurable.
+    platform_map_tile_server_dark: null,
+    platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
     platform_opengrc_url: nconf.get('xtm:opengrc_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
