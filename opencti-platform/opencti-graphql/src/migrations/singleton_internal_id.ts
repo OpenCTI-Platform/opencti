@@ -1,9 +1,9 @@
 import { loadEntity } from '../database/middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { logMigration } from '../config/conf';
+import conf, { logMigration } from '../config/conf';
 import { elRawDelete, elRawGet, elRawIndex, elRawSearch } from '../database/engine';
 import { type EntityOptions, fullEntitiesList } from '../database/middleware-loader';
-import { READ_INDEX_INTERNAL_RELATIONSHIPS } from '../database/utils';
+import { isNotEmptyField, READ_INDEX_INTERNAL_RELATIONSHIPS } from '../database/utils';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_THEME } from '../schema/internalObject';
 import { THEME_DARK_ID, THEME_LIGHT_ID } from '../modules/theme/theme-domain';
@@ -15,6 +15,15 @@ import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { DECAY_RULE_DOMAIN_NAME_ID, DECAY_RULE_FALLBACK_ID, DECAY_RULE_FILE_ARTEFACT_ID, DECAY_RULE_IP_URL_ID } from '../modules/decayRule/decayRule-domain';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { EMAIL_TEMPLATE_DEFAULT_ID } from '../modules/emailTemplate/emailTemplate-domain';
+import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
+import {
+  FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_INCIDENT_ID,
+  FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFI_ID,
+  FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFT_ID,
+  FINTEL_TEMPLATE_EXEC_SUMMARY_GROUPING_ID,
+  FINTEL_TEMPLATE_EXEC_SUMMARY_REPORT_ID,
+  FINTEL_TEMPLATE_INCIDENT_RESPONSE_ID,
+} from '../modules/fintelTemplate/fintelTemplate-domain';
 import { OPENCTI_PLATFORM_UUID } from '../schema/general';
 import { MIGRATION_STATUS_ID } from '../database/migration';
 import type { AuthContext } from '../types/user';
@@ -54,11 +63,9 @@ interface ElSearchResponse<T = Record<string, unknown>> {
   body?: { hits?: { hits: ElHit<T>[] } };
 }
 
-// ---------------------------------------------------------------------------
 // Generic helper: reindex a single-instance-by-type internal object.
-// (true singletons resolved by loadEntity on type only: Settings, MigrationStatus)
-// Returns the OLD internal_id when a reindex happened, otherwise null.
-// ---------------------------------------------------------------------------
+// Returns the old internal_id when a reindex happened, otherwise null.
+
 const fixSingletonByType = async (
   context: AuthContext,
   entityType: string,
@@ -89,12 +96,22 @@ const fixSingletonByType = async (
   return oldId;
 };
 
-// ---------------------------------------------------------------------------
+const fixSettingsSingleton = async (context: AuthContext): Promise<string | null> => {
+  const operatorPlatformId = conf.get('platform_id');
+  if (isNotEmptyField(operatorPlatformId)) {
+    logMigration.info(
+      `[MIGRATION] Settings: a custom platform_id (${operatorPlatformId}) is configured by the operator, `
+      + 'skipping - patchPlatformId() at boot is the source of truth for this platform',
+    );
+    return null;
+  }
+  return fixSingletonByType(context, ENTITY_TYPE_SETTINGS, OPENCTI_PLATFORM_UUID, 'Settings');
+};
+
 // Generic helper: reindex one instance among several of the same entity_type,
 // identified by a unique field (typically "name").
 // (Theme, RetentionRule, FintelTemplate, Notifier, DecayRule, EmailTemplate)
-// Returns the OLD internal_id when a reindex happened, otherwise null.
-// ---------------------------------------------------------------------------
+// Returns the old internal_id when a reindex happened, otherwise null.
 
 const buildNameFilters = (name: string, settingsType?: string): FilterGroup => ({
   mode: FilterMode.And,
@@ -113,24 +130,25 @@ const fixSingletonByName = async (
   label: string,
   settingsType?: string,
 ): Promise<string | null> => {
+  const matchLabel = settingsType ? `${name}" / settings_types="${settingsType}` : name;
   const args: EntityOptions<StoreLikeEntity> = { filters: buildNameFilters(name, settingsType) };
   const results = await fullEntitiesList<StoreLikeEntity>(context, SYSTEM_USER, [entityType], args);
   if (results.length === 0) {
-    logMigration.info(`[MIGRATION] ${label} ("${name}"): not found, skipping (custom/removed instance?)`);
+    logMigration.info(`[MIGRATION] ${label} ("${matchLabel}"): not found, skipping (custom/removed instance?)`);
     return null;
   }
   if (results.length > 1) {
-    logMigration.info(`[MIGRATION] ${label} ("${name}"): ${results.length} matches found, skipping to avoid ambiguity - manual review required`);
+    logMigration.info(`[MIGRATION] ${label} ("${matchLabel}"): ${results.length} matches found, skipping to avoid ambiguity - manual review required`);
     return null;
   }
   const entity = results[0];
   if (entity.internal_id === expectedId) {
-    logMigration.info(`[MIGRATION] ${label} ("${name}"): internal_id already ${expectedId}, skipping`);
+    logMigration.info(`[MIGRATION] ${label} ("${matchLabel}"): internal_id already ${expectedId}, skipping`);
     return null;
   }
   const oldId = entity.internal_id;
   const index = entity._index;
-  logMigration.info(`[MIGRATION] ${label} ("${name}"): reindexing ${oldId} -> ${expectedId}`);
+  logMigration.info(`[MIGRATION] ${label} ("${matchLabel}"): reindexing ${oldId} -> ${expectedId}`);
   const rawDoc = await elRawGet({ index, id: oldId }) as ElRawGetResponse;
   await elRawIndex({
     index,
@@ -139,15 +157,13 @@ const fixSingletonByName = async (
     refresh: true,
   });
   await elRawDelete({ index, id: oldId, refresh: true });
-  logMigration.info(`[MIGRATION] ${label} ("${name}"): done`);
+  logMigration.info(`[MIGRATION] ${label} ("${matchLabel}"): done`);
   return oldId;
 };
 
-// ---------------------------------------------------------------------------
 // MigrationStatus special case: after reindexing the entity itself, every
 // existing "migrates" relationship pointing FROM the old id must be rewritten
 // to point FROM the new fixed id, otherwise migration history breaks.
-// ---------------------------------------------------------------------------
 const fixMigrationStatusRelations = async (
   context: AuthContext,
   oldId: string | null,
@@ -202,7 +218,10 @@ const fixMigrationStatusRelations = async (
   logMigration.info('[MIGRATION] MigrationStatus relations: done');
 };
 
-// Declarative list of the "fix by name" singletons (7 groups / 20 instances).
+// Declarative list of the "fix by name" singletons (8 groups / 26 instances:
+// Theme x2, RetentionRule x4, Notifier x2, DecayRule x4, EmailTemplate x1,
+// FintelTemplate x6 - Settings and MigrationStatus are handled separately below
+// since they are resolved by type only, not by name).
 interface ByNameRow {
   entityType: string;
   name: string;
@@ -235,27 +254,69 @@ const BY_NAME_ROWS: ByNameRow[] = [
   // EmailTemplate
   { entityType: ENTITY_TYPE_EMAIL_TEMPLATE, name: 'Built-In Template For Onboarding', expectedId: EMAIL_TEMPLATE_DEFAULT_ID, label: 'EmailTemplate' },
 
-  // FintelTemplate (6) - TODO: fill in the 6 real rows once names/constants are confirmed, e.g.:
-  // { entityType: ENTITY_TYPE_FINTEL_TEMPLATE, name: '<exact built-in name>', expectedId: FINTEL_TEMPLATE_XXX_ID, label: 'FintelTemplate' },
+  // FintelTemplate (6) - "Executive Summary" is NOT unique by name alone: 5 of the
+  // 6 built-in templates share this exact name (see generateFintelTemplateExecutiveSummary()
+  // in modules/fintelTemplate/fintelTemplate-domain.ts) and are only distinguished by
+  // their `settings_types` value. `settingsType` below is mandatory for these 5 rows.
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Executive Summary',
+    expectedId: FINTEL_TEMPLATE_EXEC_SUMMARY_REPORT_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Report',
+  },
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Executive Summary',
+    expectedId: FINTEL_TEMPLATE_EXEC_SUMMARY_GROUPING_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Grouping',
+  },
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Executive Summary',
+    expectedId: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_INCIDENT_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Case-Incident',
+  },
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Executive Summary',
+    expectedId: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFI_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Case-Rfi',
+  },
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Executive Summary',
+    expectedId: FINTEL_TEMPLATE_EXEC_SUMMARY_CASE_RFT_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Case-Rft',
+  },
+  // This one has a unique name ("Incident Response Report") - settingsType is not
+  // strictly required for disambiguation but is passed anyway for consistency
+  // and defense-in-depth (in case a user creates a custom template with the same name).
+  {
+    entityType: ENTITY_TYPE_FINTEL_TEMPLATE,
+    name: 'Incident Response Report',
+    expectedId: FINTEL_TEMPLATE_INCIDENT_RESPONSE_ID,
+    label: 'FintelTemplate',
+    settingsType: 'Case-Incident',
+  },
 ];
 
 export const up = async (next: MigrationNext): Promise<void> => {
   const context = executionContext('migration');
 
   // 1) Settings (true singleton, by type)
-  //    ⚠️ VERIFY BEFORE MERGE: Settings.internal_id is already handled by
-  //    setPlatformId()/patchPlatformId() at boot (platform_id). Reindexing it here
-  //    may conflict with that mechanism.
-  await fixSingletonByType(context, ENTITY_TYPE_SETTINGS, OPENCTI_PLATFORM_UUID, 'Settings');
+  await fixSettingsSingleton(context);
 
-  // 2) All "by name" singletons (Theme, RetentionRule, Notifier, DecayRule, EmailTemplate, FintelTemplate)
   for (let i = 0; i < BY_NAME_ROWS.length; i += 1) {
     const row = BY_NAME_ROWS[i];
-    await fixSingletonByName(context, row.entityType, row.name, row.expectedId, row.label);
+    await fixSingletonByName(context, row.entityType, row.name, row.expectedId, row.label, row.settingsType);
   }
 
   // 3) MigrationStatus (true singleton, by type) + relationship rewrite.
-  //    Done LAST on purpose: this entity is the migration mechanism's own anchor.
   const oldMigrationStatusId = await fixSingletonByType(context, ENTITY_TYPE_MIGRATION_STATUS, MIGRATION_STATUS_ID, 'MigrationStatus');
   await fixMigrationStatusRelations(context, oldMigrationStatusId, MIGRATION_STATUS_ID);
 
