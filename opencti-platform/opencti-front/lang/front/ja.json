@@ -3158,6 +3158,7 @@
   "No restrictions": "制限なし",
   "No results": "結果はありません",
   "No results for": "該当する結果はありません",
+  "No saved filters compatible with this perspective": "このビューに対応する保存済みフィルターはありません",
   "No task": "タスクなし",
   "No tasks has been found.": "タスクが見つかりませんでした。",
   "No TAXII feed found for this connector.": "このコネクタに対応するTAXIIフィードが見つかりませんでした。",

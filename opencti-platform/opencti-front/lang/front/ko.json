@@ -3158,6 +3158,7 @@
   "No restrictions": "제한 없음",
   "No results": "결과 없음",
   "No results for": "다음에 대한 결과가 없습니다",
+  "No saved filters compatible with this perspective": "이 관점과 호환되는 저장된 필터가 없습니다.",
   "No task": "작업 없음",
   "No tasks has been found.": "작업이 발견되지 않았습니다.",
   "No TAXII feed found for this connector.": "이 커넥터에 대한 TAXII 피드를 찾을 수 없습니다.",

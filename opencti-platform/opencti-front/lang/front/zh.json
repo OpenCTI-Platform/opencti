@@ -3158,6 +3158,7 @@
   "No restrictions": "无限制",
   "No results": "没有结果",
   "No results for": "未找到相关结果",
+  "No saved filters compatible with this perspective": "没有与该视图兼容的已保存筛选条件",
   "No task": "没有任务",
   "No tasks has been found.": "没有找到任务。",
   "No TAXII feed found for this connector.": "未找到此连接器的 TAXII 数据源。",

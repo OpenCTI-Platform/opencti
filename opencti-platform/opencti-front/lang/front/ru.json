@@ -3158,6 +3158,7 @@
   "No restrictions": "Без ограничений",
   "No results": "Результатов нет",
   "No results for": "Результатов по запросу нет",
+  "No saved filters compatible with this perspective": "Нет сохраненных фильтров, совместимых с этой перспективой",
   "No task": "Нет задания",
   "No tasks has been found.": "Задания не найдены.",
   "No TAXII feed found for this connector.": "Канал TAXII для этого коннектора не найден.",
