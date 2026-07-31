@@ -604,6 +604,9 @@ describe('Elasticsearch pagination', () => {
       { type: 'Tracking-Number', size: entitiesCounter.TrackingNumber },
       { type: 'User', size: entitiesCounter.User },
       { type: 'Vocabulary', size: entitiesCounter.Vocabulary },
+      { type: 'CatalogContract', size: entitiesCounter.CatalogContract },
+      { type: 'CatalogLogo', size: entitiesCounter.CatalogLogo },
+      { type: 'CatalogManifest', size: entitiesCounter.CatalogManifest },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);
@@ -751,6 +754,9 @@ describe('Elasticsearch pagination', () => {
       { type: 'External-Reference', size: entitiesCounter.ExternalReference },
       { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
       { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
+      { type: 'CatalogContract', size: entitiesCounter.CatalogContract },
+      { type: 'CatalogLogo', size: entitiesCounter.CatalogLogo },
+      { type: 'CatalogManifest', size: entitiesCounter.CatalogManifest },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);
