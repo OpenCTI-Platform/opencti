@@ -2,7 +2,7 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { DATA_SANITY_MANAGER_USER, executionContext } from '../utils/access';
 import type { AuthContext, AuthUser } from '../types/user';
-import { findForceRunOperations, hasOperationBeenExecuted, markOperationAsExecuted, markOperationAsRunning } from '../modules/dataSanity/dataSanity-domain';
+import { findForceRunOperations, getOperationSkipReason, getRunningLockSkipReason, markOperationAsExecuted, markOperationAsRunning } from '../modules/dataSanity/dataSanity-domain';
 import { type SanityOperation, sanityOperationList } from '../modules/dataSanity/dataSanity-operations';
 
 const DATA_SANITY_MANAGER_ID = 'DATA_SANITY_MANAGER';
@@ -20,6 +20,12 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
     const operation = sanityOperationList().find((op: SanityOperation) => op.identifier === entity.operation_name);
     if (!operation) {
       logApp.warn('[DATA_SANITY_MANAGER] Force run requested for unknown operation, skipping', { operation_name: entity.operation_name });
+      continue;
+    }
+    // Never start a concurrent execution: a force_run request must not bypass an active running lock
+    const skipReason = getRunningLockSkipReason(entity);
+    if (skipReason) {
+      logApp.info('[DATA_SANITY_MANAGER] Force_run data sanity operation skipped', { operation: operation.identifier, reason: skipReason });
       continue;
     }
     const startTime = Date.now();
@@ -41,9 +47,9 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
 
 export const dataSanityListHandler = async (context: AuthContext, user: AuthUser) => {
   for (const operation of sanityOperationList()) {
-    const shouldSkip = await hasOperationBeenExecuted(context, user, operation.identifier);
-    if (shouldSkip) {
-      logApp.debug('[DATA_SANITY_MANAGER] Data sanity operation skipped', { operation: operation.identifier, execution_type: operation.execution_type });
+    const skipReason = await getOperationSkipReason(context, user, operation.identifier);
+    if (skipReason) {
+      logApp.info('[DATA_SANITY_MANAGER] Data sanity operation skipped', { operation: operation.identifier, execution_type: operation.execution_type, reason: skipReason });
       continue;
     }
     const startTime = Date.now();

@@ -5,7 +5,34 @@ import { ENTITY_TYPE_DATA_SANITY_EXECUTION } from './dataSanity-types';
 import type { BasicStoreEntityDataSanity } from './dataSanity-types';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
+import conf, { logApp } from '../../config/conf';
 import { type SanityOperation, sanityOperationList, type SanityOperationRunOutput } from './dataSanity-operations';
+
+// If an operation stays marked as "running" longer than this, it is considered stale
+// (e.g. the node running it crashed/restarted before it could complete) and is allowed to run again.
+const DEFAULT_STALE_RUNNING_THRESHOLD_MS = 86400000; // 24 hours
+
+/**
+ * Configuration values can be provided as strings (yaml, env vars...).
+ * Coerce them to a strictly positive finite number, otherwise the staleness comparison
+ * would evaluate to NaN and running locks would never expire.
+ */
+export const resolveStaleRunningThresholdMs = (configuredValue: unknown): number => {
+  if (configuredValue === undefined || configuredValue === null || configuredValue === '') {
+    return DEFAULT_STALE_RUNNING_THRESHOLD_MS;
+  }
+  const thresholdMs = Number(configuredValue);
+  if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
+    logApp.warn('[DATA_SANITY_MANAGER] Invalid data_sanity_manager:stale_running_threshold configuration, falling back to default', {
+      configured_value: configuredValue,
+      default_value: DEFAULT_STALE_RUNNING_THRESHOLD_MS,
+    });
+    return DEFAULT_STALE_RUNNING_THRESHOLD_MS;
+  }
+  return thresholdMs;
+};
+
+const STALE_RUNNING_THRESHOLD_MS = resolveStaleRunningThresholdMs(conf.get('data_sanity_manager:stale_running_threshold'));
 
 /**
  * Find a DataSanity entity by operation_name.
@@ -27,11 +54,46 @@ export const findDataSanityByOperationName = async (context: AuthContext, user: 
 };
 
 /**
- * Check if a sanity operation has already been executed (stored in ElasticSearch).
+ * Determine if the running lock of an operation must prevent a new execution.
+ * A lock older than STALE_RUNNING_THRESHOLD_MS is considered stale (e.g. the node running it
+ * crashed/restarted before it could complete) and does not block a new execution.
+ * @returns the skip reason, or undefined if the operation can run.
  */
-export const hasOperationBeenExecuted = async (context: AuthContext, user: AuthUser, operationName: string): Promise<boolean> => {
+export const getRunningLockSkipReason = (entity: BasicStoreEntityDataSanity): string | undefined => {
+  if (!entity.is_running) {
+    return undefined;
+  }
+  const lastRunDateMs = entity.last_run_date ? new Date(entity.last_run_date).getTime() : undefined;
+  const isStale = lastRunDateMs === undefined || (Date.now() - lastRunDateMs) > STALE_RUNNING_THRESHOLD_MS;
+  if (!isStale) {
+    return 'operation is already running';
+  }
+  logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing last_run_date or older than threshold), allowing it to run again', {
+    operation: entity.operation_name,
+    last_run_date: entity.last_run_date,
+  });
+  return undefined;
+};
+
+/**
+ * Determine if a sanity operation should be skipped by the scheduler, and why.
+ * Skip when currently running (and not stale), or when already executed and no force_run has been requested.
+ * @returns the skip reason, or undefined if the operation should run.
+ */
+export const getOperationSkipReason = async (context: AuthContext, user: AuthUser, operationName: string): Promise<string | undefined> => {
   const entity = await findDataSanityByOperationName(context, user, operationName);
-  return entity !== undefined && !entity.force_run && !entity.is_running;
+  if (!entity) {
+    return undefined;
+  }
+  const runningLockSkipReason = getRunningLockSkipReason(entity);
+  if (runningLockSkipReason) {
+    return runningLockSkipReason;
+  }
+  if (!entity.is_running && !entity.force_run) {
+    return 'operation has already been executed';
+  }
+
+  return undefined;
 };
 
 /**
@@ -43,6 +105,7 @@ export const markOperationAsRunning = async (context: AuthContext, user: AuthUse
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'is_running', value: [true] },
+      { key: 'last_run_date', value: [utcDate().toISOString()] },
     ]);
   } else {
     await createEntity(context, user, {
