@@ -42,14 +42,14 @@ export const getOperationSkipReason = async (context: AuthContext, user: AuthUse
     return undefined;
   }
   if (entity.is_running) {
-    const runningSinceMs = entity.running_since ? new Date(entity.running_since).getTime() : undefined;
-    const isStale = runningSinceMs === undefined || (Date.now() - runningSinceMs) > STALE_RUNNING_THRESHOLD_MS;
+    const lastRunDateMs = entity.last_run_date ? new Date(entity.last_run_date).getTime() : undefined;
+    const isStale = lastRunDateMs === undefined || (Date.now() - lastRunDateMs) > STALE_RUNNING_THRESHOLD_MS;
     if (!isStale) {
       return 'operation is already running';
     }
-    logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing running_since or older than threshold), allowing it to run again', {
+    logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing last_run_date or older than threshold), allowing it to run again', {
       operation: operationName,
-      running_since: entity.running_since,
+      last_run_date: entity.last_run_date,
     });
   } else {
     if (!entity.force_run) {
@@ -69,7 +69,7 @@ export const markOperationAsRunning = async (context: AuthContext, user: AuthUse
   if (existing) {
     await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
       { key: 'is_running', value: [true] },
-      { key: 'running_since', value: [utcDate().toISOString()] },
+      { key: 'last_run_date', value: [utcDate().toISOString()] },
     ]);
   } else {
     await createEntity(context, user, {
@@ -80,7 +80,6 @@ export const markOperationAsRunning = async (context: AuthContext, user: AuthUse
       last_run_message: '',
       force_run: false,
       is_running: true,
-      running_since: utcDate().toISOString(),
     }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   }
 };
@@ -112,7 +111,6 @@ export const markOperationAsExecuted = async (
       { key: 'last_run_output', value: [lastRunOutput] },
       { key: 'force_run', value: [false] },
       { key: 'is_running', value: [false] },
-      { key: 'running_since', value: [null] },
     ]);
   } else {
     await createEntity(context, user, {
@@ -124,7 +122,6 @@ export const markOperationAsExecuted = async (
       last_run_output: lastRunOutput,
       force_run: false,
       is_running: false,
-      running_since: null,
     }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   }
 };
@@ -193,7 +190,6 @@ export const listAllSanityOperations = async (context: AuthContext, user: AuthUs
       description: operation.description,
       eligible_entity_types: operation.eligibleEntityTypes,
       is_running: execution?.is_running ?? false,
-      running_since: execution?.running_since ?? null,
       force_run: execution?.force_run ?? false,
       last_run_date: execution?.last_run_date ?? null,
       last_execution_time: execution?.last_execution_time ?? null,

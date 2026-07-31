@@ -12,7 +12,6 @@ const DATA_SANITY_OPERATIONS_QUERY = gql`
       description
       eligible_entity_types
       is_running
-      running_since
       force_run
       last_run_date
       last_execution_time
@@ -70,7 +69,6 @@ describe('Data sanity resolvers test coverage', () => {
       expect(operation.eligible_entity_types).toBeDefined();
       expect(Array.isArray(operation.eligible_entity_types)).toBeTruthy();
       expect(typeof operation.is_running).toBe('boolean');
-      expect(operation.running_since === null || typeof operation.running_since === 'string').toBe(true);
       expect(typeof operation.force_run).toBe('boolean');
     });
 

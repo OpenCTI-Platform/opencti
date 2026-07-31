@@ -124,10 +124,9 @@ describe('Data sanity manager handler test coverage', () => {
     expect(operationRun).not.toHaveBeenCalled();
     const runningOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockAlreadyRunningOperation');
     expect(runningOp?.is_running).toBe(true);
-    expect(runningOp?.running_since).toBeDefined();
   });
 
-  it('should execute an operation whose running lock is stale (running_since older than threshold)', async () => {
+  it('should execute an operation whose running lock is stale (last_run_date older than threshold)', async () => {
     const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
     vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
       {
@@ -146,7 +145,7 @@ describe('Data sanity manager handler test coverage', () => {
     const staleEntity = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStaleRunningOperation');
     const twentyFiveHoursAgo = utcDate().subtract(25, 'hours').toISOString();
     await updateAttribute(testContext, ADMIN_USER, staleEntity!.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
-      { key: 'running_since', value: [twentyFiveHoursAgo] },
+      { key: 'last_run_date', value: [twentyFiveHoursAgo] },
     ]);
 
     // WHEN the scheduler runs
