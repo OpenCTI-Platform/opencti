@@ -163,9 +163,17 @@ export const addSecurityCoverage = async (
 
 export const securityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   const objects = [];
-  const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId) as StoreEntitySecurityCoverage;
+  const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId) as StoreEntitySecurityCoverage & BasicStoreEntitySecurityCoverage;
   const stixSecurityCoverage = convertStoreToStix_2_1(SecurityCoverage);
   objects.push(stixSecurityCoverage);
+  const securityCoverageResultIds = SecurityCoverage[RELATION_RESULT_OF] ?? [];
+  if (securityCoverageResultIds.length > 0) {
+    const results = await storeLoadByIdsWithRefs(context, user, securityCoverageResultIds);
+    for (const resultElement of results) {
+      const stixSecurityCoverageResult = convertStoreToStix_2_1(resultElement);
+      objects.push(stixSecurityCoverageResult);
+    }
+  }
   const objectCovered = SecurityCoverage[INPUT_COVERED] as BasicStoreEntity;
   const assessment = await storeLoadByIdWithRefs(context, user, objectCovered.id) as StoreObject;
   const stixAssessment = convertStoreToStix_2_1(assessment);

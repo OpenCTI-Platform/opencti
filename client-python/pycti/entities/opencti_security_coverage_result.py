@@ -38,6 +38,9 @@ class SecurityCoverageResult:
                 coverage_name
                 coverage_score
             }
+            resultOf {
+                id
+            }
             objectMarking {
                 id
                 standard_id
