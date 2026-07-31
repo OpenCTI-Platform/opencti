@@ -143,7 +143,7 @@
     "moment": "2.30.1",
     "moment-range": "4.0.2",
     "nconf": "0.13.0",
-    "node-calls-python": "1.12.0",
+    "node-calls-python": "1.13.0",
     "node-fetch": "3.3.2",
     "node-forge": "1.4.0",
     "nodemailer": "9.0.3",
