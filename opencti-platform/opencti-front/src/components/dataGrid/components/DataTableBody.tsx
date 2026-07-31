@@ -184,7 +184,10 @@ const DataTableBody = ({
     return null;
   }
 
-  const isSearching = !!tableSearchTerm || (filters?.filters ?? []).length > 0;
+  const isSearching = !!tableSearchTerm
+    || (filters?.filters ?? [])
+      .filter((f) => ['nil', 'not_nil', 'has_changed', 'not_has_changed'].includes(f.operator ?? 'eq') || f.values.length > 0)
+      .length > 0;
 
   return (
     <>
