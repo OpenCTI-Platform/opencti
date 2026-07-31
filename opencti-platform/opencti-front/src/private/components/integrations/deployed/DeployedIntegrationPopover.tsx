@@ -13,6 +13,7 @@ import { Connector_connector$data } from '@components/data/connectors/__generate
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
 import FeedUpdateDrawer from '@components/integrations/feeds/FeedUpdateDrawer';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
+import handleExportJson from '@components/data/forms/FormExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
@@ -37,6 +38,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   const isGrantedToIngestion = useGranted([INGESTION_SETINGESTIONS]);
 
   const isConnector = item.kind === 'connector';
+  const isForm = item.kind === 'form';
   const feedConfig = !isConnector ? FEED_MUTATIONS[item.kind] : null;
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -166,6 +168,13 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
     });
   };
 
+  // Form intakes can be exported as a JSON configuration file (same as the
+  // legacy forms list popover).
+  const handleExportForm = (event: React.MouseEvent) => {
+    handleClose(event);
+    handleExportJson({ id: item.id, name: item.name });
+  };
+
   const canManageConnector = isConnector && isGrantedToModules;
   // Deletion has extra conditions (e.g. built-in or active connectors cannot
   // be deleted): like the legacy popover, it only disables the Delete item.
@@ -208,6 +217,11 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
             }}
           >
             {t_i18n('Update')}
+          </MenuItem>
+        )}
+        {canManageFeed && isForm && (
+          <MenuItem onClick={handleExportForm}>
+            {t_i18n('Export')}
           </MenuItem>
         )}
         {canManageConnector && (
