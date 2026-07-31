@@ -2,8 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ENTITY_TYPE_CATALOG_CONTRACT, ENTITY_TYPE_CATALOG_LOGO, ENTITY_TYPE_CATALOG_MANIFEST } from '../../../../src/modules/catalog/catalog-entity-types';
 import {
   compareVersions,
+  findCatalogLogoByRef,
+  findContractFromESByContainerImage,
+  findContractFromESBySlug,
   findCatalogManifestBySourceUri,
   findContractBySlugAndVersion,
+  findLatestContractByContainerImage,
   findLatestContractBySlug,
   persistCatalogSnapshot,
   upsertCatalogManifest,
@@ -119,6 +123,131 @@ describe('catalog-persistence', () => {
       }),
     );
     expect(result?.id).toBe('contract-1');
+  });
+
+  it('findLatestContractByContainerImage should filter by image and return highest version', async () => {
+    mockFullEntitiesList.mockResolvedValue([
+      { id: 'contract-1', slug: 'ipinfo', version: '2025.04.2', image: 'opencti/ipinfo' },
+      { id: 'contract-2', slug: 'ipinfo', version: '2025.10.1', image: 'opencti/ipinfo' },
+      { id: 'contract-3', slug: 'ipinfo', version: '2025.09.9', image: 'opencti/ipinfo' },
+    ]);
+
+    const result = await findLatestContractByContainerImage(mockContext, mockUser, 'opencti/ipinfo');
+
+    expect(mockFullEntitiesList).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      [ENTITY_TYPE_CATALOG_CONTRACT],
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['image'], values: ['opencti/ipinfo'] }),
+          ]),
+        }),
+      }),
+    );
+    expect(result?.version).toBe('2025.10.1');
+  });
+
+  it('findCatalogLogoByRef should filter by hash and return first logo', async () => {
+    mockFullEntitiesList.mockResolvedValue([{ id: 'logo-1', hash: 'hash-ipinfo', data_uri: 'data:image/png;base64,AAA' }]);
+
+    const result = await findCatalogLogoByRef(mockContext, mockUser, 'hash-ipinfo');
+
+    expect(mockFullEntitiesList).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      [ENTITY_TYPE_CATALOG_LOGO],
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: expect.arrayContaining([
+            expect.objectContaining({ key: ['hash'], values: ['hash-ipinfo'] }),
+          ]),
+        }),
+      }),
+    );
+    expect(result?.id).toBe('logo-1');
+  });
+
+  it('findContractFromESBySlug should return catalog_id and serialized contract', async () => {
+    mockFullEntitiesList
+      .mockResolvedValueOnce([
+        {
+          id: 'contract-1',
+          catalog_id: 'catalog-1',
+          slug: 'ipinfo',
+          version: '2025.10.1',
+          title: 'IPinfo',
+          description: 'desc',
+          short_description: 'short',
+          use_cases: ['enrichment'],
+          verified: true,
+          playbook_supported: false,
+          manager_supported: true,
+          source_code: 'https://example.com',
+          subscription_link: 'https://example.com/sub',
+          type: 'INTERNAL_ENRICHMENT',
+          image: 'opencti/ipinfo',
+          config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+          logo_ref: 'hash-ipinfo',
+        },
+      ])
+      .mockResolvedValueOnce([
+        { id: 'logo-1', hash: 'hash-ipinfo', data_uri: 'data:image/png;base64,AAA' },
+      ]);
+
+    const result = await findContractFromESBySlug(mockContext, mockUser, 'ipinfo');
+
+    expect(result).toBeDefined();
+    expect(result?.catalog_id).toBe('catalog-1');
+    const parsedContract = JSON.parse(result!.contract);
+    expect(parsedContract.slug).toBe('ipinfo');
+    expect(parsedContract.logo).toBe('data:image/png;base64,AAA');
+  });
+
+  it('findContractFromESByContainerImage should return latest contract for image', async () => {
+    mockFullEntitiesList
+      .mockResolvedValueOnce([
+        {
+          id: 'contract-1',
+          catalog_id: 'catalog-1',
+          slug: 'ipinfo',
+          version: '2025.10.1',
+          title: 'IPinfo',
+          description: 'desc',
+          short_description: 'short',
+          use_cases: ['enrichment'],
+          verified: true,
+          playbook_supported: false,
+          manager_supported: true,
+          type: 'INTERNAL_ENRICHMENT',
+          image: 'opencti/ipinfo',
+          config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+        },
+        {
+          id: 'contract-2',
+          catalog_id: 'catalog-1',
+          slug: 'ipinfo',
+          version: '2025.09.9',
+          title: 'IPinfo old',
+          description: 'desc old',
+          short_description: 'short old',
+          use_cases: ['enrichment'],
+          verified: true,
+          playbook_supported: false,
+          manager_supported: true,
+          type: 'INTERNAL_ENRICHMENT',
+          image: 'opencti/ipinfo',
+          config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+        },
+      ]);
+
+    const result = await findContractFromESByContainerImage(mockContext, mockUser, 'opencti/ipinfo');
+
+    expect(result).toBeDefined();
+    const parsedContract = JSON.parse(result!.contract);
+    expect(parsedContract.container_version).toBe('2025.10.1');
+    expect(parsedContract.container_image).toBe('opencti/ipinfo');
   });
 
   it('compareVersions should correctly order numeric dot-separated versions', () => {

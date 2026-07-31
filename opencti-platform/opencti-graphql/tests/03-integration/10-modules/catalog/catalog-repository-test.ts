@@ -1,6 +1,8 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { deleteElementById } from '../../../../src/database/middleware';
 import {
+  findContractFromESByContainerImage,
+  findContractFromESBySlug,
   findCatalogFromES,
   findContractBySlugAndVersion,
   findLatestContractBySlug,
@@ -104,5 +106,83 @@ describe('catalog-repository integration (no mocks)', () => {
     expect(parsed.slug).toBe(slug);
     expect(parsed.manager_supported).toBe(true);
     expect(parsed.container_image).toBe('opencti/connector-it-es');
+  });
+
+  it('findContractFromESBySlug returns serialized latest contract payload', async () => {
+    const slug = `it-catalog-contract-slug-${Date.now()}`;
+
+    const created = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
+      slug,
+      version: '3.0.0',
+      title: `IT Contract ${slug}`,
+      description: 'Integration test direct slug contract lookup',
+      use_cases: ['Testing'],
+      verified: true,
+      playbook_supported: false,
+      manager_supported: true,
+      image: `opencti/connector-${slug}`,
+      type: 'INTERNAL_ENRICHMENT',
+      config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+      last_synced_at: new Date().toISOString(),
+    });
+    trackContract(created.id);
+
+    const contractData = await findContractFromESBySlug(testContext, ADMIN_USER, slug);
+
+    expect(contractData).toBeDefined();
+    expect(contractData?.catalog_id).toBe('integration-test-catalog');
+
+    const parsed = JSON.parse(contractData!.contract);
+    expect(parsed.slug).toBe(slug);
+    expect(parsed.container_image).toBe(`opencti/connector-${slug}`);
+  });
+
+  it('findContractFromESByContainerImage returns serialized latest contract payload', async () => {
+    const slug = `it-catalog-contract-image-${Date.now()}`;
+    const image = `opencti/connector-${slug}`;
+
+    const older = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
+      slug,
+      version: '1.0.0',
+      title: `IT Contract ${slug} old`,
+      description: 'Integration test direct image contract lookup old version',
+      use_cases: ['Testing'],
+      verified: true,
+      playbook_supported: false,
+      manager_supported: true,
+      image,
+      type: 'INTERNAL_ENRICHMENT',
+      config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+      last_synced_at: new Date().toISOString(),
+    });
+    trackContract(older.id);
+
+    const latest = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
+      slug,
+      version: '2.2.0',
+      title: `IT Contract ${slug} latest`,
+      description: 'Integration test direct image contract lookup latest version',
+      use_cases: ['Testing'],
+      verified: true,
+      playbook_supported: false,
+      manager_supported: true,
+      image,
+      type: 'INTERNAL_ENRICHMENT',
+      config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
+      last_synced_at: new Date().toISOString(),
+    });
+    trackContract(latest.id);
+
+    const contractData = await findContractFromESByContainerImage(testContext, ADMIN_USER, image);
+
+    expect(contractData).toBeDefined();
+    expect(contractData?.catalog_id).toBe('integration-test-catalog');
+
+    const parsed = JSON.parse(contractData!.contract);
+    expect(parsed.slug).toBe(slug);
+    expect(parsed.container_version).toBe('2.2.0');
   });
 });

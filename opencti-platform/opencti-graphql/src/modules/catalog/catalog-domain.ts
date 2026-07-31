@@ -12,7 +12,7 @@ import type { ConnectorContractConfiguration, ContractConfigInput } from '../../
 import { readFile } from 'node:fs/promises';
 import type { ValidateFunction } from 'ajv';
 import { isCatalogManagerEnabled } from './catalogManager';
-import { findCatalogFromES } from './catalog-repository';
+import { findCatalogFromES, findContractFromESByContainerImage, findContractFromESBySlug } from './catalog-repository';
 import { DECOUPLING_CONNECTOR_VERSIONS } from './catalog-constants';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { sanitizeManagerConfigSchema } from './catalog-config-schema';
@@ -496,14 +496,34 @@ export const findCatalog = async (context: AuthContext, user: AuthUser) => {
   return Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
 };
 
-const findContract = async (context: AuthContext, user: AuthUser, predicate: (contract: any) => boolean) => {
+type FindContractOptions = {
+  slug?: string;
+  containerImage?: string;
+};
+
+const findContract = async (context: AuthContext, user: AuthUser, options: FindContractOptions) => {
+  if (useCatalogFromES()) {
+    if (options.slug) {
+      return findContractFromESBySlug(context, user, options.slug);
+    }
+    if (options.containerImage) {
+      return findContractFromESByContainerImage(context, user, options.containerImage);
+    }
+    return null;
+  }
+
   const catalogDefinitions = await getCatalogs(context, user);
+  const predicate = (contract: CatalogContract) => {
+    if (options.slug) return contract.slug === options.slug;
+    if (options.containerImage) return contract.container_image === options.containerImage;
+    return false;
+  };
 
   const catalogs = Object.values(catalogDefinitions).map((catalog) => catalog.graphql);
   const foundContract = catalogs
     .map((catalog) => {
       const contract = catalog.contracts.find((contractStr: string) => {
-        const parsedContract = JSON.parse(contractStr);
+        const parsedContract = JSON.parse(contractStr) as CatalogContract;
         return predicate(parsedContract);
       });
       return contract ? { catalog_id: catalog.id, contract } : null;
@@ -514,9 +534,9 @@ const findContract = async (context: AuthContext, user: AuthUser, predicate: (co
 };
 
 export const findContractBySlug = (context: AuthContext, user: AuthUser, contractSlug: string) => {
-  return findContract(context, user, (contract) => contract.slug === contractSlug);
+  return findContract(context, user, { slug: contractSlug });
 };
 
 export const findContractByContainerImage = (context: AuthContext, user: AuthUser, containerImage: string) => {
-  return findContract(context, user, (contract) => contract.container_image === containerImage);
+  return findContract(context, user, { containerImage });
 };

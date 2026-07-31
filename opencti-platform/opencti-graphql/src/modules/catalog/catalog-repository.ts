@@ -194,6 +194,41 @@ export const findLatestContractBySlug = async (
   return results.sort((a, b) => compareVersions(b.version, a.version))[0];
 };
 
+export const findLatestContractByContainerImage = async (
+  context: AuthContext,
+  user: AuthUser,
+  containerImage: string,
+): Promise<BasicStoreEntityCatalogContract | undefined> => {
+  const results = await fullEntitiesList<BasicStoreEntityCatalogContract>(context, user, [ENTITY_TYPE_CATALOG_CONTRACT], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['image'], values: [containerImage], operator: FilterOperator.Eq },
+      ],
+      filterGroups: [],
+    },
+  });
+  if (results.length === 0) {
+    return undefined;
+  }
+  return results.sort((a, b) => compareVersions(b.version, a.version))[0];
+};
+
+export const findCatalogLogoByRef = async (
+  context: AuthContext,
+  user: AuthUser,
+  ref: string,
+): Promise<BasicStoreEntityCatalogLogo | undefined> => {
+  const results = await fullEntitiesList<BasicStoreEntityCatalogLogo>(context, user, [ENTITY_TYPE_CATALOG_LOGO], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['hash'], values: [ref], operator: FilterOperator.Eq }],
+      filterGroups: [],
+    },
+  });
+  return results[0];
+};
+
 export const findContractBySlugAndVersion = async (
   context: AuthContext,
   user: AuthUser,
@@ -428,6 +463,51 @@ const buildContractStringFromES = (
     max_confidence_level: (contract as unknown as Record<string, unknown>).max_confidence_level ?? 100,
     config_schema: configSchema,
   });
+};
+
+const buildContractLookupResultFromES = async (
+  context: AuthContext,
+  user: AuthUser,
+  contract: BasicStoreEntityCatalogContract,
+): Promise<{ catalog_id: string; contract: string }> => {
+  const logoRef = contract?.logo_ref && contract?.logo_ref?.length > 0 ? contract.logo_ref : undefined;
+
+  const logoByRef = new Map<string, string>();
+  if (logoRef) {
+    const logo = await findCatalogLogoByRef(context, user, logoRef);
+    if (logo) {
+      logoByRef.set(logo.hash, logo.data_uri);
+    }
+  }
+
+  return {
+    catalog_id: contract.catalog_id,
+    contract: buildContractStringFromES(contract, logoByRef),
+  };
+};
+
+export const findContractFromESBySlug = async (
+  context: AuthContext,
+  user: AuthUser,
+  slug: string,
+): Promise<{ catalog_id: string; contract: string } | null> => {
+  const contract = await findLatestContractBySlug(context, user, slug);
+  if (!contract) {
+    return null;
+  }
+  return buildContractLookupResultFromES(context, user, contract);
+};
+
+export const findContractFromESByContainerImage = async (
+  context: AuthContext,
+  user: AuthUser,
+  containerImage: string,
+): Promise<{ catalog_id: string; contract: string } | null> => {
+  const contract = await findLatestContractByContainerImage(context, user, containerImage);
+  if (!contract) {
+    return null;
+  }
+  return buildContractLookupResultFromES(context, user, contract);
 };
 
 export const findCatalogFromES = async (
