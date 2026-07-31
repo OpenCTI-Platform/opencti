@@ -63,7 +63,7 @@ const handleNavigate = (event, navigate, link) => {
  *
  * @param {Theme} theme
  */
-const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
+export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
   const safeNavColor = sanitize(String(theme.palette.background.nav ?? ''), true);
   const safeTextColor = sanitize(String(theme.palette.text.primary ?? ''), true);
   const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
