@@ -23,6 +23,8 @@ import {
   ValidationError,
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitionByName, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -49,6 +51,7 @@ import {
 import {
   type AggregationRelationsCount,
   elAggregationCount,
+  elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
   elDeleteElements,
@@ -874,29 +877,61 @@ export const distributionEntities = async (
   types: string | string[] | undefined | null,
   args: EntityFilters<BasicStoreEntity> & { limit?: number | null; order?: string | null; field: string } & { onlyInferred?: boolean },
 ): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
-  const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
-  const aggregationNotSupported = field.includes('.')
-    && !field.endsWith('internal_id')
-    && !field.includes('opinions_metrics');
-  if (aggregationNotSupported) {
-    throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+  const distributionArgs = buildEntityFilters(types, args);
+  const targetIndices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
+
+  let distributionData;
+
+  // Handle custom fields (x_opencti_cf_*) via nested aggregation
+  if (field.startsWith(CUSTOM_FIELD_PREFIX)) {
+    const customFieldDef = await getCustomFieldDefinitionByName(context, user, field);
+    // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
+    // and date sub-fields are already aggregatable as-is.
+    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
+    const rawValueField = customFieldDef ? getCustomFieldValueField(customFieldDef.field_type) : 'string_value';
+    const valueField = `custom_field_values.${rawValueField}${NON_KEYWORD_VALUE_FIELDS.includes(rawValueField) ? '' : '.keyword'}`;
+
+    distributionData = await elAggregationNestedTermsWithFilter(
+      context,
+      user,
+      targetIndices,
+      {
+        path: 'custom_field_values',
+        field: valueField,
+        filter: { term: { 'custom_field_values.field_name': field } },
+      },
+      {
+        ...distributionArgs,
+        size: limit ?? undefined,
+      },
+    );
+  } else {
+    const aggregationNotSupported = field.includes('.')
+      && !field.endsWith('internal_id')
+      && !field.includes('opinions_metrics');
+    if (aggregationNotSupported) {
+      throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
+    }
+    let finalField = field;
+    if (field.includes('.') && !field.includes('opinions_metrics')) {
+      finalField = REL_INDEX_PREFIX + field;
+    }
+    if (field === 'name') {
+      finalField = 'internal_id';
+    }
+    distributionData = await elAggregationCount(context, user, targetIndices, {
+      ...distributionArgs,
+      field: finalField,
+    });
   }
-  let finalField = field;
-  if (field.includes('.') && !field.includes('opinions_metrics')) {
-    finalField = REL_INDEX_PREFIX + field;
-  }
-  if (field === 'name') {
-    finalField = 'internal_id';
-  }
-  const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
-    ...distributionArgs,
-    field: finalField,
-  });
+
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
-    return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+  if (!field.startsWith(CUSTOM_FIELD_PREFIX)) {
+    if (field.includes(ID_INTERNAL) || field === 'creator_id' || field === 'x_opencti_workflow_id') {
+      return convertAggregateDistributions(context, user, limit as number, orderingFunction, distributionData);
+    }
   }
   if (field === 'name') {
     let result: { label: string; value: number; entity: BasicStoreEntity | null }[] = [];
@@ -913,7 +948,7 @@ export const distributionEntities = async (
   // TODO this return problably doesn't work when it happens: API always expects an entity in returned data, but there is none with this return
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData)); // label not good
+  return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (
   context: AuthContext,
@@ -1315,11 +1350,37 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           // if the instance has not yet this key, we need to add the full key as a new array
           patch = [{ op: 'add' as const, path: `${preparedPath}`, value }];
         } else {
-          // otherwise we need to add the values to the existing array, using jsonpatch indexed path
-          patch = value.map((v, index) => {
-            const afterIndex = index + instanceKeyValues.length;
-            return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
-          });
+          // Reconcile entries sharing a stable `field_id` (e.g. custom_field_values) so an ADD acts
+          // as an upsert-by-field: an incoming entry replaces the existing entry for the same
+          // field_id instead of being appended as a duplicate.
+          const incomingFieldIds = (value as Array<Record<string, any>>).filter((v) => v?.field_id !== undefined).map((v) => v.field_id);
+          const preservedValues = incomingFieldIds.length > 0
+            ? instanceKeyValues.filter((c: Record<string, any>) => !incomingFieldIds.includes(c?.field_id))
+            : instanceKeyValues;
+          if (preservedValues.length !== instanceKeyValues.length) {
+            // For multi_select custom fields, `select_values` is itself an array: merge/union it with
+            // the previous entry instead of discarding already-selected options on every new upsert.
+            // Other sub-fields (int_value, string_value, ...) keep last-write-wins semantics.
+            const existingByFieldId = new Map<string, Record<string, any>>(
+              instanceKeyValues
+                .filter((c: Record<string, any>) => c?.field_id !== undefined)
+                .map((c: Record<string, any>) => [c.field_id, c] as [string, Record<string, any>]),
+            );
+            const mergedValue = (value as Array<Record<string, any>>).map((v) => {
+              const existing = v?.field_id !== undefined ? existingByFieldId.get(v.field_id) : undefined;
+              if (existing && Array.isArray(existing.select_values) && Array.isArray(v.select_values)) {
+                return { ...v, select_values: R.uniq([...existing.select_values, ...v.select_values]) };
+              }
+              return v;
+            });
+            patch = [{ op: 'replace' as const, path: preparedPath, value: [...preservedValues, ...mergedValue] }];
+          } else {
+            // otherwise we need to add the values to the existing array, using jsonpatch indexed path
+            patch = value.map((v, index) => {
+              const afterIndex = index + instanceKeyValues.length;
+              return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
+            });
+          }
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
@@ -1335,8 +1396,11 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const current = jsonpatch.getValueByPointer(instance, preparedPath);
         if (Array.isArray(current) && value) {
           const toRemove = Array.isArray(value) ? value : [value];
-          // Filter out items in current that match items in toRemove
-          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
+          // Filter out items in current that match items in toRemove.
+          // `field_id` is a stable per-entry identifier used by nested object attributes that don't
+          // have a plain `id` (e.g. custom_field_values), allowing a precise removal that is recomputed
+          // against the live value at apply time instead of a stale pre-computed snapshot.
+          const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || (r.field_id !== undefined && r.field_id === c.field_id) || R.equals(r, c)));
           patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];

@@ -33,6 +33,7 @@ import {
   ACTION_TYPE_REMOVE_FROM_DRAFT,
   ACTION_TYPE_REMOVE_GROUPS,
   ACTION_TYPE_REMOVE_ORGANIZATIONS,
+  ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES,
   ACTION_TYPE_REPLACE,
   ACTION_TYPE_RESTORE,
   ACTION_TYPE_RULE_APPLY,
@@ -110,10 +111,10 @@ export const taskRule = async (context, user, task, callback) => {
   }
 };
 
-export const taskQuery = async (context, user, task, callback) => {
+export const taskQuery = async (context, user, task, callback, baseFields = []) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
-  const finalOpts = { ...options, baseData: true, callback };
+  const finalOpts = { ...options, baseData: true, baseFields, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 
@@ -543,6 +544,47 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
   };
 };
 
+// Cascade cleanup of a deleted custom field definition: for each entity still holding a value
+// for the deleted field, remove that single value entry and patch it.
+const customFieldValuesRemoveOperationCallback = async (context, user, task, operations) => {
+  const fieldId = operations[0]?.context?.values?.[0];
+  let totalProcessed = task.task_processed_number;
+  return async (elements) => {
+    const objects = [];
+    // `custom_field_values` is requested via taskQuery's baseFields (see workerTaskHandler), so
+    // `elements` already carry it — no need to reload them.
+    for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
+      const element = elements[index];
+      const currentValues = element.custom_field_values ?? [];
+      // Only patch entities actually holding a value for the deleted field. A targeted 'remove'
+      // (matched by field_id, not a pre-computed 'replace' snapshot) is used so the worker recomputes
+      // the diff against the LIVE custom_field_values at apply time, preserving any concurrent edit
+      // made to other custom field values while this task's message was queued.
+      if (currentValues.some((value) => value.field_id === fieldId)) {
+        objects.push({
+          id: element.standard_id,
+          type: convertTypeToStixType(element.entity_type),
+          extensions: {
+            [STIX_EXT_OCTI]: {
+              id: element.internal_id,
+              type: element.entity_type,
+              opencti_operation: 'patch',
+              opencti_field_patch: [{ key: 'custom_field_values', value: [{ field_id: fieldId }], operation: 'remove' }],
+            },
+          },
+        });
+      }
+    }
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+    }
+    // Update task
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -555,6 +597,10 @@ const computeOperationCallback = async (context, user, task, actionType, operati
     const { containerId } = operations[0];
     const container = containerId ? await internalLoadById(context, user, containerId, { baseData: true }) : undefined;
     return promoteOperationCallback(context, user, task, container);
+  }
+  // Handle specific case of removing a deleted custom field definition values from entities
+  if (actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES) {
+    return customFieldValuesRemoveOperationCallback(context, user, task, operations);
   }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
@@ -569,8 +615,11 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
   if (task.type === TASK_TYPE_QUERY) {
-    // Task query will be enlisted step by step except for sharing/un sharing
-    await taskQuery(context, user, task, callback);
+    // Task query will be enlisted step by step except for sharing/un sharing.
+    // custom_field_values isn't part of the base fields, but the removal callback needs it on
+    // every element; requesting it upfront here avoids a separate reload of all elements.
+    const baseFields = actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES ? ['custom_field_values'] : [];
+    await taskQuery(context, user, task, callback, baseFields);
   }
   if (task.type === TASK_TYPE_LIST) {
     // Task list is enlist in one shot

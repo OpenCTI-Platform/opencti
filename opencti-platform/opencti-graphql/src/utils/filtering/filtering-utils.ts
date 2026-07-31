@@ -13,6 +13,7 @@ import {
   FILTER_KEYS_WITH_ME_VALUE,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  isCustomFieldFilterKey,
   LABEL_FILTER,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
@@ -469,6 +470,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     .filter((k) => !(getAvailableKeys().has(k)
       || k.startsWith(RULE_PREFIX)
       || getMetricsAttributesNames().includes(k)
+      || isCustomFieldFilterKey(k)
     ));
 
   if (incorrectKeys.length > 0) {
