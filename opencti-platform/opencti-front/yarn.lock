@@ -7053,13 +7053,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.24.2":
-  version: 5.24.3
-  resolution: "enhanced-resolve@npm:5.24.3"
+"enhanced-resolve@npm:^5.24.4":
+  version: 5.24.4
+  resolution: "enhanced-resolve@npm:5.24.4"
   dependencies:
     graceful-fs: "npm:^4.2.4"
     tapable: "npm:^2.3.3"
-  checksum: 10c0/907a1c4b35901539613e080c77274e354f668da3124f7e0f595e6efed46e730c732049f500b771d2657a1f16a4a220b9852e475884b1951b6e4f1389f0d58bb1
+  checksum: 10c0/ff78318bafbddcb1b13b8a61d898aaac550672e1aa128ddc890fd24dfc4131ea90e96427c81753aa28d087f60f953a4e3602cc83138275b45c05c8607c3ffb4a
   languageName: node
   linkType: hard
 
@@ -15703,9 +15703,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.109.1":
-  version: 5.109.1
-  resolution: "webpack@npm:5.109.1"
+"webpack@npm:5.109.2":
+  version: 5.109.2
+  resolution: "webpack@npm:5.109.2"
   dependencies:
     "@types/estree": "npm:^1.0.8"
     "@types/json-schema": "npm:^7.0.15"
@@ -15715,7 +15715,7 @@ __metadata:
     acorn: "npm:^8.16.0"
     browserslist: "npm:^4.28.1"
     chrome-trace-event: "npm:^1.0.2"
-    enhanced-resolve: "npm:^5.24.2"
+    enhanced-resolve: "npm:^5.24.4"
     es-module-lexer: "npm:^2.1.0"
     eslint-scope: "npm:5.1.1"
     events: "npm:^3.2.0"
@@ -15732,7 +15732,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/54f8d59fbdc75a17bbadbe349b59969a05903176450eabb277115839b8b488bb483d7e237b7955a3ca7ba6d42e07fd8f04d115670d348464fc57e5c14e939d8b
+  checksum: 10c0/524b8afe327a2452ed1d12340cf40fc9d6c65cb72108efeb704cce55ed93b8532be23e5179bbc3f537003b8de204fab0753a0050239bfcb4871cc8a2b3c1a723
   languageName: node
   linkType: hard
 
