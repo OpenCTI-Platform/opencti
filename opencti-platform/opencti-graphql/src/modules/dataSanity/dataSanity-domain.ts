@@ -10,7 +10,29 @@ import { type SanityOperation, sanityOperationList, type SanityOperationRunOutpu
 
 // If an operation stays marked as "running" longer than this, it is considered stale
 // (e.g. the node running it crashed/restarted before it could complete) and is allowed to run again.
-const STALE_RUNNING_THRESHOLD_MS = conf.get('data_sanity_manager:stale_running_threshold') ?? 86400000; // 24 hours
+const DEFAULT_STALE_RUNNING_THRESHOLD_MS = 86400000; // 24 hours
+
+/**
+ * Configuration values can be provided as strings (yaml, env vars...).
+ * Coerce them to a strictly positive finite number, otherwise the staleness comparison
+ * would evaluate to NaN and running locks would never expire.
+ */
+export const resolveStaleRunningThresholdMs = (configuredValue: unknown): number => {
+  if (configuredValue === undefined || configuredValue === null || configuredValue === '') {
+    return DEFAULT_STALE_RUNNING_THRESHOLD_MS;
+  }
+  const thresholdMs = Number(configuredValue);
+  if (!Number.isFinite(thresholdMs) || thresholdMs <= 0) {
+    logApp.warn('[DATA_SANITY_MANAGER] Invalid data_sanity_manager:stale_running_threshold configuration, falling back to default', {
+      configured_value: configuredValue,
+      default_value: DEFAULT_STALE_RUNNING_THRESHOLD_MS,
+    });
+    return DEFAULT_STALE_RUNNING_THRESHOLD_MS;
+  }
+  return thresholdMs;
+};
+
+const STALE_RUNNING_THRESHOLD_MS = resolveStaleRunningThresholdMs(conf.get('data_sanity_manager:stale_running_threshold'));
 
 /**
  * Find a DataSanity entity by operation_name.
