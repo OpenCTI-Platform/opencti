@@ -18,7 +18,7 @@ jobs:
     name: Build opencti:platform image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-platform
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -28,7 +28,7 @@ jobs:
     name: Build opencti:worker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-worker
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -38,7 +38,7 @@ jobs:
     name: Build opencti:builder image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-builder
         with:
           checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
