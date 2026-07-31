@@ -1,83 +1,27 @@
-import {
-  AccountBalanceOutlined,
-  ArchitectureOutlined,
-  AssignmentOutlined,
-  BiotechOutlined,
-  BugReportOutlined,
-  CasesOutlined,
-  ChevronLeft,
-  ConstructionOutlined,
-  DescriptionOutlined,
-  DiamondOutlined,
-  DomainOutlined,
-  EventOutlined,
-  ExploreOutlined,
-  ExtensionOutlined,
-  FlagOutlined,
-  Home,
-  InsertChartOutlinedOutlined,
-  LayersOutlined,
-  LocalOfferOutlined,
-  MapOutlined,
-  PersonOutlined,
-  PlaceOutlined,
-  PublicOutlined,
-  SecurityOutlined,
-  SourceOutlined,
-  SpeakerNotesOutlined,
-  StorageOutlined,
-  StreamOutlined,
-  SubjectOutlined,
-  SurroundSoundOutlined,
-  TaskAltOutlined,
-  TrackChanges,
-  VisibilityOutlined,
-  WebAssetOutlined,
-  WifiTetheringOutlined,
-  WorkspacesOutlined,
-} from '@mui/icons-material';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import MenuList from '@mui/material/MenuList';
+// LOCAL-ONLY REAL SWAP — never committed, never pushed (see report). This
+// replaces the MUI Drawer/MenuList/LeftBarItem rendering with the real
+// @filigran/design-system Navbar/NavbarItem/NavbarSubmenu components, wired
+// to the exact same permission logic (`Security`, `useGranted`,
+// `useIsHiddenEntities`) and real routes as before. `LeftBarItem.tsx` is no
+// longer used by this file but is left in place untouched (still imported
+// elsewhere? no — only referenced here previously). Icons switch from
+// MUI/mdi-material-ui to FDS's own `Icon` registry (includes several
+// `custom/*` icons that map 1:1 to OpenCTI entity types).
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { createStyles, makeStyles, useTheme } from '@mui/styles';
-import {
-  AccountMultipleOutline,
-  ArchiveOutline,
-  Binoculars,
-  Biohazard,
-  BriefcaseEditOutline,
-  BriefcaseEyeOutline,
-  BriefcaseRemoveOutline,
-  BriefcaseSearchOutline,
-  ChessKnight,
-  ChevronRight,
-  CityVariantOutline,
-  CogOutline,
-  Database,
-  Fire,
-  FlaskOutline,
-  FolderTableOutline,
-  GlobeModel,
-  HexagonOutline,
-  LaptopAccount,
-  LockPattern,
-  ProgressWrench,
-  ServerNetwork,
-  ShieldSearch,
-  Timetable,
-} from 'mdi-material-ui';
+import { useTheme } from '@mui/styles';
+import { Icon, Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem } from '@filigran/design-system';
+import '@filigran/design-system/dist/index.css';
 import React, { useRef, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import logoFiligran from '../../../static/images/logo_filigran_full.svg';
 import Security from '../../../utils/Security';
 import useAuth from '../../../utils/hooks/useAuth';
-import useDimensions from '../../../utils/hooks/useDimensions';
+import useFdsThemeScope from '../../../utils/hooks/useFdsThemeScope';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
@@ -117,95 +61,12 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
 import { LeftBarHeader } from './LeftBarHeader';
-import LeftBarItem from './LeftBarItem';
 import LogoTextOrange from '../../../static/images/logo_text_orange.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
 import { shouldOpenInNewTabMouseEvent } from 'src/utils/domEvent';
 
 export const SMALL_BAR_WIDTH = 55;
 export const OPEN_BAR_WIDTH = 180;
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => createStyles({
-  drawerPaper: {
-    width: SMALL_BAR_WIDTH,
-    minHeight: '100vh',
-    overflowX: 'hidden',
-  },
-  drawerPaperOpen: {
-    width: OPEN_BAR_WIDTH,
-    minHeight: '100vh',
-    overflowX: 'hidden',
-  },
-  menuItemIcon: {
-    color: theme.palette.text.primary,
-  },
-  menuItem: {
-    paddingRight: 2,
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuHoverItem: {
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuSubItem: {
-    height: 25,
-    fontWeight: 500,
-    fontSize: 12,
-  },
-  menuItemText: {
-    padding: '1px 0 0 8px',
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuSubItemText: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    padding: '1px 0 0 8px',
-    fontWeight: 500,
-    fontSize: 12,
-  },
-  menuSubItemTextWithoutIcon: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    padding: '1px 0 0 0px',
-    fontWeight: 500,
-    fontSize: 12,
-  },
-  menuCollapseOpen: {
-    width: OPEN_BAR_WIDTH,
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuCollapse: {
-    width: SMALL_BAR_WIDTH,
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuLogoOpen: {
-    width: OPEN_BAR_WIDTH,
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuLogo: {
-    width: SMALL_BAR_WIDTH,
-    height: 35,
-    fontWeight: 500,
-    fontSize: 14,
-  },
-  menuItemSmallText: {
-    padding: '1px 0 0 20px',
-  },
-}));
 
 const leftBarQuery = graphql`
   query LeftBarQuery {
@@ -215,22 +76,20 @@ const leftBarQuery = graphql`
   }
 `;
 
-const Separator = () => {
-  const theme = useTheme();
-  return (
-    <Divider sx={{ border: `1px solid ${theme.palette.designSystem.background.bg2}` }} />
-  );
-};
-
 const LeftBarComponent = ({ queryRef }) => {
   const theme = useTheme();
-  const ref = useRef();
+  // Root of the FDS subtree: bridges OpenCTI's current light/dark mode to
+  // the .dark/.light scope classes the Navbar's own CSS variables rely on
+  // (per useFdsThemeScope's docstring — used as-is, hook itself untouched).
+  const fdsThemeContainerRef = useRef(null);
+  useFdsThemeScope(fdsThemeContainerRef);
   const { t_i18n } = useFormatter();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
   const { isFeatureEnable } = useHelper();
   const navigate = useNavigate();
+  const location = useLocation();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || hasOnlyAccessToImportDraftTab;
@@ -261,7 +120,6 @@ const LeftBarComponent = ({ queryRef }) => {
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
-  const classes = useStyles({ navOpen });
 
   const data = usePreloadedQuery(leftBarQuery, queryRef);
 
@@ -291,20 +149,30 @@ const LeftBarComponent = ({ queryRef }) => {
   const handleSelectedMenuClose = () => {
     setSelectedMenu([]);
   };
-  const handleSelectedMenuToggle = (menu) => {
-    let updatedMenu;
-    if (submenu_auto_collapse) {
-      updatedMenu = selectedMenu.includes(menu) ? [] : [menu];
-      setSelectedMenu(updatedMenu);
-    } else {
-      updatedMenu = selectedMenu.includes(menu)
-        ? removeMenuUnique(menu)
-        : addMenuUnique(menu);
-      setSelectedMenu(updatedMenu);
+  // Adapts the FDS NavbarSubmenu's `onOpenChange(open: boolean)` shape to
+  // the pre-existing open/close semantics above, preserving them exactly:
+  // opening still respects the submenu_auto_collapse preference (single vs.
+  // accumulating), closing still only removes the one closed menu (so other
+  // open sections stay open when submenu_auto_collapse is off).
+  const handleSubmenuOpenChange = (menu, open) => {
+    if (open) {
+      handleSelectedMenuOpen(menu);
+      return;
     }
+    if (submenu_auto_collapse) {
+      handleSelectedMenuClose();
+      return;
+    }
+    const updatedMenu = removeMenuUnique(menu);
+    setSelectedMenu(updatedMenu);
     localStorage.setItem('selectedMenu', JSON.stringify(updatedMenu));
   };
   const handleGoToPage = (event, link) => {
+    // NavbarSubmenuItem renders a real <a href>; without preventDefault the
+    // browser's own navigation would race the router's, causing a full
+    // reload (and, per the demo screen's real-backend testing, a lost
+    // session). Same fix as the proven pattern in FdsRealNavDemo.tsx.
+    event.preventDefault();
     if (shouldOpenInNewTabMouseEvent(event)) {
       window.open(link, '_blank');
     } else {
@@ -385,22 +253,6 @@ const LeftBarComponent = ({ queryRef }) => {
   } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
-  const { dimension } = useDimensions();
-
-  const isMobile = dimension.width < 768;
-
-  const itemProps = {
-    navOpen,
-    selectedMenu,
-    isMobile,
-    classes,
-    hiddenEntities,
-    onMenuToggle: handleSelectedMenuToggle,
-    onMenuOpen: handleSelectedMenuOpen,
-    onMenuClose: handleSelectedMenuClose,
-    onGoToPage: handleGoToPage,
-    submenuShowIcons: submenu_show_icons,
-  };
 
   const isLightTheme = theme.palette.mode === 'light';
   const getBackground = () => {
@@ -412,29 +264,86 @@ const LeftBarComponent = ({ queryRef }) => {
     return `linear-gradient(100deg, ${start} 0%, ${end} 100%)`;
   };
 
+  // Exact port of LeftBarItem.tsx's isSelected — same rules (exact vs.
+  // prefix match, same data/draft special-case) so aria-current stays
+  // correct after the swap.
+  const isSelected = (itemLink, itemExact) => {
+    if (itemExact) {
+      return location.pathname === itemLink;
+    }
+    if (itemLink === '/dashboard/data' && location.pathname.includes('/import/draft/')) {
+      return false;
+    }
+    return location.pathname === itemLink || location.pathname.startsWith(`${itemLink}/`);
+  };
+
+  // Exact port of LeftBarItem.tsx's visibleSubItems filter.
+  const visibleSubItems = (subItems) => subItems.filter(
+    (item) => item.granted !== false && (!item.type || !hiddenEntities.includes(item.type)),
+  );
+
+  // Renders one top-level entry as either a plain NavbarItem (no subItems)
+  // or a NavbarSubmenu (subItems present) — mirrors LeftBarItem.tsx's
+  // single-component dual behavior.
+  const renderNavItem = ({
+    id, icon, label, link, exact, subItems,
+  }) => {
+    const items = subItems ? visibleSubItems(subItems) : [];
+    if (!subItems || items.length === 0) {
+      return (
+        <NavbarItem
+          key={id ?? link}
+          icon={<Icon name={icon} />}
+          onClick={(e) => handleGoToPage(e, link)}
+          aria-current={isSelected(link, exact) ? 'page' : undefined}
+        >
+          {label}
+        </NavbarItem>
+      );
+    }
+    return (
+      <NavbarSubmenu
+        key={id}
+        label={label}
+        icon={<Icon name={icon} />}
+        open={selectedMenu.includes(id)}
+        onOpenChange={(open) => handleSubmenuOpenChange(id, open)}
+      >
+        {items.map((item) => (
+          <NavbarSubmenuItem
+            key={item.link}
+            href={item.link}
+            icon={item.icon ? <Icon name={item.icon} /> : undefined}
+            showIcon={submenu_show_icons}
+            onClick={(e) => handleGoToPage(e, item.link)}
+            aria-current={isSelected(item.link, item.exact) ? 'page' : undefined}
+          >
+            {item.label}
+          </NavbarSubmenuItem>
+        ))}
+      </NavbarSubmenu>
+    );
+  };
+
   return (
-    <Drawer
-      variant="permanent"
-      classes={{
-        paper: navOpen ? classes.drawerPaperOpen : classes.drawerPaper,
-      }}
-      slotProps={{
-        paper: {
-          sx: {
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            background: getBackground(),
-            borderRight: '1px solid transparent',
-          },
-        },
-      }}
-      sx={{
+    <div
+      ref={fdsThemeContainerRef}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        background: getBackground(),
+        borderRight: '1px solid transparent',
         width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+        // The old <Drawer variant="permanent"> provided flexShrink:0/flexGrow:0
+        // for free; a plain <div> doesn't, so without this the sibling flex
+        // Box in Index.tsx squeezes this bar down to ~56px once expanded
+        // (180px), clipping the wider Navbar content via overflow:hidden.
+        flexShrink: 0,
+        flexGrow: 0,
         zIndex: 999,
         top: 0,
         height: '100vh',
-        overflow: 'hidden',
         transition: theme.transitions.create('width', {
           easing: theme.transitions.easing.easeInOut,
           duration: theme.transitions.duration.enteringScreen,
@@ -454,293 +363,261 @@ const LeftBarComponent = ({ queryRef }) => {
         hasXtmHubAccess={hasXtmHubAccess}
       />
 
-      <div
-        ref={ref}
+      <Navbar
         aria-label="Main navigation"
+        collapsed={!navOpen}
+        onCollapsedChange={handleToggle}
         style={{
+          flex: 1,
           overflow: 'auto',
           overflowX: 'hidden',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
           minHeight: 0,
           backgroundColor: 'transparent',
         }}
+        footer={!data?.settings?.platform_whitemark && (
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={0.5}
+            paddingLeft={2.5}
+            marginBottom={1}
+            minHeight={16}
+          >
+            {
+              navOpen && (
+                <Typography
+                  component="span"
+                  sx={{
+                    fontFamily: 'IBM Plex Sans',
+                    fontSize: '10px',
+                    lineHeight: '16px',
+                    opacity: 0.8,
+                    color: theme.palette.text.tertiary,
+                  }}
+                >
+                  {t_i18n('Made by')}
+                </Typography>
+              )
+            }
+            <img
+              alt="logo"
+              src={logoFiligran}
+              width={navOpen ? 48 : 12}
+              height="12"
+              style={{
+                opacity: 0.8,
+                objectFit: 'cover',
+                objectPosition: 'left center',
+              }}
+            />
+          </Stack>
+        )}
       >
-        <MenuList disablePadding component="nav">
-          {!draftContext && (
-            <LeftBarItem
-              {...itemProps}
-              label={t_i18n('Home')}
-              icon={<Home />}
-              link="/dashboard"
-              exact
-            />
-          )}
+        {!draftContext && renderNavItem({ label: t_i18n('Home'), icon: 'house', link: '/dashboard', exact: true })}
 
-          <Security needs={[EXPLORE]}>
-            {!draftContext && (
-              <LeftBarItem
-                {...itemProps}
-                id="dashboards"
-                icon={<InsertChartOutlinedOutlined />}
-                label={t_i18n('Dashboards')}
-                link="/dashboard/workspaces/dashboards"
-                subItems={[
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards',
-                    label: t_i18n('Custom dashboards'),
-                    exact: true,
-                  },
-                  {
-                    granted: isGrantedToExplore,
-                    type: 'Dashboard',
-                    link: '/dashboard/workspaces/dashboards_public',
-                    label: t_i18n('Public dashboards'),
-                    exact: true,
-                  },
-                ]}
-              />
-            )}
-          </Security>
+        <Security needs={[EXPLORE]}>
+          {!draftContext && renderNavItem({
+            id: 'dashboards',
+            icon: 'chart-bar',
+            label: t_i18n('Dashboards'),
+            link: '/dashboard/workspaces/dashboards',
+            subItems: [
+              {
+                granted: isGrantedToExplore,
+                type: 'Dashboard',
+                link: '/dashboard/workspaces/dashboards',
+                label: t_i18n('Custom dashboards'),
+                exact: true,
+              },
+              {
+                granted: isGrantedToExplore,
+                type: 'Dashboard',
+                link: '/dashboard/workspaces/dashboards_public',
+                label: t_i18n('Public dashboards'),
+                exact: true,
+              },
+            ],
+          })}
+        </Security>
 
-          <Security needs={[INVESTIGATION]}>
-            {!draftContext && (
-              <LeftBarItem
-                {...itemProps}
-                label={t_i18n('Investigations')}
-                icon={<ExploreOutlined />}
-                link="/dashboard/workspaces/investigations"
-              />
-            )}
-          </Security>
+        <Security needs={[INVESTIGATION]}>
+          {!draftContext && renderNavItem({ label: t_i18n('Investigations'), icon: 'compass', link: '/dashboard/workspaces/investigations' })}
+        </Security>
 
-          {draftContext && (
-            <LeftBarItem
-              {...itemProps}
-              label={t_i18n('Draft overview')}
-              icon={<ArchitectureOutlined />}
-              link={`/dashboard/data/import/draft/${draftContext.id}`}
-            />
-          )}
+        {draftContext && renderNavItem({ label: t_i18n('Draft overview'), icon: 'drafting-compass', link: `/dashboard/data/import/draft/${draftContext.id}` })}
 
-          <Security needs={[PIRAPI]}>
-            {!draftContext && (
-              <LeftBarItem
-                {...itemProps}
-                label={t_i18n('PIR')}
-                icon={<TrackChanges />}
-                link="/dashboard/pirs"
-              />
-            )}
-          </Security>
-        </MenuList>
+        <Security needs={[PIRAPI]}>
+          {!draftContext && renderNavItem({ label: t_i18n('PIR'), icon: 'radar', link: '/dashboard/pirs' })}
+        </Security>
 
-        <Separator />
+        <NavbarSeparator />
 
         <Security needs={[KNOWLEDGE]}>
-          <MenuList component="nav">
-            {!hideAnalyses && (
-              <LeftBarItem
-                {...itemProps}
-                id="analyses"
-                icon={<AssignmentOutlined />}
-                label={t_i18n('Analyses')}
-                link="/dashboard/analyses"
-                subItems={[
-                  { type: 'Report', link: '/dashboard/analyses/reports', label: t_i18n('Reports'), icon: <DescriptionOutlined fontSize="small" /> },
-                  { type: 'Grouping', link: '/dashboard/analyses/groupings', label: t_i18n('Groupings'), icon: <WorkspacesOutlined fontSize="small" /> },
-                  { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: t_i18n('Malware analyses'), icon: <BiotechOutlined fontSize="small" /> },
-                  { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: <SecurityOutlined fontSize="small" /> },
-                  { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: <SubjectOutlined fontSize="small" /> },
-                  { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: <LocalOfferOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+          <>
+            {!hideAnalyses && renderNavItem({
+              id: 'analyses',
+              icon: 'file-text',
+              label: t_i18n('Analyses'),
+              link: '/dashboard/analyses',
+              subItems: [
+                { type: 'Report', link: '/dashboard/analyses/reports', label: t_i18n('Reports'), icon: 'newspaper' },
+                { type: 'Grouping', link: '/dashboard/analyses/groupings', label: t_i18n('Groupings'), icon: 'layers' },
+                { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: t_i18n('Malware analyses'), icon: 'flask-conical' },
+                { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: 'shield-check' },
+                { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: 'sticky-note' },
+                { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: 'link-2' },
+              ],
+            })}
 
-            {!hideCases && (
-              <LeftBarItem
-                {...itemProps}
-                id="cases"
-                icon={<CasesOutlined />}
-                label={t_i18n('Cases')}
-                link="/dashboard/cases"
-                subItems={[
-                  { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: t_i18n('Incident responses'), icon: <BriefcaseEyeOutline fontSize="small" /> },
-                  { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: t_i18n('Requests for information'), icon: <BriefcaseSearchOutline fontSize="small" /> },
-                  { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: t_i18n('Requests for takedown'), icon: <BriefcaseRemoveOutline fontSize="small" /> },
-                  { type: 'Task', link: '/dashboard/cases/tasks', label: t_i18n('Tasks'), icon: <TaskAltOutlined fontSize="small" /> },
-                  { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: t_i18n('Feedbacks'), icon: <BriefcaseEditOutline fontSize="small" /> },
-                ]}
-              />
-            )}
+            {!hideCases && renderNavItem({
+              id: 'cases',
+              icon: 'briefcase',
+              label: t_i18n('Cases'),
+              link: '/dashboard/cases',
+              subItems: [
+                { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: t_i18n('Incident responses'), icon: 'custom/case-incident' },
+                { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: t_i18n('Requests for information'), icon: 'custom/case-rfi' },
+                { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: t_i18n('Requests for takedown'), icon: 'custom/case-rft' },
+                { type: 'Task', link: '/dashboard/cases/tasks', label: t_i18n('Tasks'), icon: 'list-checks' },
+                { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: t_i18n('Feedbacks'), icon: 'message-square-text' },
+              ],
+            })}
 
-            {!hideEvents && (
-              <LeftBarItem
-                {...itemProps}
-                id="events"
-                icon={<Timetable />}
-                label={t_i18n('Events')}
-                link="/dashboard/events"
-                subItems={[
-                  { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: <Fire fontSize="small" /> },
-                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
-                  { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: <WifiTetheringOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+            {!hideEvents && renderNavItem({
+              id: 'events',
+              icon: 'alarm-clock',
+              label: t_i18n('Events'),
+              link: '/dashboard/events',
+              subItems: [
+                { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: 'custom/fire' },
+                { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: 'eye' },
+                { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: 'satellite-dish' },
+              ],
+            })}
 
-            {!hideObservations && (
-              <LeftBarItem
-                {...itemProps}
-                id="observations"
-                icon={<Binoculars />}
-                label={t_i18n('Observations')}
-                link="/dashboard/observations"
-                subItems={[
-                  { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: t_i18n('Observables'), icon: <HexagonOutline fontSize="small" /> },
-                  { type: 'Artifact', link: '/dashboard/observations/artifacts', label: t_i18n('Artifacts'), icon: <ArchiveOutline fontSize="small" /> },
-                  { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
-                  { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
-                ]}
-              />
-            )}
-          </MenuList>
+            {!hideObservations && renderNavItem({
+              id: 'observations',
+              icon: 'custom/binocular',
+              label: t_i18n('Observations'),
+              link: '/dashboard/observations',
+              subItems: [
+                { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: t_i18n('Observables'), icon: 'hexagon' },
+                { type: 'Artifact', link: '/dashboard/observations/artifacts', label: t_i18n('Artifacts'), icon: 'files' },
+                { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: 'custom/target' },
+                { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: 'custom/infrastructure' },
+              ],
+            })}
 
-          <Separator />
+            <NavbarSeparator />
 
-          <MenuList component="nav">
-            {!hideThreats && (
-              <LeftBarItem
-                {...itemProps}
-                id="threats"
-                icon={<FlaskOutline />}
-                label={t_i18n('Threats')}
-                link="/dashboard/threats"
-                subItems={[
-                  { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: t_i18n('Threat actors (group)'), icon: <AccountMultipleOutline fontSize="small" /> },
-                  {
-                    type: 'Threat-Actor-Individual',
-                    link: '/dashboard/threats/threat_actors_individual',
-                    label: t_i18n('Threat actors (individual)'),
-                    icon: <LaptopAccount fontSize="small" />,
-                  },
-                  { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
-                  { type: 'Campaign', link: '/dashboard/threats/campaigns', label: t_i18n('Campaigns'), icon: <ChessKnight fontSize="small" /> },
-                ]}
-              />
-            )}
+            {!hideThreats && renderNavItem({
+              id: 'threats',
+              icon: 'shield-check',
+              label: t_i18n('Threats'),
+              link: '/dashboard/threats',
+              subItems: [
+                { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: t_i18n('Threat actors (group)'), icon: 'users' },
+                {
+                  type: 'Threat-Actor-Individual',
+                  link: '/dashboard/threats/threat_actors_individual',
+                  label: t_i18n('Threat actors (individual)'),
+                  icon: 'custom/threat-actor-individual',
+                },
+                { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: 'custom/intrusion-set' },
+                { type: 'Campaign', link: '/dashboard/threats/campaigns', label: t_i18n('Campaigns'), icon: 'chess-knight' },
+              ],
+            })}
 
-            {!hideArsenal && (
-              <LeftBarItem
-                {...itemProps}
-                id="arsenal"
-                icon={<LayersOutlined />}
-                label={t_i18n('Arsenal')}
-                link="/dashboard/arsenal"
-                subItems={[
-                  { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: <Biohazard fontSize="small" /> },
-                  { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: <SurroundSoundOutlined fontSize="small" /> },
-                  { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: <WebAssetOutlined fontSize="small" /> },
-                  { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: <BugReportOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+            {!hideArsenal && renderNavItem({
+              id: 'arsenal',
+              icon: 'layers-2',
+              label: t_i18n('Arsenal'),
+              link: '/dashboard/arsenal',
+              subItems: [
+                { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: 'custom/malware' },
+                { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: 'megaphone' },
+                { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: 'wrench' },
+                { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: 'bug' },
+              ],
+            })}
 
-            {!hideTechniques && (
-              <LeftBarItem
-                {...itemProps}
-                id="techniques"
-                icon={<ConstructionOutlined />}
-                label={t_i18n('Techniques')}
-                link="/dashboard/techniques"
-                subItems={[
-                  { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: <LockPattern fontSize="small" /> },
-                  { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: <SpeakerNotesOutlined fontSize="small" /> },
-                  { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
-                  { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
-                  { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
+            {!hideTechniques && renderNavItem({
+              id: 'techniques',
+              icon: 'network',
+              label: t_i18n('Techniques'),
+              link: '/dashboard/techniques',
+              subItems: [
+                { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: 'custom/attack-pattern' },
+                { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: 'message-square-more' },
+                { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: 'custom/course-of-action' },
+                { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: 'grid-3x2' },
+                { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: 'server' },
+              ],
+            })}
 
-            {!hideEntities && (
-              <LeftBarItem
-                {...itemProps}
-                id="entities"
-                icon={<FolderTableOutline />}
-                label={t_i18n('Entities')}
-                link="/dashboard/entities"
-                subItems={
-                  [
-                    { type: 'Sector', link: '/dashboard/entities/sectors', label: t_i18n('Sectors'), icon: <DomainOutlined fontSize="small" /> },
-                    { type: 'Event', link: '/dashboard/entities/events', label: t_i18n('Events'), icon: <EventOutlined fontSize="small" /> },
-                    { type: 'Organization', link: '/dashboard/entities/organizations', label: t_i18n('Organizations'), icon: <AccountBalanceOutlined fontSize="small" /> },
-                    { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: <SecurityOutlined fontSize="small" /> },
-                    { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: <StorageOutlined fontSize="small" /> },
-                    { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: <PersonOutlined fontSize="small" /> },
-                  ]
-                }
-              />
-            )}
+            {!hideEntities && renderNavItem({
+              id: 'entities',
+              icon: 'box',
+              label: t_i18n('Entities'),
+              link: '/dashboard/entities',
+              subItems: [
+                { type: 'Sector', link: '/dashboard/entities/sectors', label: t_i18n('Sectors'), icon: 'building-2' },
+                { type: 'Event', link: '/dashboard/entities/events', label: t_i18n('Events'), icon: 'calendar' },
+                { type: 'Organization', link: '/dashboard/entities/organizations', label: t_i18n('Organizations'), icon: 'landmark' },
+                { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: 'custom/security-platforms' },
+                { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: 'monitor' },
+                { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: 'user' },
+              ],
+            })}
 
-            {!hideLocations && (
-              <LeftBarItem
-                {...itemProps}
-                id="locations"
-                icon={<GlobeModel />}
-                label={t_i18n('Locations')}
-                link="/dashboard/locations"
-                subItems={[
-                  { type: 'Region', link: '/dashboard/locations/regions', label: t_i18n('Regions'), icon: <PublicOutlined fontSize="small" /> },
-                  { type: 'Country', link: '/dashboard/locations/countries', label: t_i18n('Countries'), icon: <FlagOutlined fontSize="small" /> },
-                  { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: t_i18n('Administrative areas'), icon: <MapOutlined fontSize="small" /> },
-                  { type: 'City', link: '/dashboard/locations/cities', label: t_i18n('Cities'), icon: <CityVariantOutline fontSize="small" /> },
-                  { type: 'Position', link: '/dashboard/locations/positions', label: t_i18n('Positions'), icon: <PlaceOutlined fontSize="small" /> },
-                ]}
-              />
-            )}
-          </MenuList>
+            {!hideLocations && renderNavItem({
+              id: 'locations',
+              icon: 'map-pin',
+              label: t_i18n('Locations'),
+              link: '/dashboard/locations',
+              subItems: [
+                { type: 'Region', link: '/dashboard/locations/regions', label: t_i18n('Regions'), icon: 'earth' },
+                { type: 'Country', link: '/dashboard/locations/countries', label: t_i18n('Countries'), icon: 'flag' },
+                { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: t_i18n('Administrative areas'), icon: 'map' },
+                { type: 'City', link: '/dashboard/locations/cities', label: t_i18n('Cities'), icon: 'custom/city' },
+                { type: 'Position', link: '/dashboard/locations/positions', label: t_i18n('Positions'), icon: 'locate' },
+              ],
+            })}
+          </>
         </Security>
 
         <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
-          <Separator />
+          <NavbarSeparator />
 
-          <MenuList component="nav">
+          <>
             <Security needs={[MODULES, INGESTION, INGESTION_SETINGESTIONS]}>
-              {!draftContext && (
-                <LeftBarItem
-                  {...itemProps}
-                  id="integrations"
-                  icon={<ExtensionOutlined />}
-                  label={t_i18n('Integrations')}
-                  link="/dashboard/integrations"
-                />
-              )}
+              {!draftContext && renderNavItem({
+                id: 'integrations',
+                icon: 'share-2',
+                label: t_i18n('Integrations'),
+                link: '/dashboard/integrations',
+              })}
             </Security>
 
             <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI, CSVMAPPERS, INGESTION]}>
-              <LeftBarItem
-                {...itemProps}
-                id="data"
-                icon={<Database />}
-                label={t_i18n('Data')}
-                link="/dashboard/data"
-                subItems={[
-                  { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
-                  { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import') },
-                  { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing') },
-                  { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
-                  { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
-                  { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health') },
-                  { granted: isTrashEnable() && isGrantedToDelete && !draftContext, link: '/dashboard/trash', label: t_i18n('Trash') },
-                ]}
-              />
+              {renderNavItem({
+                id: 'data',
+                icon: 'database',
+                label: t_i18n('Data'),
+                link: '/dashboard/data',
+                subItems: [
+                  { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities'), icon: 'box' },
+                  { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships'), icon: 'custom/relationship' },
+                  { granted: isGrantedToImport && !draftContext, link: '/dashboard/data/import', label: t_i18n('Import'), icon: 'cloud-upload' },
+                  { granted: isGrantedToProcessing && !draftContext, link: '/dashboard/data/processing', label: t_i18n('Processing'), icon: 'refresh-cw' },
+                  { granted: isGrantedToSharing && !draftContext, link: '/dashboard/data/sharing', label: t_i18n('Data sharing'), icon: 'upload' },
+                  { granted: isGrantedToManage && !draftContext, link: '/dashboard/data/restriction', label: t_i18n('Restriction'), icon: 'lock' },
+                  { granted: isDataHealthEnabled && isGrantedToManage && !draftContext, link: '/dashboard/data/health', label: t_i18n('Health'), icon: 'activity' },
+                  { granted: isTrashEnable() && isGrantedToDelete && !draftContext, link: '/dashboard/trash', label: t_i18n('Trash'), icon: 'trash-2' },
+                ],
+              })}
             </Security>
-          </MenuList>
+          </>
         </Security>
 
         <Security needs={[
@@ -762,94 +639,25 @@ const LeftBarComponent = ({ queryRef }) => {
           SETTINGS_SETMANAGEXTMHUB,
         ]}
         >
-          <Separator />
-          {!draftContext && (
-            <MenuList component="nav" style={{ marginBottom: 48 }}>
-              <LeftBarItem
-                {...itemProps}
-                id="settings"
-                icon={<CogOutline />}
-                label={t_i18n('Settings')}
-                link="/dashboard/settings"
-                subItems={[
-                  { granted: isGrantedToParameters, link: '/dashboard/settings', label: t_i18n('Parameters'), exact: true },
-                  { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: t_i18n('Security') },
-                  { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
-                  { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
-                  { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
-                  { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
-                  { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
-                ]}
-              />
-            </MenuList>
-          )}
+          <NavbarSeparator />
+          {!draftContext && renderNavItem({
+            id: 'settings',
+            icon: 'settings',
+            label: t_i18n('Settings'),
+            link: '/dashboard/settings',
+            subItems: [
+              { granted: isGrantedToParameters, link: '/dashboard/settings', label: t_i18n('Parameters'), exact: true, icon: 'sliders-horizontal' },
+              { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: t_i18n('Security'), icon: 'shield' },
+              { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization'), icon: 'wrench' },
+              { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies'), icon: 'tag' },
+              { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity'), icon: 'activity' },
+              { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing'), icon: 'file-search' },
+              { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience'), icon: 'custom/filigran' },
+            ],
+          })}
         </Security>
-      </div>
-
-      {/** Bottom **/}
-      <div
-        style={{
-          flexShrink: 0,
-          borderRight: theme.palette.mode === 'dark'
-            ? '1px solid rgba(255, 255, 255, 0.12)'
-            : '1px solid rgba(0, 0, 0, 0.12)',
-          width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-        }}
-      >
-        <MenuList
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-          }}
-        >
-          <LeftBarItem
-            {...itemProps}
-            icon={navOpen ? <ChevronLeft /> : <ChevronRight />}
-            label={t_i18n('Collapse')}
-            onClick={handleToggle}
-          />
-          {!data?.settings?.platform_whitemark && (
-            <Stack
-              direction="row"
-              alignItems="center"
-              gap={0.5}
-              paddingLeft={2.5}
-              marginBottom={1}
-              minHeight={16}
-            >
-              {
-                navOpen && (
-                  <Typography
-                    component="span"
-                    sx={{
-                      fontFamily: 'IBM Plex Sans',
-                      fontSize: '10px',
-                      lineHeight: '16px',
-                      opacity: 0.8,
-                      color: theme.palette.text.tertiary,
-                    }}
-                  >
-                    {t_i18n('Made by')}
-                  </Typography>
-                )
-              }
-              <img
-                alt="logo"
-                src={logoFiligran}
-                width={navOpen ? 48 : 12}
-                height="12"
-                style={{
-                  opacity: 0.8,
-                  objectFit: 'cover',
-                  objectPosition: 'left center',
-                }}
-              />
-            </Stack>
-          )}
-        </MenuList>
-      </div>
-    </Drawer>
+      </Navbar>
+    </div>
   );
 };
 

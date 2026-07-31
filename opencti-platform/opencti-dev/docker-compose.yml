@@ -118,8 +118,10 @@ services:
     volumes:
       - ./rabbitmq.config:/etc/rabbitmq/conf.d/90-userdefined.conf
     ports:
-      - 5672:5672
-      - 15672:15672
+      # LOCAL-ONLY port remap (never commit): 5672/15672 are taken by another
+      # concurrent session's openaev-dev-rabbitmq on this shared host.
+      - 5674:5672
+      - 15674:15672
 
   ## Telemetry + tracing dependencies
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
