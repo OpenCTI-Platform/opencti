@@ -58,7 +58,7 @@ const SavedFiltersAutocomplete = ({
     const filterLabel = option.ownerName ? `${option.label} (${option.ownerName})` : option.label;
     const filterLabelWithScope = localStorageKey
       ? filterLabel // if localStorageKey, the scope is the same for every saved filters of the list
-      : `${filterLabel} - ${t_i18n('scope')}: ${option.scope}`; // in widgets
+      : `${filterLabel} - ${t_i18n('Scope')}: ${option.scope}`; // in widgets
     const canManage = option.canManage && (hasSharingSavedFiltersCapability || option.isOwner);
     return (
       <li {...params} key={params.key}>
