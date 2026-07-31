@@ -176,14 +176,14 @@ describe('IP Whitelist Middleware Integration', () => {
   describe('Re-enabling access after disabling whitelist', () => {
     it('should restore access after whitelist is disabled', async () => {
       await enableWhitelist(['10.99.99.99']);
-      const blockedResult = await queryInitPlatformAsAdmin(ME_QUERY);
+      const blockedResult = await queryInitPlatformAsUser(USER_EDITOR, ME_QUERY);
       expect(blockedResult.errors).toBeDefined();
       expect(blockedResult.errors[0].extensions.code).toBe('IP_FORBIDDEN');
 
       await disableWhitelist();
-      const allowedResult = await queryInitPlatformAsAdmin(ME_QUERY);
+      const allowedResult = await queryInitPlatformAsUser(USER_EDITOR, ME_QUERY);
       expect(allowedResult.data?.me).toBeDefined();
-      expect(allowedResult.data.me.user_email).toBe('admin@opencti.io');
+      expect(allowedResult.data.me.user_email).toBe('editor@opencti.io');
     });
   });
 });
