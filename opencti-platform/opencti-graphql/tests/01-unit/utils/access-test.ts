@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import {
   ADMINISTRATOR_ROLE,
   BYPASS,
+  checkOTPValidationStatus,
   checkUserCanAccessStixElement,
   checkUserFilterStoreElements,
   DEFAULT_ROLE,
@@ -15,8 +16,10 @@ import {
   MEMBER_ACCESS_RIGHT_ADMIN,
   MEMBER_ACCESS_RIGHT_EDIT,
   MEMBER_ACCESS_RIGHT_VIEW,
+  OTPValidationStatus,
   SYSTEM_USER,
 } from '../../../src/utils/access';
+import type { AuthContext } from '../../../src/types/user';
 import type { BasicStoreCommon, StoreMarkingDefinition } from '../../../src/types/store';
 import { MARKING_TLP_AMBER, MARKING_TLP_CLEAR, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { AuthUser } from '../../../src/types/user';
@@ -26,7 +29,7 @@ import { RELATION_GRANTED_TO } from '../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import type { StixObject, StixOpenctiExtension } from '../../../src/types/stix-2-1-common';
 import type { Group } from '../../../src/types/group';
-import type { Change, UpdateEvent } from '../../../src/types/event';
+import type { UpdateEvent } from '../../../src/types/event';
 
 const inPlatformContext = { ...testContext, user_inside_platform_organization: true };
 
@@ -500,6 +503,84 @@ describe('getUserAccessRight testing - service account behavior', () => {
     const element = { restricted_members, authorized_authorities: [] };
     const expected = getUserAccessRight(serviceAccount as AuthUser, element);
     expect(expected).toEqual(MEMBER_ACCESS_RIGHT_EDIT);
+  });
+});
+
+describe('checkOTPValidationStatus testing', () => {
+  const buildContext = (overrides: Partial<AuthContext>): AuthContext => ({
+    otp_mandatory: false,
+    source: 'test',
+    user: undefined,
+    user_inside_platform_organization: false,
+    ...overrides,
+  } as AuthContext);
+
+  it('should require authentication when no user is set', () => {
+    const context = buildContext({ user: undefined });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.AUTHENTICATION_REQUIRED);
+  });
+
+  it('should be valid when allowUnprotectedOTP is true even if OTP is not validated', () => {
+    const context = buildContext({
+      user: { otp_activated: true } as AuthUser,
+      otp_mandatory: true,
+      user_otp_validated: false,
+    });
+    expect(checkOTPValidationStatus(context, true)).toEqual(OTPValidationStatus.VALID);
+  });
+
+  it('should require activation when OTP is mandatory, not validated and not activated', () => {
+    const context = buildContext({
+      user: { otp_activated: false } as AuthUser,
+      otp_mandatory: true,
+      user_otp_validated: false,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.ACTIVATION_REQUIRED);
+  });
+
+  it('should require validation when OTP is mandatory, activated but not validated', () => {
+    const context = buildContext({
+      user: { otp_activated: true } as AuthUser,
+      otp_mandatory: true,
+      user_otp_validated: false,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.VALIDATION_REQUIRED);
+  });
+
+  it('should be valid when OTP is mandatory and session is validated', () => {
+    const context = buildContext({
+      user: { otp_activated: true } as AuthUser,
+      otp_mandatory: true,
+      user_otp_validated: true,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.VALID);
+  });
+
+  it('should require validation when OTP self-activated but session not validated', () => {
+    const context = buildContext({
+      user: { otp_activated: true } as AuthUser,
+      otp_mandatory: false,
+      user_otp_validated: false,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.VALIDATION_REQUIRED);
+  });
+
+  it('should be valid when OTP is not mandatory and not activated', () => {
+    const context = buildContext({
+      user: { otp_activated: false } as AuthUser,
+      otp_mandatory: false,
+      user_otp_validated: false,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.VALID);
+  });
+
+  it('should be valid when OTP is self-activated and session is validated', () => {
+    const context = buildContext({
+      user: { otp_activated: true } as AuthUser,
+      otp_mandatory: false,
+      user_otp_validated: true,
+    });
+    expect(checkOTPValidationStatus(context)).toEqual(OTPValidationStatus.VALID);
   });
 });
 
