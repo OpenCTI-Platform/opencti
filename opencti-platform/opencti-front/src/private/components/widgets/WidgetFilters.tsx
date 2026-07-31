@@ -187,7 +187,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
               {isSavedFiltersAccessible && (
                 <>
                   <Divider orientation="vertical" flexItem />
-                  <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} />
+                  <WidgetSavedFiltersIcon onClick={handleSwitchToSavedFilter} perspective={perspective} />
                 </>
               )}
             </>
