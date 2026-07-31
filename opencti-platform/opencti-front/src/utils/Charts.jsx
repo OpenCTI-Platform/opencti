@@ -1,6 +1,6 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
-import { truncate } from './String';
+import { sanitize, truncate } from './String';
 import { isColorCloseToWhite } from './Colors';
 import { alpha } from '@mui/material/styles';
 import { shouldOpenInNewTabMouseEvent } from './domEvent';
@@ -63,11 +63,16 @@ const handleNavigate = (event, navigate, link) => {
  *
  * @param {Theme} theme
  */
-const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
-  <div style="background: ${theme.palette.background.nav}; color: ${theme.palette.text.primary}; padding: 2px 6px; font-size: 12px">
-    ${w.config.labels[seriesIndex]}
+const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
+  const safeNavColor = sanitize(theme.palette.background.nav, true);
+  const safeTextColor = sanitize(theme.palette.text.primary, true);
+  const safeLabel = sanitize(w.config.labels[seriesIndex], true);
+  return (`
+  <div style="background: ${safeNavColor}; color: ${safeTextColor}; padding: 2px 6px; font-size: 12px">
+    ${safeLabel}
   </div>
 `);
+};
 
 /**
  * @param {Theme} theme
