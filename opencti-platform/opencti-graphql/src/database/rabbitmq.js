@@ -681,8 +681,13 @@ export const unregisterExchanges = async () => {
   });
 };
 
-export const rabbitMQIsAlive = async () => {
+export const rabbitMQInit = async () => {
   logApp.info('[CHECK] Checking if RabbitMq is available');
+  await rabbitMQIsAlive();
+  logApp.info('[CHECK] RabbitMq is alive');
+};
+
+export const rabbitMQIsAlive = async () => {
   const assertExchangeResult = await amqpExecute(async (channel) => {
     const assertExchange = util.promisify(channel.assertExchange).bind(channel);
     return assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true });
@@ -691,7 +696,6 @@ export const rabbitMQIsAlive = async () => {
       throw DatabaseError('RabbitMQ seems down', { cause: e });
     },
   );
-  logApp.info('[CHECK] RabbitMq is alive');
   return assertExchangeResult;
 };
 
