@@ -26,6 +26,7 @@ describe('catalog-repository integration (no mocks)', () => {
     const slug = `it-catalog-latest-${Date.now()}`;
 
     const first = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
       slug,
       version: '1.0.0',
       title: 'IT Contract A',
@@ -42,6 +43,7 @@ describe('catalog-repository integration (no mocks)', () => {
     trackContract(first.id);
 
     const second = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
       slug,
       version: '1.0.1',
       title: 'IT Contract B',
@@ -70,6 +72,7 @@ describe('catalog-repository integration (no mocks)', () => {
     const slug = `it-catalog-es-${Date.now()}`;
 
     const created = await upsertCatalogContract(testContext, ADMIN_USER, {
+      catalog_id: 'integration-test-catalog',
       slug,
       version: '2.0.0',
       title: `IT Catalog ${slug}`,

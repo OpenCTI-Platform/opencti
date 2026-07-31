@@ -48,7 +48,7 @@ export const entitiesCounter = {
   RetentionRule: 4,
   CatalogContract: 4,
   CatalogLogo: 4,
-
+  CatalogManifest: 1,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
