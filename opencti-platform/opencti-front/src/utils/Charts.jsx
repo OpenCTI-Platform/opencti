@@ -54,6 +54,11 @@ const handleNavigate = (event, navigate, link) => {
   }
 };
 
+// theme colors are always stored as 6-digit hex (see themeValidation.ts), so any other
+// value is untrusted input and must be rejected rather than interpolated into CSS
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+const sanitizeCssColor = (value, fallback) => (HEX_COLOR_REGEX.test(value) ? value : fallback);
+
 /**
  * A custom tooltip for ApexChart.
  * This tooltip only display the label of the data it hovers.
@@ -64,8 +69,8 @@ const handleNavigate = (event, navigate, link) => {
  * @param {Theme} theme
  */
 export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
-  const safeNavColor = sanitize(String(theme.palette.background.nav ?? ''), true);
-  const safeTextColor = sanitize(String(theme.palette.text.primary ?? ''), true);
+  const safeNavColor = sanitizeCssColor(theme.palette.background.nav, 'inherit');
+  const safeTextColor = sanitizeCssColor(theme.palette.text.primary, 'inherit');
   const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
   return (`
   <div style="background: ${safeNavColor}; color: ${safeTextColor}; padding: 2px 6px; font-size: 12px">
