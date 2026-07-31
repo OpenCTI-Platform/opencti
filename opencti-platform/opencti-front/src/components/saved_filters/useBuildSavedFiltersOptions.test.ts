@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import useBuildSavedFiltersOptions from './useBuildSavedFiltersOptions';
+import { SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 
 vi.mock('src/utils/hooks/useAuth', () => ({
   default: () => ({
@@ -9,12 +10,18 @@ vi.mock('src/utils/hooks/useAuth', () => ({
 }));
 
 describe('useBuildSavedFiltersOptions', () => {
-  const makeItem = (overrides = {}) => ({
+  const makeItem = (overrides = {}): SavedFiltersSelectionData => ({
     id: 'filter-1',
     name: 'My Filter',
     creator_id: 'user-1',
     currentUserAccessRight: 'admin',
     authorizedMembers: [],
+    scope: 'reports',
+    filters: JSON.stringify({
+      mode: 'and',
+      filters: [{ key: 'report_types', values: [], operator: 'not_nil' }],
+      filtersGroups: [],
+    }),
     ...overrides,
   });
 
