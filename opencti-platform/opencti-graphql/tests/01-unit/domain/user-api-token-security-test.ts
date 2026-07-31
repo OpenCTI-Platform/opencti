@@ -74,6 +74,7 @@ import { createEntity } from '../../../src/database/middleware';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { sanitizeUser } from '../../../src/utils/templateContextSanitizer';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Pure unit tests — zero mocks, zero setup
@@ -273,6 +274,30 @@ describe('sessionLogin — must return null, not the session token', () => {
     );
 
     const result = await sessionLogin(context, { email: 'user@example.com', password: 'pass' });
+    expect(result).toBeNull(); // Successful login returns null
+  });
+
+  it('allows the platform superadmin to login even when the IP is rejected and no exclusion list is configured', async () => {
+    // Superadmin user returned by the provider (line 1716-1717 of user.js short-circuits the whitelist check)
+    const superAdminUser = { ...cachedUser, id: OPENCTI_ADMIN_UUID, internal_id: OPENCTI_ADMIN_UUID };
+    vi.mocked(passport.authenticate as any).mockImplementation(
+      (_s: string, _o: unknown, cb: (_e: unknown, _u: unknown, _i: unknown) => void) => () => cb(null, superAdminUser, null),
+    );
+    // IP whitelist enabled, source IP (127.0.0.1) not matching, and NO exclusion list configured:
+    // the superadmin must still be allowed to login in any case.
+    vi.mocked(getEntityFromCache).mockResolvedValue({
+      platform_organization: null,
+      platform_session_max_concurrent: 0,
+      platform_ip_whitelist_enabled: true,
+      platform_ip_whitelist: ['10.0.0.0/8'],
+      platform_ip_whitelist_exclusion_ids: [],
+    } as any);
+
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(
+      new Map([[superAdminUser.internal_id, superAdminUser]]) as any,
+    );
+
+    const result = await sessionLogin(context, { email: 'admin@opencti.io', password: 'pass' });
     expect(result).toBeNull(); // Successful login returns null
   });
 });
