@@ -82,11 +82,12 @@ export type VocabAttribute = { type: 'string'; format: 'vocabulary'; vocabularyC
 export type JsonAttribute = { type: 'string'; format: 'json'; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string>; multiple: false; schemaDef?: Record<string, any> } & BasicDefinition;
 export type ObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; attrRawIds?: GetRawIdsFn<T>; representative?: RepresentativeFn<T> } & BasicDefinition;
 export type FlatObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'flat' } & ObjectDefinition<T>;
+export type RawObjectAttribute<T extends BasicStoreAttribute> = { type: 'object'; format: 'raw' } & ObjectDefinition<T>;
 export type ObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'standard' } & BasicObjectDefinition<T>;
 export type NestedObjectAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = { type: 'object'; format: 'nested' } & BasicObjectDefinition<T>;
 export type RefAttribute = { type: 'ref'; attrRawIds?: GetRawIdsFn<string>; databaseName: string; stixName: string; isRefExistingForTypes: Checker; datable?: boolean; toTypes: string[] } & BasicDefinition;
 export type StringAttribute = IdAttribute | TextAttribute | EnumAttribute | VocabAttribute | JsonAttribute;
-export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T>;
+export type ComplexAttribute<T extends BasicStoreAttribute = BasicStoreAttribute> = FlatObjectAttribute<T> | ObjectAttribute<T> | NestedObjectAttribute<T> | RawObjectAttribute<T>;
 export type ComplexAttributeWithMappings<T extends BasicStoreAttribute = BasicStoreAttribute> = ObjectAttribute<T> | NestedObjectAttribute<T>;
 
 export type AttributeDefinition<T extends BasicStoreAttribute = BasicStoreAttribute> = NumericAttribute | DateAttribute | BooleanAttribute
