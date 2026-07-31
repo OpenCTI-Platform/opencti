@@ -560,8 +560,9 @@ describe('computeStartEndDates', () => {
       };
       const { startDate, endDate } = computeStartEndDates(config);
       // relativeDate should override absolute dates
-      expect(startDate).toBe('2025-03-08T10:30:00+00:00');
-      expect(endDate).toBe('2025-03-15T10:30:00+00:00');
+      expect(new Date(startDate as string).toISOString()) // convert to ISO so this assertion does not depend on the local timezone
+        .toBe('2025-03-08T10:30:00.000Z');
+      expect(new Date(endDate as string).toISOString()).toBe('2025-03-15T10:30:00.000Z');
     } finally {
       vi.useRealTimers();
     }
