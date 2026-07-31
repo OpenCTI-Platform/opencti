@@ -34,7 +34,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
-  const isSavedFiltersAccessible = isDashboardSavedFiltersFeatureEnabled && host.kind === 'workspace';
+  const isSavedFiltersAccessible = isDashboardSavedFiltersFeatureEnabled && (host.kind === 'workspace' || host.kind === 'custom-view');
 
   const [useSavedFilter, setUseSavedFilter] = useState(!!dataSelection.filters_id);
   const [useSavedFilterDynamicFrom, setUseSavedFilterDynamicFrom] = useState(!!dataSelection.dynamicFrom_id);
