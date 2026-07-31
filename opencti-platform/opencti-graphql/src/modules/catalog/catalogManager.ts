@@ -99,6 +99,8 @@ const refreshCatalogInternal = async () => {
         currentRevision = persistedManifest.revision;
         logApp.info('[OPENCTI-MODULE] Catalog manager hydrated revision from persisted catalog manifest', {
           sourceUri: sourceConfig.uri,
+          catalogId: persistedManifest.catalog_id,
+          revision: currentRevision,
         });
       } else {
         logApp.info('[OPENCTI-MODULE] Catalog manager found no persisted revision for source', {
@@ -166,7 +168,6 @@ const refreshCatalogInternal = async () => {
         manifest_version: manifestMetadata.manifestVersion,
         version: manifestMetadata.productVersion,
         revision,
-        last_synced_at: new Date().toISOString(),
       });
     } catch (persistError) {
       setCatalogVersionInfo('error');

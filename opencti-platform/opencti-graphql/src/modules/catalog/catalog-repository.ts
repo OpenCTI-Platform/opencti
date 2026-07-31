@@ -2,7 +2,7 @@
 
 import { createHash } from 'node:crypto';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
@@ -34,8 +34,6 @@ export interface CatalogContractInput {
   image?: string;
   support_version?: string;
   max_confidence_level?: number;
-  is_latest: boolean;
-  format_version?: string;
   last_synced_at: string;
 }
 
@@ -51,35 +49,19 @@ export interface CatalogManifestInput {
   revision: string;
   manifest_version?: string;
   version?: string;
-  last_synced_at: string;
 }
 
 // -- Writes --
 
-// Maintains "exactly one is_latest per slug" at write time - not left for a reader to
-// arbitrate if the sync manager ever upserts two versions marked latest in the same run.
 export const upsertCatalogContract = async (
   context: AuthContext,
   user: AuthUser,
   input: CatalogContractInput,
 ): Promise<BasicStoreEntityCatalogContract> => {
-  if (input.is_latest) {
-    const currentLatest = await findLatestContractBySlug(context, user, input.slug);
-    if (currentLatest && currentLatest.version !== input.version) {
-      logApp.debug('[OPENCTI-MODULE] Catalog persistence demoting previous latest contract', {
-        catalogId: input.catalog_id,
-        slug: input.slug,
-        previousVersion: currentLatest.version,
-        newVersion: input.version,
-      });
-      await patchAttribute(context, user, currentLatest.id, ENTITY_TYPE_CATALOG_CONTRACT, { is_latest: false });
-    }
-  }
   logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting CatalogContract', {
     catalogId: input.catalog_id,
     slug: input.slug,
     version: input.version,
-    is_latest: input.is_latest,
   });
   const result = await createEntity(context, user, input, ENTITY_TYPE_CATALOG_CONTRACT);
   logApp.debug('[OPENCTI-MODULE] Catalog persistence upserted CatalogContract', {
@@ -125,9 +107,16 @@ export const findLatestContractsBySlug = async (
   context: AuthContext,
   user: AuthUser,
 ): Promise<BasicStoreEntityCatalogContract[]> => {
-  return fullEntitiesList<BasicStoreEntityCatalogContract>(context, user, [ENTITY_TYPE_CATALOG_CONTRACT], {
-    filters: { mode: FilterMode.And, filters: [{ key: ['is_latest'], values: [true], operator: FilterOperator.Eq }], filterGroups: [] },
-  });
+  const contracts = await findAllCatalogContracts(context, user);
+  const latestBySlug = new Map<string, BasicStoreEntityCatalogContract>();
+  for (let i = 0; i < contracts.length; i += 1) {
+    const contract = contracts[i];
+    const current = latestBySlug.get(contract.slug);
+    if (!current || compareVersions(contract.version, current.version) > 0) {
+      latestBySlug.set(contract.slug, contract);
+    }
+  }
+  return Array.from(latestBySlug.values());
 };
 
 export const findAllCatalogContracts = async (
@@ -195,12 +184,14 @@ export const findLatestContractBySlug = async (
       mode: FilterMode.And,
       filters: [
         { key: ['slug'], values: [slug], operator: FilterOperator.Eq },
-        { key: ['is_latest'], values: [true], operator: FilterOperator.Eq },
       ],
       filterGroups: [],
     },
   });
-  return results[0];
+  if (results.length === 0) {
+    return undefined;
+  }
+  return results.sort((a, b) => compareVersions(b.version, a.version))[0];
 };
 
 export const findContractBySlugAndVersion = async (
@@ -250,7 +241,6 @@ export interface AdapterCatalogContract {
   container_image?: string;
   support_version?: string;
   max_confidence_level?: number;
-  format_version?: string;
 }
 
 export interface AdapterInternalCatalog {
@@ -288,10 +278,8 @@ export const compareVersions = (a: string, b: string): number => {
   return 0;
 };
 
-// Persists one fetched manifest snapshot: groups contracts by slug, determines the real
-// latest version per slug via compareVersions (not array order), upserts one Catalog per
-// slug (stable fields, taken from the latest version) and one CatalogContract per
-// (slug, version) with is_latest set accordingly.
+// Persists one fetched manifest snapshot and keeps one CatalogContract per
+// (slug, version). Highest version selection is computed at read-time.
 //
 export const persistCatalogSnapshot = async (
   context: AuthContext,
@@ -323,8 +311,7 @@ export const persistCatalogSnapshot = async (
     const sorted = [...versions].sort((a, b) => compareVersions(getContractVersion(b), getContractVersion(a)));
 
     logApp.debug('[OPENCTI-MODULE] Catalog persistence upserting contracts for slug', { slug, versionCount: sorted.length });
-    for (let v = 0; v < sorted.length; v += 1) {
-      const contract = sorted[v];
+    for (const contract of sorted) {
       const version = getContractVersion(contract);
       if (!version) {
         logApp.warn('[OPENCTI-MODULE] Catalog persistence skipping contract with empty version', { slug, title: contract.title });
@@ -367,8 +354,6 @@ export const persistCatalogSnapshot = async (
         image: getContractImage(contract),
         support_version: contract.support_version,
         max_confidence_level: contract.max_confidence_level,
-        format_version: contract.format_version,
-        is_latest: v === 0,
         last_synced_at: now,
       });
     }

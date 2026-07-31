@@ -32,9 +32,6 @@ interface CatalogContractEntityFields {
   image: string; // container image name
   support_version: string;
   max_confidence_level: number;
-  is_latest: boolean;
-  format_version: string;
-  last_synced_at: Date;
 }
 
 export interface BasicStoreEntityCatalogContract extends BasicStoreEntity, CatalogContractEntityFields {}
@@ -44,7 +41,6 @@ export interface StoreEntityCatalogContract extends StoreEntity, CatalogContract
 interface CatalogLogoEntityFields {
   hash: string;
   data_uri: string;
-  last_synced_at: Date;
 }
 
 export interface BasicStoreEntityCatalogLogo extends BasicStoreEntity, CatalogLogoEntityFields {}
@@ -57,7 +53,6 @@ interface CatalogManifestEntityFields {
   revision: string;
   manifest_version?: string;
   version?: string;
-  last_synced_at: Date;
 }
 
 export interface BasicStoreEntityCatalogManifest extends BasicStoreEntity, CatalogManifestEntityFields {}

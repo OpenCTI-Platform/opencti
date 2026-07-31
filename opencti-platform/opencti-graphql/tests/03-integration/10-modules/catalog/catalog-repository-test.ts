@@ -22,7 +22,7 @@ afterAll(async () => {
 });
 
 describe('catalog-repository integration (no mocks)', () => {
-  it('upsertCatalogContract demotes previous latest for same slug', async () => {
+  it('findLatestContractBySlug returns highest version for same slug', async () => {
     const slug = `it-catalog-latest-${Date.now()}`;
 
     const first = await upsertCatalogContract(testContext, ADMIN_USER, {
@@ -37,7 +37,6 @@ describe('catalog-repository integration (no mocks)', () => {
       manager_supported: false,
       image: 'opencti/connector-it-a',
       config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
-      is_latest: true,
       last_synced_at: new Date().toISOString(),
     });
     trackContract(first.id);
@@ -45,7 +44,7 @@ describe('catalog-repository integration (no mocks)', () => {
     const second = await upsertCatalogContract(testContext, ADMIN_USER, {
       catalog_id: 'integration-test-catalog',
       slug,
-      version: '1.0.1',
+      version: '2025.10.1',
       title: 'IT Contract B',
       description: 'Integration test contract B',
       use_cases: [],
@@ -54,18 +53,16 @@ describe('catalog-repository integration (no mocks)', () => {
       manager_supported: true,
       image: 'opencti/connector-it-b',
       config_schema: JSON.stringify({ type: 'object', properties: {}, required: [] }),
-      is_latest: true,
       last_synced_at: new Date().toISOString(),
     });
     trackContract(second.id);
 
     const latest = await findLatestContractBySlug(testContext, ADMIN_USER, slug);
     expect(latest).toBeDefined();
-    expect(latest?.version).toBe('1.0.1');
+    expect(latest?.version).toBe('2025.10.1');
 
     const previous = await findContractBySlugAndVersion(testContext, ADMIN_USER, slug, '1.0.0');
     expect(previous).toBeDefined();
-    expect(previous?.is_latest).toBe(false);
   });
 
   it('findCatalogFromES keeps manager_supported in serialized contracts', async () => {
@@ -93,7 +90,6 @@ describe('catalog-repository integration (no mocks)', () => {
         },
         required: ['CUSTOM_FIELD'],
       }),
-      is_latest: true,
       last_synced_at: new Date().toISOString(),
     });
     trackContract(created.id);

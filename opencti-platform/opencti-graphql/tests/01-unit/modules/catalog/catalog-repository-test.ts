@@ -11,13 +11,11 @@ import {
 } from '../../../../src/modules/catalog/catalog-repository';
 
 const mockCreateEntity = vi.fn();
-const mockPatchAttribute = vi.fn();
 const mockDeleteElementById = vi.fn();
 const mockFullEntitiesList = vi.fn();
 
 vi.mock('../../../../src/database/middleware', () => ({
   createEntity: (...args: unknown[]) => mockCreateEntity(...args),
-  patchAttribute: (...args: unknown[]) => mockPatchAttribute(...args),
   deleteElementById: (...args: unknown[]) => mockDeleteElementById(...args),
 }));
 
@@ -31,13 +29,11 @@ const mockUser = { id: 'user-1' } as any;
 describe('catalog-persistence', () => {
   beforeEach(() => {
     mockCreateEntity.mockReset();
-    mockPatchAttribute.mockReset();
     mockDeleteElementById.mockReset();
     mockFullEntitiesList.mockReset();
   });
 
   it('upsertCatalogContract should call createEntity with contract entity type and all metadata', async () => {
-    mockFullEntitiesList.mockResolvedValueOnce([]); // no existing latest for this slug
     mockCreateEntity.mockResolvedValue({ id: 'catalog-1', slug: 'ipinfo', version: '1.0.0' });
 
     await upsertCatalogContract(mockContext, mockUser, {
@@ -50,7 +46,6 @@ describe('catalog-persistence', () => {
       verified: true,
       playbook_supported: true,
       manager_supported: true,
-      is_latest: true,
       last_synced_at: '2026-07-24T00:00:00.000Z',
     });
 
@@ -62,42 +57,7 @@ describe('catalog-persistence', () => {
     );
   });
 
-  it('upsertCatalogContract should demote previous latest when promoting a new one', async () => {
-    mockFullEntitiesList.mockResolvedValueOnce([
-      { id: 'contract-old', slug: 'ipinfo', version: '1.0.0', is_latest: true },
-    ]);
-    mockCreateEntity.mockResolvedValue({ id: 'contract-new', slug: 'ipinfo', version: '2.0.0' });
-
-    await upsertCatalogContract(mockContext, mockUser, {
-      catalog_id: 'filigran-catalog-id',
-      slug: 'ipinfo',
-      version: '2.0.0',
-      title: 'IPinfo',
-      description: '',
-      use_cases: [],
-      verified: false,
-      playbook_supported: false,
-      manager_supported: false,
-      is_latest: true,
-      last_synced_at: '2026-07-24T00:00:00.000Z',
-    });
-
-    expect(mockPatchAttribute).toHaveBeenCalledWith(
-      mockContext,
-      mockUser,
-      'contract-old',
-      ENTITY_TYPE_CATALOG_CONTRACT,
-      { is_latest: false },
-    );
-    expect(mockCreateEntity).toHaveBeenCalledWith(
-      mockContext,
-      mockUser,
-      expect.objectContaining({ slug: 'ipinfo', version: '2.0.0', is_latest: true }),
-      ENTITY_TYPE_CATALOG_CONTRACT,
-    );
-  });
-
-  it('upsertCatalogContract should not lookup latest when incoming contract is not latest', async () => {
+  it('upsertCatalogContract should not lookup latest contracts', async () => {
     mockCreateEntity.mockResolvedValue({ id: 'contract-1', slug: 'ipinfo', version: '1.0.0' });
 
     await upsertCatalogContract(mockContext, mockUser, {
@@ -110,16 +70,18 @@ describe('catalog-persistence', () => {
       verified: false,
       playbook_supported: false,
       manager_supported: false,
-      is_latest: false,
       last_synced_at: '2026-07-24T00:00:00.000Z',
     });
 
     expect(mockFullEntitiesList).not.toHaveBeenCalled();
-    expect(mockPatchAttribute).not.toHaveBeenCalled();
   });
 
-  it('findLatestContractBySlug should filter by slug and is_latest=true', async () => {
-    mockFullEntitiesList.mockResolvedValue([{ id: 'contract-2', slug: 'ipinfo', version: '2.0.0' }]);
+  it('findLatestContractBySlug should filter by slug and return highest version', async () => {
+    mockFullEntitiesList.mockResolvedValue([
+      { id: 'contract-1', slug: 'ipinfo', version: '2025.04.2' },
+      { id: 'contract-2', slug: 'ipinfo', version: '2025.10.1' },
+      { id: 'contract-3', slug: 'ipinfo', version: '2025.09.9' },
+    ]);
 
     const result = await findLatestContractBySlug(mockContext, mockUser, 'ipinfo');
 
@@ -131,12 +93,11 @@ describe('catalog-persistence', () => {
         filters: expect.objectContaining({
           filters: expect.arrayContaining([
             expect.objectContaining({ key: ['slug'], values: ['ipinfo'] }),
-            expect.objectContaining({ key: ['is_latest'], values: [true] }),
           ]),
         }),
       }),
     );
-    expect(result?.version).toBe('2.0.0');
+    expect(result?.version).toBe('2025.10.1');
   });
 
   it('findContractBySlugAndVersion should filter by exact slug and version', async () => {
@@ -166,7 +127,7 @@ describe('catalog-persistence', () => {
     expect(compareVersions('1.0.0', '1.0.1')).toBeLessThan(0);
   });
 
-  it('persistCatalogSnapshot should mark latest contract per slug from version ordering', async () => {
+  it('persistCatalogSnapshot should persist all versions without is_latest', async () => {
     mockFullEntitiesList.mockImplementation((_, __, types, opts) => {
       const isContractType = Array.isArray(types) && types[0] === ENTITY_TYPE_CATALOG_CONTRACT;
       if (!opts && isContractType) return Promise.resolve([]);
@@ -201,8 +162,8 @@ describe('catalog-persistence', () => {
     const latestCall = contractCreates.find((call) => call[2].version === '1.2.0');
     const olderCall = contractCreates.find((call) => call[2].version === '1.0.0');
 
-    expect(latestCall?.[2].is_latest).toBe(true);
-    expect(olderCall?.[2].is_latest).toBe(false);
+    expect(latestCall?.[2]).not.toHaveProperty('is_latest');
+    expect(olderCall?.[2]).not.toHaveProperty('is_latest');
   });
 
   it('persistCatalogSnapshot should hard-delete contracts and catalogs missing from new manifest', async () => {
@@ -327,7 +288,6 @@ describe('catalog-persistence', () => {
       revision: 'etag-123',
       manifest_version: 'connector-manifest-7.260728.0-260729083711',
       version: '7.260728.0',
-      last_synced_at: '2026-07-30T00:00:00.000Z',
     });
 
     expect(mockCreateEntity).toHaveBeenCalledWith(
