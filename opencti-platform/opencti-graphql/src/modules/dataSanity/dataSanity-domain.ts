@@ -32,6 +32,28 @@ export const findDataSanityByOperationName = async (context: AuthContext, user: 
 };
 
 /**
+ * Determine if the running lock of an operation must prevent a new execution.
+ * A lock older than STALE_RUNNING_THRESHOLD_MS is considered stale (e.g. the node running it
+ * crashed/restarted before it could complete) and does not block a new execution.
+ * @returns the skip reason, or undefined if the operation can run.
+ */
+export const getRunningLockSkipReason = (entity: BasicStoreEntityDataSanity): string | undefined => {
+  if (!entity.is_running) {
+    return undefined;
+  }
+  const lastRunDateMs = entity.last_run_date ? new Date(entity.last_run_date).getTime() : undefined;
+  const isStale = lastRunDateMs === undefined || (Date.now() - lastRunDateMs) > STALE_RUNNING_THRESHOLD_MS;
+  if (!isStale) {
+    return 'operation is already running';
+  }
+  logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing last_run_date or older than threshold), allowing it to run again', {
+    operation: entity.operation_name,
+    last_run_date: entity.last_run_date,
+  });
+  return undefined;
+};
+
+/**
  * Determine if a sanity operation should be skipped by the scheduler, and why.
  * Skip when currently running (and not stale), or when already executed and no force_run has been requested.
  * @returns the skip reason, or undefined if the operation should run.
@@ -41,20 +63,12 @@ export const getOperationSkipReason = async (context: AuthContext, user: AuthUse
   if (!entity) {
     return undefined;
   }
-  if (entity.is_running) {
-    const lastRunDateMs = entity.last_run_date ? new Date(entity.last_run_date).getTime() : undefined;
-    const isStale = lastRunDateMs === undefined || (Date.now() - lastRunDateMs) > STALE_RUNNING_THRESHOLD_MS;
-    if (!isStale) {
-      return 'operation is already running';
-    }
-    logApp.warn('[DATA_SANITY_MANAGER] Operation marked as running but considered stale (missing last_run_date or older than threshold), allowing it to run again', {
-      operation: operationName,
-      last_run_date: entity.last_run_date,
-    });
-  } else {
-    if (!entity.force_run) {
-      return 'operation has already been executed';
-    }
+  const runningLockSkipReason = getRunningLockSkipReason(entity);
+  if (runningLockSkipReason) {
+    return runningLockSkipReason;
+  }
+  if (!entity.is_running && !entity.force_run) {
+    return 'operation has already been executed';
   }
 
   return undefined;

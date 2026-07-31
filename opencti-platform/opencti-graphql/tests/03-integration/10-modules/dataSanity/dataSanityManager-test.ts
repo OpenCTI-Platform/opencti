@@ -126,6 +126,34 @@ describe('Data sanity manager handler test coverage', () => {
     expect(runningOp?.is_running).toBe(true);
   });
 
+  it('should not execute a force_run operation already marked as running', async () => {
+    const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
+    vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
+      {
+        identifier: 'mockForceRunWhileRunningOperation',
+        dryRun: async () => ({ impact: { total: 1, detail: { Malware: 1 } } }),
+        operationRun,
+        execution_type: 'run_once',
+        description: '',
+        display_name: '',
+        eligibleEntityTypes: [ENTITY_TYPE_MALWARE],
+      },
+    ]);
+
+    // GIVEN an operation currently running for which a force run is requested
+    await markOperationAsRunning(testContext, ADMIN_USER, 'mockForceRunWhileRunningOperation');
+    await setForceRun(testContext, ADMIN_USER, 'mockForceRunWhileRunningOperation');
+
+    // WHEN the scheduler runs
+    await dataSanityHandler();
+
+    // THEN no concurrent execution is started and the running lock/force_run flag are preserved
+    expect(operationRun).not.toHaveBeenCalled();
+    const runningOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockForceRunWhileRunningOperation');
+    expect(runningOp?.is_running).toBe(true);
+    expect(runningOp?.force_run).toBe(true);
+  });
+
   it('should execute an operation whose running lock is stale (last_run_date older than threshold)', async () => {
     const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
     vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
