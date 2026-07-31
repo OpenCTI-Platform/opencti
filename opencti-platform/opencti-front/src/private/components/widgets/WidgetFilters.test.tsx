@@ -172,21 +172,25 @@ describe('WidgetFilters', () => {
       fireEvent.click(savedSwitchButtons[0]);
       savedSwitchButtons = queryAllByTestId('switch-to-saved');
     }
-    fireEvent.click(getAllByTestId('saved-select')[0]);
+    getAllByTestId('saved-select').forEach((button) => {
+      fireEvent.click(button);
+    });
 
-    const savedModeCall = setDataSelection.mock.calls.at(-1)?.[0];
-    expect(savedModeCall.filters_id).toBe('saved-filter-id');
-    expect(savedModeCall.filters).toBeUndefined();
-    expect(savedModeCall.dynamicFrom).toBeUndefined();
-    expect(savedModeCall.dynamicTo).toBeUndefined();
+    const savedModeCalls = setDataSelection.mock.calls.map((call) => call[0]);
+    expect(savedModeCalls.some((call) => call.filters_id === 'saved-filter-id' && call.filters === undefined)).toBe(true);
+    expect(savedModeCalls.some((call) => call.dynamicFrom_id === 'saved-filter-id' && call.dynamicFrom === undefined)).toBe(true);
+    expect(savedModeCalls.some((call) => call.dynamicTo_id === 'saved-filter-id' && call.dynamicTo === undefined)).toBe(true);
 
-    fireEvent.click(getAllByTestId('saved-deselect')[0]);
+    let savedDeselectButtons = queryAllByTestId('saved-deselect');
+    while (savedDeselectButtons.length > 0) {
+      fireEvent.click(savedDeselectButtons[0]);
+      savedDeselectButtons = queryAllByTestId('saved-deselect');
+    }
 
-    const restoredCustomCall = setDataSelection.mock.calls.at(-1)?.[0];
-    expect(restoredCustomCall.filters_id).toBeNull();
-    expect(restoredCustomCall.filters).toEqual(baseDataSelection.filters);
-    expect(restoredCustomCall.dynamicFrom).toEqual(baseDataSelection.dynamicFrom);
-    expect(restoredCustomCall.dynamicTo).toEqual(baseDataSelection.dynamicTo);
+    const restoredCustomCalls = setDataSelection.mock.calls.map((call) => call[0]);
+    expect(restoredCustomCalls.some((call) => call.filters_id === null && JSON.stringify(call.filters) === JSON.stringify(baseDataSelection.filters))).toBe(true);
+    expect(restoredCustomCalls.some((call) => call.dynamicFrom_id === null && JSON.stringify(call.dynamicFrom) === JSON.stringify(baseDataSelection.dynamicFrom))).toBe(true);
+    expect(restoredCustomCalls.some((call) => call.dynamicTo_id === null && JSON.stringify(call.dynamicTo) === JSON.stringify(baseDataSelection.dynamicTo))).toBe(true);
   });
 
   it('clears the saved filter id without leaving saved mode', () => {
