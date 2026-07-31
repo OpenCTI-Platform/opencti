@@ -156,7 +156,7 @@ describe('WidgetFilters', () => {
 
   it('keeps custom filters in local state when switching to saved mode and restores them when returning to custom mode', () => {
     const setDataSelection = vi.fn();
-    const { queryAllByTestId, getByTestId } = testRender(
+    const { queryAllByTestId, getAllByTestId } = testRender(
       <WidgetFilters
         perspective="relationships"
         type="number"
@@ -172,7 +172,7 @@ describe('WidgetFilters', () => {
       fireEvent.click(savedSwitchButtons[0]);
       savedSwitchButtons = queryAllByTestId('switch-to-saved');
     }
-    fireEvent.click(getByTestId('saved-select'));
+    fireEvent.click(getAllByTestId('saved-select')[0]);
 
     const savedModeCall = setDataSelection.mock.calls.at(-1)?.[0];
     expect(savedModeCall.filters_id).toBe('saved-filter-id');
@@ -180,7 +180,7 @@ describe('WidgetFilters', () => {
     expect(savedModeCall.dynamicFrom).toBeUndefined();
     expect(savedModeCall.dynamicTo).toBeUndefined();
 
-    fireEvent.click(getByTestId('saved-deselect'));
+    fireEvent.click(getAllByTestId('saved-deselect')[0]);
 
     const restoredCustomCall = setDataSelection.mock.calls.at(-1)?.[0];
     expect(restoredCustomCall.filters_id).toBeNull();
