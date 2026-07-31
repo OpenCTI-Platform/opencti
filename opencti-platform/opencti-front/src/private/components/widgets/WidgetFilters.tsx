@@ -43,11 +43,18 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   useEffect(() => {
     setDataSelection({
       ...dataSelection,
-      filters,
-      dynamicTo: filtersDynamicTo,
-      dynamicFrom: filtersDynamicFrom,
+      filters: useSavedFilter ? undefined : filters,
+      dynamicTo: useSavedFilterDynamicTo ? undefined : filtersDynamicTo,
+      dynamicFrom: useSavedFilterDynamicFrom ? undefined : filtersDynamicFrom,
     });
-  }, [filters, filtersDynamicFrom, filtersDynamicTo]);
+  }, [
+    filters,
+    filtersDynamicFrom,
+    filtersDynamicTo,
+    useSavedFilter,
+    useSavedFilterDynamicFrom,
+    useSavedFilterDynamicTo,
+  ]);
 
   let availableEntityTypes;
   let searchContext;
@@ -92,7 +99,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const handleSwitchToSavedFilter = () => {
     setUseSavedFilter(true);
-    helpers?.handleClearAllFilters();
   };
 
   const handleSwitchToCustomFilters = () => {
@@ -110,7 +116,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const handleSwitchToSavedFilterDynamicFrom = () => {
     setUseSavedFilterDynamicFrom(true);
-    helpersDynamicFrom?.handleClearAllFilters();
   };
 
   const handleSavedFilterClearDynamicFrom = () => {
@@ -135,7 +140,6 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const handleSwitchToSavedFilterDynamicTo = () => {
     setUseSavedFilterDynamicTo(true);
-    helpersDynamicTo?.handleClearAllFilters();
   };
 
   const handleSavedFilterClearDynamicTo = () => {
@@ -257,14 +261,15 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {(dataSelection.dynamicFrom_id || isFilterGroupNotEmpty(filtersDynamicFrom))
-          && (
-            <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-              {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
-            </div>
-          )
+        {((useSavedFilterDynamicFrom && dataSelection.dynamicFrom_id)
+          || (!useSavedFilterDynamicFrom && isFilterGroupNotEmpty(filtersDynamicFrom)))
+        && (
+          <div style={{ marginTop: 8, color: theme.palette.warning.main, marginBottom: 4 }}>
+            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
+          </div>
+        )
         }
-        {dataSelection.dynamicFrom_id ? (
+        {useSavedFilterDynamicFrom ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicFrom_id}
             entityTypes={['Stix-Core-Object']}
@@ -285,14 +290,15 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
           />
         )}
 
-        {(dataSelection.dynamicTo_id || isFilterGroupNotEmpty(filtersDynamicTo))
-          && (
-            <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
-              {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
-            </div>
-          )
+        {((useSavedFilterDynamicTo && dataSelection.dynamicTo_id)
+          || (!useSavedFilterDynamicTo && isFilterGroupNotEmpty(filtersDynamicTo)))
+        && (
+          <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
+            {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
+          </div>
+        )
         }
-        {dataSelection.dynamicTo_id ? (
+        {useSavedFilterDynamicTo ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicTo_id}
             entityTypes={['Stix-Core-Object']}
@@ -321,7 +327,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             </div>
           )
         }
-        {dataSelection.filters_id ? (
+        {useSavedFilter ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.filters_id}
             entityTypes={searchContext.entityTypes}
