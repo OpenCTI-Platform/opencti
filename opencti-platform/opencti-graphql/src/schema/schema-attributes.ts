@@ -25,6 +25,9 @@ const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.
 const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
+const isRawObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+  return schemaDef.type === 'object' && schemaDef.format === 'raw';
+};
 
 /**
  * Returns the attribute definition for a given dotted path inside the given AttributeDefinition,
@@ -145,7 +148,7 @@ export const schemaAttributesDefinition = {
         });
       }
       // Check sortBy on object
-      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.sortBy) {
+      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.format !== 'raw' && attribute.sortBy) {
         const correspondingMapping = getAttributeMappingFromPath(attribute.sortBy.path, attribute);
         if (correspondingMapping.type !== attribute.sortBy.type) {
           throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
@@ -155,7 +158,7 @@ export const schemaAttributesDefinition = {
         }
       }
       let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.mappings.length > 0) {
+      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.format !== 'raw' && registeredAttribute.mappings.length > 0) {
         registeredAttribute = {
           ...registeredAttribute,
           // filter feature flagged attributes
@@ -294,7 +297,11 @@ export const isObjectFlatAttribute = (k: string): boolean => {
   if (!definition) return false;
   return definition.type === 'object' && definition.format === 'flat';
 };
-
+export const isObjectRawAttribute = (k: string): boolean => {
+  const definition = schemaAttributesDefinition.getAttributeByName(k.split('.')[0]);
+  if (!definition) return false;
+  return definition.type === 'object' && definition.format === 'raw';
+};
 // -- MULTIPLE --
 
 export const isMultipleAttribute = (entityType: string, k: string): boolean => (
@@ -330,6 +337,10 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
     if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
       throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`);
+    }
+
+    if (isRawObjectAttributeDefinition(schemaDef)) {
+      return; // raw objects are not recursively validated
     }
 
     const inputValues = Array.isArray(input) ? input : [input];
