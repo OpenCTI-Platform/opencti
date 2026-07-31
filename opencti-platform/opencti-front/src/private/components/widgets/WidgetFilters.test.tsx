@@ -156,7 +156,7 @@ describe('WidgetFilters', () => {
 
   it('keeps custom filters in local state when switching to saved mode and restores them when returning to custom mode', () => {
     const setDataSelection = vi.fn();
-    const { getAllByTestId, getByTestId } = testRender(
+    const { queryAllByTestId, getByTestId } = testRender(
       <WidgetFilters
         perspective="relationships"
         type="number"
@@ -166,9 +166,12 @@ describe('WidgetFilters', () => {
       createRenderOptions(),
     );
 
-    fireEvent.click(getAllByTestId('switch-to-saved')[0]);
-    fireEvent.click(getAllByTestId('switch-to-saved')[1]);
-    fireEvent.click(getAllByTestId('switch-to-saved')[2]);
+    // Each click switches one section to saved mode, so the number of buttons shrinks.
+    let savedSwitchButtons = queryAllByTestId('switch-to-saved');
+    while (savedSwitchButtons.length > 0) {
+      fireEvent.click(savedSwitchButtons[0]);
+      savedSwitchButtons = queryAllByTestId('switch-to-saved');
+    }
     fireEvent.click(getByTestId('saved-select'));
 
     const savedModeCall = setDataSelection.mock.calls.at(-1)?.[0];
