@@ -264,7 +264,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         {((useSavedFilterDynamicFrom && dataSelection.dynamicFrom_id)
           || (!useSavedFilterDynamicFrom && isFilterGroupNotEmpty(filtersDynamicFrom)))
         && (
-          <div style={{ marginTop: 8, color: theme.palette.warning.main, marginBottom: 4 }}>
+          <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
             {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
           </div>
         )
