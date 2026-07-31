@@ -214,7 +214,11 @@ describe('CustomView resolvers', () => {
     );
     const savedFilter = await addSavedFilter(testContext, ADMIN_USER, {
       name: 'custom-view-widget-saved-filter',
-      filters: JSON.stringify({ mode: 'and', filters: [], filterGroups: [] }),
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
+        filterGroups: [],
+      }),
       scope: 'Stix-Core-Object',
     });
     savedFilterId = savedFilter.id;
@@ -659,8 +663,30 @@ describe('CustomView resolvers', () => {
         expect(selection.filters_id).toBeUndefined();
         expect(selection.filters).toEqual({
           mode: 'and',
-          filters: [],
+          filters: [{ key: 'objectLabel', values: ['custom-view-label'] }],
           filterGroups: [],
+        });
+      });
+
+      it('should import a custom view', async () => {
+        const file = createUploadFile(
+          './tests/03-integration/10-modules/customView/data/',
+          'custom-view.json',
+        );
+        const result = await queryAsAdminWithSuccess({
+          query: IMPORT_CUSTOM_VIEW_QUERY,
+          variables: {
+            targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            file,
+          },
+        });
+        expect(result.data.customViewConfigurationImport).toMatchObject({
+          id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+          name: 'A view to import',
+          enabled: false,
+          default: false,
+          path: `a-view-to-import-${result.data.customViewConfigurationImport.id}`,
+          targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
         });
       });
     });
