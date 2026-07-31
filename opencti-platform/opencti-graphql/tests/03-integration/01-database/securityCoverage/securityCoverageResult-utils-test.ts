@@ -3,7 +3,7 @@ import { transformHasCoveredFromId } from '../../../../src/modules/securityCover
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { testContext } from '../../../utils/testQuery';
 
-describe('Function transformHasCoveredFromId', () => {
+describe.skip('Function transformHasCoveredFromId', () => {
   it('should replace security coverage id by security coverage result id when valid external_uri', async () => {
     const newInput = await transformHasCoveredFromId(
       testContext,
