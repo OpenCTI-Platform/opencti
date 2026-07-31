@@ -1,4 +1,8 @@
-import { SavedFiltersAutocompleteOptionType, WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
+import {
+  SavedFiltersAutocompleteOptionType,
+  SavedFiltersSelectionData,
+  WidgetSavedFilterScope,
+} from 'src/components/saved_filters/SavedFilterSelection';
 import useAuth from 'src/utils/hooks/useAuth';
 
 /**
@@ -13,7 +17,7 @@ import useAuth from 'src/utils/hooks/useAuth';
  * @returns Sorted, display-ready autocomplete saved filters options.
  */
 const useBuildSavedFiltersOptions = (
-  data,
+  data: SavedFiltersSelectionData[],
   scope?: WidgetSavedFilterScope,
 ): SavedFiltersAutocompleteOptionType[] => {
   const { me } = useAuth();
