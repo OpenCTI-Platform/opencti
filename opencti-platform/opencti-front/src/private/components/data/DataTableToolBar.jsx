@@ -1483,9 +1483,20 @@ class DataTableToolBar extends Component {
 
   handleAcceptDate(i, newValue) {
     const { actionsInputs } = this.state;
+    const toISOValue = (v) => {
+      if (v == null) return null;
+      if (v instanceof Date) {
+        return Number.isNaN(v.getTime()) ? null : v.toISOString();
+      }
+      return v;
+    };
+    const raw = Array.isArray(newValue)
+      ? newValue.map(toISOValue)
+      : [toISOValue(newValue)];
+    const values = raw.filter((v) => v != null);
     actionsInputs[i] = R.assoc(
       'values',
-      Array.isArray(newValue) ? newValue : [newValue],
+      values,
       actionsInputs[i] || {},
     );
     this.setState({ actionsInputs });
