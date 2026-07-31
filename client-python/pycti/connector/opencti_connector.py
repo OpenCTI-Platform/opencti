@@ -127,11 +127,13 @@ class OpenCTIConnector:
         self.type = ConnectorType(connector_type)
         if not scope:
             self.scope = []
-        elif isinstance(scope, str):
-            self.scope = scope.split(",")
         else:
-            # already a list/tuple
-            self.scope = list(scope)
+            if isinstance(scope, str):
+                raw = scope.split(",")
+            else:
+                # already a list/tuple
+                raw = list(scope)
+            self.scope = [s.strip() for s in raw]
         self.auto = auto
         self.auto_update = auto_update
         self.enrichment_resolution = enrichment_resolution
