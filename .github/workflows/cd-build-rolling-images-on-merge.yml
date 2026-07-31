@@ -7,6 +7,7 @@ on:
     branches:
       - master
       - lts/*
+      - issue/17146
 
 jobs:
   # -----------------------
