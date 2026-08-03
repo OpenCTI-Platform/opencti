@@ -352,7 +352,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             )}
             actions={(row) => {
               return (
-                <div onClick={(e) => e.stopPropagation()}>
                   <ContainerStixCoreObjectPopover
                     containerId={container.id}
                     toId={row.id}
@@ -363,7 +362,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                     setSelectedElements={setSelectedElements}
                     enableReferences={enableReferences}
                   />
-                </div>
               );
             }}
           />
