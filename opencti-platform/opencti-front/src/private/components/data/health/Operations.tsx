@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -34,7 +35,14 @@ const Operations = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Operations | Health | Data'));
 
-  const data = useLazyLoadQuery<OperationsQuery>(operationsQuery, {});
+  const [fetchKey, setFetchKey] = useState(0);
+  const refreshOperations = () => setFetchKey((prev) => prev + 1);
+
+  const data = useLazyLoadQuery<OperationsQuery>(
+    operationsQuery,
+    {},
+    { fetchPolicy: 'store-and-network', fetchKey },
+  );
 
   const operations = data.dataSanityOperations.map((op) => ({
     id: op.identifier,
@@ -181,7 +189,11 @@ const Operations = () => {
         disableLineSelection={true}
         disableToolBar={true}
         actions={(row: OperationRow) => (
-          <OperationPopover operationName={row.id} />
+          <OperationPopover
+            operationName={row.id}
+            isStoppable={row.is_running || row.force_run}
+            onUpdate={refreshOperations}
+          />
         )}
       />
     </div>

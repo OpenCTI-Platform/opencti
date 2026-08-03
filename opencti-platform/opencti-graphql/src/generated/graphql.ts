@@ -17258,6 +17258,7 @@ export type Mutation = {
   dataComponentRelationAdd?: Maybe<StixRefRelationship>;
   dataComponentRelationDelete?: Maybe<DataComponent>;
   dataSanityOperationRequestRun?: Maybe<Scalars['ID']['output']>;
+  dataSanityOperationStop?: Maybe<Scalars['ID']['output']>;
   dataSourceAdd?: Maybe<DataSource>;
   dataSourceContextClean?: Maybe<DataSource>;
   dataSourceContextPatch?: Maybe<DataSource>;
@@ -18196,6 +18197,11 @@ export type MutationDataComponentRelationDeleteArgs = {
 
 
 export type MutationDataSanityOperationRequestRunArgs = {
+  operation_name: Scalars['String']['input'];
+};
+
+
+export type MutationDataSanityOperationStopArgs = {
   operation_name: Scalars['String']['input'];
 };
 
@@ -47895,6 +47901,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   dataSanityOperationRequestRun?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityOperationRequestRunArgs, 'operation_name'>>;
+  dataSanityOperationStop?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSanityOperationStopArgs, 'operation_name'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
   dataSourceContextPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextPatchArgs, 'id' | 'input'>>;

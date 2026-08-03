@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as sanityManagerConfigMock from '../../../../src/modules/dataSanity/dataSanity-operations';
 import { dataSanityHandler } from '../../../../src/manager/dataSanityManager';
-import { findDataSanityByOperationName, markOperationAsRunning, setForceRun } from '../../../../src/modules/dataSanity/dataSanity-domain';
+import { findDataSanityByOperationName, markOperationAsRunning, OPERATION_STOPPED_MESSAGE, setForceRun, stopOperation } from '../../../../src/modules/dataSanity/dataSanity-domain';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import convertDataSanityToStix from '../../../../src/modules/dataSanity/dataSanity-converter';
@@ -184,6 +184,53 @@ describe('Data sanity manager handler test coverage', () => {
     const executedOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStaleRunningOperation');
     expect(executedOp?.is_running).toBe(false);
     expect(executedOp?.last_run_success).toBe(true);
+  });
+
+  it('should mark a running operation as done when it is stopped, and allow to run it again', async () => {
+    const operationRun = vi.fn(async () => ({ impact: { total: 1, detail: { Malware: 1 } } }));
+    vi.mocked(sanityManagerConfigMock.sanityOperationList).mockReturnValue([
+      {
+        identifier: 'mockStoppedOperation',
+        dryRun: async () => ({ impact: { total: 1, detail: { Malware: 1 } } }),
+        operationRun,
+        execution_type: 'run_once',
+        description: 'Operation that gets stopped manually',
+        display_name: 'stopped-op',
+        eligibleEntityTypes: [ENTITY_TYPE_MALWARE],
+      },
+    ]);
+
+    // GIVEN an operation currently running with a pending force run
+    await markOperationAsRunning(testContext, ADMIN_USER, 'mockStoppedOperation');
+    await setForceRun(testContext, ADMIN_USER, 'mockStoppedOperation');
+
+    // WHEN it is stopped
+    await stopOperation(testContext, ADMIN_USER, 'mockStoppedOperation');
+
+    // THEN it is marked as done: no running lock, no pending force run
+    const stoppedOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStoppedOperation');
+    expect(stoppedOp?.is_running).toBe(false);
+    expect(stoppedOp?.force_run).toBe(false);
+    expect(stoppedOp?.last_run_success).toBe(false);
+    expect(stoppedOp?.last_run_message).toBe(OPERATION_STOPPED_MESSAGE);
+
+    // AND the scheduler does not re-execute it by itself (already executed)
+    await dataSanityHandler();
+    expect(operationRun).not.toHaveBeenCalled();
+
+    // AND it can be triggered again through a force run
+    await setForceRun(testContext, ADMIN_USER, 'mockStoppedOperation');
+    await dataSanityHandler();
+    expect(operationRun).toHaveBeenCalledTimes(1);
+    const reRunOp = await findDataSanityByOperationName(testContext, ADMIN_USER, 'mockStoppedOperation');
+    expect(reRunOp?.is_running).toBe(false);
+    expect(reRunOp?.force_run).toBe(false);
+    expect(reRunOp?.last_run_success).toBe(true);
+  });
+
+  it('should throw an error when stopping an unknown operation', async () => {
+    await expect(stopOperation(testContext, ADMIN_USER, 'mockUnknownOperation'))
+      .rejects.toThrowError('Unknown sanity operation: mockUnknownOperation');
   });
 
   it('should convert a DataSanity entity to STIX format', async () => {

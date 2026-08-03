@@ -6,6 +6,7 @@ import type { BasicStoreEntityDataSanity } from './dataSanity-types';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
 import conf, { logApp } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
 import { type SanityOperation, sanityOperationList, type SanityOperationRunOutput } from './dataSanity-operations';
 
 // If an operation stays marked as "running" longer than this, it is considered stale
@@ -199,6 +200,52 @@ export const setForceRun = async (context: AuthContext, user: AuthUser, operatio
     last_run_success: false,
     last_run_message: '',
     force_run: true,
+  }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
+  return created.internal_id;
+};
+
+/**
+ * Message stored on the execution entity when an operation is stopped manually.
+ */
+export const OPERATION_STOPPED_MESSAGE = 'Operation stopped manually';
+
+/**
+ * Stop a sanity operation: mark it as done (not running, not scheduled) even if it is currently running.
+ * The underlying execution is not interrupted, but the operation is released from its running lock and
+ * from any pending force run, so it can be scheduled again through `setForceRun`.
+ * Creates the entity if it doesn't exist yet, so a never executed operation is also marked as done.
+ * @returns the internal_id of the DataSanityExecution entity.
+ */
+export const stopOperation = async (context: AuthContext, user: AuthUser, operationName: string): Promise<string> => {
+  const operation = sanityOperationList().find((op: SanityOperation) => op.identifier === operationName);
+  if (!operation) {
+    throw FunctionalError(`Unknown sanity operation: ${operationName}`, { operation_name: operationName });
+  }
+  const existing = await findDataSanityByOperationName(context, user, operationName);
+  if (existing) {
+    logApp.info('[DATA_SANITY_MANAGER] Operation stopped manually', {
+      operation: operationName,
+      was_running: existing.is_running,
+      was_scheduled: existing.force_run,
+    });
+    await updateAttribute(context, user, existing.internal_id, ENTITY_TYPE_DATA_SANITY_EXECUTION, [
+      { key: 'is_running', value: [false] },
+      { key: 'force_run', value: [false] },
+      { key: 'last_run_date', value: [utcDate().toISOString()] },
+      { key: 'last_run_success', value: [false] },
+      { key: 'last_run_message', value: [OPERATION_STOPPED_MESSAGE] },
+    ]);
+    return existing.internal_id;
+  }
+  const created = await createEntity(context, user, {
+    operation_name: operationName,
+    last_run_date: utcDate().toISOString(),
+    last_execution_time: 0,
+    last_run_success: false,
+    last_run_message: OPERATION_STOPPED_MESSAGE,
+    last_run_output: '',
+    force_run: false,
+    is_running: false,
   }, ENTITY_TYPE_DATA_SANITY_EXECUTION);
   return created.internal_id;
 };

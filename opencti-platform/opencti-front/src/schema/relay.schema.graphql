@@ -10798,6 +10798,7 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   dataSanityOperationRequestRun(operation_name: String!): ID
+  dataSanityOperationStop(operation_name: String!): ID
   customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition
   customFieldDefinitionDelete(id: ID!): ID
   customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition
