@@ -132,11 +132,25 @@ export const buildUpdateFieldPatch = (rawUpdatePatch: string): InternalEditInput
   return resultFieldPatch;
 };
 
+// Some resolved inputs can carry a non-array value/previous (e.g. a single scalar) depending on their origin.
+// Coerce to an array defensively so downstream consolidation logic never crashes with a "map is not a function" error.
+const asArray = (value: unknown): any[] => {
+  if (value === undefined || value === null) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+};
+
 export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, updatedInputsResolved: InternalEditInput[]): UpdatePatch => {
   const newUpdatePatch = currentUpdatePatch;
   const nonResolvedInput = updatedInputsResolved
     .map((i) => {
-      return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] };
+      return {
+        key: i.key,
+        value: asArray(i.value).map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)),
+        operation: i.operation ?? UPDATE_OPERATION_REPLACE,
+        previous: asArray(i.previous),
+      };
     });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];

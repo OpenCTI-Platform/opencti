@@ -54,6 +54,14 @@ describe('draft-utils', () => {
     expect(currentUpdatePatch.keyB.removed_value[0]).toBe(valueB);
   });
 
+  it('should getConsolidatedUpdatePatch not crash when value or previous is not an array', () => {
+    const scalarValueUpdate = [{ key: 'nonArrayValueKey', value: 'singleValue', operation: EditOperation.Replace, previous: false }];
+    expect(() => getConsolidatedUpdatePatch({}, scalarValueUpdate as unknown as InternalEditInput[])).not.toThrow();
+    const consolidated = getConsolidatedUpdatePatch({}, scalarValueUpdate as unknown as InternalEditInput[]);
+    expect(consolidated.nonArrayValueKey.replaced_value).toEqual(['singleValue']);
+    expect(consolidated.nonArrayValueKey.initial_value).toEqual([false]);
+  });
+
   it('should buildUpdateFieldPatch build a correct field patch input', () => {
     const stringifiedUpdatePatch = JSON.stringify(currentUpdatePatch);
     const fieldPatchResult = buildUpdateFieldPatch(stringifiedUpdatePatch);
