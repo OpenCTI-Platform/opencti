@@ -7,9 +7,15 @@ import { Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
+import {
+  reportKnowledgeGraphMutationRelationDeleteMutation,
+  reportKnowledgeGraphtMutationRelationAddMutation,
+} from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ContainerAddStixCoreObjecstLineDummy, ContainerAddStixCoreObjectsLine } from './ContainerAddStixCoreObjectsLine';
+import {
+  ContainerAddStixCoreObjecstLineDummy,
+  ContainerAddStixCoreObjectsLine,
+} from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { insertNode } from '../../../../utils/store';
 import CommitMessage from '../form/CommitMessage';
@@ -84,7 +90,12 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
     $references: [String]
   ) {
     containerEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         id
       }
     }
@@ -114,16 +125,18 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     );
   }
 
-  sendStixCoreObjectModification(stixCoreObject, commitMessage = '', references = [], setSubmitting = null, resetForm = null) {
-    const {
-      containerId,
-      paginationOptions,
-      knowledgeGraph,
-      onAdd,
-      onDelete,
-    } = this.props;
+  sendStixCoreObjectModification(
+    stixCoreObject,
+    commitMessage = '',
+    references = [],
+    setSubmitting = null,
+    resetForm = null,
+  ) {
+    const { containerId, paginationOptions, knowledgeGraph, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const alreadyAdded = stixCoreObject.id in addedStixCoreObjects || stixCoreObject.standard_id in addedStixCoreObjects;
+    const alreadyAdded =
+      stixCoreObject.id in addedStixCoreObjects ||
+      stixCoreObject.standard_id in addedStixCoreObjects;
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -137,10 +150,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixCoreObjects: R.dissoc(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
+              addedStixCoreObjects: R.dissoc(stixCoreObject.id, this.state.addedStixCoreObjects),
             });
             if (typeof onDelete === 'function') {
               onDelete(stixCoreObject);
@@ -161,12 +171,12 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             references,
           },
           updater: (store) => {
-            const id = stixCoreObject.id in addedStixCoreObjects ? stixCoreObject.id : stixCoreObject.standard_id;
+            const id =
+              stixCoreObject.id in addedStixCoreObjects
+                ? stixCoreObject.id
+                : stixCoreObject.standard_id;
             this.setState({
-              addedStixCoreObjects: R.dissoc(
-                id,
-                this.state.addedStixCoreObjects,
-              ),
+              addedStixCoreObjects: R.dissoc(id, this.state.addedStixCoreObjects),
             });
             // ID is not valid pagination options, will be handled better when hooked
             const options = { ...paginationOptions };
@@ -181,10 +191,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixCoreObjects: R.dissoc(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
+              addedStixCoreObjects: R.dissoc(stixCoreObject.id, this.state.addedStixCoreObjects),
             });
             if (typeof onDelete === 'function') {
               onDelete(stixCoreObject);
@@ -288,7 +295,13 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   submitReference(values, { setSubmitting, resetForm }) {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
-    this.sendStixCoreObjectModification(this.state.currentlyToggledCoreObject, commitMessage, references, setSubmitting, resetForm);
+    this.sendStixCoreObjectModification(
+      this.state.currentlyToggledCoreObject,
+      commitMessage,
+      references,
+      setSubmitting,
+      resetForm,
+    );
   }
 
   render() {
@@ -331,12 +344,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             initialValues={{ message: '', references: [] }}
             onSubmit={this.submitReference.bind(this)}
           >
-            {({
-              submitForm,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
+            {({ submitForm, isSubmitting, setFieldValue, values }) => (
               <Form>
                 <CommitMessage
                   handleClose={this.closeReferencesPopup.bind(this)}
@@ -385,15 +393,15 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ContainerAddStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -480,7 +488,4 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ContainerAddStixCoreObjectsLines);
+export default R.compose(inject18n, withStyles(styles))(ContainerAddStixCoreObjectsLines);

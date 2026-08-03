@@ -35,7 +35,7 @@ const fintelDesignCreationMutation = graphql`
 `;
 
 const fintelDesignEditionFocusMutation = graphql`
-  mutation FintelDesignFormDrawerFocusMutation($id: ID! $input: EditContext!) {
+  mutation FintelDesignFormDrawerFocusMutation($id: ID!, $input: EditContext!) {
     fintelDesignContextPatch(id: $id, input: $input) {
       id
     }
@@ -114,7 +114,9 @@ interface FintelDesignFormDrawerEditProps {
   controlledDial?: never;
 }
 
-type FintelDesignFormDrawerProps = FintelDesignFormDrawerCreateProps | FintelDesignFormDrawerEditProps;
+type FintelDesignFormDrawerProps =
+  | FintelDesignFormDrawerCreateProps
+  | FintelDesignFormDrawerEditProps;
 
 const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (props) => {
   const { t_i18n } = useFormatter();
@@ -127,36 +129,43 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
   const [pendingDefault, setPendingDefault] = useState<PendingDefault | null>(null);
   const [currentDefaultName, setCurrentDefaultName] = useState<string | undefined>(undefined);
 
-  const [commitAdd] = useApiMutation<FintelDesignFormDrawerAddMutation>(fintelDesignCreationMutation);
-  const [commitFocus] = useApiMutation<FintelDesignFormDrawerFocusMutation>(fintelDesignEditionFocusMutation);
+  const [commitAdd] = useApiMutation<FintelDesignFormDrawerAddMutation>(
+    fintelDesignCreationMutation,
+  );
+  const [commitFocus] = useApiMutation<FintelDesignFormDrawerFocusMutation>(
+    fintelDesignEditionFocusMutation,
+  );
   const [commitPatch] = useApiMutation(fintelDesignEditionPatchMutation);
 
-  const fetchExistingDefault = (excludeId?: string) => fetchQuery(fintelDesignsCurrentDefaultQuery, {})
-    .toPromise()
-    .then((res) => {
-      const typed = res as {
-        fintelDesigns?: {
-          edges?: Array<{ node?: { id: string; name: string; default?: boolean } | null } | null>;
-        };
-      } | undefined;
-      return typed?.fintelDesigns?.edges
-        ?.map((e) => e?.node)
-        .find((n) => n?.default && n.id !== excludeId);
-    });
+  const fetchExistingDefault = (excludeId?: string) =>
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {})
+      .toPromise()
+      .then((res) => {
+        const typed = res as
+          | {
+              fintelDesigns?: {
+                edges?: Array<{
+                  node?: { id: string; name: string; default?: boolean } | null;
+                } | null>;
+              };
+            }
+          | undefined;
+        return typed?.fintelDesigns?.edges
+          ?.map((e) => e?.node)
+          .find((n) => n?.default && n.id !== excludeId);
+      });
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_fintelDesigns',
-    props.paginationOptions ?? {},
-    'fintelDesignAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_fintelDesigns', props.paginationOptions ?? {}, 'fintelDesignAdd');
 
   const doCreate = (
     values: FintelDesignFormValues,
     helpers: FormikHelpers<FintelDesignFormValues>,
   ) => {
     commitAdd({
-      variables: { input: { name: values.name, description: values.description, default: values.default } },
+      variables: {
+        input: { name: values.name, description: values.description, default: values.default },
+      },
       updater: (store, response) => {
         if (response?.fintelDesignAdd) updater(store);
       },
@@ -172,7 +181,10 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
     });
   };
 
-  const handleCreateSubmit: FormikConfig<FintelDesignFormValues>['onSubmit'] = (values, helpers) => {
+  const handleCreateSubmit: FormikConfig<FintelDesignFormValues>['onSubmit'] = (
+    values,
+    helpers,
+  ) => {
     if (!values.default) {
       doCreate(values, helpers);
       return;
@@ -194,7 +206,9 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
   };
 
   const refetchDesigns = () => {
-    fetchQuery(fintelDesignsCurrentDefaultQuery, {}).toPromise().catch((err) => handleError(err));
+    fetchQuery(fintelDesignsCurrentDefaultQuery, {})
+      .toPromise()
+      .catch((err) => handleError(err));
   };
 
   const patchField = (name: string, value: FieldOption | string) => {
@@ -268,7 +282,9 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
         title={title}
         open={isEditMode ? props.isOpen : undefined}
         onClose={handleClose}
-        controlledDial={isEditMode ? undefined : (props.controlledDial ?? CreateFintelDesignControlledDial)}
+        controlledDial={
+          isEditMode ? undefined : (props.controlledDial ?? CreateFintelDesignControlledDial)
+        }
       >
         {({ onClose: drawerOnClose }: { onClose: () => void }) => (
           <Formik<FintelDesignFormValues>
@@ -306,12 +322,14 @@ const FintelDesignFormDrawer: FunctionComponent<FintelDesignFormDrawerProps> = (
                   name="default"
                   label={t_i18n('Set as default')}
                   containerstyle={{ marginTop: 20 }}
-                  onChange={isEditMode
-                    ? (_name: string, value: unknown) => {
-                        const next = value === true || value === 'true';
-                        handleDefaultToggle(next, () => setFieldValue('default', !next));
-                      }
-                    : undefined}
+                  onChange={
+                    isEditMode
+                      ? (_name: string, value: unknown) => {
+                          const next = value === true || value === 'true';
+                          handleDefaultToggle(next, () => setFieldValue('default', !next));
+                        }
+                      : undefined
+                  }
                 />
                 {!isEditMode && (
                   <FormButtonContainer>

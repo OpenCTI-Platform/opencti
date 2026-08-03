@@ -1,5 +1,9 @@
 import { describe, expect, it, afterEach } from 'vitest';
-import { addInSessionStorageStack, getSessionStorageItem, setSessionStorageItem } from './sessionStorage';
+import {
+  addInSessionStorageStack,
+  getSessionStorageItem,
+  setSessionStorageItem,
+} from './sessionStorage';
 
 describe('Session storage utils', () => {
   const testKey = 'test-session-storage';

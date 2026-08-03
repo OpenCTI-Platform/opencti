@@ -27,7 +27,10 @@ import { useQueryLoadingWithLoadQuery } from '../../../../../utils/hooks/useQuer
 import { CUSTOM_FIELD_NOW_TOKEN } from '../../../../../utils/customFieldDefaults';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingCustomFieldsAddDialog from './EntitySettingCustomFieldsAddDialog';
-import { EntitySettingCustomFieldsQuery, EntitySettingCustomFieldsQuery$data } from './__generated__/EntitySettingCustomFieldsQuery.graphql';
+import {
+  EntitySettingCustomFieldsQuery,
+  EntitySettingCustomFieldsQuery$data,
+} from './__generated__/EntitySettingCustomFieldsQuery.graphql';
 
 export const entitySettingCustomFieldsQuery = graphql`
   query EntitySettingCustomFieldsQuery {
@@ -61,8 +64,18 @@ const entitySettingCustomFieldsRemoveMutation = graphql`
 `;
 
 const entitySettingCustomFieldsUpdateMutation = graphql`
-  mutation EntitySettingCustomFieldsUpdateMutation($id: ID!, $entityType: String!, $mandatory: Boolean!, $default_value: String) {
-    customFieldDefinitionUpdateEntityType(id: $id, entityType: $entityType, mandatory: $mandatory, default_value: $default_value) {
+  mutation EntitySettingCustomFieldsUpdateMutation(
+    $id: ID!
+    $entityType: String!
+    $mandatory: Boolean!
+    $default_value: String
+  ) {
+    customFieldDefinitionUpdateEntityType(
+      id: $id
+      entityType: $entityType
+      mandatory: $mandatory
+      default_value: $default_value
+    ) {
       id
       entity_types
       entity_type_settings {
@@ -74,7 +87,9 @@ const entitySettingCustomFieldsUpdateMutation = graphql`
   }
 `;
 
-export type CustomFieldDefinitionNode = NonNullable<NonNullable<EntitySettingCustomFieldsQuery$data['customFieldDefinitions']>['edges']>[number]['node'];
+export type CustomFieldDefinitionNode = NonNullable<
+  NonNullable<EntitySettingCustomFieldsQuery$data['customFieldDefinitions']>['edges']
+>[number]['node'];
 
 // Maps the internal field_type value to the same human-readable label used in the custom field creation form.
 export const getCustomFieldTypeLabel = (fieldType: string, t_i18n: (s: string) => string) => {
@@ -102,7 +117,8 @@ interface EntitySettingCustomFieldsTableProps {
   refresh: () => void;
 }
 
-const getEntityTypeSetting = (cf: CustomFieldDefinitionNode, entityType: string) => (cf.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType);
+const getEntityTypeSetting = (cf: CustomFieldDefinitionNode, entityType: string) =>
+  (cf.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType);
 
 interface EntitySettingCustomFieldEditDialogProps {
   customField: CustomFieldDefinitionNode;
@@ -112,13 +128,9 @@ interface EntitySettingCustomFieldEditDialogProps {
   onUpdated: () => void;
 }
 
-const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomFieldEditDialogProps> = ({
-  customField,
-  entityType,
-  open,
-  onClose,
-  onUpdated,
-}) => {
+const EntitySettingCustomFieldEditDialog: FunctionComponent<
+  EntitySettingCustomFieldEditDialogProps
+> = ({ customField, entityType, open, onClose, onUpdated }) => {
   const { t_i18n } = useFormatter();
   const currentSetting = getEntityTypeSetting(customField, entityType);
   const [mandatory, setMandatory] = useState(currentSetting?.mandatory ?? false);
@@ -152,12 +164,12 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
         return (
           <FormControlLabel
             style={{ marginTop: 20, display: 'flex' }}
-            control={(
+            control={
               <Switch
                 checked={defaultValue === 'true'}
                 onChange={(_, checked) => setDefaultValue(checked ? 'true' : 'false')}
               />
-            )}
+            }
             label={t_i18n('Default value')}
           />
         );
@@ -175,7 +187,9 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           >
             <MenuItem value="">{t_i18n('None')}</MenuItem>
             {(customField.select_options ?? []).map((option) => (
-              <MenuItem key={option} value={option}>{option}</MenuItem>
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
             ))}
           </MuiTextField>
         );
@@ -197,12 +211,12 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
           <>
             <FormControlLabel
               style={{ marginTop: 20, display: 'flex' }}
-              control={(
+              control={
                 <Switch
                   checked={isNow}
                   onChange={(_, checked) => setDefaultValue(checked ? CUSTOM_FIELD_NOW_TOKEN : '')}
                 />
-              )}
+              }
               label={t_i18n('Use current date/time (@now)')}
             />
             {!isNow && (
@@ -210,7 +224,9 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
                 value={defaultValue ? new Date(defaultValue) : null}
                 onChange={(date) => setDefaultValue(date ? date.toISOString() : '')}
                 label={t_i18n('Default value')}
-                slotProps={{ textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } } }}
+                slotProps={{
+                  textField: { variant: 'standard', fullWidth: true, style: { marginTop: 20 } },
+                }}
               />
             )}
           </>
@@ -245,12 +261,7 @@ const EntitySettingCustomFieldEditDialog: FunctionComponent<EntitySettingCustomF
     <Dialog open={open} onClose={onClose} title={customField.label}>
       <FormControlLabel
         style={{ marginTop: 10, display: 'flex' }}
-        control={(
-          <Switch
-            checked={mandatory}
-            onChange={(_, checked) => setMandatory(checked)}
-          />
-        )}
+        control={<Switch checked={mandatory} onChange={(_, checked) => setMandatory(checked)} />}
         label={t_i18n('Mandatory')}
       />
       {renderDefaultValueField()}
@@ -273,8 +284,12 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(entitySettingCustomFieldsQuery, queryRef);
-  const allCustomFields: CustomFieldDefinitionNode[] = (data.customFieldDefinitions?.edges ?? []).map((edge) => edge.node);
-  const assignedCustomFields = allCustomFields.filter((cf) => (cf.entity_types ?? []).includes(entityType));
+  const allCustomFields: CustomFieldDefinitionNode[] = (
+    data.customFieldDefinitions?.edges ?? []
+  ).map((edge) => edge.node);
+  const assignedCustomFields = allCustomFields.filter((cf) =>
+    (cf.entity_types ?? []).includes(entityType),
+  );
 
   const [editing, setEditing] = useState<CustomFieldDefinitionNode | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -360,7 +375,9 @@ const EntitySettingCustomFieldsTable: FunctionComponent<EntitySettingCustomField
         message={t_i18n('Do you want to remove this custom field from this entity type?')}
         warning={{
           title: t_i18n('This action deletes data'),
-          message: t_i18n('The values stored for this custom field will be permanently removed from all existing entities of this type.'),
+          message: t_i18n(
+            'The values stored for this custom field will be permanently removed from all existing entities of this type.',
+          ),
         }}
       />
     </Table>
@@ -384,11 +401,7 @@ const EntitySettingCustomFields = () => {
         title={t_i18n('Custom fields')}
         titleSx={{ alignItems: 'end' }}
         sx={{ paddingTop: 0, paddingBottom: 0 }}
-        action={(
-          <Button onClick={() => setAddOpen(true)}>
-            {t_i18n('Add custom field')}
-          </Button>
-        )}
+        action={<Button onClick={() => setAddOpen(true)}>{t_i18n('Add custom field')}</Button>}
       >
         {queryRef && (
           <>

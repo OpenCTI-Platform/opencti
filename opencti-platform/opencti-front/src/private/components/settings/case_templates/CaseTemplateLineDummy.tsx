@@ -44,34 +44,22 @@ const CaseTemplateLineDummy: FunctionComponent<CaseTemplateLineDummyProps> = ({ 
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map(({ label, width }) => (
-              <div
-                key={label}
-                className={classes.bodyItem}
-                style={{ width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={width}
-                  height="100%"
-                />
+              <div key={label} className={classes.bodyItem} style={{ width }}>
+                <Skeleton animation="wave" variant="rectangular" width={width} height="100%" />
               </div>
             ))}
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

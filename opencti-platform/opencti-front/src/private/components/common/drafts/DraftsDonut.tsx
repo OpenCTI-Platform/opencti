@@ -7,7 +7,12 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsDonutDistributionQuery } from './__generated__/DraftsDonutDistributionQuery.graphql';
 import useDashboardViz from 'src/components/dashboard/useDashboardViz';
 import WidgetRenderContent from 'src/components/dashboard/WidgetRenderContent';
@@ -64,27 +69,16 @@ interface DraftsDonutComponentProps {
   setChart: (chart: ApexCharts) => void;
 }
 
-const DraftsDonutComponent = ({
-  queryRef,
-  dataSelection,
-  setChart,
-}: DraftsDonutComponentProps) => {
-  const { draftWorkspacesDistribution } = usePreloadedQuery(
-    draftsDonutDistributionQuery,
-    queryRef,
-  );
+const DraftsDonutComponent = ({ queryRef, dataSelection, setChart }: DraftsDonutComponentProps) => {
+  const { draftWorkspacesDistribution } = usePreloadedQuery(draftsDonutDistributionQuery, queryRef);
   const selection = dataSelection[0];
   const data = draftWorkspacesDistribution ?? [];
 
-  return data.length === 0
-    ? <WidgetNoData />
-    : (
-        <WidgetDonut
-          data={data}
-          groupBy={selection.attribute ?? 'entity_type'}
-          onMounted={setChart}
-        />
-      );
+  return data.length === 0 ? (
+    <WidgetNoData />
+  ) : (
+    <WidgetDonut data={data} groupBy={selection.attribute ?? 'entity_type'} onMounted={setChart} />
+  );
 };
 
 interface DraftsDonutProps {
@@ -103,7 +97,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): DraftsDonutDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
   return {
     field: selection.attribute ?? 'entity_type',
     operation: 'count',
@@ -128,7 +125,13 @@ const DraftsDonut = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsDonutDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

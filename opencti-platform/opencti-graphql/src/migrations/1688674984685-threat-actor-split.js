@@ -75,7 +75,10 @@ const createIndividualThreatCategories = async (context) => {
   const categories = [
     { individual: 'threat_actor_individual_type_ov', group: 'threat_actor_group_type_ov' },
     { individual: 'threat_actor_individual_role_ov', group: 'threat_actor_group_role_ov' },
-    { individual: 'threat_actor_individual_sophistication_ov', group: 'threat_actor_group_sophistication_ov' },
+    {
+      individual: 'threat_actor_individual_sophistication_ov',
+      group: 'threat_actor_group_sophistication_ov',
+    },
   ];
   for (let indexCategory = 0; indexCategory < categories.length; indexCategory += 1) {
     const { individual, group } = categories[indexCategory];
@@ -87,10 +90,23 @@ const createIndividualThreatCategories = async (context) => {
       filterGroups: [],
     };
     const args = { filters, noFiltersChecking: true };
-    const vocabsFromGroup = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], args);
-    const groupExistingVocabs = (vocabsFromGroup ?? []).map((v) => ({ key: v.name, description: v.description, aliases: v.aliases }));
-    const groupVocabToMaintains = groupExistingVocabs.filter((g) => !individualVocabKeys.includes(g.key));
-    logApp.info(`${message} > Create ${groupVocabToMaintains.length} vocabularies for category ${individual}`);
+    const vocabsFromGroup = await fullEntitiesList(
+      context,
+      SYSTEM_USER,
+      [ENTITY_TYPE_VOCABULARY],
+      args,
+    );
+    const groupExistingVocabs = (vocabsFromGroup ?? []).map((v) => ({
+      key: v.name,
+      description: v.description,
+      aliases: v.aliases,
+    }));
+    const groupVocabToMaintains = groupExistingVocabs.filter(
+      (g) => !individualVocabKeys.includes(g.key),
+    );
+    logApp.info(
+      `${message} > Create ${groupVocabToMaintains.length} vocabularies for category ${individual}`,
+    );
     pushAll(vocabularies, groupVocabToMaintains);
     for (let i = 0; i < vocabularies.length; i += 1) {
       const { key, description, aliases } = vocabularies[i];
@@ -121,7 +137,9 @@ export const up = async (next) => {
   await createIndividualThreatCategories(context);
   // Iterator over all threat actors
   // Some must be converted to group and some to individual
-  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, { types: [ENTITY_TYPE_THREAT_ACTOR] });
+  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, {
+    types: [ENTITY_TYPE_THREAT_ACTOR],
+  });
   logApp.info(`${message} > Migrating threat actors 0/${threatCount}`);
   let processNumber = 0;
   const callback = async (threatActors) => {
@@ -129,15 +147,18 @@ export const up = async (next) => {
     for (let index = 0; index < threatActors.length; index += 1) {
       const threatActor = threatActors[index];
       const isIndividualTarget = threatActor.resource_level === 'individual';
-      const toType = isIndividualTarget ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL : ENTITY_TYPE_THREAT_ACTOR_GROUP;
+      const toType = isIndividualTarget
+        ? ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL
+        : ENTITY_TYPE_THREAT_ACTOR_GROUP;
       const standardId = generateStandardId(toType, threatActor);
       // Update the entity
       const updateEntityQuery = {
         script: {
           params: { original: ENTITY_TYPE_THREAT_ACTOR, toType, standardId },
-          source: 'ctx._source.entity_type = params.toType; '
-            + 'ctx._source.standard_id = params.standardId; '
-            + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
+          source:
+            'ctx._source.entity_type = params.toType; ' +
+            'ctx._source.standard_id = params.standardId; ' +
+            'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
         },
         query: {
           term: { 'internal_id.keyword': { value: threatActor.internal_id } },
@@ -155,11 +176,12 @@ export const up = async (next) => {
       const updateRelationsQuery = {
         script: {
           params: { toType, toId: threatActor.internal_id },
-          source: 'for(def connection : ctx._source.connections) {'
-            + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-            + '}',
+          source:
+            'for(def connection : ctx._source.connections) {' +
+            ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }' +
+            ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }' +
+            ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }' +
+            '}',
         },
         query: {
           nested: {
@@ -167,8 +189,12 @@ export const up = async (next) => {
             query: {
               bool: {
                 should: [
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
+                  {
+                    term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } },
+                  },
+                  {
+                    term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } },
+                  },
                 ],
                 minimum_should_match: 1,
               },
@@ -188,7 +214,10 @@ export const up = async (next) => {
     }
     logApp.info(`${message} > Migrating threat actors ${processNumber}/${threatCount}`);
   };
-  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], { types: [ENTITY_TYPE_THREAT_ACTOR], callback });
+  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], {
+    types: [ENTITY_TYPE_THREAT_ACTOR],
+    callback,
+  });
   // Done with the migration
   logApp.info(`${message} > done`);
   next();

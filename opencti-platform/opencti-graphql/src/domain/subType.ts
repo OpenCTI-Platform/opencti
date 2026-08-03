@@ -1,9 +1,18 @@
 import * as R from 'ramda';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { telemetry } from '../config/tracing';
 import { buildPagination } from '../database/utils';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+} from '../schema/general';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { schemaTypesDefinition } from '../schema/schema-types';
@@ -15,7 +24,11 @@ import type { AuthContext, AuthUser } from '../types/user';
 
 // -- ENTITY TYPES --
 
-export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: AuthUser, search: string | null = null) => {
+export const queryDefaultSubTypesPaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  search: string | null = null,
+) => {
   const queryDefaultSubTypesFn = async () => {
     const domainObjectTypes = schemaTypesDefinition
       .get(ABSTRACT_STIX_DOMAIN_OBJECT)
@@ -31,24 +44,30 @@ export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: 
       ENTITY_TYPE_DRAFT_WORKSPACE,
     ];
 
-    const allTypes = [...domainObjectTypes, ...customTypes].map((id) => ({ node: { id, label: id } }));
+    const allTypes = [...domainObjectTypes, ...customTypes].map((id) => ({
+      node: { id, label: id },
+    }));
 
     // Remove duplicates types
-    const finalResult = [
-      ...new Map(allTypes.map((item) => [item.node.id, item])).values(),
-    ];
+    const finalResult = [...new Map(allTypes.map((item) => [item.node.id, item])).values()];
 
     return buildPagination(0, null, finalResult, finalResult.length);
   };
 
-  return telemetry(context, user, 'QUERY default subtypes', {
-    [ATTR_DB_NAMESPACE]: 'subtypes_domain',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'subtypes_domain',
-    [ATTR_DB_OPERATION_NAME]: 'read',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'read',
-  }, queryDefaultSubTypesFn);
+  return telemetry(
+    context,
+    user,
+    'QUERY default subtypes',
+    {
+      [ATTR_DB_NAMESPACE]: 'subtypes_domain',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'subtypes_domain',
+      [ATTR_DB_OPERATION_NAME]: 'read',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'read',
+    },
+    queryDefaultSubTypesFn,
+  );
 };
 
 const querySubType = async (subTypeId: string) => {
@@ -58,7 +77,11 @@ const querySubType = async (subTypeId: string) => {
   }
   return null;
 };
-const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { type = null, search = null }: { type: string | null; search?: string | null }) => {
+const querySubTypesPaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  { type = null, search = null }: { type: string | null; search?: string | null },
+) => {
   if (type === null) {
     return queryDefaultSubTypesPaginated(context, user, search);
   }
@@ -80,6 +103,10 @@ const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { ty
 
 export const findById = (subTypeId: string) => querySubType(subTypeId);
 
-export const findSubTypePaginated = (context: AuthContext, user: AuthUser, args: { type: string | null; search?: string | null }) => {
+export const findSubTypePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: { type: string | null; search?: string | null },
+) => {
   return querySubTypesPaginated(context, user, args);
 };

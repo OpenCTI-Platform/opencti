@@ -16,18 +16,14 @@ interface DataComponentKnowledgeProps {
   data: DataComponentKnowledge_dataComponent$key;
 }
 
-const DataComponentKnowledge: FunctionComponent<
-  DataComponentKnowledgeProps
-> = ({ data }) => {
+const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = ({ data }) => {
   const dataComponent = useFragment(DataComponentKnowledgeFragment, data);
   return (
     <>
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
-            <StixCoreRelationship entityId={dataComponent.id} />
-          }
+          element={<StixCoreRelationship entityId={dataComponent.id} />}
         />
       </Routes>
     </>

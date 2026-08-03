@@ -3,7 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { FeedLinesPaginationQuery$data } from '@components/data/feeds/__generated__/FeedLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import FeedLines, { FeedLinesQuery } from './feeds/FeedLines';
 import FeedCreation from './feeds/FeedCreation';
@@ -22,12 +25,18 @@ const Feed = () => {
   const LOCAL_STORAGE_KEY = 'feed';
   const navigate = useNavigate();
   const location = useLocation();
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
-  const [feedState, setFeedState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY) as {
+    orderAsc?: boolean;
+    searchTerm?: string;
+    view?: string;
+    sortBy?: string;
+  };
+  const [feedState, setFeedState] = useState<{
+    orderAsc: boolean;
+    searchTerm: string;
+    view: string;
+    sortBy: string;
+  }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -35,12 +44,7 @@ const Feed = () => {
   });
 
   function saveView() {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      feedState,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, feedState);
   }
 
   function handleSearch(value: string) {
@@ -93,11 +97,11 @@ const Feed = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={feedState.searchTerm}
-        createButton={(
+        createButton={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
       >
         <QueryRenderer
           query={FeedLinesQuery}
@@ -122,12 +126,19 @@ const Feed = () => {
   };
   return (
     <div data-testid="data-sharing-csv-feeds-page">
-      <Box sx={{
-        margin: 0,
-        padding: '0 200px 50px 0',
-      }}
+      <Box
+        sx={{
+          margin: 0,
+          padding: '0 200px 50px 0',
+        }}
       >
-        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Data sharing') },
+            { label: t_i18n('CSV feeds'), current: true },
+          ]}
+        />
         <SharingMenu />
         {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
       </Box>

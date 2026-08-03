@@ -6,13 +6,8 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../../utils/store';
 
-const CreateEmailTemplateControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="EmailTemplate"
-    {...props}
-  />
+const CreateEmailTemplateControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="EmailTemplate" {...props} />
 );
 
 interface EmailTemplateCreationProps {
@@ -25,19 +20,12 @@ const EmailTemplateCreation: FunctionComponent<EmailTemplateCreationProps> = ({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_emailTemplates',
-      paginationOptions,
-      rootField,
-    );
+    insertNode(store, 'Pagination_emailTemplates', paginationOptions, rootField);
   };
 
   return (
     <>
-      <CreateEmailTemplateControlledDial
-        onOpen={() => setDrawerOpen(true)}
-      />
+      <CreateEmailTemplateControlledDial onOpen={() => setDrawerOpen(true)} />
       <EmailTemplateFormDrawer
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}

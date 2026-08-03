@@ -1,5 +1,11 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addSupportPackage, deleteSupportPackage, findSupportPaginated, findById, requestZipPackage } from './support-domain';
+import {
+  addSupportPackage,
+  deleteSupportPackage,
+  findSupportPaginated,
+  findById,
+  requestZipPackage,
+} from './support-domain';
 
 const supportResolvers: Resolvers = {
   Query: {

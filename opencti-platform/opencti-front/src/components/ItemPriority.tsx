@@ -10,10 +10,7 @@ interface ItemPriorityProps {
   variant?: 'inList';
 }
 
-const ItemPriority: FunctionComponent<ItemPriorityProps> = ({
-  label,
-  priority,
-}) => {
+const ItemPriority: FunctionComponent<ItemPriorityProps> = ({ label, priority }) => {
   const theme = useTheme<Theme>();
   if (!priority) {
     return <>{EMPTY_VALUE}</>;

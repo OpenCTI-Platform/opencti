@@ -1,7 +1,12 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
+import {
+  ClearOutlined,
+  FileOpenOutlined,
+  LocalOfferOutlined,
+  VisibilityOffOutlined,
+} from '@mui/icons-material';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
 import Drawer from '@mui/material/Drawer';
@@ -62,32 +67,29 @@ const ToolBar: FunctionComponent<{
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const entitySettings = useEntitySettings();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   let entitySettingsSelected;
   if (selectAll) {
     entitySettingsSelected = entitySettings;
   } else {
-    entitySettingsSelected = entitySettings.filter((node) => R.values(selectedElements)
-      .map((n) => n.id)
-      .includes(node.target_type));
+    entitySettingsSelected = entitySettings.filter((node) =>
+      R.values(selectedElements)
+        .map((n) => n.id)
+        .includes(node.target_type),
+    );
   }
-  const entitySettingsSelectedFiltered = entitySettingsSelected.filter(
-    (node) => {
-      if (keyword) {
-        return (
-          node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
-          || t_i18n(`entity_${node.target_type}`)
-            .toLowerCase()
-            .indexOf(keyword.toLowerCase()) !== -1
-        );
-      }
-      return true;
-    },
-  );
-  const [navOpen, setNavOpen] = useState<boolean>(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const entitySettingsSelectedFiltered = entitySettingsSelected.filter((node) => {
+    if (keyword) {
+      return (
+        node.target_type.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+        t_i18n(`entity_${node.target_type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      );
+    }
+    return true;
+  });
+  const [navOpen, setNavOpen] = useState<boolean>(localStorage.getItem('navOpen') === 'true');
   useEffect(() => {
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -101,16 +103,15 @@ const ToolBar: FunctionComponent<{
   const [description, setDescription] = useState<string>('');
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
-  const [notAvailableSetting, setNotAvailableSetting] = useState<
-    EntitySetting[]
-  >([]);
+  const [notAvailableSetting, setNotAvailableSetting] = useState<EntitySetting[]>([]);
   const [commit] = useApiMutation(entitySettingPatch);
   const handleOpen = () => setDisplay(true);
   const handleClose = () => {
     setDisplay(false);
     setValue(false);
   };
-  const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter((setting) => setting[currentKey] === null);
+  const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) =>
+    entitySettingsSelectedFiltered.filter((setting) => setting[currentKey] === null);
   const handleOpenFilesRef = () => {
     handleOpen();
     setTitle(t_i18n('Automatic references at file upload'));
@@ -120,17 +121,13 @@ const ToolBar: FunctionComponent<{
       ),
     );
     setKey('platform_entity_files_ref');
-    setNotAvailableSetting(
-      retrieveNotAvailableSetting('platform_entity_files_ref'),
-    );
+    setNotAvailableSetting(retrieveNotAvailableSetting('platform_entity_files_ref'));
   };
   const handleOpenHidden = () => {
     handleOpen();
     setTitle(t_i18n('Hidden in interface'));
     setDescription(
-      t_i18n(
-        'This configuration hides a specific entity type across the entire platform.',
-      ),
+      t_i18n('This configuration hides a specific entity type across the entire platform.'),
     );
     setKey('platform_hidden_type');
     setNotAvailableSetting(retrieveNotAvailableSetting('platform_hidden_type'));
@@ -148,11 +145,7 @@ const ToolBar: FunctionComponent<{
   };
   const handleAction = () => {
     const ids = entitySettingsSelectedFiltered
-      .filter(
-        (node) => !notAvailableSetting
-          .map((n) => n.target_type)
-          .includes(node.target_type),
-      )
+      .filter((node) => !notAvailableSetting.map((n) => n.target_type).includes(node.target_type))
       .map((node) => node.id);
     commit({
       variables: {
@@ -179,14 +172,8 @@ const ToolBar: FunctionComponent<{
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>
-        <Typography
-          className={classes.title}
-          color="inherit"
-          variant="subtitle1"
-        >
-          <span className={classes.titleNumber}>
-            {numberOfSelectedElements}
-          </span>{' '}
+        <Typography className={classes.title} color="inherit" variant="subtitle1">
+          <span className={classes.titleNumber}>{numberOfSelectedElements}</span>{' '}
           {t_i18n('selected')}{' '}
           <IconButton
             aria-label="clear"
@@ -202,10 +189,9 @@ const ToolBar: FunctionComponent<{
             <IconButton
               aria-label="files-ref"
               disabled={
-                numberOfSelectedElements === 0
-                || numberOfSelectedElements
-                === retrieveNotAvailableSetting('platform_entity_files_ref')
-                  .length
+                numberOfSelectedElements === 0 ||
+                numberOfSelectedElements ===
+                  retrieveNotAvailableSetting('platform_entity_files_ref').length
               }
               onClick={handleOpenFilesRef}
               color="primary"
@@ -220,9 +206,9 @@ const ToolBar: FunctionComponent<{
             <IconButton
               aria-label="hidden-entity"
               disabled={
-                numberOfSelectedElements === 0
-                || numberOfSelectedElements
-                === retrieveNotAvailableSetting('platform_hidden_type').length
+                numberOfSelectedElements === 0 ||
+                numberOfSelectedElements ===
+                  retrieveNotAvailableSetting('platform_hidden_type').length
               }
               onClick={handleOpenHidden}
               color="primary"
@@ -237,9 +223,8 @@ const ToolBar: FunctionComponent<{
             <IconButton
               aria-label="enforce-ref"
               disabled={
-                numberOfSelectedElements === 0
-                || numberOfSelectedElements
-                === retrieveNotAvailableSetting('enforce_reference').length
+                numberOfSelectedElements === 0 ||
+                numberOfSelectedElements === retrieveNotAvailableSetting('enforce_reference').length
               }
               onClick={handleOpenEnforceRef}
               color="primary"
@@ -250,11 +235,7 @@ const ToolBar: FunctionComponent<{
           </span>
         </Tooltip>
       </Toolbar>
-      <Dialog
-        open={display}
-        onClose={handleClose}
-        title={title}
-      >
+      <Dialog open={display} onClose={handleClose} title={title}>
         <Alert severity="info" style={{ marginBottom: 20 }}>
           {description}
           {notAvailableSetting.length > 0 && (
@@ -274,17 +255,15 @@ const ToolBar: FunctionComponent<{
         </Alert>
         <FormGroup>
           <FormControlLabel
-            control={
-              <Switch checked={value} onChange={() => setValue(!value)} />
-            }
+            control={<Switch checked={value} onChange={() => setValue(!value)} />}
             label={t_i18n('Enable this feature')}
           />
         </FormGroup>
         <DialogActions>
-          <Button variant="secondary" onClick={handleClose}>{t_i18n('Cancel')}</Button>
-          <Button onClick={handleAction}>
-            {t_i18n('Update')}
+          <Button variant="secondary" onClick={handleClose}>
+            {t_i18n('Cancel')}
           </Button>
+          <Button onClick={handleAction}>{t_i18n('Update')}</Button>
         </DialogActions>
       </Dialog>
     </Drawer>

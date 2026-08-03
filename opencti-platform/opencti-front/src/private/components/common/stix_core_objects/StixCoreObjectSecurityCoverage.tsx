@@ -28,10 +28,13 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface SecurityCoverage {
   id: string;
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information:
+    | ReadonlyArray<{
+        readonly coverage_name: string;
+        readonly coverage_score: number;
+      }>
+    | null
+    | undefined;
 }
 
 interface StixCoreObjectSecurityCoverageProps {
@@ -108,10 +111,12 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
       if (typeof coverageId === 'string') {
         // Update local state to show the new coverage
         const coverageInformation = newCoverage.getLinkedRecords('coverage_information');
-        const informationArray = coverageInformation ? coverageInformation.map((info) => ({
-          coverage_name: info?.getValue('coverage_name') as string,
-          coverage_score: info?.getValue('coverage_score') as number,
-        })) : [];
+        const informationArray = coverageInformation
+          ? coverageInformation.map((info) => ({
+              coverage_name: info?.getValue('coverage_name') as string,
+              coverage_score: info?.getValue('coverage_score') as number,
+            }))
+          : [];
 
         setCoverage({
           id: coverageId,
@@ -163,15 +168,21 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
           </Button>
         )}
       </div>
-      <Drawer
-        title={t_i18n('Create a security coverage')}
-        open={open}
-        onClose={handleClose}
-      >
+      <Drawer title={t_i18n('Create a security coverage')} open={open} onClose={handleClose}>
         <QueryRenderer
           query={securityCoverageEntityQuery}
           variables={{ id }}
-          render={({ props: entityProps }: { props: { stixCoreObject: { id: string; entity_type: string; representative?: { main?: string } } } | null }) => {
+          render={({
+            props: entityProps,
+          }: {
+            props: {
+              stixCoreObject: {
+                id: string;
+                entity_type: string;
+                representative?: { main?: string };
+              };
+            } | null;
+          }) => {
             if (!entityProps) {
               return <Loader variant={LoaderVariant.inElement} />;
             }
@@ -187,10 +198,14 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
 
                   const connectors = props?.connectors || [];
                   const hasConnector = connectors.some((connector) => {
-                    return connector.active
-                      && connector.connector_type === 'INTERNAL_ENRICHMENT'
-                      && connector.connector_scope
-                      && connector.connector_scope.some((scope: string) => scope.toLowerCase() === 'security-coverage');
+                    return (
+                      connector.active &&
+                      connector.connector_type === 'INTERNAL_ENRICHMENT' &&
+                      connector.connector_scope &&
+                      connector.connector_scope.some(
+                        (scope: string) => scope.toLowerCase() === 'security-coverage',
+                      )
+                    );
                   });
 
                   return (

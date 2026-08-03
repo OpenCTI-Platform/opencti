@@ -14,7 +14,9 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 async function fetchPersistedInvestigations() {
   const context = executionContext('migration');
-  return await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE], { type: 'investigation' });
+  return await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE], {
+    type: 'investigation',
+  });
 }
 
 async function removeInvestigationsReferencesFromInvestigatedEntities(investigationIds) {
@@ -64,9 +66,10 @@ async function updateInvestigationsField(oldField, newField) {
     [READ_INDEX_INTERNAL_OBJECTS],
     {
       script: {
-        source: ''
-          + 'ctx._source[params.newField] = ctx._source[params.oldField];'
-          + 'ctx._source.remove(params.oldField)',
+        source:
+          '' +
+          'ctx._source[params.newField] = ctx._source[params.oldField];' +
+          'ctx._source.remove(params.oldField)',
         params: { oldField, newField },
       },
       query: {

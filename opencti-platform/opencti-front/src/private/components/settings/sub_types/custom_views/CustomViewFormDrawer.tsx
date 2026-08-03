@@ -25,7 +25,8 @@ const customViewCurrentDefaultQuery = graphql`
   }
 `;
 
-type PendingDefault = { kind: 'create'; values: CustomViewFormInputs }
+type PendingDefault =
+  | { kind: 'create'; values: CustomViewFormInputs }
   | { kind: 'edit'; revert: () => void };
 
 interface CustomViewFormDrawerProps {
@@ -52,12 +53,20 @@ const CustomViewFormDrawer = ({
   const [currentDefaultName, setCurrentDefaultName] = useState('');
   const [pendingDefault, setPendingDefault] = useState<PendingDefault | null>(null);
 
-  const fetchExistingDefault = (entityType_: string, excludeId?: string) => relayFetchQuery(environment, customViewCurrentDefaultQuery, { entityType: entityType_ }, { fetchPolicy: 'network-only' })
-    .toPromise()
-    .then((result: unknown) => {
-      const data = result as CustomViewFormDrawerCurrentDefaultQuery$data;
-      return data.customViews?.edges.map((e) => e.node).find((n) => n.default && n.id !== excludeId);
-    });
+  const fetchExistingDefault = (entityType_: string, excludeId?: string) =>
+    relayFetchQuery(
+      environment,
+      customViewCurrentDefaultQuery,
+      { entityType: entityType_ },
+      { fetchPolicy: 'network-only' },
+    )
+      .toPromise()
+      .then((result: unknown) => {
+        const data = result as CustomViewFormDrawerCurrentDefaultQuery$data;
+        return data.customViews?.edges
+          .map((e) => e.node)
+          .find((n) => n.default && n.id !== excludeId);
+      });
 
   const handleSetDefault = (revert: () => void) => {
     fetchExistingDefault(entityType, customView?.id)
@@ -111,7 +120,9 @@ const CustomViewFormDrawer = ({
         onClose();
         if (response.customViewAdd) {
           const { id } = response.customViewAdd;
-          navigate(`/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`);
+          navigate(
+            `/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`,
+          );
         }
       },
       onError: (error) => {
@@ -176,11 +187,7 @@ const CustomViewFormDrawer = ({
 
   return (
     <>
-      <Drawer
-        title={title}
-        open={isOpen}
-        onClose={onClose}
-      >
+      <Drawer title={title} open={isOpen} onClose={onClose}>
         <CustomViewForm
           onClose={onClose}
           onSubmit={handleSubmitForm}

@@ -161,11 +161,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
 
     return (
       <g>
-        <path
-          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
-          fill="none"
-        />
+        <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
         <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
         <text
           x={ex + (cos >= 0 ? 1 : -1) * 12}
@@ -203,33 +199,30 @@ class EntityStixSightingRelationshipsDonut extends Component {
     };
     return (
       <QueryRenderer
-        query={
-          entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQuery
-        }
+        query={entityStixSightingRelationshipsDonutStixSightingRelationshipsDistributionQuery}
         variables={stixSightingRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
-            props
-            && props.stixSightingRelationshipsDistribution
-            && props.stixSightingRelationshipsDistribution.length > 0
+            props &&
+            props.stixSightingRelationshipsDistribution &&
+            props.stixSightingRelationshipsDistribution.length > 0
           ) {
             let data = props.stixSightingRelationshipsDistribution;
             if (field === 'internal_id') {
               data = R.map(
-                (n) => R.assoc(
-                  'label',
-                  `${
-                    toTypes.length > 1 && n.entity
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
-                      : `${getMainRepresentative(n.entity) || n.label}`
-                  }`,
-                  n,
-                ),
+                (n) =>
+                  R.assoc(
+                    'label',
+                    `${toTypes.length > 1 && n.entity ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}` : `${getMainRepresentative(n.entity) || n.label}`}`,
+                    n,
+                  ),
                 props.stixSightingRelationshipsDistribution,
               );
             }
             const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => (field === 'entity_type' ? t(`entity_${n.label}`) : n.label));
+            const labels = data.map((n) =>
+              field === 'entity_type' ? t(`entity_${n.label}`) : n.label,
+            );
             return (
               <Chart
                 options={donutChartOptions(
@@ -279,11 +272,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
 
   render() {
     const { t, title } = this.props;
-    return (
-      <Card title={title || t('Distribution of entities')}>
-        {this.renderContent()}
-      </Card>
-    );
+    return <Card title={title || t('Distribution of entities')}>{this.renderContent()}</Card>;
   }
 }
 

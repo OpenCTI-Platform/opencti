@@ -17,7 +17,4 @@ const campaignDefaultOverviewLayout: OverviewLayoutCustomization[] = [
 ];
 
 // Register only the default layout
-registerEntityOverviewLayoutCustomization(
-  ENTITY_TYPE_CAMPAIGN,
-  campaignDefaultOverviewLayout,
-);
+registerEntityOverviewLayoutCustomization(ENTITY_TYPE_CAMPAIGN, campaignDefaultOverviewLayout);

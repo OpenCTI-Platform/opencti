@@ -23,7 +23,11 @@ export function extractTempImageTokens(markdown: string): string[] {
   return Array.from(tokens);
 }
 
-export function replaceTempImageTokenUrl(markdown: string, token: string, finalUrl: string): string {
+export function replaceTempImageTokenUrl(
+  markdown: string,
+  token: string,
+  finalUrl: string,
+): string {
   return markdown.split(`${TEMP_IMAGE_SCHEME}${token}`).join(finalUrl);
 }
 

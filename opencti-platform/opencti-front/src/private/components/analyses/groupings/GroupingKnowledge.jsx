@@ -9,9 +9,14 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, { groupingKnowledgeGraphQuery } from './GroupingKnowledgeGraph';
-import GroupingKnowledgeCorrelation, { groupingKnowledgeCorrelationQuery } from './GroupingKnowledgeCorrelation';
+import GroupingKnowledgeCorrelation, {
+  groupingKnowledgeCorrelationQuery,
+} from './GroupingKnowledgeCorrelation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
 import withRouter from '../../../../utils/compat_router/withRouter';
 
@@ -71,7 +76,7 @@ class GroupingKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/graph"
-            element={(
+            element={
               <QueryRenderer
                 query={groupingKnowledgeGraphQuery}
                 variables={{ id: grouping.id }}
@@ -86,58 +91,42 @@ class GroupingKnowledgeComponent extends Component {
                       />
                     );
                   }
-                  return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
-                  );
+                  return <Loader variant={LoaderVariant.inElement} withTopMargin={true} />;
                 }}
               />
-            )}
+            }
           />
           <Route
             path="/correlation"
-            element={(
+            element={
               <QueryRenderer
                 query={groupingKnowledgeCorrelationQuery}
                 variables={{ id: grouping.id }}
                 render={({ props }) => {
                   if (props && props.grouping) {
-                    return (
-                      <GroupingKnowledgeCorrelation
-                        data={props.grouping}
-                        id={grouping.id}
-                      />
-                    );
+                    return <GroupingKnowledgeCorrelation data={props.grouping} id={grouping.id} />;
                   }
                   return (
                     <div style={{ height: '50vh' }}>
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                      />
+                      <Loader variant={LoaderVariant.inElement} />
                     </div>
                   );
                 }}
               />
-            )}
+            }
           />
           <Route
             path="/matrix"
-            element={(
+            element={
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={grouping.id}
                 entityType={grouping.entity_type}
               />
-            )}
+            }
           />
           <Route
             path="/relations/:relationId"
-            element={(
-              <StixCoreRelationship
-                entityId={grouping.id}
-              />
-            )}
+            element={<StixCoreRelationship entityId={grouping.id} />}
           />
           <Route index element={<Navigate replace={true} to="graph" />} />
         </Routes>

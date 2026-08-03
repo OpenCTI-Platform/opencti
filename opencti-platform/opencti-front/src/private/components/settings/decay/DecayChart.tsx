@@ -19,7 +19,13 @@ interface DecayChartProps {
   reactionPoints?: number[];
 }
 
-const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
+const DecayChart: FunctionComponent<DecayChartProps> = ({
+  currentScore,
+  decayCurvePoint,
+  decayLiveScore,
+  revokeScore,
+  reactionPoints,
+}) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -52,7 +58,9 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
   const graphLinesAnnotations: Record<string, unknown>[] = [];
   // Horizontal lines that shows reaction points
   if (reactionPoints) {
-    const currentScoreIndex = reactionPoints.findLastIndex((reactionPoint) => reactionPoint === currentScore);
+    const currentScoreIndex = reactionPoints.findLastIndex(
+      (reactionPoint) => reactionPoint === currentScore,
+    );
     reactionPoints.forEach((reactionPoint, index) => {
       const lineReactionValue = {
         y: reactionPoint,
@@ -178,9 +186,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
       points: pointAnnotations,
     },
     grid: { show: false },
-    colors: [
-      decayCurveColor,
-    ],
+    colors: [decayCurveColor],
     tooltip: {
       theme: theme.palette.mode, // ApexChart uses 'dark'/'light', exactly the same values as we use in OpenCTI.
       x: {
@@ -204,12 +210,7 @@ const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCur
     },
   ];
 
-  return (
-    <Chart
-      series={series}
-      options={chartOptions}
-    />
-  );
+  return <Chart series={series} options={chartOptions} />;
 };
 
 export default DecayChart;

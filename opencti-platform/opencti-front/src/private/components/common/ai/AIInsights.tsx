@@ -37,88 +37,93 @@ import Drawer from '../drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-  },
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
-    height: '100%',
-    overflowY: 'auto',
-  },
-  chip: {
-    display: 'inline-flex',
-    fontWeight: 500,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
+const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) =>
+  createStyles({
+    drawerPaper: {
+      minHeight: '100vh',
+      width: '50%',
+      position: 'fixed',
+      overflow: 'auto',
+      transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+      paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
     },
-  },
-  chipFloating: {
-    float: 'right',
-    fontSize: 12,
-    fontWeight: 500,
-    height: 25,
-    display: 'inline-flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: -7,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
+    header: {
+      backgroundColor:
+        theme.palette.mode === 'light'
+          ? theme.palette.background.default
+          : theme.palette.background.nav,
+      padding: '10px 0',
+      display: 'inline-flex',
+      alignItems: 'center',
     },
-  },
-  chipNoAction: {
-    display: 'flex',
-    alignItems: 'center',
-    textWrap: 'nowrap',
-    position: 'absolute',
-    right: 10,
-    fontWeight: 500,
-    justifyContent: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'default',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
+    container: {
+      padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
+      height: '100%',
+      overflowY: 'auto',
     },
-  },
-}));
+    chip: {
+      display: 'inline-flex',
+      fontWeight: 500,
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontSize: 12,
+      marginLeft: 6,
+      borderRadius: theme.borderRadius,
+      border: `1px solid ${theme.palette.ai.main}`,
+      color: theme.palette.ai.main,
+      backgroundColor: theme.palette.ai.background,
+      cursor: 'pointer',
+      '&:hover': {
+        border: `1px solid ${theme.palette.ai.light}`,
+        color: theme.palette.ai.light,
+      },
+    },
+    chipFloating: {
+      float: 'right',
+      fontSize: 12,
+      fontWeight: 500,
+      height: 25,
+      display: 'inline-flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: -7,
+      marginLeft: 6,
+      borderRadius: theme.borderRadius,
+      border: `1px solid ${theme.palette.ai.main}`,
+      color: theme.palette.ai.main,
+      backgroundColor: theme.palette.ai.background,
+      cursor: 'pointer',
+      '&:hover': {
+        border: `1px solid ${theme.palette.ai.light}`,
+        color: theme.palette.ai.light,
+      },
+    },
+    chipNoAction: {
+      display: 'flex',
+      alignItems: 'center',
+      textWrap: 'nowrap',
+      position: 'absolute',
+      right: 10,
+      fontWeight: 500,
+      justifyContent: 'center',
+      fontSize: 12,
+      marginLeft: 6,
+      borderRadius: theme.borderRadius,
+      border: `1px solid ${theme.palette.ai.main}`,
+      color: theme.palette.ai.main,
+      backgroundColor: theme.palette.ai.background,
+      cursor: 'default',
+      '&:hover': {
+        border: `1px solid ${theme.palette.ai.light}`,
+        color: theme.palette.ai.light,
+      },
+    },
+  }),
+);
 
 interface AIInsightProps {
   id: string;
@@ -138,9 +143,18 @@ interface AiInsightButtonProps {
   tooltipTitle?: string;
 }
 
-const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEEChip = false, disabled = false, tooltipTitle }: AiInsightButtonProps) => {
+const AiInsightButton = ({
+  onlyIcon = false,
+  floating = false,
+  onClick,
+  showEEChip = false,
+  disabled = false,
+  tooltipTitle,
+}: AiInsightButtonProps) => {
   const { t_i18n } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const buttonLabel = tooltipTitle || t_i18n('AI Insights');
 
@@ -183,7 +197,10 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
+  const {
+    bannerSettings: { bannerHeightNumber },
+    settings: { id: settingsId },
+  } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
@@ -241,40 +258,45 @@ const AIInsights = ({
     setLoading(false);
     setDisplay(false);
   };
-  const handleChangeTab = (_: React.SyntheticEvent, newValue: 'activity' | 'containers' | 'forecast' | 'history') => {
+  const handleChangeTab = (
+    _: React.SyntheticEvent,
+    newValue: 'activity' | 'containers' | 'forecast' | 'history',
+  ) => {
     setCurrentTab(newValue);
   };
 
-  const initialContainersFilters = isContainer ? {
-    mode: 'and',
-    filters: [{
-      key: 'id',
-      values: [id],
-    }],
-    filterGroups: [],
-  } : {
-    mode: 'and',
-    filters: [{
-      key: 'entity_type',
-      values: ['Report', 'Case-Incident'],
-    },
-    {
-      key: 'objects',
-      values: [id],
-    }],
-    filterGroups: [],
-  };
+  const initialContainersFilters = isContainer
+    ? {
+        mode: 'and',
+        filters: [
+          {
+            key: 'id',
+            values: [id],
+          },
+        ],
+        filterGroups: [],
+      }
+    : {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Report', 'Case-Incident'],
+          },
+          {
+            key: 'objects',
+            values: [id],
+          },
+        ],
+        filterGroups: [],
+      };
   // TODO make the filter "objects" readonly?
   const [containersFilters] = useFiltersState(initialContainersFilters);
   if (!enabled) return null;
   if (!isEnterpriseEdition && enabled) {
     return (
       <>
-        <AiInsightButton
-          onlyIcon={onlyIcon}
-          onClick={() => setDisplayEEDialog(true)}
-          showEEChip
-        />
+        <AiInsightButton onlyIcon={onlyIcon} onClick={() => setDisplayEEDialog(true)} showEEChip />
 
         {isAdmin ? (
           <EnterpriseEditionAgreement
@@ -287,7 +309,9 @@ const AIInsights = ({
             openDrawer={displayEEDialog}
             handleCloseDrawer={() => setDisplayEEDialog(false)}
             initialValue={{
-              description: t_i18n('I would like to use a EE feature AI Summary but I don\'t have EE activated.\nI would like to discuss with you about activating EE.'),
+              description: t_i18n(
+                "I would like to use a EE feature AI Summary but I don't have EE activated.\nI would like to discuss with you about activating EE.",
+              ),
             }}
           />
         )}
@@ -298,10 +322,7 @@ const AIInsights = ({
   if (isEnterpriseEdition && !fullyActive && !useXtmOne) {
     return (
       <>
-        <AiInsightButton
-          onlyIcon={onlyIcon}
-          onClick={() => setDisplayAIDialog(true)}
-        />
+        <AiInsightButton onlyIcon={onlyIcon} onClick={() => setDisplayAIDialog(true)} />
         <Dialog
           open={displayAIDialog}
           onClose={() => setDisplayAIDialog(false)}
@@ -320,9 +341,12 @@ const AIInsights = ({
 
   const isCGUStatusPending = useXtmOne && !fullyActive;
   const isButtonDisabled = isCGUStatusPending && !isAdmin;
-  const tooltipTitle = (isCGUStatusPending && !isAdmin)
-    ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
-    : t_i18n('AI Insights');
+  const tooltipTitle =
+    isCGUStatusPending && !isAdmin
+      ? t_i18n(
+          "Ask Ariane isn't activated yet. Please reach out to your administrator to enable this feature.",
+        )
+      : t_i18n('AI Insights');
 
   const handleAIInsightClick = () => {
     if (isCGUStatusPending) {
@@ -341,58 +365,75 @@ const AIInsights = ({
         tooltipTitle={tooltipTitle}
       />
       {displayCGUDialog && (
-        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
+        <ValidateTermsOfUseDialog
+          open={displayCGUDialog}
+          onClose={() => setDisplayCGUDialog(false)}
+        />
       )}
       <Drawer
         open={display}
         onClose={handleClose}
         title={t_i18n('AI Insights')}
-        header={useXtmOne ? (
-          <Autocomplete<AgentOption, false, true>
-            sx={{ width: 220 }}
-            size="small"
-            disableClearable
-            options={agentOptions}
-            getOptionLabel={(option) => option.name}
-            value={selectedAgent}
-            onChange={handleAgentChange}
-            loading={loadingAgents}
-            disabled={agentOptions.length === 0 || loading}
-            noOptionsText={t_i18n('No agent available')}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                size="small"
-                placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-          />
-        ) : undefined}
+        header={
+          useXtmOne ? (
+            <Autocomplete<AgentOption, false, true>
+              sx={{ width: 220 }}
+              size="small"
+              disableClearable
+              options={agentOptions}
+              getOptionLabel={(option) => option.name}
+              value={selectedAgent}
+              onChange={handleAgentChange}
+              loading={loadingAgents}
+              disabled={agentOptions.length === 0 || loading}
+              noOptionsText={t_i18n('No agent available')}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  size="small"
+                  placeholder={
+                    agentOptions.length === 0
+                      ? t_i18n('No agent available')
+                      : t_i18n('Select agent')
+                  }
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          ) : undefined
+        }
       >
         <div className={classes.container}>
-          <Box sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItem: 'center',
-          }}
+          <Box
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItem: 'center',
+            }}
           >
             <Tabs value={currentTab} onChange={handleChangeTab}>
               {tabs.includes('activity') && <Tab value="activity" label={t_i18n('Activity')} />}
-              {tabs.includes('containers') && <Tab value="containers" label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')} />}
+              {tabs.includes('containers') && (
+                <Tab
+                  value="containers"
+                  label={isContainer ? t_i18n('Container summary') : t_i18n('Containers digest')}
+                />
+              )}
               {tabs.includes('forecast') && <Tab value="forecast" label={t_i18n('Forecast')} />}
-              {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
+              {tabs.includes('history') && (
+                <Tab value="history" label={t_i18n('Internal history')} />
+              )}
             </Tabs>
             {loading && (
               <div style={{ paddingTop: 10 }}>

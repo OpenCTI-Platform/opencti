@@ -20,10 +20,7 @@ const subscription = graphql`
 `;
 
 const markingDefinitionMutationFieldPatch = graphql`
-  mutation MarkingDefinitionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation MarkingDefinitionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     markingDefinitionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...MarkingDefinitionEdition_markingDefinition
@@ -33,10 +30,7 @@ const markingDefinitionMutationFieldPatch = graphql`
 `;
 
 const markingDefinitionEditionFocus = graphql`
-  mutation MarkingDefinitionEditionFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation MarkingDefinitionEditionFocusMutation($id: ID!, $input: EditContext!) {
     markingDefinitionEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -45,15 +39,16 @@ const markingDefinitionEditionFocus = graphql`
   }
 `;
 
-const markingDefinitionValidation = (t) => Yup.object().shape({
-  definition_type: Yup.string().required(t('This field is required')),
-  definition: Yup.string().required(t('This field is required')),
-  x_opencti_color: Yup.string().required(t('This field is required')),
-  x_opencti_order: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-});
+const markingDefinitionValidation = (t) =>
+  Yup.object().shape({
+    definition_type: Yup.string().required(t('This field is required')),
+    definition: Yup.string().required(t('This field is required')),
+    x_opencti_color: Yup.string().required(t('This field is required')),
+    x_opencti_order: Yup.number()
+      .typeError(t('The value must be a number'))
+      .integer(t('The value must be a number'))
+      .required(t('This field is required')),
+  });
 
 class MarkingDefinitionEditionContainer extends Component {
   constructor(props) {
@@ -124,12 +119,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="definition_type"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="definition_type" />}
               />
               <Field
                 component={TextField}
@@ -140,12 +130,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="definition"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="definition" />}
               />
               <Field
                 component={ColorPickerField}
@@ -155,12 +140,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="x_opencti_color"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="x_opencti_color" />}
               />
               <Field
                 component={TextField}
@@ -172,12 +152,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="x_opencti_order"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="x_opencti_order" />}
               />
             </Form>
           )}
@@ -214,6 +189,4 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-)(MarkingDefinitionEditionFragment);
+export default compose(inject18n)(MarkingDefinitionEditionFragment);

@@ -69,19 +69,14 @@ const EmailTemplateHeader = ({ data }: EmailTemplateHeaderProps) => {
           marginBottom: theme.spacing(3),
         }}
       >
-        <TitleMainEntity sx={{ flex: 1 }}>
-          {template.name}
-        </TitleMainEntity>
+        <TitleMainEntity sx={{ flex: 1 }}>{template.name}</TitleMainEntity>
         <EmailTemplateTestSend templateId={template.id} />
         <EmailTemplatePopover
           onUpdate={() => setFormOpen(true)}
           templateId={template.id}
           onDeleteComplete={() => navigate(emailTemplateLink)}
         />
-        <Button
-          onClick={onSubmit}
-          disabled={editorValue === template.template_body || editOnGoing}
-        >
+        <Button onClick={onSubmit} disabled={editorValue === template.template_body || editOnGoing}>
           {t_i18n('Save template')}
         </Button>
       </div>

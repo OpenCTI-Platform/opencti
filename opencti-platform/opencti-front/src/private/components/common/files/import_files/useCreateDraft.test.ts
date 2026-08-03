@@ -20,10 +20,13 @@ const minimalDraftValues: DraftAddInput = {
 const makeHook = (
   mockCommit: ReturnType<typeof vi.fn>,
   mockSetDraftId: ReturnType<typeof vi.fn> = vi.fn(),
-) => renderHook(() => useCreateDraft(
-  mockCommit as unknown as (args: UseMutationConfig<DraftCreationMutation>) => void,
-  mockSetDraftId as unknown as (id?: string) => void,
-));
+) =>
+  renderHook(() =>
+    useCreateDraft(
+      mockCommit as unknown as (args: UseMutationConfig<DraftCreationMutation>) => void,
+      mockSetDraftId as unknown as (id?: string) => void,
+    ),
+  );
 
 // ---------------------------------------------------------------------------
 // Tests

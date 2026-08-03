@@ -75,10 +75,7 @@ const KillChainPhasesField = ({
       options={killChainPhases}
       onInputChange={searchKillChainPhases}
       onChange={typeof onChange === 'function' ? onChange : null}
-      renderOption={(
-        props: HTMLAttributes<HTMLLIElement>,
-        option: KillChainPhaseFieldOption,
-      ) => (
+      renderOption={(props: HTMLAttributes<HTMLLIElement>, option: KillChainPhaseFieldOption) => (
         <li {...props} key={option.value}>
           <div
             style={{
@@ -95,7 +92,8 @@ const KillChainPhasesField = ({
               flexGrow: 1,
               marginLeft: 10,
             }}
-          >{option.label}
+          >
+            {option.label}
           </div>
         </li>
       )}

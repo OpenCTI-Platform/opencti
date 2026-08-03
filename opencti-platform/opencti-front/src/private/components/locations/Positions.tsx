@@ -4,7 +4,10 @@ import PositionCreation from './positions/PositionCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { PositionsLinesPaginationQuery, PositionsLinesPaginationQuery$variables } from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
+import {
+  PositionsLinesPaginationQuery,
+  PositionsLinesPaginationQuery$variables,
+} from './positions/__generated__/PositionsLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { PositionLineDummy } from './positions/PositionLine';
 import PositionsLines, { positionsLinesQuery } from './positions/PositionsLines';
@@ -19,28 +22,22 @@ const Positions: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Positions | Locations'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_POSITIONS,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: true,
-      openExports: false,
-      filters: emptyFilterGroup,
-      numberOfElements: {
-        number: 0,
-        symbol: '',
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY_POSITIONS,
+      {
+        searchTerm: '',
+        sortBy: 'name',
+        orderAsc: true,
+        openExports: false,
+        filters: emptyFilterGroup,
+        numberOfElements: {
+          number: 0,
+          symbol: '',
+        },
       },
-    },
-  );
-  const {
-    searchTerm,
-    sortBy,
-    orderAsc,
-    filters,
-    openExports,
-    numberOfElements,
-  } = viewStorage;
+    );
+  const { searchTerm, sortBy, orderAsc, filters, openExports, numberOfElements } = viewStorage;
   const renderLines = () => {
     const dataColumns = {
       name: {
@@ -82,16 +79,16 @@ const Positions: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <PositionCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -99,7 +96,7 @@ const Positions: FunctionComponent = () => {
                     <PositionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <PositionsLines
               queryRef={queryRef}
@@ -114,7 +111,9 @@ const Positions: FunctionComponent = () => {
   };
   return (
     <div data-testid="position-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

@@ -1,7 +1,15 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { logMigration } from '../config/conf';
-import { BULK_TIMEOUT, elBulk, elFindByIds, elList, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import {
+  BULK_TIMEOUT,
+  elBulk,
+  elFindByIds,
+  elList,
+  elUpdateByQueryForMigration,
+  ES_MAX_CONCURRENCY,
+  MAX_BULK_OPERATIONS,
+} from '../database/engine';
 import { isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import {
@@ -15,7 +23,11 @@ import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from '../schema/stixCyberObservable';
+import {
+  ENTITY_IPV4_ADDR,
+  ENTITY_IPV6_ADDR,
+  isStixCyberObservable,
+} from '../schema/stixCyberObservable';
 import { pushAll } from '../utils/arrayUtil';
 
 const message = '[MIGRATION] Cleaning deprecated rels';
@@ -33,15 +45,24 @@ export const up = async (next) => {
   const clearRelatedToObservableRels = async (threats) => {
     let currentProcessingThreats = 0;
     for (let i = 0; i < threats.length; i += 1) {
-      logMigration.info(`[OPENCTI] Cleaning deprecated rels for related-to ${currentProcessingThreats} / ${threats.length}`);
+      logMigration.info(
+        `[OPENCTI] Cleaning deprecated rels for related-to ${currentProcessingThreats} / ${threats.length}`,
+      );
       const threat = threats[i];
       const relatedToIds = threat[relKeyRelatedTo] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, relatedToIds.flat(Infinity).filter((id) => isNotEmptyField(id)));
+      const groupIds = R.splitEvery(
+        5000,
+        relatedToIds.flat(Infinity).filter((id) => isNotEmptyField(id)),
+      );
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
-        const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
-        const entitiesIdsWithoutObservables = entitiesBaseData.filter((n) => !isStixCyberObservable(n.entity_type)).map((n) => n.internal_id);
+        const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, {
+          baseData: true,
+        });
+        const entitiesIdsWithoutObservables = entitiesBaseData
+          .filter((n) => !isStixCyberObservable(n.entity_type))
+          .map((n) => n.internal_id);
         pushAll(newIds, entitiesIdsWithoutObservables);
       }
       if (newIds.length > 0) {
@@ -67,7 +88,11 @@ export const up = async (next) => {
     ENTITY_TYPE_CAMPAIGN,
     ENTITY_TYPE_MALWARE,
   ];
-  const optsRelatedTo = { types: threatTypes, logForMigration: true, callback: clearRelatedToObservableRels };
+  const optsRelatedTo = {
+    types: threatTypes,
+    logForMigration: true,
+    callback: clearRelatedToObservableRels,
+  };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, optsRelatedTo);
   // Apply operations.
   let currentProcessingRelatedTo = 0;
@@ -75,10 +100,16 @@ export const up = async (next) => {
   const concurrentUpdateRelatedTo = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessingRelatedTo += bulk.length;
-    logMigration.info(`[OPENCTI] Cleaning deprecated rels for observable related-to ${currentProcessingRelatedTo} / ${bulkOperationsRelatedTo.length}`);
+    logMigration.info(
+      `[OPENCTI] Cleaning deprecated rels for observable related-to ${currentProcessingRelatedTo} / ${bulkOperationsRelatedTo.length}`,
+    );
   };
-  await Promise.map(groupsOfOperationsRelatedTo, concurrentUpdateRelatedTo, { concurrency: ES_MAX_CONCURRENCY });
-  logMigration.info(`[MIGRATION] Cleaning deprecated rels for observable related-to done in ${new Date() - startRelatedTo} ms`);
+  await Promise.map(groupsOfOperationsRelatedTo, concurrentUpdateRelatedTo, {
+    concurrency: ES_MAX_CONCURRENCY,
+  });
+  logMigration.info(
+    `[MIGRATION] Cleaning deprecated rels for observable related-to done in ${new Date() - startRelatedTo} ms`,
+  );
 
   // 2nd pass
   // Cleaning located-at when pointing a country or a region
@@ -90,15 +121,24 @@ export const up = async (next) => {
   const clearLocatedAtRegionAndCountryRels = async (locations) => {
     let currentProcessingLocations = 0;
     for (let i = 0; i < locations.length; i += 1) {
-      logMigration.info(`[OPENCTI] Cleaning deprecated rels for located-at ${currentProcessingLocations} / ${locations.length}`);
+      logMigration.info(
+        `[OPENCTI] Cleaning deprecated rels for located-at ${currentProcessingLocations} / ${locations.length}`,
+      );
       const location = locations[i];
       const locatedAtIds = location[relKeyLocatedAt] ?? [];
       const newIds = [];
-      const groupIds = R.splitEvery(5000, locatedAtIds.flat(Infinity).filter((id) => isNotEmptyField(id)));
+      const groupIds = R.splitEvery(
+        5000,
+        locatedAtIds.flat(Infinity).filter((id) => isNotEmptyField(id)),
+      );
       for (let index = 0; index < groupIds.length; index += 1) {
         const workingIds = groupIds[index];
-        const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, { baseData: true });
-        const entitiesIdsOnlyWithoutClearedTypes = entitiesBaseData.filter((n) => !cleanTypes.includes(n.entity_type)).map((n) => n.internal_id);
+        const entitiesBaseData = await elFindByIds(context, SYSTEM_USER, workingIds, {
+          baseData: true,
+        });
+        const entitiesIdsOnlyWithoutClearedTypes = entitiesBaseData
+          .filter((n) => !cleanTypes.includes(n.entity_type))
+          .map((n) => n.internal_id);
         pushAll(newIds, entitiesIdsOnlyWithoutClearedTypes);
       }
       if (newIds.length > 0) {
@@ -117,7 +157,11 @@ export const up = async (next) => {
       currentProcessingLocations += 1;
     }
   };
-  const opts = { types: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY], logForMigration: true, callback: clearLocatedAtRegionAndCountryRels };
+  const opts = {
+    types: [ENTITY_TYPE_LOCATION_REGION, ENTITY_TYPE_LOCATION_COUNTRY],
+    logForMigration: true,
+    callback: clearLocatedAtRegionAndCountryRels,
+  };
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
@@ -125,10 +169,14 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logMigration.info(`[OPENCTI] Cleaning deprecated rels for located-at to country / region ${currentProcessing} / ${bulkOperationsLocatedAt.length}`);
+    logMigration.info(
+      `[OPENCTI] Cleaning deprecated rels for located-at to country / region ${currentProcessing} / ${bulkOperationsLocatedAt.length}`,
+    );
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logMigration.info(`[MIGRATION] Cleaning deprecated rels for located-at to country / region in ${new Date() - startLocatedAt} ms`);
+  logMigration.info(
+    `[MIGRATION] Cleaning deprecated rels for located-at to country / region in ${new Date() - startLocatedAt} ms`,
+  );
 
   // 3rd pass
   // Cleaning all targets to countries, regions and sectors
@@ -161,11 +209,7 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration(
-    message,
-    READ_INDEX_STIX_DOMAIN_OBJECTS,
-    updateQueryForTargets,
-  );
+  await elUpdateByQueryForMigration(message, READ_INDEX_STIX_DOMAIN_OBJECTS, updateQueryForTargets);
 
   logMigration.info(`${message} > done`);
   next();

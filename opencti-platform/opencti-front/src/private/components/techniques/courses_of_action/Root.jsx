@@ -18,7 +18,10 @@ import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionDeletion from './CouseOfActionDeletion';
 import { PATH_COURSE_OF_ACTION, PATH_COURSES_OF_ACTION } from '@components/common/routes/paths';
@@ -104,23 +107,28 @@ class RootCourseOfAction extends Component {
                 const paddingRight = getPaddingRight(location.pathname, basePath, false);
                 return (
                   <div style={{ paddingRight }}>
-                    <Breadcrumbs elements={[
-                      { label: t('Techniques') },
-                      { label: t('Courses of action'), link: PATH_COURSES_OF_ACTION },
-                      { label: courseOfAction.name, current: true },
-                    ]}
+                    <Breadcrumbs
+                      elements={[
+                        { label: t('Techniques') },
+                        { label: t('Courses of action'), link: PATH_COURSES_OF_ACTION },
+                        { label: courseOfAction.name, current: true },
+                      ]}
                     />
                     <StixDomainObjectHeader
                       entityType="Course-Of-Action"
                       stixDomainObject={courseOfAction}
-                      EditComponent={(
+                      EditComponent={
                         <Security needs={[KNOWLEDGE_KNUPDATE]}>
                           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
                         </Security>
-                      )}
+                      }
                       DeleteComponent={({ isOpen, onClose }) => (
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                          <CourseOfActionDeletion id={courseOfAction.id} isOpen={isOpen} handleClose={onClose} />
+                          <CourseOfActionDeletion
+                            id={courseOfAction.id}
+                            isOpen={isOpen}
+                            handleClose={onClose}
+                          />
                         </Security>
                       )}
                       isOpenctiAlias={true}
@@ -131,13 +139,8 @@ class RootCourseOfAction extends Component {
                       entity={courseOfAction}
                       basePath={basePath}
                       pages={{
-                        overview:
-                          <CourseOfAction courseOfActionData={props.courseOfAction} />,
-                        content: (
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={courseOfAction}
-                          />
-                        ),
+                        overview: <CourseOfAction courseOfActionData={props.courseOfAction} />,
+                        content: <StixCoreObjectContentRoot stixCoreObject={courseOfAction} />,
                         files: (
                           <FileManager
                             id={courseOfActionId}
@@ -146,15 +149,16 @@ class RootCourseOfAction extends Component {
                             entity={props.courseOfAction}
                           />
                         ),
-                        history:
-                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />,
+                        history: <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />,
                       }}
-                      extraRoutes={(
+                      extraRoutes={
                         <Route
                           path="/knowledge/*"
-                          element={<CourseOfActionKnowledge courseOfAction={props.courseOfAction} />}
+                          element={
+                            <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
+                          }
                         />
-                      )}
+                      }
                     />
                   </div>
                 );

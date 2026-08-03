@@ -8,10 +8,7 @@ const subscribe = (channel: string, callback: useBusCallback) => {
   if (!channel || !callback) {
     return undefined;
   }
-  subscribers = [
-    ...subscribers,
-    [channel, callback],
-  ];
+  subscribers = [...subscribers, [channel, callback]];
 
   return () => {
     subscribers = subscribers.filter((subscriber) => subscriber[1] !== callback);
@@ -19,7 +16,8 @@ const subscribe = (channel: string, callback: useBusCallback) => {
 };
 
 export const dispatch = (channel: string, event?: any) => {
-  subscribers.filter(([filter]) => filter === channel)
+  subscribers
+    .filter(([filter]) => filter === channel)
     .forEach(([_, callback]) => {
       callback(event);
     });

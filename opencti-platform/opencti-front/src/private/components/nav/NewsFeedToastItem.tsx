@@ -20,9 +20,7 @@ interface NewsFeedToastItemProps {
   item: NewsFeedToastData;
 }
 
-const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
-  item,
-}) => {
+const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({ item }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -71,7 +69,10 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
       {/* Text content */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {typeLabel && (
-          <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.primary.main, display: 'block' }}
+          >
             {t_i18n(typeLabel)}
           </Typography>
         )}
@@ -79,8 +80,13 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
           {item.title}
         </Typography>
         {!isKnownNewsFeedType(item.news_feed_type) && (
-          <Typography variant="caption" sx={{ color: theme.palette.primary.main, display: 'block' }}>
-            {t_i18n('A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade')}
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.primary.main, display: 'block' }}
+          >
+            {t_i18n(
+              'A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade',
+            )}
           </Typography>
         )}
       </Box>

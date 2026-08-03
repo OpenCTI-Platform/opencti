@@ -20,17 +20,14 @@ const setImagesWidth = (content: string, maxWidth = MAX_WIDTH_PORTRAIT) => {
 
   // 1. In case of images with width in pixels.
   // Find the value of the width and max sure it is not higher than maximum possible.
-  updatedContent = updatedContent.replaceAll(
-    /<img.+?width="([0-9\\.]+)".*?>/gi,
-    (match, width) => {
-      let result = match;
-      if (width > maxWidth) {
-        result = result.replace(/ height="\d+"/, ''); // Clear height to keep ratio.
-        result = result.replace(`width="${width}"`, `width="${maxWidth}"`);
-      }
-      return result;
-    },
-  );
+  updatedContent = updatedContent.replaceAll(/<img.+?width="([0-9\\.]+)".*?>/gi, (match, width) => {
+    let result = match;
+    if (width > maxWidth) {
+      result = result.replace(/ height="\d+"/, ''); // Clear height to keep ratio.
+      result = result.replace(`width="${width}"`, `width="${maxWidth}"`);
+    }
+    return result;
+  });
 
   // 2. In case of images with width in percentage.
   // Transform the width percentage in pixels.

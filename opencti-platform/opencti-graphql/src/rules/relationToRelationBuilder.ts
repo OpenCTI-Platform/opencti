@@ -10,7 +10,10 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
-const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
+const buildRelationToRelationRule = (
+  ruleDefinition: RuleDefinition,
+  relationTypes: RelationTypes,
+): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, leftTypesFrom, rightTypesTo, creationType } = relationTypes;
   // Execution
@@ -31,7 +34,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
       const listFromCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
           const { internal_id: foundRelationId, fromId, confidence = 0 } = relationships[sIndex];
-          const { start_time, stop_time, [RELATION_OBJECT_MARKING]: object_marking_refs } = relationships[sIndex];
+          const {
+            start_time,
+            stop_time,
+            [RELATION_OBJECT_MARKING]: object_marking_refs,
+          } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
@@ -65,7 +72,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
       const listToCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
           const { internal_id: foundRelationId, toId, confidence = 0 } = relationships[sIndex];
-          const { start_time, stop_time, [RELATION_OBJECT_MARKING]: object_marking_refs } = relationships[sIndex];
+          const {
+            start_time,
+            stop_time,
+            [RELATION_OBJECT_MARKING]: object_marking_refs,
+          } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];

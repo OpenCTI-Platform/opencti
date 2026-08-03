@@ -17,11 +17,16 @@ type ValidateTermsOfUseDialogProps = {
 
 const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogProps) => {
   const { t_i18n } = useFormatter();
-  const { settings: { id } } = useAuth();
+  const {
+    settings: { id },
+  } = useAuth();
 
   const [isChecked, setIsChecked] = React.useState(false);
   const [commitField] = useApiMutation(experienceFieldPatch);
-  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | boolean) => {
+  const handleSubmitField = (
+    name: string,
+    value: string | string[] | FieldOption | null | boolean,
+  ) => {
     commitField({
       variables: {
         id,
@@ -51,7 +56,9 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
     >
       <Stack gap={3}>
         <Typography>
-          {t_i18n('Please take a moment to review our "Filigran AI Terms". Our chatbot is here to assist you, but it\'s important to understand how it works and what to expect. Please read the full terms to know how we protect your data and ensure service quality.')}
+          {t_i18n(
+            'Please take a moment to review our "Filigran AI Terms". Our chatbot is here to assist you, but it\'s important to understand how it works and what to expect. Please read the full terms to know how we protect your data and ensure service quality.',
+          )}
         </Typography>
 
         <Stack alignItems="center" gap={2}>
@@ -75,16 +82,10 @@ const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogPro
         </Stack>
 
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => updateStatus(CGUStatus.disabled)}
-          >
+          <Button variant="secondary" onClick={() => updateStatus(CGUStatus.disabled)}>
             {t_i18n('Decline')}
           </Button>
-          <Button
-            onClick={() => updateStatus(CGUStatus.enabled)}
-            disabled={!isChecked}
-          >
+          <Button onClick={() => updateStatus(CGUStatus.enabled)} disabled={!isChecked}>
             {t_i18n('I Agree to Filigran AI Terms')}
           </Button>
         </DialogActions>

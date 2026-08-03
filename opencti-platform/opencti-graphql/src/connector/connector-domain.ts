@@ -1,8 +1,15 @@
 import { importCsvConnector, importCsvConnectorRuntime } from './importCsv/importCsv-domain';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv/importCsv-configuration';
-import { DRAFT_VALIDATION_CONNECTOR, draftValidationConnectorRuntime } from '../modules/draftWorkspace/draftWorkspace-connector';
-import { getInternalBackgroundTaskQueues, getInternalPlaybookQueues, getInternalSyncQueues } from '../database/rabbitmq';
+import {
+  DRAFT_VALIDATION_CONNECTOR,
+  draftValidationConnectorRuntime,
+} from '../modules/draftWorkspace/draftWorkspace-connector';
+import {
+  getInternalBackgroundTaskQueues,
+  getInternalPlaybookQueues,
+  getInternalSyncQueues,
+} from '../database/rabbitmq';
 import type { Connector } from './internalConnector';
 import { pushAll } from '../utils/arrayUtil';
 
@@ -35,12 +42,16 @@ export const builtInConnectorsRuntime = async (context: AuthContext, user: AuthU
     builtInConnectors.push(csvConnector);
   }
   builtInConnectors.push(await draftValidationConnectorRuntime());
-  pushAll(builtInConnectors, (await builtInInternalConnectors(context, user)));
+  pushAll(builtInConnectors, await builtInInternalConnectors(context, user));
   return builtInConnectors;
 };
 
 export const builtInConnectors = async (context: AuthContext, user: AuthUser) => {
-  return [importCsvConnector(), DRAFT_VALIDATION_CONNECTOR, ...(await builtInInternalConnectors(context, user))];
+  return [
+    importCsvConnector(),
+    DRAFT_VALIDATION_CONNECTOR,
+    ...(await builtInInternalConnectors(context, user)),
+  ];
 };
 
 export const builtInConnector = async (context: AuthContext, user: AuthUser, id: string) => {

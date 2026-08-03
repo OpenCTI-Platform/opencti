@@ -57,7 +57,7 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
   return (
     <Stack gap={2}>
       <Alert
-        content={(
+        content={
           <>
             <MarkdownDisplay
               content={data?.log?.context_data?.message ?? ''}
@@ -65,13 +65,10 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
               commonmark={true}
             />
           </>
-        )}
+        }
       />
 
-      <ChangesTable
-        changes={mappedChanges}
-        variant="text"
-      />
+      <ChangesTable changes={mappedChanges} variant="text" />
     </Stack>
   );
 };

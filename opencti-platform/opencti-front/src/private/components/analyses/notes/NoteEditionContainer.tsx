@@ -31,29 +31,22 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
       controlledDial={controlledDial}
     >
       {({ onClose }) => (
-        <NoteEditionOverview
-          note={note}
-          context={editContext}
-          handleClose={onClose}
-        />
+        <NoteEditionOverview note={note} context={editContext} handleClose={onClose} />
       )}
     </Drawer>
   );
 };
 
-const NoteEditionContainerFragment = createFragmentContainer(
-  NoteEditionContainer,
-  {
-    note: graphql`
-      fragment NoteEditionContainer_note on Note {
-        ...NoteEditionOverview_note
-        editContext {
-          name
-          focusOn
-        }
+const NoteEditionContainerFragment = createFragmentContainer(NoteEditionContainer, {
+  note: graphql`
+    fragment NoteEditionContainer_note on Note {
+      ...NoteEditionOverview_note
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default NoteEditionContainerFragment;

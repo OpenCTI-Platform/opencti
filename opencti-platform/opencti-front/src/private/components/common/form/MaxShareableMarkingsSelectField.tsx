@@ -35,12 +35,12 @@ const MaxShareableMarkingsSelectField = ({
   const { setFieldValue } = form;
   const { value, name } = field;
 
-  const markingTypes = Array.from(new Set(
-    markingDefinitions.map((m) => m.definition_type),
-  ));
+  const markingTypes = Array.from(new Set(markingDefinitions.map((m) => m.definition_type)));
   const initialValues: Record<string, string> = {};
   markingTypes.forEach((type) => {
-    const sortedValuesOfType = value.filter((v) => v.definition_type === type).sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+    const sortedValuesOfType = value
+      .filter((v) => v.definition_type === type)
+      .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
     if (sortedValuesOfType.length > 0) {
       if (sortedValuesOfType.find((v) => v.id === 'none')) {
         initialValues[type] = NOT_SHAREABLE_ID;
@@ -53,17 +53,19 @@ const MaxShareableMarkingsSelectField = ({
   });
 
   const changeMarking = (type: string, markingId: string) => {
-    const newValue = [...Object.entries(initialValues).filter(([definition_type]) => definition_type !== type).map(([_, v]) => v), { id: markingId, definition_type: type }];
+    const newValue = [
+      ...Object.entries(initialValues)
+        .filter(([definition_type]) => definition_type !== type)
+        .map(([_, v]) => v),
+      { id: markingId, definition_type: type },
+    ];
     setFieldValue(name, newValue);
     onChange?.(type, markingId);
   };
 
   return (
-    <Formik<MarkingsSelectFieldInternalValue>
-      initialValues={initialValues}
-      onSubmit={() => {}}
-    >
-      {() => (
+    <Formik<MarkingsSelectFieldInternalValue> initialValues={initialValues} onSubmit={() => {}}>
+      {() =>
         markingTypes.map((type, i) => (
           <Field
             key={type}
@@ -92,7 +94,7 @@ const MaxShareableMarkingsSelectField = ({
               ))}
           </Field>
         ))
-      )}
+      }
     </Formik>
   );
 };

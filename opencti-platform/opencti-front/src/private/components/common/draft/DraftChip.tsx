@@ -16,12 +16,7 @@ export const DraftChip = () => {
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
 
-  return (
-    <Tag
-      label={t_i18n('Draft')}
-      color={draftColor}
-    />
-  );
+  return <Tag label={t_i18n('Draft')} color={draftColor} />;
 };
 
 export const DraftStatusChip = ({ draftStatus }: { draftStatus?: string | null }) => {

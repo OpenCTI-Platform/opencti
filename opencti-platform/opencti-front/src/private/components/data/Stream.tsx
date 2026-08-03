@@ -21,11 +21,17 @@ import { StreamLine_node$data } from '@components/data/__generated__/StreamLine_
 import ItemBoolean from '../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../utils/String';
 import Tag from '@common/tag/Tag';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+} from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import StreamConsumersDrawer from '@components/data/stream/StreamConsumersDrawer';
 import StreamCollectionCreation from '@components/data/stream/StreamCollectionCreation';
-import { StreamLinesPaginationQuery, StreamLinesPaginationQuery$variables } from '@components/data/__generated__/StreamLinesPaginationQuery.graphql';
+import {
+  StreamLinesPaginationQuery,
+  StreamLinesPaginationQuery$variables,
+} from '@components/data/__generated__/StreamLinesPaginationQuery.graphql';
 import { StreamLines_data$data } from '@components/data/__generated__/StreamLines_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'stream';
@@ -38,20 +44,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 const streamLineFragment = graphql`
-    fragment StreamLine_node on StreamCollection {
-      id
-      name
-      description
-      filters
-      stream_public
-      stream_live
-      consumers {
-        connectionId
-        estimatedOutOfDepth
-      }
-      ...StreamCollectionEdition_streamCollection
+  fragment StreamLine_node on StreamCollection {
+    id
+    name
+    description
+    filters
+    stream_public
+    stream_live
+    consumers {
+      connectionId
+      estimatedOutOfDepth
     }
-  `;
+    ...StreamCollectionEdition_streamCollection
+  }
+`;
 
 const streamLinesFragment = graphql`
   fragment StreamLines_data on Query
@@ -93,13 +99,13 @@ export const streamLinesPaginationQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StreamLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -120,7 +126,11 @@ const Stream = () => {
     openExports: false,
     searchTerm: '',
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<StreamLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<StreamLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
@@ -140,15 +150,35 @@ const Stream = () => {
     }
     const ONE_HOUR = 3600;
     const ONE_DAY = 86400;
-    const hasCritical = consumers.some((c) => !!c.estimatedOutOfDepth && c.estimatedOutOfDepth > 0 && c.estimatedOutOfDepth < ONE_HOUR);
-    const hasWarning = consumers.some((c) => !!c.estimatedOutOfDepth && c.estimatedOutOfDepth >= ONE_HOUR && c.estimatedOutOfDepth < ONE_DAY);
+    const hasCritical = consumers.some(
+      (c) =>
+        !!c.estimatedOutOfDepth && c.estimatedOutOfDepth > 0 && c.estimatedOutOfDepth < ONE_HOUR,
+    );
+    const hasWarning = consumers.some(
+      (c) =>
+        !!c.estimatedOutOfDepth &&
+        c.estimatedOutOfDepth >= ONE_HOUR &&
+        c.estimatedOutOfDepth < ONE_DAY,
+    );
     if (hasCritical) {
-      return { count: consumers.length, label: `${consumers.length} - ${t_i18n('At risk')}`, hexColor: '#c62828' };
+      return {
+        count: consumers.length,
+        label: `${consumers.length} - ${t_i18n('At risk')}`,
+        hexColor: '#c62828',
+      };
     }
     if (hasWarning) {
-      return { count: consumers.length, label: `${consumers.length} - ${t_i18n('Degraded')}`, hexColor: '#d84315' };
+      return {
+        count: consumers.length,
+        label: `${consumers.length} - ${t_i18n('Degraded')}`,
+        hexColor: '#d84315',
+      };
     }
-    return { count: consumers.length, label: `${consumers.length} - ${t_i18n('Healthy')}`, hexColor: '#2e7d32' };
+    return {
+      count: consumers.length,
+      label: `${consumers.length} - ${t_i18n('Healthy')}`,
+      hexColor: '#2e7d32',
+    };
   };
 
   const dataColumns = {
@@ -166,9 +196,7 @@ const Stream = () => {
       label: 'Stream ID',
       percentWidth: 25,
       isSortable: true,
-      render: ({ id }: StreamLine_node$data) => (
-        <ItemCopy content={id} variant="inLine" />
-      ),
+      render: ({ id }: StreamLine_node$data) => <ItemCopy content={id} variant="inLine" />,
     },
     stream_public: {
       id: 'stream_public',
@@ -176,10 +204,7 @@ const Stream = () => {
       percentWidth: 10,
       isSortable: true,
       render: ({ stream_public }: StreamLine_node$data) => (
-        <ItemBoolean
-          label={stream_public ? t_i18n('Yes') : t_i18n('No')}
-          status={stream_public}
-        />
+        <ItemBoolean label={stream_public ? t_i18n('Yes') : t_i18n('No')} status={stream_public} />
       ),
     },
     stream_live: {
@@ -201,14 +226,11 @@ const Stream = () => {
       isSortable: false,
       render: ({ consumers }: StreamLine_node$data) => {
         const health = computeConsumersHealth(consumers);
-        return health.count === 0
-          ? <>{EMPTY_VALUE}</>
-          : (
-              <Tag
-                label={health.label}
-                color={health.hexColor}
-              />
-            );
+        return health.count === 0 ? (
+          <>{EMPTY_VALUE}</>
+        ) : (
+          <Tag label={health.label} color={health.hexColor} />
+        );
       },
     },
     filters: {
@@ -218,16 +240,16 @@ const Stream = () => {
       isSortable: false,
       render: ({ filters }: StreamLine_node$data) => {
         const deserializedFilters = deserializeFilterGroupForFrontend(filters);
-        return isFilterGroupNotEmpty(deserializedFilters)
-          ? (
-              <FilterIconButton
-                filters={deserializedFilters}
-                dataColumns={dataColumns}
-                variant="small"
-                entityTypes={['Stix-Filtering']}
-              />
-            )
-          : EMPTY_VALUE;
+        return isFilterGroupNotEmpty(deserializedFilters) ? (
+          <FilterIconButton
+            filters={deserializedFilters}
+            dataColumns={dataColumns}
+            variant="small"
+            entityTypes={['Stix-Filtering']}
+          />
+        ) : (
+          EMPTY_VALUE
+        );
       },
     },
   };
@@ -242,12 +264,20 @@ const Stream = () => {
 
   return (
     <div className={classes.container} data-testid="sharing-streams-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Data sharing') },
+          { label: t_i18n('Live streams'), current: true },
+        ]}
+      />
       <SharingMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: StreamLines_data$data) => data.streamCollections?.edges?.map((n) => n?.node)}
+          resolvePath={(data: StreamLines_data$data) =>
+            data.streamCollections?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={viewStorage.filters}
@@ -255,18 +285,16 @@ const Stream = () => {
           preloadedPaginationProps={preloadedPaginationOptions}
           disableLineSelection
           icon={() => (
-            <StreamIcon sx={{
-              color: theme.palette.primary.main,
-            }}
+            <StreamIcon
+              sx={{
+                color: theme.palette.primary.main,
+              }}
             />
           )}
           actions={(node) => (
             <div onClick={(event) => stopEvent(event)}>
               <Security needs={[TAXIIAPI]}>
-                <StreamPopover
-                  streamCollection={node}
-                  paginationOptions={paginationOptions}
-                />
+                <StreamPopover streamCollection={node} paginationOptions={paginationOptions} />
               </Security>
             </div>
           )}
@@ -274,11 +302,11 @@ const Stream = () => {
             setStreamConsumer(node);
             handelOpenStreamConsumerDrawer();
           }}
-          createButton={(
+          createButton={
             <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
               <StreamCollectionCreation paginationOptions={paginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
       <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>

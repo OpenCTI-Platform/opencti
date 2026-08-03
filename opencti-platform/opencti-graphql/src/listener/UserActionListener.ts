@@ -1,7 +1,12 @@
 import type { AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreObject } from '../types/store';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 interface BasicUserAction {
@@ -167,8 +172,21 @@ export interface UserForgotPasswordAction extends BasicUserAction {
 }
 // endregion
 
-export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
-  | UserLogoutAction | UserExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction | DisseminateAction | UserForgotPasswordAction;
+export type UserAction =
+  | UserReadAction
+  | UserFileAction
+  | UserLoginAction
+  | UserEnrichAction
+  | UserAnalyzeAction
+  | UserImportAction
+  | UserLogoutAction
+  | UserExportAction
+  | UserSendAction
+  | UserModificationAction
+  | UserForbiddenAction
+  | UserSearchAction
+  | DisseminateAction
+  | UserForgotPasswordAction;
 
 export interface ActionListener {
   id: string;
@@ -193,11 +211,19 @@ export const publishUserAction = async (userAction: UserAction) => {
   return Promise.all(actionPromises);
 };
 
-export const completeContextDataForEntity = <T extends BasicStoreCommon | null, C extends ElementContextData>(inputContextData: C, data: T) => {
+export const completeContextDataForEntity = <
+  T extends BasicStoreCommon | null,
+  C extends ElementContextData,
+>(
+  inputContextData: C,
+  data: T,
+) => {
   const contextData = { ...inputContextData };
   if (data) {
     if (data.creator_id) {
-      contextData.creator_ids = Array.isArray(data.creator_id) ? data.creator_id : [data.creator_id];
+      contextData.creator_ids = Array.isArray(data.creator_id)
+        ? data.creator_id
+        : [data.creator_id];
     }
     if (data[RELATION_GRANTED_TO]) {
       contextData.granted_refs_ids = data[RELATION_GRANTED_TO];

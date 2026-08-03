@@ -4,7 +4,7 @@ type DecayRule implements InternalObject & BasicObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
@@ -74,5 +74,6 @@ input DecayRuleAddInput {
 type Mutation {
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   decayRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

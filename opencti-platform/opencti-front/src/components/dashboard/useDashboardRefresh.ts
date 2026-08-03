@@ -18,7 +18,8 @@ const useDashboardRefresh = ({
   initialRefreshRateSeconds = 0,
   onRefreshRateChange,
 }: UseDashboardRefreshOptions): UseDashboardRefreshResult => {
-  const [localRefreshRateSeconds, setLocalRefreshRateSeconds] = useState<number>(initialRefreshRateSeconds);
+  const [localRefreshRateSeconds, setLocalRefreshRateSeconds] =
+    useState<number>(initialRefreshRateSeconds);
   const refreshRate = localRefreshRateSeconds ? localRefreshRateSeconds * 1000 : null;
 
   const [lastRefreshTime, setLastRefreshTime] = useState(new Date());
@@ -51,12 +52,15 @@ const useDashboardRefresh = ({
     });
   }, []);
 
-  const handleRefreshRateChange = useCallback((refreshRateInSeconds: number) => {
-    setLocalRefreshRateSeconds(refreshRateInSeconds);
-    lastRefreshAtRef.current = Date.now();
-    setLastRefreshTime(new Date());
-    onRefreshRateChange?.(refreshRateInSeconds);
-  }, [onRefreshRateChange]);
+  const handleRefreshRateChange = useCallback(
+    (refreshRateInSeconds: number) => {
+      setLocalRefreshRateSeconds(refreshRateInSeconds);
+      lastRefreshAtRef.current = Date.now();
+      setLastRefreshTime(new Date());
+      onRefreshRateChange?.(refreshRateInSeconds);
+    },
+    [onRefreshRateChange],
+  );
 
   useEffect(() => {
     if (!refreshRate) {

@@ -1,7 +1,10 @@
 import validator from 'validator';
 import { addSettings } from '../domain/settings';
 import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
-import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
+import {
+  findByType as findEntitySettingsByType,
+  initCreateEntitySettings,
+} from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { createStatus, createStatusTemplate } from '../domain/status';
@@ -13,7 +16,12 @@ import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import {
+  KNOWLEDGE_COLLABORATION,
+  KNOWLEDGE_FRONTEND_EXPORT,
+  KNOWLEDGE_SHARE_FILTERS,
+  KNOWLEDGE_UPDATE,
+} from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -29,7 +37,11 @@ import { createRetentionRule } from '../modules/retentionRules/retentionRules-do
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
-const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 };
+const BYPASS_CAPABILITIES = {
+  name: BYPASS,
+  description: 'Bypass all capabilities',
+  attribute_order: 1,
+};
 export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
   attribute_order: 2500,
@@ -38,24 +50,48 @@ export const TAXII_CAPABILITIES = {
     { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
   ],
 };
-export const SHARE_FILTERS_CAPABILITY = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
+export const SHARE_FILTERS_CAPABILITY = {
+  name: KNOWLEDGE_SHARE_FILTERS,
+  description: 'Share filters',
+  attribute_order: 950,
+};
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
   description: 'Access knowledge',
   attribute_order: 100,
   dependencies: [
-    { name: KNOWLEDGE_COLLABORATION, description: 'Access to collaborative creation', attribute_order: 150 },
-    { name: KNOWLEDGE_FRONTEND_EXPORT, description: 'Can use web interface export functions (PDF, PNG, etc.)', attribute_order: 160 },
+    {
+      name: KNOWLEDGE_COLLABORATION,
+      description: 'Access to collaborative creation',
+      attribute_order: 150,
+    },
+    {
+      name: KNOWLEDGE_FRONTEND_EXPORT,
+      description: 'Can use web interface export functions (PDF, PNG, etc.)',
+      attribute_order: 160,
+    },
     {
       name: KNOWLEDGE_UPDATE,
       description: 'Create / Update knowledge',
       attribute_order: 200,
       dependencies: [
-        { name: 'KNORGARESTRICT', description: 'Restrict organization access', attribute_order: 290 },
+        {
+          name: 'KNORGARESTRICT',
+          description: 'Restrict organization access',
+          attribute_order: 290,
+        },
         { name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 },
         { name: 'KNMERGE', description: 'Merge knowledge', attribute_order: 305 },
-        { name: 'KNMANAGEAUTHMEMBERS', description: 'Manage authorized members', attribute_order: 310 },
-        { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
+        {
+          name: 'KNMANAGEAUTHMEMBERS',
+          description: 'Manage authorized members',
+          attribute_order: 310,
+        },
+        {
+          name: 'KNBYPASSREFERENCE',
+          description: 'Bypass enforced reference',
+          attribute_order: 320,
+        },
         { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
       ],
     },
@@ -65,7 +101,9 @@ const KNOWLEDGE_CAPABILITIES = {
       name: 'KNGETEXPORT',
       description: 'Download knowledge export',
       attribute_order: 700,
-      dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
+      dependencies: [
+        { name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 },
+      ],
     },
     { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
     { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
@@ -165,7 +203,9 @@ export const CAPABILITIES = [
     name: 'MODULES',
     description: 'Access connectors',
     attribute_order: 2000,
-    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
+    dependencies: [
+      { name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 },
+    ],
   },
   TAXII_CAPABILITIES,
   PIR_CAPABILITIES,
@@ -274,34 +314,80 @@ const createVocabularies = async (context) => {
 };
 
 const createDefaultStatusTemplates = async (context) => {
-  const statusNew = await createStatusTemplate(context, SYSTEM_USER, { name: 'NEW', color: '#ff9800' });
-  const statusProgress = await createStatusTemplate(context, SYSTEM_USER, { name: 'IN_PROGRESS', color: '#5c7bf5' });
+  const statusNew = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'NEW',
+    color: '#ff9800',
+  });
+  const statusProgress = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'IN_PROGRESS',
+    color: '#5c7bf5',
+  });
   await createStatusTemplate(context, SYSTEM_USER, { name: 'PENDING', color: '#5c7bf5' });
   await createStatusTemplate(context, SYSTEM_USER, { name: 'TO_BE_QUALIFIED', color: '#5c7bf5' });
-  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, { name: 'ANALYZED', color: '#4caf50' });
-  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, { name: 'CLOSED', color: '#607d8b' });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusNew.id, order: 1, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusProgress.id, order: 2, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusAnalyzed.id, order: 3, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, { template_id: statusClosed.id, order: 4, scope: StatusScope.Global });
-  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, { template_id: statusNew.id, order: 0, scope: StatusScope.RequestAccess });
+  const statusAnalyzed = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'ANALYZED',
+    color: '#4caf50',
+  });
+  const statusClosed = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'CLOSED',
+    color: '#607d8b',
+  });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
+    template_id: statusNew.id,
+    order: 1,
+    scope: StatusScope.Global,
+  });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
+    template_id: statusProgress.id,
+    order: 2,
+    scope: StatusScope.Global,
+  });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
+    template_id: statusAnalyzed.id,
+    order: 3,
+    scope: StatusScope.Global,
+  });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_REPORT, {
+    template_id: statusClosed.id,
+    order: 4,
+    scope: StatusScope.Global,
+  });
+  await createStatus(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, {
+    template_id: statusNew.id,
+    order: 0,
+    scope: StatusScope.RequestAccess,
+  });
 };
 
 export const createInitialRequestAccessFlow = async (context) => {
-  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, { name: 'DECLINED', color: '#b83f13' });
-  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, { name: 'APPROVED', color: '#4caf50' });
+  const statusTemplateDeclined = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'DECLINED',
+    color: '#b83f13',
+  });
+  const statusTemplateApproved = await createStatusTemplate(context, SYSTEM_USER, {
+    name: 'APPROVED',
+    color: '#4caf50',
+  });
 
   const statusEntityRFIDeclined = await createStatus(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateDeclined.id, order: 1, scope: StatusScope.RequestAccess },
+    {
+      template_id: statusTemplateDeclined.id,
+      order: 1,
+      scope: StatusScope.RequestAccess,
+    },
   );
   const statusEntityRFIApproved = await createStatus(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_CONTAINER_CASE_RFI,
-    { template_id: statusTemplateApproved.id, order: 1, scope: StatusScope.RequestAccess },
+    {
+      template_id: statusTemplateApproved.id,
+      order: 1,
+      scope: StatusScope.RequestAccess,
+    },
   );
 
   const initialConfig = {
@@ -309,12 +395,20 @@ export const createInitialRequestAccessFlow = async (context) => {
     declined_workflow_id: statusEntityRFIDeclined.id,
   };
 
-  const rfiEntitySettings = await findEntitySettingsByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const rfiEntitySettings = await findEntitySettingsByType(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_CONTAINER_CASE_RFI,
+  );
   if (rfiEntitySettings) {
-    const editInput = [
-      { key: 'request_access_workflow', value: [initialConfig] },
-    ];
-    await updateAttribute(context, SYSTEM_USER, rfiEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING, editInput);
+    const editInput = [{ key: 'request_access_workflow', value: [initialConfig] }];
+    await updateAttribute(
+      context,
+      SYSTEM_USER,
+      rfiEntitySettings.id,
+      ENTITY_TYPE_ENTITY_SETTING,
+      editInput,
+    );
   }
 };
 
@@ -323,7 +417,11 @@ export const createCapabilities = async (context, capabilities, parentName = '')
     const capability = capabilities[i];
     const { name, description, attribute_order: AttributeOrder } = capability;
     const capabilityName = `${parentName}${name}`;
-    await addCapability(context, SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
+    await addCapability(context, SYSTEM_USER, {
+      name: capabilityName,
+      description,
+      attribute_order: AttributeOrder,
+    });
     if (capability.dependencies && capability.dependencies.length > 0) {
       await createCapabilities(context, capability.dependencies, `${capabilityName}_`);
     }
@@ -373,9 +471,7 @@ const createBasicRolesAndCapabilities = async (context) => {
   const defaultRoleInput = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
-    capabilities: [
-      KNOWLEDGE_CAPABILITY,
-    ],
+    capabilities: [KNOWLEDGE_CAPABILITY],
     can_manage_sensitive_config: false,
   });
 
@@ -409,7 +505,12 @@ const createBasicRolesAndCapabilities = async (context) => {
     toId: administratorRole.id,
     relationship_type: 'has-role',
   };
-  await groupAddRelation(context, SYSTEM_USER, administratorGroup.id, administratorRoleRelationInput);
+  await groupAddRelation(
+    context,
+    SYSTEM_USER,
+    administratorGroup.id,
+    administratorRoleRelationInput,
+  );
 
   // Create Connector(s) Role and Group
   const connectorRoleInput = {
@@ -541,14 +642,19 @@ export const initializeData = async (context, withMarkings = true) => {
 };
 
 export const setPlatformId = async (context, platformId) => {
-  if (isNotEmptyField((platformId))) {
+  if (isNotEmptyField(platformId)) {
     if (!validator.isUUID(platformId)) {
-      throw ConfigurationError('Cannot switch platform identifier: platform_id is not a valid UUID', { platform_id: platformId });
+      throw ConfigurationError(
+        'Cannot switch platform identifier: platform_id is not a valid UUID',
+        { platform_id: platformId },
+      );
     }
 
     const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
     if (platformSettings.id !== platformId) {
-      logApp.warn(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
+      logApp.warn(
+        `[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`,
+      );
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
       // Use the concrete index name from the loaded entity (_index) instead of the alias (INDEX_INTERNAL_OBJECTS).
       const settingCurrentIndex = platformSettings._index;

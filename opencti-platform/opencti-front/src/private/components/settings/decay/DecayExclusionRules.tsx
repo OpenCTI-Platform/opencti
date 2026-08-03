@@ -1,7 +1,10 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from 'src/utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from 'src/utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { DataTableProps } from 'src/components/dataGrid/dataTableTypes';
@@ -10,7 +13,10 @@ import { DecayExclusionRules_node$data } from '@components/settings/decay/__gene
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import DataTable from 'src/components/dataGrid/DataTable';
 import DecayExclusionRuleCreation from '@components/settings/decay/DecayExclusionRuleCreation';
-import { DecayExclusionRulesLinesPaginationQuery, DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
+import {
+  DecayExclusionRulesLinesPaginationQuery,
+  DecayExclusionRulesLinesPaginationQuery$variables,
+} from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
 import DecayExclusionRulePopover from './DecayExclusionRulePopover';
 
 const decayExclusionRulesQuery = graphql`
@@ -18,11 +24,11 @@ const decayExclusionRulesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: DecayExclusionRuleOrdering,
-    $orderMode: OrderingMode,
-    $filters: FilterGroup,
+    $orderBy: DecayExclusionRuleOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
   ) {
-      ...DecayExclusionRulesLines_data
+    ...DecayExclusionRulesLines_data
       @arguments(
         search: $search
         count: $count
@@ -43,7 +49,8 @@ const decayExclusionRulesLinesFragment = graphql`
     orderBy: { type: "DecayExclusionRuleOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "DecayExclusionRuleRefetchQuery") {
+  )
+  @refetchable(queryName: "DecayExclusionRuleRefetchQuery") {
     decayExclusionRules(
       search: $search
       first: $count
@@ -91,13 +98,11 @@ const DecayExclusionRules = () => {
     filters: emptyFilterGroup,
   };
 
-  const {
-    viewStorage,
-    paginationOptions,
-  } = usePaginationLocalStorage<DecayExclusionRulesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, paginationOptions } =
+    usePaginationLocalStorage<DecayExclusionRulesLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('DecayExclusionRule', filters);
@@ -138,10 +143,7 @@ const DecayExclusionRules = () => {
       isSortable: true,
       render: (node: DecayExclusionRules_node$data) => (
         <>
-          <ItemBoolean
-            label={node.active ? t_i18n('Yes') : t_i18n('No')}
-            status={node.active}
-          />
+          <ItemBoolean label={node.active ? t_i18n('Yes') : t_i18n('No')} status={node.active} />
         </>
       ),
     },
@@ -152,7 +154,11 @@ const DecayExclusionRules = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.decayExclusionRules?.edges?.map(({ node }: { node: DecayExclusionRules_node$data }) => node)}
+          resolvePath={(data) =>
+            data.decayExclusionRules?.edges?.map(
+              ({ node }: { node: DecayExclusionRules_node$data }) => node,
+            )
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -160,7 +166,9 @@ const DecayExclusionRules = () => {
           disableLineSelection
           disableNavigation
           preloadedPaginationProps={preloadedPaginationProps}
-          actions={(row) => <DecayExclusionRulePopover data={row} paginationOptions={queryPaginationOptions} />}
+          actions={(row) => (
+            <DecayExclusionRulePopover data={row} paginationOptions={queryPaginationOptions} />
+          )}
           createButton={<DecayExclusionRuleCreation paginationOptions={queryPaginationOptions} />}
         />
       )}

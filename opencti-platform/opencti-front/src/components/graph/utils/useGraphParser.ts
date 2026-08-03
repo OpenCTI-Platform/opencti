@@ -67,10 +67,12 @@ const useGraphParser = () => {
   };
 
   const getMarkings = (data: ObjectToParse) => {
-    let markedBy = [{
-      id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-      definition: t_i18n('None'),
-    }];
+    let markedBy = [
+      {
+        id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
+        definition: t_i18n('None'),
+      },
+    ];
     if (data.objectMarking && data.objectMarking.length > 0) {
       markedBy = data.objectMarking.map((m) => ({ id: m.id, definition: m.definition }));
     }
@@ -78,10 +80,12 @@ const useGraphParser = () => {
   };
 
   const getCreatedBy = (data: ObjectToParse) => {
-    return data.createdBy ? data.createdBy : {
-      id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
-      name: t_i18n('None'),
-    };
+    return data.createdBy
+      ? data.createdBy
+      : {
+          id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+          name: t_i18n('None'),
+        };
   };
 
   const getIsNestedInferred = (data: ObjectToParse) => {
@@ -95,10 +99,7 @@ const useGraphParser = () => {
     if (data.entity_type === 'StixFile' && data.observable_value) {
       return truncate(data.observable_value, 20);
     }
-    return truncate(
-      getMainRepresentative(data),
-      data.entity_type === 'Attack-Pattern' ? 30 : 20,
-    );
+    return truncate(getMainRepresentative(data), data.entity_type === 'Attack-Pattern' ? 30 : 20);
   };
 
   const getNodeImg = (data: ObjectToParse) => {
@@ -129,21 +130,28 @@ const useGraphParser = () => {
         label = 'Name';
       }
       // List of other hashes to display (without duplicating the observable_value)
-      const hashesList = data.hashes && Array.isArray(data.hashes)
-        ? data.hashes
-            .filter((hashObj) => hashObj.hash !== displayValue)
-            .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
-            .join('\n')
-        : '';
+      const hashesList =
+        data.hashes && Array.isArray(data.hashes)
+          ? data.hashes
+              .filter((hashObj) => hashObj.hash !== displayValue)
+              .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
+              .join('\n')
+          : '';
       // Add name (observableName) if available and different from observable_value
-      const additionalInfo = (data.observableName && data.observableName !== displayValue) ? `\nName: ${data.observableName}` : '';
+      const additionalInfo =
+        data.observableName && data.observableName !== displayValue
+          ? `\nName: ${data.observableName}`
+          : '';
       // Add additional_names if available and different from `observableName`.
-      const additionalNames = data.x_opencti_additional_names && Array.isArray(data.x_opencti_additional_names)
-        ? data.x_opencti_additional_names
-            .filter((additionalName) => additionalName !== data.observableName)
-            .join(', ')
+      const additionalNames =
+        data.x_opencti_additional_names && Array.isArray(data.x_opencti_additional_names)
+          ? data.x_opencti_additional_names
+              .filter((additionalName) => additionalName !== data.observableName)
+              .join(', ')
+          : '';
+      const additionalNamesString = additionalNames
+        ? `\n${t_i18n('Additional Names')}: ${additionalNames}`
         : '';
-      const additionalNamesString = additionalNames ? `\n${t_i18n('Additional Names')}: ${additionalNames}` : '';
       return `${label}: ${displayValue}${hashesList ? `\n${hashesList}` : ''}${additionalInfo}${additionalNamesString}\n${dateFormat(defaultDate(data))}`;
     }
     return `${getMainRepresentative(data)}\n${dateFormat(defaultDate(data))}`;
@@ -242,8 +250,8 @@ const useGraphParser = () => {
       if (!uniqIds.includes(o.from.id)) return [];
       if (!uniqIds.includes(o.to.id)) return [];
       if (
-        o.parent_types.includes('basic-relationship')
-        && !relationshipsIdsInNestedRelationship.includes(o.id)
+        o.parent_types.includes('basic-relationship') &&
+        !relationshipsIdsInNestedRelationship.includes(o.id)
       ) {
         return buildLink(o);
       }
@@ -264,8 +272,8 @@ const useGraphParser = () => {
 
     const nodes = uniqObjects.flatMap((o) => {
       if (
-        o.parent_types.includes('basic-relationship')
-        && !relationshipsIdsInNestedRelationship.includes(o.id)
+        o.parent_types.includes('basic-relationship') &&
+        !relationshipsIdsInNestedRelationship.includes(o.id)
       ) {
         return [];
       }
@@ -274,8 +282,8 @@ const useGraphParser = () => {
         // The diff between all connections less the ones displayed in the graph.
         numberOfConnectedElement = o.numberOfConnectedElement - (nodesLinksCounter.get(o.id) ?? 0);
       } else if (
-        !o.parent_types.includes('Stix-Meta-Object')
-        && !o.parent_types.includes('Identity')
+        !o.parent_types.includes('Stix-Meta-Object') &&
+        !o.parent_types.includes('Identity')
       ) {
         // Keep undefined for Meta and Identity objects to display a '?' while the query
         // to fetch real count is loading.
@@ -299,7 +307,7 @@ const useGraphParser = () => {
     const uniqCorrelatedContainers = R.uniqBy(R.prop('id'), correlatedContainers);
 
     const links = uniqCorrelatedObjects.flatMap((object) => {
-      const objectCorrelatedContainers = R.uniqBy(R.prop('id'), (object.linkedContainers ?? []));
+      const objectCorrelatedContainers = R.uniqBy(R.prop('id'), object.linkedContainers ?? []);
       return objectCorrelatedContainers.map((container) => {
         return buildLink(container, {
           id: `${object.id}-${container.id}`,

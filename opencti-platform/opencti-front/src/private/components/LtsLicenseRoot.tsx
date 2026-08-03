@@ -25,7 +25,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Box from '@mui/material/Box';
-import { LtsLicenseRootQuery, LtsLicenseRootQuery$data } from '@components/__generated__/LtsLicenseRootQuery.graphql';
+import {
+  LtsLicenseRootQuery,
+  LtsLicenseRootQuery$data,
+} from '@components/__generated__/LtsLicenseRootQuery.graphql';
 import { ConnectedThemeProvider } from '../../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import { environment, handleError } from '../../relay/environment';
@@ -61,17 +64,13 @@ export const licenseQuery = graphql`
 
 const LicenseRootMutationFieldPatch = graphql`
   mutation LtsLicenseRootMutation($input: LicenseActivationInput!) {
-      setupEnterpriseLicense(input: $input) {
-          id
-      }
+    setupEnterpriseLicense(input: $input) {
+      id
+    }
   }
 `;
 
-const queryRef = loadQuery<LtsLicenseRootQuery>(
-  environment,
-  licenseQuery,
-  {},
-);
+const queryRef = loadQuery<LtsLicenseRootQuery>(environment, licenseQuery, {});
 
 interface LicenseProps {
   settings: LtsLicenseRootQuery$data['settings'];
@@ -103,16 +102,20 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
     <div>
       <SystemBanners settings={settings} />
       <div className={classes.container}>
-        <Dialog
-          open
-          size="large"
-          title={t_i18n('OpenCTI LTS license agreement')}
-        >
+        <Dialog open size="large" title={t_i18n('OpenCTI LTS license agreement')}>
           <Alert severity="info" style={{ marginTop: 15 }}>
-            {t_i18n('OpenCTI LTS Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.')}
-            <br /><br />
-            {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a> {t_i18n('and provide your platform identifier.')}
-            <br /><br />
+            {t_i18n(
+              'OpenCTI LTS Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.',
+            )}
+            <br />
+            <br />
+            {t_i18n('To obtain a license, please')}{' '}
+            <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">
+              {t_i18n('reach out to the Filigran team')}
+            </a>{' '}
+            {t_i18n('and provide your platform identifier.')}
+            <br />
+            <br />
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {t_i18n('Platform identifier')}
               <ItemCopy content={settings.id} variant="inLine" />
@@ -131,19 +134,33 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
             </FormGroup>
           ) : (
             <Alert severity="warning" style={{ marginTop: 15 }}>
-              {t_i18n('The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen')}
+              {t_i18n(
+                'The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen',
+              )}
             </Alert>
           )}
           {isNoLicenseByConfig && (
             <div style={{ marginTop: 15 }}>
-              {t_i18n('By enabling the OpenCTI LTS, you (and your organization) agrees to the')}&nbsp;
-              <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LTS_LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>.
+              {t_i18n('By enabling the OpenCTI LTS, you (and your organization) agrees to the')}
+              &nbsp;
+              <a
+                href="https://github.com/OpenCTI-Platform/opencti/blob/master/LTS_LICENSE"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t_i18n('license terms and conditions of usage')}
+              </a>
+              .
             </div>
           )}
 
           {isNoLicenseByConfig && (
             <DialogActions>
-              <Button disabled={isEmptyField(enterpriseLicense)} color="secondary" onClick={enableEnterpriseEdition}>
+              <Button
+                disabled={isEmptyField(enterpriseLicense)}
+                color="secondary"
+                onClick={enableEnterpriseEdition}
+              >
                 {t_i18n('Enable')}
               </Button>
             </DialogActions>
@@ -155,10 +172,7 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
 };
 
 const LtsLicenseRoot = () => {
-  const { settings } = usePreloadedQuery<LtsLicenseRootQuery>(
-    licenseQuery,
-    queryRef,
-  );
+  const { settings } = usePreloadedQuery<LtsLicenseRootQuery>(licenseQuery, queryRef);
 
   return (
     <StyledEngineProvider injectFirst={true}>

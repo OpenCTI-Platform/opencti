@@ -19,24 +19,28 @@ const useBuildAttributesOutcome = () => {
       throw Error('The attribute widget should refers to an instance');
     }
     const queryVariables = { id: instance_id === SELF_ID ? containerId : instance_id };
-    const data = await fetchQuery(
+    const data = (await fetchQuery(
       stixCoreObjectsAttributesQuery,
       queryVariables,
-    ).toPromise() as StixCoreObjectsAttributesQuery$data;
+    ).toPromise()) as StixCoreObjectsAttributesQuery$data;
 
     return (columns ?? []).map((col) => {
       let result;
       try {
-        result = getObjectPropertyWithoutEmptyValues(data.stixCoreObject ?? {}, col.attribute ?? '');
+        result = getObjectPropertyWithoutEmptyValues(
+          data.stixCoreObject ?? {},
+          col.attribute ?? '',
+        );
       } catch (_e) {
         result = '';
       }
       const readableAttribute = buildReadableAttribute(result, col);
       return {
         variableName: col.variableName,
-        attributeData: typeof readableAttribute === 'string'
-          ? readableAttribute
-          : renderToString(readableAttribute),
+        attributeData:
+          typeof readableAttribute === 'string'
+            ? readableAttribute
+            : renderToString(readableAttribute),
       };
     });
   };

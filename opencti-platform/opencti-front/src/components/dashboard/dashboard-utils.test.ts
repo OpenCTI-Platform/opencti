@@ -1,13 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { formatDate } from '../../utils/Time';
 import { fromB64, toB64 } from '../../utils/String';
-import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from './dashboard-utils';
+import {
+  deserializeDashboardManifestForFrontend,
+  serializeDashboardManifestForBackend,
+} from './dashboard-utils';
 import type { DashboardManifest, DashboardWidget } from './dashboard-types';
-import { GqlFilterGroup, normalizeFilterGroupForBackend, normalizeFilterGroupForFrontend } from '../../utils/filters/filtersUtils';
+import {
+  GqlFilterGroup,
+  normalizeFilterGroupForBackend,
+  normalizeFilterGroupForFrontend,
+} from '../../utils/filters/filtersUtils';
 
 describe('dashboard serialization', () => {
   describe('serializeDashboardManifestForBackend', () => {
-    it('serializes to a base-64 JSON.stringify\'d string and migrates filters to backend filters structure', () => {
+    it("serializes to a base-64 JSON.stringify'd string and migrates filters to backend filters structure", () => {
       const widget: DashboardWidget = {
         id: '26672a6c-94de-4153-be20-b5bd2e813ec3',
         type: 'text',
@@ -20,66 +27,62 @@ describe('dashboard serialization', () => {
           moved: false,
           static: false,
         },
-        dataSelection: [{
-          perspective: 'entities',
-          attribute: 'created_at',
-          centerLat: null,
-          centerLng: null,
-          columns: [],
-          date_attribute: null,
-          dynamicFrom: {
-            mode: 'or',
-            filters: [
-              { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
-              { key: 'name', values: ['name1, name2'] },
-            ],
-            filterGroups: [
-              {
-                mode: 'and',
-                filters: [
-                  { id: 'YY', key: 'name', values: [], operator: 'nil' },
-                ],
-                filterGroups: [],
-              },
-            ],
+        dataSelection: [
+          {
+            perspective: 'entities',
+            attribute: 'created_at',
+            centerLat: null,
+            centerLng: null,
+            columns: [],
+            date_attribute: null,
+            dynamicFrom: {
+              mode: 'or',
+              filters: [
+                { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
+                { key: 'name', values: ['name1, name2'] },
+              ],
+              filterGroups: [
+                {
+                  mode: 'and',
+                  filters: [{ id: 'YY', key: 'name', values: [], operator: 'nil' }],
+                  filterGroups: [],
+                },
+              ],
+            },
+            dynamicTo: {
+              mode: 'or',
+              filters: [
+                { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
+                { key: 'name', values: ['name1, name2'] },
+              ],
+              filterGroups: [
+                {
+                  mode: 'and',
+                  filters: [{ id: 'YY', key: 'name', values: [], operator: 'nil' }],
+                  filterGroups: [],
+                },
+              ],
+            },
+            filters: {
+              mode: 'or',
+              filters: [
+                { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
+                { key: 'name', values: ['name1, name2'] },
+              ],
+              filterGroups: [
+                {
+                  mode: 'and',
+                  filters: [{ id: 'YY', key: 'name', values: [], operator: 'nil' }],
+                  filterGroups: [],
+                },
+              ],
+            },
+            instance_id: null,
+            isTo: false,
+            label: 'some label',
+            number: null,
           },
-          dynamicTo: {
-            mode: 'or',
-            filters: [
-              { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
-              { key: 'name', values: ['name1, name2'] },
-            ],
-            filterGroups: [
-              {
-                mode: 'and',
-                filters: [
-                  { id: 'YY', key: 'name', values: [], operator: 'nil' },
-                ],
-                filterGroups: [],
-              },
-            ],
-          },
-          filters: {
-            mode: 'or',
-            filters: [
-              { id: 'XX', key: 'value', values: ['value1'], operator: 'eq' },
-              { key: 'name', values: ['name1, name2'] },
-            ],
-            filterGroups: [
-              {
-                mode: 'and',
-                filters: [
-                  { id: 'YY', key: 'name', values: [], operator: 'nil' },
-                ],
-                filterGroups: [],
-              },
-            ],
-          },
-          instance_id: null,
-          isTo: false,
-          label: 'some label',
-          number: null,
-        }],
+        ],
       };
       const dashboard: DashboardManifest = {
         config: {
@@ -99,12 +102,14 @@ describe('dashboard serialization', () => {
         widgets: {
           '26672a6c-94de-4153-be20-b5bd2e813ec3': {
             ...widget,
-            dataSelection: [{
-              ...widget.dataSelection[0],
-              dynamicTo: normalizeFilterGroupForBackend(widget.dataSelection[0].dynamicTo!),
-              dynamicFrom: normalizeFilterGroupForBackend(widget.dataSelection[0].dynamicFrom!),
-              filters: normalizeFilterGroupForBackend(widget.dataSelection[0].filters!),
-            }],
+            dataSelection: [
+              {
+                ...widget.dataSelection[0],
+                dynamicTo: normalizeFilterGroupForBackend(widget.dataSelection[0].dynamicTo!),
+                dynamicFrom: normalizeFilterGroupForBackend(widget.dataSelection[0].dynamicFrom!),
+                filters: normalizeFilterGroupForBackend(widget.dataSelection[0].filters!),
+              },
+            ],
           },
         },
       });
@@ -112,7 +117,7 @@ describe('dashboard serialization', () => {
   });
 
   describe('deseri', () => {
-    it('serializes to a base-64 JSON.stringify\'d string and migrates filters to backend filters structure', () => {
+    it("serializes to a base-64 JSON.stringify'd string and migrates filters to backend filters structure", () => {
       const filterGroup: GqlFilterGroup = {
         mode: 'or',
         filters: [
@@ -122,9 +127,7 @@ describe('dashboard serialization', () => {
         filterGroups: [
           {
             mode: 'and',
-            filters: [
-              { key: ['name'], values: [], operator: 'nil' },
-            ],
+            filters: [{ key: ['name'], values: [], operator: 'nil' }],
             filterGroups: [],
           },
         ],
@@ -141,21 +144,23 @@ describe('dashboard serialization', () => {
           moved: false,
           static: false,
         },
-        dataSelection: [{
-          perspective: 'entities',
-          attribute: 'created_at',
-          centerLat: null,
-          centerLng: null,
-          columns: [],
-          date_attribute: null,
-          dynamicFrom: filterGroup,
-          dynamicTo: filterGroup,
-          filters: filterGroup,
-          instance_id: null,
-          isTo: false,
-          label: 'some label',
-          number: null,
-        }],
+        dataSelection: [
+          {
+            perspective: 'entities',
+            attribute: 'created_at',
+            centerLat: null,
+            centerLng: null,
+            columns: [],
+            date_attribute: null,
+            dynamicFrom: filterGroup,
+            dynamicTo: filterGroup,
+            filters: filterGroup,
+            instance_id: null,
+            isTo: false,
+            label: 'some label',
+            number: null,
+          },
+        ],
       };
       const dashboard = {
         config: {
@@ -186,12 +191,14 @@ describe('dashboard serialization', () => {
         widgets: {
           '26672a6c-94de-4153-be20-b5bd2e813ec3': {
             ...widget,
-            dataSelection: [{
-              ...widget.dataSelection[0],
-              dynamicFrom: expectedFilterGroup,
-              dynamicTo: expectedFilterGroup,
-              filters: expectedFilterGroup,
-            }],
+            dataSelection: [
+              {
+                ...widget.dataSelection[0],
+                dynamicFrom: expectedFilterGroup,
+                dynamicTo: expectedFilterGroup,
+                filters: expectedFilterGroup,
+              },
+            ],
           },
         },
       });

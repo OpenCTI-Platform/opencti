@@ -1,13 +1,20 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { ChannelsLines_data$data } from '@components/arsenal/__generated__/ChannelsLines_data.graphql';
-import { ChannelsLinesPaginationQuery, ChannelsLinesPaginationQuery$variables } from '@components/arsenal/__generated__/ChannelsLinesPaginationQuery.graphql';
+import {
+  ChannelsLinesPaginationQuery,
+  ChannelsLinesPaginationQuery$variables,
+} from '@components/arsenal/__generated__/ChannelsLinesPaginationQuery.graphql';
 import ChannelCreation from './channels/ChannelCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -54,14 +61,14 @@ const channelsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ChannelsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -115,14 +122,16 @@ const Channels = () => {
       filters: useGetDefaultFilterObject(['channel_types'], ['Channel']),
     },
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ChannelsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Channel', filters);
   const queryPaginationOptions = {
@@ -156,7 +165,9 @@ const Channels = () => {
 
   return (
     <div data-testid="channel-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Channels'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -167,11 +178,11 @@ const Channels = () => {
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={channelLineFragment}
           exportContext={{ entity_type: 'Channel' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
               <ChannelCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

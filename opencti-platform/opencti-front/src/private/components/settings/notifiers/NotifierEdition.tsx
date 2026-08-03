@@ -7,7 +7,13 @@ import type { RJSFSchema } from '@rjsf/utils';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useRef, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+  useQueryLoader,
+} from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -76,10 +82,11 @@ export const notifierEditionQuery = graphql`
   }
 `;
 
-const notifierValidation = (t: (n: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
+const notifierValidation = (t: (n: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  });
 
 interface NotifierEditionComponentProps {
   queryRef: PreloadedQuery<NotifierEditionQuery>;
@@ -114,7 +121,9 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
     name: data?.name ?? '',
     description: data?.description,
     restricted_members: convertAuthorizedMembers(data),
-    notifier_connector_id: data?.notifier_connector ? { value: data.notifier_connector.id, label: data.notifier_connector.name } : undefined,
+    notifier_connector_id: data?.notifier_connector
+      ? { value: data.notifier_connector.id, label: data.notifier_connector.name }
+      : undefined,
   };
 
   const submitForm = (
@@ -131,7 +140,10 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
           const inputs = [
             { key: 'name', value: [values.name] },
             { key: 'description', value: [values.description] },
-            { key: 'restricted_members', value: values.restricted_members?.map(({ value }) => value) },
+            {
+              key: 'restricted_members',
+              value: values.restricted_members?.map(({ value }) => value),
+            },
             { key: 'notifier_connector_id', value: [values.notifier_connector_id?.value] },
             { key: 'notifier_configuration', value: [JSON.stringify(current.state.formData)] },
           ];
@@ -152,7 +164,8 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
 
   const notifierConfiguration = useRef<string>(data?.notifier_configuration ?? ' {}');
 
-  const [testQueryRef, sendTest, resetTest] = useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
+  const [testQueryRef, sendTest, resetTest] =
+    useQueryLoader<NotifierTestDialogQuery>(notifierTestQuery);
   return (
     <div>
       <Formik
@@ -253,13 +266,16 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               queryRef={testQueryRef}
               onTest={(notifier_test_id) => {
                 if (values.notifier_connector_id) {
-                  sendTest({
-                    input: {
-                      notifier_test_id,
-                      notifier_connector_id: values.notifier_connector_id.value,
-                      notifier_configuration: notifierConfiguration.current,
+                  sendTest(
+                    {
+                      input: {
+                        notifier_test_id,
+                        notifier_connector_id: values.notifier_connector_id.value,
+                        notifier_configuration: notifierConfiguration.current,
+                      },
                     },
-                  }, { fetchPolicy: 'network-only' });
+                    { fetchPolicy: 'network-only' },
+                  );
                 }
               }}
             />

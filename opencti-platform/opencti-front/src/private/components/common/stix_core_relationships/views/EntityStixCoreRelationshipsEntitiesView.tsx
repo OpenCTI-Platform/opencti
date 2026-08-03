@@ -8,13 +8,24 @@ import { useFormatter } from '../../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../StixCoreRelationshipCreationFromEntity';
 import Security from '../../../../../utils/Security';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes, isStixCoreObjects, isStixCyberObservables } from '../../../../../utils/stixTypeUtils';
+import {
+  computeTargetStixCyberObservableTypes,
+  computeTargetStixDomainObjectTypes,
+  isStixCoreObjects,
+  isStixCyberObservables,
+} from '../../../../../utils/stixTypeUtils';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../../utils/filters/filtersUtils';
 import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
+import {
+  CreateRelationshipContext,
+  useInitCreateRelationshipContext,
+} from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -48,20 +59,9 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
   handleChangeView,
 }) => {
   const { t_i18n } = useFormatter();
-  const {
-    viewStorage,
-    helpers: storageHelpers,
-    localStorageKey,
-  } = localStorage;
-  const {
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-    view,
-    numberOfElements,
-    openExports,
-  } = viewStorage;
+  const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
+  const { filters, searchTerm, sortBy, orderAsc, view, numberOfElements, openExports } =
+    viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
@@ -110,16 +110,21 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
   };
 
   // Filters due to screen context
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    filters,
+    stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object'],
+  );
 
-  const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0
-    ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }]
-    : [];
+  const stixCoreObjectFilter: Filter[] =
+    stixCoreObjectTypes.length > 0
+      ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }]
+      : [];
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
       ...stixCoreObjectFilter,
-      { key: 'regardingOf',
+      {
+        key: 'regardingOf',
         operator: 'eq',
         mode: 'and',
         values: [
@@ -271,9 +276,7 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
           allowedRelationshipTypes={relationshipTypes}
           isRelationReversed={reversedRelation}
           handleReverseRelation={handleReverseRelation}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(
-            stixCoreObjectTypes,
-          )}
+          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
           targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(
             stixCoreObjectTypes,
           )}

@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import {
+  BULK_TIMEOUT,
+  elBulk,
+  elList,
+  ES_MAX_CONCURRENCY,
+  MAX_BULK_OPERATIONS,
+} from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../schema/general';
@@ -33,7 +39,9 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Rewriting standard ids: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(
+      `[OPENCTI] Rewriting standard ids: ${currentProcessing} / ${bulkOperations.length}`,
+    );
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info(`[MIGRATION] Rewriting standard ids done in ${new Date() - start} ms`);

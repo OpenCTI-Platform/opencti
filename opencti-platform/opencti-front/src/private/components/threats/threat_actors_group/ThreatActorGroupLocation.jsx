@@ -48,14 +48,15 @@ class ThreatActorGroupLocationsComponent extends Component {
     const { t, threatActorGroup } = this.props;
     return (
       <>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddLocationsThreatActorGroup
-              threatActorGroup={threatActorGroup}
-              threatActorGroupLocations={threatActorGroup.locations.edges}
-            />
-          </Security>
-        )}
+        <Label
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <AddLocationsThreatActorGroup
+                threatActorGroup={threatActorGroup}
+                threatActorGroupLocations={threatActorGroup.locations.edges}
+              />
+            </Security>
+          }
         >
           {t('Located at')}
         </Label>
@@ -66,42 +67,39 @@ class ThreatActorGroupLocationsComponent extends Component {
               const { types } = locationEdge;
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
-              const flagUrl = location.entity_type === 'Country'
-                && findFlagUrl(location.x_opencti_aliases);
+              const flagUrl =
+                location.entity_type === 'Country' && findFlagUrl(location.x_opencti_aliases);
               return (
                 <ListItem
                   key={location.id}
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={types.includes('manual') && (
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={() => this.removeLocation(locationEdge)}
-                      >
-                        <LinkOff />
-                      </IconButton>
-                    </Security>
-                  )}
+                  secondaryAction={
+                    types.includes('manual') && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={() => this.removeLocation(locationEdge)}
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </Security>
+                    )
+                  }
                 >
-                  <ListItemButton
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
+                  <ListItemButton component={Link} to={`${link}/${location.id}`}>
                     <ListItemIcon sx={{ minWidth: 32 }}>
                       {flagUrl ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={flagUrl}
-                          alt={location.name}
-                        />
+                        <img style={{ width: 20 }} src={flagUrl} alt={location.name} />
                       ) : (
                         <ItemIcon type={location.entity_type} />
                       )}
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+                    {!types.includes('manual') && (
+                      <AutoFix fontSize="small" style={{ marginRight: 13 }} />
+                    )}
                   </ListItemButton>
                 </ListItem>
               );
@@ -120,31 +118,28 @@ ThreatActorGroupLocationsComponent.propTypes = {
   threatActorGroup: PropTypes.object,
 };
 
-const ThreatActorGroupLocations = createFragmentContainer(
-  ThreatActorGroupLocationsComponent,
-  {
-    threatActorGroup: graphql`
-      fragment ThreatActorGroupLocations_locations on ThreatActorGroup {
-        id
-        name
-        parent_types
-        entity_type
-        locations {
-          edges {
-            types
-            node {
-              id
-              parent_types
-              entity_type
-              name
-              x_opencti_aliases
-              description
-            }
+const ThreatActorGroupLocations = createFragmentContainer(ThreatActorGroupLocationsComponent, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupLocations_locations on ThreatActorGroup {
+      id
+      name
+      parent_types
+      entity_type
+      locations {
+        edges {
+          types
+          node {
+            id
+            parent_types
+            entity_type
+            name
+            x_opencti_aliases
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(inject18n)(ThreatActorGroupLocations);

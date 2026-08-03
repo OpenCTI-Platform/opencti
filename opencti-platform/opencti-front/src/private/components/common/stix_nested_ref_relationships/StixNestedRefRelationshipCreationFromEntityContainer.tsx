@@ -1,5 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import StixNestedRefRelationshipCreationFromEntity, { stixNestedRefRelationResolveTypes } from './StixNestedRefRelationshipCreationFromEntity';
+import StixNestedRefRelationshipCreationFromEntity, {
+  stixNestedRefRelationResolveTypes,
+} from './StixNestedRefRelationshipCreationFromEntity';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
@@ -11,19 +13,14 @@ interface StixNestedRefRelationshipCreationFromEntityContainerProps {
   variant: string;
 }
 
-const StixNestedRefRelationshipCreationFromEntityContainer: FunctionComponent<StixNestedRefRelationshipCreationFromEntityContainerProps> = ({
-  entityId,
-  entityType,
-  paginationOptions,
-  variant,
-}) => {
+const StixNestedRefRelationshipCreationFromEntityContainer: FunctionComponent<
+  StixNestedRefRelationshipCreationFromEntityContainerProps
+> = ({ entityId, entityType, paginationOptions, variant }) => {
   const queryRef = useQueryLoading(stixNestedRefRelationResolveTypes, { type: entityType });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <StixNestedRefRelationshipCreationFromEntity
             possibleTypesQueryRef={queryRef}
             entityId={entityId}

@@ -1,5 +1,15 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
+import {
+  alpha,
+  Collapse,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  MenuList,
+  Popover,
+  SxProps,
+  Tooltip,
+} from '@mui/material';
 import { useTheme } from '@mui/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -173,7 +183,14 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           },
         }}
       >
-        {renderMenuItem(item.icon, item.label, itemSelected, submenuShowIcons, 'small', !inCollapse)}
+        {renderMenuItem(
+          item.icon,
+          item.label,
+          itemSelected,
+          submenuShowIcons,
+          'small',
+          !inCollapse,
+        )}
       </MenuItem>
     );
 
@@ -199,9 +216,7 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
       display: 'flex',
       alignItems: 'center',
       '&:hover': {
-        backgroundColor: selected
-          ? theme.palette.action?.selected
-          : theme.palette.leftBar.hover,
+        backgroundColor: selected ? theme.palette.action?.selected : theme.palette.leftBar.hover,
       },
     };
   };
@@ -234,11 +249,19 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
           sx={getMenuStyles(isParentSelected)}
         >
           {renderMenuItem(icon, label, isParentSelected)}
-          {isMenuOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
+          {isMenuOpen ? (
+            <ArrowDropUp sx={{ fontSize: '20px' }} />
+          ) : (
+            <ArrowDropDown sx={{ fontSize: '20px' }} />
+          )}
         </MenuItem>
 
         <Collapse in={isMenuOpen} timeout="auto" unmountOnExit>
-          <MenuList component="nav" disablePadding sx={{ backgroundColor: theme.palette.designSystem.background.main }}>
+          <MenuList
+            component="nav"
+            disablePadding
+            sx={{ backgroundColor: theme.palette.designSystem.background.main }}
+          >
             {visibleSubItems.map((item) => renderSubMenuItem(item, true))}
           </MenuList>
         </Collapse>
@@ -260,12 +283,10 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
         {renderMenuItem(icon, label, isParentSelected)}
       </MenuItem>
 
-      {
-        /*
-        * Popover has pointerEvents: 'none' and Paper has pointerEvents: 'auto'
-        * This keeps the popover open when the mouse moves from the menu item to the popover
-        */
-      }
+      {/*
+       * Popover has pointerEvents: 'none' and Paper has pointerEvents: 'auto'
+       * This keeps the popover open when the mouse moves from the menu item to the popover
+       */}
       <Popover
         sx={{ pointerEvents: 'none' }}
         open={isMenuOpen}

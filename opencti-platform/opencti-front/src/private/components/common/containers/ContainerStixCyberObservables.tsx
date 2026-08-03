@@ -6,7 +6,12 @@ import useCopy from '../../../../utils/hooks/useCopy';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../../utils/filters/filtersUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLine';
@@ -24,39 +29,39 @@ import { ContainerStixCyberObservablesLines_data$data } from '@components/common
 import ContainerStixCoreObjectPopover from '@components/common/containers/ContainerStixCoreObjectPopover';
 
 const containerStixCyberObservableLineFragment = graphql`
-    fragment ContainerStixCyberObservablesLine_node on StixCyberObservable {
-        id
-        entity_type
-        observable_value
-        created_at
-        containersNumber {
-            total
-            count
-        }
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-            }
-        }
-        objectMarking {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        objectLabel {
-            id
-            value
-            color
-        }
-        creators {
-            id
-            name
-        }
+  fragment ContainerStixCyberObservablesLine_node on StixCyberObservable {
+    id
+    entity_type
+    observable_value
+    created_at
+    containersNumber {
+      total
+      count
     }
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+  }
 `;
 
 export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
@@ -69,12 +74,7 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   ) {
     container(id: $id) {
       id
-      objects(
-        search: $search
-        first: $count
-        filters: $filters
-        types: $types
-      ) {
+      objects(search: $search, first: $count, filters: $filters, types: $types) {
         edges {
           node {
             ... on StixCyberObservable {
@@ -192,7 +192,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
   ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
   const initialValues = {
     filters: {
@@ -216,21 +218,12 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
       ...initialValues,
     },
   );
-  const {
-    filters,
-    searchTerm,
-  } = viewStorage;
+  const { filters, searchTerm } = viewStorage;
 
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    setSelectedElements,
-  } = useEntityToggle<ContainerStixCyberObservablesLine_node$data>(LOCAL_STORAGE_KEY);
+  const { selectedElements, deSelectedElements, selectAll, setSelectedElements } =
+    useEntityToggle<ContainerStixCyberObservablesLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const getValuesForCopy = (
-    data: ContainerStixCyberObservablesLinesSearchQuery$data,
-  ) => {
+  const getValuesForCopy = (data: ContainerStixCyberObservablesLinesSearchQuery$data) => {
     return (data.container?.objects?.edges ?? [])
       .map((o) => ({ id: o?.node.id, value: o?.node.observable_value }))
       .filter((o) => o.id) as { id: string; value: string }[];
@@ -247,7 +240,10 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
     ],
     filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
   };
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Cyber-Observable', filtersContext);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Stix-Cyber-Observable',
+    filtersContext,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     types: ['Stix-Cyber-Observable'],
@@ -330,7 +326,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             initialValues={initialValues}
             lineFragment={containerStixCyberObservableLineFragment}
             preloadedPaginationProps={preloadedPaginationProps}
-            resolvePath={(data: ContainerStixCyberObservablesLines_data$data) => data.container?.objects?.edges?.map((n) => n?.node)}
+            resolvePath={(data: ContainerStixCyberObservablesLines_data$data) =>
+              data.container?.objects?.edges?.map((n) => n?.node)
+            }
             dataColumns={dataColumns}
             contextFilters={contextFilters}
             handleCopy={handleCopy}
@@ -338,7 +336,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             availableEntityTypes={['Stix-Cyber-Observable']}
             searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }}
             container={container}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ContainerAddStixCoreObjectsInLine
                   containerId={container.id}
@@ -349,7 +347,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                   defaultMarkingDefinitions={container.objectMarking ?? []}
                 />
               </Security>
-            )}
+            }
             actions={(row) => {
               return (
                 <div onClick={(e) => e.stopPropagation()}>

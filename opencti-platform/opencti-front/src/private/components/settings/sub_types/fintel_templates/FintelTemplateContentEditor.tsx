@@ -16,9 +16,7 @@ interface FintelTemplateContentEditorProps {
   data: FintelTemplateContentEditor_template$key;
 }
 
-const FintelTemplateContentEditor = ({
-  data,
-}: FintelTemplateContentEditorProps) => {
+const FintelTemplateContentEditor = ({ data }: FintelTemplateContentEditorProps) => {
   const template = useFragment(editorFragment, data);
   const { setEditorValue } = useFintelTemplateContext();
 

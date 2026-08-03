@@ -1,6 +1,10 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { createEntity, distributionEntities, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import {
+  internalLoadById,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
@@ -31,7 +35,9 @@ export const addNote = async (context, user, note) => {
 // Entities tab
 
 export const noteContainsStixObjectOrStixRelationship = async (context, user, noteId, thingId) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;
+  const resolvedThingId = isStixId(thingId)
+    ? (await internalLoadById(context, user, thingId)).id
+    : thingId;
   const args = {
     filters: {
       mode: 'and',
@@ -52,7 +58,12 @@ export const notesTimeSeries = (context, user, args) => {
 };
 
 export const notesNumber = (context, user, args) => ({
-  count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+  count: elCount(
+    context,
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args),
+  ),
   total: elCount(
     context,
     user,
@@ -77,18 +88,16 @@ export const notesNumberByEntity = (context, user, args) => {
   const { objectId } = args;
   const filters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT, '*'), objectId);
   return {
-    count: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_NOTE] },
-    ),
-    total: elCount(
-      context,
-      user,
-      READ_INDEX_STIX_DOMAIN_OBJECTS,
-      { ...args, filters, types: [ENTITY_TYPE_CONTAINER_NOTE] },
-    ),
+    count: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER_NOTE],
+    }),
+    total: elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      ...args,
+      filters,
+      types: [ENTITY_TYPE_CONTAINER_NOTE],
+    }),
   };
 };
 

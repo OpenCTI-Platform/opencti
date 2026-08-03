@@ -11,16 +11,8 @@ class WorkspaceEditionContainer extends Component {
     const { t, handleClose, workspace, open, type } = this.props;
     const { editContext } = workspace;
     return (
-      <Drawer
-        title={t(`Update ${type}`)}
-        open={open}
-        onClose={handleClose}
-        context={editContext}
-      >
-        <WorkspaceEditionOverview
-          workspace={this.props.workspace}
-          context={editContext}
-        />
+      <Drawer title={t(`Update ${type}`)} open={open} onClose={handleClose} context={editContext}>
+        <WorkspaceEditionOverview workspace={this.props.workspace} context={editContext} />
       </Drawer>
     );
   }
@@ -34,22 +26,17 @@ WorkspaceEditionContainer.propTypes = {
   type: PropTypes.oneOf(['dashboard', 'investigation']),
 };
 
-const WorkspaceEditionFragment = createFragmentContainer(
-  WorkspaceEditionContainer,
-  {
-    workspace: graphql`
-      fragment WorkspaceEditionContainer_workspace on Workspace {
-        id
-        ...WorkspaceEditionOverview_workspace
-        editContext {
-          name
-          focusOn
-        }
+const WorkspaceEditionFragment = createFragmentContainer(WorkspaceEditionContainer, {
+  workspace: graphql`
+    fragment WorkspaceEditionContainer_workspace on Workspace {
+      id
+      ...WorkspaceEditionOverview_workspace
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
-export default compose(
-  inject18n,
-)(WorkspaceEditionFragment);
+export default compose(inject18n)(WorkspaceEditionFragment);

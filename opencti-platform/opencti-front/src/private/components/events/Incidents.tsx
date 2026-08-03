@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
-import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
+import {
+  IncidentsLinesQuery,
+  IncidentsLinesQuery$variables,
+} from './incidents/__generated__/IncidentsLinesQuery.graphql';
 import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
 import { incidentLineFragment } from './incidents/IncidentLine';
 import { incidentsLinesFragment, incidentsLinesQuery } from './incidents/IncidentsLines';
@@ -8,7 +11,11 @@ import IncidentCreation from './incidents/IncidentCreation';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -38,10 +45,8 @@ const Incidents: FunctionComponent = () => {
     openExports: false,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<IncidentsLinesQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Incident', viewStorage.filters);
   const queryPaginationOptions = {
@@ -76,28 +81,36 @@ const Incidents: FunctionComponent = () => {
 
   return (
     <div data-testid="incident-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
-          resolvePath={(data: IncidentsLines_data$data) => data.incidents?.edges?.map((n) => n?.node)}
+          resolvePath={(data: IncidentsLines_data$data) =>
+            data.incidents?.edges?.map((n) => n?.node)
+          }
           dataColumns={dataColumns}
           lineFragment={incidentLineFragment}
           contextFilters={contextFilters}
           exportContext={{ entity_type: 'Incident' }}
           availableEntityTypes={['Incident']}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security
+              key="form-intake"
+              needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+            >
               <StixCoreObjectForms entityType="Incident" />
             </Security>,
           ]}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IncidentCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

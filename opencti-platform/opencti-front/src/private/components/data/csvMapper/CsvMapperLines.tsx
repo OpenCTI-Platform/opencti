@@ -4,7 +4,10 @@ import { CsvMapperLines_csvMapper$key } from '@components/data/csvMapper/__gener
 import CsvMapperLine from '@components/data/csvMapper/CsvMapperLine';
 import LineDummy from '@components/common/LineDummy';
 import { useCsvMappersData } from '@components/data/csvMapper/csvMappers.data';
-import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
+import {
+  csvMappers_MappersQuery,
+  csvMappers_MappersQuery$variables,
+} from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
@@ -51,10 +54,10 @@ const CsvMapperLines: FunctionComponent<CsvMapperLinesProps> = ({
   dataColumns,
 }) => {
   const { csvMappers } = useCsvMappersData();
-  const { data } = usePaginationFragment<
-    csvMappers_MappersQuery,
-    CsvMapperLines_csvMapper$key
-  >(csvMapperLinesFragment, csvMappers);
+  const { data } = usePaginationFragment<csvMappers_MappersQuery, CsvMapperLines_csvMapper$key>(
+    csvMapperLinesFragment,
+    csvMappers,
+  );
 
   const csvMappersData = data?.csvMappers?.edges ?? [];
   const globalCount = data?.csvMappers?.pageInfo?.globalCount;

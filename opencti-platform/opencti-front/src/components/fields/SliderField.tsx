@@ -5,13 +5,14 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
 
-export type SliderFieldProps = FieldProps<string> & Omit<SliderProps, 'onChange' | 'onFocus'> & {
-  required: boolean;
-  onChange?: (name: string, value: string) => void;
-  onFocus?: (name: string) => void;
-  onSubmit?: (name: string, value: string) => void;
-  label?: string;
-};
+export type SliderFieldProps = FieldProps<string> &
+  Omit<SliderProps, 'onChange' | 'onFocus'> & {
+    required: boolean;
+    onChange?: (name: string, value: string) => void;
+    onFocus?: (name: string) => void;
+    onSubmit?: (name: string, value: string) => void;
+    label?: string;
+  };
 
 const SliderField = (muiProps: SliderFieldProps) => {
   const {
@@ -62,9 +63,7 @@ const SliderField = (muiProps: SliderFieldProps) => {
         marks={true}
         disabled={disabled}
       />
-      {!R.isNil(meta.error) && (
-        <FormHelperText error={true}>{meta.error}</FormHelperText>
-      )}
+      {!R.isNil(meta.error) && <FormHelperText error={true}>{meta.error}</FormHelperText>}
     </div>
   );
 };

@@ -28,6 +28,11 @@ export const RuleTag = ({ action = false, color, label }: RuleTagProps) => {
   const tagColor = action ? theme.palette.secondary.main : color;
 
   return (
-    <Tag style={style} color={tagColor} label={label} labelTextTransform={action ? 'uppercase' : undefined} />
+    <Tag
+      style={style}
+      color={tagColor}
+      label={label}
+      labelTextTransform={action ? 'uppercase' : undefined}
+    />
   );
 };

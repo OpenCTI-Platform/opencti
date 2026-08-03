@@ -27,14 +27,7 @@ const styles = () => ({
   },
 });
 
-const WorkbenchFileViewerBase = ({
-  entity,
-  handleOpenImport,
-  connectors,
-  relay,
-  t,
-  classes,
-}) => {
+const WorkbenchFileViewerBase = ({ entity, handleOpenImport, connectors, relay, t, classes }) => {
   const { id, pendingFiles } = entity;
   const { edges } = pendingFiles;
   const [openCreate, setOpenCreate] = useState(false);
@@ -60,7 +53,7 @@ const WorkbenchFileViewerBase = ({
         <Card
           padding="horizontal"
           title={t('Analyst workbenches')}
-          action={(
+          action={
             <Security needs={[KNOWLEDGE_KNASKIMPORT]} hasAccess={!draftContext}>
               <IconButton
                 color="primary"
@@ -72,7 +65,7 @@ const WorkbenchFileViewerBase = ({
                 <Add fontSize="small" />
               </IconButton>
             </Security>
-          )}
+          }
         >
           {edges.length ? (
             <List>
@@ -81,9 +74,7 @@ const WorkbenchFileViewerBase = ({
                   key={file.node.id}
                   dense={true}
                   file={file.node}
-                  connectors={
-                    connectors && connectors[file.node.metaData.mimetype]
-                  }
+                  connectors={connectors && connectors[file.node.metaData.mimetype]}
                   handleOpenImport={handleOpenImport}
                 />
               ))}

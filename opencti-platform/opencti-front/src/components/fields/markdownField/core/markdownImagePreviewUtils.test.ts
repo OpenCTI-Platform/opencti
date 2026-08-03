@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MarkdownTempAttachmentRegistry, TEMP_IMAGE_SCHEME, extractTempImageTokens, insertImageAtCursor, replaceTempImageTokenUrl } from './markdownImagePreviewUtils';
+import {
+  MarkdownTempAttachmentRegistry,
+  TEMP_IMAGE_SCHEME,
+  extractTempImageTokens,
+  insertImageAtCursor,
+  replaceTempImageTokenUrl,
+} from './markdownImagePreviewUtils';
 
 describe('markdown temp image utilities', () => {
   beforeEach(() => {
@@ -26,12 +32,18 @@ describe('markdown temp image utilities', () => {
       `![second](opencti-image://temp/${token})`,
     ].join('\n');
 
-    const result = replaceTempImageTokenUrl(markdown, token, '/storage/view/import%2Fpending%2Fabc');
+    const result = replaceTempImageTokenUrl(
+      markdown,
+      token,
+      '/storage/view/import%2Fpending%2Fabc',
+    );
 
-    expect(result).toBe([
-      '![first](/storage/view/import%2Fpending%2Fabc)',
-      '![second](/storage/view/import%2Fpending%2Fabc)',
-    ].join('\n'));
+    expect(result).toBe(
+      [
+        '![first](/storage/view/import%2Fpending%2Fabc)',
+        '![second](/storage/view/import%2Fpending%2Fabc)',
+      ].join('\n'),
+    );
   });
 
   it('insertImageAtCursor_insertsTempImageMarkdownAtCursor', () => {
@@ -54,9 +66,7 @@ describe('markdown temp image utilities', () => {
 
     const atEnd = insertImageAtCursor(input, input.length, 'tmp-end');
     expect(atEnd.markdown).toBe('abc def![image](opencti-image://temp/tmp-end)');
-    expect(atEnd.nextCursor).toBe(
-      'abc def![image](opencti-image://temp/tmp-end)'.length,
-    );
+    expect(atEnd.nextCursor).toBe('abc def![image](opencti-image://temp/tmp-end)'.length);
   });
 
   it('createTempAttachment_createsUniqueTokenAndBlobUrl', () => {
@@ -87,8 +97,12 @@ describe('markdown temp image utilities', () => {
     const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
 
     const registry = new MarkdownTempAttachmentRegistry();
-    const first = registry.createTempAttachment(new File(['first'], 'a.png', { type: 'image/png' }));
-    const second = registry.createTempAttachment(new File(['second'], 'b.png', { type: 'image/png' }));
+    const first = registry.createTempAttachment(
+      new File(['first'], 'a.png', { type: 'image/png' }),
+    );
+    const second = registry.createTempAttachment(
+      new File(['second'], 'b.png', { type: 'image/png' }),
+    );
 
     registry.removeTempAttachment(first.token);
 
@@ -125,7 +139,9 @@ describe('markdown temp image utilities', () => {
     vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:first');
 
     const registry = new MarkdownTempAttachmentRegistry();
-    const attachment = registry.createTempAttachment(new File(['first'], 'a.png', { type: 'image/png' }));
+    const attachment = registry.createTempAttachment(
+      new File(['first'], 'a.png', { type: 'image/png' }),
+    );
 
     const tempUrl = `${TEMP_IMAGE_SCHEME}${attachment.token}`;
     const persistedUrl = '/storage/view/some-protected-id';

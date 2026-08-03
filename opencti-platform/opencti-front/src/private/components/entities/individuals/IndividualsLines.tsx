@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { IndividualsLinesPaginationQuery, IndividualsLinesPaginationQuery$variables } from '@components/entities/individuals/__generated__/IndividualsLinesPaginationQuery.graphql';
+import {
+  IndividualsLinesPaginationQuery,
+  IndividualsLinesPaginationQuery$variables,
+} from '@components/entities/individuals/__generated__/IndividualsLinesPaginationQuery.graphql';
 import { IndividualsLines_data$key } from '@components/entities/individuals/__generated__/IndividualsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndividualLine, IndividualLineDummy } from './IndividualLine';
@@ -28,14 +31,14 @@ export const individualsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...IndividualsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -100,9 +103,7 @@ const IndividualsLines: FunctionComponent<IndividualsLinesProps> = ({
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.individuals?.edges ?? []}
-      globalCount={
-        data?.individuals?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.individuals?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={IndividualLine}
       DummyLineComponent={IndividualLineDummy}
       dataColumns={dataColumns}

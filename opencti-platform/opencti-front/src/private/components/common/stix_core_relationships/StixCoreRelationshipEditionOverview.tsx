@@ -14,9 +14,17 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { useFormatter } from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { buildDate, formatDate } from '../../../../utils/Time';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useIsEnforceReference,
+  useSchemaEditionValidation,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import CommitMessage from '../form/CommitMessage';
 import ConfidenceField from '../form/ConfidenceField';
@@ -89,11 +97,7 @@ const stixCoreRelationshipMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixCoreRelationshipEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...StixCoreRelationshipEditionOverview_stixCoreRelationship
         ...StixCoreRelationshipOverview_stixCoreRelationship
       }
@@ -102,10 +106,7 @@ const stixCoreRelationshipMutationFieldPatch = graphql`
 `;
 
 export const stixCoreRelationshipEditionFocus = graphql`
-  mutation StixCoreRelationshipEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation StixCoreRelationshipEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixCoreRelationshipEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -171,10 +172,12 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
-  coverage_information?: readonly {
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }[] | undefined;
+  coverage_information?:
+    | readonly {
+        readonly coverage_name: string;
+        readonly coverage_score: number;
+      }[]
+    | undefined;
 }
 
 export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
@@ -255,8 +258,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
       variables: {
         id: stixCoreRelationship.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -275,7 +277,9 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
-    ...(displayCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
+    ...(displayCoverage
+      ? { coverage_information: stixCoreRelationship.coverage_information || [] }
+      : {}),
   };
   return (
     <Stack>
@@ -285,14 +289,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
         validationSchema={stixCoreRelationshipValidator}
         onSubmit={onSubmit}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
           <Form>
             <AlertConfidenceForEntity entity={stixCoreRelationship} />
             <ConfidenceField
@@ -313,12 +310,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 40 },
-                helperText: (
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="start_time"
-                  />
-                ),
+                helperText: <SubscriptionFocus context={editContext} fieldName="start_time" />,
               }}
             />
             <Field
@@ -331,12 +323,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="stop_time"
-                  />
-                ),
+                helperText: <SubscriptionFocus context={editContext} fieldName="stop_time" />,
               }}
             />
             <Field
@@ -349,12 +336,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={editor.changeField}
-              helperText={(
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldName="description"
-                />
-              )}
+              helperText={<SubscriptionFocus context={editContext} fieldName="description" />}
             />
             {displayCoverage && (
               <CoverageInformationFieldEdit
@@ -368,12 +350,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
             <KillChainPhasesField
               name="killChainPhases"
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldName="killChainPhases"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={editContext} fieldName="killChainPhases" />}
               onChange={editor.changeKillChainPhases}
             />
             {stixCoreRelationship.workflowEnabled && (
@@ -384,35 +361,22 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
                 onChange={editor.changeField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                )}
+                helpertext={
+                  <SubscriptionFocus context={editContext} fieldName="x_opencti_workflow_id" />
+                }
               />
             )}
             <CreatedByField
               name="createdBy"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-              helpertext={(
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldName="createdBy"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={editContext} fieldName="createdBy" />}
               onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={editContext}
-                  fieldname="objectMarking"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={editContext} fieldname="objectMarking" />}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />
@@ -432,11 +396,7 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
       </Formik>
       {typeof handleDelete === 'function' && (
         <Stack direction="row" alignSelf="flex-end" sx={{ mt: 3 }}>
-          <Button
-            intent="destructive"
-            onClick={handleDelete}
-            variant="secondary"
-          >
+          <Button intent="destructive" onClick={handleDelete} variant="secondary">
             {t_i18n('Delete')}
           </Button>
         </Stack>
@@ -448,18 +408,16 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
 const StixCoreRelationshipEditionOverview: FunctionComponent<
   Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
 > = (props) => {
-  const queryData = usePreloadedQuery(
-    stixCoreRelationshipEditionOverviewQuery,
-    props.queryRef,
-  );
+  const queryData = usePreloadedQuery(stixCoreRelationshipEditionOverviewQuery, props.queryRef);
   if (queryData.stixCoreRelationship === null) {
     return <ErrorNotFound />;
   }
 
-  const stixCoreRelationship = useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(
-    StixCoreRelationshipEditionOverviewFragment,
-    queryData.stixCoreRelationship,
-  );
+  const stixCoreRelationship =
+    useFragment<StixCoreRelationshipEditionOverview_stixCoreRelationship$key>(
+      StixCoreRelationshipEditionOverviewFragment,
+      queryData.stixCoreRelationship,
+    );
   if (!stixCoreRelationship) {
     return null;
   }

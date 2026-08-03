@@ -10,7 +10,10 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../components/ItemCopy';
 
 const useStyles = makeStyles((theme) => ({
@@ -33,14 +36,14 @@ const labelsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...LabelsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -54,7 +57,7 @@ const linesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "LabelsLinesRefetchPaginationQuery"){
+  @refetchable(queryName: "LabelsLinesRefetchPaginationQuery") {
     labels(
       search: $search
       first: $count
@@ -62,8 +65,7 @@ const linesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_labels")
-    {
+    ) @connection(key: "Pagination_labels") {
       edges {
         node {
           id
@@ -142,10 +144,7 @@ const Labels = () => {
     },
   };
 
-  const queryRef = useQueryLoading(
-    labelsLinesQuery,
-    queryPaginationOptions,
-  );
+  const queryRef = useQueryLoading(labelsLinesQuery, queryPaginationOptions);
   const preloadedPaginationProps = {
     linesQuery: labelsLinesQuery,
     linesFragment,
@@ -156,7 +155,13 @@ const Labels = () => {
 
   return (
     <div className={classes.container} data-testid="labels-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Labels'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Taxonomies') },
+          { label: t_i18n('Labels'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -167,7 +172,9 @@ const Labels = () => {
           lineFragment={lineFragment}
           preloadedPaginationProps={preloadedPaginationProps}
           taskScope="SETTINGS"
-          actions={(label) => <LabelPopover label={label} paginationOptions={queryPaginationOptions} />}
+          actions={(label) => (
+            <LabelPopover label={label} paginationOptions={queryPaginationOptions} />
+          )}
           searchContextFinal={{ entityTypes: ['Label'] }}
           disableNavigation
           createButton={<LabelCreation paginationOptions={queryPaginationOptions} />}

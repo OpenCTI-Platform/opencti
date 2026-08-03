@@ -89,11 +89,7 @@ interface ObjectMarkingFieldProps {
   name: string;
   required?: boolean;
   style?: React.CSSProperties;
-  onChange?: (
-    name: string,
-    values: FieldOption[],
-    operation?: string | undefined,
-  ) => void;
+  onChange?: (name: string, values: FieldOption[], operation?: string | undefined) => void;
   isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean;
   helpertext?: unknown;
   disabled?: boolean;
@@ -131,19 +127,22 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const [newMarking, setNewMarking] = useState<
-  FieldOption[] | OptionValues | undefined
-  >(undefined);
+  const [newMarking, setNewMarking] = useState<FieldOption[] | OptionValues | undefined>(undefined);
   const [operation, setOperation] = useState<string | undefined>(undefined);
   const [otherUserAllowedMarkingsData, setOtherUserAllowedMarkingsData] = useState(
-    [] as { definition: string | null | undefined; id: string; x_opencti_color: string | null | undefined }[] | undefined,
+    [] as
+      | {
+          definition: string | null | undefined;
+          id: string;
+          x_opencti_color: string | null | undefined;
+        }[]
+      | undefined,
   );
 
   const fetchCreatorAllowedMarking = async (creatorId: string) => {
     return fetchQuery(objectMarkingFieldAllowedMarkingQuery, {
       id: creatorId,
-    })
-      .toPromise();
+    }).toPromise();
   };
 
   const fetchCreatorAllowedMarkings = async (creatorAllowedMarkingIds: string[]) => {
@@ -159,8 +158,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
           },
           filterGroups: [],
         },
-      })
-        .toPromise();
+      }).toPromise();
     }
     return {
       markingDefinitions: {
@@ -172,13 +170,18 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   useEffect(() => {
     if (allowedMarkingOwnerId) {
       const fetchData = async () => {
-        const creatorAllowedMarkingIds = ((await fetchCreatorAllowedMarking(allowedMarkingOwnerId) as unknown as ObjectMarkingFieldAllowedMarkingQuery$data)
-          .user?.groups?.edges ?? [])
-          .flatMap((group) => (group?.node?.allowed_marking ?? [])
-            .map((marking) => marking.id));
-        const markingsData = ((await fetchCreatorAllowedMarkings(creatorAllowedMarkingIds) as unknown as ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data)
-          ?.markingDefinitions?.edges
-          .map((marking) => ({ ...marking.node })));
+        const creatorAllowedMarkingIds = (
+          (
+            (await fetchCreatorAllowedMarking(
+              allowedMarkingOwnerId,
+            )) as unknown as ObjectMarkingFieldAllowedMarkingQuery$data
+          ).user?.groups?.edges ?? []
+        ).flatMap((group) => (group?.node?.allowed_marking ?? []).map((marking) => marking.id));
+        const markingsData = (
+          (await fetchCreatorAllowedMarkings(
+            creatorAllowedMarkingIds,
+          )) as unknown as ObjectMarkingFieldOtherUserAllowedMarkingsQuery$data
+        )?.markingDefinitions?.edges.map((marking) => ({ ...marking.node }));
         setOtherUserAllowedMarkingsData(markingsData);
       };
       fetchData();
@@ -189,16 +192,29 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   let allowedMarkingDefinitions = me.allowed_marking?.map(convertMarking) ?? [];
   if (limitToMaxSharing) {
     allowedMarkingDefinitions = allowedMarkingDefinitions.filter((def) => {
-      const maxMarkingsOfType = me.max_shareable_marking?.filter((marking) => marking.definition_type === def.definition_type);
-      return !isEmptyField(maxMarkingsOfType) && maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order >= def.x_opencti_order);
+      const maxMarkingsOfType = me.max_shareable_marking?.filter(
+        (marking) => marking.definition_type === def.definition_type,
+      );
+      return (
+        !isEmptyField(maxMarkingsOfType) &&
+        maxMarkingsOfType.some((maxMarking) => maxMarking.x_opencti_order >= def.x_opencti_order)
+      );
     });
   }
   const filteredAllowedMarkingDefinitionsOut = filterTargetIds
-    ? filterMarkingsOutFor(allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)), allowedMarkingDefinitions) : allowedMarkingDefinitions;
+    ? filterMarkingsOutFor(
+        allowedMarkingDefinitions.filter(({ value }) => filterTargetIds.includes(value)),
+        allowedMarkingDefinitions,
+      )
+    : allowedMarkingDefinitions;
 
   const otherUserAllowedMarkings = otherUserAllowedMarkingsData?.map(convertMarking) ?? [];
 
-  const optionSorted = (otherUserAllowedMarkings.length ? otherUserAllowedMarkings : filteredAllowedMarkingDefinitionsOut).sort((a, b) => {
+  const optionSorted = (
+    otherUserAllowedMarkings.length
+      ? otherUserAllowedMarkings
+      : filteredAllowedMarkingDefinitionsOut
+  ).sort((a, b) => {
     if (a.definition_type === b.definition_type) {
       return a.x_opencti_order < b.x_opencti_order ? -1 : 1;
     }
@@ -220,9 +236,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
       const { currentValues, valueToReplace } = newMarking as OptionValues;
       const markingAdded = currentValues[currentValues.length - 1];
       const markingsReplace = currentValues
-        .filter(
-          (marking) => marking.definition_type !== valueToReplace.definition_type,
-        )
+        .filter((marking) => marking.definition_type !== valueToReplace.definition_type)
         .concat([markingAdded]);
 
       onChange?.(name, markingsReplace as FieldOption[], operation);
@@ -234,8 +248,9 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const handleOnChange = (n: string, values: MarkingOption[]) => {
     const valueAdded = values[values.length - 1];
     const valueToReplace = values.find(
-      (marking) => marking.definition_type === valueAdded.definition_type
-        && marking.x_opencti_order !== valueAdded.x_opencti_order,
+      (marking) =>
+        marking.definition_type === valueAdded.definition_type &&
+        marking.x_opencti_order !== valueAdded.x_opencti_order,
     );
 
     if (valueToReplace) {
@@ -283,10 +298,10 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
           {t_i18n('You are about to change the marking with another rank.')}
         </DialogContentText>
         <DialogActions>
-          <Button variant="secondary" onClick={handleCancellation}>{t_i18n('Cancel')}</Button>
-          <Button onClick={submitUpdate}>
-            {t_i18n('Confirm')}
+          <Button variant="secondary" onClick={handleCancellation}>
+            {t_i18n('Cancel')}
           </Button>
+          <Button onClick={submitUpdate}>{t_i18n('Confirm')}</Button>
         </DialogActions>
       </Dialog>
     </>

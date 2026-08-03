@@ -1,7 +1,13 @@
 import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../config/conf';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext } from '../database/redis';
-import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import {
+  applicationSession,
+  findSessions,
+  findUserSessions,
+  killSession,
+  killUserSessions,
+} from '../database/session';
 import { addRole } from '../domain/grant';
 import {
   addBookmark,
@@ -52,7 +58,12 @@ import {
 import { subscribeToInstanceEvents, subscribeToUserEvents } from '../graphql/subscriptionWrapper';
 import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { addUserToken, revokeUserToken, revokeUserTokenByAdmin, addUserTokenByAdmin } from '../modules/user/user-domain';
+import {
+  addUserToken,
+  revokeUserToken,
+  revokeUserTokenByAdmin,
+  addUserTokenByAdmin,
+} from '../modules/user/user-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { REDACTED_USER } from '../utils/access';
@@ -76,18 +87,24 @@ const userResolvers = {
     systemMembers: () => findAllSystemMemberPaginated(),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
-    capabilitiesInDraft: (_, args, context) => findCapabilities(context, context.user, args, RELATION_HAS_CAPABILITY_IN_DRAFT),
+    capabilitiesInDraft: (_, args, context) =>
+      findCapabilities(context, context.user, args, RELATION_HAS_CAPABILITY_IN_DRAFT),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {
     roles: (current, args, context) => userRoles(context, context.user, current.id, args),
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
-    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
-    objectAssignedOrganization: (current, args, context) => userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
+    groups: (current, args, context) =>
+      userGroupsPaginated(context, context.user, current.id, args),
+    objectOrganization: (current, args, context) =>
+      userOrganizationsPaginated(context, context.user, current.id, args),
+    objectAssignedOrganization: (current, args, context) =>
+      userOrganizationsPaginatedWithoutInferences(context, context.user, current.id, args),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
-    effective_confidence_level: (current, _, context) => context.batch.userEffectiveConfidenceBatchLoader.load(current),
-    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    effective_confidence_level: (current, _, context) =>
+      context.batch.userEffectiveConfidenceBatchLoader.load(current),
+    personal_notifiers: (current, _, context) =>
+      getNotifiers(context, context.user, current.personal_notifiers),
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
   },
   Member: {
@@ -95,7 +112,9 @@ const userResolvers = {
       if (current.entity_type !== ENTITY_TYPE_USER) {
         return current.name;
       }
-      return (ENABLED_DEMO_MODE && context.user.id !== current.id) ? REDACTED_USER.name : current.name;
+      return ENABLED_DEMO_MODE && context.user.id !== current.id
+        ? REDACTED_USER.name
+        : current.name;
     },
     effective_confidence_level: (current, _, context) => {
       if (current.entity_type === ENTITY_TYPE_USER) {
@@ -111,13 +130,20 @@ const userResolvers = {
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,
     unsubscribed_news_feed_types: (current) => current.unsubscribed_news_feed_types ?? [],
-    groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
-    objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),
-    default_dashboards: (current, _, context) => findDefaultDashboards(context, context.user, current),
-    default_dashboard: (current, _, context) => findWorskpaceById(context, context.user, current.default_dashboard),
-    draftContext: (current, _, context) => findDraftById(context, context.user, current.draft_context),
-    effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context),
-    personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
+    groups: (current, args, context) =>
+      userGroupsPaginated(context, context.user, current.id, args),
+    objectOrganization: (current, args, context) =>
+      userOrganizationsPaginated(context, context.user, current.id, args),
+    default_dashboards: (current, _, context) =>
+      findDefaultDashboards(context, context.user, current),
+    default_dashboard: (current, _, context) =>
+      findWorskpaceById(context, context.user, current.default_dashboard),
+    draftContext: (current, _, context) =>
+      findDraftById(context, context.user, current.draft_context),
+    effective_confidence_level: (current, _, context) =>
+      getUserEffectiveConfidenceLevel(current, context),
+    personal_notifiers: (current, _, context) =>
+      getNotifiers(context, context.user, current.personal_notifiers),
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
   },
   UserSession: {
@@ -126,7 +152,8 @@ const userResolvers = {
   Role: {
     editContext: (role) => fetchEditContext(role.id),
     capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
-    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
+    capabilitiesInDraft: (role, _, context) =>
+      roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
   },
   Group: {
     roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
@@ -141,7 +168,8 @@ const userResolvers = {
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
-    otpDeactivation: (_, __, context) => otpUserDeactivation(context, context.user, context.user.id),
+    otpDeactivation: (_, __, context) =>
+      otpUserDeactivation(context, context.user, context.user.id),
     otpLogin: (_, { input }, { req, user }) => otpUserLogin(req, user, input),
     token: async (_, { input }, context) => sessionLogin(context, input),
     connectorJWT: () => issueConnectorJWT(),
@@ -157,7 +185,11 @@ const userResolvers = {
         event_scope: 'update',
         event_access: 'administration',
         message: `kills \`specific session\` for user \`${actionEmail}\``,
-        context_data: { id: user.id, entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } },
+        context_data: {
+          id: user.id,
+          entity_type: ENTITY_TYPE_USER,
+          input: { user_id: user.id, session_id: kill.sessionId },
+        },
       });
       return id;
     },
@@ -197,10 +229,13 @@ const userResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return userIdDeleteRelation(context, context.user, id, toId, relationshipType);
       },
-      organizationAdd: ({ organizationId }) => assignOrganizationToUser(context, context.user, id, organizationId),
-      organizationDelete: ({ organizationId }) => userDeleteOrganizationRelation(context, context.user, id, organizationId),
+      organizationAdd: ({ organizationId }) =>
+        assignOrganizationToUser(context, context.user, id, organizationId),
+      organizationDelete: ({ organizationId }) =>
+        userDeleteOrganizationRelation(context, context.user, id, organizationId),
     }),
-    meEdit: (_, { input, password }, context) => meEditField(context, context.user, context.user.id, input, password),
+    meEdit: (_, { input, password }, context) =>
+      meEditField(context, context.user, context.user.id, input, password),
     userAdd: (_, { input }, context) => addUser(context, context.user, input),
     bookmarkAdd: (_, { id, type }, context) => addBookmark(context, context.user, id, type),
     bookmarkDelete: (_, { id }, context) => deleteBookmark(context, context.user, id),
@@ -209,8 +244,10 @@ const userResolvers = {
     },
     userTokenAdd: (_, { input }, context) => addUserToken(context, context.user, input),
     userTokenRevoke: async (_, { id }, context) => revokeUserToken(context, context.user, id),
-    userAdminTokenRevoke: async (_, { userId, id }, context) => revokeUserTokenByAdmin(context, context.user, userId, id),
-    userAdminTokenAdd: async (_, { userId, input }, context) => addUserTokenByAdmin(context, context.user, userId, input),
+    userAdminTokenRevoke: async (_, { userId, id }, context) =>
+      revokeUserTokenByAdmin(context, context.user, userId, id),
+    userAdminTokenAdd: async (_, { userId, input }, context) =>
+      addUserTokenByAdmin(context, context.user, userId, input),
   },
   Subscription: {
     me: {
@@ -228,7 +265,11 @@ const userResolvers = {
         const preFn = () => userEditContext(context, context.user, id);
         const cleanFn = () => userCleanContext(context, context.user, id);
         const bus = BUS_TOPICS[ENTITY_TYPE_USER];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_USER, preFn, cleanFn });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_USER,
+          preFn,
+          cleanFn,
+        });
       },
     },
   },

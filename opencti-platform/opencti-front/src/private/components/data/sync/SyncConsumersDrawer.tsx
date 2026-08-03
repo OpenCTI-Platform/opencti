@@ -74,7 +74,10 @@ const formatDuration = (seconds: number): string => {
   return parts.join(' ');
 };
 
-const eventIdToDate = (eventId: string, dateFormatter: (date: string | Date) => string): string | null => {
+const eventIdToDate = (
+  eventId: string,
+  dateFormatter: (date: string | Date) => string,
+): string | null => {
   if (!eventId) return null;
   const ts = parseInt(eventId.split('-')[0], 10);
   if (Number.isNaN(ts) || ts <= 0) return null;
@@ -111,7 +114,10 @@ const MetricRow: FunctionComponent<MetricRowProps> = ({ label, value, tooltip, t
     <ListItem sx={{ py: 1, px: 0 }}>
       <ListItemText
         primary={label}
-        primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
+        primaryTypographyProps={{
+          variant: 'body2',
+          sx: { color: theme?.palette?.text?.secondary },
+        }}
         sx={{ flex: '0 0 auto', minWidth: 160 }}
       />
       <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -120,7 +126,9 @@ const MetricRow: FunctionComponent<MetricRowProps> = ({ label, value, tooltip, t
         </Typography>
         {tooltip && (
           <Tooltip title={tooltip} arrow>
-            <InfoOutlined sx={{ fontSize: 16, color: theme?.palette?.text?.secondary, cursor: 'pointer' }} />
+            <InfoOutlined
+              sx={{ fontSize: 16, color: theme?.palette?.text?.secondary, cursor: 'pointer' }}
+            />
           </Tooltip>
         )}
       </Box>
@@ -174,7 +182,10 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
         <ListItem sx={{ py: 1, px: 0 }}>
           <ListItemText
             primary={t_i18n('Status')}
-            primaryTypographyProps={{ variant: 'body2', sx: { color: theme?.palette?.text?.secondary } }}
+            primaryTypographyProps={{
+              variant: 'body2',
+              sx: { color: theme?.palette?.text?.secondary },
+            }}
             sx={{ flex: '0 0 auto', minWidth: 160 }}
           />
           <Box sx={{ ml: 'auto' }}>
@@ -263,11 +274,7 @@ const SyncConsumersDrawer: FunctionComponent<SyncConsumersDrawerProps> = ({
   };
 
   return (
-    <Drawer
-      title={`${t_i18n('Producer metrics')} - ${syncName}`}
-      open={open}
-      onClose={onClose}
-    >
+    <Drawer title={`${t_i18n('Producer metrics')} - ${syncName}`} open={open} onClose={onClose}>
       {drawerContent()}
     </Drawer>
   );

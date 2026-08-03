@@ -46,9 +46,7 @@ interface PirComponentProps {
   pirQueryRef: PreloadedQuery<PirQuery>;
 }
 
-const PirComponent = ({
-  pirQueryRef,
-}: PirComponentProps) => {
+const PirComponent = ({ pirQueryRef }: PirComponentProps) => {
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
 
   if (!pir) return <ErrorNotFound />;
@@ -58,22 +56,10 @@ const PirComponent = ({
       <PirHeader data={pir} editionData={pir} />
       <PirTabs data={pir} />
       <Routes>
-        <Route
-          path="/"
-          element={<PirOverview data={pir} />}
-        />
-        <Route
-          path="/threats"
-          element={<PirKnowledge data={pir} />}
-        />
-        <Route
-          path="/activities"
-          element={<PirHistory data={pir} />}
-        />
-        <Route
-          path="/analyses"
-          element={<PirAnalyses data={pir} />}
-        />
+        <Route path="/" element={<PirOverview data={pir} />} />
+        <Route path="/threats" element={<PirKnowledge data={pir} />} />
+        <Route path="/activities" element={<PirHistory data={pir} />} />
+        <Route path="/analyses" element={<PirAnalyses data={pir} />} />
       </Routes>
     </>
   );

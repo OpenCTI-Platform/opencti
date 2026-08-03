@@ -110,9 +110,13 @@ import { pushAll } from '../utils/arrayUtil';
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
 
-export const onlyStableStixIds = (ids = []) => R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);
+export const onlyStableStixIds = (ids = []) =>
+  R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);
 
-export const cleanStixIds = (ids: Array<string>, maxStixIds = MAX_TRANSIENT_STIX_IDS): Array<string> => {
+export const cleanStixIds = (
+  ids: Array<string>,
+  maxStixIds = MAX_TRANSIENT_STIX_IDS,
+): Array<string> => {
   const keptIds = [];
   const transientIds = [];
   const wIds = Array.isArray(ids) ? ids : [ids];
@@ -129,7 +133,8 @@ export const cleanStixIds = (ids: Array<string>, maxStixIds = MAX_TRANSIENT_STIX
     }
   }
   const orderedTransient = R.sort((a, b) => b.timestamp - a.timestamp, transientIds);
-  const keptTimedIds = orderedTransient.length > maxStixIds ? orderedTransient.slice(0, maxStixIds) : orderedTransient;
+  const keptTimedIds =
+    orderedTransient.length > maxStixIds ? orderedTransient.slice(0, maxStixIds) : orderedTransient;
   // Return the new list
   return R.map((s) => s.id, [...keptIds, ...keptTimedIds]);
 };
@@ -193,9 +198,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_CHANNEL}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_CHANNEL}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_BUILT_IN },
   ],
@@ -241,9 +244,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_ORIGINATES_FROM, type: REL_BUILT_IN },
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_MALWARE}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_MALWARE}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN },
   ],
@@ -253,9 +254,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_TOOL}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_TOOL}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
@@ -282,9 +281,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_INTRUSION_SET}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
   ],
-  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_MEDIA_CONTENT}`]: [
-    { name: RELATION_AMPLIFIES, type: REL_NEW },
-  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_MEDIA_CONTENT}`]: [{ name: RELATION_AMPLIFIES, type: REL_NEW }],
   // endregion
   // region COURSE_OF_ACTION
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -395,9 +392,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
   ],
-  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_CHANNEL}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_CHANNEL}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_NARRATIVE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
   ],
@@ -446,9 +441,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_ORIGINATES_FROM, type: REL_EXTENDED },
     { name: RELATION_TARGETS, type: REL_EXTENDED },
   ],
-  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_MALWARE}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_MALWARE}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED },
   ],
@@ -458,9 +451,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED },
   ],
-  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_TOOL}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_TOOL}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_TARGETS, type: REL_EXTENDED },
   ],
@@ -593,7 +584,8 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
-    { name: RELATION_TARGETS, type: REL_BUILT_IN }],
+    { name: RELATION_TARGETS, type: REL_BUILT_IN },
+  ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
@@ -737,9 +729,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_EVENT}`]: [
-    { name: RELATION_TARGETS, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_EVENT}`]: [{ name: RELATION_TARGETS, type: REL_EXTENDED }],
   [`${ENTITY_TYPE_MALWARE}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [
     { name: RELATION_BEACONS_TO, type: REL_BUILT_IN },
     { name: RELATION_EXFILTRATES_TO, type: REL_BUILT_IN },
@@ -982,9 +972,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_EVENT}`]: [
-    { name: RELATION_TARGETS, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_EVENT}`]: [{ name: RELATION_TARGETS, type: REL_EXTENDED }],
   [`${ENTITY_TYPE_TOOL}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
   ],
@@ -1055,25 +1043,15 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_DROPS, type: REL_EXTENDED },
   ],
-  [`${ENTITY_HOSTNAME}_${ENTITY_HOSTNAME}`]: [
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_HOSTNAME}_${ENTITY_HOSTNAME}`]: [{ name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }],
   // endregion
   // region URL
-  [`${ENTITY_URL}_${ENTITY_TYPE_NARRATIVE}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
-  [`${ENTITY_URL}_${ENTITY_URL}`]: [
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_URL}_${ENTITY_TYPE_NARRATIVE}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
+  [`${ENTITY_URL}_${ENTITY_URL}`]: [{ name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }],
   // endregion
   // region TEXT
-  [`${ENTITY_TEXT}_${ENTITY_TYPE_NARRATIVE}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
-  [`${ENTITY_TEXT}_${ENTITY_TEXT}`]: [
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_TEXT}_${ENTITY_TYPE_NARRATIVE}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
+  [`${ENTITY_TEXT}_${ENTITY_TEXT}`]: [{ name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }],
   // endregion
   // region ARTIFACT
   [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_TYPE_NARRATIVE}`]: [
@@ -1100,45 +1078,23 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   // endregion
   // region ICCID
-  [`${ENTITY_ICCID}_${ENTITY_IMEI}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_ICCID}_${ENTITY_IMSI}`]: [
-    { name: RELATION_HAS, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_ICCID}_${ENTITY_PHONE_NUMBER}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_ICCID}_${ENTITY_IMEI}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
+  [`${ENTITY_ICCID}_${ENTITY_IMSI}`]: [{ name: RELATION_HAS, type: REL_BUILT_IN }],
+  [`${ENTITY_ICCID}_${ENTITY_PHONE_NUMBER}`]: [{ name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }],
   // endregion
   // region IMEI
-  [`${ENTITY_IMEI}_${ENTITY_ICCID}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_IMEI}_${ENTITY_IMSI}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_IMEI}_${ENTITY_MAC_ADDR}`]: [
-    { name: RELATION_HAS, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_IMEI}_${ENTITY_ICCID}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
+  [`${ENTITY_IMEI}_${ENTITY_IMSI}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
+  [`${ENTITY_IMEI}_${ENTITY_MAC_ADDR}`]: [{ name: RELATION_HAS, type: REL_BUILT_IN }],
   // endregion
   // region IMSI
-  [`${ENTITY_IMSI}_${ENTITY_IMEI}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_IMSI}_${ENTITY_ICCID}`]: [
-    { name: RELATION_HAS, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_IMSI}_${ENTITY_PHONE_NUMBER}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_IMSI}_${ENTITY_IMEI}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
+  [`${ENTITY_IMSI}_${ENTITY_ICCID}`]: [{ name: RELATION_HAS, type: REL_BUILT_IN }],
+  [`${ENTITY_IMSI}_${ENTITY_PHONE_NUMBER}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
   // endregion
   // region PHONE_NUMBER
-  [`${ENTITY_PHONE_NUMBER}_${ENTITY_IMSI}`]: [
-    { name: RELATION_USES, type: REL_BUILT_IN },
-  ],
-  [`${ENTITY_PHONE_NUMBER}_${ENTITY_ICCID}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_PHONE_NUMBER}_${ENTITY_IMSI}`]: [{ name: RELATION_USES, type: REL_BUILT_IN }],
+  [`${ENTITY_PHONE_NUMBER}_${ENTITY_ICCID}`]: [{ name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }],
   // endregion
   // region IPV4_ADDR
   [`${ENTITY_IPV4_ADDR}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
@@ -1156,9 +1112,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV4_ADDR}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED },
   ],
-  [`${ENTITY_IPV4_ADDR}_${ENTITY_MAC_ADDR}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_MAC_ADDR}`]: [{ name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }],
   [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
     { name: RELATION_BELONGS_TO, type: REL_BUILT_IN },
   ],
@@ -1189,9 +1143,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_IPV6_ADDR}_${ENTITY_TYPE_LOCATION_REGION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED },
   ],
-  [`${ENTITY_IPV6_ADDR}_${ENTITY_MAC_ADDR}`]: [
-    { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_MAC_ADDR}`]: [{ name: RELATION_RESOLVES_TO, type: REL_BUILT_IN }],
   [`${ENTITY_IPV6_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
     { name: RELATION_BELONGS_TO, type: REL_BUILT_IN },
   ],
@@ -1220,9 +1172,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV6_ADDR}`]: [
     { name: RELATION_RESOLVES_TO, type: REL_BUILT_IN },
   ],
-  [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_NARRATIVE}`]: [
-    { name: RELATION_USES, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_NARRATIVE}`]: [{ name: RELATION_USES, type: REL_EXTENDED }],
   [`${ENTITY_DOMAIN_NAME}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
     { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
   ],
@@ -1265,9 +1215,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_HAS, type: REL_EXTENDED },
     { name: RELATION_REMEDIATES, type: REL_EXTENDED },
   ],
-  [`${ENTITY_SOFTWARE}_${ENTITY_SOFTWARE}`]: [
-    { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
-  ],
+  [`${ENTITY_SOFTWARE}_${ENTITY_SOFTWARE}`]: [{ name: RELATION_DERIVED_FROM, type: REL_BUILT_IN }],
   // From MEDIA CONTENT
   [`${ENTITY_MEDIA_CONTENT}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [
     { name: RELATION_AUTHORED_BY, type: REL_EXTENDED },
@@ -1285,22 +1233,16 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_DERIVED_FROM, type: REL_EXTENDED },
   ],
   // From USER_ACCOUNT
-  [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [
-    { name: RELATION_PUBLISHES, type: REL_NEW },
-  ],
+  [`${ENTITY_USER_ACCOUNT}_${ENTITY_MEDIA_CONTENT}`]: [{ name: RELATION_PUBLISHES, type: REL_NEW }],
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_USER_ACCOUNT}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
   ],
   // From AI_PROMPT
-  [`${ENTITY_AI_PROMPT}_${ENTITY_SOFTWARE}`]: [
-    { name: RELATION_TARGETS, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_AI_PROMPT}_${ENTITY_SOFTWARE}`]: [{ name: RELATION_TARGETS, type: REL_EXTENDED }],
   // endregion
   // Extended
   // region RELATIONS TO RELATIONS: DISCUSS IMPLEMENTATION!!
-  [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [
-    { name: RELATION_INDICATES, type: REL_EXTENDED },
-  ],
+  [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [{ name: RELATION_INDICATES, type: REL_EXTENDED }],
   [`${RELATION_TARGETS}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_EXTENDED },
   ],
@@ -1319,7 +1261,11 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
 };
 
-export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
+export const checkStixCoreRelationshipMapping = (
+  fromType: string,
+  toType: string,
+  relationshipType: string,
+): boolean => {
   // RELATED_TO and REVOKED_BY are available for every entity
   if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
     return true;
@@ -1327,9 +1273,13 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
   // If core relationship start or target a cyber observable
   // All relationships here are a STIX specification extension.
   if (isStixCyberObservable(toType)) {
-    const data = stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? [];
+    const data =
+      stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? [];
     const mappingElements = data.map((r) => r.name);
-    const haveKey = R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping));
+    const haveKey = R.includes(
+      `${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`,
+      R.keys(stixCoreRelationshipsMapping),
+    );
     const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
     if (haveKey && haveAccessibleTarget) {
       return true;
@@ -1338,7 +1288,10 @@ export const checkStixCoreRelationshipMapping = (fromType: string, toType: strin
   if (isStixCyberObservable(fromType)) {
     const data = stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`] ?? [];
     const mappingElements = data.map((r) => r.name);
-    const haveKey = R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping));
+    const haveKey = R.includes(
+      `${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`,
+      R.keys(stixCoreRelationshipsMapping),
+    );
     const haveAccessibleTarget = R.includes(relationshipType, mappingElements);
     if (haveKey && haveAccessibleTarget) {
       return true;
@@ -1365,11 +1318,17 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   const definitions = stixCoreRelationshipsMapping[`${instance.fromType}_${instance.toType}`] ?? [];
   // check from toType parent observables
   if (isStixCyberObservable(instance.toType)) {
-    pushAll(definitions, (stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? []));
+    pushAll(
+      definitions,
+      stixCoreRelationshipsMapping[`${instance.fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] ?? [],
+    );
   }
   // check from fromType parent observables
   if (isStixCyberObservable(instance.fromType)) {
-    pushAll(definitions, (stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`] ?? []));
+    pushAll(
+      definitions,
+      stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${instance.toType}`] ?? [],
+    );
   }
   // If definition found, check if the relation is build int
   if (definitions) {
@@ -1383,16 +1342,35 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   throw UnsupportedError('[STIX] Missing relation definition', meta);
 };
 
-export const checkRelationshipRef = (fromType: string, toType: string, relationshipType: string) => {
-  const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
+export const checkRelationshipRef = (
+  fromType: string,
+  toType: string,
+  relationshipType: string,
+) => {
+  const relationRefs = schemaRelationsRefDefinition
+    .getRelationsRef(fromType)
+    .filter((rel) => rel.databaseName === relationshipType);
   if (relationRefs.length === 0) {
-    throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
+    throw FunctionalError('The relationship is not allowed', {
+      type: relationshipType,
+      from: fromType,
+      to: toType,
+    });
   }
   if (relationRefs.length > 1) {
-    throw FunctionalError('Invalid relationship schema', { type: relationshipType, from: fromType, to: toType, data: relationRefs });
+    throw FunctionalError('Invalid relationship schema', {
+      type: relationshipType,
+      from: fromType,
+      to: toType,
+      data: relationRefs,
+    });
   }
 
   if (!relationRefs[0].isRefExistingForTypes(fromType, toType)) {
-    throw FunctionalError('The relationship is not allowed', { type: relationshipType, from: fromType, to: toType });
+    throw FunctionalError('The relationship is not allowed', {
+      type: relationshipType,
+      from: fromType,
+      to: toType,
+    });
   }
 };

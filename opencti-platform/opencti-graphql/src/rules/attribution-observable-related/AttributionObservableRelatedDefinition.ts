@@ -3,7 +3,8 @@ import type { RuleDefinition } from '../../types/rules';
 
 const id = 'attribution_observable_related';
 const name = 'Observable relation propagation via attribution';
-const description = 'If an entity is attributed to another entity and an observable is related to the first entity, then the observable is also related to the second entity.';
+const description =
+  'If an entity is attributed to another entity and an observable is related to the first entity, then the observable is also related to the second entity.';
 const category = 'Parent-child propagation';
 const display = {
   if: [

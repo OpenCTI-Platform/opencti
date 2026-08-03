@@ -5,11 +5,7 @@ import { ResetPwdStep } from './ResetPassword';
 
 const AlertChangePwd = () => {
   const { t_i18n } = useFormatter();
-  const {
-    pwdChanged,
-    resetPwdStep,
-    changePasswordInError,
-  } = useLoginContext();
+  const { pwdChanged, resetPwdStep, changePasswordInError } = useLoginContext();
 
   const inResetStep = resetPwdStep === ResetPwdStep.RESET_PASSWORD;
   const inLoginForm = resetPwdStep === undefined;
@@ -32,9 +28,7 @@ const AlertChangePwd = () => {
         </>
       )}
       {inLoginForm && (
-        <LoginAlert severity="success">
-          {t_i18n('Your password has been updated.')}
-        </LoginAlert>
+        <LoginAlert severity="success">{t_i18n('Your password has been updated.')}</LoginAlert>
       )}
     </>
   );

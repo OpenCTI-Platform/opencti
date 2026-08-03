@@ -40,21 +40,23 @@ vi.mock('../../utils/hooks/useAuth', () => ({
 // inside renderHook's act() without requiring async microtask flushing,
 // which deadlocks with vitest fake timers.
 vi.mock('./dashboardVizUtils', () => ({
-  resolveDataSelection: vi.fn(({
-    dataSelection,
-    host,
-  }: {
-    dataSelection: Array<unknown>;
-    host?: { kind?: string; customViewTargetEntityId?: string };
-  }) => {
-    const result = {
-      resolvedDataSelection: dataSelection,
-      isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
-      isPreviewMode: false,
-      isMissingSavedFilters: false,
-    };
-    return { then: (cb: (r: typeof result) => void) => cb(result) };
-  }),
+  resolveDataSelection: vi.fn(
+    ({
+      dataSelection,
+      host,
+    }: {
+      dataSelection: Array<unknown>;
+      host?: { kind?: string; customViewTargetEntityId?: string };
+    }) => {
+      const result = {
+        resolvedDataSelection: dataSelection,
+        isMissingHostEntity: host?.kind === 'custom-view' && !host.customViewTargetEntityId,
+        isPreviewMode: false,
+        isMissingSavedFilters: false,
+      };
+      return { then: (cb: (r: typeof result) => void) => cb(result) };
+    },
+  ),
 }));
 
 vi.mock('./DashboardRefreshContext', () => ({
@@ -85,29 +87,37 @@ describe('useDashboardViz', () => {
       title: parameters?.title ?? null,
     }));
 
-    const widgetA1 = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters,
-      buildQueryVariables,
-    }), {
-      initialProps: { parameters: { title: 'A1' } },
-    });
+    const widgetA1 = renderHook(
+      ({ parameters }: { parameters: { title: string } }) =>
+        useDashboardViz({
+          dataSelection: EMPTY_DATA_SELECTION,
+          perspective: 'entities',
+          refreshRate: null,
+          query: {} as never,
+          config: {},
+          parameters,
+          buildQueryVariables,
+        }),
+      {
+        initialProps: { parameters: { title: 'A1' } },
+      },
+    );
 
-    const widgetA2 = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters,
-      buildQueryVariables,
-    }), {
-      initialProps: { parameters: { title: 'A2' } },
-    });
+    const widgetA2 = renderHook(
+      ({ parameters }: { parameters: { title: string } }) =>
+        useDashboardViz({
+          dataSelection: EMPTY_DATA_SELECTION,
+          perspective: 'entities',
+          refreshRate: null,
+          query: {} as never,
+          config: {},
+          parameters,
+          buildQueryVariables,
+        }),
+      {
+        initialProps: { parameters: { title: 'A2' } },
+      },
+    );
 
     expect(loadMocks).toHaveLength(2);
     const [a1Load, a2Load] = loadMocks;
@@ -128,15 +138,17 @@ describe('useDashboardViz', () => {
   it('fetches on mount and then refetches when refresh token increments', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'token-refetch' }));
 
-    const hook = renderHook(() => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters: {},
-      buildQueryVariables,
-    }));
+    const hook = renderHook(() =>
+      useDashboardViz({
+        dataSelection: EMPTY_DATA_SELECTION,
+        perspective: 'entities',
+        refreshRate: null,
+        query: {} as never,
+        config: {},
+        parameters: {},
+        buildQueryVariables,
+      }),
+    );
 
     expect(loadMocks).toHaveLength(1);
     const [loadSpy] = loadMocks;
@@ -163,15 +175,17 @@ describe('useDashboardViz', () => {
   it('does not refetch again when rerendering with the same refresh token', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'same-token' }));
 
-    const hook = renderHook(() => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters: {},
-      buildQueryVariables,
-    }));
+    const hook = renderHook(() =>
+      useDashboardViz({
+        dataSelection: EMPTY_DATA_SELECTION,
+        perspective: 'entities',
+        refreshRate: null,
+        query: {} as never,
+        config: {},
+        parameters: {},
+        buildQueryVariables,
+      }),
+    );
 
     expect(loadMocks).toHaveLength(1);
     const [loadSpy] = loadMocks;
@@ -197,15 +211,17 @@ describe('useDashboardViz', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'token-disables-interval' }));
     refreshTokenMockValue = 0;
 
-    renderHook(() => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      refreshRate: 5_000,
-      query: {} as never,
-      config: {},
-      parameters: {},
-      buildQueryVariables,
-    }));
+    renderHook(() =>
+      useDashboardViz({
+        dataSelection: EMPTY_DATA_SELECTION,
+        perspective: 'entities',
+        refreshRate: 5_000,
+        query: {} as never,
+        config: {},
+        parameters: {},
+        buildQueryVariables,
+      }),
+    );
 
     expect(loadMocks).toHaveLength(1);
     const [loadSpy] = loadMocks;
@@ -221,16 +237,18 @@ describe('useDashboardViz', () => {
   it('keeps workspace host behavior unchanged by missing-host guard', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'workspace-host' }));
 
-    const hook = renderHook(() => useDashboardViz({
-      dataSelection: EMPTY_DATA_SELECTION,
-      perspective: 'entities',
-      host: { kind: 'workspace' },
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters: {},
-      buildQueryVariables,
-    }));
+    const hook = renderHook(() =>
+      useDashboardViz({
+        dataSelection: EMPTY_DATA_SELECTION,
+        perspective: 'entities',
+        host: { kind: 'workspace' },
+        refreshRate: null,
+        query: {} as never,
+        config: {},
+        parameters: {},
+        buildQueryVariables,
+      }),
+    );
 
     expect(loadMocks).toHaveLength(1);
     expect(disposeMocks).toHaveLength(1);
@@ -261,17 +279,21 @@ describe('useDashboardViz', () => {
       field: resolvedDataSelection[0]?.field?.toUpperCase() ?? null,
     }));
 
-    const hook = renderHook(({ dataSelection }: { dataSelection: WidgetDataSelection[] }) => useDashboardViz({
-      dataSelection,
-      perspective: 'entities',
-      refreshRate: null,
-      query: {} as never,
-      config: {},
-      parameters: {},
-      buildQueryVariables,
-    }), {
-      initialProps: { dataSelection: [{ field: 'selection1' }] },
-    });
+    const hook = renderHook(
+      ({ dataSelection }: { dataSelection: WidgetDataSelection[] }) =>
+        useDashboardViz({
+          dataSelection,
+          perspective: 'entities',
+          refreshRate: null,
+          query: {} as never,
+          config: {},
+          parameters: {},
+          buildQueryVariables,
+        }),
+      {
+        initialProps: { dataSelection: [{ field: 'selection1' }] },
+      },
+    );
 
     const [loadSpy] = loadMocks;
 

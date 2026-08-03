@@ -38,7 +38,9 @@ export const loadParticipants = async (
   user: AuthUser,
   object: BasicStoreEntity,
 ) => {
-  const participants = await loadThroughDenormalized(context, user, object, INPUT_PARTICIPANT, { sortBy: 'user_email' });
+  const participants = await loadThroughDenormalized(context, user, object, INPUT_PARTICIPANT, {
+    sortBy: 'user_email',
+  });
   if (!participants) {
     return [];
   }
@@ -50,7 +52,9 @@ export const loadAssignees = async (
   user: AuthUser,
   object: BasicStoreEntity,
 ) => {
-  const assignees = await loadThroughDenormalized(context, user, object, INPUT_ASSIGNEE, { sortBy: 'user_email' });
+  const assignees = await loadThroughDenormalized(context, user, object, INPUT_ASSIGNEE, {
+    sortBy: 'user_email',
+  });
   if (!assignees) {
     return [];
   }

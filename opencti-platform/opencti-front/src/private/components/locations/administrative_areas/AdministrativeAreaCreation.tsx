@@ -15,10 +15,17 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
-import { AdministrativeAreaCreationMutation, AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
+import {
+  AdministrativeAreaCreationMutation,
+  AdministrativeAreaCreationMutation$variables,
+} from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -34,9 +41,7 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const administrativeAreaMutation = graphql`
-  mutation AdministrativeAreaCreationMutation(
-    $input: AdministrativeAreaAddInput!
-  ) {
+  mutation AdministrativeAreaCreationMutation($input: AdministrativeAreaAddInput!) {
     administrativeAreaAdd(input: $input) {
       id
       standard_id
@@ -93,39 +98,39 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ADMINISTRATIVE_AREA_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    latitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t_i18n('This field must be a number'))
-      .nullable(),
-  }, mandatoryAttributes);
-  const administrativeAreaValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      latitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+      longitude: Yup.number().typeError(t_i18n('This field must be a number')).nullable(),
+    },
+    mandatoryAttributes,
+  );
+  const administrativeAreaValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const [commit] = useApiMutation<AdministrativeAreaCreationMutation>(
     administrativeAreaMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<AdministrativeAreaCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'administrativeAreaAdd');
-      }
+    {
+      successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}`,
     },
-  });
+  );
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<AdministrativeAreaCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'administrativeAreaAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -168,21 +173,18 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     });
   };
 
-  const initialValues = useDefaultValues<AdministrativeAreaAddInput>(
-    ADMINISTRATIVE_AREA_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      latitude: '',
-      longitude: '',
-      confidence: null,
-      createdBy: defaultCreatedBy ?? null,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues<AdministrativeAreaAddInput>(ADMINISTRATIVE_AREA_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    latitude: '',
+    longitude: '',
+    confidence: null,
+    createdBy: defaultCreatedBy ?? null,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+  });
 
   return (
     <Formik<AdministrativeAreaAddInput>
@@ -226,7 +228,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Administrative-Area']}
             />
@@ -234,7 +236,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -252,7 +254,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="latitude"
               label={t_i18n('Latitude')}
-              required={(mandatoryAttributes.includes('latitude'))}
+              required={mandatoryAttributes.includes('latitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -261,7 +263,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               variant="standard"
               name="longitude"
               label={t_i18n('Longitude')}
-              required={(mandatoryAttributes.includes('longitude'))}
+              required={mandatoryAttributes.includes('longitude')}
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
@@ -269,50 +271,44 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               name="createdBy"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
             />
             <ObjectLabelField
               name="objectLabel"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
             />
             <ObjectMarkingField
               name="objectMarking"
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
             />
             <ExternalReferencesField
               name="externalReferences"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
             />
             <Field
               component={CustomFileUploader}
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -331,12 +327,7 @@ const AdministrativeAreaCreation = ({
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => {
-    insertNode(
-      store,
-      'Pagination_administrativeAreas',
-      paginationOptions,
-      'administrativeAreaAdd',
-    );
+    insertNode(store, 'Pagination_administrativeAreas', paginationOptions, 'administrativeAreaAdd');
   };
 
   const CreateAreaControlledDial = (props: DrawerControlledDialProps) => (

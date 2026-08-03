@@ -1,6 +1,9 @@
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { ME_FILTER_VALUE, SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE } from '../utils/filtering/filtering-constants';
+import {
+  ME_FILTER_VALUE,
+  SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE,
+} from '../utils/filtering/filtering-constants';
 import { extractFilterGroupValues } from '../utils/filtering/filtering-utils';
 import { storeLoadByIds } from '../database/middleware-loader';
 import { ABSTRACT_BASIC_OBJECT } from '../schema/general';
@@ -31,14 +34,20 @@ export const findFiltersRepresentatives = async (
 ) => {
   const filtersRepresentatives: FilterRepresentative[] = [];
   // extract the ids to resolve from inputFilters
-  const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
+  const keysToResolve = schemaRelationsRefDefinition
+    .getAllInputNames()
     .concat(STIX_CORE_RELATIONSHIPS)
     .concat(schemaAttributesDefinition.getIdAttributeNames())
     .concat(SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE);
   const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve, false, true);
   const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true, true);
   // resolve the ids
-  const resolvedEntities = await storeLoadByIds<BasicStoreEntity>(context, user, idsToResolve, ABSTRACT_BASIC_OBJECT);
+  const resolvedEntities = await storeLoadByIds<BasicStoreEntity>(
+    context,
+    user,
+    idsToResolve,
+    ABSTRACT_BASIC_OBJECT,
+  );
   const internalUsersIds = Object.keys(INTERNAL_USERS);
   if (idsToResolve.filter((e) => internalUsersIds.includes(e)).length > 0) {
     for (let index = 0; index < idsToResolve.length; index += 1) {
@@ -59,7 +68,7 @@ export const findFiltersRepresentatives = async (
     // add the entity representative in 'value', or null for deleted/restricted entities
     filtersRepresentatives.push({
       id: idsToResolve[index],
-      value: (entity ? extractEntityRepresentativeName(entity) : null),
+      value: entity ? extractEntityRepresentativeName(entity) : null,
       entity_type: entity?.entity_type ?? null,
       color: entity?.color || entity?.x_opencti_color || null,
     });
@@ -91,11 +100,13 @@ export const findFiltersRepresentatives = async (
     });
   }
   // add ids that don't require a resolution
-  return filtersRepresentatives.concat(otherIds.map((id) => ({
-    id,
-    value: id,
-    entity_type: null,
-    color: null,
-  })));
+  return filtersRepresentatives.concat(
+    otherIds.map((id) => ({
+      id,
+      value: id,
+      entity_type: null,
+      color: null,
+    })),
+  );
 };
 // endregion

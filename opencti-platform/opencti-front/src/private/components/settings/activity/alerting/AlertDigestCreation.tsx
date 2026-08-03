@@ -43,16 +43,19 @@ interface TriggerDigestActivityAddInput {
   recipients: { value: string }[];
 }
 
-export const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  trigger_ids: Yup.array().min(1, t('Minimum one trigger')).required(t('This field is required')),
-  period: Yup.string().required(t('This field is required')),
-  notifiers: Yup.array().min(1, t('Minimum one notifier')).required(t('This field is required')),
-  recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
-  day: Yup.string().nullable(),
-  time: Yup.string().nullable(),
-});
+export const digestTriggerValidation = (t: (message: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    trigger_ids: Yup.array().min(1, t('Minimum one trigger')).required(t('This field is required')),
+    period: Yup.string().required(t('This field is required')),
+    notifiers: Yup.array().min(1, t('Minimum one notifier')).required(t('This field is required')),
+    recipients: Yup.array()
+      .min(1, t('Minimum one recipient'))
+      .required(t('This field is required')),
+    day: Yup.string().nullable(),
+    time: Yup.string().nullable(),
+  });
 
 interface TriggerDigestCreationProps {
   contextual?: boolean;
@@ -85,11 +88,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
   };
   const onDigestSubmit: FormikConfig<TriggerDigestActivityAddInput>['onSubmit'] = (
     values: TriggerDigestActivityAddInput,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    }: FormikHelpers<TriggerDigestActivityAddInput>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerDigestActivityAddInput>,
   ) => {
     // Important to translate to UTC before formatting
     let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
@@ -111,7 +110,12 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_triggersActivity', paginationOptions, 'triggerActivityDigestAdd');
+        insertNode(
+          store,
+          'Pagination_triggersActivity',
+          paginationOptions,
+          'triggerActivityDigestAdd',
+        );
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -127,11 +131,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     });
   };
   const digestFields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined,
-    ) => void,
+    setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void,
     values: TriggerDigestActivityAddInput,
   ) => (
     <React.Fragment>
@@ -229,38 +229,21 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     </React.Fragment>
   );
   const renderClassic = () => (
-    <Drawer
-      title={t_i18n('Create a regular activity digest')}
-      open={open}
-      onClose={handleClose}
-    >
+    <Drawer title={t_i18n('Create a regular activity digest')} open={open} onClose={handleClose}>
       <Formik<TriggerDigestActivityAddInput>
         initialValues={digestInitialValues}
         validationSchema={digestTriggerValidation(t_i18n)}
         onSubmit={onDigestSubmit}
         onReset={onReset}
       >
-        {({
-          submitForm,
-          handleReset,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Form>
             {digestFields(setFieldValue, values)}
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -286,17 +269,10 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
           <>
             {digestFields(setFieldValue, values)}
             <DialogActions>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

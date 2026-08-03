@@ -12,7 +12,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Drawer from '../../common/drawer/Drawer';
@@ -20,7 +24,10 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { FeedbackCreationMutation, FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
+import {
+  FeedbackCreationMutation,
+  FeedbackCreationMutation$variables,
+} from './__generated__/FeedbackCreationMutation.graphql';
 
 const feedbackMutation = graphql`
   mutation FeedbackCreationMutation($input: FeedbackAddInput!) {
@@ -50,22 +57,22 @@ const FeedbackCreation: FunctionComponent<{
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const [commit] = useApiMutation<FeedbackCreationMutation>(
-    feedbackMutation,
-    undefined,
-    { successMessage: 'Thank you for your feedback!' },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const [commit] = useApiMutation<FeedbackCreationMutation>(feedbackMutation, undefined, {
+    successMessage: 'Thank you for your feedback!',
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    FEEDBACK_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(FEEDBACK_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      description: Yup.string().nullable(),
+      confidence: Yup.number(),
+      rating: Yup.number().min(1).max(5),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    rating: Yup.number().min(1).max(5),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
   const onSubmit: FormikConfig<FormikFeedbackAddInput>['onSubmit'] = (
@@ -109,11 +116,7 @@ const FeedbackCreation: FunctionComponent<{
   );
 
   return (
-    <Drawer
-      title={t_i18n('Submit a feedback')}
-      open={openDrawer}
-      onClose={handleCloseDrawer}
-    >
+    <Drawer title={t_i18n('Submit a feedback')} open={openDrawer} onClose={handleCloseDrawer}>
       <Formik<FormikFeedbackAddInput>
         initialValues={initialValues}
         validationSchema={validator}
@@ -122,20 +125,14 @@ const FeedbackCreation: FunctionComponent<{
         validateOnBlur={true}
         onReset={handleCloseDrawer}
       >
-        {({
-          submitForm,
-          handleReset,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Form>
             <Field
               component={MarkdownField}
               askAi={false}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -143,14 +140,11 @@ const FeedbackCreation: FunctionComponent<{
               autoPersistOnBlur={false}
               registerMarkdownImagesController={registerMarkdownImagesController}
             />
-            <ConfidenceField
-              entityType="Feedback"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Feedback" containerStyle={fieldSpacingContainerStyle} />
             <RatingField
               label={t_i18n('Rating')}
               readOnly={false}
-              required={(mandatoryAttributes.includes('rating'))}
+              required={mandatoryAttributes.includes('rating')}
               rating={values.rating}
               size="small"
               handleOnChange={(newValue) => {
@@ -163,29 +157,22 @@ const FeedbackCreation: FunctionComponent<{
             />
             <StixCoreObjectsField
               name="objects"
-              required={(mandatoryAttributes.includes('objects'))}
+              required={mandatoryAttributes.includes('objects')}
               style={fieldSpacingContainerStyle}
             />
             <CustomFileUploader setFieldValue={setFieldValue} />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <FormButtonContainer>
-              <Button
-                onClick={handleReset}
-                disabled={isSubmitting}
-                variant="secondary"
-              >
+              <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

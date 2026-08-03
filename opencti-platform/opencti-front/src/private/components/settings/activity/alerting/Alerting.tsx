@@ -2,12 +2,19 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from '../../../../../components/list_lines';
-import { HandleAddFilter, UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+  usePaginationLocalStorage,
+} from '../../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloadedPaginationFragment';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
-import { AlertingPaginationQuery, AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
+import {
+  AlertingPaginationQuery,
+  AlertingPaginationQuery$variables,
+} from './__generated__/AlertingPaginationQuery.graphql';
 import AlertCreation from './AlertCreation';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
@@ -39,14 +46,14 @@ export const alertingQuery = graphql`
     $filters: FilterGroup
   ) {
     ...AlertingLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -134,9 +141,8 @@ const Alerting: FunctionComponent = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Alerting | Activity | Settings'));
   const classes = useStyles();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AlertingPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_DATA_SOURCES,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<AlertingPaginationQuery$variables>(LOCAL_STORAGE_KEY_DATA_SOURCES, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -145,8 +151,7 @@ const Alerting: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-    },
-  );
+    });
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, filters, numberOfElements } = viewStorage;
     const dataColumns = {
@@ -194,16 +199,13 @@ const Alerting: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
-                  <AlertingLineDummy
-                    key={`AlertingLineDummy-${idx}`}
-                    dataColumns={dataColumns}
-                  />
+                  <AlertingLineDummy key={`AlertingLineDummy-${idx}`} dataColumns={dataColumns} />
                 ))}
               </>
-            )}
+            }
           >
             <AlertingLines
               queryRef={queryRef}
@@ -220,7 +222,13 @@ const Alerting: FunctionComponent = () => {
 
   return (
     <div className={classes.container} data-testid="alerting-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Activity') },
+          { label: t_i18n('Alerting'), current: true },
+        ]}
+      />
       {renderLines()}
     </div>
   );

@@ -2,7 +2,11 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
-import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
+import {
+  connectorDeletionMutation,
+  connectorResetStateMutation,
+  connectorWorkDeleteMutation,
+} from '@components/data/connectors/Connector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
@@ -31,7 +35,11 @@ interface ConnectorPopoverProps {
   onOpenEditConfiguration?: () => void;
 }
 
-const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }: ConnectorPopoverProps) => {
+const ConnectorPopover = ({
+  connector,
+  onRefreshData,
+  onOpenEditConfiguration,
+}: ConnectorPopoverProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
@@ -114,7 +122,9 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
         id: connector.id,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector state has been reset and messages queue has been purged');
+        MESSAGING$.notifySuccess(
+          'The connector state has been reset and messages queue has been purged',
+        );
         setResetting(false);
         setDisplayResetState(false);
         if (onRefreshData) {
@@ -155,14 +165,8 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {connector.is_managed && (
-          <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
-        )}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {connector.is_managed && <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>}
         {isSensitive ? (
           <DangerZoneBlock
             type="connector_reset"
@@ -182,10 +186,7 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
           <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
-        <MenuItem
-          onClick={handleOpenDelete}
-          disabled={!canDeleteConnector(connector)}
-        >
+        <MenuItem onClick={handleOpenDelete} disabled={!canDeleteConnector(connector)}>
           {t_i18n('Delete')}
         </MenuItem>
       </Menu>
@@ -200,17 +201,10 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
           {t_i18n('Do you want to clear the works of this connector?')}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseClearWorks}
-            disabled={clearing}
-          >
+          <Button variant="secondary" onClick={handleCloseClearWorks} disabled={clearing}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitClearWorks}
-            disabled={clearing}
-          >
+          <Button onClick={submitClearWorks} disabled={clearing}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>
@@ -227,25 +221,26 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
             severity={isSensitive ? 'warning' : 'info'}
             variant="outlined"
             color={isSensitive ? 'dangerZone' : undefined}
-            style={isSensitive ? {
-              borderColor: theme.palette.dangerZone.main,
-            } : {}}
+            style={
+              isSensitive
+                ? {
+                    borderColor: theme.palette.dangerZone.main,
+                  }
+                : {}
+            }
           >
             <div>
               {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
               <br />
               {refreshingQueueDetails
                 ? t_i18n('Loading current message count...')
-                : t_i18n('Number of messages: ') + connector.connector_queue_details.messages_number}
+                : t_i18n('Number of messages: ') +
+                  connector.connector_queue_details.messages_number}
             </div>
           </Alert>
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseResetState}
-            disabled={resetting}
-          >
+          <Button variant="secondary" onClick={handleCloseResetState} disabled={resetting}>
             {t_i18n('Cancel')}
           </Button>
           <Button
@@ -263,7 +258,6 @@ const ConnectorPopover = ({ connector, onRefreshData, onOpenEditConfiguration }:
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this connector?')}
       />
-
     </>
   );
 };

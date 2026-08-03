@@ -13,11 +13,7 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Campaign',
-            'Intrusion-Set',
-            'Incident',
-          ],
+          values: ['Campaign', 'Intrusion-Set', 'Incident'],
           mode: 'or',
         },
         {
@@ -26,9 +22,7 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
           values: [
             {
               key: 'relationship_type',
-              values: [
-                'attributed-to',
-              ],
+              values: ['attributed-to'],
             },
           ],
           mode: 'or',
@@ -49,12 +43,7 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'IPv4-Addr',
-            'IPv6-Addr',
-            'Infrastructure',
-            'Domain-Name',
-          ],
+          values: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
           mode: 'or',
         },
         {
@@ -63,12 +52,7 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
           values: [
             {
               key: 'relationship_type',
-              values: [
-                'uses',
-                'hosts',
-                'owns',
-                'related-to',
-              ],
+              values: ['uses', 'hosts', 'owns', 'related-to'],
             },
           ],
           mode: 'or',
@@ -93,11 +77,7 @@ describe('get the filters from Malware, containing a diamond ', () => {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'Intrusion-Set',
-            'Threat-Actor-Group',
-            'Threat-Actor-Individual',
-          ],
+          values: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
           mode: 'or',
         },
         {
@@ -106,9 +86,7 @@ describe('get the filters from Malware, containing a diamond ', () => {
           values: [
             {
               key: 'relationship_type',
-              values: [
-                'authored-by',
-              ],
+              values: ['authored-by'],
             },
           ],
           mode: 'or',
@@ -129,12 +107,7 @@ describe('get the filters from Malware, containing a diamond ', () => {
         {
           key: 'entity_type',
           operator: 'eq',
-          values: [
-            'IPv4-Addr',
-            'IPv6-Addr',
-            'Infrastructure',
-            'Domain-Name',
-          ],
+          values: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
           mode: 'or',
         },
         {
@@ -143,12 +116,7 @@ describe('get the filters from Malware, containing a diamond ', () => {
           values: [
             {
               key: 'relationship_type',
-              values: [
-                'uses',
-                'exfiltrates-to',
-                'beacons-to',
-                'communicates-to',
-              ],
+              values: ['uses', 'exfiltrates-to', 'beacons-to', 'communicates-to'],
             },
           ],
           mode: 'or',

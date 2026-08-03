@@ -5,7 +5,7 @@ import { CustomViewsSettingsContext_data$key } from './__generated__/CustomViews
 
 const fragment = graphql`
   fragment CustomViewsSettingsContext_data on Query
-    @argumentDefinitions(entityType: {type: "String!"}) {
+  @argumentDefinitions(entityType: { type: "String!" }) {
     customViewsSettings(entityType: $entityType) {
       canEntityTypeHaveCustomViews
     }
@@ -14,7 +14,9 @@ const fragment = graphql`
 
 export const useProvideCustomViewsSettingsContext = ({
   data,
-}: { data?: SubTypeQuery$data | null | undefined }) => {
+}: {
+  data?: SubTypeQuery$data | null | undefined;
+}) => {
   const result = useFragment<CustomViewsSettingsContext_data$key>(fragment, data);
   const isCustomViewsEnabled = Boolean(result?.customViewsSettings?.canEntityTypeHaveCustomViews);
   return { isCustomViewsEnabled };

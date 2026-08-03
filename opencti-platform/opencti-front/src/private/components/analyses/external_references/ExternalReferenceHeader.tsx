@@ -7,7 +7,10 @@ import { truncate } from '../../../../utils/String';
 import { ExternalReferenceHeader_externalReference$data } from './__generated__/ExternalReferenceHeader_externalReference.graphql';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { useFormatter } from '../../../../components/i18n';
-import useGranted, { AUTOMATION, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  AUTOMATION,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import StixCoreObjectMenuItemUnderEE from '@components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
@@ -38,40 +41,38 @@ const ExternalReferenceHeaderComponent = ({
 
   return (
     <Stack direction="row" justifyContent="space-between" marginBottom={3}>
-      <TitleMainEntity>
-        {truncate(externalReference.source_name, 80)}
-      </TitleMainEntity>
+      <TitleMainEntity>{truncate(externalReference.source_name, 80)}</TitleMainEntity>
       <Stack direction="row" gap={1}>
-        {enableEnrollPlaybook
-          && (
-            <StixCoreObjectEnrollPlaybook
-              stixCoreObjectId={externalReference.id}
-              open={openEnrollPlaybook}
-              handleClose={handleCloseEnrollPlaybook}
-            />
-          )
-        }
+        {enableEnrollPlaybook && (
+          <StixCoreObjectEnrollPlaybook
+            stixCoreObjectId={externalReference.id}
+            open={openEnrollPlaybook}
+            handleClose={handleCloseEnrollPlaybook}
+          />
+        )}
         {displayPopoverMenu && (
           <PopoverMenu>
             {({ closeMenu }) => (
-              <Box>{enableEnrollPlaybook && (
-                <StixCoreObjectMenuItemUnderEE
-                  title={t_i18n('Enroll in playbook')}
-                  setOpen={setOpenEnrollPlaybook}
-                  handleCloseMenu={closeMenu}
-                  needs={[AUTOMATION]}
-                  matchAll
-                />
-              )}
-              {canDelete && (
-                <MenuItem onClick={() => {
-                  handleOpenDelete();
-                  closeMenu();
-                }}
-                >
-                  {t_i18n('Delete')}
-                </MenuItem>
-              )}
+              <Box>
+                {enableEnrollPlaybook && (
+                  <StixCoreObjectMenuItemUnderEE
+                    title={t_i18n('Enroll in playbook')}
+                    setOpen={setOpenEnrollPlaybook}
+                    handleCloseMenu={closeMenu}
+                    needs={[AUTOMATION]}
+                    matchAll
+                  />
+                )}
+                {canDelete && (
+                  <MenuItem
+                    onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
+                  >
+                    {t_i18n('Delete')}
+                  </MenuItem>
+                )}
               </Box>
             )}
           </PopoverMenu>
@@ -89,17 +90,14 @@ const ExternalReferenceHeaderComponent = ({
   );
 };
 
-const ExternalReferenceHeader = createFragmentContainer(
-  ExternalReferenceHeaderComponent,
-  {
-    externalReference: graphql`
-      fragment ExternalReferenceHeader_externalReference on ExternalReference {
-        id
-        source_name
-        description
-      }
-    `,
-  },
-);
+const ExternalReferenceHeader = createFragmentContainer(ExternalReferenceHeaderComponent, {
+  externalReference: graphql`
+    fragment ExternalReferenceHeader_externalReference on ExternalReference {
+      id
+      source_name
+      description
+    }
+  `,
+});
 
 export default ExternalReferenceHeader;

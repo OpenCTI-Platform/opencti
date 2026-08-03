@@ -167,9 +167,11 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
-  return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
-    || isMetricsName(filterKey)
-    || isCustomFieldFilterKey(filterKey);
+  return (
+    COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey) ||
+    isMetricsName(filterKey) ||
+    isCustomFieldFilterKey(filterKey)
+  );
 };
 
 // list of the special filtering keys

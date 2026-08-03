@@ -25,7 +25,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import PositionDeletion from './PositionDeletion';
 import { PATH_POSITION, PATH_POSITIONS } from '@components/common/routes/paths';
 
@@ -81,20 +84,20 @@ type RootPositionProps = {
 };
 
 const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootPositionsSubscription>>(() => ({
-    subscription,
-    variables: { id: positionId },
-  }), [positionId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootPositionsSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: positionId },
+    }),
+    [positionId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootPositionsSubscription>(subConfig);
 
-  const {
-    position,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootPositionQuery>(positionQuery, queryRef);
+  const { position, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootPositionQuery>(positionQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -109,7 +112,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -129,35 +132,38 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                   ]}
                   data={position}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Locations') },
-              { label: t_i18n('Positions'), link: PATH_POSITIONS },
-              { label: position.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Locations') },
+                { label: t_i18n('Positions'), link: PATH_POSITIONS },
+                { label: position.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Position"
               disableSharing={true}
               stixDomainObject={position}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <PositionEdition positionId={position.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={position}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={position} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <PositionDeletion positionId={position.id} isOpen={isOpen} handleClose={onClose} />
+                  <PositionDeletion
+                    positionId={position.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableQuickSubscription={true}
@@ -169,20 +175,18 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               entity={position}
               basePath={basePath}
               pages={{
-                overview:
-                  <Position position={position} />,
+                overview: <Position position={position} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <PositionKnowledge positionData={position} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={position}
+                content: <StixCoreObjectContentRoot stixCoreObject={position} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={position}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={position.id}
@@ -209,8 +213,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                     entity={position}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={positionId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={positionId} />,
               }}
             />
           </div>

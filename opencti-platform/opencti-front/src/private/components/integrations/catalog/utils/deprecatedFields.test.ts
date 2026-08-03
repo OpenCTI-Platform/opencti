@@ -163,14 +163,19 @@ describe('deprecatedFields utils', () => {
         DEPRECATED_A: makeStringProp({ deprecated: true }),
       };
 
-      expect(filterOutDeprecatedRequired(['ACTIVE', 'DEPRECATED_A'], properties)).toEqual(['ACTIVE']);
+      expect(filterOutDeprecatedRequired(['ACTIVE', 'DEPRECATED_A'], properties)).toEqual([
+        'ACTIVE',
+      ]);
     });
   });
 
   describe('edition path visibility', () => {
     const properties: Record<string, IngestionTypedProperty> = {
       DEPRECATED_WITH_DEFAULT: makeStringProp({ deprecated: true, default: 'same' }),
-      DEPRECATED_NO_DEFAULT: { ...makeStringProp({ deprecated: true }), default: undefined } as unknown as IngestionTypedProperty,
+      DEPRECATED_NO_DEFAULT: {
+        ...makeStringProp({ deprecated: true }),
+        default: undefined,
+      } as unknown as IngestionTypedProperty,
       NORMAL_FIELD: makeStringProp({ deprecated: false }),
     };
 
@@ -288,7 +293,10 @@ describe('deprecatedFields utils', () => {
   describe('edition payload', () => {
     const properties: Record<string, IngestionTypedProperty> = {
       DEPRECATED_WITH_DEFAULT: makeStringProp({ deprecated: true, default: 'same' }),
-      DEPRECATED_NO_DEFAULT: { ...makeStringProp({ deprecated: true }), default: undefined } as unknown as IngestionTypedProperty,
+      DEPRECATED_NO_DEFAULT: {
+        ...makeStringProp({ deprecated: true }),
+        default: undefined,
+      } as unknown as IngestionTypedProperty,
       NORMAL_FIELD: makeStringProp({ deprecated: false }),
     };
 
@@ -349,7 +357,9 @@ describe('deprecatedFields utils', () => {
       );
 
       expect(visibility.showDeprecatedAlert).toBe(true);
-      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual(['DEPRECATED_WITH_DEFAULT']);
+      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual([
+        'DEPRECATED_WITH_DEFAULT',
+      ]);
     });
 
     it('keeps deprecated field visible in-session when reset to default value', () => {
@@ -364,7 +374,9 @@ describe('deprecatedFields utils', () => {
       );
 
       expect(visibility.showDeprecatedAlert).toBe(true);
-      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual(['DEPRECATED_WITH_DEFAULT']);
+      expect(Object.keys(visibility.visibleDeprecatedProperties)).toEqual([
+        'DEPRECATED_WITH_DEFAULT',
+      ]);
     });
 
     it('flags deprecated key reset to default for in-session visibility', () => {

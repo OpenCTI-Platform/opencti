@@ -7,13 +7,22 @@ import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { CampaignsCards_data$data } from '@components/threats/campaigns/__generated__/CampaignsCards_data.graphql';
 import { CampaignCardFragment } from '@components/threats/campaigns/CampaignCard';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
-import { CampaignsCardsPaginationQuery, CampaignsCardsPaginationQuery$variables } from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
+import {
+  CampaignsCardsPaginationQuery,
+  CampaignsCardsPaginationQuery$variables,
+} from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
-import CampaignsCards, { campaignsCardsFragment, campaignsCardsQuery } from './campaigns/CampaignsCards';
+import CampaignsCards, {
+  campaignsCardsFragment,
+  campaignsCardsQuery,
+} from './campaigns/CampaignsCards';
 import CampaignCreation from './campaigns/CampaignCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -36,10 +45,11 @@ const Campaigns = () => {
   };
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Campaigns | Threats'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CampaignsCardsPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CampaignsCardsPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Campaign', viewStorage.filters);
   const queryPaginationOptions = {
@@ -53,14 +63,7 @@ const Campaigns = () => {
   );
 
   const renderCards = () => {
-    const {
-      numberOfElements,
-      filters,
-      searchTerm,
-      sortBy,
-      orderAsc,
-      openExports,
-    } = viewStorage;
+    const { numberOfElements, filters, searchTerm, sortBy, orderAsc, openExports } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -97,33 +100,25 @@ const Campaigns = () => {
             <StixCoreObjectForms entityType="Campaign" />
           </Security>,
         ]}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <CampaignCreation paginationOptions={queryPaginationOptions} />
           </Security>
-        )}
+        }
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
-              <Grid
-                container={true}
-                spacing={3}
-                style={{ paddingLeft: 17 }}
-              >
+            fallback={
+              <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid item xs={3} key={idx}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
               </Grid>
-            )}
+            }
           >
             <CampaignsCards
               queryRef={queryRef}
@@ -164,7 +159,9 @@ const Campaigns = () => {
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: CampaignsCards_data$data) => data.campaigns?.edges?.map((n) => n?.node)}
+            resolvePath={(data: CampaignsCards_data$data) =>
+              data.campaigns?.edges?.map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             contextFilters={contextFilters}
@@ -188,11 +185,11 @@ const Campaigns = () => {
                 <StixCoreObjectForms entityType="Campaign" />
               </Security>,
             ]}
-            createButton={(
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <CampaignCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </>
@@ -201,7 +198,9 @@ const Campaigns = () => {
 
   return (
     <div data-testid="campaign-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Threats') }, { label: t_i18n('Campaigns'), current: true }]}
+      />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

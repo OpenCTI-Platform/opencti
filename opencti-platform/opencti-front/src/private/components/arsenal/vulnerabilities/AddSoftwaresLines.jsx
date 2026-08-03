@@ -11,11 +11,7 @@ export const addSoftwaresMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -44,8 +40,7 @@ AddSoftwaresLinesContainer.propTypes = {
 
 export const addSoftwaresLinesQuery = graphql`
   query AddSoftwaresLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddSoftwaresLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddSoftwaresLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -59,12 +54,8 @@ const AddSoftwaresLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
       ) {
-        stixCyberObservables(
-          types: ["Software"]
-          search: $search
-          first: $count
-          after: $cursor
-        ) @connection(key: "Pagination_stixCyberObservables") {
+        stixCyberObservables(types: ["Software"], search: $search, first: $count, after: $cursor)
+          @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id

@@ -14,53 +14,55 @@ export const ICON_COLUMN_SIZE = 56;
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => createStyles({
-  headerContainer: {
-    flex: '0 0 auto',
-    position: 'relative',
-    display: 'flex',
-    fontWeight: 'bold',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    '& .react-draggable-dragging': {
-      backgroundColor: theme.palette.primary.main,
-    },
-    '&:hover': {
-      '& $draggable': {
+const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) =>
+  createStyles({
+    headerContainer: {
+      flex: '0 0 auto',
+      position: 'relative',
+      display: 'flex',
+      fontWeight: 'bold',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      '& .react-draggable-dragging': {
         backgroundColor: theme.palette.primary.main,
       },
-      '& $icon': {
-        visibility: 'visible',
+      '&:hover': {
+        '& $draggable': {
+          backgroundColor: theme.palette.primary.main,
+        },
+        '& $icon': {
+          visibility: 'visible',
+        },
       },
     },
-  },
-  label: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
-    display: 'flex',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    fontSize: '12px',
-    flexGrow: 1,
-    cursor: ({ column: { isSortable } }) => (isSortable ? 'pointer' : 'unset'),
-  },
-  draggable: {
-    position: 'absolute',
-    top: '8px',
-    right: 3,
-    height: theme.spacing(4),
-    width: 10,
-    paddingLeft: 4,
-    paddingRight: 4,
-    backgroundClip: 'content-box',
-    borderRadius: 2,
-    cursor: 'col-resize',
-  },
-  icon: {
-    visibility: 'hidden',
-  },
-}));
+    label: {
+      paddingLeft: theme.spacing(1),
+      paddingRight: theme.spacing(1),
+      display: 'flex',
+      alignItems: 'center',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      fontSize: '12px',
+      flexGrow: 1,
+      cursor: ({ column: { isSortable } }) => (isSortable ? 'pointer' : 'unset'),
+    },
+    draggable: {
+      position: 'absolute',
+      top: '8px',
+      right: 3,
+      height: theme.spacing(4),
+      width: 10,
+      paddingLeft: 4,
+      paddingRight: 4,
+      backgroundClip: 'content-box',
+      borderRadius: 2,
+      cursor: 'col-resize',
+    },
+    icon: {
+      visibility: 'hidden',
+    },
+  }),
+);
 
 const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
   column,
@@ -98,15 +100,12 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     setAnchorEl(e.currentTarget);
   };
 
-  const hasColumnMenu = !disableColumnMenu && (column.isSortable || (availableFilterKeys ?? []).includes(column.id));
+  const hasColumnMenu =
+    !disableColumnMenu && (column.isSortable || (availableFilterKeys ?? []).includes(column.id));
   const cellWidth = Math.round(tableWidth * (column.percentWidth / 100));
 
   return (
-    <div
-      key={column.id}
-      className={classes.headerContainer}
-      style={{ width: cellWidth }}
-    >
+    <div key={column.id} className={classes.headerContainer} style={{ width: cellWidth }}>
       <div className={classes.label} onClick={throttleSortColumn}>
         <Tooltip title={t_i18n(column.label)}>
           <span>{t_i18n(column.label)}</span>
@@ -159,7 +158,10 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
               });
 
               // Total width should be at least 100% so extend neighbor column if necessary.
-              const sumPercentage = newColumns.reduce((acc, col) => acc + (col.percentWidth ?? 0), 0);
+              const sumPercentage = newColumns.reduce(
+                (acc, col) => acc + (col.percentWidth ?? 0),
+                0,
+              );
               if (sumPercentage < 100) {
                 const maxOrder = Math.max(...newColumns.flatMap((c) => c.order ?? []));
                 const neighborOrder = column.order < maxOrder ? column.order + 1 : column.order - 1;

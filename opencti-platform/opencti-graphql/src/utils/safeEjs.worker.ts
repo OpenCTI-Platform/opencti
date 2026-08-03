@@ -21,9 +21,7 @@ export const customEscapeFunction = (value: any): string => {
     return '';
   }
   const result = JSON.stringify(value);
-  return result && result.startsWith('"') && result.endsWith('"')
-    ? result.slice(1, -1)
-    : result;
+  return result && result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
 };
 
 // Main worker execution

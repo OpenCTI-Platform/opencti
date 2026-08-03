@@ -27,11 +27,7 @@ interface BookmarkToggleProps {
   isBookmarked: boolean;
 }
 
-const BookmarkToggle = ({
-  stixId,
-  stixEntityType,
-  isBookmarked,
-}: BookmarkToggleProps) => {
+const BookmarkToggle = ({ stixId, stixEntityType, isBookmarked }: BookmarkToggleProps) => {
   const [addMutation] = useApiMutation(bookmarkAddMutation);
   const [deleteMutation] = useApiMutation(bookmarkDeleteMutation);
   const { t_i18n } = useFormatter();
@@ -39,12 +35,8 @@ const BookmarkToggle = ({
   const addBookmark = () => {
     addMutation({
       variables: { id: stixId, type: stixEntityType },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_bookmarks',
-        { types: [stixEntityType] },
-        'bookmarkAdd',
-      ),
+      updater: (store) =>
+        insertNode(store, 'Pagination_bookmarks', { types: [stixEntityType] }, 'bookmarkAdd'),
     });
   };
 
@@ -52,12 +44,7 @@ const BookmarkToggle = ({
     deleteMutation({
       variables: { id: stixId },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_bookmarks',
-          { types: [stixEntityType] },
-          stixId,
-        );
+        deleteNode(store, 'Pagination_bookmarks', { types: [stixEntityType] }, stixId);
       },
     });
   };
@@ -70,7 +57,11 @@ const BookmarkToggle = ({
   };
 
   return (
-    <IconButton aria-label={isBookmarked ? t_i18n('Remove bookmark') : t_i18n('Bookmark this item')} size="small" onClick={toggle}>
+    <IconButton
+      aria-label={isBookmarked ? t_i18n('Remove bookmark') : t_i18n('Bookmark this item')}
+      size="small"
+      onClick={toggle}
+    >
       {isBookmarked ? <Star /> : <StarBorder />}
     </IconButton>
   );

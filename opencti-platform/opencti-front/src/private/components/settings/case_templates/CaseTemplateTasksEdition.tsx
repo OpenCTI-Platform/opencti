@@ -11,11 +11,11 @@ import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTas
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const caseTemplateMutationFieldPatch = graphql`
-    mutation CaseTemplateTasksEditionFieldPatchMutation($id: ID!$input: [EditInput!]!) {
-        taskTemplateFieldPatch(id: $id, input: $input) {
-            ...CaseTemplateTasksLine_node
-        }
+  mutation CaseTemplateTasksEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
+    taskTemplateFieldPatch(id: $id, input: $input) {
+      ...CaseTemplateTasksLine_node
     }
+  }
 `;
 
 const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$data }) => {
@@ -34,19 +34,19 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
         commitFieldPatch({
           variables: {
             id: task.id,
-            input: [{ key: name, value: Array.isArray(value) ? value.map((o) => o.value) : [value ?? ''] }],
+            input: [
+              {
+                key: name,
+                value: Array.isArray(value) ? value.map((o) => o.value) : [value ?? ''],
+              },
+            ],
           },
         });
       })
       .catch(() => false);
   };
   return (
-    <Formik
-      initialValues={task}
-      onSubmit={() => {
-      }}
-      validationSchema={taskValidator}
-    >
+    <Formik initialValues={task} onSubmit={() => {}} validationSchema={taskValidator}>
       {() => (
         <Form>
           <Field
@@ -68,7 +68,6 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
             style={fieldSpacingContainerStyle}
             onSubmit={onSubmit}
           />
-
         </Form>
       )}
     </Formik>

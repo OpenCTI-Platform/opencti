@@ -74,9 +74,7 @@ const Card = ({
     position: 'relative',
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
-    background: variant !== 'outlined'
-      ? backgroundColor
-      : 'transparent',
+    background: variant !== 'outlined' ? backgroundColor : 'transparent',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };
@@ -97,12 +95,7 @@ const Card = ({
       };
     }
     content = (
-      <CardActionArea
-        disabled={disabled}
-        onClick={onClick}
-        sx={actionAreaSx}
-        {...linkProps}
-      >
+      <CardActionArea disabled={disabled} onClick={onClick} sx={actionAreaSx} {...linkProps}>
         {children}
       </CardActionArea>
     );
@@ -111,20 +104,11 @@ const Card = ({
   return (
     <Stack sx={{ height: '100%' }}>
       {(title || action) && (
-        <CardTitle
-          action={action}
-          sx={titleSx}
-          alignItems={titleAlignItems}
-        >
+        <CardTitle action={action} sx={titleSx} alignItems={titleAlignItems}>
           {title}
         </CardTitle>
       )}
-      <CardMui
-        elevation={0}
-        sx={containerSx}
-        variant={variant}
-        {...otherProps}
-      >
+      <CardMui elevation={0} sx={containerSx} variant={variant} {...otherProps}>
         {content}
       </CardMui>
     </Stack>

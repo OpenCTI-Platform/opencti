@@ -35,10 +35,7 @@ interface PlaybookActionValueFieldProps {
   index: number;
 }
 
-const PlaybookActionValueField = ({
-  action,
-  index,
-}: PlaybookActionValueFieldProps) => {
+const PlaybookActionValueField = ({ action, index }: PlaybookActionValueFieldProps) => {
   const { t_i18n } = useFormatter();
   const { numberAttributes } = useAttributes();
   const { setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
@@ -91,14 +88,13 @@ const PlaybookActionValueField = ({
           name={formValueName}
           disabled={disabled}
           onChange={(_: string, author: FieldOption) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: author.label,
                 value: author.value,
                 patch_value: author.value,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );
@@ -142,14 +138,13 @@ const PlaybookActionValueField = ({
           name={formValueName}
           disabled={disabled}
           onChange={(_: string, workflow: FieldOption) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: workflow.label,
                 value: workflow.value,
                 patch_value: workflow.value,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );
@@ -162,14 +157,13 @@ const PlaybookActionValueField = ({
           label={t_i18n('Value')}
           initialValue={action.value?.[0]?.value === 'true'}
           onChange={(_: string, detection: string) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: detection,
                 value: detection,
                 patch_value: detection,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );
@@ -180,14 +174,13 @@ const PlaybookActionValueField = ({
           type={['case_severity_ov', 'incident_severity_ov']}
           label={t_i18n('Severity')}
           onChange={(_, severity) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: severity,
                 value: severity,
                 patch_value: severity,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );
@@ -236,14 +229,13 @@ const PlaybookActionValueField = ({
           type="case_priority_ov"
           label={t_i18n('Priority')}
           onChange={(_, priority) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: priority,
                 value: priority,
                 patch_value: priority,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );
@@ -277,14 +269,13 @@ const PlaybookActionValueField = ({
           label={t_i18n('Value')}
           fullWidth
           onChange={(_: string, val: string) => {
-            setFieldValue(
-              valueName,
-              [{
+            setFieldValue(valueName, [
+              {
                 label: val,
                 value: val,
                 patch_value: val,
-              }],
-            );
+              },
+            ]);
           }}
         />
       );

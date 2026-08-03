@@ -28,9 +28,7 @@ const ProfileOverviewNewsFeed = ({
 
   const handleFeedTypeToggle = (feedType: string) => (_: unknown, value: boolean) => {
     const current = unsubscribedNewsFeedTypes ?? [];
-    const next = value
-      ? current.filter((type) => type !== feedType)
-      : [...current, feedType];
+    const next = value ? current.filter((type) => type !== feedType) : [...current, feedType];
     onSubmitField('unsubscribed_news_feed_types', next);
   };
 
@@ -41,21 +39,25 @@ const ProfileOverviewNewsFeed = ({
         sx={allUnsubscribed ? { padding: '0' } : { padding: '0 0 10px 0' }}
       >
         <ListItemText primary={t_i18n('Enable News Feed notifications')} />
-        <Switch
-          checked={!allUnsubscribed}
-          onChange={handleGlobalToggle}
-        />
+        <Switch checked={!allUnsubscribed} onChange={handleGlobalToggle} />
       </ListItem>
-      {!allUnsubscribed && availableNewsFeedTypes.map((feedType) => (
-        <ListItem key={feedType} sx={{ padding: '10px 0 0 0', opacity: 0.8 }}>
-          <Box component="span" sx={{ mr: 1, ml: 1 }}>•</Box>
-          <ListItemText secondary={isKnownNewsFeedType(feedType) ? t_i18n(feedType) : t_i18n('Unsupported type')} />
-          <Switch
-            checked={!unsubscribedNewsFeedTypes?.includes(feedType)}
-            onChange={handleFeedTypeToggle(feedType)}
-          />
-        </ListItem>
-      ))}
+      {!allUnsubscribed &&
+        availableNewsFeedTypes.map((feedType) => (
+          <ListItem key={feedType} sx={{ padding: '10px 0 0 0', opacity: 0.8 }}>
+            <Box component="span" sx={{ mr: 1, ml: 1 }}>
+              •
+            </Box>
+            <ListItemText
+              secondary={
+                isKnownNewsFeedType(feedType) ? t_i18n(feedType) : t_i18n('Unsupported type')
+              }
+            />
+            <Switch
+              checked={!unsubscribedNewsFeedTypes?.includes(feedType)}
+              onChange={handleFeedTypeToggle(feedType)}
+            />
+          </ListItem>
+        ))}
     </Card>
   );
 };

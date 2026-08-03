@@ -17,9 +17,7 @@ class NarrativeParentNarrativesComponent extends Component {
     const { t, narrative } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Label>
-          {t('Parent narratives')}
-        </Label>
+        <Label>{t('Parent narratives')}</Label>
         <List sx={{ py: 0 }}>
           {narrative.parentNarratives.edges.map((parentNarrativeEdge) => {
             const parentNarrative = parentNarrativeEdge.node;
@@ -54,24 +52,21 @@ NarrativeParentNarrativesComponent.propTypes = {
   attackPattern: PropTypes.object,
 };
 
-const NarrativeParentNarratives = createFragmentContainer(
-  NarrativeParentNarrativesComponent,
-  {
-    narrative: graphql`
-      fragment NarrativeParentNarratives_narrative on Narrative {
-        id
-        parentNarratives {
-          edges {
-            node {
-              id
-              name
-              description
-            }
+const NarrativeParentNarratives = createFragmentContainer(NarrativeParentNarrativesComponent, {
+  narrative: graphql`
+    fragment NarrativeParentNarratives_narrative on Narrative {
+      id
+      parentNarratives {
+        edges {
+          node {
+            id
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(inject18n)(NarrativeParentNarratives);

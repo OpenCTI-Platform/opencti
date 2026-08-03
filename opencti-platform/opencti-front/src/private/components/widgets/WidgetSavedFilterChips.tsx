@@ -54,7 +54,11 @@ const WidgetSavedFilterChipsComponent = ({
       <Chip
         label={t_i18n('Saved filter unavailable')}
         size="small"
-        sx={{ marginLeft: 1, backgroundColor: theme.palette.warning.main, color: theme.palette.warning.contrastText }}
+        sx={{
+          marginLeft: 1,
+          backgroundColor: theme.palette.warning.main,
+          color: theme.palette.warning.contrastText,
+        }}
       />
     );
   }

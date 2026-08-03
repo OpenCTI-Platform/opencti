@@ -44,16 +44,19 @@ const FileExternalReferencesViewerBase = ({
       <Card title={t('External references files')}>
         {allFiles.length ? (
           <List>
-            {allFiles.map((file) => file && (
-              <FileLine
-                key={file.id}
-                dense={true}
-                disableImport={isContainer || disableImport}
-                file={file}
-                connectors={connectors && connectors[file.metaData.mimetype]}
-                handleOpenImport={handleOpenImport}
-              />
-            ))}
+            {allFiles.map(
+              (file) =>
+                file && (
+                  <FileLine
+                    key={file.id}
+                    dense={true}
+                    disableImport={isContainer || disableImport}
+                    file={file}
+                    connectors={connectors && connectors[file.metaData.mimetype]}
+                    handleOpenImport={handleOpenImport}
+                  />
+                ),
+            )}
           </List>
         ) : (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -73,9 +76,9 @@ const FileExternalReferencesViewerBase = ({
   );
 };
 
-const FileExternalReferencesViewerComponent = R.compose(
-  inject18n,
-)(FileExternalReferencesViewerBase);
+const FileExternalReferencesViewerComponent = R.compose(inject18n)(
+  FileExternalReferencesViewerBase,
+);
 
 const FileExternalReferencesViewerRefetchQuery = graphql`
   query FileExternalReferencesViewerRefetchQuery($id: String!) {
@@ -99,8 +102,7 @@ const FileExternalReferencesViewer = createRefetchContainer(
               source_name
               url
               description
-              importFiles(first: 500)
-              @connection(key: "Pagination_importFiles") {
+              importFiles(first: 500) @connection(key: "Pagination_importFiles") {
                 edges {
                   node {
                     id

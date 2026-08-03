@@ -37,7 +37,12 @@ describe('useWorkflowForm', () => {
 
   describe('Initialization and State', () => {
     it('should identify a status node and return correct title', () => {
-      const node: Node = { id: '1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} };
+      const node: Node = {
+        id: '1',
+        type: WorkflowNodeType.status,
+        position: { x: 0, y: 0 },
+        data: {},
+      };
       const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
 
       expect(result.current.isStatus).toBe(true);
@@ -46,7 +51,12 @@ describe('useWorkflowForm', () => {
     });
 
     it('should identify a placeholder as a new status', () => {
-      const node: Node = { id: '1', type: WorkflowNodeType.placeholder, position: { x: 0, y: 0 }, data: {} };
+      const node: Node = {
+        id: '1',
+        type: WorkflowNodeType.placeholder,
+        position: { x: 0, y: 0 },
+        data: {},
+      };
       const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
 
       expect(result.current.isStatus).toBe(true);
@@ -72,7 +82,12 @@ describe('useWorkflowForm', () => {
     };
 
     it('should call addStatus on submit when it is a new status', () => {
-      const node: Node = { id: '1', type: WorkflowNodeType.placeholder, position: { x: 0, y: 0 }, data: {} };
+      const node: Node = {
+        id: '1',
+        type: WorkflowNodeType.placeholder,
+        position: { x: 0, y: 0 },
+        data: {},
+      };
       const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
 
       act(() => {
@@ -84,7 +99,12 @@ describe('useWorkflowForm', () => {
     });
 
     it('should update nodes on submit when editing existing element', () => {
-      const node: Node = { id: 'existing-id', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: { old: 'data' } };
+      const node: Node = {
+        id: 'existing-id',
+        type: WorkflowNodeType.status,
+        position: { x: 0, y: 0 },
+        data: { old: 'data' },
+      };
       const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));
 
       act(() => {

@@ -9,7 +9,12 @@ import { type CsvBundlerTestOpts, getCsvTestObjects } from '../../../../parser/c
 /**
  * @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`.
  */
-export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, content: string) => {
+export const csvMapperTest = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: string,
+  content: string,
+) => {
   let parsedConfiguration;
   try {
     parsedConfiguration = JSON.parse(configuration);

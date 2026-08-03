@@ -1,5 +1,11 @@
 import { logApp } from '../config/conf';
-import { elDeleteByQueryForMigration, elList, elRawCount, elReindexByQueryForMigration, elUpdateByQueryForMigration } from '../database/engine';
+import {
+  elDeleteByQueryForMigration,
+  elList,
+  elRawCount,
+  elReindexByQueryForMigration,
+  elUpdateByQueryForMigration,
+} from '../database/engine';
 import {
   INDEX_STIX_CORE_RELATIONSHIPS,
   READ_DATA_INDICES,
@@ -19,15 +25,24 @@ export const up = async (next) => {
   const relRelatedTo = `rel_${RELATION_RELATED_TO}.internal_id`;
 
   // We get all current linked-to relations: will be used to check for duplicates in linked-to to related-to migration
-  const linkedToRefRelations = await elList(context, SYSTEM_USER, READ_INDEX_STIX_META_RELATIONSHIPS, { types: [linkedToType] });
+  const linkedToRefRelations = await elList(
+    context,
+    SYSTEM_USER,
+    READ_INDEX_STIX_META_RELATIONSHIPS,
+    { types: [linkedToType] },
+  );
 
   // If no linked-to refs exist, we can skip the migration process
   if (linkedToRefRelations.length === 0) {
-    logApp.info('[MIGRATION] Update all linked-to refs to related-to rels finished: no linked-to to migrate');
+    logApp.info(
+      '[MIGRATION] Update all linked-to refs to related-to rels finished: no linked-to to migrate',
+    );
     next();
     return;
   }
-  logApp.info(`[MIGRATION] Update all linked-to refs to related-to rels: ${linkedToRefRelations.length} linked-to to migrate`);
+  logApp.info(
+    `[MIGRATION] Update all linked-to refs to related-to rels: ${linkedToRefRelations.length} linked-to to migrate`,
+  );
 
   const searchRelatedToDuplicateFn = async (from, to) => {
     const countDuplicateQueryBody = {
@@ -114,11 +129,20 @@ export const up = async (next) => {
     },
   };
 
-  await elReindexByQueryForMigration('[MIGRATION] Reindexing and updating non-duplicate linked-to refs', null, reindexLinkedToToRelatedToQuery);
+  await elReindexByQueryForMigration(
+    '[MIGRATION] Reindexing and updating non-duplicate linked-to refs',
+    null,
+    reindexLinkedToToRelatedToQuery,
+  );
 
   // Then, We need to update all rel that had a linked-to ref as from or to
   // If linked to was a duplicate, we need to delete the relation instead
-  const relToTypes = [RELATION_RELATED_TO, 'basic-relationship', 'stix-relationship', 'stix-core-relationship'];
+  const relToTypes = [
+    RELATION_RELATED_TO,
+    'basic-relationship',
+    'stix-relationship',
+    'stix-core-relationship',
+  ];
   const updateRelWithLinkedToFromOrToSource = `
     if(ctx._source.fromType == params.linkedToType) {ctx._source.fromType=params.relToType}
     if(ctx._source.toType == params.linkedToType) {ctx._source.toType=params.relToType}
@@ -133,22 +157,29 @@ export const up = async (next) => {
   const updateRelWithLinkedToFromOrToQuery = {
     script: {
       source: updateRelWithLinkedToFromOrToSource,
-      params: { linkedToType, relToType: RELATION_RELATED_TO, relToTypes, linkedToRefRelationsDuplicatesIds },
+      params: {
+        linkedToType,
+        relToType: RELATION_RELATED_TO,
+        relToTypes,
+        linkedToRefRelationsDuplicatesIds,
+      },
     },
     query: {
       nested: {
         path: 'connections',
         query: {
           bool: {
-            must: [
-              { term: { 'connections.types.keyword': { value: linkedToType } } },
-            ],
+            must: [{ term: { 'connections.types.keyword': { value: linkedToType } } }],
           },
         },
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Updating relations with a linked-to from or to', [READ_RELATIONSHIPS_INDICES], updateRelWithLinkedToFromOrToQuery);
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Updating relations with a linked-to from or to',
+    [READ_RELATIONSHIPS_INDICES],
+    updateRelWithLinkedToFromOrToQuery,
+  );
 
   // Then we need to move all denormalized linked-to rel in objects to related-to (if id is not already in related-to)
   const updateDenormalizedLinkedToSource = `
@@ -170,7 +201,11 @@ export const up = async (next) => {
     },
   };
 
-  await elUpdateByQueryForMigration('[MIGRATION] Updating entities with rel_linked-to to rel_related-to', [READ_DATA_INDICES], updateDenormalizedLinkedToQuery);
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Updating entities with rel_linked-to to rel_related-to',
+    [READ_DATA_INDICES],
+    updateDenormalizedLinkedToQuery,
+  );
 
   // Finally, we delete all original linked-to refs in meta rel index
 

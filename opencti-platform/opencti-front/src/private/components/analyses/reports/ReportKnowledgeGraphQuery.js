@@ -38,7 +38,12 @@ export const reportKnowledgeGraphMutationRelationDeleteMutation = graphql`
     $references: [String]
   ) {
     reportEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type, commitMessage: $commitMessage, references: $references) {
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+        commitMessage: $commitMessage
+        references: $references
+      ) {
         id
       }
     }

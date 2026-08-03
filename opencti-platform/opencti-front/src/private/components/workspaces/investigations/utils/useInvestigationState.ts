@@ -1,4 +1,8 @@
-import { addInSessionStorageStack, getSessionStorageItem, setSessionStorageItem } from '../../../../../utils/sessionStorage';
+import {
+  addInSessionStorageStack,
+  getSessionStorageItem,
+  setSessionStorageItem,
+} from '../../../../../utils/sessionStorage';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 interface InvestigationOpExpand {

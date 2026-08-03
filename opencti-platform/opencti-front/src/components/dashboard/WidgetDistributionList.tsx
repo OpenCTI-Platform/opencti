@@ -65,7 +65,9 @@ const WidgetDistributionList = ({
             };
           }
           const cursorStyle = link ? 'pointer' : 'default';
-          const hoverStyle = !link ? { '&.MuiListItemButton-root:hover': { backgroundColor: 'transparent' } } : {};
+          const hoverStyle = !link
+            ? { '&.MuiListItemButton-root:hover': { backgroundColor: 'transparent' } }
+            : {};
 
           return (
             <ListItemButton
@@ -88,8 +90,7 @@ const WidgetDistributionList = ({
               <ListItemIcon>
                 <ItemIcon
                   color={
-                    theme.palette.mode === 'light'
-                    && entry.color === '#ffffff'
+                    theme.palette.mode === 'light' && entry.color === '#ffffff'
                       ? '#000000'
                       : entry.color
                   }
@@ -97,7 +98,7 @@ const WidgetDistributionList = ({
                 />
               </ListItemIcon>
               <ListItemText
-                primary={(
+                primary={
                   <div
                     style={{
                       whiteSpace: 'nowrap',
@@ -108,7 +109,7 @@ const WidgetDistributionList = ({
                   >
                     {label}
                   </div>
-                )}
+                }
               />
               <div
                 style={{

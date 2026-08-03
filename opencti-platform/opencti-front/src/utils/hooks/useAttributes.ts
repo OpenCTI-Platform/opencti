@@ -147,11 +147,7 @@ const booleanAttributes = [
   'dep_enabled',
 ];
 
-const multipleAttributes = [
-  'x_opencti_additional_names',
-  'protocols',
-  'descriptions',
-];
+const multipleAttributes = ['x_opencti_additional_names', 'protocols', 'descriptions'];
 
 const markdownAttributes = ['description', 'x_opencti_description'];
 

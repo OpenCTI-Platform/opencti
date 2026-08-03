@@ -65,14 +65,15 @@ class IntrusionSetLocationsComponent extends Component {
     const { t, intrusionSet } = this.props;
     return (
       <>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddLocations
-              intrusionSet={intrusionSet}
-              intrusionSetLocations={intrusionSet.locations.edges}
-            />
-          </Security>
-        )}
+        <Label
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <AddLocations
+                intrusionSet={intrusionSet}
+                intrusionSetLocations={intrusionSet.locations.edges}
+              />
+            </Security>
+          }
         >
           {t('Originates from')}
         </Label>
@@ -81,15 +82,15 @@ class IntrusionSetLocationsComponent extends Component {
             {intrusionSet.locations.edges.map((locationEdge) => {
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
-              const flagUrl = location.entity_type === 'Country'
-                && findFlagUrl(location.x_opencti_aliases);
+              const flagUrl =
+                location.entity_type === 'Country' && findFlagUrl(location.x_opencti_aliases);
               return (
                 <ListItem
                   key={location.id}
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={(
+                  secondaryAction={
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Tooltip title={t('Delete relationship')}>
                         <IconButton
@@ -100,19 +101,12 @@ class IntrusionSetLocationsComponent extends Component {
                         </IconButton>
                       </Tooltip>
                     </Security>
-                  )}
+                  }
                 >
-                  <ListItemButton
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
+                  <ListItemButton component={Link} to={`${link}/${location.id}`}>
                     <ListItemIcon sx={{ minWidth: 32 }}>
                       {flagUrl ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={flagUrl}
-                          alt={location.name}
-                        />
+                        <img style={{ width: 20 }} src={flagUrl} alt={location.name} />
                       ) : (
                         <ItemIcon type={location.entity_type} />
                       )}
@@ -136,30 +130,27 @@ IntrusionSetLocationsComponent.propTypes = {
   intrusionSet: PropTypes.object,
 };
 
-const IntrusionSetLocations = createFragmentContainer(
-  IntrusionSetLocationsComponent,
-  {
-    intrusionSet: graphql`
-      fragment IntrusionSetLocations_intrusionSet on IntrusionSet {
-        id
-        name
-        parent_types
-        entity_type
-        locations {
-          edges {
-            node {
-              id
-              parent_types
-              entity_type
-              name
-              x_opencti_aliases
-              description
-            }
+const IntrusionSetLocations = createFragmentContainer(IntrusionSetLocationsComponent, {
+  intrusionSet: graphql`
+    fragment IntrusionSetLocations_intrusionSet on IntrusionSet {
+      id
+      name
+      parent_types
+      entity_type
+      locations {
+        edges {
+          node {
+            id
+            parent_types
+            entity_type
+            name
+            x_opencti_aliases
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(inject18n, withStyles(styles))(IntrusionSetLocations);

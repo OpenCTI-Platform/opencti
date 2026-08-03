@@ -25,7 +25,13 @@ import {
   storeLoadById,
   topRelationsList,
 } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation, type StoreEntityPir } from './pir-types';
+import {
+  type BasicStoreEntityPir,
+  type BasicStoreRelationPir,
+  ENTITY_TYPE_PIR,
+  type PirExplanation,
+  type StoreEntityPir,
+} from './pir-types';
 import {
   type EditInput,
   EditOperation,
@@ -40,7 +46,12 @@ import {
   type QueryPirRelationshipsDistributionArgs,
   type QueryPirRelationshipsMultiTimeSeriesArgs,
 } from '../../generated/graphql';
-import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations } from '../../database/middleware';
+import {
+  createEntity,
+  deleteRelationsByFromAndTo,
+  distributionRelations,
+  timeSeriesRelations,
+} from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
@@ -49,9 +60,19 @@ import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
 import { getPirWithAccessCheck } from './pir-checkPirAccess';
-import { ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import {
+  ForbiddenAccess,
+  FunctionalError,
+  LockTimeoutError,
+  TYPE_LOCK_ERROR,
+} from '../../config/errors';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { addDynamicFromAndToToFilters, addFilter, extractFilterKeyValues, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
+import {
+  addDynamicFromAndToToFilters,
+  addFilter,
+  extractFilterKeyValues,
+  isFilterGroupNotEmpty,
+} from '../../utils/filtering/filtering-utils';
 import {
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
@@ -61,7 +82,12 @@ import {
 } from '../../utils/filtering/filtering-constants';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import {
+  isBypassUser,
+  MEMBER_ACCESS_ALL,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  MEMBER_ACCESS_RIGHT_VIEW,
+} from '../../utils/access';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
@@ -75,7 +101,11 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityPir>(context, user, id, ENTITY_TYPE_PIR);
 };
 
-export const findPirPaginated = async (context: AuthContext, user: AuthUser, opts?: EntityOptions<BasicStoreEntityPir>) => {
+export const findPirPaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts?: EntityOptions<BasicStoreEntityPir>,
+) => {
   await checkEnterpriseEdition(context);
   return pageEntitiesConnection<BasicStoreEntityPir>(context, user, [ENTITY_TYPE_PIR], opts);
 };
@@ -87,10 +117,16 @@ export const findPirRelationPaginated = async (
 ) => {
   const { pirId } = opts;
   if (!pirId) {
-    throw FunctionalError('You should provide a Pir ID since in-pir relationships can only be fetch for a given PIR.', { pirId });
+    throw FunctionalError(
+      'You should provide a Pir ID since in-pir relationships can only be fetch for a given PIR.',
+      { pirId },
+    );
   }
   await getPirWithAccessCheck(context, user, pirId);
-  return pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, { ...R.dissoc('pirId', opts), toId: [pirId] } as RelationOptions<BasicStoreRelationPir>);
+  return pageRelationsConnection<BasicStoreRelationPir>(context, user, RELATION_IN_PIR, {
+    ...R.dissoc('pirId', opts),
+    toId: [pirId],
+  } as RelationOptions<BasicStoreRelationPir>);
 };
 
 export const pirRelationshipsDistribution = async (
@@ -102,7 +138,10 @@ export const pirRelationshipsDistribution = async (
   const relationship_type = [RELATION_IN_PIR];
   const { pirId } = opts;
   if (!pirId) {
-    throw FunctionalError('You should provide exactly a Pir ID since in-pir relationships distribution can only be fetch for a given PIR.', { pirId });
+    throw FunctionalError(
+      'You should provide exactly a Pir ID since in-pir relationships distribution can only be fetch for a given PIR.',
+      { pirId },
+    );
   }
   await getPirWithAccessCheck(context, user, pirId);
   // build args
@@ -121,17 +160,30 @@ export const pirRelationshipsMultiTimeSeries = async (
   if (!opts.timeSeriesParameters) {
     return [];
   }
-  return Promise.all(opts.timeSeriesParameters.map(async (timeSeriesParameter) => {
-    const { pirId } = timeSeriesParameter;
-    await getPirWithAccessCheck(context, user, pirId);
+  return Promise.all(
+    opts.timeSeriesParameters.map(async (timeSeriesParameter) => {
+      const { pirId } = timeSeriesParameter;
+      await getPirWithAccessCheck(context, user, pirId);
 
-    const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
-    const fullArgs = { ...R.dissoc('pirId', timeSeriesParameter), filters };
-    return { data: await timeSeriesRelations(context, user, { ...opts, relationship_type, toId: [pirId], ...fullArgs } as unknown as any) };
-  }));
+      const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
+      const fullArgs = { ...R.dissoc('pirId', timeSeriesParameter), filters };
+      return {
+        data: await timeSeriesRelations(context, user, {
+          ...opts,
+          relationship_type,
+          toId: [pirId],
+          ...fullArgs,
+        } as unknown as any),
+      };
+    }),
+  );
 };
 
-export const findPirHistory = async (context: AuthContext, user: AuthUser, args: QueryPirLogsArgs) => {
+export const findPirHistory = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryPirLogsArgs,
+) => {
   const { pirId } = args;
   await getPirWithAccessCheck(context, user, pirId);
   const filters = addFilter(args.filters, 'context_data.pir_ids', pirId);
@@ -142,7 +194,12 @@ export const findPirHistory = async (context: AuthContext, user: AuthUser, args:
     orderMode: args.orderMode ?? 'desc',
     types: [ENTITY_TYPE_PIR_HISTORY, ENTITY_TYPE_HISTORY],
   };
-  return await elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts) as LogConnection;
+  return (await elPaginate(
+    context,
+    user,
+    READ_INDEX_HISTORY,
+    finalArgs as PaginateOpts,
+  )) as LogConnection;
 };
 
 export const findPirContainers = async (
@@ -158,13 +215,15 @@ export const findPirContainers = async (
   // fetch the containers containing those ids or containing flagged entities ids
   const flaggedEntitiesFilter = {
     mode: FilterMode.And,
-    filters: [{
-      key: [INSTANCE_REGARDING_OF],
-      values: [
-        { key: RELATION_TYPE_SUBFILTER, values: [RELATION_IN_PIR] },
-        { key: 'id', values: [pir.id] },
-      ],
-    }],
+    filters: [
+      {
+        key: [INSTANCE_REGARDING_OF],
+        values: [
+          { key: RELATION_TYPE_SUBFILTER, values: [RELATION_IN_PIR] },
+          { key: 'id', values: [pir.id] },
+        ],
+      },
+    ],
     filterGroups: [],
   };
   const containsFilter = {
@@ -184,20 +243,21 @@ export const findPirContainers = async (
     ],
     filterGroups: [],
   };
-  const filters = opts?.filters && isFilterGroupNotEmpty(opts.filters)
-    ? {
-        mode: FilterMode.And,
-        filters: [],
-        filterGroups: [containsFilter, opts.filters],
-      }
-    : containsFilter;
+  const filters =
+    opts?.filters && isFilterGroupNotEmpty(opts.filters)
+      ? {
+          mode: FilterMode.And,
+          filters: [],
+          filterGroups: [containsFilter, opts.filters],
+        }
+      : containsFilter;
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
 
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   await checkEnterpriseEdition(context);
   // -- create Pir --
-  const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
+  const rescanStartDate = now() - input.pir_rescan_days * 24 * 3600 * 1000; // rescan start date in milliseconds
   const authorized_members = input.authorized_members ?? [
     {
       id: user.id,
@@ -247,7 +307,13 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
 
-export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[], opts: { auditLogEnabled?: boolean } = {}) => {
+export const updatePir = async (
+  context: AuthContext,
+  user: AuthUser,
+  pirId: string,
+  input: EditInput[],
+  opts: { auditLogEnabled?: boolean } = {},
+) => {
   await checkEnterpriseEdition(context);
   const allowedKeys = ['lastEventId', 'name', 'description'];
   const keys = input.map((i) => i.key);
@@ -289,7 +355,8 @@ export const pirFlagElement = async (
     lock = await lockResources(lockIds);
 
     const source = await internalLoadById<BasicStoreCommon>(context, user, sourceId);
-    if (source) { // if element still exist
+    if (source) {
+      // if element still exist
       const sourceFlagged = (source[RELATION_IN_PIR] ?? []).includes(pir.id);
       // build dependencies
       const pirDependencies = matchingCriteria.map((criterion) => ({
@@ -302,7 +369,15 @@ export const pirFlagElement = async (
 
       // create or update the pir relation
       if (sourceFlagged) {
-        await updatePirExplanations(context, user, sourceId, pir.id, pirDependencies, lockIds, EditOperation.Add);
+        await updatePirExplanations(
+          context,
+          user,
+          sourceId,
+          pir.id,
+          pirDependencies,
+          lockIds,
+          EditOperation.Add,
+        );
       } else {
         await createPirRelation(context, user, sourceId, pir.id, pirDependencies, lockIds);
       }
@@ -350,17 +425,27 @@ export const pirUnflagElement = async (
     lock = await lockResources(lockIds);
 
     // fetch in-pir rels between the entity and the pir
-    const rels = await topRelationsList(context, user, RELATION_IN_PIR, { fromId: sourceId, toId: pir.id });
+    const rels = await topRelationsList(context, user, RELATION_IN_PIR, {
+      fromId: sourceId,
+      toId: pir.id,
+    });
     // eslint-disable-next-line no-restricted-syntax
     for (const rel of rels) {
       const relDependencies = (rel as any).pir_explanation as PirExplanation[];
       // fetch dependencies not concerning the relationship
-      const newRelDependencies = relDependencies.filter((dep) => !dep.dependencies
-        .map((d) => d.element_id)
-        .includes(relationshipId));
+      const newRelDependencies = relDependencies.filter(
+        (dep) => !dep.dependencies.map((d) => d.element_id).includes(relationshipId),
+      );
       if (newRelDependencies.length === 0) {
         // delete the in-pir relationship between source and PIR
-        await deleteRelationsByFromAndTo(context, user, sourceId, pir.id, RELATION_IN_PIR, ABSTRACT_STIX_REF_RELATIONSHIP);
+        await deleteRelationsByFromAndTo(
+          context,
+          user,
+          sourceId,
+          pir.id,
+          RELATION_IN_PIR,
+          ABSTRACT_STIX_REF_RELATIONSHIP,
+        );
       } else if (newRelDependencies.length < relDependencies.length) {
         // update dependencies
         await updatePirExplanations(context, user, sourceId, pir.id, newRelDependencies, lockIds);

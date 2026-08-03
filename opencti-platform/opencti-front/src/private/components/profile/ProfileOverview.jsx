@@ -58,10 +58,7 @@ const styles = () => ({
 });
 
 const profileOverviewFieldPatch = graphql`
-  mutation ProfileOverviewFieldPatchMutation(
-    $input: [EditInput]!
-    $password: String
-  ) {
+  mutation ProfileOverviewFieldPatchMutation($input: [EditInput]!, $password: String) {
     meEdit(input: $input, password: $password) {
       ...ProfileOverview_me
     }
@@ -93,32 +90,34 @@ const disableOtpPatch = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  personal_notifiers: Yup.array(),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  theme: Yup.string().nullable(),
-  language: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  otp_activated: Yup.boolean(),
-  unit_system: Yup.string().nullable(),
-  submenu_show_icons: Yup.boolean(),
-  submenu_auto_collapse: Yup.boolean(),
-  monochrome_labels: Yup.boolean(),
-  unsubscribed_news_feed_types: Yup.array().of(Yup.string()),
-});
+const userValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    user_email: Yup.string()
+      .required(t('This field is required'))
+      .email(t('The value must be an email address')),
+    personal_notifiers: Yup.array(),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    theme: Yup.string().nullable(),
+    language: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    otp_activated: Yup.boolean(),
+    unit_system: Yup.string().nullable(),
+    submenu_show_icons: Yup.boolean(),
+    submenu_auto_collapse: Yup.boolean(),
+    monochrome_labels: Yup.boolean(),
+    unsubscribed_news_feed_types: Yup.array().of(Yup.string()),
+  });
 
-const passwordValidation = (t) => Yup.object().shape({
-  current_password: Yup.string().required(t('This field is required')),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-});
+const passwordValidation = (t) =>
+  Yup.object().shape({
+    current_password: Yup.string().required(t('This field is required')),
+    password: Yup.string().required(t('This field is required')),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+  });
 
 const Otp = ({ closeFunction, secret, uri }) => {
   const { t_i18n } = useFormatter();
@@ -145,42 +144,27 @@ const Otp = ({ closeFunction, secret, uri }) => {
     });
   }
   useEffect(() => {
-    qrcode.toDataURL(
-      uri,
-      (err, imageUrl) => {
-        if (err) {
-          setOtpQrImage('');
-          return;
-        }
-        setOtpQrImage(imageUrl);
-      },
-    );
+    qrcode.toDataURL(uri, (err, imageUrl) => {
+      if (err) {
+        setOtpQrImage('');
+        return;
+      }
+      setOtpQrImage(imageUrl);
+    });
   }, [uri, theme]);
   return (
     <div style={{ textAlign: 'center' }}>
       <img src={otpQrImage} style={{ width: 265 }} alt="" />
       {error ? (
-        <Alert
-          severity="error"
-          variant="outlined"
-          style={{ margin: '15px 0' }}
-        >
+        <Alert severity="error" variant="outlined" style={{ margin: '15px 0' }}>
           {error}
         </Alert>
       ) : (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ margin: '15px 0' }}
-        >
+        <Alert severity="info" variant="outlined" style={{ margin: '15px 0' }}>
           {t_i18n('Type the code generated in your application')}
         </Alert>
       )}
-      <OtpInputField
-        value={code}
-        onChange={handleChange}
-        isDisabled={inputDisable}
-      />
+      <OtpInputField value={code} onChange={handleChange} isDisabled={inputDisable} />
     </div>
   );
 };
@@ -234,7 +218,10 @@ const ProfileOverviewComponent = (props) => {
   const initialValues = {
     ...pick(fieldNames, me),
     objectOrganization,
-    personal_notifiers: (me.personal_notifiers ?? []).map(({ id, name }) => ({ value: id, label: name })),
+    personal_notifiers: (me.personal_notifiers ?? []).map(({ id, name }) => ({
+      value: id,
+      label: name,
+    })),
   };
 
   const disableOtp = () => {
@@ -272,16 +259,10 @@ const ProfileOverviewComponent = (props) => {
     });
   };
 
-  const themeList = themes?.edges
-    ?.filter((node) => !!node)
-    .map((node) => node.node)
-    ?? [];
+  const themeList = themes?.edges?.filter((node) => !!node).map((node) => node.node) ?? [];
 
   return (
-    <Stack
-      gap={2}
-      sx={{ width: 900, margin: '0 auto' }}
-    >
+    <Stack gap={2} sx={{ width: 900, margin: '0 auto' }}>
       <TokenCreationDrawer
         userId={me.id}
         open={displayTokenCreation}
@@ -385,7 +366,9 @@ const ProfileOverviewComponent = (props) => {
               >
                 <MenuItem value="default">{t('Default')}</MenuItem>
                 {themeList.map(({ id, name }) => (
-                  <MenuItem key={id} value={id}>{name}</MenuItem>
+                  <MenuItem key={id} value={id}>
+                    {name}
+                  </MenuItem>
                 ))}
               </Field>
               <Field
@@ -401,10 +384,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
-                {
-                  availableLanguage.map(({ value, label }) => <MenuItem key={value} value={value}>{label}</MenuItem>)
-                }
+                <MenuItem value="auto">
+                  <em>{t('Automatic')}</em>
+                </MenuItem>
+                {availableLanguage.map(({ value, label }) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
               </Field>
               <Field
                 component={SelectField}
@@ -416,14 +403,14 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value="auto">
+                  <em>{t('Automatic')}</em>
+                </MenuItem>
                 <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
                 <MenuItem value="Metric">{t('Metric')}</MenuItem>
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
-                <ListItemText
-                  primary={t('Show left navigation submenu icons')}
-                />
+                <ListItemText primary={t('Show left navigation submenu icons')} />
                 <Field
                   component={Switch}
                   variant="standard"
@@ -433,9 +420,7 @@ const ProfileOverviewComponent = (props) => {
                 />
               </ListItem>
               <ListItem style={{ padding: '10px 0 0 0' }}>
-                <ListItemText
-                  primary={t('Auto collapse submenus in left navigation')}
-                />
+                <ListItemText primary={t('Auto collapse submenus in left navigation')} />
                 <Field
                   component={Switch}
                   variant="standard"
@@ -456,21 +441,25 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('monochrome_labels', value)}
                 />
               </ListItem> */}
-              <Alert
-                severity="info"
-                variant="outlined"
-                style={{ margin: '10px 0 0 0' }}
-              >
+              <Alert severity="info" variant="outlined" style={{ margin: '10px 0 0 0' }}>
                 {settings.platform_notifier_auto_trigger_assignee
-                  ? t_i18n('When an event happens on a knowledge your participate, you will receive notification through your personal notifiers')
-                  : t_i18n('Automatic notifications for assignees and participants have been disabled by your platform administrator')
-                }
+                  ? t_i18n(
+                      'When an event happens on a knowledge your participate, you will receive notification through your personal notifiers',
+                    )
+                  : t_i18n(
+                      'Automatic notifications for assignees and participants have been disabled by your platform administrator',
+                    )}
               </Alert>
               {settings.platform_notifier_auto_trigger_assignee && (
                 <NotifierField
                   label={t('Personal notifiers')}
                   name="personal_notifiers"
-                  onChange={(name, values) => handleSubmitField(name, values.map(({ value }) => value))}
+                  onChange={(name, values) =>
+                    handleSubmitField(
+                      name,
+                      values.map(({ value }) => value),
+                    )
+                  }
                 />
               )}
             </Form>
@@ -482,13 +471,14 @@ const ProfileOverviewComponent = (props) => {
           <HomeDashboardSettings />
         </Card>
       ) : null}
-      {settings.xtm_hub_registration_status === 'registered' && settings.xtm_hub_available_news_feed_types?.length > 0 && (
-        <ProfileOverviewNewsFeed
-          availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
-          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
-          onSubmitField={handleSubmitField}
-        />
-      )}
+      {settings.xtm_hub_registration_status === 'registered' &&
+        settings.xtm_hub_available_news_feed_types?.length > 0 && (
+          <ProfileOverviewNewsFeed
+            availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
+            unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
+            onSubmitField={handleSubmitField}
+          />
+        )}
       <Card title={t('Authentication')}>
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
@@ -580,21 +570,12 @@ const ProfileOverviewComponent = (props) => {
           <Stack gap={2}>
             <Stack direction="row" justifyContent="flex-end" gap={1}>
               {hasAccessTokenCapability && isPlaygroundEnable() && (
-                <Button
-                  variant="secondary"
-                  component={Link}
-                  to="/public/graphql"
-                  target="_blank"
-                >
+                <Button variant="secondary" component={Link} to="/public/graphql" target="_blank">
                   {t('Playground')}
                 </Button>
               )}
               {hasAccessTokenCapability && (
-                <Button
-                  onClick={() => setDisplayTokenCreation(true)}
-                >
-                  {t('Generate Token')}
-                </Button>
+                <Button onClick={() => setDisplayTokenCreation(true)}>{t('Generate Token')}</Button>
               )}
             </Stack>
             <TokenList node={me} />

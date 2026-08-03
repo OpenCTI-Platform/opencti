@@ -39,7 +39,9 @@ export class BatchExportingMetricReader extends MetricReader {
   constructor(options: BatchExportingMetricReaderOptions) {
     super({
       aggregationSelector: options.exporter.selectAggregation?.bind(options.exporter),
-      aggregationTemporalitySelector: options.exporter.selectAggregationTemporality?.bind(options.exporter),
+      aggregationTemporalitySelector: options.exporter.selectAggregationTemporality?.bind(
+        options.exporter,
+      ),
       metricProducers: options.metricProducers,
     });
     if (options.exportIntervalMillis !== undefined && options.exportIntervalMillis <= 0) {
@@ -48,7 +50,11 @@ export class BatchExportingMetricReader extends MetricReader {
     if (options.exportTimeoutMillis !== undefined && options.exportTimeoutMillis <= 0) {
       throw Error('exportTimeoutMillis must be greater than 0');
     }
-    if (options.exportTimeoutMillis !== undefined && options.exportIntervalMillis !== undefined && options.exportIntervalMillis < options.exportTimeoutMillis) {
+    if (
+      options.exportTimeoutMillis !== undefined &&
+      options.exportIntervalMillis !== undefined &&
+      options.exportIntervalMillis < options.exportTimeoutMillis
+    ) {
       throw Error('exportIntervalMillis must be greater than or equal to exportTimeoutMillis');
     }
 
@@ -62,19 +68,22 @@ export class BatchExportingMetricReader extends MetricReader {
   private async _doRunCollect(): Promise<void> {
     const { resourceMetrics, errors } = await this.collect({ timeoutMillis: this._exportTimeout });
     if (errors.length > 0) {
-      api.diag.error(
-        'PeriodicExportingMetricReader: metrics collection errors',
-        ...errors,
-      );
+      api.diag.error('PeriodicExportingMetricReader: metrics collection errors', ...errors);
     }
     const doCollect = async () => {
       if (this._resourceMetrics.resource !== EMPTY_RESOURCE) {
         // Append result
-        const metrics = resourceMetrics.scopeMetrics.map((scopeMetric) => scopeMetric.metrics).flat();
+        const metrics = resourceMetrics.scopeMetrics
+          .map((scopeMetric) => scopeMetric.metrics)
+          .flat();
         this._resourceMetrics.scopeMetrics.forEach((value) => {
           value.metrics.forEach((metric) => {
-            const findMetric = metrics.filter((newMetric) => newMetric.descriptor.name === metric.descriptor.name);
-            const newDataPoints: DataPoint<any>[] = findMetric ? findMetric.map((f) => f.dataPoints).flat() : [];
+            const findMetric = metrics.filter(
+              (newMetric) => newMetric.descriptor.name === metric.descriptor.name,
+            );
+            const newDataPoints: DataPoint<any>[] = findMetric
+              ? findMetric.map((f) => f.dataPoints).flat()
+              : [];
             pushAll(metric.dataPoints, newDataPoints);
           });
         });
@@ -90,8 +99,11 @@ export class BatchExportingMetricReader extends MetricReader {
 
     // Avoid scheduling a promise to make the behavior more predictable and easier to test
     if (resourceMetrics.resource.asyncAttributesPending) {
-      resourceMetrics.resource.waitForAsyncAttributes?.()
-        .then(doCollect, (err: any) => api.diag.debug('Error while resolving async portion of resource: ', err));
+      resourceMetrics.resource
+        .waitForAsyncAttributes?.()
+        .then(doCollect, (err: any) =>
+          api.diag.debug('Error while resolving async portion of resource: ', err),
+        );
     } else {
       await doCollect();
     }
@@ -117,7 +129,9 @@ export class BatchExportingMetricReader extends MetricReader {
     const doExport = async () => {
       const result = await internal._export(this._exporter, this._resourceMetrics);
       if (result.code !== ExportResultCode.SUCCESS) {
-        throw UnknownError('PeriodicExportingMetricReader: metrics export failed', { cause: result.error });
+        throw UnknownError('PeriodicExportingMetricReader: metrics export failed', {
+          cause: result.error,
+        });
       }
       this._resourceMetrics.resource = EMPTY_RESOURCE;
     };

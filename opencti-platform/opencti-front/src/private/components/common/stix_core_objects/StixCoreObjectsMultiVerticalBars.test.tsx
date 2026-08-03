@@ -7,7 +7,9 @@ import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 let lastBuildQueryVariables: ((...args: any[]) => any) | undefined;
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-container">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/WidgetNoData', () => ({
@@ -19,7 +21,9 @@ vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-render-content">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-render-content">{children}</div>
+  ),
 }));
 
 vi.mock('react-relay', async () => {
@@ -36,10 +40,12 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: (opts: any) => {
     lastBuildQueryVariables = opts.buildQueryVariables;
     return {
-      resolvedDataSelection: [{
-        filters: emptyFilterGroup,
-        date_attribute: 'created_at',
-      }],
+      resolvedDataSelection: [
+        {
+          filters: emptyFilterGroup,
+          date_attribute: 'created_at',
+        },
+      ],
       isMissingHostEntity: false,
       isMissingSavedFilters: false,
       isPreviewMode: false,
@@ -49,7 +55,11 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
-  computeWidgetFiltersForMultiSelection: () => ({ startDate: null, endDate: null, timeSeriesParameters: [] }),
+  computeWidgetFiltersForMultiSelection: () => ({
+    startDate: null,
+    endDate: null,
+    timeSeriesParameters: [],
+  }),
 }));
 
 import StixCoreObjectsMultiVerticalBars from './StixCoreObjectsMultiVerticalBars';
@@ -57,10 +67,12 @@ import StixCoreObjectsMultiVerticalBars from './StixCoreObjectsMultiVerticalBars
 describe('StixCoreObjectsMultiVerticalBars', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
-    dataSelection: [{
-      filters: emptyFilterGroup,
-      date_attribute: 'created_at',
-    }],
+    dataSelection: [
+      {
+        filters: emptyFilterGroup,
+        date_attribute: 'created_at',
+      },
+    ],
     parameters: {},
   };
 
@@ -75,28 +87,19 @@ describe('StixCoreObjectsMultiVerticalBars', () => {
 
   it('passes configured interval to query variables', () => {
     testRender(
-      <StixCoreObjectsMultiVerticalBars
-        {...minimalProps}
-        parameters={{ interval: 'month' }}
-      />,
+      <StixCoreObjectsMultiVerticalBars {...minimalProps} parameters={{ interval: 'month' }} />,
     );
     expect(lastBuildQueryVariables).toBeDefined();
-    const variables = lastBuildQueryVariables!(
-      minimalProps.dataSelection,
-      minimalProps.config,
-      { interval: 'month' },
-    );
+    const variables = lastBuildQueryVariables!(minimalProps.dataSelection, minimalProps.config, {
+      interval: 'month',
+    });
     expect(variables.interval).toBe('month');
   });
 
   it('defaults interval to day when not specified', () => {
     testRender(<StixCoreObjectsMultiVerticalBars {...minimalProps} />);
     expect(lastBuildQueryVariables).toBeDefined();
-    const variables = lastBuildQueryVariables!(
-      minimalProps.dataSelection,
-      minimalProps.config,
-      {},
-    );
+    const variables = lastBuildQueryVariables!(minimalProps.dataSelection, minimalProps.config, {});
     expect(variables.interval).toBe('day');
   });
 });

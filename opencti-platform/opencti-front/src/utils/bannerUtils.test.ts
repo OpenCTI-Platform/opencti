@@ -44,48 +44,58 @@ describe('bannerUtils', () => {
     });
 
     it('should return false when the platform is not on an enterprise license', () => {
-      expect(shouldDisplayLicenseBanner({
-        license_enterprise: false,
-        license_validated: false,
-        license_extra_expiration: false,
-        license_type: 'trial',
-      } as never)).toBe(false);
+      expect(
+        shouldDisplayLicenseBanner({
+          license_enterprise: false,
+          license_validated: false,
+          license_extra_expiration: false,
+          license_type: 'trial',
+        } as never),
+      ).toBe(false);
     });
 
     it('should return true when the enterprise license is not validated', () => {
-      expect(shouldDisplayLicenseBanner({
-        license_enterprise: true,
-        license_validated: false,
-        license_extra_expiration: false,
-        license_type: 'enterprise',
-      } as never)).toBe(true);
+      expect(
+        shouldDisplayLicenseBanner({
+          license_enterprise: true,
+          license_validated: false,
+          license_extra_expiration: false,
+          license_type: 'enterprise',
+        } as never),
+      ).toBe(true);
     });
 
     it('should return true when the enterprise license has an extra expiration', () => {
-      expect(shouldDisplayLicenseBanner({
-        license_enterprise: true,
-        license_validated: true,
-        license_extra_expiration: true,
-        license_type: 'enterprise',
-      } as never)).toBe(true);
+      expect(
+        shouldDisplayLicenseBanner({
+          license_enterprise: true,
+          license_validated: true,
+          license_extra_expiration: true,
+          license_type: 'enterprise',
+        } as never),
+      ).toBe(true);
     });
 
     it('should return true when the license type is trial', () => {
-      expect(shouldDisplayLicenseBanner({
-        license_enterprise: true,
-        license_validated: true,
-        license_extra_expiration: false,
-        license_type: 'trial',
-      } as never)).toBe(true);
+      expect(
+        shouldDisplayLicenseBanner({
+          license_enterprise: true,
+          license_validated: true,
+          license_extra_expiration: false,
+          license_type: 'trial',
+        } as never),
+      ).toBe(true);
     });
 
     it('should return false when the enterprise license is validated, not extra-expired and not a trial', () => {
-      expect(shouldDisplayLicenseBanner({
-        license_enterprise: true,
-        license_validated: true,
-        license_extra_expiration: false,
-        license_type: 'enterprise',
-      } as never)).toBe(false);
+      expect(
+        shouldDisplayLicenseBanner({
+          license_enterprise: true,
+          license_validated: true,
+          license_extra_expiration: false,
+          license_type: 'enterprise',
+        } as never),
+      ).toBe(false);
     });
   });
 
@@ -96,15 +106,27 @@ describe('bannerUtils', () => {
     });
 
     it('should return false when platform_xtmhub_url is missing', () => {
-      expect(shouldDisplayTrialBanner({ platform_xtmhub_url: null, platform_demo: true } as never)).toBe(false);
+      expect(
+        shouldDisplayTrialBanner({ platform_xtmhub_url: null, platform_demo: true } as never),
+      ).toBe(false);
     });
 
     it('should return false when platform_demo is falsy', () => {
-      expect(shouldDisplayTrialBanner({ platform_xtmhub_url: 'https://hub.io', platform_demo: false } as never)).toBe(false);
+      expect(
+        shouldDisplayTrialBanner({
+          platform_xtmhub_url: 'https://hub.io',
+          platform_demo: false,
+        } as never),
+      ).toBe(false);
     });
 
     it('should return true when platform_xtmhub_url is set and platform_demo is true', () => {
-      expect(shouldDisplayTrialBanner({ platform_xtmhub_url: 'https://hub.io', platform_demo: true } as never)).toBe(true);
+      expect(
+        shouldDisplayTrialBanner({
+          platform_xtmhub_url: 'https://hub.io',
+          platform_demo: true,
+        } as never),
+      ).toBe(true);
     });
   });
 
@@ -128,11 +150,25 @@ describe('bannerUtils', () => {
     });
 
     it('should return false when the XTM Hub backend is not reachable', () => {
-      expect(shouldDisplayRegisterBanner({ ...baseSettings, xtm_hub_backend_is_reachable: false } as never, true, true, false)).toBe(false);
+      expect(
+        shouldDisplayRegisterBanner(
+          { ...baseSettings, xtm_hub_backend_is_reachable: false } as never,
+          true,
+          true,
+          false,
+        ),
+      ).toBe(false);
     });
 
     it('should return false when the platform is already registered', () => {
-      expect(shouldDisplayRegisterBanner({ ...baseSettings, xtm_hub_registration_status: 'registered' } as never, true, true, false)).toBe(false);
+      expect(
+        shouldDisplayRegisterBanner(
+          { ...baseSettings, xtm_hub_registration_status: 'registered' } as never,
+          true,
+          true,
+          false,
+        ),
+      ).toBe(false);
     });
 
     it('should return true when all conditions are met', () => {
@@ -170,12 +206,16 @@ describe('bannerUtils', () => {
       const inTwoDays = moment().add(2, 'days').toISOString();
       expect(getSmtpRefreshTokenBannerState('oauth2', inTwoDays)).toBe('expiring_soon');
 
-      const justUnderTheThreshold = moment().add(SMTP_REFRESH_TOKEN_EXPIRATION_WARNING_DAYS - 1, 'days').toISOString();
+      const justUnderTheThreshold = moment()
+        .add(SMTP_REFRESH_TOKEN_EXPIRATION_WARNING_DAYS - 1, 'days')
+        .toISOString();
       expect(getSmtpRefreshTokenBannerState('oauth2', justUnderTheThreshold)).toBe('expiring_soon');
     });
 
     it('should return none when the expiration date is beyond the warning window', () => {
-      const farInTheFuture = moment().add(SMTP_REFRESH_TOKEN_EXPIRATION_WARNING_DAYS + 1, 'days').toISOString();
+      const farInTheFuture = moment()
+        .add(SMTP_REFRESH_TOKEN_EXPIRATION_WARNING_DAYS + 1, 'days')
+        .toISOString();
       expect(getSmtpRefreshTokenBannerState('oauth2', farInTheFuture)).toBe('none');
 
       const inOneYear = moment().add(1, 'year').toISOString();

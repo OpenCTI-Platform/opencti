@@ -42,7 +42,11 @@ const renderIntegrations = ({
 }: {
   connectors?: unknown[];
   states?: unknown[];
-  queues?: { name: string; messages: unknown; message_stats?: { ack_details?: { rate?: unknown } } | null }[];
+  queues?: {
+    name: string;
+    messages: unknown;
+    message_stats?: { ack_details?: { rate?: unknown } } | null;
+  }[];
   feeds?: Record<string, unknown>;
   forms?: unknown[];
   logosBySlug?: Map<string, string>;
@@ -51,7 +55,9 @@ const renderIntegrations = ({
     connectorsListData: { connectors },
     connectorsStateData: { connectors: states, rabbitMQMetrics: { queues } },
     feedsData: { ...emptyFeeds, ...feeds },
-    formsData: { forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) } },
+    formsData: {
+      forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) },
+    },
     logosBySlug,
   } as unknown as HookProps;
   return renderHook(() => useDeployedIntegrations(props));
@@ -61,20 +67,26 @@ describe('useDeployedIntegrations', () => {
   it('returns an empty list when every data source is empty or missing', () => {
     const { result: withEmptyData } = renderIntegrations();
     expect(withEmptyData.current).toEqual([]);
-    const { result: withNullData } = renderHook(() => useDeployedIntegrations({
-      connectorsListData: null,
-      connectorsStateData: null,
-      feedsData: null,
-      formsData: null,
-      logosBySlug: new Map(),
-    }));
+    const { result: withNullData } = renderHook(() =>
+      useDeployedIntegrations({
+        connectorsListData: null,
+        connectorsStateData: null,
+        feedsData: null,
+        formsData: null,
+        logosBySlug: new Map(),
+      }),
+    );
     expect(withNullData.current).toEqual([]);
   });
 
   describe('registered connectors', () => {
     it('maps a connector with its live state and logo', () => {
       const { result } = renderIntegrations({
-        connectors: [makeConnector({ manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' } })],
+        connectors: [
+          makeConnector({
+            manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' },
+          }),
+        ],
         states: [makeState({ active: true })],
         logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
       });
@@ -100,7 +112,10 @@ describe('useDeployedIntegrations', () => {
 
     it('skips internal connectors', () => {
       const { result } = renderIntegrations({
-        connectors: [makeConnector({ id: 'internal-1', connector_type: 'internal' }), makeConnector()],
+        connectors: [
+          makeConnector({ id: 'internal-1', connector_type: 'internal' }),
+          makeConnector(),
+        ],
       });
       expect(result.current.map((item) => item.id)).toEqual(['connector-1']);
     });
@@ -116,7 +131,9 @@ describe('useDeployedIntegrations', () => {
     it('reports a processing status while a managed connector is transitioning', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
-        states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'starting' })],
+        states: [
+          makeState({ manager_current_status: 'stopped', manager_requested_status: 'starting' }),
+        ],
       });
       expect(result.current[0].status).toBe('processing');
       expect(result.current[0].statusLabel).toBe('starting');
@@ -141,8 +158,16 @@ describe('useDeployedIntegrations', () => {
         connectors: [makeConnector()],
         queues: [
           { name: 'push_connector-1', messages: 0, message_stats: { ack_details: { rate: 1.5 } } },
-          { name: 'listen_connector-1', messages: 0, message_stats: { ack_details: { rate: 0.5 } } },
-          { name: 'push_other-connector', messages: 0, message_stats: { ack_details: { rate: 100 } } },
+          {
+            name: 'listen_connector-1',
+            messages: 0,
+            message_stats: { ack_details: { rate: 0.5 } },
+          },
+          {
+            name: 'push_other-connector',
+            messages: 0,
+            message_stats: { ack_details: { rate: 100 } },
+          },
         ],
       });
       expect(result.current[0].throughputRate).toBe(2);
@@ -165,15 +190,24 @@ describe('useDeployedIntegrations', () => {
       const feedId = 'rss-feed-1';
       const twinId = connectorIdFromIngestId(feedId);
       const { result } = renderIntegrations({
-        connectors: [
-          makeConnector({ id: twinId, name: 'RSS twin connector' }),
-          makeConnector(),
+        connectors: [makeConnector({ id: twinId, name: 'RSS twin connector' }), makeConnector()],
+        queues: [
+          { name: `push_${twinId}`, messages: 12, message_stats: { ack_details: { rate: 0.8 } } },
         ],
-        queues: [{ name: `push_${twinId}`, messages: 12, message_stats: { ack_details: { rate: 0.8 } } }],
         feeds: {
           ingestionRsss: {
             pageInfo: { globalCount: 1 },
-            edges: [{ node: { id: feedId, name: 'My RSS feed', description: null, uri: 'https://feed', ingestion_running: true } }],
+            edges: [
+              {
+                node: {
+                  id: feedId,
+                  name: 'My RSS feed',
+                  description: null,
+                  uri: 'https://feed',
+                  ingestion_running: true,
+                },
+              },
+            ],
           },
         },
       });
@@ -192,17 +226,19 @@ describe('useDeployedIntegrations', () => {
         feeds: {
           synchronizers: {
             pageInfo: { globalCount: 1 },
-            edges: [{
-              node: {
-                id: 'sync-1',
-                name: 'Remote stream',
-                uri: 'https://remote',
-                running: true,
-                current_state_date: '2026-02-01T00:00:00.000Z',
-                queue_messages: 5,
-                user: { name: 'admin' },
+            edges: [
+              {
+                node: {
+                  id: 'sync-1',
+                  name: 'Remote stream',
+                  uri: 'https://remote',
+                  running: true,
+                  current_state_date: '2026-02-01T00:00:00.000Z',
+                  queue_messages: 5,
+                  user: { name: 'admin' },
+                },
               },
-            }],
+            ],
           },
         },
       });
@@ -218,13 +254,25 @@ describe('useDeployedIntegrations', () => {
 
     it('maps every feed kind to its section and detail url', () => {
       const makeFeedNode = (id: string) => ({
-        node: { id, name: id, description: null, uri: null, ingestion_running: false, last_execution_date: null, updated_at: null, user: null },
+        node: {
+          id,
+          name: id,
+          description: null,
+          uri: null,
+          ingestion_running: false,
+          last_execution_date: null,
+          updated_at: null,
+          user: null,
+        },
       });
       const { result } = renderIntegrations({
         feeds: {
           ingestionRsss: { pageInfo: { globalCount: 1 }, edges: [makeFeedNode('rss-1')] },
           ingestionTaxiis: { pageInfo: { globalCount: 1 }, edges: [makeFeedNode('taxii-1')] },
-          ingestionTaxiiCollections: { pageInfo: { globalCount: 1 }, edges: [makeFeedNode('taxii-push-1')] },
+          ingestionTaxiiCollections: {
+            pageInfo: { globalCount: 1 },
+            edges: [makeFeedNode('taxii-push-1')],
+          },
           ingestionCsvs: { pageInfo: { globalCount: 1 }, edges: [makeFeedNode('csv-1')] },
           ingestionJsons: { pageInfo: { globalCount: 1 }, edges: [makeFeedNode('json-1')] },
         },
@@ -244,7 +292,15 @@ describe('useDeployedIntegrations', () => {
 
     it('maps form intakes with their active flag', () => {
       const { result } = renderIntegrations({
-        forms: [{ id: 'form-1', name: 'Intake form', description: 'desc', active: true, updated_at: '2026-03-01T00:00:00.000Z' }],
+        forms: [
+          {
+            id: 'form-1',
+            name: 'Intake form',
+            description: 'desc',
+            active: true,
+            updated_at: '2026-03-01T00:00:00.000Z',
+          },
+        ],
       });
       expect(result.current).toHaveLength(1);
       const item = result.current[0];

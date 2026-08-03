@@ -7,15 +7,37 @@ import type { ChannelAddInput, QueryChannelsArgs } from '../../generated/graphql
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityChannel, ENTITY_TYPE_CHANNEL } from './channel-types';
 
-export const findById = (context: AuthContext, user: AuthUser, channelId: string): BasicStoreEntityChannel => {
-  return storeLoadById(context, user, channelId, ENTITY_TYPE_CHANNEL) as unknown as BasicStoreEntityChannel;
+export const findById = (
+  context: AuthContext,
+  user: AuthUser,
+  channelId: string,
+): BasicStoreEntityChannel => {
+  return storeLoadById(
+    context,
+    user,
+    channelId,
+    ENTITY_TYPE_CHANNEL,
+  ) as unknown as BasicStoreEntityChannel;
 };
 
-export const findChannelPaginated = (context: AuthContext, user: AuthUser, opts: QueryChannelsArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityChannel>(context, user, [ENTITY_TYPE_CHANNEL], opts);
+export const findChannelPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryChannelsArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityChannel>(
+    context,
+    user,
+    [ENTITY_TYPE_CHANNEL],
+    opts,
+  );
 };
 
-export const addChannel = async (context: AuthContext, user: AuthUser, channel: ChannelAddInput) => {
+export const addChannel = async (
+  context: AuthContext,
+  user: AuthUser,
+  channel: ChannelAddInput,
+) => {
   const created = await createEntity(context, user, channel, ENTITY_TYPE_CHANNEL);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

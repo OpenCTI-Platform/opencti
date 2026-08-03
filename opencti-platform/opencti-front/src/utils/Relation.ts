@@ -19,10 +19,12 @@ export const resolveRelationsTypes = (
   return values;
 };
 
-export const hasKillChainPhase = (type: string) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);
+export const hasKillChainPhase = (type: string) =>
+  includes(type, ['uses', 'exploits', 'drops', 'indicates']);
 
 // retro-compatibility with cyber-observable-relationship
-export const isStixNestedRefRelationship = (type: string) => ['stix-ref-relationship', 'stix-cyber-observable-relationship'].includes(type);
+export const isStixNestedRefRelationship = (type: string) =>
+  ['stix-ref-relationship', 'stix-cyber-observable-relationship'].includes(type);
 
 export const resolveTypesForRelationship = (
   schemaRelationsTypesMapping: Map<string, readonly string[]>,
@@ -51,14 +53,17 @@ export const resolveTypesForRelationship = (
 };
 
 export const resolveTypesForRelationshipRef = (
-  schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string; readonly toTypes: readonly string[] }[]>,
+  schemaRelationsRefTypesMapping: Map<
+    string,
+    readonly { readonly name: string; readonly toTypes: readonly string[] }[]
+  >,
   entityType: string,
   relationshipRefKey: string,
 ) => {
-  return schemaRelationsRefTypesMapping
-    .get(entityType)
-    ?.find((ref) => ref.name === relationshipRefKey)
-    ?.toTypes ?? [];
+  return (
+    schemaRelationsRefTypesMapping.get(entityType)?.find((ref) => ref.name === relationshipRefKey)
+      ?.toTypes ?? []
+  );
 };
 /**
  * Starting from one entity in the "From":
@@ -84,10 +89,7 @@ export interface RelationsToEntity {
  * @param from
  * @param schema
  */
-export const getRelationsFromOneEntityToAny = (
-  from: string,
-  schema: SchemaType,
-) => {
+export const getRelationsFromOneEntityToAny = (from: string, schema: SchemaType) => {
   const { schemaRelationsTypesMapping } = schema;
   const keys = Array.from(schemaRelationsTypesMapping.keys());
   const currentEntityFromRelations = keys.filter((item) => {
@@ -118,7 +120,9 @@ export const getRelationsFromOneEntityToAny = (
 
   // Add all missing entities
   for (let i = 0; i < schema.sdos.length; i += 1) {
-    const existingEntity = entityList.some((relationsToEntity) => relationsToEntity.toEntitytype === schema.sdos[i].id);
+    const existingEntity = entityList.some(
+      (relationsToEntity) => relationsToEntity.toEntitytype === schema.sdos[i].id,
+    );
     if (!existingEntity) {
       entityList.push({
         toEntitytype: schema.sdos[i].id,
@@ -143,7 +147,10 @@ export const getRelationsFromOneEntityToAny = (
   };
 };
 
-export const getRelationshipTypesForEntityType = (entityType: string, schema: SchemaType): string[] => {
+export const getRelationshipTypesForEntityType = (
+  entityType: string,
+  schema: SchemaType,
+): string[] => {
   const { schemaRelationsTypesMapping } = schema;
   const entries = Array.from(schemaRelationsTypesMapping.entries());
 

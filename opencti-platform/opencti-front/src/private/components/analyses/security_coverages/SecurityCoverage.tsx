@@ -121,10 +121,7 @@ const SecurityCoverageComponent = ({
       </Grid>
 
       <Grid size={12}>
-        <SecurityCoverageAttackPatterns
-          data={securityCoverage}
-          dataKillChains={dataKillChains}
-        />
+        <SecurityCoverageAttackPatterns data={securityCoverage} dataKillChains={dataKillChains} />
       </Grid>
 
       <Grid size={6}>
@@ -136,7 +133,9 @@ const SecurityCoverageComponent = ({
       </Grid>
 
       <Grid size={12}>
-        <StixCoreObjectOrStixCoreRelationshipNotes stixCoreObjectOrStixCoreRelationshipId={securityCoverage.id} />
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={securityCoverage.id}
+        />
       </Grid>
     </Grid>
   );
@@ -147,15 +146,14 @@ interface SecurityCoverageProps {
 }
 
 const SecurityCoverage = ({ data }: SecurityCoverageProps) => {
-  const killChainsQueryRef = useQueryLoading<SecurityCoverageKillChainsQuery>(securityCoverageKillChainsQuery);
+  const killChainsQueryRef = useQueryLoading<SecurityCoverageKillChainsQuery>(
+    securityCoverageKillChainsQuery,
+  );
 
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
       {killChainsQueryRef && (
-        <SecurityCoverageComponent
-          data={data}
-          killChainsQueryRef={killChainsQueryRef}
-        />
+        <SecurityCoverageComponent data={data} killChainsQueryRef={killChainsQueryRef} />
       )}
     </Suspense>
   );

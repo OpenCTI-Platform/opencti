@@ -6,7 +6,10 @@ import type { Theme } from '../../../components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { NotifiersLinesPaginationQuery, NotifiersLinesPaginationQuery$variables } from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
+import {
+  NotifiersLinesPaginationQuery,
+  NotifiersLinesPaginationQuery$variables,
+} from './notifiers/__generated__/NotifiersLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import NotifiersLines, { NotifiersLinesQuery } from './notifiers/NotifiersLines';
 import { NotifierLine_node$data } from './notifiers/__generated__/NotifierLine_node.graphql';
@@ -67,7 +70,10 @@ const Notifiers = () => {
 
   const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const settingsData = useLazyLoadQuery<NotifiersSettingsQuery>(notifiersSettingsQuery, {});
-  const settings = useFragment<NotifiersSettings$key>(notifiersSettingsFragment, settingsData.settings);
+  const settings = useFragment<NotifiersSettings$key>(
+    notifiersSettingsFragment,
+    settingsData.settings,
+  );
   const [commitFieldPatch] = useApiMutation(notifiersSettingsFieldPatchMutation);
 
   const handleToggleAutoTrigger = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
@@ -83,20 +89,18 @@ const Notifiers = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<NotifiersLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'created',
-      orderAsc: false,
-      openExports: false,
-      count: 25,
-    },
-  );
+  } = usePaginationLocalStorage<NotifiersLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+    numberOfElements: { number: 0, symbol: '', original: 0 },
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'created',
+    orderAsc: false,
+    openExports: false,
+    count: 25,
+  });
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc } = viewStorage;
-  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<NotifierLine_node$data>(LOCAL_STORAGE_KEY);
+  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } =
+    useEntityToggle<NotifierLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     connector: {
       label: 'Connector',
@@ -120,17 +124,25 @@ const Notifiers = () => {
   );
   return (
     <div className={classes.container} data-testid="notifiers-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Notifiers'), current: true },
+        ]}
+      />
       <Card title={t_i18n('Configuration')} sx={{ marginBottom: '20px' }}>
         <FormControlLabel
-          control={(
+          control={
             <Switch
               checked={settings.platform_notifier_auto_trigger_assignee}
               onChange={handleToggleAutoTrigger}
               disabled={!isGrantedToCustomization}
             />
+          }
+          label={t_i18n(
+            'Automatically notify users when they are assigned as participant or assignee',
           )}
-          label={t_i18n('Automatically notify users when they are assigned as participant or assignee')}
         />
       </Card>
       <ListLines
@@ -157,7 +169,7 @@ const Notifiers = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -165,7 +177,7 @@ const Notifiers = () => {
                     <NotifierLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <NotifiersLines
               queryRef={queryRef}

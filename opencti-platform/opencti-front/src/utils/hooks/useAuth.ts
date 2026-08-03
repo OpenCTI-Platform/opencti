@@ -29,20 +29,23 @@ export type SchemaType = {
   smos: { id: string; label: string }[];
   scrs: { id: string; label: string }[];
   schemaRelationsTypesMapping: Map<string, readonly string[]>;
-  schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string; readonly toTypes: readonly string[] }[]>;
+  schemaRelationsRefTypesMapping: Map<
+    string,
+    readonly { readonly name: string; readonly toTypes: readonly string[] }[]
+  >;
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
 };
 
-export type PlatformLang
-  = | 'de-de'
-    | 'en-us'
-    | 'es-es'
-    | 'fr-fr'
-    | 'it-it'
-    | 'ja-jp'
-    | 'ko-kr'
-    | 'zh-cn'
-    | 'ru-ru';
+export type PlatformLang =
+  | 'de-de'
+  | 'en-us'
+  | 'es-es'
+  | 'fr-fr'
+  | 'it-it'
+  | 'ja-jp'
+  | 'ko-kr'
+  | 'zh-cn'
+  | 'ru-ru';
 
 const defaultLang: PlatformLang = 'en-us';
 
@@ -95,7 +98,17 @@ const useAuth = () => {
     tz,
     queryData,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !queryData) {
+  if (
+    !me ||
+    !settings ||
+    !bannerSettings ||
+    !entitySettings ||
+    !platformModuleHelpers ||
+    !schema ||
+    !about ||
+    !themes ||
+    !queryData
+  ) {
     throw new Error('Invalid user context !');
   }
   return {

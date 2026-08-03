@@ -17,7 +17,8 @@ const elasticUpdate = (convertor) => {
   const playbooksUpdateQuery = {
     script: {
       params: { convertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       term: {
@@ -27,11 +28,7 @@ const elasticUpdate = (convertor) => {
       },
     },
   };
-  return elUpdateByQueryForMigration(
-    message,
-    READ_INDEX_INTERNAL_OBJECTS,
-    playbooksUpdateQuery,
-  );
+  return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, playbooksUpdateQuery);
 };
 
 export const up = async (next) => {

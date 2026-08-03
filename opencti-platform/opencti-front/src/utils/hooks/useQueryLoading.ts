@@ -1,4 +1,9 @@
-import { GraphQLTaggedNode, useQueryLoader, UseQueryLoaderLoadQueryOptions, VariablesOf } from 'react-relay';
+import {
+  GraphQLTaggedNode,
+  useQueryLoader,
+  UseQueryLoaderLoadQueryOptions,
+  VariablesOf,
+} from 'react-relay';
 import { OperationType, PreloadableConcreteRequest } from 'relay-runtime';
 import { useEffect, useRef } from 'react';
 import { equals } from 'ramda';

@@ -26,7 +26,14 @@ const pyCreatePattern = py.importSync('./src/python/runtime/stix2_create_pattern
 const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern };
 
 // region child
-export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
+export const execChildPython = async (
+  context,
+  user,
+  scriptPath,
+  scriptName,
+  args,
+  stopCondition,
+) => {
   const execPythonTestingProcessFn = async () => {
     if (isEmptyField(scriptPath) || isEmptyField(scriptName)) {
       throw UnsupportedError('Cannot execute Python with empty script path or name');
@@ -76,11 +83,17 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
       });
     });
   };
-  return telemetry(context, user, `PYTHON ${scriptName}`, {
-    [ATTR_DB_NAMESPACE]: 'python_testing_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'python_testing_engine',
-  }, execPythonTestingProcessFn);
+  return telemetry(
+    context,
+    user,
+    `PYTHON ${scriptName}`,
+    {
+      [ATTR_DB_NAMESPACE]: 'python_testing_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'python_testing_engine',
+    },
+    execPythonTestingProcessFn,
+  );
 };
 const createChildStixPattern = async (context, user, observableType, observableValue) => {
   try {
@@ -113,7 +126,13 @@ const checkChildIndicatorSyntax = async (context, user, patternType, indicatorVa
   }
 };
 const checkChildPythonAvailability = async (context, user) => {
-  const result = await execChildPython(context, user, './src/python/runtime', 'stix2_create_pattern.py', ['check', 'health']);
+  const result = await execChildPython(
+    context,
+    user,
+    './src/python/runtime',
+    'stix2_create_pattern.py',
+    ['check', 'health'],
+  );
   return result.data;
 };
 // endregion
@@ -134,23 +153,37 @@ const execNativePython = async (context, user, script, ...args) => {
     }
     throw UnknownError('[BRIDGE] execNativePython error', result);
   };
-  return telemetry(context, user, `PYTHON ${script.fn}`, {
-    [ATTR_DB_NAMESPACE]: 'python_runtime_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'python_runtime_engine',
-  }, execNativePythonFn);
+  return telemetry(
+    context,
+    user,
+    `PYTHON ${script.fn}`,
+    {
+      [ATTR_DB_NAMESPACE]: 'python_runtime_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'python_runtime_engine',
+    },
+    execNativePythonFn,
+  );
 };
 const createNativeStixPattern = async (context, user, observableType, observableValue) => {
-  return execNativePython(context, user, CREATE_PATTERN_SCRIPT, observableType, observableValue).catch((err) => {
+  return execNativePython(
+    context,
+    user,
+    CREATE_PATTERN_SCRIPT,
+    observableType,
+    observableValue,
+  ).catch((err) => {
     logApp.warn('[BRIDGE] createNativeStixPattern', { cause: err });
     return null;
   });
 };
 const checkNativeIndicatorSyntax = async (context, user, patternType, indicatorValue) => {
-  return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch((err) => {
-    logApp.warn('[BRIDGE] checkNativeIndicatorSyntax', { cause: err });
-    return null;
-  });
+  return execNativePython(context, user, CHECK_INDICATOR_SCRIPT, patternType, indicatorValue).catch(
+    (err) => {
+      logApp.warn('[BRIDGE] checkNativeIndicatorSyntax', { cause: err });
+      return null;
+    },
+  );
 };
 const checkNativePythonAvailability = async (context, user) => {
   return createStixPattern(context, user, 'Text', 'test');
@@ -163,7 +196,8 @@ export const createStixPatternSync = (observableType, observableValue) => {
   return cleanupIndicatorPattern(STIX_PATTERN_TYPE, stixPattern);
 };
 export const createStixPattern = async (context, user, observableType, observableValue) => {
-  const stixPattern = await (USE_NATIVE_EXEC ? createNativeStixPattern(context, user, observableType, observableValue)
+  const stixPattern = await (USE_NATIVE_EXEC
+    ? createNativeStixPattern(context, user, observableType, observableValue)
     : createChildStixPattern(context, user, observableType, observableValue));
   return cleanupIndicatorPattern(STIX_PATTERN_TYPE, stixPattern);
 };

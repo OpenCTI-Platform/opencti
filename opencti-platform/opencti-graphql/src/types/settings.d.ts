@@ -1,6 +1,10 @@
 import type { BasicStoreEntity } from './store';
 import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType } from '../generated/graphql';
-import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
+import type {
+  GroupsMapping,
+  OrganizationsMapping,
+  UserInfoMapping,
+} from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
   id: string;

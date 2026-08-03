@@ -1,5 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addFintelDesign, findFintelDesignPaginated, findById, fintelDesignDelete, fintelDesignEditContext, fintelDesignEditField } from './fintelDesign-domain';
+import {
+  addFintelDesign,
+  findFintelDesignPaginated,
+  findById,
+  fintelDesignDelete,
+  fintelDesignEditContext,
+  fintelDesignEditField,
+} from './fintelDesign-domain';
 
 const fintelDesignResolvers: Resolvers = {
   FintelDesign: {

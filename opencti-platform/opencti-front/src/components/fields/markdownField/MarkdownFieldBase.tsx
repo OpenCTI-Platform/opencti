@@ -2,7 +2,15 @@ import { AddPhotoAlternateOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { isNil } from 'ramda';
-import React, { CSSProperties, FocusEvent, MouseEvent, ReactElement, useCallback, useRef, useState } from 'react';
+import React, {
+  CSSProperties,
+  FocusEvent,
+  MouseEvent,
+  ReactElement,
+  useCallback,
+  useRef,
+  useState,
+} from 'react';
 import ReactMde from 'react-mde';
 import TextFieldAskAI from '../../../private/components/common/form/TextFieldAskAI';
 import useAI from '../../../utils/hooks/useAI';
@@ -79,10 +87,13 @@ const MarkdownFieldBase = ({
   const showError = !isNil(errorMessage) && showValidationError;
   const activeTab = controlledSelectedTab ?? selectedTab;
 
-  const pushDraftValue = useCallback((nextValue: string, shouldValidate = false) => {
-    setDraftValue(nextValue);
-    onValueChange(nextValue, shouldValidate);
-  }, [onValueChange]);
+  const pushDraftValue = useCallback(
+    (nextValue: string, shouldValidate = false) => {
+      setDraftValue(nextValue);
+      onValueChange(nextValue, shouldValidate);
+    },
+    [onValueChange],
+  );
 
   const {
     fileInputRef,
@@ -136,7 +147,8 @@ const MarkdownFieldBase = ({
     if (event.currentTarget.contains(event.relatedTarget)) {
       const blurTarget = event.target as HTMLElement | null;
       const nextTarget = event.relatedTarget as HTMLElement | null;
-      const movedFromTextareaToButton = blurTarget?.tagName === 'TEXTAREA' && nextTarget?.tagName === 'BUTTON';
+      const movedFromTextareaToButton =
+        blurTarget?.tagName === 'TEXTAREA' && nextTarget?.tagName === 'BUTTON';
 
       if (movedFromTextareaToButton && suppressInternalButtonBlurValidationRef.current) {
         suppressInternalButtonBlurValidationRef.current = false;
@@ -242,17 +254,19 @@ const MarkdownFieldBase = ({
             setSelectedTab(tab);
           }
         }}
-        generateMarkdownPreview={(markdown) => Promise.resolve(
-          <div onMouseUp={() => internalOnSelect()}>
-            <MarkdownDisplay
-              content={markdown}
-              remarkGfmPlugin={true}
-              commonmark={true}
-              resolveImageUrl={markdownPreviewResolver}
-              enableImagePreviewModal={true}
-            />
-          </div>,
-        )}
+        generateMarkdownPreview={(markdown) =>
+          Promise.resolve(
+            <div onMouseUp={() => internalOnSelect()}>
+              <MarkdownDisplay
+                content={markdown}
+                remarkGfmPlugin={true}
+                commonmark={true}
+                resolveImageUrl={markdownPreviewResolver}
+                enableImagePreviewModal={true}
+              />
+            </div>,
+          )
+        }
         toolbarCommands={toolbarCommands}
         l18n={{
           write: t_i18n('Write'),
@@ -310,7 +324,7 @@ const MarkdownFieldBase = ({
 
       {showError && <FormHelperText error={true}>{errorMessage}</FormHelperText>}
 
-      {askAi && (enabled && configured) && (
+      {askAi && enabled && configured && (
         <TextFieldAskAI
           currentValue={draftValue}
           setFieldValue={(nextValue: string) => {

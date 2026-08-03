@@ -73,7 +73,13 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       I: { N: 'None', P: 'Partial', C: 'Complete' },
       A: { N: 'None', P: 'Partial', C: 'Complete' },
       E: { ND: 'Not Defined', U: 'Unproven', POC: 'Proof-of-Concept', F: 'Functional', H: 'High' },
-      RL: { ND: 'Not Defined', OF: 'Official Fix', TF: 'Temporary Fix', W: 'Workaround', U: 'Unavailable' },
+      RL: {
+        ND: 'Not Defined',
+        OF: 'Official Fix',
+        TF: 'Temporary Fix',
+        W: 'Workaround',
+        U: 'Unavailable',
+      },
       RC: { ND: 'Not Defined', UC: 'Unconfirmed', UR: 'Uncorroborated', C: 'Confirmed' },
     },
     fullToCode: {
@@ -83,8 +89,20 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       C: { None: 'N', Partial: 'P', Complete: 'C' },
       I: { None: 'N', Partial: 'P', Complete: 'C' },
       A: { None: 'N', Partial: 'P', Complete: 'C' },
-      E: { 'Not Defined': 'ND', Unproven: 'U', 'Proof-of-Concept': 'POC', Functional: 'F', High: 'H' },
-      RL: { 'Not Defined': 'ND', 'Official Fix': 'OF', 'Temporary Fix': 'TF', Workaround: 'W', Unavailable: 'U' },
+      E: {
+        'Not Defined': 'ND',
+        Unproven: 'U',
+        'Proof-of-Concept': 'POC',
+        Functional: 'F',
+        High: 'H',
+      },
+      RL: {
+        'Not Defined': 'ND',
+        'Official Fix': 'OF',
+        'Temporary Fix': 'TF',
+        Workaround: 'W',
+        Unavailable: 'U',
+      },
       RC: { 'Not Defined': 'ND', Unconfirmed: 'UC', Uncorroborated: 'UR', Confirmed: 'C' },
     },
     ordered: ['AV', 'AC', 'AU', 'C', 'I', 'A', 'E', 'RL', 'RC'],
@@ -143,7 +161,13 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       I: { N: 'None', L: 'Low', H: 'High' },
       A: { N: 'None', L: 'Low', H: 'High' },
       E: { X: 'Not Defined', U: 'Unproven', P: 'Proof-of-Concept', F: 'Functional', H: 'High' },
-      RL: { X: 'Not Defined', O: 'Official Fix', T: 'Temporary Fix', W: 'Workaround', U: 'Unavailable' },
+      RL: {
+        X: 'Not Defined',
+        O: 'Official Fix',
+        T: 'Temporary Fix',
+        W: 'Workaround',
+        U: 'Unavailable',
+      },
       RC: { X: 'Not Defined', U: 'Unknown', R: 'Reasonable', C: 'Confirmed' },
     },
     fullToCode: {
@@ -156,7 +180,13 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       I: { None: 'N', Low: 'L', High: 'H' },
       A: { None: 'N', Low: 'L', High: 'H' },
       E: { 'Not Defined': 'X', Unproven: 'U', 'Proof-of-Concept': 'P', Functional: 'F', High: 'H' },
-      RL: { 'Not Defined': 'X', 'Official Fix': 'O', 'Temporary Fix': 'T', Workaround: 'W', Unavailable: 'U' },
+      RL: {
+        'Not Defined': 'X',
+        'Official Fix': 'O',
+        'Temporary Fix': 'T',
+        Workaround: 'W',
+        Unavailable: 'U',
+      },
       RC: { 'Not Defined': 'X', Unknown: 'U', Reasonable: 'R', Confirmed: 'C' },
     },
     ordered: ['AV', 'AC', 'PR', 'UI', 'S', 'C', 'I', 'A', 'E', 'RL', 'RC'],
@@ -238,12 +268,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
       SA: { High: 'H', Low: 'L', None: 'N' },
       E: { 'Not Defined': 'X', Attacked: 'A', 'Proof-of-Concept': 'P', Unreported: 'U' },
     },
-    ordered: [
-      'AV', 'AC', 'AT', 'PR', 'UI',
-      'VC', 'VI', 'VA',
-      'SC', 'SI', 'SA',
-      'E',
-    ],
+    ordered: ['AV', 'AC', 'AT', 'PR', 'UI', 'VC', 'VI', 'VA', 'SC', 'SI', 'SA', 'E'],
     prefix: 'CVSS:4.0/',
     baseVectorKey: 'x_opencti_cvss_v4_vector_string',
     baseScoreKey: 'x_opencti_cvss_v4_base_score',
@@ -286,25 +311,17 @@ export const getFullValue = (
   if (map[value]) return map[value];
 
   // Try full label lookup, case-insensitive
-  const found = Object.values(map).find(
-    (full) => full.toLowerCase() === value.toLowerCase(),
-  );
+  const found = Object.values(map).find((full) => full.toLowerCase() === value.toLowerCase());
   if (found) return found;
 
   // If still not found, maybe user entered the code in lowercase ("n" instead of "N")
-  const codeFromLower = Object.keys(map).find(
-    (code) => code.toLowerCase() === value.toLowerCase(),
-  );
+  const codeFromLower = Object.keys(map).find((code) => code.toLowerCase() === value.toLowerCase());
   if (codeFromLower) return map[codeFromLower];
 
   return value;
 };
 
-export const getCodeValue = (
-  metric: string,
-  value: string,
-  config: CvssConfig,
-): string => {
+export const getCodeValue = (metric: string, value: string, config: CvssConfig): string => {
   const map = config.fullToCode[metric];
   if (!map) return value;
 
@@ -393,7 +410,10 @@ export const parseCvssVector = (
   const config = cvssMappings[version];
   const { codeToOpencti } = config;
   if (isEmptyField(vector)) {
-    const nullFields: CvssFieldUpdate[] = Object.values(codeToOpencti).map((key) => ({ key, value: [null] }));
+    const nullFields: CvssFieldUpdate[] = Object.values(codeToOpencti).map((key) => ({
+      key,
+      value: [null],
+    }));
     let result: CvssFieldUpdate[];
     if (version === 'cvss2') {
       result = [
@@ -403,10 +423,7 @@ export const parseCvssVector = (
         { key: config.temporalScoreKey!, value: [null] },
       ];
     } else {
-      result = [
-        ...nullFields,
-        { key: config.baseScoreKey, value: [null] },
-      ];
+      result = [...nullFields, { key: config.baseScoreKey, value: [null] }];
       if (config.severityKey) result.push({ key: config.severityKey, value: [null] });
       if (config.temporalScoreKey) result.push({ key: config.temporalScoreKey, value: [null] });
     }
@@ -446,29 +463,24 @@ export const parseCvssVector = (
         ...nulls,
         { key: config.baseVectorKey, value: [vector] },
         { key: config.baseScoreKey, value: [scores.base] },
-        { key: config.temporalScoreKey!, value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] },
+        {
+          key: config.temporalScoreKey!,
+          value: [isNotEmptyField(scores.temporal) ? scores.temporal : null],
+        },
       ];
     } else {
-      result = [
-        ...parsedVector,
-        ...nulls,
-        { key: config.baseVectorKey, value: [vector ?? null] },
-      ];
+      result = [...parsedVector, ...nulls, { key: config.baseVectorKey, value: [vector ?? null] }];
     }
   } else if (isEmptyField(initialScore)) {
-    result = [
-      ...parsedVector,
-      ...nulls,
-      { key: config.baseScoreKey, value: [scores.base] },
-    ];
-    if (config.severityKey) result.push({ key: config.severityKey, value: [getCvssCriticity(scores.overall)] });
-    if (config.temporalScoreKey && isNotEmptyField(scores.temporal)) result.push({ key: config.temporalScoreKey, value: [scores.temporal] });
+    result = [...parsedVector, ...nulls, { key: config.baseScoreKey, value: [scores.base] }];
+    if (config.severityKey)
+      result.push({ key: config.severityKey, value: [getCvssCriticity(scores.overall)] });
+    if (config.temporalScoreKey && isNotEmptyField(scores.temporal))
+      result.push({ key: config.temporalScoreKey, value: [scores.temporal] });
   } else {
-    result = [
-      ...parsedVector,
-      ...nulls,
-    ];
-    if (config.severityKey) result.push({ key: config.severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
+    result = [...parsedVector, ...nulls];
+    if (config.severityKey)
+      result.push({ key: config.severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
   }
   return asObject ? Object.fromEntries(result.map((e) => [e.key, e.value[0]])) : result;
 };
@@ -484,8 +496,19 @@ export const updateCvssVector = (
     return {};
   }
   const config = cvssMappings[version];
-  const { openctiToCode, ordered, prefix, baseVectorKey, baseScoreKey, temporalScoreKey, severityKey } = config;
-  const initialParts: [string, string | undefined][] = stripVectorPrefix(existingVector || '', config)
+  const {
+    openctiToCode,
+    ordered,
+    prefix,
+    baseVectorKey,
+    baseScoreKey,
+    temporalScoreKey,
+    severityKey,
+  } = config;
+  const initialParts: [string, string | undefined][] = stripVectorPrefix(
+    existingVector || '',
+    config,
+  )
     .split('/')
     .filter((s) => s.includes(':'))
     .map((part) => {
@@ -502,12 +525,15 @@ export const updateCvssVector = (
       }
     }
   });
-  const updatedVector = (prefix || '')
-    + ordered
+  const updatedVector =
+    (prefix || '') +
+    ordered
       .filter((k) => parts.has(k))
-      .map((k) => (version === 'cvss2'
-        ? `${cvss2OutputKeyCase[k] || k}:${parts.get(k)}`
-        : `${k}:${parts.get(k)}`))
+      .map((k) =>
+        version === 'cvss2'
+          ? `${cvss2OutputKeyCase[k] || k}:${parts.get(k)}`
+          : `${k}:${parts.get(k)}`,
+      )
       .join('/');
   let scores: any = null;
   if (version === 'cvss3') {
@@ -523,7 +549,10 @@ export const updateCvssVector = (
       result = [
         { key: baseVectorKey, value: [updatedVector] },
         { key: baseScoreKey, value: [scores.base] },
-        { key: temporalScoreKey!, value: [isNotEmptyField(scores.temporal) ? scores.temporal : null] },
+        {
+          key: temporalScoreKey!,
+          value: [isNotEmptyField(scores.temporal) ? scores.temporal : null],
+        },
       ];
     } else {
       result = [{ key: baseVectorKey, value: [updatedVector] }];
@@ -534,15 +563,20 @@ export const updateCvssVector = (
       { key: baseScoreKey, value: [scores.base] },
     ];
     if (severityKey) result.push({ key: severityKey, value: [getCvssCriticity(scores.overall)] });
-    if (temporalScoreKey && isNotEmptyField(scores.temporal)) result.push({ key: temporalScoreKey, value: [scores.temporal] });
+    if (temporalScoreKey && isNotEmptyField(scores.temporal))
+      result.push({ key: temporalScoreKey, value: [scores.temporal] });
   } else {
     result = [{ key: baseVectorKey, value: [updatedVector] }];
-    if (severityKey) result.push({ key: severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
+    if (severityKey)
+      result.push({ key: severityKey, value: [getCvssCriticity(initialScore ?? 0)] });
   }
   return asObject ? Object.fromEntries(result.map((e) => [e.key, e.value[0]])) : result;
 };
 
-export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: CvssFieldUpdate[]) => {
+export const generateVulnerabilitiesUpdates = (
+  initial: Vulnerability,
+  updates: CvssFieldUpdate[],
+) => {
   const newUpdates: CvssFieldUpdate[] = [];
   if (updates.some((e) => e.key === 'x_opencti_cvss_v2_vector_string')) {
     const vectorUpdate = updates.filter((e) => e.key === 'x_opencti_cvss_v2_vector_string').at(0);
@@ -552,9 +586,22 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     }
     pushAll(newUpdates, parseCvssVector('cvss2', vector) as CvssFieldUpdate[]);
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v2_'))) {
-    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v2_') && !e.key.includes('base') && !e.key.includes('temporal'));
+    const updatedVectorParts = updates.filter(
+      (e) =>
+        e.key.startsWith('x_opencti_cvss_v2_') &&
+        !e.key.includes('base') &&
+        !e.key.includes('temporal'),
+    );
     if (updatedVectorParts.length > 0) {
-      pushAll(newUpdates, updateCvssVector('cvss2', initial.x_opencti_cvss_v2_vector_string, updatedVectorParts, initial.x_opencti_cvss_v2_base_score) as CvssFieldUpdate[]);
+      pushAll(
+        newUpdates,
+        updateCvssVector(
+          'cvss2',
+          initial.x_opencti_cvss_v2_vector_string,
+          updatedVectorParts,
+          initial.x_opencti_cvss_v2_base_score,
+        ) as CvssFieldUpdate[],
+      );
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_vector_string')) {
@@ -563,17 +610,46 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     if (!isValidCvssVector('cvss3', vector)) {
       throw FunctionalError('This is not a valid CVSS3 vector', { vector });
     }
-    const initialScore = updates.find((item) => item.key === 'x_opencti_cvss_base_score')?.value?.at?.(0);
-    pushAll(newUpdates, parseCvssVector('cvss3', vector, initialScore === undefined ? undefined : Number(initialScore)) as CvssFieldUpdate[]);
+    const initialScore = updates
+      .find((item) => item.key === 'x_opencti_cvss_base_score')
+      ?.value?.at?.(0);
+    pushAll(
+      newUpdates,
+      parseCvssVector(
+        'cvss3',
+        vector,
+        initialScore === undefined ? undefined : Number(initialScore),
+      ) as CvssFieldUpdate[],
+    );
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
     let baseScore = initial.x_opencti_cvss_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
-      baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_base_score').at(0)?.value.at(0) as number;
-      newUpdates.push({ key: 'x_opencti_cvss_base_severity', value: [getCvssCriticity(baseScore)] });
+      baseScore = updates
+        .filter((e) => e.key === 'x_opencti_cvss_base_score')
+        .at(0)
+        ?.value.at(0) as number;
+      newUpdates.push({
+        key: 'x_opencti_cvss_base_severity',
+        value: [getCvssCriticity(baseScore)],
+      });
     }
-    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_') && !e.key.includes('base') && !e.key.includes('temporal') && !e.key.startsWith('x_opencti_cvss_v'));
+    const updatedVectorParts = updates.filter(
+      (e) =>
+        e.key.startsWith('x_opencti_cvss_') &&
+        !e.key.includes('base') &&
+        !e.key.includes('temporal') &&
+        !e.key.startsWith('x_opencti_cvss_v'),
+    );
     if (updatedVectorParts.length > 0) {
-      pushAll(newUpdates, updateCvssVector('cvss3', initial.x_opencti_cvss_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      pushAll(
+        newUpdates,
+        updateCvssVector(
+          'cvss3',
+          initial.x_opencti_cvss_vector_string,
+          updatedVectorParts,
+          baseScore,
+        ) as CvssFieldUpdate[],
+      );
     }
   }
   if (updates.some((e) => e.key === 'x_opencti_cvss_v4_vector_string')) {
@@ -586,12 +662,28 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_v4_'))) {
     let baseScore = initial.x_opencti_cvss_v4_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_v4_base_score')) {
-      baseScore = updates.filter((e) => e.key === 'x_opencti_cvss_v4_base_score').at(0)?.value.at(0) as number;
-      newUpdates.push({ key: 'x_opencti_cvss_v4_base_severity', value: [getCvssCriticity(baseScore)] });
+      baseScore = updates
+        .filter((e) => e.key === 'x_opencti_cvss_v4_base_score')
+        .at(0)
+        ?.value.at(0) as number;
+      newUpdates.push({
+        key: 'x_opencti_cvss_v4_base_severity',
+        value: [getCvssCriticity(baseScore)],
+      });
     }
-    const updatedVectorParts = updates.filter((e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'));
+    const updatedVectorParts = updates.filter(
+      (e) => e.key.startsWith('x_opencti_cvss_v4_') && !e.key.includes('base'),
+    );
     if (updatedVectorParts.length > 0) {
-      pushAll(newUpdates, updateCvssVector('cvss4', initial.x_opencti_cvss_v4_vector_string, updatedVectorParts, baseScore) as CvssFieldUpdate[]);
+      pushAll(
+        newUpdates,
+        updateCvssVector(
+          'cvss4',
+          initial.x_opencti_cvss_v4_vector_string,
+          updatedVectorParts,
+          baseScore,
+        ) as CvssFieldUpdate[],
+      );
     }
   }
   return newUpdates;

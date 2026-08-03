@@ -57,11 +57,7 @@ const publicTaxiiLinesFragment = graphql`
 const publicTaxiiLinesQuery = graphql`
   query PublicTaxiiLinesQuery {
     taxiiCollections(
-      filters: {
-        mode: and
-        filters: [{ key: "taxii_public", values: ["true"] }]
-        filterGroups: []
-      }
+      filters: { mode: and, filters: [{ key: "taxii_public", values: ["true"] }], filterGroups: [] }
     ) {
       edges {
         node {
@@ -72,11 +68,7 @@ const publicTaxiiLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicTaxiiLinesQuery>(
-  environment,
-  publicTaxiiLinesQuery,
-  {},
-);
+const queryRef = loadQuery<PublicTaxiiLinesQuery>(environment, publicTaxiiLinesQuery, {});
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -113,17 +105,14 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
     window.location.pathname = `/taxii2/root/collections/${collection.id}`;
   };
   const copyClick = () => {
-    copyToClipboard(
-      t_i18n,
-      `${window.location.origin}/taxii2/root/collections/${collection.id}`,
-    );
+    copyToClipboard(t_i18n, `${window.location.origin}/taxii2/root/collections/${collection.id}`);
   };
   return (
     <ListItem
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
             <IconButton onClick={copyClick} color="primary">
@@ -136,25 +125,21 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
             </IconButton>
           </Tooltip>
         </>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="taxiicollection" />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                 {value.render?.(collection, { t: t_i18n, classes })}
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

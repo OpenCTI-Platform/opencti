@@ -1,9 +1,17 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$data } from '@components/common/files/__generated__/ImportWorksDrawerQuery.graphql';
-import { fileManagerAskJobImportMutation, fileManagerCreateDraftAskJobImportMutation } from '@components/common/files/FileManager';
+import {
+  ImportWorksDrawerQuery,
+  ImportWorksDrawerQuery$data,
+} from '@components/common/files/__generated__/ImportWorksDrawerQuery.graphql';
+import {
+  fileManagerAskJobImportMutation,
+  fileManagerCreateDraftAskJobImportMutation,
+} from '@components/common/files/FileManager';
 import { fileWorksQuery } from '@components/common/files/ImportWorksDrawer';
-import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import AuthorizedMembersField, {
+  AuthorizedMembersFieldValue,
+} from '@components/common/form/AuthorizedMembersField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
@@ -27,7 +35,11 @@ import CreatedByField from '@components/common/form/CreatedByField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../utils/ai/agentApi';
+import {
+  AgentOption,
+  fetchAgentsForIntent,
+  isXtmOneIntentWithoutAgents,
+} from '../../../../utils/ai/agentApi';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 
 interface LaunchImportDialogProps {
@@ -53,7 +65,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
-  const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
+  const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(
+    fileWorksQuery,
+    queryRef,
+  );
   const { xtmOneConfigured } = useChatbot();
   const isXtmOneConfigured = !!xtmOneConfigured;
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
@@ -129,9 +144,13 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       createdBy: FieldOption | undefined;
       authorized_members?: AuthorizedMembersFieldValue;
     },
-    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
+    {
+      setSubmitting,
+      resetForm,
+    }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
-    const { connector_id, configuration, objectMarking, validation_mode, authorized_members } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorized_members } =
+      values;
     let config = configuration;
 
     // Dynamically inject the markings chosen by the user into the csv mapper
@@ -149,7 +168,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
     commitMutation({
       ...defaultCommitMutation,
-      mutation: validation_mode === 'draft' ? fileManagerCreateDraftAskJobImportMutation : fileManagerAskJobImportMutation,
+      mutation:
+        validation_mode === 'draft'
+          ? fileManagerCreateDraftAskJobImportMutation
+          : fileManagerAskJobImportMutation,
       variables: {
         fileName: file.id,
         connectorId: connector_id,
@@ -166,9 +188,10 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
               .map((member) => ({
                 id: member.value,
                 access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
+                groups_restriction_ids:
+                  member.groupsRestriction?.length > 0
+                    ? member.groupsRestriction.map((group) => group.value)
+                    : undefined,
               })),
       },
       onCompleted: () => {
@@ -184,33 +207,38 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
   const importValidation = (configurations: boolean) => {
     const isDraft = (value: string) => value === 'draft';
-    const requiredWhenDraftAndMandatory = (field: string, schema: Yup.StringSchema) => Yup.string().when('validation_mode', {
-      is: isDraft,
-      then: () => mandatoryAttributes.includes(field)
-        ? schema.required(t_i18n('This field is required'))
-        : schema,
-      otherwise: () => Yup.string().nullable(),
-    });
+    const requiredWhenDraftAndMandatory = (field: string, schema: Yup.StringSchema) =>
+      Yup.string().when('validation_mode', {
+        is: isDraft,
+        then: () =>
+          mandatoryAttributes.includes(field)
+            ? schema.required(t_i18n('This field is required'))
+            : schema,
+        otherwise: () => Yup.string().nullable(),
+      });
 
     const draftShape = {
       description: requiredWhenDraftAndMandatory('description', Yup.string()),
       objectAssignee: Yup.array().when('validation_mode', {
         is: isDraft,
-        then: (schema) => mandatoryAttributes.includes('objectAssignee')
-          ? schema.min(1, t_i18n('This field is required'))
-          : schema,
+        then: (schema) =>
+          mandatoryAttributes.includes('objectAssignee')
+            ? schema.min(1, t_i18n('This field is required'))
+            : schema,
       }),
       objectParticipant: Yup.array().when('validation_mode', {
         is: isDraft,
-        then: (schema) => mandatoryAttributes.includes('objectParticipant')
-          ? schema.min(1, t_i18n('This field is required'))
-          : schema,
+        then: (schema) =>
+          mandatoryAttributes.includes('objectParticipant')
+            ? schema.min(1, t_i18n('This field is required'))
+            : schema,
       }),
       createdBy: Yup.object().when('validation_mode', {
         is: isDraft,
-        then: (schema) => mandatoryAttributes.includes('createdBy')
-          ? schema.required(t_i18n('This field is required'))
-          : schema.nullable(),
+        then: (schema) =>
+          mandatoryAttributes.includes('createdBy')
+            ? schema.required(t_i18n('This field is required'))
+            : schema.nullable(),
         otherwise: (schema) => schema.nullable(),
       }),
     };
@@ -228,13 +256,12 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
     return Yup.object().shape(shape);
   };
 
-  const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-    && selectedConnector?.configurations?.length === 0;
+  const invalidCsvMapper =
+    selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
 
   // XTM One connector requires agent selection when agents are available
-  const requiresAgentSelection = !!selectedConnector?.xtm_one_intent
-    && isXtmOneConfigured
-    && availableAgents.length > 0;
+  const requiresAgentSelection =
+    !!selectedConnector?.xtm_one_intent && isXtmOneConfigured && availableAgents.length > 0;
 
   const draftInitialValues = useDefaultValues<Omit<DraftAddInput, 'name'>>(DRAFTWORKSPACE_TYPE, {
     description: '',
@@ -254,7 +281,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         objectMarking: [],
         ...draftInitialValues,
       }}
-      validationSchema={importValidation(!!selectedConnector?.configurations || requiresAgentSelection)}
+      validationSchema={importValidation(
+        !!selectedConnector?.configurations || requiresAgentSelection,
+      )}
       onSubmit={onSubmitImport}
       onReset={onClose}
     >
@@ -284,13 +313,18 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                 onChange={handleSelectConnector}
               >
                 {connectors?.map((connector) => {
-                  const disabled = !file
-                    || (connector?.connector_scope && connector?.connector_scope?.length > 0
-                      && file?.metaData?.mimetype && !connector?.connector_scope?.includes(file?.metaData?.mimetype));
+                  const disabled =
+                    !file ||
+                    (connector?.connector_scope &&
+                      connector?.connector_scope?.length > 0 &&
+                      file?.metaData?.mimetype &&
+                      !connector?.connector_scope?.includes(file?.metaData?.mimetype));
                   const noAgents = isXtmOneIntentWithoutAgents(
                     isXtmOneConfigured,
                     connector?.xtm_one_intent,
-                    connector?.xtm_one_intent ? intentAgentCounts[connector.xtm_one_intent] : undefined,
+                    connector?.xtm_one_intent
+                      ? intentAgentCounts[connector.xtm_one_intent]
+                      : undefined,
                   );
                   return (
                     <MenuItem
@@ -304,22 +338,24 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   );
                 })}
               </Field>
-              {isXtmOneConfigured && selectedConnector?.xtm_one_intent && availableAgents.length > 0 && (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="configuration"
-                  label={t_i18n('Select agent')}
-                  fullWidth={true}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                >
-                  {availableAgents.map((agent) => (
-                    <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
-                      {agent.name}
-                    </MenuItem>
-                  ))}
-                </Field>
-              )}
+              {isXtmOneConfigured &&
+                selectedConnector?.xtm_one_intent &&
+                availableAgents.length > 0 && (
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="configuration"
+                    label={t_i18n('Select agent')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    {availableAgents.map((agent) => (
+                      <MenuItem key={agent.id} value={JSON.stringify({ agent_slug: agent.slug })}>
+                        {agent.name}
+                      </MenuItem>
+                    ))}
+                  </Field>
+                )}
               {!isDraftContext && (
                 <Field
                   component={SelectField}
@@ -376,7 +412,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   />
                 </>
               )}
-              {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
+              {selectedConnector?.configurations &&
+              selectedConnector?.configurations?.length > 0 ? (
                 <Field
                   component={SelectField}
                   variant="standard"

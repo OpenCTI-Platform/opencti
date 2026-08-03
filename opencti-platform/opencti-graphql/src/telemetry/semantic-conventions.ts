@@ -11,4 +11,5 @@ import {
 // https://github.com/open-telemetry/opentelemetry-js/blob/main/semantic-conventions/README.md#unstable-semconv
 
 export const ATTR_ENDUSER_ID = 'enduser.id' satisfies typeof INCUBATING_ATTR_ENDUSER_ID;
-export const ATTR_MESSAGING_MESSAGE_BODY_SIZE = 'messaging.message.body.size' satisfies typeof INCUBATING_ATTR_MESSAGING_MESSAGE_BODY_SIZE;
+export const ATTR_MESSAGING_MESSAGE_BODY_SIZE =
+  'messaging.message.body.size' satisfies typeof INCUBATING_ATTR_MESSAGING_MESSAGE_BODY_SIZE;

@@ -30,11 +30,7 @@ export const up = async (next) => {
     throw DatabaseError('Error delete previous themes', { cause: err });
   });
 
-  const settings = await getEntityFromCache(
-    context,
-    SYSTEM_USER,
-    ENTITY_TYPE_SETTINGS,
-  );
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
   // Create Dark theme with user customizations or defaults
   const darkThemeInput = {
@@ -47,7 +43,8 @@ export const up = async (next) => {
     theme_accent: settings.platform_theme_dark_accent || DARK_DEFAULTS.theme_accent,
     theme_text_color: DARK_DEFAULTS.theme_text_color,
     theme_logo: settings.platform_theme_dark_logo || DARK_DEFAULTS.theme_logo,
-    theme_logo_collapsed: settings.platform_theme_dark_logo_collapsed || DARK_DEFAULTS.theme_logo_collapsed,
+    theme_logo_collapsed:
+      settings.platform_theme_dark_logo_collapsed || DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_dark_logo_login || DARK_DEFAULTS.theme_logo_login,
     built_in: true,
   };
@@ -66,7 +63,8 @@ export const up = async (next) => {
     theme_accent: settings.platform_theme_light_accent || LIGHT_DEFAULTS.theme_accent,
     theme_text_color: LIGHT_DEFAULTS.theme_text_color,
     theme_logo: settings.platform_theme_light_logo || LIGHT_DEFAULTS.theme_logo,
-    theme_logo_collapsed: settings.platform_theme_light_logo_collapsed || LIGHT_DEFAULTS.theme_logo_collapsed,
+    theme_logo_collapsed:
+      settings.platform_theme_light_logo_collapsed || LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_light_logo_login || LIGHT_DEFAULTS.theme_logo_login,
     built_in: true,
   };
@@ -90,7 +88,9 @@ export const up = async (next) => {
   }
 
   // Update Settings to use the new theme ID
-  logMigration.info(`${message} > Changing platform_theme from "${settings.platform_theme}" to ${themeId}`);
+  logMigration.info(
+    `${message} > Changing platform_theme from "${settings.platform_theme}" to ${themeId}`,
+  );
   const updateQuery = {
     query: {
       term: {

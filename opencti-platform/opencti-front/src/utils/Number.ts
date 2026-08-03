@@ -16,19 +16,13 @@ const TRAILING_ZEROS_REGEX = /\.0+$|(\.\d*[1-9])0+$/;
 /**
  * Returns a pseudo-random floating point number in the half-open interval [min, max).
  */
-export const random = (
-  min: number,
-  max: number,
-): number => Math.random() * (max - min) + min;
+export const random = (min: number, max: number): number => Math.random() * (max - min) + min;
 
 /**
  * Formats a number into a compact representation using SI prefixes (K, M, G, T, P, E).
  * Returns the scaled number, its symbol and the original value.
  */
-export const numberFormat = (
-  number: number,
-  digits = 2,
-): NumberFormat => {
+export const numberFormat = (number: number, digits = 2): NumberFormat => {
   const si = [
     { value: 1, symbol: '' },
     { value: 1e3, symbol: 'K' },
@@ -45,7 +39,9 @@ export const numberFormat = (
     }
   }
   return {
-    number: Number.parseFloat((number / si[i].value).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1')),
+    number: Number.parseFloat(
+      (number / si[i].value).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1'),
+    ),
     symbol: si[i].symbol,
     original: number,
   };
@@ -57,9 +53,7 @@ export const numberFormat = (
  */
 export const simpleNumberFormat = (number: number, digits = 2): string => {
   const formatted = numberFormat(number, digits);
-  return formatted.symbol
-    ? `${formatted.number} ${formatted.symbol}`
-    : `${formatted.number}`;
+  return formatted.symbol ? `${formatted.number} ${formatted.symbol}` : `${formatted.number}`;
 };
 
 /**
@@ -78,7 +72,9 @@ export const bytesFormat = (number: number, digits = 2): BytesFormat => {
 
   const i = Math.floor(Math.log(number) / Math.log(1024));
   return {
-    number: Number.parseFloat((number / 1024 ** i).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1')),
+    number: Number.parseFloat(
+      (number / 1024 ** i).toFixed(digits).replace(TRAILING_ZEROS_REGEX, '$1'),
+    ),
     symbol: sizes[i],
     original: number,
   };
@@ -112,7 +108,5 @@ export const computeLevel = (
   maxAllowed = 9,
 ): number => {
   if (value === null || value === undefined) return minAllowed;
-  return Math.trunc(
-    ((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed,
-  );
+  return Math.trunc(((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed);
 };

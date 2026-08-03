@@ -9,15 +9,17 @@ const defaultContext = {
   preloadedData: undefined,
 };
 
-export const CustomViewsPreloadedDataContext = createContext<CustomViewsPreloadedDataContext>(defaultContext);
+export const CustomViewsPreloadedDataContext =
+  createContext<CustomViewsPreloadedDataContext>(defaultContext);
 
 type CustomViewsPreloadedDataContextProviderProps = PropsWithChildren<{
   customViews: useCustomViews_data$key;
 }>;
 
-export const CustomViewsPreloadedDataContextProvider = (
-  { customViews, children }: CustomViewsPreloadedDataContextProviderProps,
-) => {
+export const CustomViewsPreloadedDataContextProvider = ({
+  customViews,
+  children,
+}: CustomViewsPreloadedDataContextProviderProps) => {
   const value = useMemo(() => ({ preloadedData: customViews }), [customViews]);
   return (
     <CustomViewsPreloadedDataContext.Provider value={value}>

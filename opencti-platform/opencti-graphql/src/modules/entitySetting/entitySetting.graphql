@@ -16,7 +16,6 @@ type TypeAttribute {
   scale: String
 }
 
-
 type ScaleAttribute {
   name: String!
   scale: String!
@@ -41,7 +40,7 @@ type EntitySetting implements InternalObject & BasicObject {
   representative: Representative!
   standard_id: String! @auth
   parent_types: [String!]!
-  metrics:[Metric] @auth
+  metrics: [Metric] @auth
   # EntitySetting
   target_type: String! @auth
   platform_entity_files_ref: Boolean @auth
@@ -104,7 +103,12 @@ type Query {
 
 # Mutations
 type Mutation {
-  entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting] @auth(for: [SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS])
+  entitySettingsFieldPatch(
+    ids: [ID!]!
+    input: [EditInput!]!
+    commitMessage: String
+    references: [String]
+  ): [EntitySetting] @auth(for: [SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS])
 }
 
 # Subscriptions

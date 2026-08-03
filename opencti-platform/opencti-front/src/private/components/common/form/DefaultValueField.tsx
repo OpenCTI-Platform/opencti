@@ -56,23 +56,17 @@ const DefaultValueField = ({
           containerstyle={{ marginTop: 20 }}
           disabled={disabled}
         />
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ margin: '20px 0 10px 0' }}
-        >
-          {t_i18n('When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.')}
+        <Alert severity="info" variant="outlined" style={{ margin: '20px 0 10px 0' }}>
+          {t_i18n(
+            'When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.',
+          )}
         </Alert>
       </>
     );
   }
   if (attribute.name === 'killChainPhases') {
     return (
-      <KillChainPhasesField
-        name={name}
-        style={fieldSpacingContainerStyle}
-        disabled={disabled}
-      />
+      <KillChainPhasesField name={name} style={fieldSpacingContainerStyle} disabled={disabled} />
     );
   }
   // Handle createdBy
@@ -170,7 +164,10 @@ const DefaultValueField = ({
     return (
       <Field
         component={ToggleButtonField}
-        items={[{ value: true, content: t_i18n('true') }, { value: false, content: t_i18n('false') }]}
+        items={[
+          { value: true, content: t_i18n('true') },
+          { value: false, content: t_i18n('false') },
+        ]}
         name={name}
         label={label}
         containerstyle={fieldSpacingContainerStyle}

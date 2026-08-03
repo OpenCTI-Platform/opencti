@@ -11,7 +11,9 @@ import { useTheme } from '@mui/styles';
 import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import { InformationOutline } from 'mdi-material-ui';
-import useWidgetConfigValidateForm, { fintelTemplateVariableNameChecker } from '@components/widgets/useWidgetConfigValidateForm';
+import useWidgetConfigValidateForm, {
+  fintelTemplateVariableNameChecker,
+} from '@components/widgets/useWidgetConfigValidateForm';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import FormHelperText from '@mui/material/FormHelperText';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -42,108 +44,136 @@ const stixCoreObjectsAvailableAttributesColumns: { attribute: string; label: str
 ];
 
 const attributesByEntityType: Map<string, { attribute: string; label: string }[]> = new Map([
-  ['Attack-Pattern', [
-    { attribute: 'x_mitre_id', label: 'External ID' },
-  ]],
-  ['Campaign', [
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-  ]],
-  ['Case-Rfi', [
-    { attribute: 'severity', label: 'Severity' },
-    { attribute: 'priority', label: 'Priority' },
-    { attribute: 'information_types', label: 'Request for information types' },
-    { attribute: 'container_content', label: 'Content' },
-  ]],
-  ['Case-Rft', [
-    { attribute: 'severity', label: 'Severity' },
-    { attribute: 'priority', label: 'Priority' },
-    { attribute: 'takedown_types', label: 'Request for takedown types' },
-    { attribute: 'container_content', label: 'Content' },
-  ]],
-  ['Grouping', [
-    { attribute: 'context', label: 'Context' },
-    { attribute: 'container_content', label: 'Content' },
-  ]],
-  ['Incident', [
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-    { attribute: 'incident_type', label: 'Incident type' },
-    { attribute: 'severity', label: 'Severity' },
-    { attribute: 'source', label: 'Source' },
-    { attribute: 'container_content', label: 'Content' },
-  ]],
-  ['Case-Incident', [
-    { attribute: 'severity', label: 'Severity' },
-    { attribute: 'priority', label: 'Priority' },
-    { attribute: 'response_types', label: 'Incident type' },
-  ]],
-  ['Intrusion-Set', [
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-  ]],
-  ['Malware', [
-    { attribute: 'malware_types', label: 'Malware types' },
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-    { attribute: 'is_family', label: 'Is family' },
-    { attribute: 'architecture_execution_envs', label: 'Architecture execution environments' },
-    { attribute: 'implementation_languages', label: 'Implementation languages' },
-    { attribute: 'killChainPhases.phase_name', label: 'Kill chain phases' },
-  ]],
-  ['Report', [
-    { attribute: 'published', label: 'Report publication date' },
-    { attribute: 'report_types', label: 'Report types' },
-    { attribute: 'x_opencti_reliability', label: 'Reliability (self)' },
-    { attribute: 'container_content', label: 'Content' },
-  ]],
-  ['Task', [
-    { attribute: 'due_date', label: 'Due date' },
-  ]],
-  ['Threat-Actor-Group', [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-  ]],
-  ['Threat-Actor-Individual', [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-    { attribute: 'first_seen', label: 'First seen' },
-    { attribute: 'last_seen', label: 'Last seen' },
-    { attribute: 'secondary_motivations', label: 'Secondary motivations' },
-    { attribute: 'personal_motivations', label: 'Personal motivations' },
-    { attribute: 'primary_motivation', label: 'Primary motivation' },
-    { attribute: 'roles', label: 'Roles' },
-    { attribute: 'sophistication', label: 'Sophistication' },
-    { attribute: 'resource_level', label: 'Resource level' },
-    { attribute: 'goals', label: 'Goals' },
-    { attribute: 'bornIn.name', label: 'Born in' },
-    { attribute: 'ethnicity.name', label: 'Ethnicity' },
-    { attribute: 'date_of_birth', label: 'Date of birth' },
-    { attribute: 'gender', label: 'Gender' },
-    { attribute: 'marital_status', label: 'Marital status' },
-    { attribute: 'job_title', label: 'Job title' },
-    { attribute: 'eye_color', label: 'Eye color' },
-    { attribute: 'hair_color', label: 'Hair color' },
-    { attribute: 'height.measure', label: 'Height' },
-    { attribute: 'weight.measure', label: 'Weight' },
-  ]],
-  ['Indicator', [
-    { attribute: 'indicator_types', label: 'Indicator types' },
-  ]],
-  ['Note', [
-    { attribute: 'attribute_abstract', label: 'Attribute abstract' },
-  ]],
-  ['Vulnerability', [
-    { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS v2 vector string' },
-    { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS v2 base score' },
-    { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS vector string' },
-    { attribute: 'x_opencti_cvss_base_score', label: 'CVSS base score' },
-    { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS v4 vector string' },
-    { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS v4 base score' },
-    { attribute: 'x_opencti_cisa_kev', label: 'CISA KEV' },
-    { attribute: 'x_opencti_epss_score', label: 'EPSS score' },
-    { attribute: 'x_opencti_epss_percentile', label: 'EPSS percentile' },
-  ]],
+  ['Attack-Pattern', [{ attribute: 'x_mitre_id', label: 'External ID' }]],
+  [
+    'Campaign',
+    [
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+    ],
+  ],
+  [
+    'Case-Rfi',
+    [
+      { attribute: 'severity', label: 'Severity' },
+      { attribute: 'priority', label: 'Priority' },
+      { attribute: 'information_types', label: 'Request for information types' },
+      { attribute: 'container_content', label: 'Content' },
+    ],
+  ],
+  [
+    'Case-Rft',
+    [
+      { attribute: 'severity', label: 'Severity' },
+      { attribute: 'priority', label: 'Priority' },
+      { attribute: 'takedown_types', label: 'Request for takedown types' },
+      { attribute: 'container_content', label: 'Content' },
+    ],
+  ],
+  [
+    'Grouping',
+    [
+      { attribute: 'context', label: 'Context' },
+      { attribute: 'container_content', label: 'Content' },
+    ],
+  ],
+  [
+    'Incident',
+    [
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+      { attribute: 'incident_type', label: 'Incident type' },
+      { attribute: 'severity', label: 'Severity' },
+      { attribute: 'source', label: 'Source' },
+      { attribute: 'container_content', label: 'Content' },
+    ],
+  ],
+  [
+    'Case-Incident',
+    [
+      { attribute: 'severity', label: 'Severity' },
+      { attribute: 'priority', label: 'Priority' },
+      { attribute: 'response_types', label: 'Incident type' },
+    ],
+  ],
+  [
+    'Intrusion-Set',
+    [
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+    ],
+  ],
+  [
+    'Malware',
+    [
+      { attribute: 'malware_types', label: 'Malware types' },
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+      { attribute: 'is_family', label: 'Is family' },
+      { attribute: 'architecture_execution_envs', label: 'Architecture execution environments' },
+      { attribute: 'implementation_languages', label: 'Implementation languages' },
+      { attribute: 'killChainPhases.phase_name', label: 'Kill chain phases' },
+    ],
+  ],
+  [
+    'Report',
+    [
+      { attribute: 'published', label: 'Report publication date' },
+      { attribute: 'report_types', label: 'Report types' },
+      { attribute: 'x_opencti_reliability', label: 'Reliability (self)' },
+      { attribute: 'container_content', label: 'Content' },
+    ],
+  ],
+  ['Task', [{ attribute: 'due_date', label: 'Due date' }]],
+  [
+    'Threat-Actor-Group',
+    [
+      { attribute: 'threat_actor_types', label: 'Threat actor types' },
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+    ],
+  ],
+  [
+    'Threat-Actor-Individual',
+    [
+      { attribute: 'threat_actor_types', label: 'Threat actor types' },
+      { attribute: 'first_seen', label: 'First seen' },
+      { attribute: 'last_seen', label: 'Last seen' },
+      { attribute: 'secondary_motivations', label: 'Secondary motivations' },
+      { attribute: 'personal_motivations', label: 'Personal motivations' },
+      { attribute: 'primary_motivation', label: 'Primary motivation' },
+      { attribute: 'roles', label: 'Roles' },
+      { attribute: 'sophistication', label: 'Sophistication' },
+      { attribute: 'resource_level', label: 'Resource level' },
+      { attribute: 'goals', label: 'Goals' },
+      { attribute: 'bornIn.name', label: 'Born in' },
+      { attribute: 'ethnicity.name', label: 'Ethnicity' },
+      { attribute: 'date_of_birth', label: 'Date of birth' },
+      { attribute: 'gender', label: 'Gender' },
+      { attribute: 'marital_status', label: 'Marital status' },
+      { attribute: 'job_title', label: 'Job title' },
+      { attribute: 'eye_color', label: 'Eye color' },
+      { attribute: 'hair_color', label: 'Hair color' },
+      { attribute: 'height.measure', label: 'Height' },
+      { attribute: 'weight.measure', label: 'Weight' },
+    ],
+  ],
+  ['Indicator', [{ attribute: 'indicator_types', label: 'Indicator types' }]],
+  ['Note', [{ attribute: 'attribute_abstract', label: 'Attribute abstract' }]],
+  [
+    'Vulnerability',
+    [
+      { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS v2 vector string' },
+      { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS v2 base score' },
+      { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS vector string' },
+      { attribute: 'x_opencti_cvss_base_score', label: 'CVSS base score' },
+      { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS v4 vector string' },
+      { attribute: 'x_opencti_cvss_v4_base_score', label: 'CVSS v4 base score' },
+      { attribute: 'x_opencti_cisa_kev', label: 'CISA KEV' },
+      { attribute: 'x_opencti_epss_score', label: 'EPSS score' },
+      { attribute: 'x_opencti_epss_percentile', label: 'EPSS percentile' },
+    ],
+  ],
 ]);
 
 interface WidgetAttributesInputValue {
@@ -173,23 +203,26 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
     widgetAttributesInputInstanceQuery,
     queryRef,
   );
-  const entityType = stixCoreObject?.entity_type ?? (
-    host.kind === 'fintelTemplate'
-      ? host.fintelEntityType
-      : undefined
-  );
+  const entityType =
+    stixCoreObject?.entity_type ??
+    (host.kind === 'fintelTemplate' ? host.fintelEntityType : undefined);
 
   const specificAttributesOfType = attributesByEntityType.get(entityType ?? '') ?? [];
-  const availableAttributes: { attribute: string; label: string }[] = stixCoreObjectsAvailableAttributesColumns
-    .concat(specificAttributesOfType)
-    .sort((a, b) => a.label.localeCompare(b.label));
+  const availableAttributes: { attribute: string; label: string }[] =
+    stixCoreObjectsAvailableAttributesColumns
+      .concat(specificAttributesOfType)
+      .sort((a, b) => a.label.localeCompare(b.label));
 
   const findAttribute = (attributeName: string | null) => {
     return availableAttributes.find((a) => a.attribute === attributeName);
   };
 
   const isWidgetUsedInTemplate = (widgetVarName: string) => {
-    return widgetVarName !== '' && host.kind === 'fintelTemplate' && !!host.fintelEditorValue?.includes(`$${widgetVarName}`);
+    return (
+      widgetVarName !== '' &&
+      host.kind === 'fintelTemplate' &&
+      !!host.fintelEditorValue?.includes(`$${widgetVarName}`)
+    );
   };
 
   const attributesValidation = Yup.object({
@@ -197,7 +230,10 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
       Yup.object().shape({
         variableName: Yup.string()
           .test('no-space', 'This field cannot contain spaces', (v) => !v?.includes(' '))
-          .matches(fintelTemplateVariableNameChecker, t_i18n('The variable name should not contain special characters'))
+          .matches(
+            fintelTemplateVariableNameChecker,
+            t_i18n('The variable name should not contain special characters'),
+          )
           .required(t_i18n('This field is required')),
       }),
     ),
@@ -208,14 +244,21 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
       <InputLabel sx={{ marginBottom: 1 }}>
         <>
           <>{t_i18n('List of attributes')}</>
-          <Tooltip title={(
-            <>
-              <span style={{ display: 'block', marginBottom: theme.spacing(1) }}>
-                {t_i18n('Variable names are identifiers to copy paste in the content to display the corresponding attribute.')}
-              </span>
-              <span>{t_i18n('Labels are helper texts to better explain the variable names. They are displayed only in the list at the right of your screen.')}</span>
-            </>
-          )}
+          <Tooltip
+            title={
+              <>
+                <span style={{ display: 'block', marginBottom: theme.spacing(1) }}>
+                  {t_i18n(
+                    'Variable names are identifiers to copy paste in the content to display the corresponding attribute.',
+                  )}
+                </span>
+                <span>
+                  {t_i18n(
+                    'Labels are helper texts to better explain the variable names. They are displayed only in the list at the right of your screen.',
+                  )}
+                </span>
+              </>
+            }
           >
             <InformationOutline
               fontSize="small"
@@ -287,9 +330,10 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             sx={{ flex: 1 }}
                             error={isVarNameAlreadyUsed(values.attributes[index].variableName)}
                             startAdornment={<InputAdornment position="start">$</InputAdornment>}
-                            helperText={isVarNameAlreadyUsed(values.attributes[index].variableName)
-                              ? t_i18n('This name is already used for an other widget')
-                              : undefined
+                            helperText={
+                              isVarNameAlreadyUsed(values.attributes[index].variableName)
+                                ? t_i18n('This name is already used for an other widget')
+                                : undefined
                             }
                           />
 
@@ -299,7 +343,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                               color="primary"
                               sx={{ alignSelf: 'center' }}
                               onClick={() => {
-                                if (isWidgetUsedInTemplate(values.attributes[index].variableName ?? '')) {
+                                if (
+                                  isWidgetUsedInTemplate(
+                                    values.attributes[index].variableName ?? '',
+                                  )
+                                ) {
                                   toRemove.current = () => remove(index);
                                   handleOpenDelete();
                                 } else {
@@ -343,11 +391,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             </FormHelperText>
                           )}
                         </FormControl>
-                        <MuiTextField
-                          label={t_i18n('Label')}
-                          disabled
-                          sx={{ flex: 1 }}
-                        />
+                        <MuiTextField label={t_i18n('Label')} disabled sx={{ flex: 1 }} />
                         <MuiTextField
                           label={t_i18n('Variable name')}
                           disabled
@@ -358,7 +402,12 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                             },
                           }}
                         />
-                        <IconButton aria-label={t_i18n('Delete')} size="small" color="primary" disabled>
+                        <IconButton
+                          aria-label={t_i18n('Delete')}
+                          size="small"
+                          color="primary"
+                          disabled
+                        >
                           <DeleteOutlined fontSize="small" />
                         </IconButton>
                       </div>
@@ -367,7 +416,11 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                         deletion={deletion}
                         submitDelete={removeAttribute}
                         message={t_i18n('Do you want to delete this attribute?')}
-                        warning={{ message: t_i18n('You are about to delete an attribute used in the template') }}
+                        warning={{
+                          message: t_i18n(
+                            'You are about to delete an attribute used in the template',
+                          ),
+                        }}
                       />
                     </>
                   );

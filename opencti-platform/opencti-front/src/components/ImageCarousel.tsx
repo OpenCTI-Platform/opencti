@@ -118,15 +118,12 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
                 alt={file.altText}
               />
               {isNotEmptyField(file.tooltipTitle) && (
-                <ImageListItemBar
-                  position="bottom"
-                  subtitle={file.tooltipTitle}
-                />
+                <ImageListItemBar position="bottom" subtitle={file.tooltipTitle} />
               )}
               <ImageListItemBar
                 sx={{ background: 'none' }}
                 position="top"
-                actionIcon={(
+                actionIcon={
                   <IconButton
                     sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                     aria-label={`info about ${file.altText}`}
@@ -135,18 +132,13 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
                   >
                     <ZoomOutMapOutlined fontSize="small" />
                   </IconButton>
-                )}
+                }
               />
             </ImageListItem>
           ))
         ) : (
           <Paper elevation={1} sx={{ width: '100%', height: '100%' }}>
-            <Skeleton
-              variant="rectangular"
-              width="100%"
-              height="100%"
-              animation={false}
-            />
+            <Skeleton variant="rectangular" width="100%" height="100%" animation={false} />
           </Paper>
         )}
       </Carousel>

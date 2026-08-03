@@ -27,7 +27,10 @@ interface SearchRootComponentProps {
   filesCount?: number;
 }
 
-const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children, filesCount = 0 }) => {
+const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({
+  children,
+  filesCount = 0,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { keyword } = useParams() as { keyword?: string };
@@ -39,7 +42,12 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
   }
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Search') }, { label: t_i18n('Advanced search'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Search') },
+          { label: t_i18n('Advanced search'), current: true },
+        ]}
+      />
       <Box
         sx={{
           borderBottom: 1,
@@ -59,22 +67,18 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
             component={Link}
             to={`/dashboard/search/files/${encodedKeyword ?? ''}`}
             value="files"
-            label={(
+            label={
               <Badge badgeContent={filesCount} color="primary">
-                <div
-                  style={{ padding: '0px 12px', display: 'flex', textTransform: 'none' }}
-                >
+                <div style={{ padding: '0px 12px', display: 'flex', textTransform: 'none' }}>
                   {t_i18n('Files search')}
                   <EEChip />
                 </div>
               </Badge>
-            )}
+            }
           />
         </Tabs>
       </Box>
-      <Suspense fallback={<Loader />}>
-        {children}
-      </Suspense>
+      <Suspense fallback={<Loader />}>{children}</Suspense>
     </ExportContextProvider>
   );
 };
@@ -84,14 +88,16 @@ interface SearchContainerQueryWithRefProps {
   queryRef: PreloadedQuery<SearchContainerQueryFilesCountQuery>;
 }
 
-const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({ queryRef, children }) => {
-  const { indexedFilesCount } = usePreloadedQuery<SearchContainerQueryFilesCountQuery>(searchContainerQueryFilesCountQuery, queryRef);
-  const filesCount = indexedFilesCount ?? 0;
-  return (
-    <SearchContainer filesCount={filesCount}>
-      {children}
-    </SearchContainer>
+const SearchContainerQueryWithRef: FunctionComponent<SearchContainerQueryWithRefProps> = ({
+  queryRef,
+  children,
+}) => {
+  const { indexedFilesCount } = usePreloadedQuery<SearchContainerQueryFilesCountQuery>(
+    searchContainerQueryFilesCountQuery,
+    queryRef,
   );
+  const filesCount = indexedFilesCount ?? 0;
+  return <SearchContainer filesCount={filesCount}>{children}</SearchContainer>;
 };
 
 interface SearchContainerQueryProps {
@@ -106,7 +112,9 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
 
-  const [queryRef, loadQuery] = useQueryLoader<SearchContainerQueryFilesCountQuery>(searchContainerQueryFilesCountQuery);
+  const [queryRef, loadQuery] = useQueryLoader<SearchContainerQueryFilesCountQuery>(
+    searchContainerQueryFilesCountQuery,
+  );
   const queryArgs = {
     search: searchTerm,
   };
@@ -118,18 +126,18 @@ const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
 
   return (
     <>
-      {(fileSearchEnabled) ? (
+      {fileSearchEnabled ? (
         <>
           {queryRef ? (
             <SearchContainerQueryWithRef queryRef={queryRef}>
               {children}
             </SearchContainerQueryWithRef>
-          ) : (<Loader />) }
+          ) : (
+            <Loader />
+          )}
         </>
       ) : (
-        <SearchContainer>
-          {children}
-        </SearchContainer>
+        <SearchContainer>{children}</SearchContainer>
       )}
     </>
   );

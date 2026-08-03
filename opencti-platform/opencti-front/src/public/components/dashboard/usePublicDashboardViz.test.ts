@@ -41,10 +41,9 @@ describe('usePublicDashboardViz', () => {
   });
 
   it('refetches on refresh token change without clearing queryRef (no loader flash)', async () => {
-    const hook = renderHook(() => usePublicDashboardViz(
-      {} as never,
-      { marker: 'public-refresh' } as never,
-    ));
+    const hook = renderHook(() =>
+      usePublicDashboardViz({} as never, { marker: 'public-refresh' } as never),
+    );
 
     expect(loadMocks).toHaveLength(1);
     const [loadSpy] = loadMocks;

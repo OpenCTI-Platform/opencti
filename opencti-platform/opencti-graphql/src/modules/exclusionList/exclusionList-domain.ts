@@ -5,9 +5,22 @@ import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
-import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
-import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateExclusionListStatus } from '../../database/redis';
+import {
+  type BasicStoreEntityExclusionList,
+  ENTITY_TYPE_EXCLUSION_LIST,
+  type StoreEntityExclusionList,
+} from './exclusionList-types';
+import type {
+  ExclusionListFileAddInput,
+  MutationExclusionListFieldPatchArgs,
+  QueryExclusionListsArgs,
+} from '../../generated/graphql';
+import {
+  getClusterInstances,
+  notify,
+  redisGetExclusionListStatus,
+  redisUpdateExclusionListStatus,
+} from '../../database/redis';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -18,11 +31,25 @@ const filePath = 'exclusionLists';
 const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST);
+  return storeLoadById<BasicStoreEntityExclusionList>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_EXCLUSION_LIST,
+  );
 };
 
-export const findExclusionListPaginated = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], args);
+export const findExclusionListPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryExclusionListsArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityExclusionList>(
+    context,
+    user,
+    [ENTITY_TYPE_EXCLUSION_LIST],
+    args,
+  );
 };
 
 export const getCacheStatus = async () => {
@@ -36,7 +63,8 @@ export const getCacheStatus = async () => {
     isCacheRebuildInProgress = refreshVersion !== cacheVersion;
     for (let i = 0; i < clusterConfig.length; i += 1) {
       const platformInstanceId = allNodeIds[i];
-      isCacheRebuildInProgress = isCacheRebuildInProgress || refreshVersion !== redisCacheStatus[platformInstanceId];
+      isCacheRebuildInProgress =
+        isCacheRebuildInProgress || refreshVersion !== redisCacheStatus[platformInstanceId];
     }
   }
 
@@ -44,7 +72,7 @@ export const getCacheStatus = async () => {
 };
 
 const refreshExclusionListStatus = async () => {
-  await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+  await redisUpdateExclusionListStatus({ last_refresh_ask_date: new Date().toString() });
 };
 
 const checkFileSize = async (createReadStream: () => Readable) => {
@@ -73,7 +101,12 @@ const checkFileSize = async (createReadStream: () => Readable) => {
   return { byteLength, linesNumber };
 };
 
-const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exclusionListId: string, file: FileUploadData) => {
+const uploadExclusionListFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  exclusionListId: string,
+  file: FileUploadData,
+) => {
   const fullFile = await file;
   const { byteLength, linesNumber } = await checkFileSize(fullFile.createReadStream);
   const mimeType = guessMimeType(fullFile.filename);
@@ -85,9 +118,19 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   return { upload, byteLength, linesNumber };
 };
 
-const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData) => {
+const storeAndCreateExclusionList = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: ExclusionListFileAddInput,
+  file: FileUploadData,
+) => {
   const exclusionListInternalId = generateInternalId();
-  const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
+  const { upload, byteLength, linesNumber } = await uploadExclusionListFile(
+    context,
+    user,
+    exclusionListInternalId,
+    file,
+  );
   const exclusionListToCreate = {
     name: input.name,
     description: input.description,
@@ -98,16 +141,29 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
     exclusion_list_file_size: byteLength,
     exclusion_list_values_count: linesNumber,
   };
-  const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
+  const createdExclusionList = createInternalObject<StoreEntityExclusionList>(
+    context,
+    user,
+    exclusionListToCreate,
+    ENTITY_TYPE_EXCLUSION_LIST,
+  );
   await refreshExclusionListStatus();
   return createdExclusionList;
 };
 
-export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
+export const addExclusionListFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: ExclusionListFileAddInput,
+) => {
   return storeAndCreateExclusionList(context, user, input, input.file);
 };
 
-export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUser, args: MutationExclusionListFieldPatchArgs) => {
+export const fieldPatchExclusionList = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationExclusionListFieldPatchArgs,
+) => {
   const { id, file, input } = args;
   const exclusionList = await findById(context, user, id);
   if (!exclusionList) {
@@ -117,12 +173,27 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   let fileSize = exclusionList.exclusion_list_file_size;
   let exclusionListCount = exclusionList.exclusion_list_values_count;
   if (file) {
-    const uploadResult = await uploadExclusionListFile(context, user, exclusionList.internal_id, file);
+    const uploadResult = await uploadExclusionListFile(
+      context,
+      user,
+      exclusionList.internal_id,
+      file,
+    );
     fileSize = uploadResult.byteLength;
     exclusionListCount = uploadResult.linesNumber;
   }
-  const fullInput = [...(input ?? []), { key: 'exclusion_list_file_size', value: [fileSize] }, { key: 'exclusion_list_values_count', value: [exclusionListCount] }];
-  const { element } = await updateAttribute<StoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
+  const fullInput = [
+    ...(input ?? []),
+    { key: 'exclusion_list_file_size', value: [fileSize] },
+    { key: 'exclusion_list_values_count', value: [exclusionListCount] },
+  ];
+  const { element } = await updateAttribute<StoreEntityExclusionList>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_EXCLUSION_LIST,
+    fullInput,
+  );
 
   if (file || fullInput.some((i) => i.key === 'enabled')) {
     await refreshExclusionListStatus();
@@ -139,10 +210,19 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   return notify(BUS_TOPICS[ENTITY_TYPE_EXCLUSION_LIST].EDIT_TOPIC, element, user);
 };
 
-export const deleteExclusionList = async (context: AuthContext, user: AuthUser, exclusionListId: string) => {
+export const deleteExclusionList = async (
+  context: AuthContext,
+  user: AuthUser,
+  exclusionListId: string,
+) => {
   const exclusionList = await findById(context, user, exclusionListId);
   await deleteFile(context, user, exclusionList.file_id);
-  const deletedExclusionList = deleteInternalObject(context, user, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST);
+  const deletedExclusionList = deleteInternalObject(
+    context,
+    user,
+    exclusionListId,
+    ENTITY_TYPE_EXCLUSION_LIST,
+  );
   await refreshExclusionListStatus();
   return deletedExclusionList;
 };

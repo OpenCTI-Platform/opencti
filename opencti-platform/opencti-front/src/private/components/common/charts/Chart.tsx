@@ -37,7 +37,9 @@ const escapeForHtmlOutput = (value: unknown): string => sanitize(toDisplayString
 const wrapFormatter = (formatter: unknown, fallback?: (value: unknown) => unknown) => {
   return (value: unknown, formatterOptions: unknown) => {
     if (typeof formatter === 'function') {
-      return escapeForHtmlOutput((formatter as ApexFormatter)(value as never, formatterOptions as never));
+      return escapeForHtmlOutput(
+        (formatter as ApexFormatter)(value as never, formatterOptions as never),
+      );
     }
     return escapeForHtmlOutput(fallback ? fallback(value) : value);
   };
@@ -59,14 +61,7 @@ const getCategoryFormatter = (options: ApexOptions | undefined) => {
   return yaxis?.labels?.formatter;
 };
 
-const Chart = ({
-  options,
-  series,
-  type,
-  width,
-  height,
-  onMounted,
-}: OpenCTIChartProps) => {
+const Chart = ({ options, series, type, width, height, onMounted }: OpenCTIChartProps) => {
   // Add in config a callback on 'mounted event' to retrieve chart context.
   // This context is used to export in different format.
   const apexOptions: ApexProps['options'] = useMemo(() => {
@@ -74,7 +69,9 @@ const Chart = ({
     // A datetime axis builds its tooltip title through a dedicated path that a custom formatter
     // would bypass, and displays timestamps, so it is left untouched.
     const isDateTimeAxis = options?.xaxis?.type === 'datetime';
-    const tooltipY = Array.isArray(options?.tooltip?.y) ? options?.tooltip?.y[0] : options?.tooltip?.y;
+    const tooltipY = Array.isArray(options?.tooltip?.y)
+      ? options?.tooltip?.y[0]
+      : options?.tooltip?.y;
     return {
       ...options,
       chart: {
@@ -92,20 +89,22 @@ const Chart = ({
         ...options?.tooltip,
         x: {
           ...options?.tooltip?.x,
-          ...(isDateTimeAxis ? {} : {
-            formatter: wrapFormatter(
-              options?.tooltip?.x?.formatter,
-              categoryFormatter && ((value: unknown) => (categoryFormatter as ApexFormatter)(value as never)),
-            ),
-          }),
+          ...(isDateTimeAxis
+            ? {}
+            : {
+                formatter: wrapFormatter(
+                  options?.tooltip?.x?.formatter,
+                  categoryFormatter &&
+                    ((value: unknown) => (categoryFormatter as ApexFormatter)(value as never)),
+                ),
+              }),
         },
         y: {
           ...tooltipY,
           title: {
             ...tooltipY?.title,
-            formatter: wrapFormatter(
-              tooltipY?.title?.formatter,
-              (value) => (value ? `${toDisplayString(value)}: ` : ''),
+            formatter: wrapFormatter(tooltipY?.title?.formatter, (value) =>
+              value ? `${toDisplayString(value)}: ` : '',
             ),
           },
         },
@@ -114,13 +113,7 @@ const Chart = ({
   }, [options]);
 
   return (
-    <ApexChart
-      options={apexOptions}
-      series={series}
-      type={type}
-      width={width}
-      height={height}
-    />
+    <ApexChart options={apexOptions} series={series} type={type} width={width} height={height} />
   );
 };
 

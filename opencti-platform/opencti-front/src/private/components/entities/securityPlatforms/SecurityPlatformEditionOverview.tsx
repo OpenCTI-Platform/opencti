@@ -1,6 +1,9 @@
 import { createFragmentContainer, graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import { getSecurityPlatformValidator, SECURITY_PLATFORM_TYPE } from '@components/entities/securityPlatforms/SecurityPlatformUtils';
+import {
+  getSecurityPlatformValidator,
+  SECURITY_PLATFORM_TYPE,
+} from '@components/entities/securityPlatforms/SecurityPlatformUtils';
 import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -8,12 +11,8 @@ import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
 import CommitMessage from '@components/common/form/CommitMessage';
-import {
-  SecurityPlatformEditionOverview_securityPlatform$data,
-} from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionOverview_securityPlatform.graphql';
-import {
-  SecurityPlatformEditionContainer_securityPlatform$data,
-} from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionContainer_securityPlatform.graphql';
+import { SecurityPlatformEditionOverview_securityPlatform$data } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionOverview_securityPlatform.graphql';
+import { SecurityPlatformEditionContainer_securityPlatform$data } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionContainer_securityPlatform.graphql';
 import StatusField from '@components/common/form/StatusField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
@@ -46,42 +45,40 @@ const securityPlatformMutationFieldPatch = graphql`
 `;
 
 export const securityPlatformEditionOverviewFocus = graphql`
-mutation SecurityPlatformEditionOverviewFocusMutation(
-  $id: ID!
-  $input: EditContext!
-) {
-  securityPlatformContextPatch(id: $id, input: $input) {
-    id
+  mutation SecurityPlatformEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+    securityPlatformContextPatch(id: $id, input: $input) {
+      id
+    }
   }
-}
 `;
 
 const securityPlatformMutationRelationAdd = graphql`
-mutation SecurityPlatformEditionOverviewRelationAddMutation(
-  $id: ID!
-  $input: StixRefRelationshipAddInput!
-) {
-  securityPlatformRelationAdd(id: $id, input: $input) {
-    from {
-      ...SecurityPlatformEditionOverview_securityPlatform
+  mutation SecurityPlatformEditionOverviewRelationAddMutation(
+    $id: ID!
+    $input: StixRefRelationshipAddInput!
+  ) {
+    securityPlatformRelationAdd(id: $id, input: $input) {
+      from {
+        ...SecurityPlatformEditionOverview_securityPlatform
+      }
     }
   }
-}
 `;
 
 const securityPlatformMutationRelationDelete = graphql`
-mutation SecurityPlatformEditionOverviewRelationDeleteMutation(
+  mutation SecurityPlatformEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
-) {
+  ) {
     securityPlatformRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
-... SecurityPlatformEditionOverview_securityPlatform
+      ...SecurityPlatformEditionOverview_securityPlatform
     }
   }
 `;
 
-type SecurityPlatformGenericData = SecurityPlatformEditionOverview_securityPlatform$data & GenericData;
+type SecurityPlatformGenericData = SecurityPlatformEditionOverview_securityPlatform$data &
+  GenericData;
 
 interface SecurityPlatformEditionOverviewProps {
   securityPlatform: SecurityPlatformGenericData;
@@ -114,9 +111,17 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
     relationDelete: securityPlatformMutationRelationDelete,
     editionFocus: securityPlatformEditionOverviewFocus,
   };
-  const editor = useFormEditor(securityPlatform, enableReferences, queries, securityPlatformValidator);
+  const editor = useFormEditor(
+    securityPlatform,
+    enableReferences,
+    queries,
+    securityPlatformValidator,
+  );
 
-  const onSubmit: FormikConfig<SecurityPlatformEditionFormData>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<SecurityPlatformEditionFormData>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -131,8 +136,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
       variables: {
         id: securityPlatform.id,
         input: inputValues,
-        commitMessage:
-         commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -142,7 +146,10 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
     });
   };
 
-  const handleSubmitField = (name: string, value: string | string[] | number | number[] | FieldOption | null) => {
+  const handleSubmitField = (
+    name: string,
+    value: string | string[] | number | number[] | FieldOption | null,
+  ) => {
     if (!enableReferences) {
       let finalValue = value;
       if (name === 'x_opencti_workflow_id') {
@@ -184,14 +191,7 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={securityPlatform} />
           <Field
@@ -199,19 +199,17 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             uploadEntityId={securityPlatform.id}
             fullWidth={true}
             multiline={true}
@@ -219,15 +217,13 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <OpenVocabField
             label={t_i18n('Security platform type')}
             type="security_platform_type_ov"
             name="security_platform_type"
-            required={(mandatoryAttributes.includes('security_platform_type'))}
+            required={mandatoryAttributes.includes('security_platform_type')}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -244,28 +240,22 @@ const SecurityPlatformEditionOverview: FunctionComponent<SecurityPlatformEdition
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

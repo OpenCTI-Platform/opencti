@@ -1,10 +1,7 @@
 import { graphql } from 'react-relay';
 
 export const pictureManagementUtilsMutation = graphql`
-  mutation PictureManagementUtilsMutation(
-    $id: ID!
-    $input: StixDomainObjectFileEditInput
-  ) {
+  mutation PictureManagementUtilsMutation($id: ID!, $input: StixDomainObjectFileEditInput) {
     stixDomainObjectEdit(id: $id) {
       stixDomainObjectFileEdit(input: $input) {
         importFiles {

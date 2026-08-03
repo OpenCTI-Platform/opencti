@@ -1,10 +1,20 @@
 import { logMigration } from '../config/conf';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
-import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_TAXII } from '../modules/ingestion/ingestion-types';
+import {
+  ENTITY_TYPE_INGESTION_CSV,
+  ENTITY_TYPE_INGESTION_JSON,
+  ENTITY_TYPE_INGESTION_TAXII,
+} from '../modules/ingestion/ingestion-types';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { encryptIngestionCredential, isIngestionCredentialEncrypted } from '../modules/ingestion/ingestion-common';
-import { encryptSynchronizerCredential, isSynchronizerCredentialEncrypted } from '../domain/connector-sync-crypto';
+import {
+  encryptIngestionCredential,
+  isIngestionCredentialEncrypted,
+} from '../modules/ingestion/ingestion-common';
+import {
+  encryptSynchronizerCredential,
+  isSynchronizerCredentialEncrypted,
+} from '../domain/connector-sync-crypto';
 import { elUpdate } from '../database/engine';
 
 const message = '[MIGRATION] Encrypt credentials at rest for ingestions and synchronizers';
@@ -30,21 +40,27 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // -- IngestionCsv --
-  const csvIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_CSV]);
+  const csvIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [
+    ENTITY_TYPE_INGESTION_CSV,
+  ]);
   logMigration.info(`${message} > found ${csvIngestions.length} CSV ingestions`);
   for (let i = 0; i < csvIngestions.length; i += 1) {
     await encryptIngestionFieldIfNeeded(context, csvIngestions[i], 'authentication_value');
   }
 
   // -- IngestionJson --
-  const jsonIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_JSON]);
+  const jsonIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [
+    ENTITY_TYPE_INGESTION_JSON,
+  ]);
   logMigration.info(`${message} > found ${jsonIngestions.length} JSON ingestions`);
   for (let i = 0; i < jsonIngestions.length; i += 1) {
     await encryptIngestionFieldIfNeeded(context, jsonIngestions[i], 'authentication_value');
   }
 
   // -- IngestionTaxii --
-  const taxiiIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_TAXII]);
+  const taxiiIngestions = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [
+    ENTITY_TYPE_INGESTION_TAXII,
+  ]);
   logMigration.info(`${message} > found ${taxiiIngestions.length} TAXII ingestions`);
   for (let i = 0; i < taxiiIngestions.length; i += 1) {
     await encryptIngestionFieldIfNeeded(context, taxiiIngestions[i], 'authentication_value');

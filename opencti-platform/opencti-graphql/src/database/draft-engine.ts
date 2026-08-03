@@ -1,5 +1,10 @@
 import * as R from 'ramda';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
+import {
+  isDraftIndex,
+  READ_INDEX_DRAFT_OBJECTS,
+  READ_INDEX_HISTORY,
+  READ_INDEX_INTERNAL_OBJECTS,
+} from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
   BULK_TIMEOUT,
@@ -34,7 +39,12 @@ import { loadFile } from './file-storage';
 import { rewriteMarkdownPatchUpdatesForExport } from './middlewareEmbeddedImages';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
+import type {
+  BasicStoreCommon,
+  BasicStoreRelation,
+  InternalEditInput,
+  StoreRelation,
+} from '../types/store';
 import { files } from '../schema/attribute-definition';
 
 type ResolveDraftUpdateFilesOptions = {
@@ -42,7 +52,11 @@ type ResolveDraftUpdateFilesOptions = {
   entityId?: string;
 };
 
-const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
+const completeDeleteElementsFromDraft = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreCommon[],
+): Promise<void> => {
   const draftContext = getDraftContext(context, user);
   if (!draftContext) {
     return;
@@ -53,19 +67,37 @@ const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthU
 };
 
 const isCreateOrDraftDelete = (draftOp: string): boolean => {
-  return draftOp === DRAFT_OPERATION_CREATE || draftOp === DRAFT_OPERATION_DELETE || draftOp === DRAFT_OPERATION_DELETE_LINKED;
+  return (
+    draftOp === DRAFT_OPERATION_CREATE ||
+    draftOp === DRAFT_OPERATION_DELETE ||
+    draftOp === DRAFT_OPERATION_DELETE_LINKED
+  );
 };
 
-const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
+const elRemoveCreateElementFromDraft = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreCommon,
+): Promise<void> => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_CREATE) {
     return;
   }
-  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, [element]);
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, [
+    element,
+  ]);
   // We get all relations that were created in draft that target this element (should be all of the relations in this case, since element itself was created in draft)
-  const draftCreatedRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  const draftCreatedRelations = relations.filter(
+    (f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE,
+  );
   // Add element to relations to get the impacts from if current element is itself a relation
-  const relationToRemove = draftCreatedRelations.concat(isBasicRelationship(element.entity_type) ? [element as BasicStoreRelation] : []);
-  const draftRelationsElementsImpact = await computeDeleteElementsImpacts(relationToRemove, [element.internal_id], relationsToRemoveMap);
+  const relationToRemove = draftCreatedRelations.concat(
+    isBasicRelationship(element.entity_type) ? [element as BasicStoreRelation] : [],
+  );
+  const draftRelationsElementsImpact = await computeDeleteElementsImpacts(
+    relationToRemove,
+    [element.internal_id],
+    relationsToRemoveMap,
+  );
 
   // Clean up all denormalized rel impact of relations deletion, then delete all relations
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
@@ -73,7 +105,11 @@ const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUs
   await elDeleteInstances(context, [element, ...draftCreatedRelations]);
 };
 
-const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
+const elRemoveUpdateElementFromDraft = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreCommon,
+): Promise<void> => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE) {
     return;
   }
@@ -81,16 +117,27 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
   // apply reverse field patch
   const elementWithRefs = await storeLoadByIdWithRefs(context, user, element.internal_id);
   if (element.draft_change.draft_updates_patch) {
-    const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(element.draft_change.draft_updates_patch);
-    await updateAttributeFromLoadedWithRefs(context, user, elementWithRefs, reverseUpdateFieldPatch);
+    const reverseUpdateFieldPatch = buildReverseUpdateFieldPatch(
+      element.draft_change.draft_updates_patch,
+    );
+    await updateAttributeFromLoadedWithRefs(
+      context,
+      user,
+      elementWithRefs,
+      reverseUpdateFieldPatch,
+    );
   }
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
 
   // verify if element can be entirely removed from draft or if it needs to be kept as update_linked
   // We get all relations that were created or deleted/delete_linked in draft that target this element.
   // If there are still some, it means that we need to keep the element as an UPDATE_LINKED
-  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-  const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
+  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], {
+    includeDeletedInDraft: true,
+  });
+  const draftCreatedOrDeletedRelations = relations.filter(
+    (f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation),
+  );
   if (draftCreatedOrDeletedRelations.length > 0) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
     await elReplace(context, element._index, element._id, { doc: newDraftChange });
@@ -105,26 +152,28 @@ const removeDraftDeleteLinkedRelations = async (
   deleteLinkedRelations: { rel: any; dep: any }[],
 ): Promise<void> => {
   // Reapply denormalized refs on elements impacted with deleteLinked rel removal
-  const elementsToUpdate = deleteLinkedRelations.map((deleteLinkedRelToRemove) => {
-    const { rel, dep } = deleteLinkedRelToRemove;
-    const isFromImpact = rel.fromId === dep.internal_id;
-    const isToImpact = rel.toId === dep.internal_id;
-    const { entity_type, fromType, fromRole, toType, toRole } = rel;
-    if (isFromImpact && !isImpactedRole(entity_type, fromType, toType, fromRole)) {
-      return undefined;
-    }
-    if (isToImpact && !isImpactedRole(entity_type, fromType, toType, toRole)) {
-      return undefined;
-    }
-    const targetId = isFromImpact ? rel.toId : rel.fromId;
-    // Create params and scripted update
-    const field = buildRefRelationKey(rel.relationship_type);
-    let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-    script += `ctx._source['${field}'].addAll(params['${field}']);`;
-    const source = script;
-    const params = { [field]: [targetId] };
-    return { ...dep, _id: dep._id, data: { script: { source, params } } };
-  }).filter((e) => e);
+  const elementsToUpdate = deleteLinkedRelations
+    .map((deleteLinkedRelToRemove) => {
+      const { rel, dep } = deleteLinkedRelToRemove;
+      const isFromImpact = rel.fromId === dep.internal_id;
+      const isToImpact = rel.toId === dep.internal_id;
+      const { entity_type, fromType, fromRole, toType, toRole } = rel;
+      if (isFromImpact && !isImpactedRole(entity_type, fromType, toType, fromRole)) {
+        return undefined;
+      }
+      if (isToImpact && !isImpactedRole(entity_type, fromType, toType, toRole)) {
+        return undefined;
+      }
+      const targetId = isFromImpact ? rel.toId : rel.fromId;
+      // Create params and scripted update
+      const field = buildRefRelationKey(rel.relationship_type);
+      let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+      script += `ctx._source['${field}'].addAll(params['${field}']);`;
+      const source = script;
+      const params = { [field]: [targetId] };
+      return { ...dep, _id: dep._id, data: { script: { source, params } } };
+    })
+    .filter((e) => e);
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     { update: { _index: doc._index, _id: doc._id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.dissoc('_index', doc.data),
@@ -139,7 +188,11 @@ const removeDraftDeleteLinkedRelations = async (
   await completeDeleteElementsFromDraft(context, user, deleteLinkedRelationsInstances);
 };
 
-const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon) => {
+const elRemoveDeleteElementFromDraft = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreCommon,
+) => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_DELETE) {
     return;
   }
@@ -147,7 +200,10 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
   // if current element is a relation, and if from or to are in DRAFT_OPERATION_DELETE, it means the current element needs to be switched to a delete linked
   if (isBasicRelationship(element.entity_type)) {
     const relationshipElement = element as StoreRelation;
-    if (isDraftIndex(relationshipElement.from?._index) || isDraftIndex(relationshipElement.to?._index)) {
+    if (
+      isDraftIndex(relationshipElement.from?._index) ||
+      isDraftIndex(relationshipElement.to?._index)
+    ) {
       const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
       await elReplace(context, element._index, element._id, { doc: newDraftChange });
       return;
@@ -155,23 +211,37 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
   }
 
   // We get all related relations that are delete_linked
-  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
-  const draftDeleteLinkedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
+  const { relations } = await getRelationsToRemove(context, SYSTEM_USER, [element], {
+    includeDeletedInDraft: true,
+  });
+  const draftDeleteLinkedRelations = relations.filter(
+    (f) =>
+      isDraftIndex(f._index) &&
+      f.draft_change &&
+      f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED,
+  );
   const draftDeleteLinkedRelationsIds = draftDeleteLinkedRelations.map((r) => r.internal_id);
   // We get all of those relations dependencies (that are not the current element or the related relations)
-  const draftDeleteLinkedRelationsTargetsIds = draftDeleteLinkedRelations.map((r) => {
-    const { fromId, toId } = r;
-    if (!draftDeleteLinkedRelationsIds.includes(fromId) && fromId !== element.internal_id) {
-      return fromId;
-    }
-    if (!draftDeleteLinkedRelationsIds.includes(toId) && toId !== element.internal_id) {
-      return toId;
-    }
-    return undefined;
-  }).filter((i) => i) as string[];
+  const draftDeleteLinkedRelationsTargetsIds = draftDeleteLinkedRelations
+    .map((r) => {
+      const { fromId, toId } = r;
+      if (!draftDeleteLinkedRelationsIds.includes(fromId) && fromId !== element.internal_id) {
+        return fromId;
+      }
+      if (!draftDeleteLinkedRelationsIds.includes(toId) && toId !== element.internal_id) {
+        return toId;
+      }
+      return undefined;
+    })
+    .filter((i) => i) as string[];
   // We resolve all those dependencies
-  const draftDeleteDependenciesRaw = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true }) as BasicStoreCommon[];
-  const draftDeleteDependencies = draftDeleteDependenciesRaw.filter((d) => isDraftIndex((d._index)));
+  const draftDeleteDependenciesRaw = (await elFindByIds(
+    context,
+    user,
+    draftDeleteLinkedRelationsTargetsIds,
+    { includeDeletedInDraft: true },
+  )) as BasicStoreCommon[];
+  const draftDeleteDependencies = draftDeleteDependenciesRaw.filter((d) => isDraftIndex(d._index));
   let hasDraftDeletedLinkedRelationsToKeep = false;
   const draftDeletedLinkedRelationsToRemove = [];
   // We distinguish relations that need to be kept (from or to has a DELETE operation) from those that can be reverted in draft
@@ -180,16 +250,28 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
     const fromDependency = draftDeleteDependencies.find((e) => e.internal_id === fromId);
     const toDependency = draftDeleteDependencies.find((e) => e.internal_id === toId);
     if (fromDependency) {
-      if (fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+      if (
+        fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE ||
+        fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED
+      ) {
         hasDraftDeletedLinkedRelationsToKeep = true;
       } else {
-        draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: fromDependency });
+        draftDeletedLinkedRelationsToRemove.push({
+          rel: draftDeleteLinkedRelations[i],
+          dep: fromDependency,
+        });
       }
     } else if (toDependency) {
-      if (toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+      if (
+        toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE ||
+        toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED
+      ) {
         hasDraftDeletedLinkedRelationsToKeep = true;
       } else {
-        draftDeletedLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: toDependency });
+        draftDeletedLinkedRelationsToRemove.push({
+          rel: draftDeleteLinkedRelations[i],
+          dep: toDependency,
+        });
       }
     }
   }
@@ -210,7 +292,11 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
   }
 };
 
-export const elRemoveElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon) => {
+export const elRemoveElementFromDraft = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreCommon,
+) => {
   if (!isDraftIndex(element._index) || !element.draft_change) {
     return element;
   }
@@ -226,11 +312,18 @@ export const elRemoveElementFromDraft = async (context: AuthContext, user: AuthU
     case DRAFT_OPERATION_DELETE_LINKED:
       throw UnsupportedError('Cannot remove linked elements from draft', { id: element.id });
     default:
-      throw UnsupportedError('Draft operation not recognized', { id: element.id, operation: element.draft_change.draft_operation });
+      throw UnsupportedError('Draft operation not recognized', {
+        id: element.id,
+        operation: element.draft_change.draft_operation,
+      });
   }
 };
 
-export const elDeleteDraftElements = async (context: AuthContext, user: AuthUser, draftId: string) => {
+export const elDeleteDraftElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftId: string,
+) => {
   return elRawDeleteByQuery({
     index: READ_INDEX_DRAFT_OBJECTS,
     refresh: true,
@@ -244,7 +337,11 @@ export const elDeleteDraftElements = async (context: AuthContext, user: AuthUser
   });
 };
 
-export const elDeleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser, draftId: string) => {
+export const elDeleteDraftContextFromUsers = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftId: string,
+) => {
   return elRawUpdateByQuery({
     index: READ_INDEX_INTERNAL_OBJECTS,
     refresh: true,
@@ -262,7 +359,11 @@ export const elDeleteDraftContextFromUsers = async (context: AuthContext, user: 
   });
 };
 
-export const elDeleteDraftContextFromWorks = async (context: AuthContext, user: AuthUser, draftId: string) => {
+export const elDeleteDraftContextFromWorks = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftId: string,
+) => {
   return elRawUpdateByQuery({
     index: READ_INDEX_HISTORY,
     refresh: true,
@@ -288,15 +389,18 @@ export const resolveDraftUpdateFiles = async (
 ) => {
   // File patches are rebuilt separately with full file payload objects.
   const nonFileDraftUpdates = draftUpdates.filter((update) => update.key !== files.name);
-  const resolvedNonFilePatches = (options.entityType && options.entityId)
-    ? await rewriteMarkdownPatchUpdatesForExport(context, nonFileDraftUpdates, {
-        entityType: options.entityType,
-        entityId: options.entityId,
-      })
-    : nonFileDraftUpdates;
+  const resolvedNonFilePatches =
+    options.entityType && options.entityId
+      ? await rewriteMarkdownPatchUpdatesForExport(context, nonFileDraftUpdates, {
+          entityType: options.entityType,
+          entityId: options.entityId,
+        })
+      : nonFileDraftUpdates;
   const resolvedDraftUpdatePatch = [...resolvedNonFilePatches];
 
-  const fileAddPatch = draftUpdates.find((update) => update.key === files.name && update.operation === EditOperation.Add);
+  const fileAddPatch = draftUpdates.find(
+    (update) => update.key === files.name && update.operation === EditOperation.Add,
+  );
   if (fileAddPatch) {
     const fileIds = fileAddPatch.value;
     const loadedFileValues = [];

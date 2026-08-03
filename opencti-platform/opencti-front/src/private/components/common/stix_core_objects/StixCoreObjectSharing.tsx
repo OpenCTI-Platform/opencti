@@ -65,10 +65,7 @@ const containerHeaderSharedQuery = graphql`
 `;
 
 const containerHeaderSharedQueryGroupDeleteMutation = graphql`
-  mutation StixCoreObjectSharingGroupDeleteMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixCoreObjectSharingGroupDeleteMutation($id: ID!, $organizationId: [ID!]!) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationDelete(organizationId: $organizationId) {
         id
@@ -82,10 +79,7 @@ const containerHeaderSharedQueryGroupDeleteMutation = graphql`
 `;
 
 const containerHeaderSharedGroupAddMutation = graphql`
-  mutation StixCoreObjectSharingGroupAddMutation(
-    $id: ID!
-    $organizationId: [ID!]!
-  ) {
+  mutation StixCoreObjectSharingGroupAddMutation($id: ID!, $organizationId: [ID!]!) {
     stixCoreObjectEdit(id: $id) {
       restrictionOrganizationAdd(organizationId: $organizationId) {
         id
@@ -113,11 +107,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const notifySuccessMessage = (
     <span>
-      {t_i18n(
-        'The background task has been executed. You can monitor it on',
-      )}{' '}
-      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
-      .
+      {t_i18n('The background task has been executed. You can monitor it on')}{' '}
+      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>.
     </span>
   );
   // If user not an organization organizer, return empty div
@@ -211,10 +202,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Close')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Share')}
                   </Button>
                 </DialogActions>
@@ -239,7 +227,10 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 style={{ float: 'left', margin: '-15px 0 0 -2px' }}
                 disabled={disabled}
               >
-                <BankPlus fontSize="small" color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'} />
+                <BankPlus
+                  fontSize="small"
+                  color={!disabled && isEnterpriseEdition ? 'primary' : 'disabled'}
+                />
               </IconButton>
             </EETooltip>
             <div className="clearfix" />
@@ -257,8 +248,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               </Tooltip>
             ))}
           </>
-        )
-        }
+        )}
         <div className="clearfix" />
         <Formik
           initialValues={{ objectOrganization: { value: '', label: '' } }}
@@ -283,10 +273,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Close')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Share')}
                 </Button>
               </DialogActions>

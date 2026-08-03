@@ -170,9 +170,14 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     button_label_override: data.button_label_override ?? '',
     url: conf.url ?? '',
     bind_dn: conf.bind_dn ?? '',
-    bind_credentials_action: (conf.bind_credentials as SecretInfo)?.source === 'EXTERNAL' && (conf.bind_credentials as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
+    bind_credentials_action:
+      (conf.bind_credentials as SecretInfo)?.source === 'EXTERNAL' &&
+      (conf.bind_credentials as SecretInfo)?.external_secret_name
+        ? 'use_external_secret'
+        : 'keep',
     bind_credentials_new_value: '',
-    bind_credentials_secret_name: ((conf.bind_credentials as SecretInfo)?.external_secret_name as string) ?? '',
+    bind_credentials_secret_name:
+      ((conf.bind_credentials as SecretInfo)?.external_secret_name as string) ?? '',
     search_base: conf.search_base ?? '',
     search_filter: conf.search_filter ?? '',
     group_base: conf.group_base ?? '',
@@ -191,7 +196,10 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
       default_groups: [...(conf.groups_mapping?.default_groups ?? [])],
       groups_expr: [...(conf.groups_mapping?.groups_expr ?? [])],
       group_splitter: conf.groups_mapping?.group_splitter ?? '',
-      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      groups_mapping: (conf.groups_mapping?.groups_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_groups: conf.groups_mapping?.auto_create_groups ?? false,
       prevent_default_groups: conf.groups_mapping?.prevent_default_groups ?? false,
       extend_platform_groups: conf.groups_mapping?.extend_platform_groups ?? false,
@@ -200,7 +208,10 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
       default_organizations: [...(conf.organizations_mapping?.default_organizations ?? [])],
       organizations_expr: [...(conf.organizations_mapping?.organizations_expr ?? [])],
       organizations_splitter: conf.organizations_mapping?.organizations_splitter ?? '',
-      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      organizations_mapping: (conf.organizations_mapping?.organizations_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_organizations: conf.organizations_mapping?.auto_create_organizations ?? false,
     },
     extra_conf: (conf.extra_conf ?? []).map((e) => ({ type: e.type, key: e.key, value: e.value })),
@@ -255,8 +266,16 @@ const LdapProviderForm = ({
         ...(values.bind_credentials_action === 'keep'
           ? {}
           : values.bind_credentials_action === 'use_external_secret'
-            ? { bind_credentials: { external_secret_name: values.bind_credentials_secret_name || null } }
-            : { bind_credentials: { new_value_cleartext: values.bind_credentials_new_value || null } }),
+            ? {
+                bind_credentials: {
+                  external_secret_name: values.bind_credentials_secret_name || null,
+                },
+              }
+            : {
+                bind_credentials: {
+                  new_value_cleartext: values.bind_credentials_new_value || null,
+                },
+              }),
         search_base: values.search_base,
         search_filter: values.search_filter,
         group_base: values.group_base,
@@ -266,7 +285,9 @@ const LdapProviderForm = ({
         username_field: values.username_field || null,
         password_field: values.password_field || null,
         credentials_lookup: values.credentials_lookup || null,
-        group_search_attributes: values.group_search_attributes ? splitAndTrim(values.group_search_attributes) : null,
+        group_search_attributes: values.group_search_attributes
+          ? splitAndTrim(values.group_search_attributes)
+          : null,
         user_info_mapping: {
           email_expr: values.email_expr,
           name_expr: values.name_expr,
@@ -313,7 +334,12 @@ const LdapProviderForm = ({
         variables: { input },
         updater: (store: RecordSourceSelectorProxy) => {
           if (paginationOptions) {
-            insertNode(store, 'Pagination_authenticationProviders', paginationOptions, 'ldapProviderAdd');
+            insertNode(
+              store,
+              'Pagination_authenticationProviders',
+              paginationOptions,
+              'ldapProviderAdd',
+            );
           }
         },
         onCompleted: () => {
@@ -514,9 +540,19 @@ const LdapProviderForm = ({
                     {({ push, remove }) => (
                       <>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Typography variant="body2" color="textSecondary" style={{ width: '20%' }}>{t_i18n('Type')}</Typography>
-                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Key')}</Typography>
-                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>{t_i18n('Value')}</Typography>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            style={{ width: '20%' }}
+                          >
+                            {t_i18n('Type')}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                            {t_i18n('Key')}
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary" style={{ flex: 1 }}>
+                            {t_i18n('Value')}
+                          </Typography>
                           <IconButton
                             color="primary"
                             aria-label={t_i18n('Add')}
@@ -527,7 +563,11 @@ const LdapProviderForm = ({
                           </IconButton>
                         </div>
                         {values.extra_conf.length === 0 && (
-                          <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic', mt: 1 }}>
+                          <Typography
+                            variant="body2"
+                            color="textSecondary"
+                            sx={{ fontStyle: 'italic', mt: 1 }}
+                          >
                             {t_i18n('No extra configuration entries. Click + to add one.')}
                           </Typography>
                         )}

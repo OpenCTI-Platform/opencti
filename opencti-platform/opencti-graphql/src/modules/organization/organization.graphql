@@ -1,9 +1,13 @@
-type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
+type Organization implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  Identity {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -194,7 +198,10 @@ type OrganizationEdge {
 
 # Queries
 type Query {
-  organization(id: String!): Organization @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  organization(id: String!): Organization
+    @auth(
+      for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]
+    )
   organizations(
     first: Int
     after: ID
@@ -203,7 +210,10 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  ): OrganizationConnection
+    @auth(
+      for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]
+    )
   securityOrganizations(
     first: Int
     after: ID
@@ -212,7 +222,8 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
+  ): OrganizationConnection
+    @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
 }
 
 # Mutations
@@ -252,14 +263,24 @@ input OrganizationAddInput {
 type Mutation {
   organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
-  organizationContextPatch(id: ID!, input: EditContext!): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
+  organizationFieldPatch(
+    id: ID!
+    input: [EditInput!]!
+    commitMessage: String
+    references: [String]
+  ): Organization @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
+  organizationContextPatch(id: ID!, input: EditContext!): Organization
+    @auth(for: [KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES])
   organizationContextClean(id: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationEditAuthorizedAuthorities(id: ID!, input: [String!]!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Organization
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationEditAuthorizedAuthorities(id: ID!, input: [String!]!): Organization
+    @auth(for: [SETTINGS_SETACCESSES])
   organizationAdminAdd(id: ID!, memberId: String!): Organization @auth(for: [SETTINGS_SETACCESSES])
-  organizationAdminRemove(id: ID!, memberId: String!): Organization @auth(for: [SETTINGS_SETACCESSES])
+  organizationAdminRemove(id: ID!, memberId: String!): Organization
+    @auth(for: [SETTINGS_SETACCESSES])
 }
 
 ################ Me Organizations

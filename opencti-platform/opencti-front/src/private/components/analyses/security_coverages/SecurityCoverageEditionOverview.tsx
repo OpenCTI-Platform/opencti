@@ -16,7 +16,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { CoverageInformationFieldEdit } from '../../common/form/CoverageInformationField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
@@ -46,10 +50,7 @@ const securityCoverageMutationFieldPatch = graphql`
 `;
 
 export const securityCoverageEditionOverviewFocus = graphql`
-  mutation SecurityCoverageEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation SecurityCoverageEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     securityCoverageContextPatch(id: $id, input: $input) {
       id
     }
@@ -75,11 +76,7 @@ const securityCoverageMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    securityCoverageRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    securityCoverageRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       ...SecurityCoverageEditionOverview_securityCoverage
     }
   }
@@ -129,10 +126,13 @@ const securityCoverageEditionOverviewFragment = graphql`
 
 interface SecurityCoverageEditionOverviewProps {
   securityCoverage: SecurityCoverageEditionOverview_securityCoverage$key;
-  context: readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[] | null | undefined;
+  context:
+    | readonly ({
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
   enableReferences?: boolean;
 }
 
@@ -175,15 +175,17 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     auto_enrichment_disable: Yup.boolean(),
-    coverage_information: Yup.array().of(
-      Yup.object().shape({
-        coverage_name: Yup.string().required(t_i18n('This field is required')),
-        coverage_score: Yup.number()
-          .required(t_i18n('This field is required'))
-          .min(0, t_i18n('Score must be at least 0'))
-          .max(100, t_i18n('Score must be at most 100')),
-      }),
-    ).nullable(),
+    coverage_information: Yup.array()
+      .of(
+        Yup.object().shape({
+          coverage_name: Yup.string().required(t_i18n('This field is required')),
+          coverage_score: Yup.number()
+            .required(t_i18n('This field is required'))
+            .min(0, t_i18n('Score must be at least 0'))
+            .max(100, t_i18n('Score must be at most 100')),
+        }),
+      )
+      .nullable(),
     periodicity: Yup.string().nullable(),
     duration: Yup.string().nullable(),
     type_affinity: Yup.string().nullable(),
@@ -275,10 +277,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       validationSchema={securityValidator}
       onSubmit={onSubmit}
     >
-      {({
-        values,
-        setFieldValue,
-      }) => (
+      {({ values, setFieldValue }) => (
         <div style={{ margin: '20px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
@@ -290,9 +289,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             required
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
@@ -305,9 +302,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={securityCoverageData.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             entityType="Security-Coverage"
@@ -386,17 +381,13 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             name="createdBy"
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

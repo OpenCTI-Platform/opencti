@@ -30,7 +30,9 @@ interface ContainerStixCoreObjectsMappingHeaderProps {
   handleAskNewSuggestion: () => void;
 }
 
-const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCoreObjectsMappingHeaderProps> = ({
+const ContainerStixCoreObjectsMappingHeader: FunctionComponent<
+  ContainerStixCoreObjectsMappingHeaderProps
+> = ({
   suggestedMappingData,
   validateDisabled,
   openValidate,
@@ -47,7 +49,9 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
   handleAskNewSuggestion,
 }) => {
   const { t_i18n } = useFormatter();
-  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
+  const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length
+    ? suggestedMappingData.connectorsForAnalysis.length > 0
+    : false;
 
   return (
     <>
@@ -57,20 +61,15 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         title={t_i18n('Are you sure?')}
       >
         <DialogContentText>
-          {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
+          {t_i18n(
+            'You are about to validate this mapping, it will add suggested entities to your container.',
+          )}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setOpenValidate(false)}
-            disabled={validating}
-          >
+          <Button variant="secondary" onClick={() => setOpenValidate(false)} disabled={validating}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={handleValidateMapping}
-            disabled={validating}
-          >
+          <Button onClick={handleValidateMapping} disabled={validating}>
             {t_i18n('Validate')}
           </Button>
         </DialogActions>
@@ -91,10 +90,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
           >
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={() => handleClearMapping()}
-            disabled={clearing}
-          >
+          <Button onClick={() => handleClearMapping()} disabled={clearing}>
             {t_i18n('Clear')}
           </Button>
         </DialogActions>
@@ -102,30 +98,34 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FormGroup>
           <FormControlLabel
-            control={(
+            control={
               <Switch
                 checked={inSuggestedMode}
                 onChange={() => {
                   setInSuggestedMode(!inSuggestedMode);
                 }}
-                disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'}
+                disabled={
+                  askingSuggestion ||
+                  validating ||
+                  suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'
+                }
               />
-            )}
+            }
             label={t_i18n('Show suggested mapping')}
           />
         </FormGroup>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
           {!hasConnectorsAvailable && (
             <Tooltip
-              title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
+              title={t_i18n(
+                'An analysis connector needs to be available to ask for a mapping suggestion.',
+              )}
             >
               <InformationOutline fontSize="small" color="primary" />
             </Tooltip>
           )}
           {askingSuggestion && (
-            <Tooltip
-              title={t_i18n('An analysis is ongoing, waiting for results.')}
-            >
+            <Tooltip title={t_i18n('An analysis is ongoing, waiting for results.')}>
               <InformationOutline fontSize="small" color="primary" />
             </Tooltip>
           )}
@@ -140,10 +140,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
           </Tooltip>
           {!inSuggestedMode && (
             <Tooltip title={t_i18n('Clear mappings')}>
-              <Button
-                onClick={() => setOpenClearMapping(true)}
-                size="small"
-              >
+              <Button onClick={() => setOpenClearMapping(true)} size="small">
                 {t_i18n('Clear mappings')}
               </Button>
             </Tooltip>

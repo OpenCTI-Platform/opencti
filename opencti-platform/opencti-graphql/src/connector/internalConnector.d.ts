@@ -26,5 +26,8 @@ export interface Connector {
   connector_priority_group?: ConnectorPriorityGroup;
   name: string;
   built_in: boolean;
-  connector_schema_runtime_fn?: <T extends BasicStoreEntityCsvMapper> (context: AuthContext, user: AuthUser) => Promise<T[]>;
+  connector_schema_runtime_fn?: <T extends BasicStoreEntityCsvMapper>(
+    context: AuthContext,
+    user: AuthUser,
+  ) => Promise<T[]>;
 }

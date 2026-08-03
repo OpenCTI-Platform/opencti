@@ -59,6 +59,4 @@ ReportEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(ReportEdition);
+export default compose(inject18n)(ReportEdition);

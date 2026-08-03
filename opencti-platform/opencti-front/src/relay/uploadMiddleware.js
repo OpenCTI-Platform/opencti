@@ -1,6 +1,6 @@
 /* eslint-disable */
-import extractFiles from "extract-files/extractFiles.mjs";
-import isExtractableFile from "extract-files/isExtractableFile.mjs";
+import extractFiles from 'extract-files/extractFiles.mjs';
+import isExtractableFile from 'extract-files/isExtractableFile.mjs';
 
 const uploadMiddleware = () => (next) => async (req) => {
   const operations = {
@@ -10,19 +10,19 @@ const uploadMiddleware = () => (next) => async (req) => {
   const { clone: extractedOperations, files } = extractFiles(operations, isExtractableFile);
   if (files.size) {
     const formData = new FormData();
-    formData.append("operations", JSON.stringify(extractedOperations));
+    formData.append('operations', JSON.stringify(extractedOperations));
     const pathMap = {};
     let i = 0;
     files.forEach((paths) => {
       pathMap[++i] = paths;
     });
-    formData.append("map", JSON.stringify(pathMap));
+    formData.append('map', JSON.stringify(pathMap));
 
     i = 0;
     files.forEach((paths, file) => {
       formData.append(++i, file, file.name);
     });
-    req.fetchOpts.method = "POST";
+    req.fetchOpts.method = 'POST';
     req.fetchOpts.body = formData;
   }
   return next(req);

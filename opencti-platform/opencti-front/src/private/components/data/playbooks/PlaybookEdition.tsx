@@ -14,7 +14,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import PlaybookEditionForm, { playbookEditionFormQuery } from '@components/data/playbooks/PlaybookEditionForm';
+import PlaybookEditionForm, {
+  playbookEditionFormQuery,
+} from '@components/data/playbooks/PlaybookEditionForm';
 import Drawer from '@components/common/drawer/Drawer';
 import { PlaybookEditionFormQuery } from '@components/data/playbooks/__generated__/PlaybookEditionFormQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,15 +28,10 @@ const PlaybookEdition = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
 
   return (
-    <Drawer
-      title={t_i18n('Update a playbook')}
-      controlledDial={EditEntityControlledDial}
-    >
+    <Drawer title={t_i18n('Update a playbook')} controlledDial={EditEntityControlledDial}>
       {queryRef && (
         <React.Suspense fallback={<div />}>
-          <PlaybookEditionForm
-            queryRef={queryRef}
-          />
+          <PlaybookEditionForm queryRef={queryRef} />
         </React.Suspense>
       )}
     </Drawer>

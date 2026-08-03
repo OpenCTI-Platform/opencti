@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 
 export const getCountriesQuery = graphql`
   query CountryGetAllQuery {
-    countries (first:5000) {
+    countries(first: 5000) {
       edges {
         node {
           id
@@ -88,25 +88,14 @@ export const countryFragment = graphql`
   }
 `;
 
-const CountryComponent = ({
-  countryData,
-}: {
-  countryData: Country_country$key;
-}) => {
+const CountryComponent = ({ countryData }: { countryData: Country_country$key }) => {
   useInitCreateRelationshipContext();
 
   const classes = useStyles();
-  const country = useFragment<Country_country$key>(
-    countryFragment,
-    countryData,
-  );
+  const country = useFragment<Country_country$key>(countryFragment, countryData);
   return (
     <div data-testid="country-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={4}>
           <LocationDetails locationData={country} />
         </Grid>
@@ -122,9 +111,7 @@ const CountryComponent = ({
           />
         </Grid>
         <Grid item xs={4}>
-          <StixDomainObjectOverview
-            stixDomainObject={country}
-          />
+          <StixDomainObjectOverview stixDomainObject={country} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

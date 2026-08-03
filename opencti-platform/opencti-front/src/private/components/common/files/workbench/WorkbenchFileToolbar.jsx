@@ -21,9 +21,7 @@ import withHooksSettingsMessagesBannerHeight from '../../../settings/settings_me
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -165,7 +163,6 @@ class WorkbenchFileToolbar extends Component {
             anchor="bottom"
             variant="persistent"
             classes={{
-
               paper: classes.bottomNav,
             }}
             open={isOpen}
@@ -179,11 +176,7 @@ class WorkbenchFileToolbar extends Component {
             }}
           >
             <Toolbar style={{ minHeight: 54 }}>
-              <Typography
-                className={classes.title}
-                color="inherit"
-                variant="subtitle1"
-              >
+              <Typography className={classes.title} color="inherit" variant="subtitle1">
                 <span
                   style={{
                     padding: '2px 5px 2px 5px',
@@ -259,14 +252,10 @@ class WorkbenchFileToolbar extends Component {
               title={t('Are you sure?')}
               size="small"
             >
-              <DialogContentText>
-                {t('Do you want to remove these objects?')}
-              </DialogContentText>
+              <DialogContentText>{t('Do you want to remove these objects?')}</DialogContentText>
 
               <DialogActions>
-                <Button onClick={this.handleCloseDelete.bind(this)}>
-                  {t('Cancel')}
-                </Button>
+                <Button onClick={this.handleCloseDelete.bind(this)}>{t('Cancel')}</Button>
                 <Button
                   color="secondary"
                   onClick={() => {

@@ -97,24 +97,21 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={(
+        secondaryAction={
           <TaskPopover
             id={task.id}
             objectId={entityId}
             paginationOptions={paginationOptions}
             variant="inLine"
           />
-        )}
+        }
       >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          onClick={() => setOpen(true)}
-        >
+        <ListItemButton classes={{ root: classes.item }} onClick={() => setOpen(true)}>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
             <ItemIcon type="Task" />
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <>
                 {Object.values(tasksDataColumns).map((value) => (
                   <div
@@ -126,7 +123,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
                   </div>
                 ))}
               </>
-            )}
+            }
           />
         </ListItemButton>
       </ListItem>
@@ -134,7 +131,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
         open={open}
         title={task.name}
         onClose={() => setOpen(false)}
-        header={(
+        header={
           <IconButton
             aria-label={t_i18n('Go to')}
             size="small"
@@ -144,7 +141,7 @@ export const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
           >
             <NorthEastOutlined />
           </IconButton>
-        )}
+        }
       >
         <CaseTaskOverview tasksData={task} enableReferences={enableReferences} />
       </Drawer>
@@ -159,7 +156,7 @@ export const CaseTasksLineDummy = () => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <IconButton
           aria-label={t_i18n('Open menu')}
           disabled={true}
@@ -168,30 +165,21 @@ export const CaseTasksLineDummy = () => {
         >
           <MoreVert />
         </IconButton>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(tasksDataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

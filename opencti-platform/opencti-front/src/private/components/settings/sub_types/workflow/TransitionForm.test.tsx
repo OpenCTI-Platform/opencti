@@ -21,7 +21,9 @@ vi.mock('./WorkflowConditionFilters', () => ({
 }));
 
 vi.mock('../../../../../components/TextField', () => ({
-  default: ({ field }: { field: { name: string } }) => <input data-testid={`field-${field.name}`} />,
+  default: ({ field }: { field: { name: string } }) => (
+    <input data-testid={`field-${field.name}`} />
+  ),
 }));
 
 vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
@@ -95,7 +97,10 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Enable comment" ON sets comment to "allowed"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.disabled, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
 
@@ -112,7 +117,10 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Enable comment" OFF sets comment to "disable"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.allowed, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
 
@@ -129,7 +137,10 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Required" ON sets comment to "required"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.allowed, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /required/i }));
 
@@ -146,7 +157,10 @@ describe('TransitionForm – comment section', () => {
 
   it('toggling "Required" OFF sets comment back to "allowed"', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.required, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.required, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /required/i }));
 
@@ -177,7 +191,9 @@ describe('TransitionForm – action toggles', () => {
     renderForm({
       event: 'approve',
       comment: CommentMode.disabled,
-      syncActions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
+      syncActions: [
+        { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } },
+      ],
     });
     const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
     expect((uamSwitch as HTMLInputElement).checked).toBe(true);
@@ -185,7 +201,10 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Update authorized members" ON adds the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.disabled, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
 
@@ -205,11 +224,16 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Update authorized members" OFF removes the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({
-      event: 'approve',
-      comment: CommentMode.disabled,
-      syncActions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
-    }, onSubmit);
+    const { user } = renderForm(
+      {
+        event: 'approve',
+        comment: CommentMode.disabled,
+        syncActions: [
+          { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } },
+        ],
+      },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
 
@@ -217,20 +241,28 @@ describe('TransitionForm – action toggles', () => {
 
     await waitFor(() => {
       const actions = onSubmit.mock.calls[0][0].syncActions as { type: string }[];
-      expect(actions.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers)).toBe(false);
+      expect(actions.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers)).toBe(
+        false,
+      );
     });
   });
 
   it('pre-populates CREATORS with admin access when toggling "Update authorized members" ON', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.disabled, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
     await waitFor(() => {
-      const actions = onSubmit.mock.calls[0][0].syncActions as { type: string; params?: { authorized_members?: { value: string; accessRight: string }[] } }[];
+      const actions = onSubmit.mock.calls[0][0].syncActions as {
+        type: string;
+        params?: { authorized_members?: { value: string; accessRight: string }[] };
+      }[];
       const uamAction = actions.find((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
       expect(uamAction?.params?.authorized_members).toEqual(
         expect.arrayContaining([
@@ -258,7 +290,10 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Validate draft" ON adds the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
+    const { user } = renderForm(
+      { event: 'approve', comment: CommentMode.disabled, syncActions: [] },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /validate draft/i }));
 
@@ -278,11 +313,14 @@ describe('TransitionForm – action toggles', () => {
 
   it('toggling "Validate draft" OFF removes the action', async () => {
     const onSubmit = vi.fn();
-    const { user } = renderForm({
-      event: 'approve',
-      comment: CommentMode.disabled,
-      syncActions: [{ type: WorkflowActionType.validateDraft }],
-    }, onSubmit);
+    const { user } = renderForm(
+      {
+        event: 'approve',
+        comment: CommentMode.disabled,
+        syncActions: [{ type: WorkflowActionType.validateDraft }],
+      },
+      onSubmit,
+    );
 
     await user.click(screen.getByRole('checkbox', { name: /validate draft/i }));
 
@@ -311,7 +349,12 @@ describe('TransitionForm – rendering', () => {
   });
 
   it('renders WorkflowConditionFilters when conditions are defined', () => {
-    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
+    renderForm({
+      event: 'approve',
+      comment: CommentMode.disabled,
+      syncActions: [],
+      conditions: { filters: emptyFilterGroup },
+    });
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
 
@@ -330,36 +373,73 @@ describe('TransitionForm – rendering', () => {
 // EE / CE gating
 // ---------------------------------------------------------------------------
 describe('TransitionForm – EE / CE gating', () => {
-  const eeActions = [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }];
+  const eeActions = [
+    { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } },
+  ];
 
   it('disables EE-only switches in CE', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
-    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
+    renderForm({
+      event: 'close',
+      comment: CommentMode.disabled,
+      syncActions: [],
+      asyncActions: [],
+    });
 
-    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(true);
+    expect(
+      (screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      (screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(true);
   });
 
   it('enables EE-only switches in EE', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
-    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
+    renderForm({
+      event: 'close',
+      comment: CommentMode.disabled,
+      syncActions: [],
+      asyncActions: [],
+    });
 
-    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(false);
-    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(false);
-    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(false);
+    expect(
+      (screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(false);
+    expect(
+      (screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(false);
+    expect(
+      (screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement)
+        .disabled,
+    ).toBe(false);
   });
 
   it('"Validate draft" switch is always enabled regardless of EE status', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
     renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [] });
 
-    expect((screen.getByRole('checkbox', { name: /validate draft/i }) as HTMLInputElement).disabled).toBe(false);
+    expect(
+      (screen.getByRole('checkbox', { name: /validate draft/i }) as HTMLInputElement).disabled,
+    ).toBe(false);
   });
 
   it('renders the conditions block with pointer-events:none in CE', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
-    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
+    renderForm({
+      event: 'close',
+      comment: CommentMode.disabled,
+      syncActions: [],
+      conditions: { filters: emptyFilterGroup },
+    });
 
     const conditionFilters = screen.getByTestId('workflow-condition-filters');
     const wrapper = conditionFilters.parentElement!;
@@ -369,7 +449,12 @@ describe('TransitionForm – EE / CE gating', () => {
 
   it('renders the conditions block without pointer-events restriction in EE', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
-    renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } });
+    renderForm({
+      event: 'close',
+      comment: CommentMode.disabled,
+      syncActions: [],
+      conditions: { filters: emptyFilterGroup },
+    });
 
     const conditionFilters = screen.getByTestId('workflow-condition-filters');
     const wrapper = conditionFilters.parentElement!;

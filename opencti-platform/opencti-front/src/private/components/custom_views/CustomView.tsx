@@ -71,18 +71,18 @@ const CustomViewComponent = ({ queryRef, entityId, entityType }: CustomViewCompo
     });
   };
 
-  const host = useMemo(() => ({
-    kind: 'custom-view' as const,
-    customViewTargetEntityType: entityType,
-    customViewTargetEntityId: entityId,
-  }), [entityType]);
+  const host = useMemo(
+    () => ({
+      kind: 'custom-view' as const,
+      customViewTargetEntityType: entityType,
+      customViewTargetEntityId: entityId,
+    }),
+    [entityType],
+  );
 
   return (
     <Stack gap={2}>
-      <DashboardTimeFilters
-        config={effectiveConfig}
-        handleDateChange={handleDateChange}
-      />
+      <DashboardTimeFilters config={effectiveConfig} handleDateChange={handleDateChange} />
       <DashboardContent
         helpers={{ ...helpers, config: effectiveConfig }}
         isEditable={false}
@@ -100,15 +100,14 @@ export interface CustomViewProps {
 }
 
 export const CustomView = ({ customViewId, entityId, entityType }: CustomViewProps) => {
-  const queryRef = useQueryLoading<CustomView_Query>(
-    customViewQuery,
-    { id: customViewId },
-  );
+  const queryRef = useQueryLoading<CustomView_Query>(customViewQuery, { id: customViewId });
 
   return (
     <ErrorBoundary>
       <Suspense fallback={<Loader />}>
-        {queryRef && <CustomViewComponent queryRef={queryRef} entityId={entityId} entityType={entityType} />}
+        {queryRef && (
+          <CustomViewComponent queryRef={queryRef} entityId={entityId} entityType={entityType} />
+        )}
       </Suspense>
     </ErrorBoundary>
   );

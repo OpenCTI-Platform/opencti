@@ -1,5 +1,7 @@
 import React from 'react';
-import AdministrativeAreaEditionContainer, { administrativeAreaEditionQuery } from './AdministrativeAreaEditionContainer';
+import AdministrativeAreaEditionContainer, {
+  administrativeAreaEditionQuery,
+} from './AdministrativeAreaEditionContainer';
 import { administrativeAreaEditionOverviewFocus } from './AdministrativeAreaEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -7,11 +9,7 @@ import { AdministrativeAreaEditionContainerQuery } from './__generated__/Adminis
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-const AdministrativeAreaEdition = ({
-  administrativeAreaId,
-}: {
-  administrativeAreaId: string;
-}) => {
+const AdministrativeAreaEdition = ({ administrativeAreaId }: { administrativeAreaId: string }) => {
   const [commit] = useApiMutation(administrativeAreaEditionOverviewFocus);
   const handleClose = () => {
     commit({
@@ -28,9 +26,7 @@ const AdministrativeAreaEdition = ({
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <AdministrativeAreaEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

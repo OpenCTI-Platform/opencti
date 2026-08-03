@@ -24,10 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const addDataComponentsMutationRelationAdd = graphql`
-  mutation AddDataComponentsLinesToDataSourceRelationAddMutation(
-    $id: ID!
-    $dataComponentId: ID!
-  ) {
+  mutation AddDataComponentsLinesToDataSourceRelationAddMutation($id: ID!, $dataComponentId: ID!) {
     dataSourceDataComponentAdd(id: $id, dataComponentId: $dataComponentId) {
       ...DataSourceDataComponents_dataSource
     }
@@ -46,11 +43,7 @@ export const addDataComponentsMutationRelationDelete = graphql`
 `;
 
 export const addDataComponentsLinesQuery = graphql`
-  query AddDataComponentsLinesToDataSourceQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
+  query AddDataComponentsLinesToDataSourceQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddDataComponentsLinesToDataSource_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }
@@ -82,9 +75,10 @@ interface AddDataComponentsLinesContainerProps {
   queryRef: PreloadedQuery<AddDataComponentsLinesToDataSourceQuery>;
 }
 
-const AddDataComponentsLines: FunctionComponent<
-  AddDataComponentsLinesContainerProps
-> = ({ dataSource, queryRef }) => {
+const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerProps> = ({
+  dataSource,
+  queryRef,
+}) => {
   const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
     AddDataComponentsLinesToDataSourceQuery,
@@ -100,9 +94,7 @@ const AddDataComponentsLines: FunctionComponent<
   const [commitDelete] = useApiMutation(addDataComponentsMutationRelationDelete);
 
   const dataComponents = dataSource.dataComponents?.edges;
-  const dataComponentsIds = dataComponents?.map(
-    (dataComponent) => dataComponent?.node.id,
-  );
+  const dataComponentsIds = dataComponents?.map((dataComponent) => dataComponent?.node.id);
 
   const toggleDataComponent = (dataComponentId: string) => {
     const alreadyAdded = dataComponentsIds?.includes(dataComponentId);
@@ -139,14 +131,9 @@ const AddDataComponentsLines: FunctionComponent<
           return (
             <ListItemText
               key={idx}
-              primary={(
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              )}
+              primary={
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
+              }
             />
           );
         }
@@ -159,11 +146,7 @@ const AddDataComponentsLines: FunctionComponent<
             onClick={() => toggleDataComponent(dataComponent.id)}
           >
             <ListItemIcon>
-              {alreadyAdded ? (
-                <CheckCircle classes={{ root: classes.icon }} />
-              ) : (
-                <SourceOutlined />
-              )}
+              {alreadyAdded ? <CheckCircle classes={{ root: classes.icon }} /> : <SourceOutlined />}
             </ListItemIcon>
             <ListItemText
               primary={dataComponent.name}

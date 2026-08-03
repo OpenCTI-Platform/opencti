@@ -32,11 +32,7 @@ const stixCyberObservableMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixCyberObservableEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         id
         ...StixCyberObservableEditionOverview_stixCyberObservable
         ...StixCyberObservable_stixCyberObservable
@@ -46,10 +42,7 @@ const stixCyberObservableMutationFieldPatch = graphql`
 `;
 
 export const stixCyberObservableEditionOverviewFocus = graphql`
-  mutation StixCyberObservableEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation StixCyberObservableEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixCyberObservableEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -97,7 +90,13 @@ const StixCyberObservableEditionOverviewComponent = ({
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
-  const { booleanAttributes, dateAttributes, ignoredAttributes, multipleAttributes, numberAttributes } = useAttributes();
+  const {
+    booleanAttributes,
+    dateAttributes,
+    ignoredAttributes,
+    multipleAttributes,
+    numberAttributes,
+  } = useAttributes();
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -118,8 +117,7 @@ const StixCyberObservableEditionOverviewComponent = ({
       variables: {
         id: stixCyberObservable.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -163,10 +161,7 @@ const StixCyberObservableEditionOverviewComponent = ({
           input: { key: finalName, object_path, value: finalValue },
         },
         onCompleted: (response) => {
-          if (
-            response.stixCyberObservableEdit.fieldPatch.id
-            !== stixCyberObservable.id
-          ) {
+          if (response.stixCyberObservableEdit.fieldPatch.id !== stixCyberObservable.id) {
             navigate(
               `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
             );
@@ -236,7 +231,8 @@ const StixCyberObservableEditionOverviewComponent = ({
   };
 
   const stixCyberObservableValidation = Yup.object().shape({
-    x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
+    x_opencti_score: Yup.number()
+      .integer(t_i18n('The value must be an integer'))
       .nullable()
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100')),
@@ -248,12 +244,13 @@ const StixCyberObservableEditionOverviewComponent = ({
       variables={{ elementType: [stixCyberObservable.entity_type] }}
       render={({ props }) => {
         if (props && props.schemaAttributeNames) {
-          const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
-            ? ''
-            : {
-                label: stixCyberObservable?.createdBy?.name ?? null,
-                value: stixCyberObservable?.createdBy?.id ?? null,
-              };
+          const createdBy =
+            (stixCyberObservable?.createdBy?.name ?? null) === null
+              ? ''
+              : {
+                  label: stixCyberObservable?.createdBy?.name ?? null,
+                  value: stixCyberObservable?.createdBy?.id ?? null,
+                };
           const objectMarking = convertMarkings(stixCyberObservable);
           const initialValues = pipe(
             assoc('createdBy', createdBy),
@@ -268,22 +265,15 @@ const StixCyberObservableEditionOverviewComponent = ({
           )(stixCyberObservable);
           const attributes = pipe(
             map((n) => n.node),
-            filter(
-              (n) => !includes(n.value, ignoredAttributes)
-                && !n.value.startsWith('i_'),
-            ),
+            filter((n) => !includes(n.value, ignoredAttributes) && !n.value.startsWith('i_')),
           )(props.schemaAttributeNames.edges);
           for (const attribute of attributes) {
             if (includes(attribute.value, dateAttributes)) {
-              initialValues[attribute.value] = stixCyberObservable[
-                attribute.value
-              ]
+              initialValues[attribute.value] = stixCyberObservable[attribute.value]
                 ? buildDate(stixCyberObservable[attribute.value])
                 : null;
             } else if (includes(attribute.value, multipleAttributes)) {
-              initialValues[attribute.value] = stixCyberObservable[
-                attribute.value
-              ]
+              initialValues[attribute.value] = stixCyberObservable[attribute.value]
                 ? stixCyberObservable[attribute.value].join(',')
                 : null;
             } else if (attribute.value === 'hashes') {
@@ -317,12 +307,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                     type="number"
                     onFocus={handleChangeFocus}
                     onSubmit={handleSubmitField}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="x_opencti_score"
-                      />
-                    )}
+                    helperText={<SubscriptionFocus context={context} fieldName="x_opencti_score" />}
                   />
                   <Field
                     component={MarkdownField}
@@ -335,12 +320,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                     style={{ marginTop: 20 }}
                     onFocus={handleChangeFocus}
                     onSubmit={handleSubmitField}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="x_opencti_description"
-                      />
-                    )}
+                    helperText={
+                      <SubscriptionFocus context={context} fieldName="x_opencti_description" />
+                    }
                   />
                   {attributes.map((attribute) => {
                     if (attribute.value === 'hashes') {
@@ -355,12 +337,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
                             onSubmit={handleSubmitField}
-                            helperText={(
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="/hashes/MD5"
-                              />
-                            )}
+                            helperText={
+                              <SubscriptionFocus context={context} fieldName="/hashes/MD5" />
+                            }
                           />
                           <Field
                             component={TextField}
@@ -371,12 +350,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
                             onSubmit={handleSubmitField}
-                            helperText={(
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="/hashes/SHA-1"
-                              />
-                            )}
+                            helperText={
+                              <SubscriptionFocus context={context} fieldName="/hashes/SHA-1" />
+                            }
                           />
                           <Field
                             component={TextField}
@@ -387,12 +363,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
                             onSubmit={handleSubmitField}
-                            helperText={(
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="/hashes/SHA-256"
-                              />
-                            )}
+                            helperText={
+                              <SubscriptionFocus context={context} fieldName="/hashes/SHA-256" />
+                            }
                           />
                           <Field
                             component={TextField}
@@ -403,12 +376,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
                             onSubmit={handleSubmitField}
-                            helperText={(
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="/hashes/SHA-512"
-                              />
-                            )}
+                            helperText={
+                              <SubscriptionFocus context={context} fieldName="/hashes/SHA-512" />
+                            }
                           />
                         </div>
                       );
@@ -428,10 +398,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             fullWidth: true,
                             style: { marginTop: 20 },
                             helperText: (
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName={attribute.value}
-                              />
+                              <SubscriptionFocus context={context} fieldName={attribute.value} />
                             ),
                           }}
                         />
@@ -450,12 +417,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                           style={{ marginTop: 20 }}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
-                          helperText={(
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName={attribute.value}
-                            />
-                          )}
+                          helperText={
+                            <SubscriptionFocus context={context} fieldName={attribute.value} />
+                          }
                         />
                       );
                     }
@@ -472,20 +436,12 @@ const StixCyberObservableEditionOverviewComponent = ({
                         />
                       );
                     }
-                    if (
-                      isVocabularyField(
-                        stixCyberObservable.entity_type,
-                        attribute.value,
-                      )
-                    ) {
+                    if (isVocabularyField(stixCyberObservable.entity_type, attribute.value)) {
                       return (
                         <OpenVocabField
                           key={attribute.value}
                           label={t_i18n(attribute.value)}
-                          type={fieldToCategory(
-                            stixCyberObservable.entity_type,
-                            attribute.value,
-                          )}
+                          type={fieldToCategory(stixCyberObservable.entity_type, attribute.value)}
                           name={attribute.value}
                           variant="edit"
                           onChange={handleSubmitField}
@@ -504,8 +460,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                           attributeValue={
                             artifact
                               ? {
-                                  label:
-                                  artifact.observable_value ?? artifact.id,
+                                  label: artifact.observable_value ?? artifact.id,
                                   value: artifact.id,
                                 }
                               : undefined
@@ -525,12 +480,9 @@ const StixCyberObservableEditionOverviewComponent = ({
                         style={{ marginTop: 20 }}
                         onFocus={handleChangeFocus}
                         onSubmit={handleSubmitField}
-                        helperText={(
-                          <SubscriptionFocus
-                            context={context}
-                            fieldName={attribute.value}
-                          />
-                        )}
+                        helperText={
+                          <SubscriptionFocus context={context} fieldName={attribute.value} />
+                        }
                       />
                     );
                   })}
@@ -538,23 +490,13 @@ const StixCyberObservableEditionOverviewComponent = ({
                     name="createdBy"
                     style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="createdBy"
-                      />
-                    )}
+                    helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
                     onChange={handleChangeCreatedBy}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
                     style={fieldSpacingContainerStyle}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={context}
-                        fieldname="objectMarking"
-                      />
-                    )}
+                    helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
                     setFieldValue={setFieldValue}
                     onChange={handleChangeObjectMarking}
                   />

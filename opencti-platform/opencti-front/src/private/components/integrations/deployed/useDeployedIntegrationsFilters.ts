@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BUILT_IN_INTEGRATION_KINDS, isBuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
+import {
+  BUILT_IN_INTEGRATION_KINDS,
+  isBuiltInIntegrationKind,
+} from '@components/integrations/available/builtInIntegrations';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 
 export type DeployedSortMode = 'name' | 'status' | 'lastRun' | 'messages';
@@ -39,7 +42,14 @@ const SECTION_ORDER: string[] = [...CONNECTOR_TYPE_ORDER, ...BUILT_IN_INTEGRATIO
 
 const parseListParam = (value: string | null): string[] => {
   if (!value) return [];
-  return [...new Set(value.split(',').map((v) => v.trim()).filter((v) => v.length > 0))];
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0),
+    ),
+  ];
 };
 
 const itemKindFacet = (item: DeployedIntegrationItem): DeployedKindFacet => {
@@ -64,10 +74,18 @@ const matchesFilters = (
   if (skip !== 'types' && filters.types.length > 0 && !filters.types.includes(item.sectionKey)) {
     return false;
   }
-  if (skip !== 'statuses' && filters.statuses.length > 0 && !filters.statuses.includes(itemStatusFacet(item))) {
+  if (
+    skip !== 'statuses' &&
+    filters.statuses.length > 0 &&
+    !filters.statuses.includes(itemStatusFacet(item))
+  ) {
     return false;
   }
-  if (skip !== 'kinds' && filters.kinds.length > 0 && !filters.kinds.includes(itemKindFacet(item))) {
+  if (
+    skip !== 'kinds' &&
+    filters.kinds.length > 0 &&
+    !filters.kinds.includes(itemKindFacet(item))
+  ) {
     return false;
   }
   return true;
@@ -78,7 +96,10 @@ interface UseDeployedIntegrationsFiltersProps {
   searchParams: URLSearchParams;
 }
 
-const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedIntegrationsFiltersProps) => {
+const useDeployedIntegrationsFilters = ({
+  items,
+  searchParams,
+}: UseDeployedIntegrationsFiltersProps) => {
   // The legacy feed screens redirect to /integrations/deployed?kind=<feed>:
   // the kind is folded into the type facet as an initial selection.
   const legacyKind = searchParams.get('kind');
@@ -90,13 +111,17 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
   const [filters, setFilters] = useState<DeployedFilterState>({
     search: searchParams.get('search') || '',
     types: [...new Set(initialTypes)],
-    statuses: parseListParam(searchParams.get('status'))
-      .filter((s): s is DeployedStatusFacet => (DEPLOYED_STATUS_FACETS as string[]).includes(s)),
-    kinds: parseListParam(searchParams.get('deployment'))
-      .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
+    statuses: parseListParam(searchParams.get('status')).filter((s): s is DeployedStatusFacet =>
+      (DEPLOYED_STATUS_FACETS as string[]).includes(s),
+    ),
+    kinds: parseListParam(searchParams.get('deployment')).filter((k): k is DeployedKindFacet =>
+      (DEPLOYED_KIND_FACETS as string[]).includes(k),
+    ),
   });
   const [sort, setSort] = useState<DeployedSortMode>(
-    (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
+    (['name', 'status', 'lastRun', 'messages'] as const).find(
+      (mode) => mode === searchParams.get('sort'),
+    ) ?? 'name',
   );
 
   useEffect(() => {
@@ -108,7 +133,9 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();
-    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
     window.history.replaceState({}, '', newUrl);
   }, [filters, sort]);
 
@@ -162,23 +189,24 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       if (item.status === 'processing') return 1;
       return 2;
     };
-    const sortItems = (list: DeployedIntegrationItem[]) => [...list].sort((a, b) => {
-      if (sort === 'status' && statusRank(a) !== statusRank(b)) {
-        return statusRank(a) - statusRank(b);
-      }
-      if (sort === 'lastRun') {
-        const aDate = a.lastRunDate ?? a.updatedAt ?? '';
-        const bDate = b.lastRunDate ?? b.updatedAt ?? '';
-        if (aDate !== bDate) return bDate.localeCompare(aDate);
-      }
-      // Largest backlog first, to quickly spot integrations with queued messages.
-      if (sort === 'messages') {
-        const aMessages = a.messagesCount ?? 0;
-        const bMessages = b.messagesCount ?? 0;
-        if (aMessages !== bMessages) return bMessages - aMessages;
-      }
-      return a.name.localeCompare(b.name);
-    });
+    const sortItems = (list: DeployedIntegrationItem[]) =>
+      [...list].sort((a, b) => {
+        if (sort === 'status' && statusRank(a) !== statusRank(b)) {
+          return statusRank(a) - statusRank(b);
+        }
+        if (sort === 'lastRun') {
+          const aDate = a.lastRunDate ?? a.updatedAt ?? '';
+          const bDate = b.lastRunDate ?? b.updatedAt ?? '';
+          if (aDate !== bDate) return bDate.localeCompare(aDate);
+        }
+        // Largest backlog first, to quickly spot integrations with queued messages.
+        if (sort === 'messages') {
+          const aMessages = a.messagesCount ?? 0;
+          const bMessages = b.messagesCount ?? 0;
+          if (aMessages !== bMessages) return bMessages - aMessages;
+        }
+        return a.name.localeCompare(b.name);
+      });
     return availableTypes
       .map((key) => ({
         key,
@@ -187,10 +215,11 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       .filter((section) => section.items.length > 0);
   }, [filteredItems, availableTypes, sort]);
 
-  const hasActiveFilters = filters.search !== ''
-    || filters.types.length > 0
-    || filters.statuses.length > 0
-    || filters.kinds.length > 0;
+  const hasActiveFilters =
+    filters.search !== '' ||
+    filters.types.length > 0 ||
+    filters.statuses.length > 0 ||
+    filters.kinds.length > 0;
 
   const clearAllFilters = () => {
     setFilters({ search: '', types: [], statuses: [], kinds: [] });

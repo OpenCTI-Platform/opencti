@@ -1,6 +1,11 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -9,7 +14,11 @@ import { telemetry } from '../config/tracing';
 import { isEmptyField, RABBIT_QUEUE_PREFIX, wait } from './utils';
 import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_BACKGROUND_TASK,
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_SYNC,
+} from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { s3ConnectionConfig } from './raw-file-storage';
 
@@ -18,15 +27,22 @@ export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
-const readFileFromConfig = (configKey) => (conf.get(configKey) ? loadCert(conf.get(configKey)) : undefined);
+const readFileFromConfig = (configKey) =>
+  conf.get(configKey) ? loadCert(conf.get(configKey)) : undefined;
 const RABBITMQ_CA = (conf.get('rabbitmq:use_ssl_ca') ?? []).map((path) => loadCert(path));
 const RABBITMQ_CA_CERT = readFileFromConfig('rabbitmq:use_ssl_cert');
 const RABBITMQ_CA_KEY = readFileFromConfig('rabbitmq:use_ssl_key');
 const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
 const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
 const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
-const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
-export const BACKGROUND_TASK_QUEUES = parseInt(conf.get('app:task_scheduler:max_queues_breakdown') ?? '4', 10);
+const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf(
+  'rabbitmq:management_ssl_reject_unauthorized',
+  false,
+);
+export const BACKGROUND_TASK_QUEUES = parseInt(
+  conf.get('app:task_scheduler:max_queues_breakdown') ?? '4',
+  10,
+);
 const RABBITMQ_PUSH_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}push_`;
 const RABBITMQ_LISTEN_QUEUE_PREFIX = `${RABBIT_QUEUE_PREFIX}listen_`;
 const HOSTNAME = conf.get('rabbitmq:hostname');
@@ -49,15 +65,17 @@ const amqpCred = () => {
 };
 
 const getConnectionOptions = () => {
-  return USE_SSL ? {
-    ...amqpCred(),
-    ...configureCA(RABBITMQ_CA),
-    cert: RABBITMQ_CA_CERT,
-    key: RABBITMQ_CA_KEY,
-    pfx: RABBITMQ_CA_PFX,
-    passphrase: RABBITMQ_CA_PASSPHRASE,
-    rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
-  } : amqpCred();
+  return USE_SSL
+    ? {
+        ...amqpCred(),
+        ...configureCA(RABBITMQ_CA),
+        cert: RABBITMQ_CA_CERT,
+        key: RABBITMQ_CA_KEY,
+        pfx: RABBITMQ_CA_PFX,
+        passphrase: RABBITMQ_CA_PASSPHRASE,
+        rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+      }
+    : amqpCred();
 };
 
 // region Persistent Publisher Connection
@@ -182,7 +200,10 @@ const reconnectWithBackoff = async () => {
       return;
     } catch (err) {
       connectionPromise = null;
-      logApp.warn(`[RABBITMQ] Reconnection attempt ${attempt} failed, retrying in ${currentDelay}ms`, { cause: err });
+      logApp.warn(
+        `[RABBITMQ] Reconnection attempt ${attempt} failed, retrying in ${currentDelay}ms`,
+        { cause: err },
+      );
       await wait(currentDelay);
       // Exponential backoff with max limit
       currentDelay = Math.min(currentDelay * RECONNECT_MULTIPLIER, RECONNECT_MAX_DELAY);
@@ -376,8 +397,14 @@ export const getConnectorQueueDetails = async (connectorId) => {
 
     // Fetch both push and listen queue details in parallel
     const [pushResult, listenResult] = await Promise.all([
-      httpClient.get(pathPushQueue).then((response) => response.data).catch(() => null),
-      httpClient.get(pathListenQueue).then((response) => response.data).catch(() => null),
+      httpClient
+        .get(pathPushQueue)
+        .then((response) => response.data)
+        .catch(() => null),
+      httpClient
+        .get(pathListenQueue)
+        .then((response) => response.data)
+        .catch(() => null),
     ]);
 
     const pushMessages = pushResult?.messages || 0;
@@ -407,7 +434,8 @@ const amqpExecute = async (execute) => {
       amqp.connect(amqpUri(), connOptions, (err, conn) => {
         if (err) {
           reject(err);
-        } else { // Connection success
+        } else {
+          // Connection success
           conn.on('error', (onConnectError) => {
             logApp.error('Rabbit Error trying to connect', { onConnectError });
             reject(onConnectError);
@@ -421,14 +449,16 @@ const amqpExecute = async (execute) => {
                 logApp.error('Rabbit Error on channel', { onChannelError });
                 reject(onChannelError);
               });
-              execute(channel).then((data) => {
-                channel.close();
-                conn.close();
-                resolve(data);
-              }).catch((executeError) => {
-                logApp.error('Rabbit Error on execute', { executeError });
-                reject(executeError);
-              });
+              execute(channel)
+                .then((data) => {
+                  channel.close();
+                  conn.close();
+                  resolve(data);
+                })
+                .catch((executeError) => {
+                  logApp.error('Rabbit Error on execute', { executeError });
+                  reject(executeError);
+                });
             }
           });
         }
@@ -460,7 +490,10 @@ export const send = async (exchangeName, routingKey, message) => {
     try {
       return await sendPersistent(exchangeName, routingKey, message);
     } catch (err) {
-      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber}), retrying in ${retryDelay}ms`, { cause: err, exchangeName, routingKey });
+      logApp.warn(
+        `[RABBITMQ] Send failed (attempt ${++attemptNumber}), retrying in ${retryDelay}ms`,
+        { cause: err, exchangeName, routingKey },
+      );
 
       // If channel was lost, wait for reconnection before retry
       if (!persistentChannel) {
@@ -478,22 +511,34 @@ export const send = async (exchangeName, routingKey, message) => {
 export const metrics = async (context, user) => {
   const metricApi = async () => {
     const httpClient = await amqpHttpClient();
-    const overview = await httpClient.get('/api/overview', { timeout: 5000 }).then((response) => response.data);
-    const queues = await httpClient.get(`/api/queues${VHOST_PATH}`, { timeout: 5000 }).then((response) => response.data);
+    const overview = await httpClient
+      .get('/api/overview', { timeout: 5000 })
+      .then((response) => response.data);
+    const queues = await httpClient
+      .get(`/api/queues${VHOST_PATH}`, { timeout: 5000 })
+      .then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
-    const pushQueues = platformQueues.filter((q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0);
+    const pushQueues = platformQueues.filter(
+      (q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0,
+    );
     const consumers = pushQueues.length > 0 ? pushQueues[0].consumers : 0;
     return { overview, consumers, queues: platformQueues };
   };
-  return telemetry(context, user, 'QUEUE metrics', {
-    [ATTR_DB_NAMESPACE]: 'messaging_engine',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'messaging_engine',
-    [ATTR_DB_OPERATION_NAME]: 'metrics',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'metrics',
-  }, metricApi);
+  return telemetry(
+    context,
+    user,
+    'QUEUE metrics',
+    {
+      [ATTR_DB_NAMESPACE]: 'messaging_engine',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'messaging_engine',
+      [ATTR_DB_OPERATION_NAME]: 'metrics',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'metrics',
+    },
+    metricApi,
+  );
 };
 
 const metricsCache = new LRUCache({ ttl: 15000, max: 1 }); // 15 seconds cache
@@ -507,7 +552,9 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
   if (targetQueues.length === 1) {
     return targetQueues[0].messages ?? 0;
   }
-  return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
+  return targetQueues.length > 0
+    ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0))
+    : 0;
 };
 export const getBestBackgroundConnectorId = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');
@@ -516,7 +563,9 @@ export const getBestBackgroundConnectorId = async (context, user) => {
     metricsCache.set('cached_metrics', stats);
   }
   // Find the least used push queue
-  const targetQueues = stats.queues.filter((queue) => queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`));
+  const targetQueues = stats.queues.filter((queue) =>
+    queue.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_background-task`),
+  );
   const bestQueue = targetQueues.sort((a, b) => (a.messages ?? 0) - (b.messages ?? 0))[0];
   return bestQueue.name.substring(`${RABBIT_QUEUE_PREFIX}push_`.length);
 };
@@ -586,30 +635,57 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 export const getInternalBackgroundTaskQueues = () => {
   const backgroundTaskConnectorQueues = [];
   for (let i = 0; i < BACKGROUND_TASK_QUEUES; i += 1) {
-    backgroundTaskConnectorQueues.push(
-      { id: `background-task-${i}`, name: `[TASK] Internal task processing #${i}`, type: 'internal', scope: ENTITY_TYPE_BACKGROUND_TASK },
-    );
+    backgroundTaskConnectorQueues.push({
+      id: `background-task-${i}`,
+      name: `[TASK] Internal task processing #${i}`,
+      type: 'internal',
+      scope: ENTITY_TYPE_BACKGROUND_TASK,
+    });
   }
   return backgroundTaskConnectorQueues;
 };
 // region deprecated fixed queues
 // we have now dedicated queues for each playbook and each sync (see getInternalPlaybookQueues & getInternalSyncQueues)
-const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: 'Internal playbook manager', type: 'internal', scope: 'playbook' };
-const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' };
+const CONNECTOR_QUEUE_PLAYBOOK = {
+  id: 'playbook',
+  name: 'Internal playbook manager',
+  type: 'internal',
+  scope: 'playbook',
+};
+const CONNECTOR_QUEUE_SYNC = {
+  id: 'sync',
+  name: 'Internal sync manager',
+  type: 'internal',
+  scope: 'sync',
+};
 /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
 const DEPRECATED_INTERNAL_QUEUES = [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC];
-const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE = { id: 'too-large-bundle', name: 'Bundle too large for ingestion', type: 'internal', scope: 'dead letter' };
+const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE = {
+  id: 'too-large-bundle',
+  name: 'Bundle too large for ingestion',
+  type: 'internal',
+  scope: 'dead letter',
+};
 // endregion
 export const getInternalQueues = () => {
   const backgroundTaskConnectorQueues = getInternalBackgroundTaskQueues();
-  return [CONNECTOR_QUEUE_BUNDLES_TOO_LARGE, ...DEPRECATED_INTERNAL_QUEUES, ...backgroundTaskConnectorQueues];
+  return [
+    CONNECTOR_QUEUE_BUNDLES_TOO_LARGE,
+    ...DEPRECATED_INTERNAL_QUEUES,
+    ...backgroundTaskConnectorQueues,
+  ];
 };
 
 export const initializeInternalQueues = async () => {
   const internalQueues = getInternalQueues();
   for (let i = 0; i < internalQueues.length; i += 1) {
     const internalQueue = internalQueues[i];
-    await registerConnectorQueues(internalQueue.id, internalQueue.name, internalQueue.type, internalQueue.scope);
+    await registerConnectorQueues(
+      internalQueue.id,
+      internalQueue.name,
+      internalQueue.type,
+      internalQueue.scope,
+    );
   }
 };
 
@@ -618,7 +694,12 @@ export const getInternalPlaybookQueues = async (context, user) => {
   const playbooks = await fullEntitiesList(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let index = 0; index < playbooks.length; index += 1) {
     const playbook = playbooks[index];
-    playbookQueues.push({ id: playbook.internal_id, name: `[PLAYBOOK] ${playbook.name}`, type: 'internal', scope: ENTITY_TYPE_PLAYBOOK });
+    playbookQueues.push({
+      id: playbook.internal_id,
+      name: `[PLAYBOOK] ${playbook.name}`,
+      type: 'internal',
+      scope: ENTITY_TYPE_PLAYBOOK,
+    });
   }
   return playbookQueues;
 };
@@ -628,7 +709,12 @@ export const getInternalSyncQueues = async (context, user) => {
   const syncs = await fullEntitiesList(context, user, [ENTITY_TYPE_SYNC]);
   for (let index = 0; index < syncs.length; index += 1) {
     const sync = syncs[index];
-    syncQueues.push({ id: sync.internal_id, name: `[SYNC] ${sync.name}`, type: 'internal', scope: ENTITY_TYPE_SYNC });
+    syncQueues.push({
+      id: sync.internal_id,
+      name: `[SYNC] ${sync.name}`,
+      type: 'internal',
+      scope: ENTITY_TYPE_SYNC,
+    });
   }
   return syncQueues;
 };
@@ -642,13 +728,23 @@ export const enforceQueuesConsistency = async (context, user) => {
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const scopes = connector.connector_scope ? connector.connector_scope.split(',') : [];
-    await registerConnectorQueues(connector.internal_id, connector.name, connector.connector_type, scopes);
+    await registerConnectorQueues(
+      connector.internal_id,
+      connector.name,
+      connector.connector_type,
+      scopes,
+    );
   }
   // List all current platform playbooks and ensure queues are correctly setup
   const playbooksQueues = await getInternalPlaybookQueues(context, user);
   for (let index = 0; index < playbooksQueues.length; index += 1) {
     const playbookQueue = playbooksQueues[index];
-    await registerConnectorQueues(playbookQueue.id, playbookQueue.name, playbookQueue.type, playbookQueue.scope);
+    await registerConnectorQueues(
+      playbookQueue.id,
+      playbookQueue.name,
+      playbookQueue.type,
+      playbookQueue.scope,
+    );
   }
   // List all current platform synchronizers (OpenCTI Streams) and ensure queues are correctly setup
   const syncQueues = await getInternalSyncQueues(context, user);
@@ -724,7 +820,8 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
       amqp.connect(amqpUri(), connOptions, (err, conn) => {
         if (err) {
           reject(err);
-        } else { // Connection success
+        } else {
+          // Connection success
           logApp.debug('[QUEUEING] Starting connector queue consuming', { connectorId });
           conn.on('close', (onConnectError) => {
             if (onConnectError) {
@@ -742,18 +839,23 @@ export const consumeQueue = async (context, connectorId, connectionSetterCallbac
               channel.on('error', (onChannelError) => {
                 reject(onChannelError);
               });
-              channel.consume(listenQueue, (data) => {
-                if (data !== null) {
-                  callback(context, data.content.toString());
-                }
-              }, { noAck: true }, (consumeError) => {
-                if (consumeError) {
-                  logApp.error('[QUEUEING] Consumption fail', {
-                    connectorId,
-                    cause: consumeError,
-                  });
-                }
-              });
+              channel.consume(
+                listenQueue,
+                (data) => {
+                  if (data !== null) {
+                    callback(context, data.content.toString());
+                  }
+                },
+                { noAck: true },
+                (consumeError) => {
+                  if (consumeError) {
+                    logApp.error('[QUEUEING] Consumption fail', {
+                      connectorId,
+                      cause: consumeError,
+                    });
+                  }
+                },
+              );
             }
           });
         }

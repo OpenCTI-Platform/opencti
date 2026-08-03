@@ -18,7 +18,11 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -29,16 +33,16 @@ const eventMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-      eventFieldPatch(
-        id: $id
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
-        ...EventEditionOverview_event
-        ...Event_event
-      }
+    eventFieldPatch(
+      id: $id
+      input: $input
+      commitMessage: $commitMessage
+      references: $references
+    ) {
+      ...EventEditionOverview_event
+      ...Event_event
     }
+  }
 `;
 
 export const eventEditionOverviewFocus = graphql`
@@ -50,10 +54,7 @@ export const eventEditionOverviewFocus = graphql`
 `;
 
 const eventMutationRelationAdd = graphql`
-  mutation EventEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation EventEditionOverviewRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     eventRelationAdd(id: $id, input: $input) {
       from {
         ...EventEditionOverview_event
@@ -80,21 +81,26 @@ const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(EVENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    event_types: Yup.array().nullable(),
-    start_time: Yup.date().typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
-    stop_time: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('start_time'), "The end date can't be before start date")
-      .nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      event_types: Yup.array().nullable(),
+      start_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .nullable(),
+      stop_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .min(Yup.ref('start_time'), "The end date can't be before start date")
+        .nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const eventValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -174,14 +180,7 @@ const EventEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={event} />
           <Field
@@ -189,19 +188,17 @@ const EventEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             label={t_i18n('Event types')}
             type="event-type-ov"
             name="event_types"
-            required={(mandatoryAttributes.includes('event_types'))}
+            required={mandatoryAttributes.includes('event_types')}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
@@ -214,7 +211,7 @@ const EventEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             uploadEntityId={event.id}
             fullWidth={true}
             multiline={true}
@@ -222,9 +219,7 @@ const EventEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <Field
             component={DateTimePickerField}
@@ -233,13 +228,11 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('Start date'),
-              required: (mandatoryAttributes.includes('start_time')),
+              required: mandatoryAttributes.includes('start_time'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="start_date" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="start_date" />,
             }}
           />
           <Field
@@ -249,13 +242,11 @@ const EventEditionOverviewComponent = (props) => {
             onSubmit={handleSubmitField}
             textFieldProps={{
               label: t_i18n('End date'),
-              required: (mandatoryAttributes.includes('stop_time')),
+              required: mandatoryAttributes.includes('stop_time'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="end_date" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="end_date" />,
             }}
           />
           <ConfidenceField
@@ -274,28 +265,22 @@ const EventEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -317,38 +302,38 @@ const EventEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(EventEditionOverviewComponent, {
   event: graphql`
-      fragment EventEditionOverview_event on Event {
-        id
-        name
-        event_types
-        description
-        start_time
-        confidence
-        entity_type
-        stop_time
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
+    fragment EventEditionOverview_event on Event {
+      id
+      name
+      event_types
+      description
+      start_time
+      confidence
+      entity_type
+      stop_time
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
+          name
+          entity_type
         }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
       }
-    `,
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

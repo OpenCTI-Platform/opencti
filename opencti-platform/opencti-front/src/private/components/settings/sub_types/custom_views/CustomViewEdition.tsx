@@ -27,13 +27,16 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
   const handlePreviewEntityChange = (id: string | null) => {
     setPreviewEntityId(id);
   };
-  const host = useMemo(() => ({
-    kind: 'custom-view' as const,
-    customViewTargetEntityType: entityType,
-    customViewTargetEntityId: previewEntityId ?? undefined,
-    previewMode: Boolean(previewEntityId),
-    missingHostEntityFiller: <CustomViewEditionMissingHostEntityFiller />,
-  }), [entityType, previewEntityId]);
+  const host = useMemo(
+    () => ({
+      kind: 'custom-view' as const,
+      customViewTargetEntityType: entityType,
+      customViewTargetEntityId: previewEntityId ?? undefined,
+      previewMode: Boolean(previewEntityId),
+      missingHostEntityFiller: <CustomViewEditionMissingHostEntityFiller />,
+    }),
+    [entityType, previewEntityId],
+  );
   if (!customView) {
     return <ErrorNotFound />;
   }
@@ -48,19 +51,14 @@ const CustomViewEditionComponent = ({ queryRef, entityType }: CustomViewEditionC
           host={host}
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DashboardTimeFilters
-            config={config}
-            handleDateChange={handleDateChange}
+          <DashboardTimeFilters config={config} handleDateChange={handleDateChange} />
+          <CustomViewPreviewEntitySelector
+            type={entityType}
+            onPreviewEntityChange={handlePreviewEntityChange}
           />
-          <CustomViewPreviewEntitySelector type={entityType} onPreviewEntityChange={handlePreviewEntityChange} />
         </Box>
       </Stack>
-      <DashboardContent
-        helpers={helpers}
-        entity={customView}
-        isEditable={true}
-        host={host}
-      />
+      <DashboardContent helpers={helpers} entity={customView} isEditable={true} host={host} />
     </Stack>
   );
 };
@@ -75,12 +73,9 @@ const CustomViewEdition = ({ entityType }: CustomViewEditionProps) => {
     return <ErrorNotFound />;
   }
 
-  const queryRef = useQueryLoading<useCustomViewDashboardEdit_Query>(
-    customViewQuery,
-    {
-      id: customViewId,
-    },
-  );
+  const queryRef = useQueryLoading<useCustomViewDashboardEdit_Query>(customViewQuery, {
+    id: customViewId,
+  });
 
   return (
     <Suspense fallback={<Loader />}>

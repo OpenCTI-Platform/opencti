@@ -1,5 +1,11 @@
 import * as R from 'ramda';
-import { Checklist, FormatShapesOutlined, MapOutlined, PieChartOutlined, ViewQuiltOutlined } from '@mui/icons-material';
+import {
+  Checklist,
+  FormatShapesOutlined,
+  MapOutlined,
+  PieChartOutlined,
+  ViewQuiltOutlined,
+} from '@mui/icons-material';
 import {
   AlignHorizontalLeft,
   ChartAreasplineVariant,
@@ -216,25 +222,31 @@ const customAttributesVisualizationType = {
   isAudits: false,
 } as const;
 
-export type WidgetVisualizationTypes
-  = (typeof widgetVisualizationTypes)[number]['key']
-    | typeof customAttributesVisualizationType['key'];
+export type WidgetVisualizationTypes =
+  | (typeof widgetVisualizationTypes)[number]['key']
+  | (typeof customAttributesVisualizationType)['key'];
 
-export const RELATIONSHIP_WIDGETS_TYPES = ['stix-core-relationship', 'stix-sighting-relationship', 'object', 'object-label'];
+export const RELATIONSHIP_WIDGETS_TYPES = [
+  'stix-core-relationship',
+  'stix-sighting-relationship',
+  'object',
+  'object-label',
+];
 
-export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
+export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter(
+  (w) => w.key !== 'attribute',
+);
 
-export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
+export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) =>
+  ['list'].includes(w.key),
+);
 
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
   ...workspacesWidgetVisualizationTypes,
 ];
 
-const allVisualizationTypes = [
-  ...widgetVisualizationTypes,
-  customAttributesVisualizationType,
-];
+const allVisualizationTypes = [...widgetVisualizationTypes, customAttributesVisualizationType];
 
 export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizationTypes);
 
@@ -245,7 +257,9 @@ export const getCurrentCategory = (type: string | null) => {
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
   if (!type) return [];
-  return [...(indexedVisualizationTypes[type as WidgetVisualizationTypes]?.availableParameters ?? [])];
+  return [
+    ...(indexedVisualizationTypes[type as WidgetVisualizationTypes]?.availableParameters ?? []),
+  ];
 };
 
 export const getCurrentDataSelectionLimit = (type: string) => {
@@ -257,7 +271,10 @@ export const getCurrentIsRelationships = (type: string) => {
 };
 
 export const isWidgetListOrTimeline = (type: string) => {
-  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
+  return (
+    indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' ||
+    indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline'
+  );
 };
 
 /**
@@ -330,18 +347,21 @@ export const getMaxResultCount = (type: string) => {
 };
 
 export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDataSelection[]) => {
-  if (type === 'list'
-    || type === 'distribution-list'
-    || type === 'timeline'
-    || type === 'donut'
-    || type === 'horizontal-bar'
-    || type === 'radar'
-    || type === 'polar-area'
-    || type === 'tree'
-    || type === 'map'
-    || type === 'wordcloud'
+  if (
+    type === 'list' ||
+    type === 'distribution-list' ||
+    type === 'timeline' ||
+    type === 'donut' ||
+    type === 'horizontal-bar' ||
+    type === 'radar' ||
+    type === 'polar-area' ||
+    type === 'tree' ||
+    type === 'map' ||
+    type === 'wordcloud'
   ) {
-    return dataSelection.every((selection) => !selection.number || selection.number <= getMaxResultCount(type));
+    return dataSelection.every(
+      (selection) => !selection.number || selection.number <= getMaxResultCount(type),
+    );
   }
   return true;
 };
@@ -365,7 +385,8 @@ export const isWidgetUsingRelationsAggregation = (
 
 // value above which the unique count is estimated and may differ from the actual number of distinct values
 export const UNIQUE_COUNT_ESTIMATION_THRESHOLD = 40000;
-export const UNIQUE_COUNT_ESTIMATION_WARNING = 'Datasets with more than 40000 distinct values have estimated counts and may differ slightly from the amount of actual distinct values';
+export const UNIQUE_COUNT_ESTIMATION_WARNING =
+  'Datasets with more than 40000 distinct values have estimated counts and may differ slightly from the amount of actual distinct values';
 
 /**
  * Determines whether the estimation warning should be displayed for the given widget data.
@@ -373,8 +394,12 @@ export const UNIQUE_COUNT_ESTIMATION_WARNING = 'Datasets with more than 40000 di
  * whose value exceeds `UNIQUE_COUNT_ESTIMATION_THRESHOLD`, indicating that counts are
  * approximated and may differ from the actual number of distinct values.
  */
-export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelection[], data: WidgetMultiTimeSeries[]) => {
-  return dataSelection.some((selection, i) => (
-    selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD)
-  ));
+export const showEstimationWarningForUniqCount = (
+  dataSelection: WidgetDataSelection[],
+  data: WidgetMultiTimeSeries[],
+) => {
+  return dataSelection.some(
+    (selection, i) =>
+      selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD),
+  );
 };

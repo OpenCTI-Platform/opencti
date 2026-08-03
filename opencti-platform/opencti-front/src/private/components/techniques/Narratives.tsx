@@ -15,7 +15,11 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { useFormatter } from '../../../components/i18n';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import Security from '../../../utils/Security';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -25,7 +29,10 @@ import NarrativeCreation from './narratives/NarrativeCreation';
 import { narrativeLineFragment } from './narratives/NarrativeLine';
 import { narrativesLinesFragment, narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativesWithSubnarrativesLines from './narratives/NarrativesWithSubnarrativesLines';
-import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
+import {
+  NarrativesLinesPaginationQuery,
+  NarrativesLinesPaginationQuery$variables,
+} from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
@@ -47,15 +54,12 @@ const Narratives: FunctionComponent = () => {
     view: 'lines',
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
-  const {
-    searchTerm,
-    filters,
-    view,
-  } = viewStorage;
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<NarrativesLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
+  const { searchTerm, filters, view } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Narrative', filters);
   const queryPaginationOptions = {
@@ -76,11 +80,7 @@ const Narratives: FunctionComponent = () => {
           alignItems="center"
           sx={{ marginBottom: theme.spacing(2) }}
         >
-          <SearchInput
-            variant="small"
-            onSubmit={helpers.handleSearch}
-            keyword={searchTerm}
-          />
+          <SearchInput variant="small" onSubmit={helpers.handleSearch} keyword={searchTerm} />
 
           <Stack direction="row" gap={1}>
             <ViewSwitchingButtons
@@ -98,7 +98,7 @@ const Narratives: FunctionComponent = () => {
 
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -106,11 +106,9 @@ const Narratives: FunctionComponent = () => {
                     <NarrativeWithSubnarrativeLineDummy key={idx} />
                   ))}
               </>
-            )}
+            }
           >
-            <NarrativesWithSubnarrativesLines
-              queryRef={queryRef}
-            />
+            <NarrativesWithSubnarrativesLines queryRef={queryRef} />
           </React.Suspense>
         )}
       </>
@@ -163,35 +161,28 @@ const Narratives: FunctionComponent = () => {
             initialValues={initialValues}
             exportContext={{ entity_type: 'Narrative' }}
             lineFragment={narrativeLineFragment}
-            resolvePath={(data: NarrativesLines_data$data) => data.narratives?.edges?.map(({ node }) => node)}
+            resolvePath={(data: NarrativesLines_data$data) =>
+              data.narratives?.edges?.map(({ node }) => node)
+            }
             preloadedPaginationProps={preloadedPaginationProps}
             contextFilters={contextFilters}
             additionalHeaderToggleButtons={[
-              (
-                <Tooltip key="lines" title={t_i18n('Lines view')}>
-                  <ToggleButton
-                    value="lines"
-                    aria-label="lines"
-                  >
-                    <FiligranIcon icon={ListViewIcon} size="small" />
-                  </ToggleButton>
-                </Tooltip>
-              ),
-              (
-                <Tooltip key="subEntityLines" title={t_i18n('Sub entity lines view')}>
-                  <ToggleButton
-                    value="subEntityLines"
-                    aria-label="subEntityLines"
-                  >
-                    <FiligranIcon icon={SublistViewIcon} size="small" />
-                  </ToggleButton>
-                </Tooltip>
-              )]}
-            createButton={(
+              <Tooltip key="lines" title={t_i18n('Lines view')}>
+                <ToggleButton value="lines" aria-label="lines">
+                  <FiligranIcon icon={ListViewIcon} size="small" />
+                </ToggleButton>
+              </Tooltip>,
+              <Tooltip key="subEntityLines" title={t_i18n('Sub entity lines view')}>
+                <ToggleButton value="subEntityLines" aria-label="subEntityLines">
+                  <FiligranIcon icon={SublistViewIcon} size="small" />
+                </ToggleButton>
+              </Tooltip>,
+            ]}
+            createButton={
               <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <NarrativeCreation paginationOptions={queryPaginationOptions} />
               </Security>
-            )}
+            }
           />
         )}
       </>
@@ -200,7 +191,12 @@ const Narratives: FunctionComponent = () => {
   return (
     <ExportContextProvider>
       <div data-testid="narrative-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Techniques') },
+            { label: t_i18n('Narratives'), current: true },
+          ]}
+        />
         {view === 'lines' ? renderLines() : ''}
         {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       </div>

@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import { useFormatter } from '../../../components/i18n';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';
@@ -20,11 +23,7 @@ const Sectors = () => {
   setTitle(t_i18n('Sectors | Entities'));
   const navigate = useNavigate();
   const location = useLocation();
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  );
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY);
 
   const [sectorsState, setSectorsState] = useState({
     searchTerm: params.searchTerm ?? '',
@@ -32,18 +31,11 @@ const Sectors = () => {
   });
 
   const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      sectorsState,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, sectorsState);
   };
 
   const handleSearch = (value) => {
-    setSectorsState({ ...sectorsState,
-      searchTerm: value,
-    });
+    setSectorsState({ ...sectorsState, searchTerm: value });
   };
 
   useEffect(() => {
@@ -52,13 +44,12 @@ const Sectors = () => {
 
   return (
     <div data-testid="sector-page">
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Sectors'), current: true }]} />
+      <Breadcrumbs
+        variant="list"
+        elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Sectors'), current: true }]}
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <SearchInput
-          variant="small"
-          onSubmit={handleSearch}
-          keyword={sectorsState.searchTerm}
-        />
+        <SearchInput variant="small" onSubmit={handleSearch} keyword={sectorsState.searchTerm} />
         <div>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <SectorCreation />
@@ -69,9 +60,7 @@ const Sectors = () => {
       <QueryRenderer
         query={sectorsLinesQuery}
         variables={{ count: 500 }}
-        render={({ props }) => (
-          <SectorsLines data={props} keyword={sectorsState.searchTerm} />
-        )}
+        render={({ props }) => <SectorsLines data={props} keyword={sectorsState.searchTerm} />}
       />
     </div>
   );

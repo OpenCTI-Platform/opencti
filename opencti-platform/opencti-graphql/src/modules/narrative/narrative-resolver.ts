@@ -1,5 +1,12 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addNarrative, childNarrativesPaginated, findNarrativePaginated, findById, isSubNarrative, parentNarrativesPaginated } from './narrative-domain';
+import {
+  addNarrative,
+  childNarrativesPaginated,
+  findNarrativePaginated,
+  findById,
+  isSubNarrative,
+  parentNarrativesPaginated,
+} from './narrative-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -17,8 +24,20 @@ const narrativeResolvers: Resolvers = {
     narratives: (_, args, context) => findNarrativePaginated(context, context.user, args),
   },
   Narrative: {
-    parentNarratives: (narrative, args, context) => parentNarrativesPaginated<BasicStoreEntityNarrative>(context, context.user, narrative.id, args),
-    subNarratives: (narrative, args, context) => childNarrativesPaginated<BasicStoreEntityNarrative>(context, context.user, narrative.id, args),
+    parentNarratives: (narrative, args, context) =>
+      parentNarrativesPaginated<BasicStoreEntityNarrative>(
+        context,
+        context.user,
+        narrative.id,
+        args,
+      ),
+    subNarratives: (narrative, args, context) =>
+      childNarrativesPaginated<BasicStoreEntityNarrative>(
+        context,
+        context.user,
+        narrative.id,
+        args,
+      ),
     isSubNarrative: (narrative, _, context) => isSubNarrative(context, context.user, narrative.id),
   },
   Mutation: {
@@ -29,7 +48,10 @@ const narrativeResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_NARRATIVE);
     },
     narrativeFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
+      return stixDomainObjectEditField(context, context.user, id, input, {
+        commitMessage,
+        references,
+      });
     },
     narrativeContextPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditContext(context, context.user, id, input);

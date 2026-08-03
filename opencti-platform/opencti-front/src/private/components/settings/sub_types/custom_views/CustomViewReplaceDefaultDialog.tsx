@@ -34,9 +34,7 @@ const CustomViewReplaceDefaultDialog = ({
         <Button variant="secondary" onClick={onClose}>
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={onConfirm}>
-          {t_i18n('Confirm')}
-        </Button>
+        <Button onClick={onConfirm}>{t_i18n('Confirm')}</Button>
       </DialogActions>
     </Dialog>
   );

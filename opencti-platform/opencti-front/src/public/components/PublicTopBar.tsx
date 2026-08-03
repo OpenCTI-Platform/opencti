@@ -19,11 +19,7 @@ const PublicTopBar = ({ title }: { title: string }) => {
       }}
     >
       <Toolbar>
-        <img
-          src={theme.logo}
-          alt="logo"
-          height={35}
-        />
+        <img src={theme.logo} alt="logo" height={35} />
         <div style={{ marginLeft: '30px' }}>
           <Button
             variant="contained"

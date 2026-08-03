@@ -17,7 +17,10 @@ import { graphql, useFragment } from 'react-relay';
 import React from 'react';
 import PirKnowledgeEntities from '@components/pir/pir_knowledge/PirKnowledgeEntities';
 import { PirKnowledgeFragment$key } from './__generated__/PirKnowledgeFragment.graphql';
-import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useGetDefaultFilterObject,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../components/list_lines';
 
@@ -39,7 +42,10 @@ const PirKnowledge = ({ data }: PirKnowledgeProps) => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['pir_score', 'last_pir_score_date'], ['Stix-Domain-Object']),
+      filters: useGetDefaultFilterObject(
+        ['pir_score', 'last_pir_score_date'],
+        ['Stix-Domain-Object'],
+      ),
     },
     searchTerm: '',
     sortBy: 'pir_score',

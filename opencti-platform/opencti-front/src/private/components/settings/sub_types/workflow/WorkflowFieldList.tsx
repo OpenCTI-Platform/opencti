@@ -14,13 +14,7 @@ const WorkflowFieldList = ({ name }: WorkflowFieldListProps) => {
 
   const content = () => {
     if (isCondition && items) {
-      return (
-        <Field
-          name={name}
-          component={WorkflowFieldItem}
-          isCondition={isCondition}
-        />
-      );
+      return <Field name={name} component={WorkflowFieldItem} isCondition={isCondition} />;
     }
     if (Array.isArray(items)) {
       return items.map((_, idx: number) => (

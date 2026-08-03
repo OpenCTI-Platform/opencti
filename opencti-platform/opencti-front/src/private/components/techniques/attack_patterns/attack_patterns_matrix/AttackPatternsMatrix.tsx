@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import {
-  StixDomainObjectAttackPatternsKillChainContainer_data$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import { StixDomainObjectAttackPatternsKillChainContainer_data$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import { graphql } from 'react-relay';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import Loader from '../../../../../components/Loader';
@@ -10,7 +8,9 @@ import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
-  attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
+  attackPatterns: NonNullable<
+    NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']
+  >['edges'][0]['node'][];
   searchTerm?: string;
   handleAdd: (entity: TargetEntity) => void;
   selectedKillChain?: string;
@@ -19,7 +19,10 @@ export interface AttackPatternsMatrixProps {
   entityType: string;
   inPaper?: boolean;
   isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>>;
+  coverageMap?: Map<
+    string,
+    ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number }>
+  >;
   entityId?: string;
 }
 
@@ -45,12 +48,13 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      margin: 0,
-      padding: 0,
-    }}
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        margin: 0,
+        padding: 0,
+      }}
     >
       {queryRef && (
         <React.Suspense fallback={<Loader />}>

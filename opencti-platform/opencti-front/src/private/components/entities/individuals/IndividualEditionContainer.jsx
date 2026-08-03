@@ -29,20 +29,17 @@ const IndividualEditionContainer = (props) => {
   );
 };
 
-const IndividualEditionFragment = createFragmentContainer(
-  IndividualEditionContainer,
-  {
-    individual: graphql`
-      fragment IndividualEditionContainer_individual on Individual {
-        id
-        ...IndividualEditionOverview_individual
-        editContext {
-          name
-          focusOn
-        }
+const IndividualEditionFragment = createFragmentContainer(IndividualEditionContainer, {
+  individual: graphql`
+    fragment IndividualEditionContainer_individual on Individual {
+      id
+      ...IndividualEditionOverview_individual
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default IndividualEditionFragment;

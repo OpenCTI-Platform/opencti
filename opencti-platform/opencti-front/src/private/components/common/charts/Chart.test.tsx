@@ -29,7 +29,14 @@ describe('Component: Chart', () => {
 
   it('should keep the mounted callback and the given options', () => {
     const onMounted = vi.fn();
-    render(<Chart options={{ chart: { type: 'donut' } }} series={[]} type="donut" onMounted={onMounted} />);
+    render(
+      <Chart
+        options={{ chart: { type: 'donut' } }}
+        series={[]}
+        type="donut"
+        onMounted={onMounted}
+      />,
+    );
     expect(receivedOptions?.chart?.type).toEqual('donut');
     expect(receivedOptions?.chart?.events?.mounted).toEqual(onMounted);
   });
@@ -51,7 +58,9 @@ describe('Component: Chart', () => {
     it('should keep the formatter already configured on the chart', () => {
       const options = renderChart({ legend: { formatter: (value) => `[${value}]` } });
       expect(callFormatter(options.legend?.formatter, 'ACME')).toEqual('[ACME]');
-      expect(callFormatter(options.legend?.formatter, '<b>ACME</b>')).toEqual('[&lt;b&gt;ACME&lt;/b&gt;]');
+      expect(callFormatter(options.legend?.formatter, '<b>ACME</b>')).toEqual(
+        '[&lt;b&gt;ACME&lt;/b&gt;]',
+      );
     });
 
     it('should join the parts of a multiline label', () => {
@@ -74,7 +83,9 @@ describe('Component: Chart', () => {
         yaxis: { labels: { formatter: (value) => `${value}!` } },
       });
       expect(callFormatter(options.tooltip?.x?.formatter, 'ACME')).toEqual('ACME!');
-      expect(callFormatter(options.tooltip?.x?.formatter, '<b>ACME</b>')).toEqual('&lt;b&gt;ACME&lt;/b&gt;!');
+      expect(callFormatter(options.tooltip?.x?.formatter, '<b>ACME</b>')).toEqual(
+        '&lt;b&gt;ACME&lt;/b&gt;!',
+      );
     });
 
     it('should not format the tooltip title of a datetime chart', () => {
@@ -84,14 +95,18 @@ describe('Component: Chart', () => {
 
     it('should escape markup in a series name', () => {
       const options = renderChart({});
-      const tooltipY = Array.isArray(options.tooltip?.y) ? options.tooltip?.y[0] : options.tooltip?.y;
+      const tooltipY = Array.isArray(options.tooltip?.y)
+        ? options.tooltip?.y[0]
+        : options.tooltip?.y;
       const name = callFormatter(tooltipY?.title?.formatter, '<b>ACME</b>');
       expect(name).toEqual('&lt;b&gt;ACME&lt;/b&gt;: ');
     });
 
     it('should keep an empty series name empty', () => {
       const options = renderChart({});
-      const tooltipY = Array.isArray(options.tooltip?.y) ? options.tooltip?.y[0] : options.tooltip?.y;
+      const tooltipY = Array.isArray(options.tooltip?.y)
+        ? options.tooltip?.y[0]
+        : options.tooltip?.y;
       expect(callFormatter(tooltipY?.title?.formatter, '')).toEqual('');
     });
   });

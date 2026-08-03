@@ -17,16 +17,13 @@ const CountryEdition = ({ countryId }: { countryId: string }) => {
       },
     });
   };
-  const queryRef = useQueryLoading<CountryEditionContainerQuery>(
-    countryEditionQuery,
-    { id: countryId },
-  );
+  const queryRef = useQueryLoading<CountryEditionContainerQuery>(countryEditionQuery, {
+    id: countryId,
+  });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <CountryEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

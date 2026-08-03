@@ -11,31 +11,22 @@ const IndicatorKnowledge = ({ indicatorId }: IndicatorKnowledgeProps) => (
   <Routes>
     <Route
       index
-      element={(
+      element={
         <IndicatorEntities
           indicatorId={indicatorId}
           relationshipType={undefined}
           defaultStartTime={undefined}
           defaultStopTime={undefined}
         />
-      )}
+      }
     />
     <Route
       path="/relations/:relationId"
-      element={(
-        <StixCoreRelationship
-          entityId={indicatorId}
-        />
-      )}
+      element={<StixCoreRelationship entityId={indicatorId} />}
     />
     <Route
       path="/sightings/:sightingId"
-      element={(
-        <StixSightingRelationship
-          entityId={indicatorId}
-          paddingRight
-        />
-      )}
+      element={<StixSightingRelationship entityId={indicatorId} paddingRight />}
     />
   </Routes>
 );

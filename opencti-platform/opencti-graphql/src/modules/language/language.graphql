@@ -1,122 +1,107 @@
 type Language implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
-    id: ID! # internal_id
-    standard_id: String!
-    entity_type: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    # StixObject
-    representative: Representative!
-    x_opencti_stix_ids: [StixId]
-    is_inferred: Boolean!
-    spec_version: String!
-    created_at: DateTime!
-    updated_at: DateTime!
-    x_opencti_modified_at: DateTime
-    refreshed_at: DateTime
-    draftVersion: DraftVersion
-    # inferences
-    x_opencti_inferences: [Inference]
-    # StixCoreObject
-    createdBy: Identity
-    currentUserAccessRight: String
-    numberOfConnectedElement: Int!
-    objectMarking: [MarkingDefinition!]
-    objectOrganization: [Organization!]
-    objectLabel: [Label!]
-    externalReferences(first: Int): ExternalReferenceConnection
-    containersNumber: Number
-    containers(first: Int, entityTypes: [String!]): ContainerConnection
-    reports(first: Int): ReportConnection
-    notes(first: Int): NoteConnection
-    opinions(first: Int): OpinionConnection
-    observedData(first: Int): ObservedDataConnection
-    groupings(first: Int): GroupingConnection
-    cases(first: Int): CaseConnection
-    stixCoreRelationships(
-        first: Int
-        after: ID
-        orderBy: StixCoreRelationshipsOrdering
-        orderMode: OrderingMode
-        fromId: StixRef
-        toId: StixRef
-        fromTypes: [String]
-        toTypes: [String]
-        relationship_type: String
-        startTimeStart: DateTime
-        startTimeStop: DateTime
-        stopTimeStart: DateTime
-        stopTimeStop: DateTime
-        firstSeenStart: DateTime
-        firstSeenStop: DateTime
-        lastSeenStart: DateTime
-        lastSeenStop: DateTime
-        confidences: [Int]
-        search: String
-        filters: FilterGroup
-    ): StixCoreRelationshipConnection
-    stixCoreObjectsDistribution(
-        relationship_type: [String]
-        toTypes: [String]
-        field: String!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        operation: StatsOperation!
-        limit: Int
-        order: String
-        types: [String]
-        filters: FilterGroup
-        search: String
-    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-    stixCoreRelationshipsDistribution(
-        field: String!
-        operation: StatsOperation!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        isTo: Boolean
-        limit: Int
-        order: String
-        elementWithTargetTypes: [String]
-        fromId: [String]
-        fromRole: String
-        fromTypes: [String]
-        toId: [String]
-        toRole: String
-        toTypes: [String]
-        relationship_type: [String]
-        confidences: [Int]
-        search: String
-        filters: FilterGroup
-    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-    opinions_metrics: OpinionsMetrics
-    # StixDomainObject
-    revoked: Boolean!
-    confidence: Int
-    lang: String
-    created: DateTime
-    modified: DateTime
-    x_opencti_graph_data: String
-    objectAssignee: [Assignee!]
-    objectParticipant: [Participant!]
-    avatar: OpenCtiFile
-    fintelTemplates: [FintelTemplate!]
-    filesFromTemplate(
-        first: Int
-        prefixMimeType: String
-        after: ID
-        orderBy: FileOrdering
-        orderMode: OrderingMode
-        search: String
-        filters: FilterGroup
-    ): FileConnection
-    # Language
-    name: String!
-    aliases: [String]
-    # Technical
-    creators: [Creator!]
-    toStix(version: Version): String
-    importFiles(
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -125,7 +110,22 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     search: String
     filters: FilterGroup
   ): FileConnection
-    pendingFiles(
+  # Language
+  name: String!
+  aliases: [String]
+  # Technical
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  pendingFiles(
     first: Int
     after: ID
     orderBy: FileOrdering
@@ -133,85 +133,92 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
     search: String
     filters: FilterGroup
   ): FileConnection
-    exportFiles(first: Int): FileConnection
-    editContext: [EditUserContext!]
-    connectors(onlyAlive: Boolean): [Connector]
-    jobs(first: Int): [Work]
-    status: Status
-    workflowEnabled: Boolean
-    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 enum LanguagesOrdering {
-    name
-    created
-    modified
-    created_at
-    updated_at
-    objectMarking
-    objectLabel
-    x_opencti_workflow_id
-    _score
+  name
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
+  _score
 }
 
 # Relay connections
 type LanguageConnection {
-    pageInfo: PageInfo!
-    edges: [LanguageEdge]
+  pageInfo: PageInfo!
+  edges: [LanguageEdge]
 }
 type LanguageEdge {
-    cursor: String!
-    node: Language!
+  cursor: String!
+  node: Language!
 }
 
 # Queries
 type Query {
-    language(id: String!): Language @auth(for: [KNOWLEDGE])
-    languages(
-        first: Int
-        after: ID
-        orderBy: LanguagesOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): LanguageConnection @auth(for: [KNOWLEDGE])
+  language(id: String!): Language @auth(for: [KNOWLEDGE])
+  languages(
+    first: Int
+    after: ID
+    orderBy: LanguagesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): LanguageConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
 input LanguageAddInput {
-    stix_id: StixId
-    x_opencti_stix_ids: [StixId]
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    aliases: [String]
-    confidence: Int
-    revoked: Boolean
-    lang: String
-    createdBy: String
-    objectMarking: [String]
-    objectOrganization: [String]
-    objectLabel: [String]
-    externalReferences: [String]
-    created: DateTime
-    modified: DateTime
-    clientMutationId: String
-    x_opencti_workflow_id: String
-    x_opencti_modified_at: DateTime
-    update: Boolean
-    file: Upload
-    fileMarkings: [String]
-    files: [Upload]
-    filesMarkings: [[String]]
-    noTriggerImport: [Boolean]
-    embedded: [Boolean]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  x_opencti_workflow_id: String
+  x_opencti_modified_at: DateTime
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
 }
 
 type Mutation {
-    languageAdd(input: LanguageAddInput!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageContextPatch(id: ID!, input: EditContext!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageContextClean(id: ID!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageAdd(input: LanguageAddInput!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  languageFieldPatch(
+    id: ID!
+    input: [EditInput]!
+    commitMessage: String
+    references: [String]
+  ): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageContextPatch(id: ID!, input: EditContext!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageContextClean(id: ID!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 }

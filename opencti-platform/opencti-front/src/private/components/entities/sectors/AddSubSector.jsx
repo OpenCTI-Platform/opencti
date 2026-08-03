@@ -35,11 +35,7 @@ class AddSubSector extends Component {
     };
     return (
       <div>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer

@@ -21,7 +21,11 @@ import { RootIncidentSubscription } from '../../events/incidents/__generated__/R
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import { getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -104,7 +108,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
     [caseId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const {
@@ -117,7 +122,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
   }
   const basePath = PATH_CASE_INCIDENT(caseId);
   const paddingRight = getPaddingRight(location.pathname, basePath, false);
-  const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
+  const isKnowledgeOrContent =
+    location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   const IncidentKnowledgeComponent = IncidentKnowledge as React.ComponentType<{
     caseData: FragmentRef<IncidentKnowledge_case$data>;
@@ -125,19 +131,20 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
   }>;
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">
-      <Breadcrumbs elements={[
-        { label: t_i18n('Cases') },
-        { label: t_i18n('Incident responses'), link: PATH_CASE_INCIDENTS },
-        { label: caseData.name, current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Cases') },
+          { label: t_i18n('Incident responses'), link: PATH_CASE_INCIDENTS },
+          { label: caseData.name, current: true },
+        ]}
       />
       <ContainerHeader
         container={caseData}
-        EditComponent={(
+        EditComponent={
           <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
             <CaseIncidentEdition caseId={caseData.id} />
           </Security>
-        )}
+        }
         DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <CaseIncidentDeletion id={caseData.id} isOpen={isOpen} handleClose={onClose} />
@@ -152,24 +159,15 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
         entity={caseData}
         basePath={basePath}
         pages={{
-          overview: <CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />,
+          overview: (
+            <CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />
+          ),
           knowledge: (
-            <IncidentKnowledgeComponent
-              caseData={caseData}
-              enableReferences={enableReferences}
-            />
+            <IncidentKnowledgeComponent caseData={caseData} enableReferences={enableReferences} />
           ),
-          content: (
-            <StixCoreObjectContentRoot
-              stixCoreObject={caseData}
-              isContainer={true}
-            />
-          ),
+          content: <StixCoreObjectContentRoot stixCoreObject={caseData} isContainer={true} />,
           entities: (
-            <ContainerStixDomainObjects
-              container={caseData}
-              enableReferences={enableReferences}
-            />
+            <ContainerStixDomainObjects container={caseData} enableReferences={enableReferences} />
           ),
           observables: (
             <ContainerStixCyberObservables
@@ -188,12 +186,22 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
             />
           ),
         }}
-        extraActions={!isKnowledgeOrContent && (
-          <>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-            <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
-          </>
-        )}
+        extraActions={
+          !isKnowledgeOrContent && (
+            <>
+              <AIInsights
+                id={caseData.id}
+                tabs={['containers']}
+                defaultTab="containers"
+                isContainer={true}
+              />
+              <StixCoreObjectSecurityCoverage
+                id={caseData.id}
+                coverage={caseData.securityCoverage}
+              />
+            </>
+          )
+        }
       />
     </div>
   );

@@ -24,18 +24,11 @@ class CourseOfActionDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={courseOfAction.description}
-                limit={300}
-              />
+              <Label>{t('Description')}</Label>
+              <ExpandableMarkdown source={courseOfAction.description} limit={300} />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Log sources')}
-              </Label>
+              <Label>{t('Log sources')}</Label>
               <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>
                 <List>
                   {(courseOfAction.x_opencti_log_sources ?? []).map((logSource, index) => (
@@ -50,12 +43,8 @@ class CourseOfActionDetailsComponent extends Component {
               </FieldOrEmpty>
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('External ID')}
-              </Label>
-              <FieldOrEmpty
-                source={courseOfAction.x_mitre_id}
-              >
+              <Label>{t('External ID')}</Label>
+              <FieldOrEmpty source={courseOfAction.x_mitre_id}>
                 <Chip
                   size="small"
                   label={courseOfAction.x_mitre_id}
@@ -63,15 +52,8 @@ class CourseOfActionDetailsComponent extends Component {
                   style={{ borderRadius: 4 }}
                 />
               </FieldOrEmpty>
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Threat hunting techniques')}
-              </Label>
-              <ExpandableMarkdown
-                source={courseOfAction.x_opencti_threat_hunting}
-                limit={300}
-              />
+              <Label sx={{ marginTop: 2 }}>{t('Threat hunting techniques')}</Label>
+              <ExpandableMarkdown source={courseOfAction.x_opencti_threat_hunting} limit={300} />
             </Grid>
           </Grid>
           <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
@@ -87,25 +69,22 @@ CourseOfActionDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const CourseOfActionDetails = createFragmentContainer(
-  CourseOfActionDetailsComponent,
-  {
-    courseOfAction: graphql`
-      fragment CourseOfActionDetails_courseOfAction on CourseOfAction {
+const CourseOfActionDetails = createFragmentContainer(CourseOfActionDetailsComponent, {
+  courseOfAction: graphql`
+    fragment CourseOfActionDetails_courseOfAction on CourseOfAction {
+      id
+      description
+      x_mitre_id
+      x_opencti_threat_hunting
+      x_opencti_log_sources
+      objectLabel {
         id
-        description
-        x_mitre_id
-        x_opencti_threat_hunting
-        x_opencti_log_sources
-        objectLabel {
-          id
-          value
-          color
-        }
-        ...CourseOfActionAttackPatterns_courseOfAction
+        value
+        color
       }
-    `,
-  },
-);
+      ...CourseOfActionAttackPatterns_courseOfAction
+    }
+  `,
+});
 
 export default compose(inject18n)(CourseOfActionDetails);

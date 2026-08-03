@@ -22,7 +22,11 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
+import {
+  yupShapeConditionalRequired,
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+} from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -103,19 +107,21 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    opinion: Yup.string(),
-    explanation: Yup.string().nullable(),
-    confidence: Yup.number(),
-  }, mandatoryAttributes);
-  const opinionValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      opinion: Yup.string(),
+      explanation: Yup.string().nullable(),
+      confidence: Yup.number(),
+    },
     mandatoryAttributes,
-    basicShape,
-    ['createdBy'],
   );
+  const opinionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape, [
+    'createdBy',
+  ]);
 
   const [commit] = useApiMutation(opinionCreationMutation);
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
@@ -155,19 +161,16 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     });
   };
 
-  const initialValues = useDefaultValues<OpinionAddInput>(
-    OPINION_TYPE,
-    {
-      opinion: inputValue ?? '',
-      explanation: '',
-      confidence: defaultConfidence,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<OpinionAddInput>(OPINION_TYPE, {
+    opinion: inputValue ?? '',
+    explanation: '',
+    confidence: defaultConfidence,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<OpinionAddInput>
@@ -184,7 +187,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             label={t_i18n('Opinion')}
             type="opinion_ov"
             name="opinion"
-            required={(mandatoryAttributes.includes('opinion'))}
+            required={mandatoryAttributes.includes('opinion')}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
@@ -193,7 +196,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             component={MarkdownField}
             name="explanation"
             label={t_i18n('Explanation')}
-            required={(mandatoryAttributes.includes('explanation'))}
+            required={mandatoryAttributes.includes('explanation')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -202,32 +205,29 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
-          <ConfidenceField
-            entityType="Opinion"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Opinion" containerStyle={fieldSpacingContainerStyle} />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
@@ -242,11 +242,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             >
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
               {t_i18n('Create')}
             </Button>
           </div>
@@ -268,19 +264,21 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OPINION_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    opinion: Yup.string(),
-    explanation: Yup.string().nullable(),
-    confidence: Yup.number(),
-  }, mandatoryAttributes);
-  const opinionValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      opinion: Yup.string(),
+      explanation: Yup.string().nullable(),
+      confidence: Yup.number(),
+    },
     mandatoryAttributes,
-    basicShape,
-    ['createdBy'],
   );
+  const opinionValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape, [
+    'createdBy',
+  ]);
 
   const [commit] = useApiMutation(opinionCreationUserMutation);
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
@@ -320,19 +318,16 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     });
   };
 
-  const initialValues = useDefaultValues<OpinionAddInput>(
-    OPINION_TYPE,
-    {
-      opinion: inputValue ?? '',
-      explanation: '',
-      confidence: defaultConfidence,
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<OpinionAddInput>(OPINION_TYPE, {
+    opinion: inputValue ?? '',
+    explanation: '',
+    confidence: defaultConfidence,
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  });
 
   return (
     <Formik<OpinionAddInput>
@@ -349,7 +344,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             label={t_i18n('Opinion')}
             type="opinion_ov"
             name="opinion"
-            required={(mandatoryAttributes.includes('opinion'))}
+            required={mandatoryAttributes.includes('opinion')}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
@@ -358,7 +353,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             component={MarkdownField}
             name="explanation"
             label={t_i18n('Explanation')}
-            required={(mandatoryAttributes.includes('explanation'))}
+            required={mandatoryAttributes.includes('explanation')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -367,26 +362,23 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
-          <ConfidenceField
-            entityType="Opinion"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Opinion" containerStyle={fieldSpacingContainerStyle} />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={{ marginTop: 10 }}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
@@ -401,11 +393,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             >
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting} classes={{ root: classes.button }}>
               {t_i18n('Create')}
             </Button>
           </div>

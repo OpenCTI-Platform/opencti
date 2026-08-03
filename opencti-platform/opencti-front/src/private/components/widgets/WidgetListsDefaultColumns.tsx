@@ -47,26 +47,16 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'start_time' },
     { attribute: 'stop_time' },
   ],
-  common: [
-    ...defaultWidgetColumns.common,
-  ],
+  common: [...defaultWidgetColumns.common],
   Report: [
     { attribute: 'report_types', label: 'Report type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
     { attribute: 'container_content', label: 'Content' },
   ],
-  Grouping: [
-    { attribute: 'context' },
-    { attribute: 'container_content', label: 'Content' },
-  ],
-  'Malware-Analysis': [
-    { attribute: 'product', label: 'Product' },
-    { attribute: 'objectAssignee' },
-  ],
-  Note: [
-    { attribute: 'note_types', label: 'Note type' },
-  ],
+  Grouping: [{ attribute: 'context' }, { attribute: 'container_content', label: 'Content' }],
+  'Malware-Analysis': [{ attribute: 'product', label: 'Product' }, { attribute: 'objectAssignee' }],
+  Note: [{ attribute: 'note_types', label: 'Note type' }],
   'Case-Incident': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
@@ -106,27 +96,13 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'valid_until', label: 'Valid until' },
     { attribute: 'x_opencti_score' },
   ],
-  'Threat-Actor': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-  ],
-  'Threat-Actor-Individual': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-  ],
-  'Threat-Actor-Group': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-  ],
-  'Intrusion-Set': [
-    { attribute: 'resource_level', label: 'Resource level' },
-  ],
-  Malware: [
-    { attribute: 'malware_types', label: 'Malware type' },
-  ],
-  Channel: [
-    { attribute: 'channel_types', label: 'Channel type' },
-  ],
-  Tool: [
-    { attribute: 'tool_types', label: 'Tool types' },
-  ],
+  'Threat-Actor': [{ attribute: 'threat_actor_types', label: 'Threat actor types' }],
+  'Threat-Actor-Individual': [{ attribute: 'threat_actor_types', label: 'Threat actor types' }],
+  'Threat-Actor-Group': [{ attribute: 'threat_actor_types', label: 'Threat actor types' }],
+  'Intrusion-Set': [{ attribute: 'resource_level', label: 'Resource level' }],
+  Malware: [{ attribute: 'malware_types', label: 'Malware type' }],
+  Channel: [{ attribute: 'channel_types', label: 'Channel type' }],
+  Tool: [{ attribute: 'tool_types', label: 'Tool types' }],
   Vulnerability: [
     { attribute: 'x_opencti_cvss_base_score', label: 'CVSS3 - Score' },
     { attribute: 'x_opencti_cvss_base_severity', label: 'CVSS3 - Severity' },
@@ -136,15 +112,9 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_epss_score', label: 'EPSS Score' },
     { attribute: 'x_opencti_epss_percentile', label: 'EPSS Percentile' },
   ],
-  'Attack-Pattern': [
-    { attribute: 'x_mitre_id', label: 'External ID' },
-  ],
-  'Course-Of-Action': [
-    { attribute: 'x_mitre_id', label: 'External ID' },
-  ],
-  Event: [
-    { attribute: 'event_types', label: 'Event type' },
-  ],
+  'Attack-Pattern': [{ attribute: 'x_mitre_id', label: 'External ID' }],
+  'Course-Of-Action': [{ attribute: 'x_mitre_id', label: 'External ID' }],
+  Event: [{ attribute: 'event_types', label: 'Event type' }],
   Organization: [
     { attribute: 'x_opencti_organization_type', label: 'Organization type' },
     { attribute: 'x_opencti_score', label: 'Score' },
@@ -163,16 +133,26 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
 
 // Additional columns, only available in the "custom-attributes" perspective.
 const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
-  Report: [
-    { attribute: 'published', label: 'Publication date', attributeType: 'date' },
-  ],
+  Report: [{ attribute: 'published', label: 'Publication date', attributeType: 'date' }],
   'Malware-Analysis': [
     { attribute: 'result_name', label: 'Report name', attributeType: 'markdown' },
     { attribute: 'result', label: 'Maliciousness', attributeType: 'tag' },
     { attribute: 'version', label: 'Version of the product', attributeType: 'tag' },
-    { attribute: 'configuration_version', label: 'Configuration version', attributeType: 'markdown' },
-    { attribute: 'analysis_engine_version', label: 'Analysis engine version', attributeType: 'markdown' },
-    { attribute: 'analysis_definition_version', label: 'Analysis definition version', attributeType: 'markdown' },
+    {
+      attribute: 'configuration_version',
+      label: 'Configuration version',
+      attributeType: 'markdown',
+    },
+    {
+      attribute: 'analysis_engine_version',
+      label: 'Analysis engine version',
+      attributeType: 'markdown',
+    },
+    {
+      attribute: 'analysis_definition_version',
+      label: 'Analysis definition version',
+      attributeType: 'markdown',
+    },
     { attribute: 'modules', label: 'Modules', attributeType: 'tag_list' },
     { attribute: 'submitted', label: 'Submission date', attributeType: 'date' },
     { attribute: 'analysis_started', label: 'Analysis started', attributeType: 'date' },
@@ -190,7 +170,11 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'pattern', label: 'Indicator pattern' },
     { attribute: 'x_opencti_detection', label: 'Detection', attributeType: 'boolean' },
     { attribute: 'indicator_types', label: 'Indicator types', attributeType: 'open_vocab_list' },
-    { attribute: 'x_opencti_main_observable_type', label: 'Main observable type', attributeType: 'open_vocab' },
+    {
+      attribute: 'x_opencti_main_observable_type',
+      label: 'Main observable type',
+      attributeType: 'open_vocab',
+    },
     { attribute: 'x_mitre_platforms_indicator', label: 'Platforms', attributeType: 'tag_list' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
@@ -200,8 +184,16 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'sophistication', label: 'Sophistication' },
     { attribute: 'resource_level', label: 'Resource level', attributeType: 'open_vocab' },
     { attribute: 'primary_motivation', label: 'Primary motivation', attributeType: 'open_vocab' },
-    { attribute: 'secondary_motivations', label: 'Secondary motivations', attributeType: 'text_list' },
-    { attribute: 'personal_motivations', label: 'Personal motivations', attributeType: 'text_list' },
+    {
+      attribute: 'secondary_motivations',
+      label: 'Secondary motivations',
+      attributeType: 'text_list',
+    },
+    {
+      attribute: 'personal_motivations',
+      label: 'Personal motivations',
+      attributeType: 'text_list',
+    },
     { attribute: 'goals', label: 'Goals', attributeType: 'text_list' },
     { attribute: 'roles', label: 'Roles', attributeType: 'text_list' },
     { attribute: 'eye_color', label: 'Eye color', attributeType: 'open_vocab' },
@@ -221,7 +213,11 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'sophistication', label: 'Sophistication' },
     { attribute: 'resource_level', label: 'Resource level', attributeType: 'open_vocab' },
     { attribute: 'primary_motivation', label: 'Primary motivation', attributeType: 'open_vocab' },
-    { attribute: 'secondary_motivations', label: 'Secondary motivations', attributeType: 'text_list' },
+    {
+      attribute: 'secondary_motivations',
+      label: 'Secondary motivations',
+      attributeType: 'text_list',
+    },
     { attribute: 'goals', label: 'Goals', attributeType: 'text_list' },
     { attribute: 'roles', label: 'Roles', attributeType: 'text_list' },
   ],
@@ -229,15 +225,27 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
     { attribute: 'primary_motivation', label: 'Primary motivation', attributeType: 'open_vocab' },
-    { attribute: 'secondary_motivations', label: 'Secondary motivations', attributeType: 'text_list' },
+    {
+      attribute: 'secondary_motivations',
+      label: 'Secondary motivations',
+      attributeType: 'text_list',
+    },
     { attribute: 'goals', label: 'Goals', attributeType: 'text_list' },
   ],
   Malware: [
     { attribute: 'is_family', label: 'Is family', attributeType: 'boolean' },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
-    { attribute: 'architecture_execution_envs', label: 'Architecture execution env.', attributeType: 'open_vocab_list' },
-    { attribute: 'implementation_languages', label: 'Implementation languages', attributeType: 'open_vocab_list' },
+    {
+      attribute: 'architecture_execution_envs',
+      label: 'Architecture execution env.',
+      attributeType: 'open_vocab_list',
+    },
+    {
+      attribute: 'implementation_languages',
+      label: 'Implementation languages',
+      attributeType: 'open_vocab_list',
+    },
     { attribute: 'capabilities', label: 'Capabilities', attributeType: 'open_vocab_list' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
@@ -250,50 +258,194 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'x_opencti_cwe', label: 'Associated CWE(s)', attributeType: 'text_list' },
     { attribute: 'x_opencti_first_seen_active', label: 'First seen active', attributeType: 'date' },
     // CVSS V2
-    { attribute: 'x_opencti_cvss_v2_base_score', label: 'CVSS2 - Score', attributeType: 'cvss_score' },
+    {
+      attribute: 'x_opencti_cvss_v2_base_score',
+      label: 'CVSS2 - Score',
+      attributeType: 'cvss_score',
+    },
     { attribute: 'x_opencti_cvss_v2_vector_string', label: 'CVSS2 - Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_access_vector', label: 'CVSS2 - Access Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_access_complexity', label: 'CVSS2 - Access Complexity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_authentication', label: 'CVSS2 - Authentication', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_confidentiality_impact', label: 'CVSS2 - Confidentiality Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_integrity_impact', label: 'CVSS2 - Integrity Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_availability_impact', label: 'CVSS2 - Availability Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_exploitability', label: 'CVSS2 - Exploitability', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_remediation_level', label: 'CVSS2 - Remediation Level', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_report_confidence', label: 'CVSS2 - Report Confidence', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v2_temporal_score', label: 'CVSS2 - Temporal Score', attributeType: 'cvss_score' },
+    {
+      attribute: 'x_opencti_cvss_v2_access_vector',
+      label: 'CVSS2 - Access Vector',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_access_complexity',
+      label: 'CVSS2 - Access Complexity',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_authentication',
+      label: 'CVSS2 - Authentication',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_confidentiality_impact',
+      label: 'CVSS2 - Confidentiality Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_integrity_impact',
+      label: 'CVSS2 - Integrity Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_availability_impact',
+      label: 'CVSS2 - Availability Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_exploitability',
+      label: 'CVSS2 - Exploitability',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_remediation_level',
+      label: 'CVSS2 - Remediation Level',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_report_confidence',
+      label: 'CVSS2 - Report Confidence',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v2_temporal_score',
+      label: 'CVSS2 - Temporal Score',
+      attributeType: 'cvss_score',
+    },
     // CVSS V3
     { attribute: 'x_opencti_cvss_vector_string', label: 'CVSS3 - Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_attack_vector', label: 'CVSS3 - Attack Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_attack_complexity', label: 'CVSS3 - Attack Complexity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_privileges_required', label: 'CVSS3 - Privileges Required', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_user_interaction', label: 'CVSS3 - User Interaction', attributeType: 'tag' },
+    {
+      attribute: 'x_opencti_cvss_attack_vector',
+      label: 'CVSS3 - Attack Vector',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_attack_complexity',
+      label: 'CVSS3 - Attack Complexity',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_privileges_required',
+      label: 'CVSS3 - Privileges Required',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_user_interaction',
+      label: 'CVSS3 - User Interaction',
+      attributeType: 'tag',
+    },
     { attribute: 'x_opencti_cvss_scope', label: 'CVSS3 - Scope', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_confidentiality_impact', label: 'CVSS3 - Confidentiality Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_integrity_impact', label: 'CVSS3 - Integrity Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_availability_impact', label: 'CVSS3 - Availability Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_exploit_code_maturity', label: 'CVSS3 - Exploit Code Maturity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_remediation_level', label: 'CVSS3 - Remediation Level', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_report_confidence', label: 'CVSS3 - Report Confidence', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_temporal_score', label: 'CVSS3 - Temporal Score', attributeType: 'cvss_score' },
+    {
+      attribute: 'x_opencti_cvss_confidentiality_impact',
+      label: 'CVSS3 - Confidentiality Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_integrity_impact',
+      label: 'CVSS3 - Integrity Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_availability_impact',
+      label: 'CVSS3 - Availability Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_exploit_code_maturity',
+      label: 'CVSS3 - Exploit Code Maturity',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_remediation_level',
+      label: 'CVSS3 - Remediation Level',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_report_confidence',
+      label: 'CVSS3 - Report Confidence',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_temporal_score',
+      label: 'CVSS3 - Temporal Score',
+      attributeType: 'cvss_score',
+    },
     // CVSS V4
     { attribute: 'x_opencti_cvss_v4_vector_string', label: 'CVSS4 - Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_attack_vector', label: 'CVSS4 - Attack Vector', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_attack_complexity', label: 'CVSS4 - Attack Complexity', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_attack_requirements', label: 'CVSS4 - Attack Requirements', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_privileges_required', label: 'CVSS4 - Privileges Required', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_user_interaction', label: 'CVSS4 - User Interaction', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_confidentiality_impact_v', label: 'CVSS4 - VS Confidentiality Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_confidentiality_impact_s', label: 'CVSS4 - SS Confidentiality Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_integrity_impact_v', label: 'CVSS4 - VS Integrity Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_integrity_impact_s', label: 'CVSS4 - SS Integrity Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_availability_impact_v', label: 'CVSS4 - VS Availability Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_availability_impact_s', label: 'CVSS4 - SS Availability Impact', attributeType: 'tag' },
-    { attribute: 'x_opencti_cvss_v4_exploit_maturity', label: 'CVSS4 - Exploit Maturity', attributeType: 'tag' },
+    {
+      attribute: 'x_opencti_cvss_v4_attack_vector',
+      label: 'CVSS4 - Attack Vector',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_attack_complexity',
+      label: 'CVSS4 - Attack Complexity',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_attack_requirements',
+      label: 'CVSS4 - Attack Requirements',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_privileges_required',
+      label: 'CVSS4 - Privileges Required',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_user_interaction',
+      label: 'CVSS4 - User Interaction',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_confidentiality_impact_v',
+      label: 'CVSS4 - VS Confidentiality Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_confidentiality_impact_s',
+      label: 'CVSS4 - SS Confidentiality Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_integrity_impact_v',
+      label: 'CVSS4 - VS Integrity Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_integrity_impact_s',
+      label: 'CVSS4 - SS Integrity Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_availability_impact_v',
+      label: 'CVSS4 - VS Availability Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_availability_impact_s',
+      label: 'CVSS4 - SS Availability Impact',
+      attributeType: 'tag',
+    },
+    {
+      attribute: 'x_opencti_cvss_v4_exploit_maturity',
+      label: 'CVSS4 - Exploit Maturity',
+      attributeType: 'tag',
+    },
   ],
   'Attack-Pattern': [
-    { attribute: 'x_mitre_platforms_attack_pattern', label: 'Platforms', attributeType: 'tag_list' },
-    { attribute: 'x_mitre_permissions_required', label: 'Required permissions', attributeType: 'tag_list' },
+    {
+      attribute: 'x_mitre_platforms_attack_pattern',
+      label: 'Platforms',
+      attributeType: 'tag_list',
+    },
+    {
+      attribute: 'x_mitre_permissions_required',
+      label: 'Required permissions',
+      attributeType: 'tag_list',
+    },
     { attribute: 'x_mitre_detection', label: 'Detection', attributeType: 'markdown' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
   ],
@@ -310,7 +462,11 @@ const customAttributesTypeColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
   ],
   Infrastructure: [
-    { attribute: 'infrastructure_types', label: 'Infrastructure types', attributeType: 'open_vocab_list' },
+    {
+      attribute: 'infrastructure_types',
+      label: 'Infrastructure types',
+      attributeType: 'open_vocab_list',
+    },
     { attribute: 'first_seen', label: 'First seen', attributeType: 'date' },
     { attribute: 'last_seen', label: 'Last seen', attributeType: 'date' },
     { attribute: 'killChainPhases', label: 'Kill chain phases' },
@@ -377,7 +533,14 @@ const customAttributesExtraColumns: WidgetColumn[] = [
 const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
   'Malware-Analysis': ['name', 'description', 'modified', 'entity_type'],
   Indicator: ['name', 'entity_type'],
-  'Stix-Cyber-Observable': ['entity_type', 'name', 'description', 'revoked', 'x_opencti_workflow_id', 'confidence'],
+  'Stix-Cyber-Observable': [
+    'entity_type',
+    'name',
+    'description',
+    'revoked',
+    'x_opencti_workflow_id',
+    'confidence',
+  ],
   Artifact: ['name', 'entity_type', 'revoked', 'x_opencti_workflow_id', 'confidence'],
   Campaign: ['entity_type'],
   'Attack-Pattern': ['entity_type'],
@@ -414,7 +577,10 @@ const EXCLUDED_COMMON_COLUMNS: Partial<Record<string, string[]>> = {
 
 type WidgetEntityType = 'relationships' | 'entities';
 
-export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: WidgetHost): WidgetColumn[] => {
+export const getDefaultWidgetColumns = (
+  type: WidgetEntityType,
+  context?: WidgetHost,
+): WidgetColumn[] => {
   if (context?.kind === 'fintelTemplate') {
     if (type === 'relationships') {
       return fintelTemplateDefaultWidgetColumns.relationships;
@@ -450,10 +616,9 @@ export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] 
   if (entityType) {
     const excluded = EXCLUDED_COMMON_COLUMNS[entityType] ?? [];
 
-    const baseColumns = [
-      ...availableWidgetColumns.common,
-      ...customAttributesExtraColumns,
-    ].filter((col) => !excluded.includes(col.attribute ?? ''));
+    const baseColumns = [...availableWidgetColumns.common, ...customAttributesExtraColumns].filter(
+      (col) => !excluded.includes(col.attribute ?? ''),
+    );
 
     if (availableWidgetColumns[entityType]) {
       baseColumns.push(...availableWidgetColumns[entityType]);
@@ -466,13 +631,14 @@ export const getCustomAttributesColumns = (entityType?: string): WidgetColumn[] 
     return baseColumns;
   }
 
-  return [
-    ...availableWidgetColumns.common,
-    ...customAttributesExtraColumns,
-  ];
+  return [...availableWidgetColumns.common, ...customAttributesExtraColumns];
 };
 
-export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[]): WidgetColumn[] => {
+export const getWidgetColumns = (
+  type: WidgetEntityType,
+  entityType?: string,
+  metrics?: readonly MetricsColumn[],
+): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
 
   if (type === 'relationships') {

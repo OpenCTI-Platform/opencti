@@ -52,11 +52,16 @@ const Message = () => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
-          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null };
+          const firstMessage = messages[0] as {
+            text: string | ReactElement;
+            type: string;
+            fullError: FullError | null;
+          };
           const textPart = firstMessage.text;
-          const translatedText = (typeof textPart === 'string' || textPart instanceof String)
-            ? t_i18n(textPart)
-            : textPart;
+          const translatedText =
+            typeof textPart === 'string' || textPart instanceof String
+              ? t_i18n(textPart)
+              : textPart;
           const firstMessageError = firstMessage.type === 'error';
           setOpen(true);
           setFullError(firstMessage.fullError || null);
@@ -128,7 +133,13 @@ const Message = () => {
       case 'nlq':
         return (
           <Alert
-            icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" style={{ color: theme.palette.ai.main }} />}
+            icon={
+              <FiligranIcon
+                icon={LogoXtmOneIcon}
+                size="small"
+                style={{ color: theme.palette.ai.main }}
+              />
+            }
             style={{
               backgroundColor: theme.palette.ai.background,
               color: theme.palette.ai.light,

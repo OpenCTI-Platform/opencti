@@ -9,7 +9,12 @@ import { isEmptyField } from '../../database/utils';
 // csv mapper representatives converter for default values ids
 // Export => ids must be converted to standard id
 // Import => ids must be converted back to internal id
-export const convertRepresentationsIds = async (context: AuthContext, user: AuthUser, representations: CsvMapperRepresentation[] | JsonMapperRepresentation[], from: 'internal' | 'stix') => {
+export const convertRepresentationsIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  representations: CsvMapperRepresentation[] | JsonMapperRepresentation[],
+  from: 'internal' | 'stix',
+) => {
   // First iteration to resolve all ids to translate
   const resolvingIds: string[] = [];
   representations.forEach((representation) => {
@@ -34,7 +39,10 @@ export const convertRepresentationsIds = async (context: AuthContext, user: Auth
   });
 };
 
-export const representationLabel = (idx: number, representation: CsvMapperRepresentation | JsonMapperRepresentation) => {
+export const representationLabel = (
+  idx: number,
+  representation: CsvMapperRepresentation | JsonMapperRepresentation,
+) => {
   const number = `#${idx + 1}`;
   if (isEmptyField(representation.target.entity_type)) {
     return `${number} New ${representation.type} representation`;

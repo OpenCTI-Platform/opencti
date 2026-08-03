@@ -89,39 +89,26 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         {flagUrl ? (
-          <img
-            style={{ width: 20 }}
-            src={flagUrl}
-            alt={data.name}
-          />
+          <img style={{ width: 20 }} src={flagUrl} alt={data.name} />
         ) : (
           <ItemIcon type="Country" />
         )}
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
-              {data.draftVersion && (<DraftChip />)}
+              {data.draftVersion && <DraftChip />}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
               {fd(data.created)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.modified.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.modified.width }}>
               {fd(data.modified)}
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -130,11 +117,7 @@ export const CountryLineComponent: FunctionComponent<CountryLineProps> = ({
   );
 };
 
-export const CountryLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const CountryLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -142,43 +125,19 @@ export const CountryLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.modified.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.modified.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

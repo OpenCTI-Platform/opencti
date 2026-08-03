@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType } from './utils';
+import {
+  transformToWorkflowDefinition,
+  isElementStatus,
+  isNewElementStatus,
+  WorkflowNodeType,
+  WorkflowActionType,
+} from './utils';
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -25,8 +31,18 @@ describe('Workflow utils', () => {
 
   it('should identify an initial state', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' } }, position: { x: 0, y: 0 } },
-      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' } }, position: { x: 0, y: 0 } },
+      {
+        id: 'state-1',
+        type: WorkflowNodeType.status,
+        data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' } },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'state-2',
+        type: WorkflowNodeType.status,
+        data: { statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' } },
+        position: { x: 0, y: 0 },
+      },
     ];
     const edges: Edge[] = [
       { id: 'e1-2', source: 'state-1', target: 'state-2', type: 'smoothstep' },
@@ -37,9 +53,32 @@ describe('Workflow utils', () => {
 
   it('should transform a simple graph with states and transitions', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
-      { id: 'trans-1', type: WorkflowNodeType.transition, data: { event: 'start' }, position: { x: 0, y: 0 } },
-      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
+      {
+        id: 'state-1',
+        type: WorkflowNodeType.status,
+        data: {
+          statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'trans-1',
+        type: WorkflowNodeType.transition,
+        data: { event: 'start' },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'state-2',
+        type: WorkflowNodeType.status,
+        data: {
+          statusTemplate: { id: 'state-2', name: 'State 2', color: '#ffffff' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
+      },
     ];
     const edges: Edge[] = [
       { id: 'e1', source: 'state-1', target: 'trans-1', type: 'smoothstep' },
@@ -61,12 +100,24 @@ describe('Workflow utils', () => {
 
   it('should handle transitions with no target', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
-      { id: 'trans-1', type: WorkflowNodeType.transition, data: { event: 'end' }, position: { x: 0, y: 0 } },
+      {
+        id: 'state-1',
+        type: WorkflowNodeType.status,
+        data: {
+          statusTemplate: { id: 'state-1', name: 'State 1', color: '#ffffff' },
+          onEnter: [],
+          onExit: [],
+        },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'trans-1',
+        type: WorkflowNodeType.transition,
+        data: { event: 'end' },
+        position: { x: 0, y: 0 },
+      },
     ];
-    const edges: Edge[] = [
-      { id: 'e1', source: 'state-1', target: 'trans-1', type: 'smoothstep' },
-    ];
+    const edges: Edge[] = [{ id: 'e1', source: 'state-1', target: 'trans-1', type: 'smoothstep' }];
     const result = transformToWorkflowDefinition(nodes, edges, mockWorkflowDefinition);
     expect(result.transitions.length).toBe(1);
     expect(result.transitions[0]).toEqual({
@@ -90,7 +141,15 @@ describe('Workflow utils', () => {
           onEnter: [
             {
               type: WorkflowActionType.updateAuthorizedMembers,
-              params: { authorized_members: [{ value: 'user-1', accessRight: 'edit', groupsRestriction: [{ value: 'group-1' }] }] },
+              params: {
+                authorized_members: [
+                  {
+                    value: 'user-1',
+                    accessRight: 'edit',
+                    groupsRestriction: [{ value: 'group-1' }],
+                  },
+                ],
+              },
             },
           ],
           onExit: [{ type: WorkflowActionType.validateDraft }],
@@ -102,7 +161,11 @@ describe('Workflow utils', () => {
     expect(result.states[0].onEnter).toEqual([
       {
         type: 'updateAuthorizedMembers',
-        params: { authorized_members: [{ id: 'user-1', access_right: 'edit', groups_restriction_ids: ['group-1'] }] },
+        params: {
+          authorized_members: [
+            { id: 'user-1', access_right: 'edit', groups_restriction_ids: ['group-1'] },
+          ],
+        },
       },
     ]);
     expect(result.states[0].onExit).toEqual([{ type: 'validateDraft' }]);
@@ -110,10 +173,30 @@ describe('Workflow utils', () => {
 
   it('should fan out multiple-source transitions into one entry per source state', () => {
     const nodes: Node[] = [
-      { id: 'state-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-1' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
-      { id: 'state-2', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-2' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
-      { id: 'state-reject', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'state-reject' }, onEnter: [], onExit: [] }, position: { x: 0, y: 0 } },
-      { id: 'trans-reject', type: WorkflowNodeType.transition, data: { event: 'reject', conditions: {}, actions: [], asyncActions: [], syncActions: [] }, position: { x: 0, y: 0 } },
+      {
+        id: 'state-1',
+        type: WorkflowNodeType.status,
+        data: { statusTemplate: { id: 'state-1' }, onEnter: [], onExit: [] },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'state-2',
+        type: WorkflowNodeType.status,
+        data: { statusTemplate: { id: 'state-2' }, onEnter: [], onExit: [] },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'state-reject',
+        type: WorkflowNodeType.status,
+        data: { statusTemplate: { id: 'state-reject' }, onEnter: [], onExit: [] },
+        position: { x: 0, y: 0 },
+      },
+      {
+        id: 'trans-reject',
+        type: WorkflowNodeType.transition,
+        data: { event: 'reject', conditions: {}, actions: [], asyncActions: [], syncActions: [] },
+        position: { x: 0, y: 0 },
+      },
     ];
     const edges: Edge[] = [
       // Both state-1 and state-2 feed into the same "reject" transition node
@@ -124,16 +207,33 @@ describe('Workflow utils', () => {
     const result = transformToWorkflowDefinition(nodes, edges, mockWorkflowDefinition);
     // Must produce two separate transitions rather than one with from: ['state-1', 'state-2']
     expect(result.transitions).toHaveLength(2);
-    expect(result.transitions).toEqual(expect.arrayContaining([
-      expect.objectContaining({ from: 'state-1', to: 'state-reject', event: 'reject' }),
-      expect.objectContaining({ from: 'state-2', to: 'state-reject', event: 'reject' }),
-    ]));
+    expect(result.transitions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ from: 'state-1', to: 'state-reject', event: 'reject' }),
+        expect.objectContaining({ from: 'state-2', to: 'state-reject', event: 'reject' }),
+      ]),
+    );
   });
 
   it('should correctly identify element types', () => {
-    const statusNode: Node = { id: '1', type: WorkflowNodeType.status, data: {}, position: { x: 0, y: 0 } };
-    const placeholderNode: Node = { id: '2', type: WorkflowNodeType.placeholder, data: {}, position: { x: 0, y: 0 } };
-    const transitionNode: Node = { id: '3', type: WorkflowNodeType.transition, data: {}, position: { x: 0, y: 0 } };
+    const statusNode: Node = {
+      id: '1',
+      type: WorkflowNodeType.status,
+      data: {},
+      position: { x: 0, y: 0 },
+    };
+    const placeholderNode: Node = {
+      id: '2',
+      type: WorkflowNodeType.placeholder,
+      data: {},
+      position: { x: 0, y: 0 },
+    };
+    const transitionNode: Node = {
+      id: '3',
+      type: WorkflowNodeType.transition,
+      data: {},
+      position: { x: 0, y: 0 },
+    };
 
     expect(isElementStatus(statusNode)).toBe(true);
     expect(isElementStatus(placeholderNode)).toBe(true);

@@ -1,5 +1,16 @@
 import { Delete } from '@mui/icons-material';
-import { Alert, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import {
+  Alert,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+} from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -146,13 +157,12 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
                 <TableCell component="th" scope="row">
                   {token.name}
                 </TableCell>
+                <TableCell>{token.masked_token}</TableCell>
                 <TableCell>
-                  {token.masked_token}
+                  {token.last_used_at ? nsdt(token.last_used_at) : t_i18n('Never used')}
                 </TableCell>
-                <TableCell>{token.last_used_at ? nsdt(token.last_used_at) : t_i18n('Never used')}</TableCell>
                 <TableCell>
-                  {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}
-                  {' '}
+                  {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}{' '}
                   {getExpirationStatus(token.expires_at)}
                 </TableCell>
                 <TableCell align="right">

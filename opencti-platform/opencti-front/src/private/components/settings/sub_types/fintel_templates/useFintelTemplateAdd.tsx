@@ -17,7 +17,8 @@ const fintelTemplateAddMutation = graphql`
 
 const useFintelTemplateAdd = (entitySettingId: string) => {
   const [mutating, setMutating] = useState(false);
-  const [commitAddMutation] = useApiMutation<useFintelTemplateAddMutation>(fintelTemplateAddMutation);
+  const [commitAddMutation] =
+    useApiMutation<useFintelTemplateAddMutation>(fintelTemplateAddMutation);
 
   const mutation: typeof commitAddMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);

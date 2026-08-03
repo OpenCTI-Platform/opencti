@@ -1,13 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { CaseRfisLinesCasesPaginationQuery, CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
+import {
+  CaseRfisLinesCasesPaginationQuery,
+  CaseRfisLinesCasesPaginationQuery$variables,
+} from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/CaseRfisLinesCases_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -51,7 +57,7 @@ const caseFragment = graphql`
       value
       color
     }
-    creators {                                                          
+    creators {
       id
       name
     }
@@ -77,14 +83,14 @@ const caseRfisLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...CaseRfisLinesCases_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -128,7 +134,9 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -137,14 +145,16 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<CaseRfisLinesCasesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<CaseRfisLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext('Case-Rfi', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -189,11 +199,18 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
 
   return (
     <div data-testid="rfis-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Cases') },
+          { label: t_i18n('Requests for information'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: CaseRfisLinesCases_data$data) => data.caseRfis?.edges?.map((n) => n?.node)}
+          resolvePath={(data: CaseRfisLinesCases_data$data) =>
+            data.caseRfis?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -201,15 +218,19 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           lineFragment={caseFragment}
           exportContext={{ entity_type: 'Case-Rfi' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security
+              key="form-intake"
+              needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+            >
               <StixCoreObjectForms entityType="Case-Rfi" />
             </Security>,
           ]}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CaseRfiCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

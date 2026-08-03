@@ -170,12 +170,20 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
               disabled={isConfigurationFromEnv || (!canDisableLocal && initialValues.enabled)}
             />
             {isConfigurationFromEnv && (
-              <Tooltip title={t_i18n('Local authentication cannot be changed when authentication is managed by environment configuration')}>
+              <Tooltip
+                title={t_i18n(
+                  'Local authentication cannot be changed when authentication is managed by environment configuration',
+                )}
+              >
                 <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
               </Tooltip>
             )}
             {!canDisableLocal && initialValues.enabled && (
-              <Tooltip title={t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}>
+              <Tooltip
+                title={t_i18n(
+                  'Local authentication cannot be disabled when no other authentication provider is enabled',
+                )}
+              >
                 <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
               </Tooltip>
             )}

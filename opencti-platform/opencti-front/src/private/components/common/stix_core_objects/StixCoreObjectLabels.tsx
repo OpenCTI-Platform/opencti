@@ -10,21 +10,20 @@ import { Theme } from '../../../../components/Theme';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 interface StixCoreObjectLabelsProps {
-  labels: readonly {
-    readonly color: string | null | undefined;
-    readonly id: string;
-    readonly value: string | null | undefined;
-  }[] | null | undefined;
+  labels:
+    | readonly {
+        readonly color: string | null | undefined;
+        readonly id: string;
+        readonly value: string | null | undefined;
+      }[]
+    | null
+    | undefined;
   onClick?: HandleAddFilter;
   variant?: string;
   revoked?: boolean;
 }
 
-const StixCoreObjectLabels = ({
-  labels,
-  onClick,
-  revoked,
-}: StixCoreObjectLabelsProps) => {
+const StixCoreObjectLabels = ({ labels, onClick, revoked }: StixCoreObjectLabelsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -100,7 +99,10 @@ const StixCoreObjectLabels = ({
           <Tag
             label={`+${hiddenCount}`}
             color={theme.tag.overflowColor}
-            tooltipTitle={labels.slice(visibleCount).map((l) => l.value).join(', ')}
+            tooltipTitle={labels
+              .slice(visibleCount)
+              .map((l) => l.value)
+              .join(', ')}
           />
         )}
       </div>
@@ -108,9 +110,7 @@ const StixCoreObjectLabels = ({
   }
 
   // case no labels
-  return (
-    <>{EMPTY_VALUE}</>
-  );
+  return <>{EMPTY_VALUE}</>;
 };
 
 export default StixCoreObjectLabels;

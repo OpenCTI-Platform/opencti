@@ -14,7 +14,17 @@ const useDonutOutcome = () => {
   const { buildWidgetLabelsOption } = useDistributionGraphData();
 
   const buildDonutOutcome = async (
-    dataSelection: Pick<Widget['dataSelection'][0], 'date_attribute' | 'filters' | 'number' | 'columns' | 'attribute' | 'isTo' | 'dynamicTo' | 'dynamicFrom'>,
+    dataSelection: Pick<
+      Widget['dataSelection'][0],
+      | 'date_attribute'
+      | 'filters'
+      | 'number'
+      | 'columns'
+      | 'attribute'
+      | 'isTo'
+      | 'dynamicTo'
+      | 'dynamicFrom'
+    >,
   ) => {
     const finalField = dataSelection.attribute || 'entity_type';
     const variables = {
@@ -27,10 +37,10 @@ const useDonutOutcome = () => {
       dynamicFrom: dataSelection.dynamicFrom,
       dynamicTo: dataSelection.dynamicTo,
     };
-    const { stixRelationshipsDistribution: data } = await fetchQuery(
+    const { stixRelationshipsDistribution: data } = (await fetchQuery(
       stixRelationshipsDonutsDistributionQuery,
       variables,
-    ).toPromise() as StixRelationshipsDonutDistributionQuery$data;
+    ).toPromise()) as StixRelationshipsDonutDistributionQuery$data;
 
     if (!data) return '';
 
@@ -38,19 +48,25 @@ const useDonutOutcome = () => {
     const labels = buildWidgetLabelsOption(data, finalField);
     let chartColors: string[] = [];
     if (data.at(0)?.entity?.color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n?.entity?.color === '#ffffff'
-        ? '#000000'
-        : n?.entity?.color ?? '#000000'));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n?.entity?.color === '#ffffff'
+          ? '#000000'
+          : (n?.entity?.color ?? '#000000'),
+      );
     }
     if (data.at(0)?.entity?.x_opencti_color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n?.entity?.x_opencti_color === '#ffffff'
-        ? '#000000'
-        : n?.entity?.x_opencti_color ?? '#000000'));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n?.entity?.x_opencti_color === '#ffffff'
+          ? '#000000'
+          : (n?.entity?.x_opencti_color ?? '#000000'),
+      );
     }
     if (data.at(0)?.entity?.template?.color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n?.entity?.template?.color === '#ffffff'
-        ? '#000000'
-        : n?.entity?.template?.color ?? '#000000'));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n?.entity?.template?.color === '#ffffff'
+          ? '#000000'
+          : (n?.entity?.template?.color ?? '#000000'),
+      );
     }
 
     const chartOptions = {

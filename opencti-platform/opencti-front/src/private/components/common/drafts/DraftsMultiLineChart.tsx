@@ -8,7 +8,12 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsMultiLineChartTimeSeriesQuery } from './__generated__/DraftsMultiLineChartTimeSeriesQuery.graphql';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
@@ -60,13 +65,15 @@ const DraftsMultiLineChartComponent = ({
 
   return (
     <WidgetMultiLines
-      series={[{
-        name: selection?.label || t_i18n('Number of draft workspaces'),
-        data: data.draftWorkspacesTimeSeries.map((entry) => ({
-          x: new Date(entry?.date),
-          y: entry?.value,
-        })),
-      }]}
+      series={[
+        {
+          name: selection?.label || t_i18n('Number of draft workspaces'),
+          data: data.draftWorkspacesTimeSeries.map((entry) => ({
+            x: new Date(entry?.date),
+            y: entry?.value,
+          })),
+        },
+      ]}
       interval={parameters.interval}
       hasLegend={parameters.legend ?? undefined}
       onMounted={setChart}
@@ -118,7 +125,13 @@ const DraftsMultiLineChart = ({
 }: DraftsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsMultiLineChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsMultiLineChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,

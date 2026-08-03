@@ -40,26 +40,23 @@ const FintelTemplatePopover = ({
   const [commitEditMutation] = useFintelTemplateEdit();
 
   const fintelTemplatesRefetchQuery = graphql`
-      query FintelTemplatePopoverRefetchQuery($id: String!) {
-          entitySetting(id: $id) {
+    query FintelTemplatePopoverRefetchQuery($id: String!) {
+      entitySetting(id: $id) {
+        id
+        fintelTemplates(orderBy: name, orderMode: asc) {
+          edges {
+            node {
               id
-              fintelTemplates(orderBy: name, orderMode: asc) {
-                  edges {
-                      node {
-                          id
-                          default
-                      }
-                  }
-              }
+              default
+            }
           }
+        }
       }
+    }
   `;
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
-  const {
-    handleOpenDelete,
-    handleCloseDelete,
-  } = deletion;
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const onOpenMenu = (e: UIEvent) => {
     stopEvent(e);
@@ -106,9 +103,11 @@ const FintelTemplatePopover = ({
         input: [{ key: 'default', value: ['true'] }],
       },
       onCompleted: () => {
-        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId }).toPromise().catch((err) => {
-          handleError(err);
-        });
+        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId })
+          .toPromise()
+          .catch((err) => {
+            handleError(err);
+          });
       },
     });
   };
@@ -132,9 +131,11 @@ const FintelTemplatePopover = ({
         input: [{ key: 'default', value: ['false'] }],
       },
       onCompleted: () => {
-        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId }).toPromise().catch((err) => {
-          handleError(err);
-        });
+        fetchQuery(fintelTemplatesRefetchQuery, { id: entitySettingId })
+          .toPromise()
+          .catch((err) => {
+            handleError(err);
+          });
       },
     });
   };
@@ -142,7 +143,12 @@ const FintelTemplatePopover = ({
   return (
     <>
       {inline ? (
-        <IconButton aria-label={t_i18n('Open menu')} onClick={onOpenMenu} aria-haspopup="true" color="primary">
+        <IconButton
+          aria-label={t_i18n('Open menu')}
+          onClick={onOpenMenu}
+          aria-haspopup="true"
+          color="primary"
+        >
           <MoreVert fontSize="small" />
         </IconButton>
       ) : (
@@ -161,10 +167,11 @@ const FintelTemplatePopover = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={onCloseMenu}>
         {onUpdate && <MenuItem onClick={update}>{t_i18n('Update')}</MenuItem>}
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
-        {isDefault
-          ? <MenuItem onClick={onSetRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
-          : <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
-        }
+        {isDefault ? (
+          <MenuItem onClick={onSetRemoveDefault}>{t_i18n('Remove default')}</MenuItem>
+        ) : (
+          <MenuItem onClick={onSetAsDefault}>{t_i18n('Set as default')}</MenuItem>
+        )}
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
 

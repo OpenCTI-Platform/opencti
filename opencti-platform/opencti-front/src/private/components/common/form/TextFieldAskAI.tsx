@@ -2,12 +2,30 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
-import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
-import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
-import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
-import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
-import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
+import {
+  TextFieldAskAIChangeToneMutation,
+  TextFieldAskAIChangeToneMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
+import {
+  TextFieldAskAIExplainMutation,
+  TextFieldAskAIExplainMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
+import {
+  TextFieldAskAIFixSpellingMutation,
+  TextFieldAskAIFixSpellingMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
+import {
+  TextFieldAskAIMakeLongerMutation,
+  TextFieldAskAIMakeLongerMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
+import {
+  TextFieldAskAIMakeShorterMutation,
+  TextFieldAskAIMakeShorterMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
+import {
+  TextFieldAskAISummarizeMutation,
+  TextFieldAskAISummarizeMutation$data,
+} from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
 import DialogActions from '@mui/material/DialogActions';
 import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -71,7 +89,12 @@ const textFieldAskAIMakeLongerMutation = graphql`
 `;
 
 const textFieldAskAIChangeToneMutation = graphql`
-  mutation TextFieldAskAIChangeToneMutation($id: ID!, $content: String!, $format: Format, $tone: Tone) {
+  mutation TextFieldAskAIChangeToneMutation(
+    $id: ID!
+    $content: String!
+    $format: Format
+    $tone: Tone
+  ) {
     aiChangeTone(id: $id, content: $content, format: $format, tone: $tone)
   }
 `;
@@ -105,7 +128,10 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
 
   const [content, setContent] = useState('');
   const menuId = useRef(`ask-ai-menu-${uuid()}`).current;
-  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null }>({ open: false, anchorEl: null });
+  const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null }>({
+    open: false,
+    anchorEl: null,
+  });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
 
@@ -129,12 +155,24 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [isAcceptable, setIsAcceptable] = useState(true);
 
   // Legacy GraphQL mutation hooks (always declared to satisfy React hook rules)
-  const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
-  const [commitMutationMakeShorter] = useApiMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
-  const [commitMutationMakeLonger] = useApiMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
-  const [commitMutationChangeTone] = useApiMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
-  const [commitMutationSummarize] = useApiMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
-  const [commitMutationExplain] = useApiMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
+  const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(
+    textFieldAskAIFixSpellingMutation,
+  );
+  const [commitMutationMakeShorter] = useApiMutation<TextFieldAskAIMakeShorterMutation>(
+    textFieldAskAIMakeShorterMutation,
+  );
+  const [commitMutationMakeLonger] = useApiMutation<TextFieldAskAIMakeLongerMutation>(
+    textFieldAskAIMakeLongerMutation,
+  );
+  const [commitMutationChangeTone] = useApiMutation<TextFieldAskAIChangeToneMutation>(
+    textFieldAskAIChangeToneMutation,
+  );
+  const [commitMutationSummarize] = useApiMutation<TextFieldAskAISummarizeMutation>(
+    textFieldAskAISummarizeMutation,
+  );
+  const [commitMutationExplain] = useApiMutation<TextFieldAskAIExplainMutation>(
+    textFieldAskAIExplainMutation,
+  );
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
@@ -205,7 +243,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -218,7 +260,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -231,7 +277,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -244,7 +294,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -257,7 +311,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -270,7 +328,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
             setDisableResponse(false);
           },
           onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+            setContent(
+              t_i18n(
+                `An unknown error occurred, please ask your platform administrator: ${error.toString()}`,
+              ),
+            );
             setDisableResponse(false);
           },
         });
@@ -289,7 +351,9 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
     ? t_i18n('Add more content before using AI')
     : t_i18n('Ask AI');
   if (isCGUStatusPending && !isAdmin) {
-    tooltipTitle = t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.');
+    tooltipTitle = t_i18n(
+      "Ask Ariane isn't activated yet. Please reach out to your administrator to enable this feature.",
+    );
   }
 
   const renderButton = () => {
@@ -302,7 +366,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
               size="small"
               onClick={(event) => handleOpenMenu(event)}
               disabled={isButtonDisabled}
-              style={{ color: isButtonDisabled ? (theme.palette.action?.disabled ?? 'rgba(255,255,255,0.3)') : theme.palette.ai.main }}
+              style={{
+                color: isButtonDisabled
+                  ? (theme.palette.action?.disabled ?? 'rgba(255,255,255,0.3)')
+                  : theme.palette.ai.main,
+              }}
             >
               <FiligranIcon icon={LogoXtmOneIcon} size="small" />
             </IconButton>
@@ -314,22 +382,42 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           open={menuOpen.open}
           onClose={handleCloseMenu}
         >
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('spelling') : handleLegacyAskAi('spelling'))}>
+          <MenuItem
+            onClick={() =>
+              useXtmOne ? handleAgentAction('spelling') : handleLegacyAskAi('spelling')
+            }
+          >
             {t_i18n('Fix spelling & grammar')}
           </MenuItem>
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('shorter') : handleLegacyAskAi('shorter'))}>
+          <MenuItem
+            onClick={() =>
+              useXtmOne ? handleAgentAction('shorter') : handleLegacyAskAi('shorter')
+            }
+          >
             {t_i18n('Make it shorter')}
           </MenuItem>
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('longer') : handleLegacyAskAi('longer'))}>
+          <MenuItem
+            onClick={() => (useXtmOne ? handleAgentAction('longer') : handleLegacyAskAi('longer'))}
+          >
             {t_i18n('Make it longer')}
           </MenuItem>
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('tone') : handleOpenToneOptions())}>
+          <MenuItem
+            onClick={() => (useXtmOne ? handleAgentAction('tone') : handleOpenToneOptions())}
+          >
             {t_i18n('Change tone')}
           </MenuItem>
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('summarize') : handleLegacyAskAi('summarize'))}>
+          <MenuItem
+            onClick={() =>
+              useXtmOne ? handleAgentAction('summarize') : handleLegacyAskAi('summarize')
+            }
+          >
             {t_i18n('Summarize')}
           </MenuItem>
-          <MenuItem onClick={() => (useXtmOne ? handleAgentAction('explain') : handleLegacyAskAi('explain', false))}>
+          <MenuItem
+            onClick={() =>
+              useXtmOne ? handleAgentAction('explain') : handleLegacyAskAi('explain', false)
+            }
+          >
             {t_i18n('Explain')}
           </MenuItem>
         </Menu>
@@ -364,7 +452,9 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
               <Select
                 labelId="tone"
                 value={tone}
-                onChange={(event) => setTone(event.target.value as 'tactical' | 'operational' | 'strategic')}
+                onChange={(event) =>
+                  setTone(event.target.value as 'tactical' | 'operational' | 'strategic')
+                }
                 fullWidth={true}
               >
                 <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
@@ -388,7 +478,10 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           </Dialog>
         )}
         {displayCGUDialog && (
-          <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
+          <ValidateTermsOfUseDialog
+            open={displayCGUDialog}
+            onClose={() => setDisplayCGUDialog(false)}
+          />
         )}
       </>
     );

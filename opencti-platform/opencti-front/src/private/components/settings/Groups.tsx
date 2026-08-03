@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -22,7 +25,11 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export const groupsSearchQuery = graphql`
-  query GroupsSearchQuery($search: String, $groupsOrderBy: GroupsOrdering, $groupsOrderMode: OrderingMode) {
+  query GroupsSearchQuery(
+    $search: String
+    $groupsOrderBy: GroupsOrdering
+    $groupsOrderMode: OrderingMode
+  ) {
     groups(search: $search, orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
       edges {
         node {
@@ -57,13 +64,19 @@ const Groups = () => {
   const location = useLocation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groups | Security | Settings'));
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY) as {
+    orderAsc?: boolean;
+    searchTerm?: string;
+    view?: string;
+    sortBy?: string;
+  };
 
-  const [groupState, setGroupState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
+  const [groupState, setGroupState] = useState<{
+    orderAsc: boolean;
+    searchTerm: string;
+    view: string;
+    sortBy: string;
+  }>({
     sortBy: params.sortBy ?? 'name',
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
@@ -71,12 +84,7 @@ const Groups = () => {
   });
 
   function saveView() {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      groupState,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, groupState);
   }
 
   function handleSearch(value: string) {
@@ -166,7 +174,13 @@ const Groups = () => {
 
   return (
     <div className={classes.container} data-testid="groups-settings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Groups'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Groups'), current: true },
+        ]}
+      />
       {groupState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );

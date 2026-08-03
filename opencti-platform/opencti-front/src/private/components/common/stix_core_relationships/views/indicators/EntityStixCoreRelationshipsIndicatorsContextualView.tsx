@@ -3,9 +3,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables,
-} from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables } from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery.graphql';
 import ItemPatternType from '../../../../../../components/ItemPatternType';
 import EntityStixCoreRelationshipsIndicatorsContextualViewLines from './EntityStixCoreRelationshipsIndicatorsContextualViewLines';
 import { DataColumns, PaginationOptions } from '../../../../../../components/list_lines';
@@ -14,9 +12,7 @@ import { EntityStixCoreRelationshipsIndicatorsContextualViewQuery } from './__ge
 import { PaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../../../components/i18n';
 import usePreloadedFragment from '../../../../../../utils/hooks/usePreloadedFragment';
-import {
-  EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key,
-} from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
+import { EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
 import useAuth from '../../../../../../utils/hooks/useAuth';
@@ -30,7 +26,10 @@ import useQueryLoading from '../../../../../../utils/hooks/useQueryLoading';
 import { EntityStixCoreRelationshipsContextualViewLine_node$data } from '../__generated__/EntityStixCoreRelationshipsContextualViewLine_node.graphql';
 import { resolveLink } from '../../../../../../utils/Entity';
 import type { Theme } from '../../../../../../components/Theme';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -51,7 +50,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const contextualViewFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject on StixDomainObject
-  @argumentDefinitions(entityTypes: { type: "[String!]" } ) {
+  @argumentDefinitions(entityTypes: { type: "[String!]" }) {
     containers(entityTypes: $entityTypes) {
       edges {
         node {
@@ -63,9 +62,13 @@ const contextualViewFragment = graphql`
 `;
 
 const contextualViewQuery = graphql`
-  query EntityStixCoreRelationshipsIndicatorsContextualViewQuery($id: String!, $entityTypes: [String!]) {
+  query EntityStixCoreRelationshipsIndicatorsContextualViewQuery(
+    $id: String!
+    $entityTypes: [String!]
+  ) {
     stixDomainObject(id: $id) {
-      ...EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject @arguments(entityTypes: $entityTypes)
+      ...EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject
+        @arguments(entityTypes: $entityTypes)
     }
   }
 `;
@@ -79,7 +82,9 @@ interface EntityStixCoreRelationshipsIndicatorsContextualViewProps {
   currentView: string;
 }
 
-const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewProps> = ({
+const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComponent<
+  EntityStixCoreRelationshipsIndicatorsContextualViewProps
+> = ({
   queryRef,
   entityId,
   localStorage,
@@ -102,13 +107,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
 
   const { viewStorage, helpers, localStorageKey } = localStorage;
 
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const { numberOfElements, filters, searchTerm, sortBy, orderAsc } = viewStorage;
 
   const availableFilterKeys = [
     'objectLabel',
@@ -139,7 +138,9 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       label: 'Type',
       width: '10%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => {
+      render: (
+        stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+      ) => {
         if (stixCoreObject.pattern_type) {
           return <ItemPatternType label={stixCoreObject.pattern_type} />;
         }
@@ -150,13 +151,16 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       label: 'Name',
       width: '20%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => getMainRepresentative(stixCoreObject),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) =>
+        getMainRepresentative(stixCoreObject),
     },
     objectLabel: {
       label: 'Labels',
       width: '15%',
       isSortable: false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
+      render: (
+        stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+      ) => (
         <StixCoreObjectLabels
           variant="inList"
           labels={stixCoreObject.objectLabel}
@@ -168,24 +172,23 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       label: 'Platform creation date',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) =>
+        nsdt(stixCoreObject.created_at),
     },
     valid_until: {
       label: 'Valid until',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.valid_until),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) =>
+        nsdt(stixCoreObject.valid_until),
     },
     objectMarking: {
       label: 'Marking',
       width: '10%',
       isSortable: isRuntimeSort ?? false,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => (
-        <ItemMarkings
-          markingDefinitions={stixCoreObject.objectMarking ?? []}
-          limit={1}
-        />
-      ),
+      render: (
+        stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data,
+      ) => <ItemMarkings markingDefinitions={stixCoreObject.objectMarking ?? []} limit={1} />,
     },
     cases_and_analysis: {
       label: 'Cases & Analyses',
@@ -206,14 +209,20 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     },
   };
 
-  const containers = stixDomainObject.containers?.edges?.map((e) => e?.node)
-    .filter((r) => isNotEmptyField(r)) as { id: string }[] ?? [];
+  const containers =
+    (stixDomainObject.containers?.edges?.map((e) => e?.node).filter((r) => isNotEmptyField(r)) as {
+      id: string;
+    }[]) ?? [];
   const containersIds = containers.map((r) => r.id);
-  const containersSubFilter = containers.length > 0
-    ? { key: 'objects', operator: 'eq', mode: 'or', values: containersIds }
-    : { key: 'objects', operator: 'nil', mode: 'or', values: [] };
+  const containersSubFilter =
+    containers.length > 0
+      ? { key: 'objects', operator: 'eq', mode: 'or', values: containersIds }
+      : { key: 'objects', operator: 'nil', mode: 'or', values: [] };
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    filters,
+    stixCoreObjectTypes,
+  );
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
@@ -225,7 +234,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
 
   const paginationOptions = {
     search: searchTerm,
-    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'name',
+    orderBy: sortBy && sortBy in dataColumns && dataColumns[sortBy].isSortable ? sortBy : 'name',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: contextFilters,
   } as unknown as EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery$variables; // Because of FilterMode
@@ -238,7 +247,10 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>(localStorageKey);
+  } =
+    useEntityToggle<EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data>(
+      localStorageKey,
+    );
 
   return (
     <>
@@ -273,8 +285,10 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         currentView={currentView}
         searchContext={{ elementId: [entityId] }}
         additionalFilterKeys={{
-          filtersRestrictions: { preventFilterValuesEditionFor: new Map([['objects', containersIds]]) } }
-        }
+          filtersRestrictions: {
+            preventFilterValuesEditionFor: new Map([['objects', containersIds]]),
+          },
+        }}
       >
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -302,23 +316,29 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
         warning={true}
-        warningMessage={t_i18n(
-          'Be careful, you are about to delete the selected entities',
-        )}
+        warningMessage={t_i18n('Be careful, you are about to delete the selected entities')}
       />
     </>
   );
 };
 
-const EntityStixCoreRelationshipsIndicatorsContextualView: FunctionComponent<Omit<EntityStixCoreRelationshipsIndicatorsContextualViewProps, 'queryRef'>> = (props) => {
+const EntityStixCoreRelationshipsIndicatorsContextualView: FunctionComponent<
+  Omit<EntityStixCoreRelationshipsIndicatorsContextualViewProps, 'queryRef'>
+> = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsIndicatorsContextualViewQuery>(
     contextualViewQuery,
-    { id: props.entityId, entityTypes: ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'] },
+    {
+      id: props.entityId,
+      entityTypes: ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'],
+    },
   );
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityStixCoreRelationshipsIndicatorsContextualViewComponent {...props} queryRef={queryRef} />
+      <EntityStixCoreRelationshipsIndicatorsContextualViewComponent
+        {...props}
+        queryRef={queryRef}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

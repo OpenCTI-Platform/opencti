@@ -11,7 +11,12 @@ const createQueuesForType = async (context, type) => {
   const elements = await fullEntitiesList(context, SYSTEM_USER, [type]);
   for (let i = 0; i < elements.length; i += 1) {
     const element = elements[i];
-    await registerConnectorQueues(element.internal_id, `${type} ${element.internal_id} queue`, 'internal', type);
+    await registerConnectorQueues(
+      element.internal_id,
+      `${type} ${element.internal_id} queue`,
+      'internal',
+      type,
+    );
   }
 };
 

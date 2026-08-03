@@ -18,10 +18,7 @@ const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLeve
   const overrides = confidenceLevel?.overrides ?? [];
 
   return overrides.length > 0 ? (
-    <Tooltip
-      sx={{ marginLeft: 1 }}
-      title={<GroupConfidenceOverrides overrides={overrides} />}
-    >
+    <Tooltip sx={{ marginLeft: 1 }} title={<GroupConfidenceOverrides overrides={overrides} />}>
       <InformationOutline fontSize="small" color="info" />
     </Tooltip>
   ) : null;
@@ -34,7 +31,9 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
     return (
       <Alert severity="error" variant="outlined">
         <AlertTitle>
-          {t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
+          {t_i18n(
+            'This group does not have a Max Confidence Level, members might not be able to create data.',
+          )}
         </AlertTitle>
       </Alert>
     );
@@ -43,9 +42,7 @@ const GroupConfidenceLevel: React.FC<GroupConfidenceLevelProps> = ({ confidenceL
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center' }}>
       <span>{`${confidenceLevel.max_confidence ?? EMPTY_VALUE}`}</span>
-      {!!confidenceLevel.max_confidence
-        && <ConfidenceTooltip confidenceLevel={confidenceLevel} />
-      }
+      {!!confidenceLevel.max_confidence && <ConfidenceTooltip confidenceLevel={confidenceLevel} />}
     </Box>
   );
 };

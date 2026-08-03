@@ -32,14 +32,18 @@ describe('extractWorkflowMembersIds', () => {
   describe('updateAuthorizedMembers', () => {
     it('extracts member ids from state onEnter actions', () => {
       const def = emptyDef({
-        states: [{
-          statusId: 's1',
-          onEnter: [{
-            type: 'updateAuthorizedMembers',
-            params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
-          }],
-          onExit: [],
-        }],
+        states: [
+          {
+            statusId: 's1',
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
+              },
+            ],
+            onExit: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-1']);
@@ -47,14 +51,18 @@ describe('extractWorkflowMembersIds', () => {
 
     it('extracts member ids from state onExit actions', () => {
       const def = emptyDef({
-        states: [{
-          statusId: 's1',
-          onEnter: [],
-          onExit: [{
-            type: 'updateAuthorizedMembers',
-            params: { authorized_members: [{ id: 'user-2', access_right: 'admin' }] },
-          }],
-        }],
+        states: [
+          {
+            statusId: 's1',
+            onEnter: [],
+            onExit: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-2', access_right: 'admin' }] },
+              },
+            ],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-2']);
@@ -62,20 +70,26 @@ describe('extractWorkflowMembersIds', () => {
 
     it('extracts groups_restriction_ids alongside member ids', () => {
       const def = emptyDef({
-        states: [{
-          statusId: 's1',
-          onEnter: [{
-            type: 'updateAuthorizedMembers',
-            params: {
-              authorized_members: [{
-                id: 'user-1',
-                access_right: 'view',
-                groups_restriction_ids: ['group-1', 'group-2'],
-              }],
-            },
-          }],
-          onExit: [],
-        }],
+        states: [
+          {
+            statusId: 's1',
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: {
+                  authorized_members: [
+                    {
+                      id: 'user-1',
+                      access_right: 'view',
+                      groups_restriction_ids: ['group-1', 'group-2'],
+                    },
+                  ],
+                },
+              },
+            ],
+            onExit: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-1', 'group-1', 'group-2']);
@@ -83,18 +97,22 @@ describe('extractWorkflowMembersIds', () => {
 
     it('extracts member ids from transition syncActions', () => {
       const def = emptyDef({
-        transitions: [{
-          from: ['s1'],
-          to: 's2',
-          event: 'go',
-          conditions: {},
-          comment: null,
-          asyncActions: [],
-          syncActions: [{
-            type: 'updateAuthorizedMembers',
-            params: { authorized_members: [{ id: 'user-3', access_right: 'edit' }] },
-          }],
-        }],
+        transitions: [
+          {
+            from: ['s1'],
+            to: 's2',
+            event: 'go',
+            conditions: {},
+            comment: null,
+            asyncActions: [],
+            syncActions: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-3', access_right: 'edit' }] },
+              },
+            ],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-3']);
@@ -104,20 +122,24 @@ describe('extractWorkflowMembersIds', () => {
   describe('asyncBulkAction', () => {
     it('extracts org ids from SHARE asyncBulkAction in transition asyncActions', () => {
       const def = emptyDef({
-        transitions: [{
-          from: ['s1'],
-          to: 's2',
-          event: 'share',
-          conditions: {},
-          comment: null,
-          asyncActions: [{
-            type: 'asyncBulkAction',
-            params: {
-              actions: [{ type: 'SHARE', context: { values: ['org-1', 'org-2'] } }],
-            },
-          }],
-          syncActions: [],
-        }],
+        transitions: [
+          {
+            from: ['s1'],
+            to: 's2',
+            event: 'share',
+            conditions: {},
+            comment: null,
+            asyncActions: [
+              {
+                type: 'asyncBulkAction',
+                params: {
+                  actions: [{ type: 'SHARE', context: { values: ['org-1', 'org-2'] } }],
+                },
+              },
+            ],
+            syncActions: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['org-1', 'org-2']);
@@ -125,20 +147,24 @@ describe('extractWorkflowMembersIds', () => {
 
     it('extracts org ids from UNSHARE asyncBulkAction', () => {
       const def = emptyDef({
-        transitions: [{
-          from: ['s1'],
-          to: 's2',
-          event: 'unshare',
-          conditions: {},
-          comment: null,
-          asyncActions: [{
-            type: 'asyncBulkAction',
-            params: {
-              actions: [{ type: 'UNSHARE', context: { values: ['org-3'] } }],
-            },
-          }],
-          syncActions: [],
-        }],
+        transitions: [
+          {
+            from: ['s1'],
+            to: 's2',
+            event: 'unshare',
+            conditions: {},
+            comment: null,
+            asyncActions: [
+              {
+                type: 'asyncBulkAction',
+                params: {
+                  actions: [{ type: 'UNSHARE', context: { values: ['org-3'] } }],
+                },
+              },
+            ],
+            syncActions: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['org-3']);
@@ -151,18 +177,22 @@ describe('extractWorkflowMembersIds', () => {
         states: [
           {
             statusId: 's1',
-            onEnter: [{
-              type: 'updateAuthorizedMembers',
-              params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
-            }],
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
+              },
+            ],
             onExit: [],
           },
           {
             statusId: 's2',
-            onEnter: [{
-              type: 'updateAuthorizedMembers',
-              params: { authorized_members: [{ id: 'user-1', access_right: 'admin' }] },
-            }],
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-1', access_right: 'admin' }] },
+              },
+            ],
             onExit: [],
           },
         ],
@@ -173,19 +203,23 @@ describe('extractWorkflowMembersIds', () => {
 
     it('deduplicates ids shared between members and group restrictions', () => {
       const def = emptyDef({
-        states: [{
-          statusId: 's1',
-          onEnter: [{
-            type: 'updateAuthorizedMembers',
-            params: {
-              authorized_members: [
-                { id: 'group-1', access_right: 'view' },
-                { id: 'user-1', access_right: 'admin', groups_restriction_ids: ['group-1'] },
-              ],
-            },
-          }],
-          onExit: [],
-        }],
+        states: [
+          {
+            statusId: 's1',
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: {
+                  authorized_members: [
+                    { id: 'group-1', access_right: 'view' },
+                    { id: 'user-1', access_right: 'admin', groups_restriction_ids: ['group-1'] },
+                  ],
+                },
+              },
+            ],
+            onExit: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['group-1', 'user-1']);
@@ -193,26 +227,34 @@ describe('extractWorkflowMembersIds', () => {
 
     it('collects ids from both states and transitions without duplicates', () => {
       const def = emptyDef({
-        states: [{
-          statusId: 's1',
-          onEnter: [{
-            type: 'updateAuthorizedMembers',
-            params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
-          }],
-          onExit: [],
-        }],
-        transitions: [{
-          from: ['s1'],
-          to: 's2',
-          event: 'go',
-          conditions: {},
-          comment: null,
-          asyncActions: [{
-            type: 'asyncBulkAction',
-            params: { actions: [{ type: 'SHARE', context: { values: ['user-1', 'org-1'] } }] },
-          }],
-          syncActions: [],
-        }],
+        states: [
+          {
+            statusId: 's1',
+            onEnter: [
+              {
+                type: 'updateAuthorizedMembers',
+                params: { authorized_members: [{ id: 'user-1', access_right: 'view' }] },
+              },
+            ],
+            onExit: [],
+          },
+        ],
+        transitions: [
+          {
+            from: ['s1'],
+            to: 's2',
+            event: 'go',
+            conditions: {},
+            comment: null,
+            asyncActions: [
+              {
+                type: 'asyncBulkAction',
+                params: { actions: [{ type: 'SHARE', context: { values: ['user-1', 'org-1'] } }] },
+              },
+            ],
+            syncActions: [],
+          },
+        ],
       });
 
       expect(extractWorkflowMembersIds(def)).toEqual(['user-1', 'org-1']);

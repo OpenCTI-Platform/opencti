@@ -34,7 +34,13 @@ interface ContentKnowledgeTimeLineBarProps {
   timeLineFunctionalDate: boolean;
   handleToggleTimeLineFunctionalDate: () => void;
   timeLineFilters: FilterGroup;
-  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string | null, op?: string, event?: SyntheticEvent) => void;
+  handleAddTimeLineFilter: (
+    filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+    key: string,
+    id: string | null,
+    op?: string,
+    event?: SyntheticEvent,
+  ) => void;
   handleRemoveTimeLineFilter: (key: string, id?: string) => void;
   handleSwitchFilterLocalMode: (filter: Filter) => void;
   handleSwitchFilterGlobalMode: () => void;
@@ -58,9 +64,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
   const classes = useStyles();
   const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();
-  const [navOpen, setNavOpen] = useState(
-    localStorage.getItem('navOpen') === 'true',
-  );
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
   const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
   useEffect(() => {
@@ -160,10 +164,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                     'createdBy',
                     'relationship_type',
                   ]}
-                  availableEntityTypes={[
-                    'Stix-Domain-Object',
-                    'Stix-Cyber-Observable',
-                  ]}
+                  availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                   handleAddFilter={handleAddFilter}
                 />
               </div>
@@ -175,10 +176,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                   handleSwitchLocalMode={handleSwitchFilterLocalMode}
                   handleSwitchGlobalMode={handleSwitchFilterGlobalMode}
                   redirection
-                  availableEntityTypes={[
-                    'Stix-Domain-Object',
-                    'Stix-Cyber-Observable',
-                  ]}
+                  availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                 />
               </div>
             </Stack>

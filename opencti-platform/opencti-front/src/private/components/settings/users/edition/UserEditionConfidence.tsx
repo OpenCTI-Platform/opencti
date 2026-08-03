@@ -30,10 +30,11 @@ interface UserEditionConfidenceProps {
   user: UserEdition_user$data;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
-    | null | undefined;
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
 }
 
 const userConfidenceValidation = (t: (value: string) => string) => {
@@ -58,17 +59,22 @@ const userConfidenceValidation = (t: (value: string) => string) => {
   });
 };
 
-const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ user, context }) => {
+const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({
+  user,
+  context,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
   const initialValues: ConfidenceFormData = {
     user_confidence_level_enabled: !!user.user_confidence_level,
     user_confidence_level: user.user_confidence_level?.max_confidence,
-    overrides: user.user_confidence_level?.overrides?.map((override) => ({
-      ...override,
-      max_confidence: override.max_confidence.toString(),
-    })) ?? [] };
+    overrides:
+      user.user_confidence_level?.overrides?.map((override) => ({
+        ...override,
+        max_confidence: override.max_confidence.toString(),
+      })) ?? [],
+  };
 
   const [commitFieldPatch] = useApiMutation(userMutationFieldPatch);
 
@@ -119,18 +125,22 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
         object_path = 'user_confidence_level';
         finalValue = {
           max_confidence: null, // Initialize global max_confidence as null
-          overrides: [{
-            entity_type: value.entity_type,
-            max_confidence: parseInt(value.max_confidence ?? '0', 10),
-          }],
+          overrides: [
+            {
+              entity_type: value.entity_type,
+              max_confidence: parseInt(value.max_confidence ?? '0', 10),
+            },
+          ],
         };
       } else {
         // If user_confidence_level already exists, just update or add the override
         object_path = `/user_confidence_level/overrides/${index}`;
-        finalValue = [{
-          entity_type: value.entity_type,
-          max_confidence: parseInt(value.max_confidence ?? '0', 10),
-        }];
+        finalValue = [
+          {
+            entity_type: value.entity_type,
+            max_confidence: parseInt(value.max_confidence ?? '0', 10),
+          },
+        ];
       }
       const name = `overrides[${index}]`;
       userConfidenceValidation(t_i18n)
@@ -163,7 +173,10 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
     }
   };
 
-  const defaultOverrideConfidence = user.effective_confidence_level && user.effective_confidence_level.max_confidence ? user.effective_confidence_level.max_confidence : 0;
+  const defaultOverrideConfidence =
+    user.effective_confidence_level && user.effective_confidence_level.max_confidence
+      ? user.effective_confidence_level.max_confidence
+      : 0;
   return (
     <>
       <Formik<ConfidenceFormData>
@@ -187,16 +200,21 @@ const UserEditionConfidence: FunctionComponent<UserEditionConfidenceProps> = ({ 
                 <div>
                   <Label
                     variant="primary"
-                    action={(
+                    action={
                       <IconButton
                         color="primary"
                         aria-label="Add"
-                        onClick={() => arrayHelpers.push({ entity_type: '', max_confidence: defaultOverrideConfidence })}
+                        onClick={() =>
+                          arrayHelpers.push({
+                            entity_type: '',
+                            max_confidence: defaultOverrideConfidence,
+                          })
+                        }
                         disabled={values.overrides.some((o) => o.entity_type === '')}
                       >
                         <Add fontSize="small" />
                       </IconButton>
-                    )}
+                    }
                   >
                     {t_i18n('Add a specific max confidence level for an entity type')}
                   </Label>

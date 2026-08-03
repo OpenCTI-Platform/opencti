@@ -22,10 +22,15 @@ import ItemCopy from '../../../components/ItemCopy';
 import { StixCoreObjectsCustomAttributesQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsCustomAttributesQuery.graphql';
 import { entityTypeRenderers } from 'src/utils/widget/widgetCustomAttributesRendererUtils';
 import ListItemText from '@mui/material/ListItemText';
-import { openVocabListRenderers, openVocabSingleRenderers } from 'src/utils/widget/widgetOpenVocabRendererUtils';
+import {
+  openVocabListRenderers,
+  openVocabSingleRenderers,
+} from 'src/utils/widget/widgetOpenVocabRendererUtils';
 import { EMPTY_VALUE } from 'src/utils/String';
 
-export type StixCoreObject = NonNullable<StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']>;
+export type StixCoreObject = NonNullable<
+  StixCoreObjectsCustomAttributesQuery$data['stixCoreObject']
+>;
 
 interface WidgetCustomAttributesCardProps {
   column: WidgetColumn;
@@ -37,8 +42,7 @@ interface WidgetCustomAttributesCardProps {
 const isString = (v: unknown): v is string => typeof v === 'string';
 const isNumber = (v: unknown): v is number => typeof v === 'number' && !Number.isNaN(v);
 const isBoolean = (v: unknown): v is boolean => typeof v === 'boolean';
-const isStringArray = (v: unknown): v is string[] =>
-  Array.isArray(v) && v.every(isString);
+const isStringArray = (v: unknown): v is string[] => Array.isArray(v) && v.every(isString);
 const isObjectArray = (v: unknown): v is Record<string, unknown>[] =>
   Array.isArray(v) && v.every((item) => typeof item === 'object' && item !== null);
 
@@ -52,14 +56,12 @@ const getField = <T,>(
   return value as T | undefined;
 };
 
-const empty = () => (
-  <Typography>
-    {EMPTY_VALUE}
-  </Typography>
-);
+const empty = () => <Typography>{EMPTY_VALUE}</Typography>;
 
 const ValueCopy = ({ value }: { value: string }) => (
-  <pre><ItemCopy content={value} /></pre>
+  <pre>
+    <ItemCopy content={value} />
+  </pre>
 );
 
 const renderByAttributeType = (
@@ -84,13 +86,7 @@ const renderByAttributeType = (
     case 'boolean': {
       const bool = getField(data, attribute, isBoolean);
       if (bool === undefined || bool === null) return empty();
-      return (
-        <ItemBoolean
-          status={bool}
-          label={bool ? t_i18n('Yes') : t_i18n('No')}
-          reverse
-        />
-      );
+      return <ItemBoolean status={bool} label={bool ? t_i18n('Yes') : t_i18n('No')} reverse />;
     }
 
     case 'tag': {
@@ -108,7 +104,9 @@ const renderByAttributeType = (
       return (
         <FieldOrEmpty source={list}>
           <Stack direction="row" flexWrap="wrap" gap={1}>
-            {list.map((item) => <Tag key={item} label={item} />)}
+            {list.map((item) => (
+              <Tag key={item} label={item} />
+            ))}
           </Stack>
         </FieldOrEmpty>
       );
@@ -135,13 +133,11 @@ const renderByAttributeType = (
     }
 
     case 'open_vocab': {
-      return openVocabSingleRenderers[attribute]?.(data as Record<string, unknown>)
-        ?? empty();
+      return openVocabSingleRenderers[attribute]?.(data as Record<string, unknown>) ?? empty();
     }
 
     case 'open_vocab_list': {
-      return openVocabListRenderers[attribute]?.(data as Record<string, unknown>)
-        ?? empty();
+      return openVocabListRenderers[attribute]?.(data as Record<string, unknown>) ?? empty();
     }
 
     case 'copy': {
@@ -149,7 +145,9 @@ const renderByAttributeType = (
       if (list) {
         return (
           <FieldOrEmpty source={list}>
-            {list.map((v) => <ValueCopy key={v} value={v} />)}
+            {list.map((v) => (
+              <ValueCopy key={v} value={v} />
+            ))}
           </FieldOrEmpty>
         );
       }
@@ -177,18 +175,14 @@ const renderAttributeValue = (
   if (!attribute) return null;
 
   if (!data) {
-    return (
-      <Typography>
-        {EMPTY_VALUE}
-      </Typography>
-    );
+    return <Typography>{EMPTY_VALUE}</Typography>;
   }
 
   const entityType = data.entity_type ?? '';
   const isSCO = 'observable_value' in data;
-  const specificRenderer
-    = entityTypeRenderers[entityType]?.[attribute]
-      ?? (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
+  const specificRenderer =
+    entityTypeRenderers[entityType]?.[attribute] ??
+    (isSCO ? entityTypeRenderers['Stix-Cyber-Observable']?.[attribute] : undefined);
 
   if (specificRenderer) {
     return specificRenderer(data, t_i18n, fldt, host);
@@ -205,12 +199,7 @@ const renderAttributeValue = (
       return <ItemAuthor createdBy={data.createdBy ?? null} />;
 
     case 'confidence':
-      return (
-        <ItemConfidence
-          confidence={data.confidence ?? null}
-          entityType={entityType}
-        />
-      );
+      return <ItemConfidence confidence={data.confidence ?? null} entityType={entityType} />;
 
     case 'objectLabel': {
       const labels = getField<{ id: string; value: string; color: string }[]>(data, 'objectLabel');
@@ -229,21 +218,26 @@ const renderAttributeValue = (
       return <ItemCreators creators={data.creators ?? []} />;
 
     case 'objectAssignee': {
-      const assignees = getField<{ id: string; name: string; entity_type: string }[]>(data, 'objectAssignee') ?? [];
+      const assignees =
+        getField<{ id: string; name: string; entity_type: string }[]>(data, 'objectAssignee') ?? [];
       return <ItemAssignees assignees={assignees} stixDomainObjectId={data.id} readOnly />;
     }
 
     case 'objectParticipant': {
-      const participants = getField<{ id: string; name: string; entity_type: string }[]>(data, 'objectParticipant') ?? [];
+      const participants =
+        getField<{ id: string; name: string; entity_type: string }[]>(data, 'objectParticipant') ??
+        [];
       return <ItemParticipants participants={participants} stixDomainObjectId={data.id} readOnly />;
     }
 
     case 'killChainPhases': {
-      const phases = getField<ReadonlyArray<{
-        id: string;
-        kill_chain_name: string;
-        phase_name: string;
-      }>>(data, 'killChainPhases');
+      const phases = getField<
+        ReadonlyArray<{
+          id: string;
+          kill_chain_name: string;
+          phase_name: string;
+        }>
+      >(data, 'killChainPhases');
       return (
         <FieldOrEmpty source={phases}>
           <List sx={{ py: 0 }}>
@@ -285,7 +279,9 @@ const renderAttributeValue = (
         return (
           <FieldOrEmpty source={stringArr}>
             <Stack direction="row" flexWrap="wrap" gap={1}>
-              {stringArr.map((item) => <Tag key={item} label={item} />)}
+              {stringArr.map((item) => (
+                <Tag key={item} label={item} />
+              ))}
             </Stack>
           </FieldOrEmpty>
         );

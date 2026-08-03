@@ -1,9 +1,16 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { SearchBulkQuery, SearchBulkQuery$variables } from './__generated__/SearchBulkQuery.graphql';
+import {
+  SearchBulkQuery,
+  SearchBulkQuery$variables,
+} from './__generated__/SearchBulkQuery.graphql';
 import { SearchBulkQuery_data$data } from './__generated__/SearchBulkQuery_data.graphql';
 import DataTable from '../../components/dataGrid/DataTable';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../utils/filters/filtersUtils';
 import { NumberOfElements, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
@@ -72,15 +79,15 @@ export const searchBulkQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...SearchBulkQuery_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-      types: $types
-      filters: $filters
-      search: $search
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        count: $count
+        cursor: $cursor
+        types: $types
+        filters: $filters
+        search: $search
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -99,13 +106,12 @@ export const searchBulkFragment = graphql`
     globalSearch(
       first: $count
       after: $cursor
-      types: $types,
-      search: $search,
+      types: $types
+      search: $search
       filters: $filters
       orderBy: $orderBy
       orderMode: $orderMode
-    )
-    @connection(key: "Pagination_globalSearch") {
+    ) @connection(key: "Pagination_globalSearch") {
       edges {
         node {
           id
@@ -176,7 +182,9 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SearchBulkQuery_data$data) =>
+            data.globalSearch?.edges?.map((n) => n?.node)
+          }
           storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={queryFilters}

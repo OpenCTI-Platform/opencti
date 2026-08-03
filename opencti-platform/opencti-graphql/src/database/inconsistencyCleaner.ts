@@ -18,7 +18,10 @@ const checkForRefsDuplicates = (entityDocument: any): string[] => {
       // Rebuild rel to stix attributes
       const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      if (!isSingleRelationsRef(elementEntityType as string, relType) && isStixRefUnidirectionalRelationship(relType)) {
+      if (
+        !isSingleRelationsRef(elementEntityType as string, relType) &&
+        isStixRefUnidirectionalRelationship(relType)
+      ) {
         const valueSet = new Set(value as []);
         if (valueSet.size !== value.length) {
           refsWithDuplicates.push(key);
@@ -33,16 +36,22 @@ const checkForRefsDuplicates = (entityDocument: any): string[] => {
 const getLoadByInternalIdQuery = (internal_id: string) => {
   return {
     bool: {
-      filter: [{
-        term: {
-          [`${internalId.name}.keyword`]: internal_id,
+      filter: [
+        {
+          term: {
+            [`${internalId.name}.keyword`]: internal_id,
+          },
         },
-      }],
+      ],
     },
   };
 };
 
-const loadRawElement = async (context: AuthContext, user: AuthUser, internal_id: string): Promise<any> => {
+const loadRawElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  internal_id: string,
+): Promise<any> => {
   const query = getLoadByInternalIdQuery(internal_id);
   const rawSearchQuery = {
     index: READ_DATA_INDICES_WITHOUT_INFERRED,
@@ -66,7 +75,10 @@ const cleanDuplicatedRefs = async (
   elemntDocument: Record<string, any>,
 ): Promise<CleaningResult> => {
   const result: CleaningResult = { shouldUpdate: false };
-  if (operationsToApply.includes(InconsistencyCleaningType.All) || operationsToApply.includes(InconsistencyCleaningType.RefDuplicateClean)) {
+  if (
+    operationsToApply.includes(InconsistencyCleaningType.All) ||
+    operationsToApply.includes(InconsistencyCleaningType.RefDuplicateClean)
+  ) {
     const refDuplicatesKeys = checkForRefsDuplicates(elemntDocument);
     if (refDuplicatesKeys) {
       result.params = { duplicatedKeys: refDuplicatesKeys };

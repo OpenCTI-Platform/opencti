@@ -70,7 +70,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -195,8 +195,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   #Decay
-  decay_base_score : Int
-  decay_base_score_date : DateTime
+  decay_base_score: Int
+  decay_base_score_date: DateTime
   decay_applied_rule: IndicatorDecayRule
   decay_exclusion_applied_rule: IndicatorDecayExclusionRule
   decay_history: [DecayHistory!]
@@ -293,7 +293,8 @@ type Query {
     interval: String!
     filters: FilterGroup
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE])
   indicatorsDistribution(
     objectId: String
     field: String!
@@ -309,9 +310,16 @@ type Query {
 type Mutation {
   indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  indicatorFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorFieldPatch(
+    id: ID!
+    input: [EditInput!]!
+    commitMessage: String
+    references: [String]
+  ): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorContextPatch(id: ID!, input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorContextClean(id: ID!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 }

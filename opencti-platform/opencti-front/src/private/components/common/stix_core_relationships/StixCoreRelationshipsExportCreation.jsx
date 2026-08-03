@@ -18,15 +18,16 @@ import Loader from '../../../../components/Loader';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { emptyFilterGroup, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
@@ -57,14 +58,13 @@ export const StixCoreRelationshipsExportCreationMutation = graphql`
   }
 `;
 
-const exportValidation = (t_i18n) => Yup.object().shape({
-  format: Yup.string().required(t_i18n('This field is required')),
-});
+const exportValidation = (t_i18n) =>
+  Yup.object().shape({
+    format: Yup.string().required(t_i18n('This field is required')),
+  });
 
 export const scopesConn = (exportConnectors) => {
-  const scopes = R.uniq(
-    R.flatten(exportConnectors.map((c) => c.connector_scope)),
-  );
+  const scopes = R.uniq(R.flatten(exportConnectors.map((c) => c.connector_scope)));
   const connectors = scopes.map((s) => {
     const filteredConnectors = exportConnectors.filter((e) => R.includes(s, e.connector_scope));
     return filteredConnectors.map((x) => ({
@@ -130,18 +130,19 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
   render() {
     const { t, data, open, onClose } = this.props;
     const connectorsExport = data?.connectorsForExport ?? [];
-    const exportScopes = R.uniq(
-      R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
-    );
+    const exportScopes = R.uniq(R.flatten(R.map((c) => c.connector_scope, connectorsExport)));
     const exportConnsPerFormat = scopesConn(connectorsExport);
 
-    const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const isExportActive = (format) =>
+      exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
     const visibleColumnExportEnabledFormats = ['text/csv'];
 
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const availableFilterKeys = Array.from(schema.filterKeysSchema.get('stix-core-relationship')?.keys() ?? []).concat(['entity_type']);
+          const availableFilterKeys = Array.from(
+            schema.filterKeysSchema.get('stix-core-relationship')?.keys() ?? [],
+          ).concat(['entity_type']);
           return (
             <ExportContext.Consumer>
               {({ selectedIds }) => {
@@ -159,7 +160,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
                       onReset={onClose}
                     >
-                      {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
+                      {({
+                        submitForm,
+                        handleReset,
+                        isSubmitting,
+                        resetForm,
+                        setFieldValue,
+                        values,
+                      }) => (
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
@@ -168,14 +176,18 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               resetForm();
                               onClose();
                             }}
-                            title={(
+                            title={
                               <>
                                 {t('Generate an export')}
-                                <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
+                                <Tooltip
+                                  title={t(
+                                    'Your max shareable markings will be applied to the content max markings',
+                                  )}
+                                >
                                   <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
                                 </Tooltip>
                               </>
-                            )}
+                            }
                           >
                             <QueryRenderer
                               query={markingDefinitionsLinesSearchQuery}
@@ -205,7 +217,9 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                       <ObjectMarkingField
                                         name="contentMaxMarkings"
                                         label={t(CONTENT_MAX_MARKINGS_TITLE)}
-                                        onChange={(_, values) => this.handleSelectedContentMaxMarkingsChange(values)}
+                                        onChange={(_, values) =>
+                                          this.handleSelectedContentMaxMarkingsChange(values)
+                                        }
                                         style={fieldSpacingContainerStyle}
                                         setFieldValue={setFieldValue}
                                         limitToMaxSharing
@@ -218,25 +232,19 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                                         style={fieldSpacingContainerStyle}
                                         setFieldValue={setFieldValue}
                                       />
-                                      {visibleColumnExportEnabledFormats.includes(values.format)
-                                        ? (
-                                            <Field
-                                              component={SelectField}
-                                              variant="standard"
-                                              name="columns"
-                                              label={t('Choose column to export')}
-                                              fullWidth={true}
-                                              containerstyle={fieldSpacingContainerStyle}
-                                            >
-                                              <MenuItem value="all">
-                                                {t('All attributes')}
-                                              </MenuItem>
-                                              <MenuItem value="view">
-                                                {t('Current view')}
-                                              </MenuItem>
-                                            </Field>
-                                          )
-                                        : undefined}
+                                      {visibleColumnExportEnabledFormats.includes(values.format) ? (
+                                        <Field
+                                          component={SelectField}
+                                          variant="standard"
+                                          name="columns"
+                                          label={t('Choose column to export')}
+                                          fullWidth={true}
+                                          containerstyle={fieldSpacingContainerStyle}
+                                        >
+                                          <MenuItem value="all">{t('All attributes')}</MenuItem>
+                                          <MenuItem value="view">{t('Current view')}</MenuItem>
+                                        </Field>
+                                      ) : undefined}
                                     </>
                                   );
                                 }
@@ -254,10 +262,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               >
                                 {t('Cancel')}
                               </Button>
-                              <Button
-                                onClick={submitForm}
-                                disabled={isSubmitting}
-                              >
+                              <Button onClick={submitForm} disabled={isSubmitting}>
                                 {t('Create')}
                               </Button>
                             </DialogActions>
@@ -304,7 +309,4 @@ StixCoreRelationshipsExportCreations.propTypes = {
   onClose: PropTypes.func,
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipsExportCreations);
+export default R.compose(inject18n, withStyles(styles))(StixCoreRelationshipsExportCreations);

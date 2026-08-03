@@ -43,9 +43,7 @@ const PlaybookFlowFieldArray = ({
   const { translateEntityType } = useEntityTranslation();
   const fieldOptions = [...options]
     .sort((a, b) =>
-      translateEntityType(a?.title ?? '').localeCompare(
-        translateEntityType(b?.title ?? ''),
-      ),
+      translateEntityType(a?.title ?? '').localeCompare(translateEntityType(b?.title ?? '')),
     )
     .map((o) => o.const);
 
@@ -67,18 +65,12 @@ const PlaybookFlowFieldArray = ({
       }}
       name={name}
       options={fieldOptions}
-      renderTags={(values: string[], getTagProps: AutocompleteRenderGetTagProps) => (
+      renderTags={(values: string[], getTagProps: AutocompleteRenderGetTagProps) =>
         values.map((value, index) => {
           const option = findOption(value);
-          return (
-            <Tag
-              {...getTagProps({ index })}
-              key={value}
-              label={option?.title}
-            />
-          );
+          return <Tag {...getTagProps({ index })} key={value} label={option?.title} />;
         })
-      )}
+      }
       renderOption={(props: TooltipProps, value: string) => {
         const option = findOption(value);
         if (!option) return null;

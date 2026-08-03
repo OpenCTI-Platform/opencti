@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { callAgent, callAgentStream, isXtmOneIntentWithoutAgents } from './agentApi';
 
-const buildJsonResponse = (status: number, body: unknown, ok = status >= 200 && status < 300): Response => {
+const buildJsonResponse = (
+  status: number,
+  body: unknown,
+  ok = status >= 200 && status < 300,
+): Response => {
   const json = JSON.stringify(body);
   let statusText = 'OK';
   if (status === 400) statusText = 'Bad Request';
@@ -19,7 +23,11 @@ const buildJsonResponse = (status: number, body: unknown, ok = status >= 200 && 
   return response as unknown as Response;
 };
 
-const buildPlainResponse = (status: number, text: string, ok = status >= 200 && status < 300): Response => {
+const buildPlainResponse = (
+  status: number,
+  text: string,
+  ok = status >= 200 && status < 300,
+): Response => {
   const response = {
     ok,
     status,
@@ -115,9 +123,7 @@ describe('agentApi', () => {
     });
 
     it('falls back to statusText when the error body is not JSON', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        buildPlainResponse(400, 'plain text error'),
-      );
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(buildPlainResponse(400, 'plain text error'));
 
       const result = await callAgent('test-agent', 'hello');
 
@@ -158,9 +164,7 @@ describe('agentApi', () => {
     });
 
     it('falls back to statusText when the error body is not JSON', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        buildPlainResponse(400, 'plain text error'),
-      );
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(buildPlainResponse(400, 'plain text error'));
 
       const result = await callAgentStream('test-agent', 'hello', vi.fn());
 
@@ -178,7 +182,9 @@ describe('agentApi', () => {
       );
 
       const chunks: string[] = [];
-      const result = await callAgentStream('test-agent', 'hello', (partial) => chunks.push(partial));
+      const result = await callAgentStream('test-agent', 'hello', (partial) =>
+        chunks.push(partial),
+      );
 
       expect(result.status).toBe('success');
       expect(result.content).toBe('Hello world');
@@ -188,11 +194,9 @@ describe('agentApi', () => {
     });
 
     it('forwards `force_refresh: true` to the backend when the caller opts to bypass the cache', async () => {
-      const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        buildSseStreamResponse([
-          'data: {"type":"done","content":"fresh"}\n\n',
-        ]),
-      );
+      const fetchMock = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(buildSseStreamResponse(['data: {"type":"done","content":"fresh"}\n\n']));
 
       await callAgentStream('test-agent', 'hello', vi.fn(), undefined, true);
 

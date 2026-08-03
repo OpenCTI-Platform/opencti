@@ -29,12 +29,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   const { isFormValid } = useWidgetConfigValidateForm();
 
   return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      className="noDrag"
-      size="large"
-    >
+    <Dialog open={open} onClose={onCancel} className="noDrag" size="large">
       <WidgetConfigStepper />
 
       {open && (

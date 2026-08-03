@@ -9,7 +9,11 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { isUserHasCapability, KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import type { BasicStoreEntity } from '../types/store';
-import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import {
+  type EntityOptions,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
 import type { Change } from '../types/event';
 
 export interface StoreHistory extends BasicStoreEntity {
@@ -31,11 +35,17 @@ export const findHistory = async (context: AuthContext, user: AuthUser, args: Qu
 };
 
 export const findById = async (context: AuthContext, user: AuthUser, logId: string) => {
-  return storeLoadById<StoreHistory>(context, user, logId, ENTITY_TYPE_HISTORY, { historyFiltering: true });
+  return storeLoadById<StoreHistory>(context, user, logId, ENTITY_TYPE_HISTORY, {
+    historyFiltering: true,
+  });
 };
 
 export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
-  let types = args.types ? args.types : isUserHasCapability(user, SETTINGS_SECURITYACTIVITY) ? [ENTITY_TYPE_ACTIVITY] : [ENTITY_TYPE_HISTORY];
+  let types = args.types
+    ? args.types
+    : isUserHasCapability(user, SETTINGS_SECURITYACTIVITY)
+      ? [ENTITY_TYPE_ACTIVITY]
+      : [ENTITY_TYPE_HISTORY];
   if (!isUserHasCapability(user, KNOWLEDGE)) {
     types = types.filter((t) => t !== ENTITY_TYPE_HISTORY);
   }
@@ -68,7 +78,13 @@ export const auditsNumber = (context: AuthContext, user: AuthUser, args: any) =>
   if (args.unique) {
     return {
       count: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, finalArgs),
-      total: elCardinalityCount(context, user, READ_INDEX_HISTORY, args.field, R.dissoc('endDate', finalArgs)),
+      total: elCardinalityCount(
+        context,
+        user,
+        READ_INDEX_HISTORY,
+        args.field,
+        R.dissoc('endDate', finalArgs),
+      ),
     };
   } else {
     return {
@@ -84,9 +100,17 @@ export const auditsTimeSeries = (context: AuthContext, user: AuthUser, args: any
 };
 
 export const auditsMultiTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
-  return Promise.all(args.timeSeriesParameters.map((timeSeriesParameter: any) => {
-    return { data: timeSeriesHistory(context, user, { ...args, historyFiltering: true, ...timeSeriesParameter }) };
-  }));
+  return Promise.all(
+    args.timeSeriesParameters.map((timeSeriesParameter: any) => {
+      return {
+        data: timeSeriesHistory(context, user, {
+          ...args,
+          historyFiltering: true,
+          ...timeSeriesParameter,
+        }),
+      };
+    }),
+  );
 };
 
 export const auditsDistribution = async (context: AuthContext, user: AuthUser, args: any) => {

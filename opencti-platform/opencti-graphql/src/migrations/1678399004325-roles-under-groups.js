@@ -13,7 +13,12 @@ export const up = async (next) => {
   const start = new Date().getTime();
   logApp.info('[MIGRATION] Roles under groups');
   const relationArgs = { fromTypes: [ENTITY_TYPE_USER] };
-  const currentRolesRelations = await fullRelationsList(context, context.user, [RELATION_HAS_ROLE], relationArgs);
+  const currentRolesRelations = await fullRelationsList(
+    context,
+    context.user,
+    [RELATION_HAS_ROLE],
+    relationArgs,
+  );
   // If remaining user->roles relationships available.
   if (currentRolesRelations.length > 0) {
     const roles = await fullEntitiesList(context, context.user, [ENTITY_TYPE_ROLE]);
@@ -36,10 +41,15 @@ export const up = async (next) => {
       roleGroupAssociations[role.id] = addedGroup.id;
     }
     // Remap each user to the corresponding groups
-    logApp.info(`[MIGRATION] Roles under groups remapping ${currentRolesRelations.length} roles relations`);
+    logApp.info(
+      `[MIGRATION] Roles under groups remapping ${currentRolesRelations.length} roles relations`,
+    );
     for (let index = 0; index < currentRolesRelations.length; index += 1) {
       const { id, entity_type, fromId: userId, toId: roleId } = currentRolesRelations[index];
-      const groupRelationInput = { relationship_type: RELATION_MEMBER_OF, toId: roleGroupAssociations[roleId] };
+      const groupRelationInput = {
+        relationship_type: RELATION_MEMBER_OF,
+        toId: roleGroupAssociations[roleId],
+      };
       await userAddRelation(context, context.user, userId, groupRelationInput);
       // Delete the old relation
       await deleteElementById(context, context.user, id, entity_type);

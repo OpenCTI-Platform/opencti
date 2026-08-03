@@ -2,8 +2,18 @@ import { files } from '../schema/attribute-definition';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { getDraftContext } from '../utils/draftContext';
-import { READ_INDEX_DRAFT_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './utils';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE } from '../modules/draftWorkspace/draftOperations';
+import {
+  READ_INDEX_DRAFT_OBJECTS,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE,
+} from './utils';
+import {
+  DRAFT_OPERATION_CREATE,
+  DRAFT_OPERATION_DELETE,
+  DRAFT_OPERATION_DELETE_LINKED,
+  DRAFT_OPERATION_UPDATE,
+} from '../modules/draftWorkspace/draftOperations';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, DraftChange, InternalEditInput } from '../types/store';
@@ -27,7 +37,11 @@ export const isDraftFile = (fileKey: string, draftId: string, suffix = ''): bool
 export type BuildDraftFilterOpts = {
   includeDeletedInDraft?: boolean | null;
 };
-export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: BuildDraftFilterOpts = {}) => {
+export const buildDraftFilter = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: BuildDraftFilterOpts = {},
+) => {
   const { includeDeletedInDraft = false } = opts;
   const draftContext = getDraftContext(context, user);
   const draftMust = [];
@@ -60,7 +74,14 @@ export const buildDraftFilter = (context: AuthContext, user: AuthUser, opts: Bui
       const excludeDeletedDraft = {
         bool: {
           must_not: [
-            { terms: { 'draft_change.draft_operation.keyword': [DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED] } },
+            {
+              terms: {
+                'draft_change.draft_operation.keyword': [
+                  DRAFT_OPERATION_DELETE,
+                  DRAFT_OPERATION_DELETE_LINKED,
+                ],
+              },
+            },
           ],
         },
       };
@@ -92,7 +113,11 @@ export const buildReverseUpdateFieldPatch = (rawUpdatePatch: string): InternalEd
       const currentKey = updatePatchKeys[i];
       const currentValues = parsedUpdatePatch[currentKey];
       if (currentValues) {
-        const replaceInput = { key: currentKey, value: currentValues.initial_value, operation: EditOperation.Replace };
+        const replaceInput = {
+          key: currentKey,
+          value: currentValues.initial_value,
+          operation: EditOperation.Replace,
+        };
         resulReverseFieldPatch.push(replaceInput);
       }
     }
@@ -113,15 +138,27 @@ export const buildUpdateFieldPatch = (rawUpdatePatch: string): InternalEditInput
       // Ignore standard id in patch: standard id update will be handled by the platform if needed when applying the patch
       if (currentKey !== 'standard_id' && currentValues) {
         if (currentValues.replaced_value && currentValues.replaced_value.length > 0) {
-          const replaceInput = { key: currentKey, value: currentValues.replaced_value, operation: EditOperation.Replace };
+          const replaceInput = {
+            key: currentKey,
+            value: currentValues.replaced_value,
+            operation: EditOperation.Replace,
+          };
           resultFieldPatch.push(replaceInput);
         } else {
           if (currentValues.added_value && currentValues.added_value.length > 0) {
-            const addInput = { key: currentKey, value: currentValues.added_value, operation: EditOperation.Add };
+            const addInput = {
+              key: currentKey,
+              value: currentValues.added_value,
+              operation: EditOperation.Add,
+            };
             resultFieldPatch.push(addInput);
           }
           if (currentValues.removed_value && currentValues.removed_value.length > 0) {
-            const removeInput = { key: currentKey, value: currentValues.removed_value, operation: EditOperation.Remove };
+            const removeInput = {
+              key: currentKey,
+              value: currentValues.removed_value,
+              operation: EditOperation.Remove,
+            };
             resultFieldPatch.push(removeInput);
           }
         }
@@ -132,12 +169,19 @@ export const buildUpdateFieldPatch = (rawUpdatePatch: string): InternalEditInput
   return resultFieldPatch;
 };
 
-export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, updatedInputsResolved: InternalEditInput[]): UpdatePatch => {
+export const getConsolidatedUpdatePatch = (
+  currentUpdatePatch: UpdatePatch,
+  updatedInputsResolved: InternalEditInput[],
+): UpdatePatch => {
   const newUpdatePatch = currentUpdatePatch;
-  const nonResolvedInput = updatedInputsResolved
-    .map((i) => {
-      return { key: i.key, value: i.value?.map((v) => ((v && typeof v !== 'string' && v.standard_id) ? v.standard_id : v)), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] };
-    });
+  const nonResolvedInput = updatedInputsResolved.map((i) => {
+    return {
+      key: i.key,
+      value: i.value?.map((v) => (v && typeof v !== 'string' && v.standard_id ? v.standard_id : v)),
+      operation: i.operation ?? UPDATE_OPERATION_REPLACE,
+      previous: i.previous ?? [],
+    };
+  });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];
     const currentUpdates = currentUpdatePatch[currentNonResolvedInput.key];
@@ -147,32 +191,88 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, upda
       if (currentNonResolvedInput.operation === UPDATE_OPERATION_ADD) {
         // if current input was a replace, add updateInput values to the replaced values
         if (currentUpdates.replaced_value.length > 0) {
-          const newReplacedValues = [...new Set([...currentUpdates.replaced_value, ...currentNonResolvedInput.value])];
-          newUpdatePatch[currentNonResolvedInput.key] = { ...currentUpdates, replaced_value: newReplacedValues, added_value: [], removed_value: [] };
-        } else { // Otherwise, remove added inputs from removed_value and add them to added_value
-          const newAddedValues = [...new Set([...currentUpdates.added_value, ...currentNonResolvedInput.value])];
-          const newRemovedValues = currentUpdates.removed_value.filter((v) => !currentNonResolvedInput.value.includes(v));
-          newUpdatePatch[currentNonResolvedInput.key] = { ...currentUpdates, replaced_value: [], added_value: newAddedValues, removed_value: newRemovedValues };
+          const newReplacedValues = [
+            ...new Set([...currentUpdates.replaced_value, ...currentNonResolvedInput.value]),
+          ];
+          newUpdatePatch[currentNonResolvedInput.key] = {
+            ...currentUpdates,
+            replaced_value: newReplacedValues,
+            added_value: [],
+            removed_value: [],
+          };
+        } else {
+          // Otherwise, remove added inputs from removed_value and add them to added_value
+          const newAddedValues = [
+            ...new Set([...currentUpdates.added_value, ...currentNonResolvedInput.value]),
+          ];
+          const newRemovedValues = currentUpdates.removed_value.filter(
+            (v) => !currentNonResolvedInput.value.includes(v),
+          );
+          newUpdatePatch[currentNonResolvedInput.key] = {
+            ...currentUpdates,
+            replaced_value: [],
+            added_value: newAddedValues,
+            removed_value: newRemovedValues,
+          };
         }
-      } else if (currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE) { // Else if new input is a remove
+      } else if (currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE) {
+        // Else if new input is a remove
         // if current input was a replace, remove updateInput values from the replaced values
         if (currentUpdates.replaced_value.length > 0) {
-          const newReplacedValues = currentUpdates.replaced_value.filter((v) => !currentNonResolvedInput.value.includes(v));
-          newUpdatePatch[currentNonResolvedInput.key] = { ...currentUpdates, replaced_value: newReplacedValues, added_value: [], removed_value: [] };
-        } else { // Otherwise, remove added inputs from added_value and add them to removed_value
-          const newAddedValues = currentUpdates.added_value.filter((v) => !currentNonResolvedInput.value.includes(v));
-          const newRemovedValues = [...new Set([...currentUpdates.removed_value, ...currentNonResolvedInput.value])];
-          newUpdatePatch[currentNonResolvedInput.key] = { ...currentUpdates, replaced_value: [], added_value: newAddedValues, removed_value: newRemovedValues };
+          const newReplacedValues = currentUpdates.replaced_value.filter(
+            (v) => !currentNonResolvedInput.value.includes(v),
+          );
+          newUpdatePatch[currentNonResolvedInput.key] = {
+            ...currentUpdates,
+            replaced_value: newReplacedValues,
+            added_value: [],
+            removed_value: [],
+          };
+        } else {
+          // Otherwise, remove added inputs from added_value and add them to removed_value
+          const newAddedValues = currentUpdates.added_value.filter(
+            (v) => !currentNonResolvedInput.value.includes(v),
+          );
+          const newRemovedValues = [
+            ...new Set([...currentUpdates.removed_value, ...currentNonResolvedInput.value]),
+          ];
+          newUpdatePatch[currentNonResolvedInput.key] = {
+            ...currentUpdates,
+            replaced_value: [],
+            added_value: newAddedValues,
+            removed_value: newRemovedValues,
+          };
         }
-      } else { // Else if new input is a replace or not defined, remove all added_value and removedValues, and overwrite replaced_value with current input
-        newUpdatePatch[currentNonResolvedInput.key] = { ...currentUpdates, replaced_value: currentNonResolvedInput.value, added_value: [], removed_value: [] };
+      } else {
+        // Else if new input is a replace or not defined, remove all added_value and removedValues, and overwrite replaced_value with current input
+        newUpdatePatch[currentNonResolvedInput.key] = {
+          ...currentUpdates,
+          replaced_value: currentNonResolvedInput.value,
+          added_value: [],
+          removed_value: [],
+        };
       }
-    } else { // If no update is currently defined for this key, we just initialize it with current operation and we set the initial value
-      const replaced_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REPLACE ? currentNonResolvedInput.value : [];
-      const added_value = currentNonResolvedInput.operation === UPDATE_OPERATION_ADD ? currentNonResolvedInput.value : [];
-      const removed_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE ? currentNonResolvedInput.value : [];
+    } else {
+      // If no update is currently defined for this key, we just initialize it with current operation and we set the initial value
+      const replaced_value =
+        currentNonResolvedInput.operation === UPDATE_OPERATION_REPLACE
+          ? currentNonResolvedInput.value
+          : [];
+      const added_value =
+        currentNonResolvedInput.operation === UPDATE_OPERATION_ADD
+          ? currentNonResolvedInput.value
+          : [];
+      const removed_value =
+        currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE
+          ? currentNonResolvedInput.value
+          : [];
       const initial_value = currentNonResolvedInput.previous?.map((p) => p?.standard_id ?? p);
-      newUpdatePatch[currentNonResolvedInput.key] = { replaced_value, added_value, removed_value, initial_value };
+      newUpdatePatch[currentNonResolvedInput.key] = {
+        replaced_value,
+        added_value,
+        removed_value,
+        initial_value,
+      };
     }
   }
 
@@ -181,16 +281,25 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, upda
 
 // Get the resulting draft_change to apply to instance depending on updated inputs
 // If instance already contained a draft_change with a draft_update_patch, consolidate updated inputs in existing draft_update_patch
-export const getDraftChanges = (initialInstance: BasicStoreBase, updatedInputs: InternalEditInput[]): DraftChange => {
-  const currentDraftChanges = initialInstance.draft_change ?? { draft_operation: DRAFT_OPERATION_UPDATE };
-  if (updatedInputs.length === 0
-    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE
-    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE
-    || currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+export const getDraftChanges = (
+  initialInstance: BasicStoreBase,
+  updatedInputs: InternalEditInput[],
+): DraftChange => {
+  const currentDraftChanges = initialInstance.draft_change ?? {
+    draft_operation: DRAFT_OPERATION_UPDATE,
+  };
+  if (
+    updatedInputs.length === 0 ||
+    currentDraftChanges?.draft_operation === DRAFT_OPERATION_CREATE ||
+    currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE ||
+    currentDraftChanges?.draft_operation === DRAFT_OPERATION_DELETE_LINKED
+  ) {
     return currentDraftChanges;
   }
 
-  const currentUpdatePatch = currentDraftChanges.draft_updates_patch ? JSON.parse(currentDraftChanges.draft_updates_patch) : {};
+  const currentUpdatePatch = currentDraftChanges.draft_updates_patch
+    ? JSON.parse(currentDraftChanges.draft_updates_patch)
+    : {};
   const newUpdatePatch = getConsolidatedUpdatePatch(currentUpdatePatch, updatedInputs);
   const stringifiedUpdatePatch = JSON.stringify(newUpdatePatch);
 

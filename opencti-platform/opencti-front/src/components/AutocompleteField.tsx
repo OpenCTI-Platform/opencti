@@ -1,7 +1,13 @@
 import React, { ReactNode, useCallback } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
-import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
+import {
+  Autocomplete,
+  AutocompleteProps,
+  AutocompleteValue,
+  TextField,
+  TextFieldProps,
+} from '@mui/material';
 import { FieldProps, useField } from 'formik';
 import { FieldOption } from '../utils/field';
 import { truncate } from '../utils/String';
@@ -18,9 +24,11 @@ export type AutocompleteFieldProps<
   Value extends PossibleValue = FieldOption,
   DC extends Bool = boolean,
   FSolo extends Bool = false,
-> = Omit<AutocompleteProps<Value, M, DC, FSolo>, 'onChange' | 'onBlur' | 'onFocus' | 'renderInput'>
-  & FieldProps<Value>
-  & {
+> = Omit<
+  AutocompleteProps<Value, M, DC, FSolo>,
+  'onChange' | 'onBlur' | 'onFocus' | 'renderInput'
+> &
+  FieldProps<Value> & {
     optionLength?: number;
     required?: boolean;
     endAdornment?: ReactNode;
@@ -64,14 +72,17 @@ const AutocompleteField = <
   const [, meta] = useField(name);
   const { t_i18n } = useFormatter();
 
-  const internalOnChange = useCallback<NonNullable<MuiProps['onChange']>>((_, value) => {
-    if (onInternalChange) {
-      onInternalChange(name, value);
-    } else {
-      setFieldValue(name, value);
-      onChange?.(name, value);
-    }
-  }, [setFieldValue, name, onChange, onInternalChange]);
+  const internalOnChange = useCallback<NonNullable<MuiProps['onChange']>>(
+    (_, value) => {
+      if (onInternalChange) {
+        onInternalChange(name, value);
+      } else {
+        setFieldValue(name, value);
+        onChange?.(name, value);
+      }
+    },
+    [setFieldValue, name, onChange, onInternalChange],
+  );
 
   const internalOnFocus = useCallback<NonNullable<MuiProps['onFocus']>>(() => {
     onFocus?.(name);
@@ -93,7 +104,7 @@ const AutocompleteField = <
       : truncate(option, optionLength);
   };
 
-  const defaultRenderTags: MuiProps['renderTags'] = (values, getTagProps) => (
+  const defaultRenderTags: MuiProps['renderTags'] = (values, getTagProps) =>
     values.map((option, index) => {
       const { label, value, color } = getOptionData(option);
       return (
@@ -105,8 +116,7 @@ const AutocompleteField = <
           color={color}
         />
       );
-    })
-  );
+    });
 
   const getOptionData = (option: Value) => {
     return typeof option === 'object' && option !== null
@@ -142,7 +152,9 @@ const AutocompleteField = <
   // Formik fields may be initialized as null/undefined/empty string, causing
   // a "value.some is not a function" crash in useAutocomplete.
   if (fieldProps.multiple && !Array.isArray(fieldProps.value)) {
-    fieldProps.value = (fieldProps.value != null && fieldProps.value !== '' ? [fieldProps.value] : []) as unknown as typeof fieldProps.value;
+    fieldProps.value = (fieldProps.value != null && fieldProps.value !== ''
+      ? [fieldProps.value]
+      : []) as unknown as typeof fieldProps.value;
   }
 
   return (

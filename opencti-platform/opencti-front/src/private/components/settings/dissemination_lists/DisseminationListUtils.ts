@@ -6,22 +6,14 @@ export const disseminationListValidator = (t: (value: string) => string) => {
     description: Yup.string(),
     emails: Yup.string()
       .required(t('This field is required'))
-      .test(
-        'emails',
-        t('Each line must contain a valid email address'),
-        (value) => {
-          const emails = value.split('\n').map((email) => email.trim());
-          return emails.every((email) => email !== '' && Yup.string().email().isValidSync(email));
-        },
-      )
-      .test(
-        'max-emails',
-        t('You cannot have more than 500 e-mail addresses'),
-        (value) => {
-          const emails = formatEmailsForApi(value);
-          return emails.length <= 500;
-        },
-      ),
+      .test('emails', t('Each line must contain a valid email address'), (value) => {
+        const emails = value.split('\n').map((email) => email.trim());
+        return emails.every((email) => email !== '' && Yup.string().email().isValidSync(email));
+      })
+      .test('max-emails', t('You cannot have more than 500 e-mail addresses'), (value) => {
+        const emails = formatEmailsForApi(value);
+        return emails.length <= 500;
+      }),
   });
 };
 

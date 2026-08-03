@@ -23,7 +23,9 @@ export const up = async (next) => {
   });
   let currentProcessing = 0;
   const filteredElementsIds = R.uniq(mergedEvents.map((event) => event.context_data.id));
-  logApp.info(`[OPENCTI] Migration denormalized cleanup find ${filteredElementsIds.length} to clean`);
+  logApp.info(
+    `[OPENCTI] Migration denormalized cleanup find ${filteredElementsIds.length} to clean`,
+  );
   const concurrentUpdate = async (mergedId) => {
     const data = await elLoadById(context, SYSTEM_USER, mergedId);
     if (data) {
@@ -36,18 +38,21 @@ export const up = async (next) => {
       }
       await elUpdate(context, data._index, mergedId, {
         script: {
-          source: 'for (key in ctx._source.keySet()) { '
-            + "if (key.startsWith('rel_')) { "
-            + 'ctx._source[key] = params[key];'
-            + '}'
-            + '}',
+          source:
+            'for (key in ctx._source.keySet()) { ' +
+            "if (key.startsWith('rel_')) { " +
+            'ctx._source[key] = params[key];' +
+            '}' +
+            '}',
           lang: 'painless',
           params,
         },
       });
     }
     currentProcessing += 1;
-    logApp.info(`[OPENCTI] Cleaning denormalized relations ids: ${currentProcessing} / ${filteredElementsIds.length}`);
+    logApp.info(
+      `[OPENCTI] Cleaning denormalized relations ids: ${currentProcessing} / ${filteredElementsIds.length}`,
+    );
   };
   await BluePromise.map(filteredElementsIds, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info('[OPENCTI] Migration denormalized cleanup done');

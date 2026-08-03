@@ -17,16 +17,11 @@ const CityEdition = ({ cityId }: { cityId: string }) => {
       },
     });
   };
-  const queryRef = useQueryLoading<CityEditionContainerQuery>(
-    cityEditionQuery,
-    { id: cityId },
-  );
+  const queryRef = useQueryLoading<CityEditionContainerQuery>(cityEditionQuery, { id: cityId });
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <CityEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

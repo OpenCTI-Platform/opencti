@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import {
-  StixDomainObjectAttackPatternsKillChainContainer_data$data,
-} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
+import { StixDomainObjectAttackPatternsKillChainContainer_data$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainContainer_data.graphql';
 import {
   StixDomainObjectAttackPatternsKillChainQuery,
   StixDomainObjectAttackPatternsKillChainQuery$data,
@@ -10,7 +8,9 @@ import {
 } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import { AttackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
-import StixDomainObjectAttackPatternsKillChain, { stixDomainObjectAttackPatternsKillChainQuery } from './StixDomainObjectAttackPatternsKillChain';
+import StixDomainObjectAttackPatternsKillChain, {
+  stixDomainObjectAttackPatternsKillChainQuery,
+} from './StixDomainObjectAttackPatternsKillChain';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -161,7 +161,9 @@ export const stixDomainObjectAttackPatternsKillChainContainerFragment = graphql`
   }
 `;
 
-const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDomainObjectAttackPatternsKillChainProps> = ({
+const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<
+  StixDomainObjectAttackPatternsKillChainProps
+> = ({
   helpers,
   queryRef,
   queryPaginationOptions,
@@ -185,7 +187,8 @@ const StixDomainObjectAttackPatternsKillChainContainer: FunctionComponent<StixDo
     stixDomainObjectAttackPatternsKillChainContainerFragment,
     dataPreloaded,
   ) as StixDomainObjectAttackPatternsKillChainContainer_data$data;
-  const killChainDataQueryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery);
+  const killChainDataQueryRef =
+    useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery);
   return killChainDataQueryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <StixDomainObjectAttackPatternsKillChain

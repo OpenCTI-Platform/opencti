@@ -30,12 +30,7 @@ interface PirThreatMapTooltipProps {
   y: number;
 }
 
-const PirThreatMapTooltip = ({
-  data,
-  onMouseLeave,
-  x,
-  y,
-}: PirThreatMapTooltipProps) => {
+const PirThreatMapTooltip = ({ data, onMouseLeave, x, y }: PirThreatMapTooltipProps) => {
   const { fsd } = useFormatter();
   const theme = useTheme<Theme>();
   const computeLink = useComputeLink();

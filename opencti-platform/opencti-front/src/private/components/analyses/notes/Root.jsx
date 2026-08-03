@@ -13,49 +13,52 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Security, { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import NoteEdition from './NoteEdition';
 import NoteDeletion from './NoteDeletion';
 import { PATH_NOTE, PATH_NOTES } from '@components/common/routes/paths';
 
 const subscription = graphql`
-    subscription RootNoteSubscription($id: ID!) {
-        stixDomainObject(id: $id) {
-            ... on Note {
-                ...Note_note
-                ...NoteEditionContainer_note
-            }
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-        }
+  subscription RootNoteSubscription($id: ID!) {
+    stixDomainObject(id: $id) {
+      ... on Note {
+        ...Note_note
+        ...NoteEditionContainer_note
+      }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
     }
+  }
 `;
 
 const noteQuery = graphql`
-    query RootNoteQuery($id: String!) {
-        note(id: $id) {
-            id
-            standard_id
-            entity_type
-            ...Note_note
-            ...NoteDetails_note
-            ...ContainerHeader_container
-            ...ContainerStixDomainObjects_container
-            ...ContainerStixObjectsOrStixRelationships_container
-            ...FileImportViewer_entity
-            ...FileExportViewer_entity
-            ...FileExternalReferencesViewer_entity
-            ...WorkbenchFileViewer_entity
-        }
-        connectorsForExport {
-            ...FileManager_connectorsExport
-        }
-        connectorsForImport {
-            ...FileManager_connectorsImport
-        }
+  query RootNoteQuery($id: String!) {
+    note(id: $id) {
+      id
+      standard_id
+      entity_type
+      ...Note_note
+      ...NoteDetails_note
+      ...ContainerHeader_container
+      ...ContainerStixDomainObjects_container
+      ...ContainerStixObjectsOrStixRelationships_container
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      ...FileExternalReferencesViewer_entity
+      ...WorkbenchFileViewer_entity
     }
+    connectorsForExport {
+      ...FileManager_connectorsExport
+    }
+    connectorsForImport {
+      ...FileManager_connectorsImport
+    }
+  }
 `;
 
 const RootNote = () => {
@@ -81,22 +84,23 @@ const RootNote = () => {
               const { note } = props;
               return (
                 <>
-                  <Breadcrumbs elements={[
-                    { label: t_i18n('Analyses') },
-                    { label: t_i18n('Notes'), link: PATH_NOTES },
-                  ]}
+                  <Breadcrumbs
+                    elements={[
+                      { label: t_i18n('Analyses') },
+                      { label: t_i18n('Notes'), link: PATH_NOTES },
+                    ]}
                   />
                   <CollaborativeSecurity
                     data={note}
                     needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-                    placeholder={(
+                    placeholder={
                       <ContainerHeader
                         container={props.note}
-                        EditComponent={(
+                        EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                             <NoteEdition noteId={note.id} />
                           </CollaborativeSecurity>
-                        )}
+                        }
                         DeleteComponent={({ isOpen, onClose }) => (
                           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                             <NoteDeletion id={note.id} isOpen={isOpen} handleClose={onClose} />
@@ -107,15 +111,15 @@ const RootNote = () => {
                         enableEnricher={true}
                         enableEnrollPlaybook={true}
                       />
-                    )}
+                    }
                   >
                     <ContainerHeader
                       container={note}
-                      EditComponent={(
+                      EditComponent={
                         <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
                           <NoteEdition noteId={note.id} />
                         </CollaborativeSecurity>
-                      )}
+                      }
                       DeleteComponent={({ isOpen, onClose }) => (
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                           <NoteDeletion id={note.id} isOpen={isOpen} handleClose={onClose} />
@@ -142,12 +146,12 @@ const RootNote = () => {
                       ),
                       history: <StixCoreObjectHistory stixCoreObjectId={noteId} withoutRelations />,
                     }}
-                    extraRoutes={(
+                    extraRoutes={
                       <Route
                         path="/knowledge/relations/:relationId"
                         element={<StixCoreRelationship entityId={note.id} />}
                       />
-                    )}
+                    }
                   />
                 </>
               );

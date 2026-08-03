@@ -39,12 +39,7 @@ const FormEditionContainer: FunctionComponent<FormEditionContainerProps> = ({
       onClose={handleClose}
       open={open}
     >
-      {({ onClose }) => (
-        <FormEdition
-          form={form}
-          handleClose={onClose}
-        />
-      )}
+      {({ onClose }) => <FormEdition form={form} handleClose={onClose} />}
     </Drawer>
   );
 };

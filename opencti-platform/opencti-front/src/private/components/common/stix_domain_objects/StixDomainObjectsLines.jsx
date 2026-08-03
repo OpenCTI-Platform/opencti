@@ -81,10 +81,7 @@ class StixDomainObjectsContainer extends Component {
 
   render() {
     const { t, classes, data, fd } = this.props;
-    const stixDomainObjectsNodes = map(
-      (n) => n.node,
-      data.stixDomainObjects.edges,
-    );
+    const stixDomainObjectsNodes = map((n) => n.node, data.stixDomainObjects.edges);
     const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
     const stixDomainObjects = byType(stixDomainObjectsNodes);
     const stixDomainObjectsTypes = keys(stixDomainObjects);
@@ -102,23 +99,14 @@ class StixDomainObjectsContainer extends Component {
               onChange={this.handleChangePanel.bind(this, type)}
               elevation={3}
             >
-              <AccordionSummary
-                expandIcon={<ExpandMore />}
-                className={classes.summary}
-              >
-                <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
-                </Typography>
+              <AccordionSummary expandIcon={<ExpandMore />} className={classes.summary}>
+                <Typography className={classes.heading}>{t(`entity_${type}`)}</Typography>
                 <Typography classes={{ root: classes.secondaryHeading }}>
                   {stixDomainObjects[type].length}{' '}
-                  {stixDomainObjects[type].length < 2
-                    ? t('entity')
-                    : t('entities')}
+                  {stixDomainObjects[type].length < 2 ? t('entity') : t('entities')}
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
-              >
+              <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
                 <List classes={{ root: classes.list }}>
                   {stixDomainObjects[type].map((stixDomainObject) => {
                     const link = resolveLink(stixDomainObject.entity_type);
@@ -128,17 +116,14 @@ class StixDomainObjectsContainer extends Component {
                           key={stixDomainObject.id}
                           divider={true}
                           disablePadding
-                          secondaryAction={(
+                          secondaryAction={
                             <StixCoreObjectLabels
                               labels={stixDomainObject.objectLabel}
                               variant="inSearch"
                             />
-                          )}
+                          }
                         >
-                          <ListItemButton
-                            component={Link}
-                            to={`${link}/${stixDomainObject.id}`}
-                          >
+                          <ListItemButton component={Link} to={`${link}/${stixDomainObject.id}`}>
                             <ListItemIcon classes={{ root: classes.itemIcon }}>
                               <ItemIcon type={type} />
                             </ListItemIcon>
@@ -146,19 +131,14 @@ class StixDomainObjectsContainer extends Component {
                               primary={truncate(
                                 stixDomainObject.x_mitre_id
                                   ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
-                                  : stixDomainObject.name
-                                    || stixDomainObject.attribute_abstract
-                                    || stixDomainObject.content
-                                    || stixDomainObject.opinion
-                                    || `${fd(
-                                      stixDomainObject.first_observed,
-                                    )} - ${fd(stixDomainObject.last_observed)}`,
+                                  : stixDomainObject.name ||
+                                      stixDomainObject.attribute_abstract ||
+                                      stixDomainObject.content ||
+                                      stixDomainObject.opinion ||
+                                      `${fd(stixDomainObject.first_observed)} - ${fd(stixDomainObject.last_observed)}`,
                                 100,
                               )}
-                              secondary={truncate(
-                                stixDomainObject.description,
-                                150,
-                              )}
+                              secondary={truncate(stixDomainObject.description, 150)}
                             />
                           </ListItemButton>
                         </ListItem>
@@ -168,22 +148,19 @@ class StixDomainObjectsContainer extends Component {
                       <ListItem
                         key={stixDomainObject.id}
                         divider={true}
-                        secondaryAction={(
+                        secondaryAction={
                           <StixCoreObjectLabels
                             labels={stixDomainObject.objectLabel}
                             variant="inSearch"
                           />
-                        )}
+                        }
                       >
                         <ListItemIcon classes={{ root: classes.itemIcon }}>
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
                           primary={truncate(stixDomainObject.name, 100)}
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            150,
-                          )}
+                          secondary={truncate(stixDomainObject.description, 150)}
                         />
                       </ListItem>
                     );
@@ -195,11 +172,7 @@ class StixDomainObjectsContainer extends Component {
         </div>
       );
     }
-    return (
-      <div className={classes.noResult}>
-        {t('No entities were found for this search.')}
-      </div>
-    );
+    return <div className={classes.noResult}>{t('No entities were found for this search.')}</div>;
   }
 }
 
@@ -215,10 +188,7 @@ StixDomainObjectsContainer.propTypes = {
 };
 
 export const stixDomainObjectsLinesSubTypesQuery = graphql`
-  query StixDomainObjectsLinesSubTypesQuery(
-    $type: String!
-    $includeParents: Boolean
-  ) {
+  query StixDomainObjectsLinesSubTypesQuery($type: String!, $includeParents: Boolean) {
     subTypes(type: $type, includeParents: $includeParents) {
       edges {
         node {
@@ -258,12 +228,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
     $count: Int
     $filters: FilterGroup
   ) {
-    stixDomainObjects(
-      search: $search
-      types: $types
-      first: $count
-      filters: $filters
-    ) {
+    stixDomainObjects(search: $search, types: $types, first: $count, filters: $filters) {
       edges {
         node {
           id

@@ -1,7 +1,13 @@
 import React, { useCallback } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import ReactFlow, { addEdge, MarkerType, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow';
+import ReactFlow, {
+  addEdge,
+  MarkerType,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+} from 'reactflow';
 import nodeTypes from './diamond/types/nodes';
 import edgeTypes from './diamond/types/edges';
 import { ErrorBoundary } from '../../Error';
@@ -124,10 +130,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
   const Flow = () => {
     const [nodes, , onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-    const onConnect = useCallback(
-      (params) => setEdges((eds) => addEdge(params, eds)),
-      [setEdges],
-    );
+    const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
     return (
       <>
         <ReactFlow
@@ -233,7 +236,12 @@ const StixDomainObjectDiamond = createRefetchContainer(
             }
             attributedTo: stixCoreRelationships(
               relationship_type: "attributed-to"
-              toTypes: ["Campaign", "Intrusion-Set", "Threat-Actor-Group", "Threat-Actor-Individual"]
+              toTypes: [
+                "Campaign"
+                "Intrusion-Set"
+                "Threat-Actor-Group"
+                "Threat-Actor-Individual"
+              ]
               first: 10
               orderBy: created_at
               orderMode: desc
@@ -319,7 +327,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -338,7 +346,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -357,7 +365,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -504,7 +512,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -523,7 +531,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -542,7 +550,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -578,7 +586,6 @@ const StixDomainObjectDiamond = createRefetchContainer(
                         main
                       }
                     }
-                    
                   }
                 }
               }
@@ -716,7 +723,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -735,7 +742,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -754,7 +761,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -904,7 +911,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -923,7 +930,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -942,7 +949,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -1006,7 +1013,12 @@ const StixDomainObjectDiamond = createRefetchContainer(
             }
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
-              fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
+              fromTypes: [
+                "Threat-Actor-Group"
+                "Threat-Actor-Individual"
+                "Intrusion-Set"
+                "Campaign"
+              ]
               first: 10
               orderBy: created_at
               orderMode: desc
@@ -1092,7 +1104,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1111,7 +1123,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1130,7 +1142,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -1194,7 +1206,12 @@ const StixDomainObjectDiamond = createRefetchContainer(
             }
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
-              fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
+              fromTypes: [
+                "Threat-Actor-Group"
+                "Threat-Actor-Individual"
+                "Intrusion-Set"
+                "Campaign"
+              ]
               first: 10
               orderBy: created_at
               orderMode: desc
@@ -1280,7 +1297,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1299,7 +1316,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1318,7 +1335,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }
@@ -1382,7 +1399,12 @@ const StixDomainObjectDiamond = createRefetchContainer(
             }
             usedBy: stixCoreRelationships(
               relationship_type: "uses"
-              fromTypes: ["Threat-Actor-Group", "Threat-Actor-Individual", "Intrusion-Set", "Campaign"]
+              fromTypes: [
+                "Threat-Actor-Group"
+                "Threat-Actor-Individual"
+                "Intrusion-Set"
+                "Campaign"
+              ]
               first: 10
               orderBy: created_at
               orderMode: desc
@@ -1468,7 +1490,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1487,7 +1509,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ...on StixCyberObservable {
+                    ... on StixCyberObservable {
                       representative {
                         main
                       }
@@ -1506,7 +1528,7 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   to {
-                    ...on Infrastructure {
+                    ... on Infrastructure {
                       name
                     }
                   }

@@ -1,7 +1,21 @@
 import * as R from 'ramda';
-import { BASE_TYPE_ENTITY, BASE_TYPE_RELATION, ID_INTERNAL, ID_STANDARD, IDS_STIX, INPUT_GRANTED_REFS, INTERNAL_IDS_ALIASES } from '../schema/general';
+import {
+  BASE_TYPE_ENTITY,
+  BASE_TYPE_RELATION,
+  ID_INTERNAL,
+  ID_STANDARD,
+  IDS_STIX,
+  INPUT_GRANTED_REFS,
+  INTERNAL_IDS_ALIASES,
+} from '../schema/general';
 import { getParentTypes } from '../schema/schemaUtils';
-import { generateAliasesIdsForInstance, generateInternalId, generateStandardId, normalizeName, X_WORKFLOW_ID } from '../schema/identifier';
+import {
+  generateAliasesIdsForInstance,
+  generateInternalId,
+  generateStandardId,
+  normalizeName,
+  X_WORKFLOW_ID,
+} from '../schema/identifier';
 import { FROM_START, now, UNTIL_END } from '../utils/format';
 import { inferIndexFromConceptType, isEmptyField, isNotEmptyField } from './utils';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
@@ -21,9 +35,19 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_TYPE_STATUS, isDatedInternalObject } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGANIZATIONS_RESTRICTED, STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import {
+  isStixDomainObject,
+  isStixObjectAliased,
+  resolveAliasesField,
+  STIX_ORGANIZATIONS_RESTRICTED,
+  STIX_ORGANIZATIONS_UNRESTRICTED,
+} from '../schema/stixDomainObject';
 import { getEntitiesListFromCache } from './cache';
-import { isServiceAccountUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
+import {
+  isServiceAccountUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+} from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
@@ -101,7 +125,10 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
       // Check, if status is not set or not valid
-      if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
+      if (
+        R.isNil(input[X_WORKFLOW_ID]) ||
+        statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0
+      ) {
         data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
       }
     }
@@ -110,7 +137,9 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   if (isStixObjectAliased(type)) {
     const aliasField = resolveAliasesField(type).name;
     if (input[aliasField]) {
-      const preparedAliases = input[aliasField].filter((a) => isNotEmptyField(a)).map((a) => a.trim());
+      const preparedAliases = input[aliasField]
+        .filter((a) => isNotEmptyField(a))
+        .map((a) => a.trim());
       const uniqAliases = R.uniqBy((e) => normalizeName(e), preparedAliases);
       data[aliasField] = uniqAliases.filter((e) => normalizeName(e) !== normalizeName(input.name));
     }
@@ -123,16 +152,25 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
-  const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o))
-    || STIX_ORGANIZATIONS_RESTRICTED.some((o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o));
+  const isSegregationEntity =
+    !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o)) ||
+    STIX_ORGANIZATIONS_RESTRICTED.some(
+      (o) => o === data.entity_type || getParentTypes(data.entity_type).includes(o),
+    );
   const appendMetaRelationships = async (inputField, relType) => {
     if (input[inputField] || relType === RELATION_GRANTED_TO) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
-        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
-          && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
+        if (
+          isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) &&
+          input[inputField] &&
+          (!Array.isArray(input[inputField]) || input[inputField].length > 0)
+        ) {
           pushAll(relToCreate, buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
-        } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
+        } else if (
+          !context.user_inside_platform_organization ||
+          (isServiceAccountUser(user) && isNotEmptyField(user.organizations))
+        ) {
           // If user is not part of the platform organization or is a service account with organizations, put its own organizations
           pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
@@ -140,7 +178,9 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
         const markingsFiltered = await cleanMarkings(context, input[inputField]);
         pushAll(relToCreate, buildInnerRelation(data, markingsFiltered, relType));
       } else if (input[inputField]) {
-        const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
+        const instancesToCreate = Array.isArray(input[inputField])
+          ? input[inputField]
+          : [input[inputField]];
         pushAll(relToCreate, buildInnerRelation(data, instancesToCreate, relType));
       }
     }
@@ -222,14 +262,20 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
       const statusesForType = platformStatuses.filter((p) => p.type === type);
       if (statusesForType.length > 0) {
         // Check, if status is not set or not valid
-        if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
+        if (
+          R.isNil(input[X_WORKFLOW_ID]) ||
+          statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0
+        ) {
           data[X_WORKFLOW_ID] = R.head(statusesForType).id;
         }
       }
     }
   }
   // stix-ref-relationship
-  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
+  if (
+    isStixRefRelationship(relationshipType) &&
+    schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)
+  ) {
     // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
@@ -283,10 +329,19 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   const relToCreate = [];
   if (isStixRelationshipExceptRef(relationshipType)) {
     // We need to link the data to organization sharing, only for core and sightings.
-    if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
-      && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
-      pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-    } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {
+    if (
+      isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) &&
+      input[INPUT_GRANTED_REFS] &&
+      (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)
+    ) {
+      pushAll(
+        relToCreate,
+        buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO),
+      );
+    } else if (
+      !context.user_inside_platform_organization ||
+      (isServiceAccountUser(user) && isNotEmptyField(user.organizations))
+    ) {
       // If user is not part of the platform organization  or is a service account with organizations, put its own organizations
       pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
@@ -294,10 +349,16 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     pushAll(relToCreate, buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
     pushAll(relToCreate, buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
     pushAll(relToCreate, buildInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
-    pushAll(relToCreate, buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
+    pushAll(
+      relToCreate,
+      buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE),
+    );
   }
   if (isStixCoreRelationship(relationshipType)) {
-    pushAll(relToCreate, buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    pushAll(
+      relToCreate,
+      buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE),
+    );
   }
   if (relationshipType === RELATION_IN_PIR) {
     data.pir_score = input.pir_score;
@@ -361,7 +422,9 @@ const buildRelationInput = (input) => {
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
     relationAttributes.description = R.isNil(input.description) ? null : input.description;
-    relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    relationAttributes.start_time = R.isNil(input.start_time)
+      ? new Date(FROM_START)
+      : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     //* v8 ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
@@ -373,8 +436,13 @@ const buildRelationInput = (input) => {
     }
   }
   // stix-ref-relationship
-  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+  if (
+    isStixRefRelationship(relationshipType) &&
+    schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)
+  ) {
+    relationAttributes.start_time = R.isNil(input.start_time)
+      ? new Date(FROM_START)
+      : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     relationAttributes.created = R.isNil(input.created) ? today : input.created;
     relationAttributes.modified = R.isNil(input.modified) ? today : input.modified;
@@ -391,16 +459,23 @@ const buildRelationInput = (input) => {
   if (isStixSightingRelationship(relationshipType)) {
     relationAttributes.description = R.isNil(input.description) ? null : input.description;
     relationAttributes.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
-    relationAttributes.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
-    relationAttributes.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
+    relationAttributes.x_opencti_negative = R.isNil(input.x_opencti_negative)
+      ? false
+      : input.x_opencti_negative;
+    relationAttributes.first_seen = R.isNil(input.first_seen)
+      ? new Date(FROM_START)
+      : input.first_seen;
     relationAttributes.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     //* v8 ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
-      throw DatabaseError('You cant create a relation with a first_seen greater than the last_seen', {
-        from: input.fromId,
-        to: input.toId,
-        type: relationshipType,
-      });
+      throw DatabaseError(
+        'You cant create a relation with a first_seen greater than the last_seen',
+        {
+          from: input.fromId,
+          to: input.toId,
+          type: relationshipType,
+        },
+      );
     }
   }
   return { relation: relationAttributes };

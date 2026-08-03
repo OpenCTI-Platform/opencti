@@ -15,11 +15,7 @@ export const up = async (next) => {
       term: { 'entity_type.keyword': { value: 'Settings' } },
     },
   };
-  await elUpdateByQueryForMigration(
-    message,
-    READ_INDEX_INTERNAL_OBJECTS,
-    updateQuery,
-  );
+  await elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, updateQuery);
   logMigration.info(`${message} > done`);
   next();
 };

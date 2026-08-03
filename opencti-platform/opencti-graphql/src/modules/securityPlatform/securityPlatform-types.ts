@@ -9,7 +9,8 @@ export interface BasicStoreEntitySecurityPlatform extends BasicIdentityEntity {
   security_platform_type: string;
 }
 
-export interface StoreEntitySecurityPlatform extends StoreEntityIdentity, BasicStoreEntitySecurityPlatform {}
+export interface StoreEntitySecurityPlatform
+  extends StoreEntityIdentity, BasicStoreEntitySecurityPlatform {}
 // endregion
 
 // region Stix type

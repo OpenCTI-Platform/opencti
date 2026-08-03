@@ -116,7 +116,9 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const [commitEdit] = useApiMutation<SmtpConfigurationFormEditMutation>(smtpConfigurationEditMutation);
+  const [commitEdit] = useApiMutation<SmtpConfigurationFormEditMutation>(
+    smtpConfigurationEditMutation,
+  );
 
   const initialValues: SmtpConfigurationFormValues = {
     smtp_enabled: smtpConfiguration?.smtp_enabled ?? false,
@@ -205,7 +207,9 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
           />
           {!values.use_db_config && (
             <Alert severity="info" variant="outlined" style={{ marginTop: 10, marginBottom: 10 }}>
-              {t_i18n('The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.')}
+              {t_i18n(
+                'The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.',
+              )}
             </Alert>
           )}
           <Field
@@ -327,7 +331,11 @@ const SmtpConfigurationForm: FunctionComponent<SmtpConfigurationFormProps> = ({
                   label: (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                       {t_i18n('Refresh token expiration date')}
-                      <Tooltip title={t_i18n('This date will help you identify when your token will be revoked, it only serves as a reminder.')}>
+                      <Tooltip
+                        title={t_i18n(
+                          'This date will help you identify when your token will be revoked, it only serves as a reminder.',
+                        )}
+                      >
                         <InfoOutlined fontSize="small" color="info" sx={{ cursor: 'help' }} />
                       </Tooltip>
                     </span>

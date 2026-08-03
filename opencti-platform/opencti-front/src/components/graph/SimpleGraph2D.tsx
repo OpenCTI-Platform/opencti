@@ -31,12 +31,7 @@ const SimpleGraph2D = ({
     }, 100);
   }
 
-  const {
-    nodePaint,
-    nodePointerAreaPaint,
-    linkLabelPaint,
-    linkColorPaint,
-  } = useGraphPainter();
+  const { nodePaint, nodePointerAreaPaint, linkLabelPaint, linkColorPaint } = useGraphPainter();
 
   return (
     <ForceGraph2D<GraphNode, GraphLink>

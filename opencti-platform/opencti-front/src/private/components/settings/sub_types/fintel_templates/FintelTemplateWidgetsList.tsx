@@ -29,21 +29,30 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
   const { t_i18n } = useFormatter();
   const { subTypeId } = useParams<{ subTypeId?: string }>();
 
-  const widgetSelfInstance = widgets.find(({ widget }) => widget.dataSelection[0].instance_id === SELF_ID);
-  const widgetsNoSelf = widgets.filter(({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID);
+  const widgetSelfInstance = widgets.find(
+    ({ widget }) => widget.dataSelection[0].instance_id === SELF_ID,
+  );
+  const widgetsNoSelf = widgets.filter(
+    ({ widget }) => widget.dataSelection[0].instance_id !== SELF_ID,
+  );
 
   return (
     <>
       <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
         <Typography variant="body2" gutterBottom>
-          {t_i18n('First, create widgets detailing which data to get. Then, copy paste the widget name in your template.')}
+          {t_i18n(
+            'First, create widgets detailing which data to get. Then, copy paste the widget name in your template.',
+          )}
         </Typography>
         <Typography variant="body2">
           {t_i18n('', {
             id: 'Find examples on our documentation.',
             values: {
               link: (
-                <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
+                <Link
+                  target="_blank"
+                  to="https://docs.opencti.io/latest/administration/entities/#fintel-templates"
+                >
                   {t_i18n('documentation')}
                 </Link>
               ),
@@ -94,23 +103,22 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         {widgetsNoSelf.map((fintelWidget) => {
           const { variable_name, widget } = fintelWidget;
           const isAttributeWidget = widget.type === 'attribute';
-          const isSelfAttributeWidget = isAttributeWidget && widget.dataSelection[0].instance_id === SELF_ID;
+          const isSelfAttributeWidget =
+            isAttributeWidget && widget.dataSelection[0].instance_id === SELF_ID;
 
           return isAttributeWidget ? (
             <FintelTemplateWidgetAttribute
               key={variable_name}
               widget={widget}
               onUpdate={() => onUpdateWidget(fintelWidget)}
-              onDelete={!isSelfAttributeWidget
-                ? () => onDeleteWidget(fintelWidget)
-                : undefined
-              }
-              variableName={isSelfAttributeWidget
-                ? t_i18n('', {
-                    id: 'Attributes of the instance',
-                    values: { type: subTypeId ?? '' },
-                  })
-                : variable_name
+              onDelete={!isSelfAttributeWidget ? () => onDeleteWidget(fintelWidget) : undefined}
+              variableName={
+                isSelfAttributeWidget
+                  ? t_i18n('', {
+                      id: 'Attributes of the instance',
+                      values: { type: subTypeId ?? '' },
+                    })
+                  : variable_name
               }
             />
           ) : (

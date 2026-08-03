@@ -32,19 +32,35 @@ export const isIngestionCredentialEncrypted = async (value: string): Promise<boo
   }
 };
 
-export const verifyIngestionAuthenticationContent = (authenticationType: string, authenticationValue: string) => {
+export const verifyIngestionAuthenticationContent = (
+  authenticationType: string,
+  authenticationValue: string,
+) => {
   if (authenticationType && authenticationValue) {
-    if (authenticationType === IngestionAuthType.Basic && authenticationValue.split(':').length !== 2) {
-      throw FunctionalError('Username and password cannot have : character.', { authenticationType });
+    if (
+      authenticationType === IngestionAuthType.Basic &&
+      authenticationValue.split(':').length !== 2
+    ) {
+      throw FunctionalError('Username and password cannot have : character.', {
+        authenticationType,
+      });
     }
 
-    if (authenticationType === IngestionAuthType.Certificate && authenticationValue.split(':').length !== 3) {
-      throw FunctionalError('Certificate, CA and Key cannot have : character.', { authenticationType });
+    if (
+      authenticationType === IngestionAuthType.Certificate &&
+      authenticationValue.split(':').length !== 3
+    ) {
+      throw FunctionalError('Certificate, CA and Key cannot have : character.', {
+        authenticationType,
+      });
     }
   }
 };
 
-export const removeAuthenticationCredentials = (authentication_type: IngestionAuthType | undefined | null, authentication_value: string | undefined | null) => {
+export const removeAuthenticationCredentials = (
+  authentication_type: IngestionAuthType | undefined | null,
+  authentication_value: string | undefined | null,
+) => {
   if (!authentication_value || !authentication_type) {
     return authentication_value;
   }
@@ -61,7 +77,11 @@ export const removeAuthenticationCredentials = (authentication_type: IngestionAu
   return authentication_value;
 };
 
-export const addAuthenticationCredentials = (currentValue: string | undefined | null, newValue: string | undefined | null, authType: IngestionAuthType) => {
+export const addAuthenticationCredentials = (
+  currentValue: string | undefined | null,
+  newValue: string | undefined | null,
+  authType: IngestionAuthType,
+) => {
   if (!newValue) {
     return currentValue;
   }

@@ -22,10 +22,7 @@ const Root = () => {
           path="/connectors"
           element={<Navigate to="/dashboard/integrations/deployed" replace={true} />}
         />
-        <Route
-          path="/connectors/:connectorId/*"
-          element={<RootConnector />}
-        />
+        <Route path="/connectors/:connectorId/*" element={<RootConnector />} />
         <Route
           path="/catalog"
           element={<Navigate to="/dashboard/integrations/available" replace={true} />}
@@ -34,14 +31,8 @@ const Root = () => {
           path="/catalog/:connectorSlug"
           element={boundaryWrapper(IngestionCatalogConnector)}
         />
-        <Route
-          path="/feeds/:feedKind/:feedId"
-          element={boundaryWrapper(FeedDetail)}
-        />
-        <Route
-          path="/:tab"
-          element={boundaryWrapper(Integrations)}
-        />
+        <Route path="/feeds/:feedKind/:feedId" element={boundaryWrapper(FeedDetail)} />
+        <Route path="/:tab" element={boundaryWrapper(Integrations)} />
       </Routes>
     </Suspense>
   );

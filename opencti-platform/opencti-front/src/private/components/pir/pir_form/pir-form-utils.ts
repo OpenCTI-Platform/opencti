@@ -39,7 +39,10 @@ export interface PirCreationFormData {
  * @param relType Type of the relation linked to the entities.
  * @returns An array of criteria for PIR.
  */
-const formOptionsToPirCriteria = (options: FieldOption[], relType: string): PirAddInput['pir_criteria'] => {
+const formOptionsToPirCriteria = (
+  options: FieldOption[],
+  relType: string,
+): PirAddInput['pir_criteria'] => {
   return options.map((option) => ({
     weight: 1,
     filters: {
@@ -77,12 +80,14 @@ export const pirFormDataToMutationInput = (data: PirCreationFormData): PirAddInp
     pir_filters: {
       mode: 'and',
       filterGroups: [],
-      filters: [{
-        key: ['confidence'],
-        values: [`${data.confidence ?? 0}`],
-        operator: 'gte',
-        mode: 'or',
-      }],
+      filters: [
+        {
+          key: ['confidence'],
+          values: [`${data.confidence ?? 0}`],
+          operator: 'gte',
+          mode: 'or',
+        },
+      ],
     },
   };
 };

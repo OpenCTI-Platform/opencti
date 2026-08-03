@@ -19,12 +19,7 @@ const FintelTemplateReplaceDefaultDialog = ({
   const { t_i18n } = useFormatter();
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={t_i18n('Replace default template?')}
-      size="small"
-    >
+    <Dialog open={open} onClose={onClose} title={t_i18n('Replace default template?')} size="small">
       <Typography>
         {t_i18n('The template {name} is currently set as default. Do you want to replace it?', {
           values: { name: <strong>{currentDefaultName}</strong> },
@@ -34,9 +29,7 @@ const FintelTemplateReplaceDefaultDialog = ({
         <Button variant="secondary" onClick={onClose}>
           {t_i18n('Cancel')}
         </Button>
-        <Button onClick={onConfirm}>
-          {t_i18n('Confirm')}
-        </Button>
+        <Button onClick={onConfirm}>{t_i18n('Confirm')}</Button>
       </DialogActions>
     </Dialog>
   );

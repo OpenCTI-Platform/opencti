@@ -1,4 +1,10 @@
-import { AccountBalanceOutlined, CenterFocusStrongOutlined, DateRangeOutlined, FilterAltOffOutlined, FilterListOutlined } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  CenterFocusStrongOutlined,
+  DateRangeOutlined,
+  FilterAltOffOutlined,
+  FilterListOutlined,
+} from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
 import React, { useState } from 'react';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
@@ -51,22 +57,22 @@ const GraphToolbarFilterTools = () => {
   return (
     <>
       <GraphToolbarItem
-        Icon={(
+        Icon={
           <Badge badgeContent={timeRangeFilters} color="secondary">
             <DateRangeOutlined />
           </Badge>
-        )}
+        }
         color={showTimeRange ? 'secondary' : 'primary'}
         onClick={toggleTimeRange}
         title={t_i18n('Display time range selector')}
       />
 
       <GraphToolbarItem
-        Icon={(
+        Icon={
           <Badge badgeContent={disabledEntityTypes.length} color="secondary">
             <FilterListOutlined />
           </Badge>
-        )}
+        }
         disabled={stixCoreObjectTypes.length === 0}
         color="primary"
         onClick={(e) => setFilterByTypeAnchor(e.currentTarget)}
@@ -84,11 +90,11 @@ const GraphToolbarFilterTools = () => {
       />
 
       <GraphToolbarItem
-        Icon={(
+        Icon={
           <Badge badgeContent={disabledMarkings.length} color="secondary">
             <CenterFocusStrongOutlined />
           </Badge>
-        )}
+        }
         disabled={markingDefinitions.length === 0}
         color="primary"
         onClick={(e) => setFilterByMarkingAnchor(e.currentTarget)}
@@ -106,11 +112,11 @@ const GraphToolbarFilterTools = () => {
       />
 
       <GraphToolbarItem
-        Icon={(
+        Icon={
           <Badge badgeContent={disabledCreators.length} color="secondary">
             <AccountBalanceOutlined />
           </Badge>
-        )}
+        }
         disabled={creators.length === 0}
         color="primary"
         onClick={(e) => setFilterByCreatorAnchor(e.currentTarget)}

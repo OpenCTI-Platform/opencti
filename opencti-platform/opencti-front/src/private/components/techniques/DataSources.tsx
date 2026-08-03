@@ -1,13 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { DataSourcesLines_data$data } from '@components/techniques/__generated__/DataSourcesLines_data.graphql';
-import { DataSourcesLinesPaginationQuery, DataSourcesLinesPaginationQuery$variables } from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
+import {
+  DataSourcesLinesPaginationQuery,
+  DataSourcesLinesPaginationQuery$variables,
+} from '@components/techniques/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataSourceCreation from './data_sources/DataSourceCreation';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -56,14 +62,14 @@ const dataSourcesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...DataSourcesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -152,22 +158,29 @@ const DataSources: FunctionComponent = () => {
 
   return (
     <div data-testid="data-source-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Data sources'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Techniques') },
+          { label: t_i18n('Data sources'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: DataSourcesLines_data$data) => data.dataSources?.edges?.map((e) => e?.node)}
+          resolvePath={(data: DataSourcesLines_data$data) =>
+            data.dataSources?.edges?.map((e) => e?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY_DATA_SOURCES}
           initialValues={initialValues}
           contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationOptions}
           lineFragment={dataSourceLineFragment}
           exportContext={{ entity_type: 'Data-Source' }}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <DataSourceCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

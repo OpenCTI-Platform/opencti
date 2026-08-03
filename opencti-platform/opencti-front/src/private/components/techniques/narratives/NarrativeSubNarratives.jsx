@@ -32,8 +32,7 @@ class NarrativeSubNarrativesComponent extends Component {
         const subNarratives = node.getLinkedRecord('subNarratives');
         const edges = subNarratives.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id')
-            !== subNarrativeEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id') !== subNarrativeEdge.node.id,
           edges,
         );
         subNarratives.setLinkedRecords(newEdges, 'edges');
@@ -45,14 +44,15 @@ class NarrativeSubNarrativesComponent extends Component {
     const { t, narrative } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddSubNarrative
-              narrative={narrative}
-              narrativeSubNarratives={narrative.subNarratives.edges}
-            />
-          </Security>
-        )}
+        <Label
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <AddSubNarrative
+                narrative={narrative}
+                narrativeSubNarratives={narrative.subNarratives.edges}
+              />
+            </Security>
+          }
         >
           {t('Subnarratives')}
         </Label>
@@ -64,17 +64,14 @@ class NarrativeSubNarrativesComponent extends Component {
                 key={subNarrative.id}
                 dense={true}
                 divider={true}
-                secondaryAction={(
+                secondaryAction={
                   <IconButton
                     aria-label="Remove"
-                    onClick={this.removeSubNarrative.bind(
-                      this,
-                      subNarrativeEdge,
-                    )}
+                    onClick={this.removeSubNarrative.bind(this, subNarrativeEdge)}
                   >
                     <LinkOff />
                   </IconButton>
-                )}
+                }
               >
                 <ListItemButton
                   component={Link}
@@ -101,28 +98,25 @@ NarrativeSubNarrativesComponent.propTypes = {
   narrative: PropTypes.object,
 };
 
-const NarrativeSubNarratives = createFragmentContainer(
-  NarrativeSubNarrativesComponent,
-  {
-    narrative: graphql`
-      fragment NarrativeSubNarratives_narrative on Narrative {
-        id
-        name
-        parent_types
-        entity_type
-        subNarratives {
-          edges {
-            node {
-              id
-              parent_types
-              name
-              description
-            }
+const NarrativeSubNarratives = createFragmentContainer(NarrativeSubNarrativesComponent, {
+  narrative: graphql`
+    fragment NarrativeSubNarratives_narrative on Narrative {
+      id
+      name
+      parent_types
+      entity_type
+      subNarratives {
+        edges {
+          node {
+            id
+            parent_types
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(inject18n)(NarrativeSubNarratives);

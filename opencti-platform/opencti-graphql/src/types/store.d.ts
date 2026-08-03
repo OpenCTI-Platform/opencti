@@ -53,8 +53,18 @@ import {
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
-import type { windows_integrity_level_enum, ssh_key_type_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
-import { RELATION_MEMBER_OF, RELATION_IN_PIR, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import type {
+  windows_integrity_level_enum,
+  ssh_key_type_enum,
+  windows_service_start_type_enum,
+  windows_service_status_enum,
+  windows_service_type_enum,
+} from './stix-2-1-sco';
+import {
+  RELATION_MEMBER_OF,
+  RELATION_IN_PIR,
+  RELATION_PARTICIPATE_TO,
+} from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 import type { Metric } from '../modules/metrics/metrics';
 import type { PirInformation } from '../modules/pir/pir-types';
@@ -176,7 +186,6 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
-
   inferred: any;
   explanation: string[];
 }
@@ -498,12 +507,14 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
     attribute: string;
     multi_match_strategy?: string;
     multi_match_separator?: string;
-    mappings: [{
-      type: string;
-      attribute: string;
-      relationship_type?: string;
-      target_entity_type?: string;
-    }];
+    mappings: [
+      {
+        type: string;
+        attribute: string;
+        relationship_type?: string;
+        target_entity_type?: string;
+      },
+    ];
   }>;
   restricted_members: Array<AuthorizedMember>;
 }

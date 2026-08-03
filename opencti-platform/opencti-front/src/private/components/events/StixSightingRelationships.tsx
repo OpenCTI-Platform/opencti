@@ -6,7 +6,11 @@ import {
 } from '@components/events/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
 import { StixSightingRelationshipsLines_data$data } from '@components/events/__generated__/StixSightingRelationshipsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -216,17 +220,17 @@ const stixSightingRelationshipsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...StixSightingRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      toId: $toId
-      toTypes: $toTypes
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        fromId: $fromId
+        toId: $toId
+        toTypes: $toTypes
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -239,13 +243,11 @@ const stixSightingRelationshipsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixSightingRelationshipsOrdering"
-      defaultValue: first_seen
-    }
+    orderBy: { type: "StixSightingRelationshipsOrdering", defaultValue: first_seen }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "StixSightingRelationshipsLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "StixSightingRelationshipsLinesRefetchQuery") {
     stixSightingRelationships(
       fromId: $fromId
       toId: $toId
@@ -282,7 +284,10 @@ const StixSightingRelationships = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['toSightingId', 'x_opencti_negative'], ['stix-sighting-relationship']),
+      filters: useGetDefaultFilterObject(
+        ['toSightingId', 'x_opencti_negative'],
+        ['stix-sighting-relationship'],
+      ),
     },
     searchTerm: '',
     sortBy: 'last_seen',
@@ -300,7 +305,10 @@ const StixSightingRelationships = () => {
 
   const { filters } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-sighting-relationship', filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'stix-sighting-relationship',
+    filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -326,33 +334,34 @@ const StixSightingRelationships = () => {
       label: 'Name',
       percentWidth: 15,
       isSortable: false,
-      render: ({ from }, { fd }) => (from !== null
-        ? from.name
-        || from.attribute_abstract
-        || truncate(from.content, 30)
-        || from.observable_value
-        || `${fd(from.first_observed)} - ${fd(from.last_observed)}`
-        : t_i18n('Restricted')),
+      render: ({ from }, { fd }) =>
+        from !== null
+          ? from.name ||
+            from.attribute_abstract ||
+            truncate(from.content, 30) ||
+            from.observable_value ||
+            `${fd(from.first_observed)} - ${fd(from.last_observed)}`
+          : t_i18n('Restricted'),
     },
     entity_type: {
       label: 'Entity type',
       percentWidth: 12,
       isSortable: false,
-      render: ({ from }) => (from !== null
-        ? t_i18n(`entity_${from.entity_type}`)
-        : t_i18n('Restricted')),
+      render: ({ from }) =>
+        from !== null ? t_i18n(`entity_${from.entity_type}`) : t_i18n('Restricted'),
     },
     entity: {
       label: 'Entity',
       percentWidth: 12,
       isSortable: false,
-      render: ({ to }, { fd }) => (to !== null
-        ? to.name
-        || to.attribute_abstract
-        || truncate(to.content, 30)
-        || to.observable_value
-        || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
-        : t_i18n('Restricted')),
+      render: ({ to }, { fd }) =>
+        to !== null
+          ? to.name ||
+            to.attribute_abstract ||
+            truncate(to.content, 30) ||
+            to.observable_value ||
+            `${fd(to.first_observed)} - ${fd(to.last_observed)}`
+          : t_i18n('Restricted'),
     },
     first_seen: {},
     last_seen: {},
@@ -362,11 +371,15 @@ const StixSightingRelationships = () => {
 
   return (
     <span data-testid="sightings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: StixSightingRelationshipsLines_data$data) => data.stixSightingRelationships?.edges?.map((n) => n?.node)}
+          resolvePath={(data: StixSightingRelationshipsLines_data$data) =>
+            data.stixSightingRelationships?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

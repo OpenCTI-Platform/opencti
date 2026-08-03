@@ -4,7 +4,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Box from '@mui/material/Box';
-import { CheckCircleOutlined, DoNotDisturbOnOutlined, KeyboardArrowRightOutlined, ReportGmailerrorred } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  DoNotDisturbOnOutlined,
+  KeyboardArrowRightOutlined,
+  ReportGmailerrorred,
+} from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
@@ -62,11 +67,16 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
       to={`/dashboard/settings/accesses/groups/${node.id}`}
     >
       <ListItemText
-        primary={(
+        primary={
           <>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.name.width, display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{
+                width: dataColumns.name.width,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
             >
               <span>{node.name}</span>
               {isSensitive && <DangerZoneChip />}
@@ -81,20 +91,14 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
                 <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.auto_new_marking.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.auto_new_marking.width }}>
               {node.auto_new_marking ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.no_creators.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.no_creators.width }}>
               {node.no_creators ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
@@ -107,26 +111,22 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
             >
               {node.group_confidence_level?.max_confidence ?? (
                 <Tooltip
-                  title={t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
+                  title={t_i18n(
+                    'This group does not have a Max Confidence Level, members might not be able to create data.',
+                  )}
                 >
                   <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
               {fd(node.created_at)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.updated_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.updated_at.width }}>
               {fd(node.updated_at)}
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -160,91 +160,44 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <KeyboardArrowRightOutlined />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.default_assignation.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.auto_new_marking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.auto_new_marking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.group_confidence_level.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.updated_at.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.updated_at.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

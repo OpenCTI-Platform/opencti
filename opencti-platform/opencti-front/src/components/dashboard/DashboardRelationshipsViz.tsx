@@ -142,10 +142,7 @@ const DashboardRelationshipsViz = ({
         />
       );
     case 'horizontal-bar':
-      if (
-        widget.dataSelection.length > 1
-        && widget.dataSelection[0].attribute === 'internal_id'
-      ) {
+      if (widget.dataSelection.length > 1 && widget.dataSelection[0].attribute === 'internal_id') {
         return (
           <StixRelationshipsMultiHorizontalBars
             variant={undefined}
@@ -252,9 +249,7 @@ const DashboardRelationshipsViz = ({
         />
       );
     default:
-      return (
-        <WidgetNotImplemented popover={popover} />
-      );
+      return <WidgetNotImplemented popover={popover} />;
   }
 };
 

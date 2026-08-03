@@ -17,13 +17,13 @@ const publicStixCoreObjectsListQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjects(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       edges {
         node {
@@ -430,10 +430,7 @@ const PublicStixCoreObjectsListComponent = ({
   widgetId,
   columns,
 }: PublicStixCoreObjectsListComponentProps) => {
-  const { publicStixCoreObjects } = usePreloadedQuery(
-    publicStixCoreObjectsListQuery,
-    queryRef,
-  );
+  const { publicStixCoreObjects } = usePreloadedQuery(publicStixCoreObjectsListQuery, queryRef);
 
   if (publicStixCoreObjects?.edges && publicStixCoreObjects.edges.length > 0) {
     return (
@@ -477,9 +474,7 @@ const PublicStixCoreObjectsList = ({
   const rootRef = useRef<HTMLDivElement>(null);
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       <div ref={rootRef} style={{ height: '100%' }}>
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

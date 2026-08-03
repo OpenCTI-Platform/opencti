@@ -11,7 +11,12 @@ import { useEffect } from 'react';
  * in the front-end (isSortable: true), you MUST add its field name here too.
  * Failing to do so will cause an UnsupportedError on OpenSearch instances.
  */
-export const RUNTIME_ONLY_SORT_FIELDS = ['createdBy', 'objectAssignee', 'objectParticipant', 'objectMarking'];
+export const RUNTIME_ONLY_SORT_FIELDS = [
+  'createdBy',
+  'objectAssignee',
+  'objectParticipant',
+  'objectMarking',
+];
 export const FALLBACK_SORT_FIELD = 'created_at';
 
 /**

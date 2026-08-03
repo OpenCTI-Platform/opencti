@@ -1,7 +1,23 @@
 import type { ElementType } from 'react';
-import { AddOutlined, DeleteOutlined, EditOutlined, HelpOutlined, LinkOffOutlined, LinkOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  HelpOutlined,
+  LinkOffOutlined,
+  LinkOutlined,
+} from '@mui/icons-material';
 import Avatar from '@mui/material/Avatar';
-import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
+import {
+  deepOrange,
+  deepPurple,
+  green,
+  indigo,
+  pink,
+  red,
+  teal,
+  yellow,
+} from '@mui/material/colors';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../components/Theme';

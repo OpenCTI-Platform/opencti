@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
 import { useParams } from 'react-router-dom';
-import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
+import InvestigationExpandForm, {
+  InvestigationExpandFormProps,
+} from '@components/workspaces/investigations/InvestigationExpandForm';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';
 import GraphToolbarItem from './GraphToolbarItem';
@@ -16,9 +18,7 @@ import { ObjectToParse } from '../utils/useGraphParser';
 
 const expandRelationshipsQuery = graphql`
   query GraphToolbarExpandToolsRelationshipsQuery($filters: FilterGroup) {
-    stixRelationships(
-      filters: $filters
-    ) {
+    stixRelationships(filters: $filters) {
       edges {
         node {
           id
@@ -531,11 +531,7 @@ const expandRelationshipsQuery = graphql`
   }
 `;
 
-const expandFilterGroup = (
-  id: string,
-  entityTypes: string[],
-  relationshipTypes: string[],
-) => ({
+const expandFilterGroup = (id: string, entityTypes: string[], relationshipTypes: string[]) => ({
   mode: 'or',
   filterGroups: [
     {
@@ -572,24 +568,15 @@ const GraphToolbarExpandTools = ({
   const { workspaceId } = useParams();
   const { t_i18n } = useFormatter();
 
-  const {
-    containsExpandOp,
-  } = useInvestigationState(workspaceId ?? '');
+  const { containsExpandOp } = useInvestigationState(workspaceId ?? '');
 
   const {
     graphData,
     rawObjects,
-    graphState: {
-      selectedNodes,
-      selectedLinks,
-      isExpandOpen,
-    },
+    graphState: { selectedNodes, selectedLinks, isExpandOpen },
   } = useGraphContext();
 
-  const {
-    setLinearProgress,
-    setIsExpandOpen,
-  } = useGraphInteractions();
+  const { setLinearProgress, setIsExpandOpen } = useGraphInteractions();
 
   const [rollBackOpen, setRollBackOpen] = useState(false);
 
@@ -614,10 +601,9 @@ const GraphToolbarExpandTools = ({
 
     const allNewElements: ObjectToParse[] = [];
     for (const id of selectionIds) {
-      const { stixRelationships } = (await fetchQuery(
-        expandRelationshipsQuery,
-        { filters: expandFilterGroup(id, entityTypes, relationshipTypes) },
-      ).toPromise()) as GraphToolbarExpandToolsRelationshipsQuery$data;
+      const { stixRelationships } = (await fetchQuery(expandRelationshipsQuery, {
+        filters: expandFilterGroup(id, entityTypes, relationshipTypes),
+      }).toPromise()) as GraphToolbarExpandToolsRelationshipsQuery$data;
       const newElements = (stixRelationships?.edges ?? []).flatMap((e) => {
         if (!e) return [];
         const entity = e.node.from?.id === id ? e.node.to : e.node.from;

@@ -21,9 +21,10 @@ interface PublicDashboardLineActionsProps {
 }
 
 const publicDashboardLineActionsDeleteMutation = graphql`
-  mutation PublicDashboardLineActionsDeleteMutation($id: ID!){
+  mutation PublicDashboardLineActionsDeleteMutation($id: ID!) {
     publicDashboardDelete(id: $id)
-  }`;
+  }
+`;
 
 const publicDashboardLineActionsEditMutation = graphql`
   mutation PublicDashboardLineActionsEditMutation($id: ID!, $input: [EditInput!]!) {
@@ -35,7 +36,10 @@ const publicDashboardLineActionsEditMutation = graphql`
   }
 `;
 
-const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: PublicDashboardLineActionsProps) => {
+const PublicDashboardLineActions = ({
+  publicDashboard,
+  paginationOptions,
+}: PublicDashboardLineActionsProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchor, setAnchor] = useState<MenuProps['anchorEl']>();
@@ -44,7 +48,9 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   const deletion = useDeletion({});
   const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
 
-  const { canManage } = useGetCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
+  const { canManage } = useGetCurrentUserAccessRight(
+    publicDashboard.dashboard.currentUserAccessRight,
+  );
 
   const copyLinkUrl = () => {
     copyPublicDashboardLinkUrl(t_i18n, publicDashboard.uri_key);
@@ -101,16 +107,10 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
         open={!!anchor}
         onClose={() => setAnchor(undefined)}
       >
-        <MenuItem
-          onClick={() => goToDashboard()}
-          aria-label="Go to dashboard"
-        >
+        <MenuItem onClick={() => goToDashboard()} aria-label="Go to dashboard">
           {t_i18n('Go to Original dashboard')}
         </MenuItem>
-        <MenuItem
-          onClick={() => copyLinkUrl()}
-          aria-label="Copy link"
-        >
+        <MenuItem onClick={() => copyLinkUrl()} aria-label="Copy link">
           {t_i18n('Copy public link')}
         </MenuItem>
         <Security needs={[EXPLORE_EXUPDATE_PUBLISH]} hasAccess={canManage}>

@@ -49,10 +49,7 @@ const StixRelationshipsMultiLineChartComponent = ({
   onMounted,
 }: StixRelationshipsMultiLineChartComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsMultiLineChartTimeSeriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsMultiLineChartTimeSeriesQuery, queryRef);
 
   if (!data?.stixRelationshipsMultiTimeSeries) {
     return <WidgetNoData />;
@@ -89,7 +86,10 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiLineChartTimeSeriesQuery['variables'] => {
   return buildRelationshipMultiWidgetBaseQueryVariables(
-    resolvedDataSelection, config, parameters) as StixRelationshipsMultiLineChartTimeSeriesQuery['variables'];
+    resolvedDataSelection,
+    config,
+    parameters,
+  ) as StixRelationshipsMultiLineChartTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiLineChartProps {
@@ -115,7 +115,13 @@ const StixRelationshipsMultiLineChart = ({
 }: StixRelationshipsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

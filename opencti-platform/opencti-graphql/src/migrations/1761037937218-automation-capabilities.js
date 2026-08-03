@@ -29,14 +29,26 @@ export const up = async (next) => {
   for (let i = 0; i < roles.length; i += 1) {
     const roleId = roles[i].id;
     const capabilities = await roleCapabilities(context, SYSTEM_USER, roleId);
-    const hasAdminCapability = capabilities.some((capability) => capability.name === 'SETTINGS_SETACCESSES');
-    const hasEnrichmentCapability = capabilities.some((capability) => capability.name === 'KNOWLEDGE_KNENRICHMENT');
+    const hasAdminCapability = capabilities.some(
+      (capability) => capability.name === 'SETTINGS_SETACCESSES',
+    );
+    const hasEnrichmentCapability = capabilities.some(
+      (capability) => capability.name === 'KNOWLEDGE_KNENRICHMENT',
+    );
     if (hasAdminCapability) {
-      const parametersInput = { fromId: roleId, toId: manageAutomationCapability.id, relationship_type: 'has-capability' };
+      const parametersInput = {
+        fromId: roleId,
+        toId: manageAutomationCapability.id,
+        relationship_type: 'has-capability',
+      };
       await createRelation(context, SYSTEM_USER, parametersInput);
     }
     if (hasEnrichmentCapability) {
-      const parametersInput = { fromId: roleId, toId: useAutomationCapability.id, relationship_type: 'has-capability' };
+      const parametersInput = {
+        fromId: roleId,
+        toId: useAutomationCapability.id,
+        relationship_type: 'has-capability',
+      };
       await createRelation(context, SYSTEM_USER, parametersInput);
     }
   }

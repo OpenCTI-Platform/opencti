@@ -1,4 +1,14 @@
-import { Alert, Drawer, IconButton, ListItem, ListItemText, SxProps, Toolbar, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Drawer,
+  IconButton,
+  ListItem,
+  ListItemText,
+  SxProps,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import React from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { useTheme } from '@mui/styles';
@@ -26,9 +36,7 @@ const EmailTemplateAttributesSidebar = () => {
     { variableName: 'user.objectOrganization', label: 'Organizations' },
     { variableName: 'user.account_lock_after_date', label: 'Expire Date' },
   ];
-  const platformAttributes = [
-    { variableName: 'settings.platform_url', label: 'Platform URL' },
-  ];
+  const platformAttributes = [{ variableName: 'settings.platform_url', label: 'Platform URL' }];
 
   const copyAttributeToClipboard = async (varName: string) => {
     await navigator.clipboard.writeText(`$${varName}`);
@@ -46,16 +54,10 @@ const EmailTemplateAttributesSidebar = () => {
 
   return (
     <>
-      <Drawer
-        variant="permanent"
-        anchor="right"
-        sx={paperStyle}
-      >
+      <Drawer variant="permanent" anchor="right" sx={paperStyle}>
         <Toolbar />
         <Alert severity="info" variant="outlined" sx={{ margin: 2, marginTop: 0 }}>
-          <Typography variant="body2">
-            {t_i18n('Use these variables in your template.')}
-          </Typography>
+          <Typography variant="body2">{t_i18n('Use these variables in your template.')}</Typography>
         </Alert>
         <ListItem
           key={attributesOfTheUserTitle}
@@ -70,16 +72,13 @@ const EmailTemplateAttributesSidebar = () => {
           }}
         >
           <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title="attribute">
-              {renderWidgetIcon('attribute', 'small')}
-            </Tooltip>
+            <Tooltip title="attribute">{renderWidgetIcon('attribute', 'small')}</Tooltip>
 
             <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
               {attributesOfTheUserTitle}
             </Typography>
 
             <div style={{ height: 36 }}></div>
-
           </div>
 
           <div style={{ paddingLeft: theme.spacing(3.5) }}>
@@ -117,16 +116,13 @@ const EmailTemplateAttributesSidebar = () => {
           }}
         >
           <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-            <Tooltip title="attribute">
-              {renderWidgetIcon('attribute', 'small')}
-            </Tooltip>
+            <Tooltip title="attribute">{renderWidgetIcon('attribute', 'small')}</Tooltip>
 
             <Typography style={{ fontStyle: 'italic', flex: 1 }} variant="body2">
               {attributesOfThePlatformTitle}
             </Typography>
 
-            <div style={{ height: 36 }}>
-            </div>
+            <div style={{ height: 36 }}></div>
           </div>
 
           <div style={{ paddingLeft: theme.spacing(3.5) }}>
@@ -153,7 +149,6 @@ const EmailTemplateAttributesSidebar = () => {
           </div>
         </ListItem>
       </Drawer>
-
     </>
   );
 };

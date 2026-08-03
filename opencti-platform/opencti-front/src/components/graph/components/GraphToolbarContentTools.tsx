@@ -15,7 +15,9 @@ import { dateFormat, dayStartDate, minutesBefore, now } from '../../../utils/Tim
 import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { useGraphContext } from '../GraphContext';
 import { ObjectToParse } from '../utils/useGraphParser';
-import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
+import GraphToolbarRemoveConfirm, {
+  GraphToolbarDeleteConfirmProps,
+} from './GraphToolbarRemoveConfirm';
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
 
@@ -64,29 +66,29 @@ const GraphToolbarContentTools = ({
     },
   } = useGraphContext();
 
-  const {
-    addNode,
-    removeNode,
-    removeLink,
-    addLink,
-  } = useGraphInteractions();
+  const { addNode, removeNode, removeLink, addLink } = useGraphInteractions();
 
   // if a link or node is a relationship, display correctly its representative
-  const selectedLinks = rawSelectedLinks.map((o) => o.relationship_type
-    ? {
-        ...o,
-        name: getRelationshipMainRepresentative(
-          { label: (o.source as GraphNode).label },
-          { label: (o.target as GraphNode).label },
-          10),
-      }
-    : o);
-  const selectedNodes = rawSelectedNodes.map((o) => o.relationship_type
-    ? {
-        ...o,
-        name: o.label, // no source and target if the relationship is displayed as a node
-      }
-    : o);
+  const selectedLinks = rawSelectedLinks.map((o) =>
+    o.relationship_type
+      ? {
+          ...o,
+          name: getRelationshipMainRepresentative(
+            { label: (o.source as GraphNode).label },
+            { label: (o.target as GraphNode).label },
+            10,
+          ),
+        }
+      : o,
+  );
+  const selectedNodes = rawSelectedNodes.map((o) =>
+    o.relationship_type
+      ? {
+          ...o,
+          name: o.label, // no source and target if the relationship is displayed as a node
+        }
+      : o,
+  );
 
   const head = selectedNodes.slice(0, 1);
   const tail = selectedNodes.slice(-1);
@@ -98,9 +100,11 @@ const GraphToolbarContentTools = ({
   const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
 
-  const selectionContainsInferred = selectedNodes.some((n) => n.isNestedInferred)
-    || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
-  const canDelete = !selectionContainsInferred && (selectedNodes.length > 0 || selectedLinks.length > 0);
+  const selectionContainsInferred =
+    selectedNodes.some((n) => n.isNestedInferred) ||
+    selectedLinks.some((n) => n.inferred || n.isNestedInferred);
+  const canDelete =
+    !selectionContainsInferred && (selectedNodes.length > 0 || selectedLinks.length > 0);
 
   const isReversed = relationReversed || sightingReversed || nestedReversed;
 
@@ -121,9 +125,11 @@ const GraphToolbarContentTools = ({
 
   const removeFromAddPanel = (node: { id: string }) => {
     // Remove links associated to removed node
-    (graphData?.links ?? []).filter(({ source_id, target_id }) => {
-      return source_id === node.id || target_id === node.id;
-    }).forEach(({ id }) => removeLink(id));
+    (graphData?.links ?? [])
+      .filter(({ source_id, target_id }) => {
+        return source_id === node.id || target_id === node.id;
+      })
+      .forEach(({ id }) => removeLink(id));
     removeNode(node.id);
   };
 

@@ -13,43 +13,18 @@ const ItemLikelihood = ({ likelihood }: ItemLikelihoodProps) => {
     return <>{EMPTY_VALUE}</>;
   }
   if (likelihood <= 20) {
-    return (
-      <Tag
-        color={theme.palette.severity?.critical}
-        label={`${likelihood} / 100`}
-      />
-    );
+    return <Tag color={theme.palette.severity?.critical} label={`${likelihood} / 100`} />;
   }
   if (likelihood <= 50) {
-    return (
-      <Tag
-        color={theme.palette.severity?.high}
-        label={`${likelihood} / 100`}
-      />
-    );
+    return <Tag color={theme.palette.severity?.high} label={`${likelihood} / 100`} />;
   }
   if (likelihood <= 75) {
-    return (
-      <Tag
-        color={theme.palette.severity?.info}
-        label={`${likelihood} / 100`}
-      />
-    );
+    return <Tag color={theme.palette.severity?.info} label={`${likelihood} / 100`} />;
   }
   if (likelihood <= 100) {
-    return (
-      <Tag
-        color={theme.palette.severity?.low}
-        label={`${likelihood} / 100`}
-      />
-    );
+    return <Tag color={theme.palette.severity?.low} label={`${likelihood} / 100`} />;
   }
-  return (
-    <Tag
-      color={theme.palette.common.white}
-      label={`${likelihood} / 100`}
-    />
-  );
+  return <Tag color={theme.palette.common.white} label={`${likelihood} / 100`} />;
 };
 
 export default ItemLikelihood;

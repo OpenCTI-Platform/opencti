@@ -25,28 +25,30 @@ import { useChatbot } from './ChatbotContext';
 const CtemCommandCenterButton = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
+  const {
+    settings: { filigran_chatbot_ai_cgu_status },
+  } = useAuth();
   const { xtmOneConfigured, xtmOneUrl } = useChatbot();
 
   const safeXtmOneUrl = toSafeHttpUrl(xtmOneUrl);
   if (
-    filigran_chatbot_ai_cgu_status === CGUStatus.disabled
-    || xtmOneConfigured !== true
-    || !safeXtmOneUrl
+    filigran_chatbot_ai_cgu_status === CGUStatus.disabled ||
+    xtmOneConfigured !== true ||
+    !safeXtmOneUrl
   ) {
     return null;
   }
 
   return (
     <Tooltip
-      title={(
+      title={
         // The global MuiTooltip theme lower-cases tooltip text (sentence case),
         // which would mangle the "CTEM" / "XTM One" acronyms - opt this one out so
         // the product name keeps its true casing.
         <Box component="span" sx={{ textTransform: 'none' }}>
           {t_i18n('Open CTEM Command Center in XTM One')}
         </Box>
-      )}
+      }
     >
       <IconButton
         size="default"

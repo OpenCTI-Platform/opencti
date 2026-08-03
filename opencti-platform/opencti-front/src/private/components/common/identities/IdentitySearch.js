@@ -1,11 +1,7 @@
 import { graphql } from 'react-relay';
 
 export const identitySearchIdentitiesSearchQuery = graphql`
-  query IdentitySearchIdentitiesSearchQuery(
-    $types: [String]
-    $search: String
-    $first: Int
-  ) {
+  query IdentitySearchIdentitiesSearchQuery($types: [String], $search: String, $first: Int) {
     identities(types: $types, orderBy: _score, orderMode: desc, search: $search, first: $first) {
       edges {
         node {

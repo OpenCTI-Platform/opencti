@@ -12,7 +12,12 @@ import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
+import {
+  createWork,
+  deleteWorkForFile,
+  deleteWorkForSource,
+  reportExpectation,
+} from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
@@ -30,12 +35,25 @@ import {
   SUPPORT_STORAGE_PATH,
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
+import {
+  isUserHasCapability,
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+  SETTINGS_SUPPORT,
+  SYSTEM_USER,
+  validateMarking,
+} from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
-import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
+import {
+  deleteFileFromStorage,
+  getFileSize,
+  rawCopyFile,
+  rawListObjects,
+  rawUpload,
+} from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
@@ -116,25 +134,33 @@ export const loadFile = async (
     }
     const pathForPermissionChecks = fileS3Path.replace(/^draft\/[^/]+\//, '');
     // 01. Check if user as enough capability to get support packages
-    if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
+    if (
+      pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) &&
+      !isUserHasCapability(user, SETTINGS_SUPPORT)
+    ) {
       if (opts.dontThrow) {
         return undefined;
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 01.1. Check if user as enough capability to load import / export / template knowledge files
-    if ((pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH)
-      || pathForPermissionChecks.startsWith(EMBEDDED_STORAGE_PATH)
-      || pathForPermissionChecks.startsWith(EXPORT_STORAGE_PATH)
-      || pathForPermissionChecks.startsWith(FROM_TEMPLATE_STORAGE_PATH))
-    && !isUserHasCapability(user, KNOWLEDGE)) {
+    if (
+      (pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH) ||
+        pathForPermissionChecks.startsWith(EMBEDDED_STORAGE_PATH) ||
+        pathForPermissionChecks.startsWith(EXPORT_STORAGE_PATH) ||
+        pathForPermissionChecks.startsWith(FROM_TEMPLATE_STORAGE_PATH)) &&
+      !isUserHasCapability(user, KNOWLEDGE)
+    ) {
       if (opts.dontThrow) {
         return undefined;
       }
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 01.2. Check if user as enough capability to load import/global files
-    if (pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
+    if (
+      pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) &&
+      !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)
+    ) {
       if (opts.dontThrow) {
         return undefined;
       }
@@ -151,7 +177,9 @@ export const loadFile = async (
     // let resolvedPath: string | undefined;
     for (let i = 0; i < candidatePaths.length; i += 1) {
       const candidatePath = candidatePaths[i];
-      const resolvedDocument = await documentFindById(context, user, candidatePath, { ignoreDuplicates: true });
+      const resolvedDocument = await documentFindById(context, user, candidatePath, {
+        ignoreDuplicates: true,
+      });
       if (resolvedDocument) {
         document = resolvedDocument;
         break;
@@ -172,7 +200,9 @@ export const loadFile = async (
         }
         throw FunctionalError('File not found or restricted', { filename: fileS3Path });
       }
-      const instance = await internalLoadById(context, user, metaData.entity_id, { indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] });
+      const instance = await internalLoadById(context, user, metaData.entity_id, {
+        indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS],
+      });
       if (!instance) {
         if (opts.dontThrow) {
           return undefined;
@@ -207,7 +237,12 @@ export const loadFile = async (
  * @returns {Promise<LoadedFile | undefined>} The deleted file information
  * @throws {UnsupportedError} When attempting to delete non-draft files in draft mode
  */
-export const deleteFile = async (context: AuthContext, user: AuthUser, id: string, opts: { forceDelete?: boolean } = {}) => {
+export const deleteFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  opts: { forceDelete?: boolean } = {},
+) => {
   const { forceDelete = false } = opts;
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(id, draftContext)) {
@@ -227,10 +262,9 @@ export const deleteFile = async (context: AuthContext, user: AuthUser, id: strin
   const isFileIndexModuleActivated = await isModuleActivated('FILE_INDEX_MANAGER');
   if (isFileIndexModuleActivated && isAttachmentProcessorEnabled()) {
     logApp.debug(`[FILE STORAGE] delete file ${id} in index`);
-    await elDeleteFilesByIds([id])
-      .catch((err) => {
-        logApp.error('[FILE STORAGE] Error deleting file', { cause: err });
-      });
+    await elDeleteFilesByIds([id]).catch((err) => {
+      logApp.error('[FILE STORAGE] Error deleting file', { cause: err });
+    });
   }
   return up;
 };
@@ -278,7 +312,12 @@ export const deleteRawFiles = async (context: AuthContext, user: AuthUser, ids: 
  */
 export const copyFile = async (
   context: AuthContext,
-  copyProps: { sourceId: string; targetId: string; sourceDocument: BasicStoreEntityDocument; targetEntityId: string },
+  copyProps: {
+    sourceId: string;
+    targetId: string;
+    sourceDocument: BasicStoreEntityDocument;
+    targetEntityId: string;
+  },
 ): Promise<LoadedFile | null> => {
   const { sourceId, targetId, sourceDocument, targetEntityId } = copyProps;
   try {
@@ -297,7 +336,11 @@ export const copyFile = async (
       uploadStatus: 'complete',
     };
     await indexFileToDocument(context, file);
-    logApp.info('[FILE STORAGE] Copy file to S3 in success', { document: file, sourceId, targetId });
+    logApp.info('[FILE STORAGE] Copy file to S3 in success', {
+      document: file,
+      sourceId,
+      targetId,
+    });
     return file;
   } catch (err) {
     logApp.error('[FILE STORAGE] Cannot copy file in S3', { cause: err, sourceId, targetId });
@@ -402,7 +445,11 @@ export const loadedFilesListing = async (
   context: AuthContext,
   user: AuthUser,
   directory: string,
-  opts: { recursive?: boolean; callback?: ((files: LoadedFile[]) => void) | null; dontThrow?: boolean } = {},
+  opts: {
+    recursive?: boolean;
+    callback?: ((files: LoadedFile[]) => void) | null;
+    dontThrow?: boolean;
+  } = {},
 ): Promise<LoadedFile[]> => {
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files: LoadedFile[] = [];
@@ -426,7 +473,10 @@ export const loadedFilesListing = async (
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
       } else {
-        pushAll(files, resultLoaded.filter((n) => n !== undefined));
+        pushAll(
+          files,
+          resultLoaded.filter((n) => n !== undefined),
+        );
       }
       truncated = response.IsTruncated ?? false;
       if (truncated) {
@@ -480,7 +530,13 @@ export const uploadJobImport = async (
     forceValidation = false,
   } = opts;
   const draftContext = getDraftContext(context, user);
-  let connectors = await connectorsForImport(context, user, file.metaData.mimetype ?? '', true, !manual);
+  let connectors = await connectorsForImport(
+    context,
+    user,
+    file.metaData.mimetype ?? '',
+    true,
+    !manual,
+  );
   if (connectorId) {
     connectors = connectors.filter((n: BasicStoreEntityConnector) => n.id === connectorId);
   }
@@ -491,13 +547,22 @@ export const uploadJobImport = async (
     // Create job and send ask to broker
     const createConnectorWork = async (connector: BasicStoreEntityConnector) => {
       const contextOutOfDraft = { ...context, draft_context: '' };
-      const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
-      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
+      const messageToUse = draftContext
+        ? `Manual import of ${file.name} in draft ${draftContext}`
+        : `Manual import of ${file.name}`;
+      const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, {
+        draftContext,
+      });
       return { connector, work };
     };
-    const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));
+    const actionList = await Promise.all(
+      connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)),
+    );
     // Send message to all correct connectors queues
-    const buildConnectorMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }, connectorConfiguration: string | null) => {
+    const buildConnectorMessage = (
+      data: { connector: BasicStoreEntityConnector; work: { id: string } },
+      connectorConfiguration: string | null,
+    ) => {
       const { work } = data;
       return {
         internal: {
@@ -520,7 +585,10 @@ export const uploadJobImport = async (
         configuration: connectorConfiguration,
       };
     };
-    const pushMessage = async (data: { connector: BasicStoreEntityConnector; work: { id: string } }) => {
+    const pushMessage = async (data: {
+      connector: BasicStoreEntityConnector;
+      work: { id: string };
+    }) => {
       const { connector, work } = data;
       let connectorConfiguration = configuration;
       // In auto mode, if the connector declares an xtm_one_intent and no agent_slug
@@ -533,11 +601,20 @@ export const uploadJobImport = async (
           const agents = await xtmOneClient.listAgentsForIntent(context, connector.xtm_one_intent);
           if (agents.length > 0) {
             const defaultAgent = agents[0];
-            connectorConfiguration = JSON.stringify({ ...existingConfig, agent_slug: defaultAgent.agent_slug });
+            connectorConfiguration = JSON.stringify({
+              ...existingConfig,
+              agent_slug: defaultAgent.agent_slug,
+            });
           } else {
             // Connector cannot be trigger as not agent available
-            logApp.warn('No agent found for connector intent', { connector: connector.name, intent: connector.xtm_one_intent });
-            await reportExpectation(context, user, work.id, { error: 'No agent available for connector intent', source: 'Platform' });
+            logApp.warn('No agent found for connector intent', {
+              connector: connector.name,
+              intent: connector.xtm_one_intent,
+            });
+            await reportExpectation(context, user, work.id, {
+              error: 'No agent available for connector intent',
+              source: 'Platform',
+            });
             return false;
           }
         }
@@ -576,7 +653,9 @@ const triggerJobImport = async (
     // confidence control on the context entity (like a report) if we want auto-enrichment
     // noThrow ; we do not want to fail here as it's an automatic process.
     // we will simply not start the job
-    const isConfidenceMatch = entityContext ? controlUserConfidenceAgainstElement(user, entityContext, true) : true;
+    const isConfidenceMatch = entityContext
+      ? controlUserConfidenceAgainstElement(user, entityContext, true)
+      : true;
 
     // Trigger an enrich job for import file if needed
     if (isConfidenceMatch) {
@@ -606,12 +685,24 @@ export const upload = async (
   fileUpload: FileUploadData,
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
-  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
-  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const normalized_file_markings = file_markings?.map((m) => {
-    const marking = markings.get(m);
-    return marking ? marking.internal_id : m;
-  }) ?? [];
+  const {
+    entity,
+    meta = {},
+    noTriggerImport = false,
+    errorOnExisting = false,
+    file_markings = [],
+    importContextEntities = [],
+  } = opts;
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
+  const normalized_file_markings =
+    file_markings?.map((m) => {
+      const marking = markings.get(m);
+      return marking ? marking.internal_id : m;
+    }) ?? [];
   const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
   // Verify markings
   for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
@@ -648,18 +739,30 @@ export const upload = async (
     key = currentFile.internal_id;
     // If the file content is identical, we don't upload
     if ((currentFile.metaData as FileMetadata).sha256 === sha256) {
-      return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
+      return {
+        upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile,
+        untouched: true,
+      };
     }
     // keep version handling backward compatible, if the existing file version is newer or equal than the uploaded one, we skip the upload
-    if (utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(metadata.version as string))) {
-      return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
+    if (
+      utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(
+        utcDate(metadata.version as string),
+      )
+    ) {
+      return {
+        upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile,
+        untouched: true,
+      };
     }
     if (errorOnExisting) {
       throw FunctionalError('A file already exists with this name');
     }
   }
 
-  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
+  const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id
+    ? (currentFile.metaData as FileMetadata).creator_id
+    : user.id;
 
   // Upload the data from the buffered content
   const uploadReadStream = createReadStream();
@@ -689,7 +792,8 @@ export const upload = async (
   };
   await indexFileToDocument(context, file);
 
-  const isFilePathForImportEnrichment = filePath.startsWith('import/') && !filePath.startsWith('import/pending');
+  const isFilePathForImportEnrichment =
+    filePath.startsWith('import/') && !filePath.startsWith('import/pending');
   if (!noTriggerImport && isFilePathForImportEnrichment) {
     // Trigger import on file context entities : either specified importContextEntities or file entity or global import
     // Entities for job import can depend on context (ex: report containing the external reference)
@@ -739,7 +843,13 @@ export interface FileUploadData {
  * @param fileUpload
  * @param opts
  */
-export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: string, fileUpload: FileUploadData, opts: FileUploadOpts) => {
+export const uploadToStorage = (
+  context: AuthContext,
+  user: AuthUser,
+  filePath: string,
+  fileUpload: FileUploadData,
+  opts: FileUploadOpts,
+) => {
   return upload(context, user, filePath, fileUpload, opts);
 };
 
@@ -750,21 +860,43 @@ export const uploadToStorage = (context: AuthContext, user: AuthUser, filePath: 
  * @param s3FileName target name on s3, can be different from local filename.
  * @param mimeType
  */
-export const fileToReadStream = (localFilePath: string, localFileName: string, s3FileName: string, mimeType: string) => {
+export const fileToReadStream = (
+  localFilePath: string,
+  localFileName: string,
+  s3FileName: string,
+  mimeType: string,
+) => {
   const fullPathFile = join(localFilePath, localFileName);
   const buffer = fs.readFileSync(fullPathFile);
-  return { createReadStream: () => Readable.from(buffer), filename: s3FileName, mimetype: mimeType };
+  return {
+    createReadStream: () => Readable.from(buffer),
+    filename: s3FileName,
+    mimetype: mimeType,
+  };
 };
 
-export const ALL_ROOT_FOLDERS = [SUPPORT_STORAGE_PATH, IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH];
-export const ALL_MERGEABLE_FOLDERS = [IMPORT_STORAGE_PATH, EXPORT_STORAGE_PATH, FROM_TEMPLATE_STORAGE_PATH];
+export const ALL_ROOT_FOLDERS = [
+  SUPPORT_STORAGE_PATH,
+  IMPORT_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+];
+export const ALL_MERGEABLE_FOLDERS = [
+  IMPORT_STORAGE_PATH,
+  EXPORT_STORAGE_PATH,
+  FROM_TEMPLATE_STORAGE_PATH,
+];
 /**
  * Delete all files in storage that relates to an element.
  * @param context
  * @param user
  * @param element
  */
-export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser, element: BasicStoreObject) => {
+export const deleteAllObjectFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreObject,
+) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for ${element.internal_id}`);
   let ids: string[];
   if (element.entity_type === ENTITY_TYPE_SUPPORT_PACKAGE) {
@@ -790,20 +922,29 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
 
     // Also delete workbenches linked to this entity (files in import/pending with metaData.entity_id)
     const pendingPath = `${IMPORT_STORAGE_PATH}/pending/`;
-    const pendingFilesPromise = allFilesForPaths(context, user, [pendingPath], { entity_id: element.internal_id });
+    const pendingFilesPromise = allFilesForPaths(context, user, [pendingPath], {
+      entity_id: element.internal_id,
+    });
 
-    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, pendingFiles] = await Promise.all([
-      importFilesPromise,
-      embeddedFilesPromise,
-      exportFilesPromise,
-      fromTemplateFilesPromise,
-      pendingFilesPromise,
-      importWorkPromise,
-      embeddedWorkPromise,
-      exportWorkPromise,
-      fromTemplateWorkPromise,
-    ]);
-    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles, ...pendingFiles].map((file) => file.id);
+    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, pendingFiles] =
+      await Promise.all([
+        importFilesPromise,
+        embeddedFilesPromise,
+        exportFilesPromise,
+        fromTemplateFilesPromise,
+        pendingFilesPromise,
+        importWorkPromise,
+        embeddedWorkPromise,
+        exportWorkPromise,
+        fromTemplateWorkPromise,
+      ]);
+    ids = [
+      ...importFiles,
+      ...embeddedFiles,
+      ...exportFiles,
+      ...fromTemplateFiles,
+      ...pendingFiles,
+    ].map((file) => file.id);
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);
@@ -815,7 +956,11 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
  * @param user
  * @param draftId
  */
-export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, draftId: string) => {
+export const deleteAllDraftFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  draftId: string,
+) => {
   logApp.debug(`[FILE STORAGE] deleting all storage files for draft ${draftId}`);
   const contextInDraft = { ...context, draft_context: draftId };
   const draftFiles = await allFilesForPaths(contextInDraft, user, [getDraftFilePrefix(draftId)]);
@@ -833,7 +978,10 @@ export const deleteAllDraftFiles = async (context: AuthContext, user: AuthUser, 
 export const deleteAllBucketContent = async (context: AuthContext, user: AuthUser) => {
   for (let i = 0; i < ALL_ROOT_FOLDERS.length; i += 1) {
     const folder = ALL_ROOT_FOLDERS[i];
-    const allFiles = await loadedFilesListing(context, user, `${folder}/`, { recursive: true, dontThrow: true });
+    const allFiles = await loadedFilesListing(context, user, `${folder}/`, {
+      recursive: true,
+      dontThrow: true,
+    });
     const ids = [];
     for (let fileI = 0; fileI < allFiles.length; fileI += 1) {
       const currentFile = allFiles[fileI];
@@ -859,7 +1007,12 @@ export const deleteAllBucketContent = async (context: AuthContext, user: AuthUse
  * @param sourceEntity
  * @param targetEntity
  */
-export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user: AuthUser, sourceEntity: BasicStoreBase, targetEntity: BasicStoreBase) => {
+export const moveAllFilesFromEntityToAnother = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceEntity: BasicStoreBase,
+  targetEntity: BasicStoreBase,
+) => {
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot merge all files in draft');
   }
@@ -875,11 +1028,17 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
       for (let fileI = 0; fileI < importFilesToMove.length; fileI += 1) {
         const sourceFileDocument = importFilesToMove[fileI];
         const sourceFileName = sourceFileDocument.name;
-        if (!targetFilesNames.includes(sourceFileName)) { // move the file only if no files with this name already exist in target
+        if (!targetFilesNames.includes(sourceFileName)) {
+          // move the file only if no files with this name already exist in target
           const sourceFileS3Id = `${sourcePath}/${sourceFileName}`;
           const targetFileS3Id = `${targetPath}/${sourceFileName}`;
           logApp.info(`[FILE STORAGE] Moving from ${sourceFileS3Id} to: ${targetFileS3Id}`);
-          const copyProps = { sourceId: sourceFileS3Id, targetId: targetFileS3Id, sourceDocument: sourceFileDocument, targetEntityId: targetEntity.internal_id };
+          const copyProps = {
+            sourceId: sourceFileS3Id,
+            targetId: targetFileS3Id,
+            sourceDocument: sourceFileDocument,
+            targetEntityId: targetEntity.internal_id,
+          };
           const newFile = await copyFile(context, copyProps);
           if (newFile) {
             const newFileForEntity = storeFileConverter(user, newFile);
@@ -890,7 +1049,13 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
         }
       }
     } catch (err) {
-      logApp.error('[FILE STORAGE] Merge of files failed', { cause: err, user_id: user.id, sourceEntity, targetEntity, folder: ALL_MERGEABLE_FOLDERS[folderI] });
+      logApp.error('[FILE STORAGE] Merge of files failed', {
+        cause: err,
+        user_id: user.id,
+        sourceEntity,
+        targetEntity,
+        folder: ALL_MERGEABLE_FOLDERS[folderI],
+      });
     }
   }
 

@@ -28,9 +28,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
 }) => {
   const { t_i18n } = useFormatter();
 
-  const valueString = entityType
-    ? t_i18n(`entity_${entityType}`)
-    : t_i18n('Entity');
+  const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
   const defaultButtonValue = t_i18n('', {
     id: 'Create ...',
     values: { entity_type: valueString },
@@ -45,10 +43,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
     setOpen((prev) => !prev);
   };
 
-  const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLLIElement>,
-    index: number,
-  ) => {
+  const handleMenuItemClick = (event: React.MouseEvent<HTMLLIElement>, index: number) => {
     setOpen(false);
     setSelectedIndex(index);
 
@@ -60,9 +55,9 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
 
   const handleClose = (event: MouseEvent | TouchEvent) => {
     if (
-      anchorRef.current
-      && event.target instanceof Node
-      && anchorRef.current.contains(event.target)
+      anchorRef.current &&
+      event.target instanceof Node &&
+      anchorRef.current.contains(event.target)
     ) {
       return;
     }
@@ -105,25 +100,17 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
             <Grow
               {...TransitionProps}
               style={{
-                transformOrigin:
-                  placement === 'bottom'
-                    ? 'center top'
-                    : 'center bottom',
+                transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
               }}
             >
               <Paper sx={{ minWidth: anchorRef.current?.offsetWidth }}>
                 <ClickAwayListener onClickAway={handleClose}>
-                  <MenuList
-                    id="create-split-button-menu"
-                    autoFocusItem
-                  >
+                  <MenuList id="create-split-button-menu" autoFocusItem>
                     {options.map((option, index) => (
                       <MenuItem
                         key={option}
                         selected={index === selectedIndex}
-                        onClick={(event) =>
-                          handleMenuItemClick(event, index)
-                        }
+                        onClick={(event) => handleMenuItemClick(event, index)}
                       >
                         {t_i18n(option)}
                       </MenuItem>

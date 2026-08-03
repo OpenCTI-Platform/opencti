@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getRelationsFromOneEntityToAny, resolveRelationsTypes, resolveTypesForRelationshipRef } from './Relation';
+import {
+  getRelationsFromOneEntityToAny,
+  resolveRelationsTypes,
+  resolveTypesForRelationshipRef,
+} from './Relation';
 import { type SchemaType } from './hooks/useAuth';
 
 // Subset of schemas to tests utilities
@@ -21,7 +25,8 @@ const testSchema: SchemaType = {
     ['Basic-Object', new Map()],
     ['Container', new Map()],
     ['Attack-Pattern', new Map()],
-    ['Campaign', new Map()]]),
+    ['Campaign', new Map()],
+  ]),
   schemaRelationsRefTypesMapping: new Map([
     ['*_Case-Incident', [{ name: 'createdBy', toTypes: ['Individual'] }]],
     ['*_Case-Rfi', [{ name: 'createdBy', toTypes: ['Individual'] }]],
@@ -86,7 +91,12 @@ const testSchema: SchemaType = {
 
 describe('Test schema utilities functions', () => {
   it('should get all relationType with from and to entity', () => {
-    const relations = resolveRelationsTypes('Campaign', 'Administrative-Area', testSchema.schemaRelationsTypesMapping, true);
+    const relations = resolveRelationsTypes(
+      'Campaign',
+      'Administrative-Area',
+      testSchema.schemaRelationsTypesMapping,
+      true,
+    );
     expect(relations.length).toBe(3);
 
     // contains all expected values
@@ -100,7 +110,12 @@ describe('Test schema utilities functions', () => {
     const result = getRelationsFromOneEntityToAny('Campaign', testSchema);
     expect(result.allPossibleRelations.length).toBe(4);
     const matchesAll = result.allPossibleRelations.filter((relation) => {
-      return relation === 'uses' || relation === 'related-to' || relation === 'originates-from' || relation === 'targets';
+      return (
+        relation === 'uses' ||
+        relation === 'related-to' ||
+        relation === 'originates-from' ||
+        relation === 'targets'
+      );
     });
     expect(matchesAll.length).toBe(4);
 
@@ -115,7 +130,11 @@ describe('Test schema utilities functions', () => {
   });
 
   it('should resolve relationship types for ref with a container', () => {
-    const result = resolveTypesForRelationshipRef(testSchema.schemaRelationsRefTypesMapping, 'Report', 'objects');
+    const result = resolveTypesForRelationshipRef(
+      testSchema.schemaRelationsRefTypesMapping,
+      'Report',
+      'objects',
+    );
     expect(result).toEqual(['Stix-Core-Object']);
   });
 });

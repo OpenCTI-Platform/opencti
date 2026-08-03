@@ -10,12 +10,12 @@ import { insertNode } from '../../../../utils/store';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 
 export const securityPlatformCreationMutation = graphql`
-mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
+  mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
     securityPlatformAdd(input: $input) {
-    id
-        ...SecurityPlatform_securityPlatform
+      id
+      ...SecurityPlatform_securityPlatform
     }
-}
+  }
 `;
 
 interface SecurityPlatformCreationProps {
@@ -29,17 +29,10 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => {
-    insertNode(
-      store,
-      'Pagination_securityPlatforms',
-      paginationOptions,
-      'securityPlatformAdd',
-    );
+    insertNode(store, 'Pagination_securityPlatforms', paginationOptions, 'securityPlatformAdd');
   };
 
-  const CreateSecurityPlatformControlledDial = (
-    props: DrawerControlledDialProps,
-  ) => (
+  const CreateSecurityPlatformControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="SecurityPlatform" {...props} />
   );
 

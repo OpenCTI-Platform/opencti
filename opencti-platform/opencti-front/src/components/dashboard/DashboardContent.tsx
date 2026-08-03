@@ -44,7 +44,8 @@ const DashboardContent = ({
                 border: '2px solid',
                 borderColor: 'primary.main',
                 borderRadius: 1,
-              } }
+              },
+            }
           : {}),
       }}
     >
@@ -56,7 +57,9 @@ const DashboardContent = ({
         dragConfig={{ enabled: isEditable, cancel: '.noDrag' }}
         resizeConfig={{ enabled: isEditable }}
         onLayoutChange={isEditable ? handleLayoutChange : () => true}
-        onResizeStart={isEditable ? (_, layoutItem) => handleResize(layoutItem?.i ?? null) : undefined}
+        onResizeStart={
+          isEditable ? (_, layoutItem) => handleResize(layoutItem?.i ?? null) : undefined
+        }
         onResizeStop={isEditable ? () => handleResize(null) : undefined}
       >
         {widgetsArray.map((widget) => {
@@ -75,7 +78,9 @@ const DashboardContent = ({
 
           return (
             <div key={widget.id}>
-              {isEditable && widget.id === idToResize ? <div /> : (
+              {isEditable && widget.id === idToResize ? (
+                <div />
+              ) : (
                 <DashboardViz
                   widget={widget}
                   host={host}

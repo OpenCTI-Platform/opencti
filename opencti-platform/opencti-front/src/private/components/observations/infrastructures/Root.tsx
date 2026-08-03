@@ -21,7 +21,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
 import InfrastructureDeletion from './InfrastructureDeletion';
 import { PATH_INFRASTRUCTURE, PATH_INFRASTRUCTURES } from '@components/common/routes/paths';
@@ -80,7 +83,10 @@ interface RootInfrastructureComponentProps {
   infrastructureId: string;
 }
 
-const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrastructureComponentProps) => {
+const RootInfrastructureComponent = ({
+  queryRef,
+  infrastructureId,
+}: RootInfrastructureComponentProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootInfrastructureSubscription>>(
     () => ({
       subscription,
@@ -99,34 +105,34 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrast
   return (
     <CreateRelationshipContextProvider>
       {infrastructure ? (
-        <div
-          style={{ paddingRight }}
-          data-testid="infrastructure-details-page"
-        >
-          <Breadcrumbs elements={[
-            { label: t_i18n('Observations') },
-            { label: t_i18n('Infrastructures'), link: PATH_INFRASTRUCTURES },
-            { label: infrastructure.name, current: true },
-          ]}
+        <div style={{ paddingRight }} data-testid="infrastructure-details-page">
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Observations') },
+              { label: t_i18n('Infrastructures'), link: PATH_INFRASTRUCTURES },
+              { label: infrastructure.name, current: true },
+            ]}
           />
           <StixDomainObjectHeader
             entityType="Infrastructure"
             stixDomainObject={infrastructure}
-            EditComponent={(
+            EditComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <InfrastructureEdition infrastructureId={infrastructure.id} />
               </Security>
-            )}
-            RelateComponent={(
+            }
+            RelateComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <StixCoreRelationshipCreationFromEntityHeader
-                  data={infrastructure}
-                />
+                <StixCoreRelationshipCreationFromEntityHeader data={infrastructure} />
               </Security>
-            )}
+            }
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                <InfrastructureDeletion id={infrastructure.id} isOpen={isOpen} handleClose={onClose} />
+                <InfrastructureDeletion
+                  id={infrastructure.id}
+                  isOpen={isOpen}
+                  handleClose={onClose}
+                />
               </Security>
             )}
             enableQuickSubscription={true}
@@ -143,11 +149,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrast
                   <InfrastructureKnowledge infrastructure={infrastructure} />
                 </div>
               ),
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={infrastructure}
-                />
-              ),
+              content: <StixCoreObjectContentRoot stixCoreObject={infrastructure} />,
               analyses: (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
@@ -161,11 +163,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrast
                   entity={infrastructure}
                 />
               ),
-              history: (
-                <StixCoreObjectHistory
-                  stixCoreObjectId={infrastructureId}
-                />
-              ),
+              history: <StixCoreObjectHistory stixCoreObjectId={infrastructureId} />,
             }}
           />
         </div>
@@ -178,18 +176,14 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }: RootInfrast
 
 const RootInfrastructure = () => {
   const { infrastructureId } = useParams() as { infrastructureId: string };
-  const queryRef = useQueryLoading<RootInfrastructureQuery>(
-    infrastructureQuery,
-    { id: infrastructureId },
-  );
+  const queryRef = useQueryLoading<RootInfrastructureQuery>(infrastructureQuery, {
+    id: infrastructureId,
+  });
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-          <RootInfrastructureComponent
-            queryRef={queryRef}
-            infrastructureId={infrastructureId}
-          />
+          <RootInfrastructureComponent queryRef={queryRef} infrastructureId={infrastructureId} />
         </React.Suspense>
       )}
     </>

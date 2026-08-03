@@ -46,20 +46,18 @@ const SwitchField = (props) => {
       <FormGroup>
         <FormControlLabel
           style={{ width: 'fit-content' }}
-          control={(
+          control={
             <MuiSwitch
               {...fieldToSwitch(props)}
               onChange={internalOnChange}
               onBlur={internalOnBlur}
             />
-          )}
+          }
           label={
             tooltip ? (
               <div style={{ display: 'flex' }}>
                 <span>{props.label}</span>
-                <Tooltip
-                  title={t_i18n(tooltip)}
-                >
+                <Tooltip title={t_i18n(tooltip)}>
                   <InformationOutline
                     fontSize="small"
                     color="primary"

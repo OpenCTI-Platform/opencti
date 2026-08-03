@@ -18,7 +18,12 @@ vi.mock('react-relay', async () => {
 // ── Silence MESSAGING$ side-effects ─────────────────────────────────────────
 
 vi.mock('../../relay/environment', () => ({
-  MESSAGING$: { notifyError: vi.fn(), notifyRelayError: vi.fn(), notifyCustomRelayError: vi.fn(), notifySuccess: vi.fn() },
+  MESSAGING$: {
+    notifyError: vi.fn(),
+    notifyRelayError: vi.fn(),
+    notifyCustomRelayError: vi.fn(),
+    notifySuccess: vi.fn(),
+  },
   relayErrorHandling: vi.fn(),
 }));
 

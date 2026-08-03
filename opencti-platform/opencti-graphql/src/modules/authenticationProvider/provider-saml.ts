@@ -1,4 +1,8 @@
-import type { ProviderMeta, SamlStoreConfiguration, SecretProvider } from './authenticationProvider-types';
+import type {
+  ProviderMeta,
+  SamlStoreConfiguration,
+  SecretProvider,
+} from './authenticationProvider-types';
 import { AuthenticationProviderError, type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType } from './providers-configuration';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
@@ -8,7 +12,11 @@ import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain'
 import { getBaseUrl } from '../../config/conf';
 import { handleProviderLogin } from './providers';
 
-export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration, secretsProvider: SecretProvider): Promise<PassportSamlConfig> => ({
+export const buildSAMLOptions = async (
+  meta: ProviderMeta,
+  conf: SamlStoreConfiguration,
+  secretsProvider: SecretProvider,
+): Promise<PassportSamlConfig> => ({
   name: meta.name,
   entryPoint: conf.entry_point,
   issuer: conf.issuer,
@@ -31,7 +39,11 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   ...flatExtraConf(conf.extra_conf),
 });
 
-export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: SamlStoreConfiguration) => {
+export const createSAMLStrategy = async (
+  logger: AuthenticationProviderLogger,
+  meta: ProviderMeta,
+  conf: SamlStoreConfiguration,
+) => {
   const secretsProvider = await retrieveSecrets(conf);
   const samlOptions = await buildSAMLOptions(meta, conf, secretsProvider);
   const mapper = createMapper(conf);

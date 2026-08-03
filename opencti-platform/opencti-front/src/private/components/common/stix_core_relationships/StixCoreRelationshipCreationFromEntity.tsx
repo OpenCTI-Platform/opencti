@@ -3,12 +3,8 @@ import IconButton from '@common/button/IconButton';
 import BulkRelationDialogContainer from '@components/common/bulk/dialog/BulkRelationDialogContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { StixCoreRelationshipCreationFromEntityQuery$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
-import {
-  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
-import {
-  StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
+import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
 import makeStyles from '@mui/styles/makeStyles';
@@ -37,9 +33,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import { insertNode } from '../../../../utils/store';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
-import {
-  type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
-} from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import { type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -62,15 +56,15 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery = g
     $filters: FilterGroup
   ) {
     ...StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment = graphql`
@@ -83,7 +77,10 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment 
     orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesRefetchQuery") {
+  )
+  @refetchable(
+    queryName: "StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesRefetchQuery"
+  ) {
     stixCoreObjects(
       types: $types
       search: $search
@@ -188,7 +185,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       description
       x_opencti_aliases
     }
-    ... on SecurityPlatform{
+    ... on SecurityPlatform {
       name
       description
       security_platform_type
@@ -325,7 +322,6 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       name
     }
   }
-
 `;
 
 export const stixCoreRelationshipCreationFromEntityQuery = graphql`
@@ -436,9 +432,7 @@ export const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
 `;
 
 export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
-  mutation StixCoreRelationshipCreationFromEntityToMutation(
-    $input: StixCoreRelationshipAddInput!
-  ) {
+  mutation StixCoreRelationshipCreationFromEntityToMutation($input: StixCoreRelationshipAddInput!) {
     stixCoreRelationshipAdd(input: $input) {
       ...EntityStixCoreRelationshipLineAll_node
     }
@@ -483,7 +477,9 @@ export interface TargetEntity {
   name?: string;
 }
 
-const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {
+const StixCoreRelationshipCreationFromEntity: FunctionComponent<
+  StixCoreRelationshipCreationFromEntityProps
+> = (props) => {
   const {
     targetEntities: targetEntitiesProps = [],
     entityId,
@@ -513,8 +509,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   ];
   let virtualEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
   if (
-    (targetStixDomainObjectTypes ?? []).length > 0
-    && (targetStixCyberObservableTypes ?? []).length === 0
+    (targetStixDomainObjectTypes ?? []).length > 0 &&
+    (targetStixCyberObservableTypes ?? []).length === 0
   ) {
     isOnlySDOs = true;
     virtualEntityTypes = targetStixDomainObjectTypes;
@@ -522,8 +518,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       actualTypeFilterValues = targetStixDomainObjectTypes;
     }
   } else if (
-    (targetStixCyberObservableTypes ?? []).length > 0
-    && (targetStixDomainObjectTypes ?? []).length === 0
+    (targetStixCyberObservableTypes ?? []).length > 0 &&
+    (targetStixDomainObjectTypes ?? []).length === 0
   ) {
     isOnlySCOs = true;
     virtualEntityTypes = targetStixCyberObservableTypes;
@@ -531,13 +527,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       actualTypeFilterValues = targetStixCyberObservableTypes;
     }
   } else if (
-    (targetStixCyberObservableTypes ?? []).length > 0
-    && (targetStixDomainObjectTypes ?? []).length > 0
+    (targetStixCyberObservableTypes ?? []).length > 0 &&
+    (targetStixDomainObjectTypes ?? []).length > 0
   ) {
-    virtualEntityTypes = [
-      ...targetStixDomainObjectTypes,
-      ...targetStixCyberObservableTypes,
-    ];
+    virtualEntityTypes = [...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes];
   }
 
   const classes = useStyles();
@@ -546,7 +539,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
   const [targetEntities, setTargetEntities] = useState(targetEntitiesProps);
   useEffect(() => {
-    if (!R.equals(targetEntitiesProps, targetEntities) && targetEntitiesProps.length > targetEntities.length) {
+    if (
+      !R.equals(targetEntitiesProps, targetEntities) &&
+      targetEntitiesProps.length > targetEntities.length
+    ) {
       setTargetEntities(targetEntitiesProps);
       setStep(targetEntitiesProps.length === 0 ? 0 : 1);
       setOpen(targetEntitiesProps.length !== 0);
@@ -557,16 +553,22 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   const containerRef = useRef(null);
 
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {},
-    true,
-  );
-  const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
+  const { viewStorage, helpers } =
+    usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      {},
+      true,
+    );
+  const {
+    searchTerm = '',
+    orderAsc: storageOrderAsc,
+    sortBy: storageSortBy,
+    filters,
+  } = viewStorage;
 
   useEffect(() => {
-    if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
-    if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
+    if (storageSortBy && storageSortBy !== sortBy) setSortBy(storageSortBy);
+    if (storageOrderAsc !== undefined && storageOrderAsc !== orderAsc) setOrderAsc(storageOrderAsc);
   }, [storageOrderAsc, storageSortBy]);
 
   const handleClose = () => {
@@ -599,13 +601,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           }
 
           if (currentView === 'relationships') {
-            insertNode(
-              store,
-              connKey,
-              paginationOptions,
-              'stixCoreRelationshipAdd',
-              objectId,
-            );
+            insertNode(store, connKey, paginationOptions, 'stixCoreRelationshipAdd', objectId);
           }
         },
         optimisticUpdater: undefined,
@@ -621,7 +617,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     });
   };
 
-  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = async (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = async (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
       const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
@@ -636,10 +635,18 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         R.assoc('createdBy', values.createdBy?.value),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
         R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-        isCoverage && values.coverage_information ? R.assoc('coverage_information', values.coverage_information.map((c) => ({
-          coverage_name: c.coverage_name,
-          coverage_score: typeof c.coverage_score === 'string' ? parseInt(c.coverage_score, 10) : c.coverage_score,
-        }))) : R.identity,
+        isCoverage && values.coverage_information
+          ? R.assoc(
+              'coverage_information',
+              values.coverage_information.map((c) => ({
+                coverage_name: c.coverage_name,
+                coverage_score:
+                  typeof c.coverage_score === 'string'
+                    ? parseInt(c.coverage_score, 10)
+                    : c.coverage_score,
+              })),
+            )
+          : R.identity,
       )(values);
       try {
         await commit(finalValues);
@@ -666,9 +673,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setStep(1);
   };
 
-  const {
-    selectedElements,
-  } = useEntityToggle(LOCAL_STORAGE_KEY);
+  const { selectedElements } = useEntityToggle(LOCAL_STORAGE_KEY);
 
   useEffect(() => {
     const newTargetEntities: TargetEntity[] = Object.values(selectedElements).map((item) => ({
@@ -717,10 +722,14 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     orderMode: orderAsc ? 'asc' : 'desc',
   } as PaginationOptions;
 
-  const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>(
-    stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
-    { ...searchPaginationOptions, count: 100 } as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
-  );
+  const queryRef =
+    useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>(
+      stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
+      {
+        ...searchPaginationOptions,
+        count: 100,
+      } as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
+    );
 
   const preloadedPaginationProps = {
     linesQuery: stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
@@ -741,7 +750,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           height: '100%',
         }}
       >
-        <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
+        <div
+          data-testid="stixCoreRelationshipCreationFromEntity-component"
+          className={classes.container}
+        >
           <UserContext.Consumer>
             {({ platformModuleHelpers }) => (
               <>
@@ -755,17 +767,24 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       variant={DataTableVariant.inline}
                       rootRef={tableRootRef ?? undefined}
                       dataColumns={buildColumns(platformModuleHelpers)}
-                      resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+                      resolvePath={(
+                        data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data,
+                      ) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
                       storageKey={LOCAL_STORAGE_KEY}
-                      lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+                      lineFragment={
+                        stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment
+                      }
                       initialValues={{}}
                       contextFilters={contextFilters}
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
                       availableEntityTypes={virtualEntityTypes}
-                      additionalHeaderButtons={[(
+                      additionalHeaderButtons={[
                         <BulkRelationDialogContainer
-                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
+                          targetObjectTypes={[
+                            ...targetStixDomainObjectTypes,
+                            ...targetStixCyberObservableTypes,
+                          ]}
                           paginationOptions={searchPaginationOptions}
                           paginationKey="Pagination_stixCoreObjects"
                           key="BulkRelationDialogContainer"
@@ -775,16 +794,15 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                           defaultRelationshipType={allowedRelationshipTypes?.[0]}
                           selectedEntities={targetEntities}
                           onBulkCreate={handleClose}
-                        />
-                      ), (
+                        />,
                         <StixCoreRelationshipCreationHeaderButtons
                           key="headerButton"
                           showSDOs={!isOnlySDOs}
                           showSCOs={!isOnlySCOs}
                           actualTypeFilterValues={actualTypeFilterValues}
                           searchPaginationOptions={searchPaginationOptions}
-                        />
-                      )]}
+                        />,
+                      ]}
                     />
                   </div>
                 )}
@@ -818,16 +836,19 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
-            fromEntities[0].entity_type,
-            toEntities[0].entity_type,
-            schema?.schemaRelationsTypesMapping ?? new Map(),
-          ).filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes('stix-core-relationship')
-              || allowedRelationshipTypes.includes(n),
-          ));
+          const relationshipTypes = R.uniq(
+            resolveRelationsTypes(
+              fromEntities[0].entity_type,
+              toEntities[0].entity_type,
+              schema?.schemaRelationsTypesMapping ?? new Map(),
+            ).filter(
+              (n) =>
+                R.isNil(allowedRelationshipTypes) ||
+                allowedRelationshipTypes.length === 0 ||
+                allowedRelationshipTypes.includes('stix-core-relationship') ||
+                allowedRelationshipTypes.includes(n),
+            ),
+          );
           return (
             <StixCoreRelationshipCreationForm
               fromEntities={fromEntities}
@@ -869,11 +890,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   return (
     <>
       {variant === 'inLine' && (
-        <IconButton
-          aria-label="Label"
-          onClick={() => setOpen(true)}
-          size="small"
-        >
+        <IconButton aria-label="Label" onClick={() => setOpen(true)} size="small">
           <Add fontSize="small" />
         </IconButton>
       )}
@@ -887,7 +904,11 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           <QueryRenderer
             query={stixCoreRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
-            render={({ props: renderProps }: ({ props: StixCoreRelationshipCreationFromEntityQuery$data })) => {
+            render={({
+              props: renderProps,
+            }: {
+              props: StixCoreRelationshipCreationFromEntityQuery$data;
+            }) => {
               if (renderProps && renderProps.stixCoreObject) {
                 const { name, entity_type, observable_value } = renderProps.stixCoreObject;
                 return (

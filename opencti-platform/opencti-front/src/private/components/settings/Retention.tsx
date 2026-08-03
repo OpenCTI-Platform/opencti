@@ -1,7 +1,10 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { RetentionLinesPaginationQuery, RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
+import {
+  RetentionLinesPaginationQuery,
+  RetentionLinesPaginationQuery$variables,
+} from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLineDummy } from './retention/RetentionLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
@@ -88,10 +91,19 @@ const Retention = () => {
       </div>
     );
   }
-  const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(RetentionLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(
+    RetentionLinesQuery,
+    paginationOptions,
+  );
   return (
     <div className={classes.container} data-testid="retention-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Retention'), current: true },
+        ]}
+      />
       <ListLines
         dataColumns={dataColumns}
         handleSearch={storageHelpers.handleSearch}
@@ -106,7 +118,7 @@ const Retention = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -114,7 +126,7 @@ const Retention = () => {
                     <RetentionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <RetentionLines
               queryRef={queryRef}

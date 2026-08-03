@@ -40,9 +40,13 @@ interface ExternalReferencePopoverProps {
   variant?: string;
 }
 
-const ExternalReferencePopover: FunctionComponent<
-  ExternalReferencePopoverProps
-> = ({ id, objectId, handleRemove, isExternalReferenceAttachment, variant }) => {
+const ExternalReferencePopover: FunctionComponent<ExternalReferencePopoverProps> = ({
+  id,
+  objectId,
+  handleRemove,
+  isExternalReferenceAttachment,
+  variant,
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
@@ -71,13 +75,7 @@ const ExternalReferencePopover: FunctionComponent<
       },
       updater: (store) => {
         if (handleRemove && objectId) {
-          deleteNodeFromId(
-            store,
-            objectId,
-            'Pagination_externalReferences',
-            undefined,
-            id,
-          );
+          deleteNodeFromId(store, objectId, 'Pagination_externalReferences', undefined, id);
         }
       },
       onCompleted: () => {
@@ -105,11 +103,7 @@ const ExternalReferencePopover: FunctionComponent<
           <MoreVertOutlined />
         </IconButton>
       ) : (
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
+        <ToggleButton value="popover" size="small" onClick={handleOpen}>
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
       )}
@@ -130,11 +124,7 @@ const ExternalReferencePopover: FunctionComponent<
       <QueryRenderer
         query={externalReferenceEditionQuery}
         variables={{ id }}
-        render={({
-          props,
-        }: {
-          props: ExternalReferencePopoverEditionQuery$data;
-        }) => {
+        render={({ props }: { props: ExternalReferencePopoverEditionQuery$data }) => {
           if (props && props.externalReference) {
             return (
               <ExternalReferenceEditionContainer
@@ -151,9 +141,15 @@ const ExternalReferencePopover: FunctionComponent<
         deletion={deletion}
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this external reference?')}
-        warning={isExternalReferenceAttachment
-          ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
-          : undefined}
+        warning={
+          isExternalReferenceAttachment
+            ? {
+                message: t_i18n(
+                  'This external reference is linked to a file. If you delete it, the file will be deleted as well.',
+                ),
+              }
+            : undefined
+        }
       />
     </>
   );

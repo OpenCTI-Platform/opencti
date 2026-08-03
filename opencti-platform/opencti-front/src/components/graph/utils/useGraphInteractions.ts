@@ -2,7 +2,10 @@ import { NodeObject } from 'react-force-graph-2d';
 import { useGraphContext } from '../GraphContext';
 import { GraphNode, LibGraphProps, GraphState, GraphLink } from '../graph.types';
 import { RectangleSelectionProps } from '../components/RectangleSelection';
-import { getMainRepresentative, getSecondaryRepresentative } from '../../../utils/defaultRepresentatives';
+import {
+  getMainRepresentative,
+  getSecondaryRepresentative,
+} from '../../../utils/defaultRepresentatives';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 
 const useGraphInteractions = () => {
@@ -157,17 +160,26 @@ const useGraphInteractions = () => {
 
   const switchSelectRelationshipMode = () => {
     const selectedNodesIds = selectedNodes.map((n) => n.id);
-    setSelectedLinks((graphData?.links ?? []).filter((l) => {
-      const shouldGetFrom = selectRelationshipMode === null || selectRelationshipMode === 'children';
-      const shouldGetTo = selectRelationshipMode === null || selectRelationshipMode === 'parent';
-      return (shouldGetFrom && selectedNodesIds.includes(l.source_id))
-        || (shouldGetTo && selectedNodesIds.includes(l.target_id));
-    }));
+    setSelectedLinks(
+      (graphData?.links ?? []).filter((l) => {
+        const shouldGetFrom =
+          selectRelationshipMode === null || selectRelationshipMode === 'children';
+        const shouldGetTo = selectRelationshipMode === null || selectRelationshipMode === 'parent';
+        return (
+          (shouldGetFrom && selectedNodesIds.includes(l.source_id)) ||
+          (shouldGetTo && selectedNodesIds.includes(l.target_id))
+        );
+      }),
+    );
 
-    if (selectRelationshipMode === 'children') setGraphStateProp('selectRelationshipMode', 'parent');
-    else if (selectRelationshipMode === 'parent') setGraphStateProp('selectRelationshipMode', 'deselect');
-    else if (selectRelationshipMode === 'deselect') setGraphStateProp('selectRelationshipMode', null);
-    else if (selectRelationshipMode === null) setGraphStateProp('selectRelationshipMode', 'children');
+    if (selectRelationshipMode === 'children')
+      setGraphStateProp('selectRelationshipMode', 'parent');
+    else if (selectRelationshipMode === 'parent')
+      setGraphStateProp('selectRelationshipMode', 'deselect');
+    else if (selectRelationshipMode === 'deselect')
+      setGraphStateProp('selectRelationshipMode', null);
+    else if (selectRelationshipMode === null)
+      setGraphStateProp('selectRelationshipMode', 'children');
   };
 
   const setCorrelationMode = (mode: GraphState['correlationMode']) => {
@@ -308,10 +320,10 @@ const useGraphInteractions = () => {
     if (graphOrigin && graphTarget) {
       const selected = (graphData?.nodes ?? []).filter((node) => {
         return (
-          node.x >= graphOrigin.x
-          && node.x <= graphTarget.x
-          && node.y >= graphOrigin.y
-          && node.y <= graphTarget.y
+          node.x >= graphOrigin.x &&
+          node.x <= graphTarget.x &&
+          node.y >= graphOrigin.y &&
+          node.y <= graphTarget.y
         );
       });
       if (!hasSpecialKey) setSelectedNodes(selected);
@@ -321,7 +333,9 @@ const useGraphInteractions = () => {
 
   const selectByEntityType = (entityType: string) => {
     clearSelection();
-    const matchingNodes = (graphData?.nodes ?? []).filter(({ entity_type }) => entity_type === entityType);
+    const matchingNodes = (graphData?.nodes ?? []).filter(
+      ({ entity_type }) => entity_type === entityType,
+    );
     setSelectedNodes(matchingNodes);
   };
 
@@ -336,9 +350,11 @@ const useGraphInteractions = () => {
     if (search) {
       const searchLow = search.toLowerCase();
       const matchingNodes = (graphData?.nodes ?? []).filter((node) => {
-        return (getMainRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
-          || (getSecondaryRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1
-          || (node.entity_type || '').toLowerCase().indexOf(searchLow) !== -1;
+        return (
+          (getMainRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1 ||
+          (getSecondaryRepresentative(node) || '').toLowerCase().indexOf(searchLow) !== -1 ||
+          (node.entity_type || '').toLowerCase().indexOf(searchLow) !== -1
+        );
       });
       setSelectedNodes(matchingNodes);
     }
@@ -379,15 +395,19 @@ const useGraphInteractions = () => {
   };
 
   const rebuildGraphData = (objects: ObjectToParse[], resetPositions = false) => {
-    const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
-      ? objects.filter((o) => (
-          o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
-        ))
-      : objects;
+    const filteredObjects =
+      context === 'correlation' && graphState.correlationMode === 'observables'
+        ? objects.filter(
+            (o) =>
+              o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable'),
+          )
+        : objects;
     setRawObjects(filteredObjects);
-    setGraphData(context === 'correlation'
-      ? buildCorrelationData(filteredObjects, resetPositions ? {} : rawPositions)
-      : buildGraphData(filteredObjects, resetPositions ? {} : rawPositions));
+    setGraphData(
+      context === 'correlation'
+        ? buildCorrelationData(filteredObjects, resetPositions ? {} : rawPositions)
+        : buildGraphData(filteredObjects, resetPositions ? {} : rawPositions),
+    );
   };
 
   /**
@@ -417,7 +437,7 @@ const useGraphInteractions = () => {
     if (rawObjects.find((o) => o.id === data.id)) {
       return;
     }
-    setRawObjects((old) => ([...old, data]));
+    setRawObjects((old) => [...old, data]);
     const node = buildNode(data, rawPositions);
     setGraphData((oldData) => {
       const withoutExisting = (oldData?.nodes ?? []).filter((n) => n.id !== node.id);
@@ -450,17 +470,27 @@ const useGraphInteractions = () => {
 
   const addLink = (data: ObjectToParse) => {
     if (!rawObjects.find((o) => o.id === data.id)) {
-      setRawObjects((old) => ([...old, data]));
+      setRawObjects((old) => [...old, data]);
     }
     setGraphData((oldData) => {
       let newGraphData = oldData;
       // If the from or the to of the link to add is a relationship displayed as a link
       // add it as a node so the link to add can be drawn properly.
       if (data.from?.relationship_type) {
-        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(newGraphData, rawObjects, rawPositions, data.from);
+        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(
+          newGraphData,
+          rawObjects,
+          rawPositions,
+          data.from,
+        );
       }
       if (data.to?.relationship_type) {
-        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(newGraphData, rawObjects, rawPositions, data.to);
+        newGraphData = buildGraphDataAfterRelationshipLinkToNodeConversion(
+          newGraphData,
+          rawObjects,
+          rawPositions,
+          data.to,
+        );
       }
       // link to add
       const link = buildLink(data);

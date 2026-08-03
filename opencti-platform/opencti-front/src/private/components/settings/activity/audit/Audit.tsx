@@ -24,7 +24,10 @@ import type { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
-import { AuditLinesPaginationQuery, AuditLinesPaginationQuery$variables } from './__generated__/AuditLinesPaginationQuery.graphql';
+import {
+  AuditLinesPaginationQuery,
+  AuditLinesPaginationQuery$variables,
+} from './__generated__/AuditLinesPaginationQuery.graphql';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import AuditLines, { AuditLinesQuery } from './AuditLines';
 import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
@@ -34,7 +37,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { fetchQuery } from '../../../../../relay/environment';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
-import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  SETTINGS_SECURITYACTIVITY,
+} from '../../../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -92,17 +98,12 @@ export const AuditCSVQuery = graphql`
 
 const Audit = () => {
   const classes = useStyles();
-  const csvLink = useRef<
-  CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
-  >(null);
+  const csvLink = useRef<CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }>(null);
   const hasPageRendered = useRef(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const { settings } = useAuth();
-  const hasBothCapabilities = useGranted(
-    [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
-    true,
-  );
+  const hasBothCapabilities = useGranted([SETTINGS_SECURITYACTIVITY, KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Events | Activity | Settings'));
@@ -111,21 +112,19 @@ const Audit = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
-      numberOfElements: { number: 0, symbol: '', original: 0 },
-      filters: emptyFilterGroup,
-      searchTerm: '',
-      sortBy: 'timestamp',
-      orderAsc: false,
-      openExports: false,
-      types: ['Activity'],
-      count: 25,
-    },
-  );
+  } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+    numberOfElements: { number: 0, symbol: '', original: 0 },
+    filters: emptyFilterGroup,
+    searchTerm: '',
+    sortBy: 'timestamp',
+    orderAsc: false,
+    openExports: false,
+    types: ['Activity'],
+    count: 25,
+  });
   const { numberOfElements, filters, searchTerm, sortBy, orderAsc, types } = viewStorage;
-  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
+  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } =
+    useEntityToggle<AuditLine_node$data>(LOCAL_STORAGE_KEY);
   const dataColumns = {
     timestamp: {
       label: 'Timestamp',
@@ -153,10 +152,7 @@ const Audit = () => {
       isSortable: false,
     },
   };
-  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(
-    AuditLinesQuery,
-    paginationOptions,
-  );
+  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(AuditLinesQuery, paginationOptions);
   useEffect(() => {
     if (!loading && hasPageRendered.current) {
       csvLink?.current?.link?.click();
@@ -186,10 +182,8 @@ const Audit = () => {
             user_id: node.user?.id ?? 'undefined',
             user_name: node.user?.name ?? 'undefined',
             context_data_id: node.context_data?.entity_id ?? 'undefined',
-            context_data_entity_type:
-              node.context_data?.entity_type ?? 'undefined',
-            context_data_entity_name:
-              node.context_data?.entity_name ?? 'undefined',
+            context_data_entity_type: node.context_data?.entity_type ?? 'undefined',
+            context_data_entity_name: node.context_data?.entity_name ?? 'undefined',
             context_data_message: node.context_data?.message ?? 'undefined',
           };
         });
@@ -202,7 +196,7 @@ const Audit = () => {
     <div style={{ marginLeft: 10 }}>
       <FormControlLabel
         value="start"
-        control={(
+        control={
           <Checkbox
             style={{ padding: 7 }}
             onChange={() => {
@@ -211,19 +205,22 @@ const Audit = () => {
             }}
             checked={types?.length === 2}
           />
-        )}
+        }
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
     </div>
-  ) : <></>;
+  ) : (
+    <></>
+  );
   return (
     <div className={classes.container} data-testid="audit-page">
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Activity') },
-        { label: t_i18n('Events'), current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Activity') },
+          { label: t_i18n('Events'), current: true },
+        ]}
       />
       {settings.platform_demo && (
         <Alert severity="info" variant="outlined" style={{ marginBottom: 30 }}>
@@ -255,7 +252,7 @@ const Audit = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -263,7 +260,7 @@ const Audit = () => {
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <AuditLines
               queryRef={queryRef}

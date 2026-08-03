@@ -17,13 +17,9 @@ const layoutNodes = (nodes: Node[], edges: Edge[]): Node[] => {
   }
   const hierarchy = stratify<Node>()
     .id((d) => d.id)
-    .parentId((d: Node) => edges.find((e: Edge) => e.target === d.id)?.source)(
-      nodes,
-    );
+    .parentId((d: Node) => edges.find((e: Edge) => e.target === d.id)?.source)(nodes);
   const root = layout(hierarchy);
-  return root
-    .descendants()
-    .map((d) => ({ ...d.data, position: { x: d.x, y: d.y } }));
+  return root.descendants().map((d) => ({ ...d.data, position: { x: d.x, y: d.y } }));
 };
 
 const nodeCountSelector = (state: ReactFlowState) => state.nodeInternals.size;

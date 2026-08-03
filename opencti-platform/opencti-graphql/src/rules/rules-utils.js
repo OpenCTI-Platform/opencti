@@ -27,7 +27,8 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
         { name: 'objectMarking', operation: 'AGG' },
       ];
     }
-    if (entityType === ENTITY_TYPE_INCIDENT) { // RuleSightingIncident
+    if (entityType === ENTITY_TYPE_INCIDENT) {
+      // RuleSightingIncident
       return [
         { name: 'first_seen', operation: 'MIN' },
         { name: 'last_seen', operation: 'MAX' },

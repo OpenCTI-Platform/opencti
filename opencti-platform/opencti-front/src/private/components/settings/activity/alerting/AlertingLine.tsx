@@ -58,25 +58,25 @@ interface AlertingLineProps {
 }
 
 const alertingLineFragment = graphql`
-    fragment AlertingLine_node on Trigger {
-        id
-        name
-        trigger_type
-        description
-        filters
-        created
-        modified
-        notifiers {
-            id
-            name
-        }
-        period
-        trigger_time
-        triggers {
-            id
-            name
-        }
+  fragment AlertingLine_node on Trigger {
+    id
+    name
+    trigger_type
+    description
+    filters
+    created
+    modified
+    notifiers {
+      id
+      name
     }
+    period
+    trigger_time
+    triggers {
+      id
+      name
+    }
+  }
 `;
 
 export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
@@ -89,13 +89,12 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   const { t_i18n, nt } = useFormatter();
   const data = useFragment(alertingLineFragment, node);
   const filters = deserializeFilterGroupForFrontend(data.filters);
-  const currentTime = data.trigger_time?.split('-') ?? [
-    dayStartDate().toISOString(),
-  ];
+  const currentTime = data.trigger_time?.split('-') ?? [dayStartDate().toISOString()];
   const day = currentTime.length > 1 ? currentTime[0] : '1';
-  const time = currentTime.length > 1
-    ? new Date(`2000-01-01T${currentTime[1]}`)
-    : new Date(`2000-01-01T${currentTime[0]}`);
+  const time =
+    currentTime.length > 1
+      ? new Date(`2000-01-01T${currentTime[1]}`)
+      : new Date(`2000-01-01T${currentTime[0]}`);
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon>
@@ -106,34 +105,27 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
         )}
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.trigger_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.trigger_type.width }}>
               <Tag
-                color={data.trigger_type === 'live' ? theme.palette.severity.high : theme.palette.severity.low}
-                label={
+                color={
                   data.trigger_type === 'live'
-                    ? t_i18n('Live trigger')
-                    : t_i18n('Regular digest')
+                    ? theme.palette.severity.high
+                    : theme.palette.severity.low
+                }
+                label={
+                  data.trigger_type === 'live' ? t_i18n('Live trigger') : t_i18n('Regular digest')
                 }
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               {data.name}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.notifiers.width }}
-            >
-              {data.notifiers
-                && data.notifiers.length > 0
-                && data.notifiers
+            <div className={classes.bodyItem} style={{ width: dataColumns.notifiers.width }}>
+              {data.notifiers &&
+                data.notifiers.length > 0 &&
+                data.notifiers
                   .map<React.ReactNode>((n) => (
                     <div
                       key={n.id}
@@ -161,37 +153,37 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 textOverflow="ellipsis"
               >
                 <Tag
-                  label={(
+                  label={
                     <span>
                       <strong>{t_i18n('Period: ')}</strong>
                       {data.period}
                     </span>
-                  )}
+                  }
                 />
                 {currentTime.length > 1 && (
                   <Tag
-                    label={(
+                    label={
                       <span>
                         <strong>{t_i18n('Day: ')}</strong>
                         {day}
                       </span>
-                    )}
+                    }
                   />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
                   <Tag
-                    label={(
+                    label={
                       <span>
                         <strong>{t_i18n('Time: ')}</strong>
                         {nt(time)}
                       </span>
-                    )}
+                    }
                   />
                 )}
               </Stack>
             )}
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <AlertingPopover data={data} paginationOptions={paginationOptions} />
@@ -200,47 +192,34 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
   );
 };
 
-export const AlertingLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const AlertingLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <IconButton aria-label={t_i18n('Open menu')} disabled={true} aria-haspopup="true">
             <MoreVert />
           </IconButton>
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

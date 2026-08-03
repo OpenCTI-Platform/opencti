@@ -1,6 +1,9 @@
 import { NewsFeedLine_node$data } from '@components/profile/__generated__/NewsFeedLine_node.graphql';
 import { NewsFeedLines_data$data } from '@components/profile/__generated__/NewsFeedLines_data.graphql';
-import { NewsFeedLinesPaginationQuery, NewsFeedLinesPaginationQuery$variables } from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
+import {
+  NewsFeedLinesPaginationQuery,
+  NewsFeedLinesPaginationQuery$variables,
+} from '@components/profile/__generated__/NewsFeedLinesPaginationQuery.graphql';
 import { Alert, IconButton, Stack, Tooltip } from '@mui/material';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
@@ -13,9 +16,16 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../utils/filters/filtersUtils';
 import useAuth from '../../../utils/hooks/useAuth';
-import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import {
+  UseLocalStorageHelpers,
+  usePaginationLocalStorage,
+} from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import useChipOverflow from '../integrations/catalog/components/card/usecases/useChipOverflow';
@@ -62,14 +72,14 @@ const newsFeedLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...NewsFeedLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -127,7 +137,9 @@ const markAllNewsFeedItemsAsReadMutation = graphql`
   }
 `;
 
-const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[] }> = ({ tags }) => {
+const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[] }> = ({
+  tags,
+}) => {
   const tagValues = tags.filter(Boolean) as string[];
   const { containerRef, chipRefs, visibleCount, shouldTruncate } = useChipOverflow(tagValues);
   const hiddenCount = tagValues.length - visibleCount;
@@ -135,7 +147,16 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
   return (
     <div
       ref={containerRef}
-      style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', overflow: 'hidden', width: '100%', position: 'relative', gap: 4, height: 20 }}
+      style={{
+        display: 'flex',
+        flexWrap: 'nowrap',
+        alignItems: 'center',
+        overflow: 'hidden',
+        width: '100%',
+        position: 'relative',
+        gap: 4,
+        height: 20,
+      }}
     >
       {/* Hidden measurement row */}
       <Stack direction="row" position="absolute" visibility="hidden" gap={0.5}>
@@ -159,7 +180,10 @@ const TagsCell: FunctionComponent<{ tags: readonly (string | null | undefined)[]
         {shouldTruncate && hiddenCount > 0 && (
           <Tag
             label={`+${hiddenCount}`}
-            tooltipTitle={tagValues.slice(visibleCount).map((tag) => tag.toLowerCase()).join(', ')}
+            tooltipTitle={tagValues
+              .slice(visibleCount)
+              .map((tag) => tag.toLowerCase())
+              .join(', ')}
             sx={{ flexShrink: 0, width: 'fit-content' }}
           />
         )}
@@ -198,7 +222,12 @@ interface NewsFeedComponentProps {
   onNewItem: () => void;
 }
 
-const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem }) => {
+const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({
+  queryRef,
+  helpers,
+  contextFilters,
+  onNewItem,
+}) => {
   const { t_i18n } = useFormatter();
 
   const [commitMarkAllAsRead] = useMutation(markAllNewsFeedItemsAsReadMutation);
@@ -207,18 +236,24 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
     commitMarkAllAsRead({ variables: {} });
   }, [commitMarkAllAsRead]);
 
-  const subConfig = useMemo(() => ({
-    subscription: newsFeedItemSubscription,
-    variables: {},
-    onNext: () => onNewItem(),
-  }), [onNewItem]);
+  const subConfig = useMemo(
+    () => ({
+      subscription: newsFeedItemSubscription,
+      variables: {},
+      onNext: () => onNewItem(),
+    }),
+    [onNewItem],
+  );
   useSubscription(subConfig);
 
-  const deletedSubConfig = useMemo(() => ({
-    subscription: newsFeedItemDeletedSubscription,
-    variables: {},
-    onNext: () => onNewItem(),
-  }), [onNewItem]);
+  const deletedSubConfig = useMemo(
+    () => ({
+      subscription: newsFeedItemDeletedSubscription,
+      variables: {},
+      onNext: () => onNewItem(),
+    }),
+    [onNewItem],
+  );
   useSubscription(deletedSubConfig);
 
   const dataColumns: DataTableProps['dataColumns'] = {
@@ -227,7 +262,10 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       label: 'Type',
       percentWidth: 20,
       isSortable: true,
-      render: ({ news_feed_type }: NewsFeedLine_node$data) => defaultRender(isKnownNewsFeedType(news_feed_type) ? t_i18n(news_feed_type) : t_i18n('Unsupported type')),
+      render: ({ news_feed_type }: NewsFeedLine_node$data) =>
+        defaultRender(
+          isKnownNewsFeedType(news_feed_type) ? t_i18n(news_feed_type) : t_i18n('Unsupported type'),
+        ),
     },
     title: {
       id: 'title',
@@ -235,7 +273,17 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       percentWidth: 35,
       isSortable: true,
       render: ({ title }: NewsFeedLine_node$data) => (
-        <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+        <div
+          style={{
+            height: 20,
+            fontSize: 13,
+            float: 'left',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            paddingRight: 10,
+          }}
+        >
           <Tooltip title={title ?? ''}>
             <span>{title ?? ''}</span>
           </Tooltip>
@@ -247,16 +295,15 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       label: 'Original creation date',
       percentWidth: 20,
       isSortable: true,
-      render: ({ creation_date }: NewsFeedLine_node$data, item) => defaultRender(item.fldt(creation_date)),
+      render: ({ creation_date }: NewsFeedLine_node$data, item) =>
+        defaultRender(item.fldt(creation_date)),
     },
     tags: {
       id: 'tags',
       label: 'Tags',
       percentWidth: 25,
       isSortable: false,
-      render: ({ tags }: NewsFeedLine_node$data) => (
-        <TagsCell tags={tags ?? []} />
-      ),
+      render: ({ tags }: NewsFeedLine_node$data) => <TagsCell tags={tags ?? []} />,
     },
   };
 
@@ -270,10 +317,12 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
 
   return (
     <div>
-      <Alert severity="info" style={{ marginBottom: 16, backgroundColor: 'transparent', border: '1px solid #1976d2' }}>
+      <Alert
+        severity="info"
+        style={{ marginBottom: 16, backgroundColor: 'transparent', border: '1px solid #1976d2' }}
+      >
         {t_i18n('Want to control which news appear here?')}{' '}
-        <strong>{t_i18n('Manage your News Feed preferences')}</strong>{' '}
-        {t_i18n('in your')}{' '}
+        <strong>{t_i18n('Manage your News Feed preferences')}</strong> {t_i18n('in your')}{' '}
         <Link to="/dashboard/profile/me">{t_i18n('profile settings')}</Link>.
       </Alert>
       <DataTable
@@ -300,16 +349,15 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
 const NewsFeed: FunctionComponent = () => {
   const { me } = useAuth();
 
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<NewsFeedLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    newsFeedInitialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<NewsFeedLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      newsFeedInitialValues,
+    );
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['NewsFeedItem']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, [
+    'NewsFeedItem',
+  ]);
   const contextFilters = {
     mode: 'and',
     filters: [

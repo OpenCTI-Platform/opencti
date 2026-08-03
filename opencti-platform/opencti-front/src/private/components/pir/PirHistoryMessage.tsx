@@ -20,19 +20,25 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
 
 export interface PirLog {
-  readonly context_data: {
-    readonly entity_id: string | null | undefined;
-    readonly from_id: string | null | undefined;
-    readonly entity_name: string | null | undefined;
-    readonly entity_type: string | null | undefined;
-    readonly message: string;
-    readonly pir_score: number | null | undefined;
-  } | null | undefined;
+  readonly context_data:
+    | {
+        readonly entity_id: string | null | undefined;
+        readonly from_id: string | null | undefined;
+        readonly entity_name: string | null | undefined;
+        readonly entity_type: string | null | undefined;
+        readonly message: string;
+        readonly pir_score: number | null | undefined;
+      }
+    | null
+    | undefined;
   readonly entity_type: string | null | undefined;
   readonly event_scope: string | null | undefined;
-  readonly user: {
-    readonly name: string;
-  } | null | undefined;
+  readonly user:
+    | {
+        readonly name: string;
+      }
+    | null
+    | undefined;
 }
 
 interface PirHistoryMessageProps {
@@ -64,13 +70,7 @@ const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {
     return `\`${user?.name}\` ${message} ${isUpdate ? `for \`${context_data?.entity_name}\` (${entityType})` : ''}`;
   };
 
-  return (
-    <MarkdownDisplay
-      commonmark
-      remarkGfmPlugin
-      content={getHistoryMessage()}
-    />
-  );
+  return <MarkdownDisplay commonmark remarkGfmPlugin content={getHistoryMessage()} />;
 };
 
 export default PirHistoryMessage;

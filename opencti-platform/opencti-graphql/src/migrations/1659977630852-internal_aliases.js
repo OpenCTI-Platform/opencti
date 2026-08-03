@@ -5,7 +5,8 @@ import { DatabaseError } from '../config/errors';
 export const up = async (next) => {
   const updateQuery = {
     script: {
-      source: 'ctx._source.i_aliases_ids = ctx._source.i_aliases_ids.stream().distinct().collect(Collectors.toList())',
+      source:
+        'ctx._source.i_aliases_ids = ctx._source.i_aliases_ids.stream().distinct().collect(Collectors.toList())',
     },
     query: {
       bool: {
@@ -13,10 +14,13 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration('[MIGRATION] Rewriting aliases', READ_DATA_INDICES, updateQuery)
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { cause: err });
-    });
+  await elUpdateByQueryForMigration(
+    '[MIGRATION] Rewriting aliases',
+    READ_DATA_INDICES,
+    updateQuery,
+  ).catch((err) => {
+    throw DatabaseError('Error updating elastic', { cause: err });
+  });
   next();
 };
 

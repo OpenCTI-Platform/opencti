@@ -115,10 +115,7 @@ const StixRelationshipsPolarAreaComponent = ({
   dataSelection,
   onMounted,
 }: StixRelationshipsPolarAreaComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsPolarAreasDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsPolarAreasDistributionQuery, queryRef);
 
   if (!data?.stixRelationshipsDistribution?.length) {
     return <WidgetNoData />;
@@ -140,7 +137,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsPolarAreaDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -179,7 +177,13 @@ const StixRelationshipsPolarArea = ({
 }: StixRelationshipsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

@@ -54,9 +54,7 @@ export const emptyFilterGroup: FilterGroup = {
 
 export const isFilterFormatCorrect = (filter: Filter) => {
   // TODO complete (regardingOf checks, nested filters checks, within/nil operators checks, etc)
-  return (
-    filter.key && isNotEmptyField(filter.key)
-  );
+  return filter.key && isNotEmptyField(filter.key);
 };
 
 /**
@@ -66,12 +64,15 @@ export const isFilterFormatCorrect = (filter: Filter) => {
  * @param filterGroup
  */
 const isFilterGroupFormatCorrect = (filterGroup: FilterGroup): boolean => {
-  return (filterGroup.mode
-    && ['and', 'or'].includes(filterGroup.mode)
-    && filterGroup.filters && Array.isArray(filterGroup.filters)
-    && filterGroup.filters.every((f) => isFilterFormatCorrect(f))
-    && filterGroup.filterGroups && Array.isArray(filterGroup.filterGroups)
-    && filterGroup.filterGroups.every((fg) => isFilterGroupFormatCorrect(fg))
+  return (
+    filterGroup.mode &&
+    ['and', 'or'].includes(filterGroup.mode) &&
+    filterGroup.filters &&
+    Array.isArray(filterGroup.filters) &&
+    filterGroup.filters.every((f) => isFilterFormatCorrect(f)) &&
+    filterGroup.filterGroups &&
+    Array.isArray(filterGroup.filterGroups) &&
+    filterGroup.filterGroups.every((fg) => isFilterGroupFormatCorrect(fg))
   );
 };
 
@@ -94,7 +95,10 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
     }
     const relative_date_regex = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
     if (values.some((v) => !relative_date_regex.test(v) && !isValidDate(v))) {
-      throw UnsupportedError('The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.', { filter: f });
+      throw UnsupportedError(
+        'The values for filter with "within" operator are not valid: you should provide a datetime or a valid relative date.',
+        { filter: f },
+      );
     }
   });
   // recursively check the syntax of sub filter groups
@@ -107,18 +111,22 @@ export const checkFilterGroupValuesSyntax = (filterGroup: FilterGroup) => {
  * @param filterGroup
  */
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup) => {
-  return filterGroup
-    && (
-      (filterGroup.filters && filterGroup.filters.length > 0)
-      || (filterGroup.filterGroups && filterGroup.filterGroups.length > 0)
-    );
+  return (
+    filterGroup &&
+    ((filterGroup.filters && filterGroup.filters.length > 0) ||
+      (filterGroup.filterGroups && filterGroup.filterGroups.length > 0))
+  );
 };
 
 /**
  * return the filter corresponding to the specified key (and operator if it is specified)
  * among a list of filters
  */
-export const findFiltersFromKey = (filtersList: Filter[], key: string, operator: FilterOperator | null = null) => {
+export const findFiltersFromKey = (
+  filtersList: Filter[],
+  key: string,
+  operator: FilterOperator | null = null,
+) => {
   const foundFilters = [];
   for (let index = 0; index < filtersList.length; index += 1) {
     const filter = filtersList[index];
@@ -149,10 +157,18 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
 /**
  * extract all the filters from a filter group for specified keys
  */
-export const extractFiltersFromGroup = (inputFilters: FilterGroup, keysToKeep: string[]): Filter[] => {
+export const extractFiltersFromGroup = (
+  inputFilters: FilterGroup,
+  keysToKeep: string[],
+): Filter[] => {
   const { filters = [], filterGroups = [] } = inputFilters;
-  const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
-  pushAll(filteredFilters, filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat());
+  const filteredFilters = filters.filter((f) =>
+    Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key),
+  );
+  pushAll(
+    filteredFilters,
+    filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat(),
+  );
   return filteredFilters;
 };
 
@@ -170,15 +186,27 @@ export const extractFilterGroupValues = (
 ): string[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   if (lookInDynamicFilters) {
-    pushAll(keysToKeep, [INSTANCE_DYNAMIC_REGARDING_OF, RELATION_DYNAMIC_TO_FILTER, RELATION_DYNAMIC_FROM_FILTER]);
+    pushAll(keysToKeep, [
+      INSTANCE_DYNAMIC_REGARDING_OF,
+      RELATION_DYNAMIC_TO_FILTER,
+      RELATION_DYNAMIC_FROM_FILTER,
+    ]);
   }
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters: Filter[];
   if (key) {
     filteredFilters = reverse
-      // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
-      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
-      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
+      ? // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
+        filters.filter((f) =>
+          Array.isArray(f.key)
+            ? f.key.every((k) => !keysToKeep.includes(k))
+            : !keysToKeep.includes(f.key),
+        )
+      : filters.filter((f) =>
+          Array.isArray(f.key)
+            ? f.key.some((k) => keysToKeep.includes(k))
+            : keysToKeep.includes(f.key),
+        );
   } else {
     filteredFilters = filters;
   }
@@ -193,10 +221,15 @@ export const extractFilterGroupValues = (
     } else if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF)) {
       // values of 'dynamic' subfilter are filters we should look for
       const dynamicValues = f.values.find((v) => v.key === 'dynamic')?.values ?? [];
-      const dynamicIds = dynamicValues.map((v: FilterGroup) => extractFilterGroupValues(v, key, reverse)).flat();
+      const dynamicIds = dynamicValues
+        .map((v: FilterGroup) => extractFilterGroupValues(v, key, reverse))
+        .flat();
       pushAll(ids, dynamicIds);
       ids.push('dynamic');
-    } else if (f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+    } else if (
+      f.key.includes(RELATION_DYNAMIC_FROM_FILTER) ||
+      f.key.includes(RELATION_DYNAMIC_TO_FILTER)
+    ) {
       // values are filters we should look for
       const dynamicIds = f.values.map((v) => extractFilterGroupValues(v, key, reverse)).flat();
       pushAll(ids, dynamicIds);
@@ -217,28 +250,47 @@ export const extractFilterGroupValues = (
  * if key is specified: extract all the values corresponding to the specified keys
  * if key is specified and reverse=true: extract all the ids NOT corresponding to any key
  */
-export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): FilterGroup[] => {
+export const extractDynamicFilterGroupValues = (
+  inputFilters: FilterGroup,
+  key: string | string[] | null = null,
+  reverse = false,
+): FilterGroup[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
   let filteredFilters: Filter[];
   if (key) {
     filteredFilters = reverse
-    // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
-      ? filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToKeep.includes(k)) : !keysToKeep.includes(f.key)))
-      : filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
+      ? // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
+        filters.filter((f) =>
+          Array.isArray(f.key)
+            ? f.key.every((k) => !keysToKeep.includes(k))
+            : !keysToKeep.includes(f.key),
+        )
+      : filters.filter((f) =>
+          Array.isArray(f.key)
+            ? f.key.some((k) => keysToKeep.includes(k))
+            : keysToKeep.includes(f.key),
+        );
   } else {
     filteredFilters = filters;
   }
   const ids: FilterGroup[] = [];
   // we need to extract the ids that need representatives resolution
   filteredFilters.forEach((f) => {
-    if (f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) || f.key.includes(RELATION_DYNAMIC_FROM_FILTER) || f.key.includes(RELATION_DYNAMIC_TO_FILTER)) {
+    if (
+      f.key.includes(INSTANCE_DYNAMIC_REGARDING_OF) ||
+      f.key.includes(RELATION_DYNAMIC_FROM_FILTER) ||
+      f.key.includes(RELATION_DYNAMIC_TO_FILTER)
+    ) {
       pushAll(ids, f.values);
     }
   });
   // recurse on filter groups
   if (filterGroups.length > 0) {
-    pushAll(ids, filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat());
+    pushAll(
+      ids,
+      filterGroups.map((group) => extractDynamicFilterGroupValues(group, key, reverse)).flat(),
+    );
   }
   return ids;
 };
@@ -246,10 +298,17 @@ export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: 
 /**
  * clear selected key(s) from filters
  */
-export const clearKeyFromFilterGroup = (inputFilters: FilterGroup, key: string | string[]): FilterGroup => {
+export const clearKeyFromFilterGroup = (
+  inputFilters: FilterGroup,
+  key: string | string[],
+): FilterGroup => {
   const keysToRemove = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
-  const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.every((k) => !keysToRemove.includes(k)) : !keysToRemove.includes(f.key)));
+  const filteredFilters = filters.filter((f) =>
+    Array.isArray(f.key)
+      ? f.key.every((k) => !keysToRemove.includes(k))
+      : !keysToRemove.includes(f.key),
+  );
   let filteredFilterGroups: FilterGroup[] = [];
   if (filterGroups.length > 0) {
     filteredFilterGroups = filterGroups.map((group) => clearKeyFromFilterGroup(group, key));
@@ -262,7 +321,13 @@ export const clearKeyFromFilterGroup = (inputFilters: FilterGroup, key: string |
  * If the input filterGroup is not defined, it will return a new filterGroup with only the added filter (and / or).
  * Note that this function does input coercion, accepting string[] and string alike
  */
-export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: string | string[], newValues: string | string[] | undefined | null, operator = 'eq', localMode = 'or'): FilterGroup => {
+export const addFilter = (
+  filterGroup: FilterGroup | undefined | null,
+  newKey: string | string[],
+  newValues: string | string[] | undefined | null,
+  operator = 'eq',
+  localMode = 'or',
+): FilterGroup => {
   const keyArray = Array.isArray(newKey) ? newKey : [newKey];
   let valuesArray: string[] = [];
   if (newValues) {
@@ -295,7 +360,11 @@ const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string
  * @param oldKey
  * @param newKey
  */
-export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string): FilterGroup => {
+export const replaceFilterKey = (
+  filterGroup: FilterGroup,
+  oldKey: string,
+  newKey: string,
+): FilterGroup => {
   return {
     ...filterGroup,
     filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
@@ -368,7 +437,9 @@ export const convertRelationRefsFilterKeys = (filterGroup: FilterGroup): FilterG
 // input: an array of relations names
 // return an array of the converted names in the rel_'database_name' format
 const getConvertedRelationsNames = (relationNames: string[]) => {
-  const convertedRelationsNames = relationNames.map((relationName) => `${REL_INDEX_PREFIX}${relationName}`);
+  const convertedRelationsNames = relationNames.map(
+    (relationName) => `${REL_INDEX_PREFIX}${relationName}`,
+  );
   convertedRelationsNames.push(`${REL_INDEX_PREFIX}*`); // means 'all the relations'
   return convertedRelationsNames;
 };
@@ -396,7 +467,11 @@ export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGro
 /**
  * Replace @me by the user id in filter whose values can contain user ids, and replace eventual label values with label ids
  */
-export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: string, resolvedLabels: Record<string, string>): FilterGroup => {
+export const replaceEnrichValuesInFilters = (
+  filterGroup: FilterGroup,
+  userId: string,
+  resolvedLabels: Record<string, string>,
+): FilterGroup => {
   const newFilters = filterGroup.filters.map((filter) => {
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
@@ -428,7 +503,9 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
   // recursivity on the filter groups
   let newFilterGroups: FilterGroup[] = [];
   if (filterGroup.filterGroups.length > 0) {
-    newFilterGroups = filterGroup.filterGroups.map((fg) => replaceEnrichValuesInFilters(fg, userId, resolvedLabels));
+    newFilterGroups = filterGroup.filterGroups.map((fg) =>
+      replaceEnrichValuesInFilters(fg, userId, resolvedLabels),
+    );
   }
   return {
     ...filterGroup,
@@ -442,8 +519,11 @@ const getAvailableKeys = () => {
   if (!availableKeysCache) {
     const availableAttributes = schemaAttributesDefinition.getAllAttributesNames();
     const availableRefRelations = schemaRelationsRefDefinition.getAllInputNames();
-    const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
-    const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
+    const availableConvertedRefRelations = getConvertedRelationsNames(
+      schemaRelationsRefDefinition.getAllDatabaseName(),
+    );
+    const availableConvertedStixCoreRelationships =
+      getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
     const availableConvertedInternalRelations = getConvertedRelationsNames(INTERNAL_RELATIONSHIPS);
     const availableConvertedMetrics = getMetricsAttributesNames();
     const availableKeys = availableAttributes
@@ -460,30 +540,27 @@ const getAvailableKeys = () => {
   return availableKeysCache;
 };
 
-// A filter key segment (once split on '.') must only contain characters that are legit in a
-// schema attribute / relation / sub-field name.
-const FILTER_KEY_SEGMENT_ALLOWED_CHARS_REGEX = /^[A-Za-z0-9_*-]+$/;
-
 /**
  * Check the filter keys exist in the schema
  */
 const checkFilterKeys = (filterGroup: FilterGroup) => {
   // TODO improvement: check filters keys correspond to the entity types if types is given
-  const allKeys = extractFilterKeys(filterGroup);
-  const malformedKeys = allKeys.filter((k) => k.split('.').some((segment) => !FILTER_KEY_SEGMENT_ALLOWED_CHARS_REGEX.test(segment)));
-  if (malformedKeys.length > 0) {
-    throw UnsupportedError('Incorrect filter keys containing invalid characters', { keys: malformedKeys });
-  }
-  const incorrectKeys = allKeys
-    .map((k) => k.split('.')[0])
-    .filter((k) => !(getAvailableKeys().has(k)
-      || k.startsWith(RULE_PREFIX)
-      || getMetricsAttributesNames().includes(k)
-      || isCustomFieldFilterKey(k)
-    ));
+  const incorrectKeys = extractFilterKeys(filterGroup)
+    .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
+    .filter(
+      (k) =>
+        !(
+          getAvailableKeys().has(k) ||
+          k.startsWith(RULE_PREFIX) ||
+          getMetricsAttributesNames().includes(k) ||
+          isCustomFieldFilterKey(k)
+        ),
+    );
 
   if (incorrectKeys.length > 0) {
-    throw UnsupportedError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    throw UnsupportedError('Incorrect filter keys not existing in any schema definition', {
+      keys: incorrectKeys,
+    });
   }
 };
 
@@ -510,7 +587,12 @@ const computeFilterLabelMap = async (
   context: AuthContext,
   user: AuthUser,
   inputFilterGroup: FilterGroup,
-  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>,
+  idsFinder: (
+    context: AuthContext,
+    user: AuthUser,
+    ids: string[],
+    opts: any,
+  ) => Promise<Record<string, BasicStoreObject>>,
 ) => {
   const resolvedLabels: Record<string, string> = {};
   const labelFilterValues = extractFilterKeyValues(LABEL_FILTER, inputFilterGroup);
@@ -522,7 +604,10 @@ const computeFilterLabelMap = async (
   const generateId = (val: string) => idLabel(prepareLabel(val), isForceLabel(val));
   if (isLabelsByText) {
     const labelByIds = labelFilterValues.map((val) => generateId(val));
-    const mapLabels = await idsFinder(context, user, labelByIds, { toMap: true, mapWithAllIds: true });
+    const mapLabels = await idsFinder(context, user, labelByIds, {
+      toMap: true,
+      mapWithAllIds: true,
+    });
     for (let index = 0; index < labelFilterValues.length; index += 1) {
       const labelFilterValue = labelFilterValues[index];
       resolvedLabels[labelFilterValue] = mapLabels[generateId(labelFilterValue)]?.internal_id;
@@ -531,7 +616,12 @@ const computeFilterLabelMap = async (
   return resolvedLabels;
 };
 
-export type FiltersIdsFinder = (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>;
+export type FiltersIdsFinder = (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  opts: any,
+) => Promise<Record<string, BasicStoreObject>>;
 /**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
@@ -552,7 +642,12 @@ export const checkAndConvertFilters = async (
   const { noFiltersChecking = false, noFiltersConvert = false } = opts;
   checkFiltersValidity(inputFilterGroup, noFiltersChecking);
   // 02. If label filtered by name, try to resolve it.
-  const resolvedLabels: Record<string, string> = await computeFilterLabelMap(context, user, inputFilterGroup, idsFinder);
+  const resolvedLabels: Record<string, string> = await computeFilterLabelMap(
+    context,
+    user,
+    inputFilterGroup,
+    idsFinder,
+  );
   // 03. replace dynamic @me value and label values
   const filterGroup = replaceEnrichValuesInFilters(inputFilterGroup, userId, resolvedLabels);
   // 04. convert relation refs
@@ -568,40 +663,49 @@ export const checkAndConvertFilters = async (
  * - replace the values of the filter by the associated id in the map
  * - if no id has been found in the map for the filter values, remove the filter
  */
-export const filtersEntityIdsMappingResult = (inputFilters: FilterGroup, keysToReplace: string[], valuesIdsMap: Map<string, string | null>) => {
+export const filtersEntityIdsMappingResult = (
+  inputFilters: FilterGroup,
+  keysToReplace: string[],
+  valuesIdsMap: Map<string, string | null>,
+) => {
   let newFilters = inputFilters.filters;
   let newFilterGroups = inputFilters.filterGroups;
   if (isFilterGroupNotEmpty(inputFilters)) {
     // replace the values by their ids
-    newFilters = inputFilters.filters.map((f) => {
-      const key = Array.isArray(f.key) ? f.key[0] : f.key;
-      if (keysToReplace.includes(key)) {
-        if (key === INSTANCE_REGARDING_OF) {
-          const valuesIds = f.values.filter((v) => v.key === 'id').map((v) => v.values).flat();
-          const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
-          if (resolvedValuesIds.length > 0) {
-            f.values = [
-              ...f.values.filter((v) => v.key !== 'id'),
-              { key: 'id', values: resolvedValuesIds },
-            ];
+    newFilters = inputFilters.filters
+      .map((f) => {
+        const key = Array.isArray(f.key) ? f.key[0] : f.key;
+        if (keysToReplace.includes(key)) {
+          if (key === INSTANCE_REGARDING_OF) {
+            const valuesIds = f.values
+              .filter((v) => v.key === 'id')
+              .map((v) => v.values)
+              .flat();
+            const resolvedValuesIds = valuesIds.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
+            if (resolvedValuesIds.length > 0) {
+              f.values = [
+                ...f.values.filter((v) => v.key !== 'id'),
+                { key: 'id', values: resolvedValuesIds },
+              ];
+            } else {
+              f.values = f.values.filter((v) => v.key !== 'id');
+            }
           } else {
-            f.values = [
-              ...f.values.filter((v) => v.key !== 'id'),
-            ];
+            f.values = f.values.map((v) => valuesIdsMap.get(v)).filter((v) => !!v);
           }
-        } else {
-          f.values = f.values
-            .map((v) => valuesIdsMap.get(v))
-            .filter((v) => !!v);
         }
-      }
-      const shouldRemoveFilter = f.values.length === 0 && f.operator && !['nil', 'not_nil'].includes(f.operator);
-      if (shouldRemoveFilter) { // remove filters of keysToReplace with values not resolved
-        return null;
-      }
-      return f;
-    }).filter((f) => !!f);
-    newFilterGroups = inputFilters.filterGroups.map((fg) => filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap));
+        const shouldRemoveFilter =
+          f.values.length === 0 && f.operator && !['nil', 'not_nil'].includes(f.operator);
+        if (shouldRemoveFilter) {
+          // remove filters of keysToReplace with values not resolved
+          return null;
+        }
+        return f;
+      })
+      .filter((f) => !!f);
+    newFilterGroups = inputFilters.filterGroups.map((fg) =>
+      filtersEntityIdsMappingResult(fg, keysToReplace, valuesIdsMap),
+    );
   }
   return {
     ...inputFilters,

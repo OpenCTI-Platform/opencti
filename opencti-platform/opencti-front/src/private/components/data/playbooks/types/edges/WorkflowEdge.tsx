@@ -72,13 +72,7 @@ export default function CustomEdge({
   });
   return (
     <>
-      <path
-        id={id}
-        style={style}
-        className={classes.edgePath}
-        d={edgePath}
-        markerEnd={markerEnd}
-      />
+      <path id={id} style={style} className={classes.edgePath} d={edgePath} markerEnd={markerEnd} />
       <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
         <rect
           onClick={() => data.openConfig(getEdge(id))}

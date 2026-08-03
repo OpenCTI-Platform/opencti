@@ -1,12 +1,20 @@
 import React, { ReactNode } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { OrderingMode, StixCoreObjectsOrdering, StixCoreObjectsTimelineQuery } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
+import {
+  OrderingMode,
+  StixCoreObjectsOrdering,
+  StixCoreObjectsTimelineQuery,
+} from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import { resolveLink } from '../../../../utils/Entity';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -33,7 +41,7 @@ const stixCoreObjectsTimelineQuery = graphql`
           entity_type
           created_at
           updated_at
-          ... on StixDomainObject  {
+          ... on StixDomainObject {
             modified
             created
           }
@@ -79,8 +87,8 @@ const StixCoreObjectsTimelineComponent = ({
   const edges = data?.stixCoreObjects?.edges ?? [];
   const selection = dataSelection[0];
 
-  const dateAttribute
-    = selection.date_attribute && selection.date_attribute.length > 0
+  const dateAttribute =
+    selection.date_attribute && selection.date_attribute.length > 0
       ? selection.date_attribute
       : 'created_at';
 
@@ -139,7 +147,13 @@ const StixCoreObjectsTimeline = ({
   refreshRate = null,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsTimelineQuery>({
     perspective: 'entities',
     dataSelection,
     host,

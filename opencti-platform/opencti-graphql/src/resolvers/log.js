@@ -1,4 +1,13 @@
-import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, findById, findAuditById } from '../domain/log';
+import {
+  auditsDistribution,
+  auditsMultiTimeSeries,
+  auditsNumber,
+  auditsTimeSeries,
+  findAudits,
+  findHistory,
+  findById,
+  findAuditById,
+} from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
@@ -16,20 +25,28 @@ const logResolvers = {
     auditsDistribution: (_, args, context) => auditsDistribution(context, context.user, args),
   },
   Log: {
-    user: async (log, _, context) => loadCreator(context, context.user, log.applicant_id || log.user_id),
-    context_data: async (log, args, context) => context.batch.logContextDataBatchLoader.load({ log, args }),
+    user: async (log, _, context) =>
+      loadCreator(context, context.user, log.applicant_id || log.user_id),
+    context_data: async (log, args, context) =>
+      context.batch.logContextDataBatchLoader.load({ log, args }),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
-    context_uri: (log, _, __) => (log.context_data.id && log.entity_type === 'History' ? `/dashboard/id/${log.context_data.id}` : undefined),
+    context_uri: (log, _, __) =>
+      log.context_data.id && log.entity_type === 'History'
+        ? `/dashboard/id/${log.context_data.id}`
+        : undefined,
     event_status: (log, _, __) => log.event_status ?? 'success',
     event_scope: (log, _, __) => log.event_scope ?? log.event_type, // Retro compatibility
   },
   ContextData: {
     external_references: (data, _, context) => {
       const refPromises = Promise.all(
-        (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE)),
+        (data.references || []).map((id) =>
+          storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE),
+        ),
       ).then((refs) => refs.filter((element) => element !== undefined));
-      return Promise.resolve(data.external_references ?? [])
-        .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
+      return Promise.resolve(data.external_references ?? []).then((externalReferences) =>
+        refPromises.then((refs) => externalReferences.concat(refs)),
+      );
     },
   },
   Mutation: {

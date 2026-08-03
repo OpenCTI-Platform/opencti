@@ -1,6 +1,13 @@
 import { head, includes } from 'ramda';
-import { ATTR_DB_OPERATION_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES } from '@opentelemetry/semantic-conventions';
-import { ATTR_ENDUSER_ID, ATTR_MESSAGING_MESSAGE_BODY_SIZE } from '../telemetry/semantic-conventions';
+import {
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_OPERATION,
+  SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES,
+} from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_ENDUSER_ID,
+  ATTR_MESSAGING_MESSAGE_BODY_SIZE,
+} from '../telemetry/semantic-conventions';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
 
@@ -11,7 +18,8 @@ const getRequestError = (context) => {
   }
   const currentError = head(context.errors);
   const callError = currentError.originalError ? currentError.originalError : currentError;
-  const isAuthenticationCall = callError.name && includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
+  const isAuthenticationCall =
+    callError.name && includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
   if (isAuthenticationCall) {
     return undefined;
   }
@@ -24,29 +32,38 @@ export default {
     let tracingSpan;
     return {
       didResolveOperation: (resolveContext) => {
-        const isWrite = resolveContext.operation && resolveContext.operation.operation === 'mutation';
+        const isWrite =
+          resolveContext.operation && resolveContext.operation.operation === 'mutation';
         const operationType = `${isWrite ? 'INSERT' : 'SELECT'}`;
         const { contextValue: context } = resolveContext;
         const endUserId = context.user?.origin?.user_id ?? 'anonymous';
-        tracingSpan = context.tracing.getTracer().startSpan(`${operationType} ${resolveContext.operationName}`, {
-          attributes: {
-            'enduser.type': context.source,
-            [ATTR_DB_OPERATION_NAME]: operationType,
-            // Deprecated attribute to be removed when transition done
-            [SEMATTRS_DB_OPERATION]: operationType,
-            [ATTR_ENDUSER_ID]: endUserId,
-          },
-          kind: 1,
-        });
+        tracingSpan = context.tracing
+          .getTracer()
+          .startSpan(`${operationType} ${resolveContext.operationName}`, {
+            attributes: {
+              'enduser.type': context.source,
+              [ATTR_DB_OPERATION_NAME]: operationType,
+              // Deprecated attribute to be removed when transition done
+              [SEMATTRS_DB_OPERATION]: operationType,
+              [ATTR_ENDUSER_ID]: endUserId,
+            },
+            kind: 1,
+          });
         context.tracing.setCurrentCtx(tracingSpan);
       },
       willSendResponse: async (sendContext) => {
-        if (tracingSpan) { // Tracing span can be null for invalid operations
+        if (tracingSpan) {
+          // Tracing span can be null for invalid operations
           const requestError = getRequestError(sendContext);
-          const payloadSize = Buffer.byteLength(JSON.stringify(sendContext.request.variables || {}));
+          const payloadSize = Buffer.byteLength(
+            JSON.stringify(sendContext.request.variables || {}),
+          );
           tracingSpan.setAttribute(ATTR_MESSAGING_MESSAGE_BODY_SIZE, payloadSize);
           // Deprecated attribute to be removed when transition done
-          tracingSpan.setAttribute(SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES, payloadSize);
+          tracingSpan.setAttribute(
+            SEMATTRS_MESSAGING_MESSAGE_PAYLOAD_COMPRESSED_SIZE_BYTES,
+            payloadSize,
+          );
           if (requestError) {
             tracingSpan.setStatus({ code: 2, message: requestError.name });
           } else {

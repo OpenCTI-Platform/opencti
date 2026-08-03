@@ -1,12 +1,8 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { Box } from '@mui/material';
-import {
-  StixCyberObservableNestedEntitiesTablePaginationQuery,
-} from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableNestedEntitiesTablePaginationQuery.graphql';
-import {
-  StixCyberObservableNestedEntitiesTable_data$data,
-} from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableNestedEntitiesTable_data.graphql';
+import { StixCyberObservableNestedEntitiesTablePaginationQuery } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableNestedEntitiesTablePaginationQuery.graphql';
+import { StixCyberObservableNestedEntitiesTable_data$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableNestedEntitiesTable_data.graphql';
 import StixNestedRefRelationshipPopover from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -33,14 +29,14 @@ export const stixCyberObservableNestedEntitiesTableQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservableNestedEntitiesTable_data
-    @arguments(
-      fromOrToId: $fromOrToId
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromOrToId: $fromOrToId
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -250,11 +246,9 @@ interface StixCyberObservableNestedEntitiesTableProps {
   isInLine: boolean;
 }
 
-const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNestedEntitiesTableProps> = ({
-  stixCyberObservableId,
-  searchTerm,
-  isInLine,
-}) => {
+const StixCyberObservableNestedEntitiesTable: React.FC<
+  StixCyberObservableNestedEntitiesTableProps
+> = ({ stixCyberObservableId, searchTerm, isInLine }) => {
   const initialValues = {
     searchTerm: '',
     sortBy: 'relationship_type',
@@ -265,22 +259,23 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
     },
   };
   const computeLink = useComputeLink();
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCyberObservableNestedEntitiesTablePaginationQuery>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
+  const { viewStorage, helpers } =
+    usePaginationLocalStorage<StixCyberObservableNestedEntitiesTablePaginationQuery>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Stix-Cyber-Observable',
+    viewStorage.filters,
   );
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Cyber-Observable', viewStorage.filters);
-  const queryRef = useQueryLoading(
-    stixCyberObservableNestedEntitiesTableQuery,
-    {
-      fromOrToId: stixCyberObservableId,
-      search: searchTerm,
-      orderBy: isInLine ? 'relationship_type' : null,
-      orderMode: 'desc',
-      count: 200,
-      filters: contextFilters,
-    },
-  );
+  const queryRef = useQueryLoading(stixCyberObservableNestedEntitiesTableQuery, {
+    fromOrToId: stixCyberObservableId,
+    search: searchTerm,
+    orderBy: isInLine ? 'relationship_type' : null,
+    orderMode: 'desc',
+    count: 200,
+    filters: contextFilters,
+  });
 
   const preloadedPaginationProps = {
     linesQuery: stixCyberObservableNestedEntitiesTableQuery,
@@ -314,7 +309,10 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
       render: (data: StixCyberObservableNestedEntitiesTable_node$data) => {
         return (
           <>
-            {data.to?.name || data.to?.observable_value || data.to?.attribute_abstract || data.to?.content}
+            {data.to?.name ||
+              data.to?.observable_value ||
+              data.to?.attribute_abstract ||
+              data.to?.content}
             {data.to?.draftVersion && <DraftChip />}
           </>
         );
@@ -340,7 +338,8 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
   };
 
   const getRedirectionLink = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => {
-    const targetObject = stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
+    const targetObject =
+      stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
     if (targetObject) {
       return computeLink(targetObject as ComputeLinkNode);
     }
@@ -348,14 +347,17 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
   };
 
   return (
-    <Box style={{
-      marginBlockStart: isInLine ? 0 : -25,
-    }}
+    <Box
+      style={{
+        marginBlockStart: isInLine ? 0 : -25,
+      }}
     >
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: StixCyberObservableNestedEntitiesTable_data$data) => data.stixNestedRefRelationships?.edges?.map((e) => e?.node)}
+          resolvePath={(data: StixCyberObservableNestedEntitiesTable_data$data) =>
+            data.stixNestedRefRelationships?.edges?.map((e) => e?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           lineFragment={stixCyberObservableNestedEntitiesLineFragment}
@@ -366,7 +368,9 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           hideHeaders={isInLine}
           disableLineSelection
           getComputeLink={getRedirectionLink}
-          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
+          icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => (
+            <ItemIcon type={data.to?.entity_type} />
+          )}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
               <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>

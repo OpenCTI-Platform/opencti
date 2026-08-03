@@ -26,25 +26,18 @@ export function TagsOverflow<T>({
   children,
   direction = 'ltr',
 }: TagsOverflowProps<T>) {
-  const {
-    measureContainerRef,
-    visibleContainerRef,
-    visibleCount,
-    overflowCount,
-    isRTL,
-  } = useTagsOverflowDetection({
-    totalCount: items.length,
-    gapPx,
-    direction,
-  });
+  const { measureContainerRef, visibleContainerRef, visibleCount, overflowCount, isRTL } =
+    useTagsOverflowDetection({
+      totalCount: items.length,
+      gapPx,
+      direction,
+    });
 
   const visibleItems = (items as T[]).slice(0, visibleCount);
   const displayItems = isRTL ? [...visibleItems].reverse() : visibleItems;
 
   const hiddenItems = (items as T[]).slice(visibleCount);
-  const tooltipTitle = getLabel
-    ? hiddenItems.map((item) => getLabel(item)).join(', ')
-    : undefined;
+  const tooltipTitle = getLabel ? hiddenItems.map((item) => getLabel(item)).join(', ') : undefined;
 
   return (
     <>
@@ -95,9 +88,7 @@ export function TagsOverflow<T>({
         }}
       >
         {displayItems.map((item) => (
-          <div key={getKey(item)}>
-            {renderTag(item)}
-          </div>
+          <div key={getKey(item)}>{renderTag(item)}</div>
         ))}
 
         {overflowCount > 0 && (
@@ -108,11 +99,7 @@ export function TagsOverflow<T>({
           />
         )}
 
-        {children && (
-          <div>
-            {children}
-          </div>
-        )}
+        {children && <div>{children}</div>}
       </Stack>
     </>
   );

@@ -50,13 +50,11 @@ class ThreatActorIndividualLocationsComponent extends Component {
       <>
         <Label
           sx={{ marginTop: '20px' }}
-          action={(
+          action={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <AddLocationsThreatActorIndividual
-                threatActorIndividual={threatActorIndividual}
-              />
+              <AddLocationsThreatActorIndividual threatActorIndividual={threatActorIndividual} />
             </Security>
-          )}
+          }
         >
           {t('Located at')}
         </Label>
@@ -66,8 +64,8 @@ class ThreatActorIndividualLocationsComponent extends Component {
               const { types } = locationEdge;
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
-              const flagUrl = location.entity_type === 'Country'
-                && findFlagUrl(location.x_opencti_aliases);
+              const flagUrl =
+                location.entity_type === 'Country' && findFlagUrl(location.x_opencti_aliases);
               return (
                 <ListItem
                   key={location.id}
@@ -89,23 +87,18 @@ class ThreatActorIndividualLocationsComponent extends Component {
                     )
                   }
                 >
-                  <ListItemButton
-                    component={Link}
-                    to={`${link}/${location.id}`}
-                  >
+                  <ListItemButton component={Link} to={`${link}/${location.id}`}>
                     <ListItemIcon sx={{ minWidth: 32 }}>
                       {flagUrl ? (
-                        <img
-                          style={{ width: 20 }}
-                          src={flagUrl}
-                          alt={location.name}
-                        />
+                        <img style={{ width: 20 }} src={flagUrl} alt={location.name} />
                       ) : (
                         <ItemIcon type={location.entity_type} />
                       )}
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+                    {!types.includes('manual') && (
+                      <AutoFix fontSize="small" style={{ marginRight: 13 }} />
+                    )}
                   </ListItemButton>
                 </ListItem>
               );

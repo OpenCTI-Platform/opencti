@@ -57,37 +57,20 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
 
   return (
     <>
-      <IconButton
-        color="primary"
-        aria-label={t_i18n('Add')}
-        onClick={handleOpen}
-        size="small"
-      >
-        <Add
-          fontSize="small"
-        />
+      <IconButton color="primary" aria-label={t_i18n('Add')} onClick={handleOpen} size="small">
+        <Add fontSize="small" />
       </IconButton>
       <Drawer
         open={open}
         onClose={handleClose}
         title={t_i18n('Add notes')}
         subHeader={{
-          right: [(
-            <Button
-              onClick={handleDialogOpen}
-              key="rightButton"
-            >
+          right: [
+            <Button onClick={handleDialogOpen} key="rightButton">
               {t_i18n('Create')} {t_i18n('entity_Note')}
-            </Button>
-
-          )],
-          left: [(
-            <SearchInput
-              variant="noAnimation"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
+            </Button>,
+          ],
+          left: [<SearchInput variant="noAnimation" onSubmit={handleSearch} key="leftInput" />],
         }}
       >
         <QueryRenderer
@@ -100,9 +83,7 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
             if (props) {
               return (
                 <AddNotesLines
-                  stixCoreObjectOrStixCoreRelationshipId={
-                    stixCoreObjectOrStixCoreRelationshipId
-                  }
+                  stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectOrStixCoreRelationshipId}
                   stixCoreObjectOrStixCoreRelationshipNotes={
                     stixCoreObjectOrStixCoreRelationshipNotes.notes?.edges ?? []
                   }
@@ -116,15 +97,10 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
                 {Array.from(Array(20), (_, i) => (
                   <ListItem key={i} divider={true}>
                     <ListItemIcon>
-                      <Skeleton
-                        animation="wave"
-                        variant="circular"
-                        width={30}
-                        height={30}
-                      />
+                      <Skeleton animation="wave" variant="circular" width={30} height={30} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={(
+                      primary={
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
@@ -132,15 +108,10 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
                           height={15}
                           style={{ marginBottom: 10 }}
                         />
-                      )}
-                      secondary={(
-                        <Skeleton
-                          animation="wave"
-                          variant="rectangular"
-                          width="90%"
-                          height={15}
-                        />
-                      )}
+                      }
+                      secondary={
+                        <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+                      }
                     />
                   </ListItem>
                 ))}
@@ -149,16 +120,8 @@ const AddNotes: FunctionComponent<AddNotesProps> = ({
           }}
         />
       </Drawer>
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        title={t_i18n('Create a note')}
-      >
-        <NoteCreationForm
-          inputValue={search}
-          updater={updater}
-          onClose={handleDialogClose}
-        />
+      <Dialog open={dialogOpen} onClose={handleDialogClose} title={t_i18n('Create a note')}>
+        <NoteCreationForm inputValue={search} updater={updater} onClose={handleDialogClose} />
       </Dialog>
     </>
   );

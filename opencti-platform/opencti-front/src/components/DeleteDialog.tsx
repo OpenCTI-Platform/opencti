@@ -42,7 +42,11 @@ const DeleteDialog: React.FC<DeleteDialogProps> = ({
         </Alert>
       )}
       <DialogActions>
-        <Button variant="secondary" onClick={onClose ?? deletion.handleCloseDelete} disabled={deletion.deleting}>
+        <Button
+          variant="secondary"
+          onClick={onClose ?? deletion.handleCloseDelete}
+          disabled={deletion.deleting}
+        >
           {t_i18n('Cancel')}
         </Button>
         <Button onClick={submitDelete} disabled={deletion.deleting}>

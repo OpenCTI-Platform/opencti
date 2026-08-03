@@ -5,7 +5,9 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreObjectEnrichmentLines, { stixCoreObjectEnrichmentLinesQuery } from './StixCoreObjectEnrichmentLines';
+import StixCoreObjectEnrichmentLines, {
+  stixCoreObjectEnrichmentLinesQuery,
+} from './StixCoreObjectEnrichmentLines';
 
 const StixCoreObjectEnrichment = ({ stixCoreObjectId, onClose, isOpen }) => {
   // otherwise, a button + internal state allow to open and close
@@ -27,11 +29,7 @@ const StixCoreObjectEnrichment = ({ stixCoreObjectId, onClose, isOpen }) => {
     <>
       {!onClose && (
         <Tooltip title={t_i18n('Enrichment')}>
-          <ToggleButton
-            onClick={handleOpenEnrichment}
-            value="enrich"
-            size="small"
-          >
+          <ToggleButton onClick={handleOpenEnrichment} value="enrich" size="small">
             <CloudRefreshOutline fontSize="small" color="primary" />
           </ToggleButton>
         </Tooltip>
@@ -45,11 +43,7 @@ const StixCoreObjectEnrichment = ({ stixCoreObjectId, onClose, isOpen }) => {
           query={stixCoreObjectEnrichmentLinesQuery}
           variables={{ id: stixCoreObjectId }}
           render={({ props: queryProps }) => {
-            if (
-              queryProps
-              && queryProps.stixCoreObject
-              && queryProps.connectorsForImport
-            ) {
+            if (queryProps && queryProps.stixCoreObject && queryProps.connectorsForImport) {
               return (
                 <StixCoreObjectEnrichmentLines
                   stixCoreObject={queryProps.stixCoreObject}

@@ -26,7 +26,8 @@ export const up = async (next) => {
 
   // map [input_name, database_name] for rel relationship to convert the keys
   const inputNameToDatabaseNameMap = new Map(
-    schemaRelationsRefDefinition.getAllInputNames()
+    schemaRelationsRefDefinition
+      .getAllInputNames()
       .map((name) => [schemaRelationsRefDefinition.getDatabaseName(name), name]),
   );
 
@@ -66,8 +67,7 @@ export const up = async (next) => {
     }
     filters.forEach((f) => {
       const filterKeys = Array.isArray(f.key) ? f.key : [f.key];
-      const convertedFilterKeys = filterKeys
-        .map((key) => revertRelFilterKeyConversion(key));
+      const convertedFilterKeys = filterKeys.map((key) => revertRelFilterKeyConversion(key));
       newFiltersContent.push({ ...f, key: convertedFilterKeys });
     });
     return {
@@ -78,56 +78,54 @@ export const up = async (next) => {
   };
 
   // -- step 1: fetch the playbooks --
-  const playbooks = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_PLAYBOOK],
-  );
+  const playbooks = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK]);
 
   // -- step 2: fill playbooksDefinitionConvertor with the playbooks with correct filters --
   let playbooksDefinitionConvertor = {};
-  playbooks
-    .forEach((playbook) => {
-      const playbookDefinition = JSON.parse(playbook.playbook_definition);
-      const definitionNodes = playbookDefinition.nodes;
-      const newDefinitionNodes = [];
-      for (let i = 0; i < definitionNodes.length; i += 1) {
-        const node = definitionNodes[i];
-        if (node.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-          const nodeConfiguration = JSON.parse(node.configuration);
-          const { filters } = nodeConfiguration;
-          if (filters) {
-            const newFilters = JSON.stringify(convertFilters(JSON.parse(filters)));
-            const newNode = {
-              ...node,
-              configuration: JSON.stringify({
-                ...nodeConfiguration,
-                filters: newFilters,
-              }),
-            };
-            newDefinitionNodes.push(newNode);
-          } else { // no conversion to do
-            newDefinitionNodes.push(node);
-          }
-        } else { // no conversion to do for components that are not CRON
+  playbooks.forEach((playbook) => {
+    const playbookDefinition = JSON.parse(playbook.playbook_definition);
+    const definitionNodes = playbookDefinition.nodes;
+    const newDefinitionNodes = [];
+    for (let i = 0; i < definitionNodes.length; i += 1) {
+      const node = definitionNodes[i];
+      if (node.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+        const nodeConfiguration = JSON.parse(node.configuration);
+        const { filters } = nodeConfiguration;
+        if (filters) {
+          const newFilters = JSON.stringify(convertFilters(JSON.parse(filters)));
+          const newNode = {
+            ...node,
+            configuration: JSON.stringify({
+              ...nodeConfiguration,
+              filters: newFilters,
+            }),
+          };
+          newDefinitionNodes.push(newNode);
+        } else {
+          // no conversion to do
           newDefinitionNodes.push(node);
         }
+      } else {
+        // no conversion to do for components that are not CRON
+        newDefinitionNodes.push(node);
       }
-      const newPlaybookDefinition = {
-        ...playbookDefinition,
-        nodes: newDefinitionNodes,
-      };
-      playbooksDefinitionConvertor = {
-        ...playbooksDefinitionConvertor,
-        [playbook.internal_id]: JSON.stringify(newPlaybookDefinition),
-      };
-    });
+    }
+    const newPlaybookDefinition = {
+      ...playbookDefinition,
+      nodes: newDefinitionNodes,
+    };
+    playbooksDefinitionConvertor = {
+      ...playbooksDefinitionConvertor,
+      [playbook.internal_id]: JSON.stringify(newPlaybookDefinition),
+    };
+  });
 
   // -- step 3: update the playbooks filters in elastic --
   const playbooksUpdateQuery = {
     script: {
       params: { convertor: playbooksDefinitionConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {

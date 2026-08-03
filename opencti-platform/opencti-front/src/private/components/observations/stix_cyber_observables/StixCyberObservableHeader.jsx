@@ -24,13 +24,19 @@ import useGranted, {
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
 
-const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent, enableEnrollPlaybook }) => {
+const StixCyberObservableHeaderComponent = ({
+  stixCyberObservable,
+  DeleteComponent,
+  enableEnrollPlaybook,
+}) => {
   const [openSharing, setOpenSharing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(
+    draftContext?.currentUserAccessRight,
+  );
   const canEdit = !draftContext || currentDraftAccessRight.canEdit;
 
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]) && canEdit;
@@ -47,31 +53,28 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
 
   const handleCloseDelete = () => setOpenDelete(false);
 
-  const displayPopoverMenu = (displayEnrollPlaybook && isEnrichPlaybookGranted)
-    || isKnowledgeEnricher
-    || isKnowledgeUpdater
-    || canDelete;
+  const displayPopoverMenu =
+    (displayEnrollPlaybook && isEnrichPlaybookGranted) ||
+    isKnowledgeEnricher ||
+    isKnowledgeUpdater ||
+    canDelete;
 
   return (
     <HeaderMainEntityLayout
       title={stixCyberObservable.observable_value}
-      rightActions={(
+      rightActions={
         <>
-          {isKnowledgeUpdater && (
-            <StixCoreObjectContainer elementId={stixCyberObservable.id} />
-          )}
+          {isKnowledgeUpdater && <StixCoreObjectContainer elementId={stixCyberObservable.id} />}
           {isKnowledgeEnricher && (
             <StixCoreObjectEnrichment stixCoreObjectId={stixCyberObservable.id} />
           )}
-          {displayEnrollPlaybook
-            && (
-              <StixCoreObjectEnrollPlaybook
-                stixCoreObjectId={stixCyberObservable.id}
-                open={openEnrollPlaybook}
-                handleClose={handleCloseEnrollPlaybook}
-              />
-            )
-          }
+          {displayEnrollPlaybook && (
+            <StixCoreObjectEnrollPlaybook
+              stixCoreObjectId={stixCyberObservable.id}
+              open={openEnrollPlaybook}
+              handleClose={handleCloseEnrollPlaybook}
+            />
+          )}
           {displayPopoverMenu && (
             <PopoverMenu>
               {({ closeMenu }) => (
@@ -93,10 +96,11 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
                     />
                   )}
                   {canDelete && (
-                    <MenuItem onClick={() => {
-                      handleOpenDelete();
-                      closeMenu();
-                    }}
+                    <MenuItem
+                      onClick={() => {
+                        handleOpenDelete();
+                        closeMenu();
+                      }}
                     >
                       {t_i18n('Delete')}
                     </MenuItem>
@@ -104,12 +108,9 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
                 </Box>
               )}
             </PopoverMenu>
-
           )}
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <StixCyberObservableEdition
-              stixCyberObservableId={stixCyberObservable.id}
-            />
+            <StixCyberObservableEdition stixCyberObservableId={stixCyberObservable.id} />
           </Security>
           <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
 
@@ -120,33 +121,26 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
             handleClose={() => setOpenSharing(false)}
           />
         </>
-      )}
-      leftTags={
-        stixCyberObservable.draftVersion && <DraftChip />
       }
-      rightTags={
-        <StixCoreObjectSharingList data={stixCyberObservable} />
-      }
+      leftTags={stixCyberObservable.draftVersion && <DraftChip />}
+      rightTags={<StixCoreObjectSharingList data={stixCyberObservable} />}
     />
   );
 };
 
-const StixCyberObservableHeader = createFragmentContainer(
-  StixCyberObservableHeaderComponent,
-  {
-    stixCyberObservable: graphql`
-      fragment StixCyberObservableHeader_stixCyberObservable on StixCyberObservable {
-        id
-        draftVersion {
-          draft_id
-          draft_operation
-        }
-        entity_type
-        observable_value
-        ...StixCoreObjectSharingListFragment
+const StixCyberObservableHeader = createFragmentContainer(StixCyberObservableHeaderComponent, {
+  stixCyberObservable: graphql`
+    fragment StixCyberObservableHeader_stixCyberObservable on StixCyberObservable {
+      id
+      draftVersion {
+        draft_id
+        draft_operation
       }
-    `,
-  },
-);
+      entity_type
+      observable_value
+      ...StixCoreObjectSharingListFragment
+    }
+  `,
+});
 
 export default StixCyberObservableHeader;

@@ -3,7 +3,10 @@ import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsLines_data.graphql';
-import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
+import {
+  AlertsLinesPaginationQuery,
+  AlertsLinesPaginationQuery$variables,
+} from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Tooltip } from '@mui/material';
@@ -22,10 +25,18 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import { chipInListBasicStyle } from '../../../utils/chipStyle';
 import { hexToRGB } from '../../../utils/Colors';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useGetDefaultFilterObject, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useGetDefaultFilterObject,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
-import { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import {
+  UseLocalStorageHelpers,
+  usePaginationLocalStorage,
+} from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { deleteNode } from '../../../utils/store';
@@ -66,14 +77,14 @@ const alertsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...AlertsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -112,10 +123,7 @@ const alertsLinesFragment = graphql`
 `;
 
 const alertsLineNotificationMarkReadMutation = graphql`
-  mutation AlertsNotificationMarkReadMutation(
-    $id: ID!
-    $read: Boolean!
-  ) {
+  mutation AlertsNotificationMarkReadMutation($id: ID!, $read: Boolean!) {
     notificationMarkRead(id: $id, read: $read) {
       ...AlertsLine_node
     }
@@ -172,10 +180,11 @@ const AlertsLineActions: FunctionComponent<AlertsLineActionsProps> = ({
           size="small"
           color={data.is_read ? 'primary' : 'success'}
         >
-          {data.is_read
-            ? <UnpublishedOutlined fontSize="small" />
-            : <CheckCircleOutlined fontSize="small" />
-          }
+          {data.is_read ? (
+            <UnpublishedOutlined fontSize="small" />
+          ) : (
+            <CheckCircleOutlined fontSize="small" />
+          )}
         </IconButton>
       </Tooltip>
       <Tooltip title={t_i18n('Delete this notification')}>
@@ -213,9 +222,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [commitDelete] = useApiMutation(
-    alertsLineNotificationDeleteMutation,
-  );
+  const [commitDelete] = useApiMutation(alertsLineNotificationDeleteMutation);
   const [notificationToDelete, setNotificationToDelete] = useState<AlertsLine_node$data>();
   const [notificationDigestToOpen, setNotificationDigestToOpen] = useState<AlertsLine_node$data>();
 
@@ -228,7 +235,10 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
 
     const firstEvent = events.at(0);
     const firstOperation = isDigest ? 'multiple' : (firstEvent?.operation ?? 'none');
-    const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
+    const isLinkAvailable =
+      events.length === 1 &&
+      isNotEmptyField(firstEvent?.instance_id) &&
+      firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
       if (firstEvent.entity_type === 'DraftWorkspace') {
         navigate(`/dashboard/data/import/draft/${firstEvent.instance_id}`);
@@ -276,9 +286,20 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           none: t_i18n('Unknown'),
         };
         return (
-          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+          <div
+            style={{
+              height: 20,
+              fontSize: 13,
+              float: 'left',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              paddingRight: 10,
+            }}
+          >
             <Chip
-              style={{ fontSize: 12,
+              style={{
+                fontSize: 12,
                 height: 20,
                 float: 'left',
                 width: 150,
@@ -309,13 +330,28 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
         const multipleEvents = events.length > 1;
 
         return (
-          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+          <div
+            style={{
+              height: 20,
+              fontSize: 13,
+              float: 'left',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              paddingRight: 10,
+            }}
+          >
             {multipleEvents ? (
               <i>{t_i18n('Digest with multiple notifiers')}</i>
             ) : (
               <Tooltip title={firstEvent?.message ?? EMPTY_VALUE}>
                 <span>
-                  <MarkdownDisplay content={firstEvent?.message ?? EMPTY_VALUE} remarkGfmPlugin commonmark removeLinks />
+                  <MarkdownDisplay
+                    content={firstEvent?.message ?? EMPTY_VALUE}
+                    remarkGfmPlugin
+                    commonmark
+                    removeLinks
+                  />
                 </span>
               </Tooltip>
             )}
@@ -336,15 +372,16 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       isSortable: isRuntimeSort,
       render: ({ notification_type, name }, { storageHelpers: { handleAddFilter } }) => {
         return (
-          <div style={{
-            height: 20,
-            fontSize: 13,
-            float: 'left',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            paddingRight: 10,
-          }}
+          <div
+            style={{
+              height: 20,
+              fontSize: 13,
+              float: 'left',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              paddingRight: 10,
+            }}
           >
             <Tooltip title={name ?? EMPTY_VALUE}>
               <Chip
@@ -353,9 +390,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
                   width: 100,
                   marginRight: 10,
                 }}
-                color={notification_type === 'live'
-                  ? 'warning'
-                  : 'secondary'}
+                color={notification_type === 'live' ? 'warning' : 'secondary'}
                 variant="outlined"
                 label={name ?? EMPTY_VALUE}
                 onClick={(e) => {
@@ -385,7 +420,9 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
         preloadedPaginationProps={preloadedPaginationProps}
-        resolvePath={(data: AlertsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
+        resolvePath={(data: AlertsLines_data$data) =>
+          data.myNotifications?.edges?.map((n) => n?.node)
+        }
         dataColumns={dataColumns}
         onLineClick={handleLineClick}
         icon={(data) => {
@@ -402,10 +439,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
         exportContext={{ entity_type: 'Notification' }}
         availableEntityTypes={['Notification']}
         actions={(data: AlertsLine_node$data) => (
-          <AlertsLineActions
-            data={data}
-            setNotificationToDelete={setNotificationToDelete}
-          />
+          <AlertsLineActions data={data} setNotificationToDelete={setNotificationToDelete} />
         )}
         markAsReadEnabled={true}
       />
@@ -422,9 +456,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
             <Button variant="secondary" onClick={handleCloseDelete}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={() => handleDelete(notificationToDelete.id)}
-            >
+            <Button onClick={() => handleDelete(notificationToDelete.id)}>
               {t_i18n('Delete')}
             </Button>
           </DialogActions>
@@ -461,16 +493,15 @@ const Alerts: FunctionComponent = () => {
     },
   };
 
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<AlertsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<AlertsLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Notification']);
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, [
+    'Notification',
+  ]);
   const contextFilters = {
     mode: 'and',
     filters: [

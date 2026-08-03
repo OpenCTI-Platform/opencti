@@ -1,7 +1,12 @@
 import * as R from 'ramda';
 import semver from 'semver';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  executionContext,
+  isInternalUser,
+  SYSTEM_USER,
+} from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -12,9 +17,21 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
-import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
+import {
+  checkAndConvertFilters,
+  type FiltersIdsFinder,
+} from '../../utils/filtering/filtering-utils';
+import {
+  isStixMatchFilterGroup,
+  validateFilterGroupForStixMatch,
+} from '../../utils/filtering/filtering-stix/stix-filtering';
+import {
+  playbookBundleElementsToApply,
+  type ComponentDefinition,
+  type LinkDefinition,
+  type NodeDefinition,
+  type PlaybookBundleElementsToApply,
+} from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
@@ -39,8 +56,12 @@ export const isBundleElementInScope = (
   mainElementId: string,
 ): boolean => {
   const all = applyToElements === playbookBundleElementsToApply.allElements.value;
-  const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && bundleElement.id === mainElementId;
-  const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && bundleElement.id !== mainElementId;
+  const onlyMain =
+    applyToElements === playbookBundleElementsToApply.onlyMain.value &&
+    bundleElement.id === mainElementId;
+  const exceptMain =
+    applyToElements === playbookBundleElementsToApply.allExceptMain.value &&
+    bundleElement.id !== mainElementId;
   return all || onlyMain || exceptMain;
 };
 
@@ -60,12 +81,7 @@ export const isBundleElementMatchFilters = async (
 ): Promise<boolean> => {
   if (!filters || isEmptyField(filters)) return true;
   const jsonFilters = JSON.parse(filters);
-  return isStixMatchFilterGroup(
-    context,
-    SYSTEM_USER,
-    bundleElement,
-    jsonFilters,
-  );
+  return isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
 };
 
 /**
@@ -85,12 +101,9 @@ export const filterBundleElements = async (
   if (!filters || isEmptyField(filters)) return bundleElements;
   const jsonFilters = JSON.parse(filters);
   const filterResults = await Promise.all(
-    bundleElements.map((element) => isStixMatchFilterGroup(
-      context,
-      SYSTEM_USER,
-      element,
-      jsonFilters,
-    )),
+    bundleElements.map((element) =>
+      isStixMatchFilterGroup(context, SYSTEM_USER, element, jsonFilters),
+    ),
   );
   return bundleElements.filter((_, i) => filterResults[i]);
 };
@@ -155,7 +168,9 @@ export const convertMembersToUsersFromElements = async (
         if (participantIds) participantIds.forEach((id: string) => membersIdsSet.add(id));
       }
     } else if (m.value === 'BUNDLE_ORGANIZATIONS') {
-      const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
+      const bundleOrganizations = bundle.objects.filter(
+        (o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      );
       bundleOrganizations.forEach((o) => membersIdsSet.add(o.extensions[STIX_EXT_OCTI].id));
     } else {
       membersIdsSet.add(m.value);
@@ -168,24 +183,32 @@ export const convertMembersToUsersFromElements = async (
     if (isInternalUser(user)) return false;
     const isDirectlyAuthorized = membersIds.includes(user.id);
     const isAuthorizedByGroup = user.groups.some((g) => membersIds.includes(g.internal_id));
-    const isAuthorizedByOrganization = user.organizations.some((o) => membersIds.includes(o.internal_id));
+    const isAuthorizedByOrganization = user.organizations.some((o) =>
+      membersIds.includes(o.internal_id),
+    );
     return isDirectlyAuthorized || isAuthorizedByGroup || isAuthorizedByOrganization;
   });
   return R.uniqBy(R.prop('id'), users);
 };
 
-export const applyOperationFieldPatch = (element: StixObject, patchObject: {
-  key: string;
-  value: any[];
-  operation: 'add' | 'replace' | 'remove';
-}[]) => {
+export const applyOperationFieldPatch = (
+  element: StixObject,
+  patchObject: {
+    key: string;
+    value: any[];
+    operation: 'add' | 'replace' | 'remove';
+  }[],
+) => {
   if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
     element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
   }
   pushAll(element.extensions[STIX_EXT_OCTI].opencti_upsert_operations, patchObject);
 };
 
-export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
+export const deleteLinksAndAllChildren = (
+  definition: ComponentDefinition,
+  links: LinkDefinition[],
+) => {
   // Resolve all nodes to delete
   const linksToDelete = links;
   const nodesToDelete = [] as NodeDefinition[];
@@ -194,16 +217,24 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
   let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
   if (childrenNodes.length > 0) {
     pushAll(nodesToDelete, childrenNodes);
-    childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
+    childrenLinks = definition.links.filter((n) =>
+      childrenNodes.map((o) => o.id).includes(n.from.id),
+    );
   }
   while (childrenLinks.length > 0) {
     pushAll(linksToDelete, childrenLinks);
     // Resolve children nodes not already in nodesToDelete
-    childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
+    childrenNodes = definition.nodes.filter(
+      (n) =>
+        linksToDelete.map((o) => o.to.id).includes(n.id) &&
+        !nodesToDelete.map((o) => o.id).includes(n.id),
+    );
     if (childrenNodes.length > 0) {
       pushAll(nodesToDelete, childrenNodes);
 
-      childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
+      childrenLinks = definition.links.filter((n) =>
+        childrenNodes.map((o) => o.id).includes(n.from.id),
+      );
     } else {
       childrenLinks = [];
     }
@@ -229,7 +260,14 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
+      const convertedFilters = await checkAndConvertFilters(
+        context,
+        user,
+        filterGroup,
+        userId,
+        elFindByIds as FiltersIdsFinder,
+        { noFiltersConvert: true },
+      );
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else {
       // our stix matching is currently limited, we need to validate the input filters
@@ -250,7 +288,10 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
  * @returns Updated stringified playbook definition, or the original if version is not compatible.
  */
 export const MINIMAL_COMPATIBLE_SCOPE_VERSION = '7.260515.0';
-export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string | undefined, version: string) => {
+export const updateImportedPlaybookDefinitionScope = (
+  playbookDefinition: string | undefined,
+  version: string,
+) => {
   if (!playbookDefinition || semver.gt(version, MINIMAL_COMPATIBLE_SCOPE_VERSION)) {
     return playbookDefinition;
   }
@@ -282,9 +323,10 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
     } else if (all === true) {
       finalConfig = {
         ...restOfConfig,
-        applyToElements: node.component_id === PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id && excludeMainElement
-          ? playbookBundleElementsToApply.allExceptMain.value
-          : playbookBundleElementsToApply.allElements.value,
+        applyToElements:
+          node.component_id === PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id && excludeMainElement
+            ? playbookBundleElementsToApply.allExceptMain.value
+            : playbookBundleElementsToApply.allElements.value,
       };
     } else {
       finalConfig = {

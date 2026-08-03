@@ -9,7 +9,11 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsNumberQuery } from './__generated__/DraftsNumberQuery.graphql';
 import { useGetNumberWidgetTitle } from 'src/utils/widget/widgetUtils';
 
@@ -54,11 +58,7 @@ interface DraftsNumberComponentProps {
   label: string;
 }
 
-const DraftsNumberComponent = ({
-  queryRef,
-  entityType,
-  label,
-}: DraftsNumberComponentProps) => {
+const DraftsNumberComponent = ({ queryRef, entityType, label }: DraftsNumberComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(draftsNumberQuery, queryRef);
 
@@ -107,15 +107,16 @@ const DraftsNumber = ({
   const DEFAULT_TITLE = t_i18n('Draft workspaces number');
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsNumberQuery>({
-    perspective: 'entities',
-    dataSelection,
-    host,
-    refreshRate,
-    query: draftsNumberQuery,
-    config,
-    buildQueryVariables,
-  });
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } =
+    useDashboardViz<DraftsNumberQuery>({
+      perspective: 'entities',
+      dataSelection,
+      host,
+      refreshRate,
+      query: draftsNumberQuery,
+      config,
+      buildQueryVariables,
+    });
 
   return (
     <WidgetContainer

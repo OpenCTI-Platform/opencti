@@ -72,11 +72,7 @@ const infrastructureFragment = graphql`
   }
 `;
 
-const Infrastructure = ({
-  data,
-}: {
-  data: Infrastructure_infrastructure$key;
-}) => {
+const Infrastructure = ({ data }: { data: Infrastructure_infrastructure$key }) => {
   useInitCreateRelationshipContext();
 
   const classes = useStyles();
@@ -86,11 +82,7 @@ const Infrastructure = ({
   );
   return (
     <div data-testid="infrastructure-overview">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={6}>
           <InfrastructureDetails infrastructure={infrastructureData} />
         </Grid>
@@ -109,14 +101,10 @@ const Infrastructure = ({
           />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={infrastructureData.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={infrastructureData.id} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectLatestHistory
-            stixCoreObjectId={infrastructureData.id}
-          />
+          <StixCoreObjectLatestHistory stixCoreObjectId={infrastructureData.id} />
         </Grid>
         <Grid item xs={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes

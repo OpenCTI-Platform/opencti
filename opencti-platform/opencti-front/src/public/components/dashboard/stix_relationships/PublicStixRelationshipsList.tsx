@@ -17,13 +17,13 @@ const publicStixRelationshipsListQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationships(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       edges {
         node {
@@ -1393,10 +1393,7 @@ const PublicStixRelationshipsListComponent = ({
   widgetId,
   rootRef,
 }: PublicStixRelationshipsListComponentProps) => {
-  const { publicStixRelationships } = usePreloadedQuery(
-    publicStixRelationshipsListQuery,
-    queryRef,
-  );
+  const { publicStixRelationships } = usePreloadedQuery(publicStixRelationshipsListQuery, queryRef);
 
   if (publicStixRelationships?.edges && publicStixRelationships.edges.length > 0) {
     return (
@@ -1437,9 +1434,7 @@ const PublicStixRelationshipsList = ({
   const rootRef = useRef<HTMLDivElement>(null);
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       <div ref={rootRef} style={{ height: '100%' }}>
         {queryRef ? (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

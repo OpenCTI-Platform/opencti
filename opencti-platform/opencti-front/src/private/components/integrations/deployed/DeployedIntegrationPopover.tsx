@@ -3,15 +3,15 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
 import { MoreVert } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
-import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
-import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
+import {
+  connectorDeletionMutation,
+  connectorResetStateMutation,
+  connectorWorkDeleteMutation,
+} from '@components/data/connectors/Connector';
 import canDeleteConnector from '@components/data/connectors/utils/canDeleteConnector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { FEED_MUTATIONS } from '@components/integrations/feeds/feedMutations';
@@ -20,9 +20,10 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import handleExportJson from '@components/data/forms/FormExportHandler';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
-import type { Theme } from '../../../../components/Theme';
-import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
-import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import useGranted, {
+  INGESTION_SETINGESTIONS,
+  MODULES_MODMANAGE,
+} from '../../../../utils/hooks/useGranted';
 import stopEvent from '../../../../utils/domEvent';
 
 interface DeployedIntegrationPopoverProps {
@@ -34,7 +35,6 @@ interface DeployedIntegrationPopoverProps {
 // clear works and delete for connectors (same set as the detail page).
 const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopoverProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayReset, setDisplayReset] = useState(false);
@@ -43,7 +43,6 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   const [submitting, setSubmitting] = useState(false);
   const isGrantedToModules = useGranted([MODULES_MODMANAGE]);
   const isGrantedToIngestion = useGranted([INGESTION_SETINGESTIONS]);
-  const { isSensitive } = useSensitiveModifications('connector_reset');
 
   const isConnector = item.kind === 'connector';
   const isForm = item.kind === 'form';
@@ -186,8 +185,8 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   const canManageConnector = isConnector && isGrantedToModules;
   // Deletion has extra conditions (e.g. built-in or active connectors cannot
   // be deleted): like the legacy popover, it only disables the Delete item.
-  const canDeleteThisConnector = canManageConnector
-    && canDeleteConnector(item.connector as unknown as Connector_connector$data);
+  const canDeleteThisConnector =
+    canManageConnector && canDeleteConnector(item.connector as unknown as Connector_connector$data);
   const canManageFeed = !isConnector && isGrantedToIngestion;
 
   // Opening the card already navigates to the details: without any granted
@@ -207,11 +206,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
       >
         <MoreVert fontSize="small" />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
         {canManageFeed && (
           <MenuItem onClick={handleToggleRunning} disabled={submitting}>
             {item.running ? t_i18n('Stop') : t_i18n('Start')}
@@ -228,39 +223,17 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
           </MenuItem>
         )}
         {canManageFeed && isForm && (
-          <MenuItem onClick={handleExportForm}>
-            {t_i18n('Export')}
-          </MenuItem>
+          <MenuItem onClick={handleExportForm}>{t_i18n('Export')}</MenuItem>
         )}
         {canManageConnector && (
-          isSensitive ? (
-            <DangerZoneBlock
-              type="connector_reset"
-              sx={{ title: { display: 'none' } }}
-              component={({ disabled }) => (
-                <MenuItem
-                  onClick={(event) => {
-                    handleClose(event);
-                    setDisplayReset(true);
-                  }}
-                  disabled={disabled}
-                  sx={{ color: theme.palette.dangerZone.main, gap: 1 }}
-                >
-                  <div>{t_i18n('Reset')}</div>
-                  <DangerZoneChip />
-                </MenuItem>
-              )}
-            />
-          ) : (
-            <MenuItem
-              onClick={(event) => {
-                handleClose(event);
-                setDisplayReset(true);
-              }}
-            >
-              {t_i18n('Reset the connector state')}
-            </MenuItem>
-          )
+          <MenuItem
+            onClick={(event) => {
+              handleClose(event);
+              setDisplayReset(true);
+            }}
+          >
+            {t_i18n('Reset the connector state')}
+          </MenuItem>
         )}
         {canManageConnector && (
           <MenuItem
@@ -330,11 +303,7 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
             : t_i18n('Do you want to delete this integration instance?')}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayDelete(false)}
-            disabled={submitting}
-          >
+          <Button variant="secondary" onClick={() => setDisplayDelete(false)} disabled={submitting}>
             {t_i18n('Cancel')}
           </Button>
           <Button onClick={submitDelete} disabled={submitting}>
@@ -348,35 +317,17 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
         onClose={() => setDisplayReset(false)}
         title={t_i18n('Are you sure?')}
       >
-        <DialogContentText component="div">
-          <Alert
-            severity={isSensitive ? 'warning' : 'info'}
-            variant="outlined"
-            color={isSensitive ? 'dangerZone' : undefined}
-            style={isSensitive ? {
-              borderColor: theme.palette.dangerZone.main,
-            } : {}}
-          >
-            <div>
-              {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
-              <br />
-              {t_i18n('Number of messages: ') + (item.messagesCount ?? 0)}
-            </div>
-          </Alert>
+        <DialogContentText>
+          {t_i18n('Do you want to reset the state and purge messages queue of this connector?')}
+        </DialogContentText>
+        <DialogContentText>
+          {t_i18n('Number of messages: ') + (item.messagesCount ?? 0)}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayReset(false)}
-            disabled={submitting}
-          >
+          <Button variant="secondary" onClick={() => setDisplayReset(false)} disabled={submitting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitReset}
-            disabled={submitting}
-            {...(isSensitive && { color: 'error' })}
-          >
+          <Button onClick={submitReset} disabled={submitting}>
             {t_i18n('Confirm')}
           </Button>
         </DialogActions>

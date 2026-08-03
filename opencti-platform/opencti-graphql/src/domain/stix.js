@@ -5,12 +5,21 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { connectorsForExport } from './connector';
-import { findById as findMarkingDefinitionById, markingDefinitionDeleteAndUpdateGroups } from './markingDefinition';
+import {
+  findById as findMarkingDefinitionById,
+  markingDefinitionDeleteAndUpdateGroups,
+} from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork, updateExpectationsNumber } from './work';
 import { pushToConnector, pushToWorkerForConnector } from '../database/rabbitmq';
 import { isStixDomainObjectShareableContainer } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE, INPUT_GRANTED_REFS } from '../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_OBJECT,
+  buildRefRelationKey,
+  CONNECTOR_INTERNAL_EXPORT_FILE,
+  INPUT_GRANTED_REFS,
+} from '../schema/general';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { notify } from '../database/redis';
@@ -38,14 +47,19 @@ export const stixDelete = async (context, user, id, opts = {}) => {
       // THIS IS NOT IDEAL: we ideally would need to add the forceDelete flag to all delete related methods on the API,
       // and let the worker call this method with the flag set to true in case of synchronization
       if (element.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
-        await markingDefinitionDeleteAndUpdateGroups(context, user, element.id, { forceDelete: true });
+        await markingDefinitionDeleteAndUpdateGroups(context, user, element.id, {
+          forceDelete: true,
+        });
       } else {
         const forceDelete = opts.forceDelete !== undefined ? opts.forceDelete : true;
         await deleteElementById(context, user, element.id, element.entity_type, { forceDelete });
       }
       return element.id;
     }
-    throw UnsupportedError('This method can only delete Stix element', { id: element.id, type: element.entity_type });
+    throw UnsupportedError('This method can only delete Stix element', {
+      id: element.id,
+      type: element.entity_type,
+    });
   }
   throw FunctionalError(`Cannot delete the stix element, ${id} cannot be found.`);
 };
@@ -69,11 +83,18 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
     let target_work_id = work_id;
     if (isEmptyField(work_id)) {
       const workName = `${connector.name} run @ ${now()}`;
-      const work = await createWork(context, user, connector, workName, connector.internal_id, { receivedTime: now() });
+      const work = await createWork(context, user, connector, workName, connector.internal_id, {
+        receivedTime: now(),
+      });
       target_work_id = work.id;
       if (jsonBundle.objects.length === 1) {
         // Only add explicit expectation if the worker will not split anything
-        await updateExpectationsNumber(context, context.user, target_work_id, jsonBundle.objects.length);
+        await updateExpectationsNumber(
+          context,
+          context.user,
+          target_work_id,
+          jsonBundle.objects.length,
+        );
       }
     }
     const content = Buffer.from(bundle, 'utf-8').toString('base64');
@@ -90,7 +111,17 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
   }
 };
 
-export const askListExport = async (context, user, exportContext, format, selectedIds, listParams, type, contentMaxMarkings, fileMarkings) => {
+export const askListExport = async (
+  context,
+  user,
+  exportContext,
+  format,
+  selectedIds,
+  listParams,
+  type,
+  contentMaxMarkings,
+  fileMarkings,
+) => {
   if (!exportContext || !exportContext?.entity_type) {
     throw FunctionalError('entity_type is missing from askListExport');
   }
@@ -99,23 +130,33 @@ export const askListExport = async (context, user, exportContext, format, select
   addExportGeneratedCount();
 
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
-    return await findMarkingDefinitionById(context, user, id);
-  }));
+  const markingLevels = await Promise.all(
+    contentMaxMarkings.map(async (id) => {
+      return await findMarkingDefinitionById(context, user, id);
+    }),
+  );
   await checkUserCanShareMarkings(context, user, markingLevels);
-  const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
+  const fileNameMarkingLevels = markingLevels
+    .map((markingLevel) => markingLevel?.definition)
+    .join('_');
 
-  const entity = exportContext.entity_id ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const entity = exportContext.entity_id
+    ? await storeLoadById(context, user, exportContext.entity_id, ABSTRACT_STIX_CORE_OBJECT)
+    : null;
   const { entity_type } = exportContext;
 
   const toFileName = (connector) => {
-    const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
+    const fileNamePart = `${entity_type}_${type}.${mime.extension(format) ? mime.extension(format) : (specialTypesExtensions[format] ?? 'unknown')}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
 
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
 
-  const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: selectedIds });
+  const { markingFilter, mainFilter } = await getExportFilter(user, {
+    markingList,
+    contentMaxMarkings,
+    objectIdsList: selectedIds,
+  });
   const extendedListParams = { ...listParams, visible_columns: exportContext.visible_columns };
 
   const baseEvent = {
@@ -163,7 +204,9 @@ export const askListExport = async (context, user, exportContext, format, select
     map(async (connector) => {
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity_type}${entity ? `/${entity.id}` : ''}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
+      const work = await createWork(context, user, connector, fileIdentifier, path, {
+        fileMarkings,
+      });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
@@ -179,22 +222,38 @@ export const askListExport = async (context, user, exportContext, format, select
   return worksForExport;
 };
 
-export const askEntityExport = async (context, user, format, entity, type, contentMaxMarkings, fileMarkings) => {
+export const askEntityExport = async (
+  context,
+  user,
+  format,
+  entity,
+  type,
+  contentMaxMarkings,
+  fileMarkings,
+) => {
   // Telemetry: one export generation requested (attempts semantics).
   addExportGeneratedCount();
 
   const connectors = await connectorsForExport(context, user, format, true);
-  const markingLevels = await Promise.all(contentMaxMarkings.map(async (id) => {
-    return await findMarkingDefinitionById(context, user, id);
-  }));
+  const markingLevels = await Promise.all(
+    contentMaxMarkings.map(async (id) => {
+      return await findMarkingDefinitionById(context, user, id);
+    }),
+  );
   await checkUserCanShareMarkings(context, user, markingLevels);
-  const fileNameMarkingLevels = markingLevels.map((markingLevel) => markingLevel?.definition).join('_');
+  const fileNameMarkingLevels = markingLevels
+    .map((markingLevel) => markingLevel?.definition)
+    .join('_');
   const toFileName = (connector) => {
-    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : specialTypesExtensions[format] ?? 'unknown'}`;
+    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(format) ? mime.extension(format) : (specialTypesExtensions[format] ?? 'unknown')}`;
     return `${now()}_${fileNameMarkingLevels || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
   const markingList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_MARKING_DEFINITION);
-  const { markingFilter, mainFilter } = await getExportFilter(user, { markingList, contentMaxMarkings, objectIdsList: [entity.id] });
+  const { markingFilter, mainFilter } = await getExportFilter(user, {
+    markingList,
+    contentMaxMarkings,
+    objectIdsList: [entity.id],
+  });
 
   const baseEvent = {
     format,
@@ -225,10 +284,13 @@ export const askEntityExport = async (context, user, format, entity, type, conte
 
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
-    map(async (connector) => { // can be refactored to native map
+    map(async (connector) => {
+      // can be refactored to native map
       const fileIdentifier = toFileName(connector);
       const path = `export/${entity.entity_type}/${entity.id}`;
-      const work = await createWork(context, user, connector, fileIdentifier, path, { fileMarkings });
+      const work = await createWork(context, user, connector, fileIdentifier, path, {
+        fileMarkings,
+      });
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(connector.internal_id, message);
       return work;
@@ -245,22 +307,38 @@ export const askEntityExport = async (context, user, format, entity, type, conte
   return worksForExport;
 };
 
-export const exportTransformFilters = async (context, user, filteringArgs, orderOptions, userId) => {
+export const exportTransformFilters = async (
+  context,
+  user,
+  filteringArgs,
+  orderOptions,
+  userId,
+) => {
   const orderingInversed = invertObj(orderOptions);
   const { filters } = filteringArgs;
-  const convertedFilters = await checkAndConvertFilters(context, user, filters, userId, elFindByIds);
+  const convertedFilters = await checkAndConvertFilters(
+    context,
+    user,
+    filters,
+    userId,
+    elFindByIds,
+  );
   return {
     ...filteringArgs,
-    orderBy: filteringArgs.orderBy in orderingInversed
-      ? orderingInversed[filteringArgs.orderBy]
-      : filteringArgs.orderBy,
+    orderBy:
+      filteringArgs.orderBy in orderingInversed
+        ? orderingInversed[filteringArgs.orderBy]
+        : filteringArgs.orderBy,
     filters: convertedFilters,
   };
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
-  const organizations = await internalFindByIds(context, context.user, organizationIds, { baseData: true, baseFields: ['name'] });
+  const organizations = await internalFindByIds(context, context.user, organizationIds, {
+    baseData: true,
+    baseFields: ['name'],
+  });
   const organizationNames = organizations.map((o) => o.name).join('|');
   const sharingDescription = `${type} with organization ${organizationNames}`;
   // orderMode is on created_at, see buildQueryFilters in backgroundTask
@@ -276,49 +354,97 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
   await createListTask(context, context.user, input);
 };
 
-export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
+export const addOrganizationRestriction = async (
+  context,
+  user,
+  fromId,
+  organizationId,
+  directContainerSharing,
+) => {
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
   const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
-  const organizationsNotCurrentlyGranted = organizationIds.filter((o) => !currentGrants.includes(o));
+  const organizationsNotCurrentlyGranted = organizationIds.filter(
+    (o) => !currentGrants.includes(o),
+  );
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
-  if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-    || organizationsNotCurrentlyGranted.length === 0
+  if (
+    !objectOrganization.isRefExistingForTypes(
+      from.entity_type,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    ) ||
+    organizationsNotCurrentlyGranted.length === 0
   ) {
     return from;
   }
 
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, ACTION_TYPE_SHARE, from.internal_id, organizationsNotCurrentlyGranted);
+    await createSharingTask(
+      context,
+      ACTION_TYPE_SHARE,
+      from.internal_id,
+      organizationsNotCurrentlyGranted,
+    );
     return from;
   }
   // If standard, just share directly
-  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationsNotCurrentlyGranted, operation: UPDATE_OPERATION_ADD }];
+  const updates = [
+    {
+      key: INPUT_GRANTED_REFS,
+      value: organizationsNotCurrentlyGranted,
+      operation: UPDATE_OPERATION_ADD,
+    },
+  ];
   // We skip references validation when updating organization sharing
-  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, {
+    bypassValidation: true,
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };
 
-export const removeOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
+export const removeOrganizationRestriction = async (
+  context,
+  user,
+  fromId,
+  organizationId,
+  directContainerSharing,
+) => {
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
   const currentGrants = from[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
   const organizationsCurrentlyGranted = organizationIds.filter((o) => currentGrants.includes(o));
   // If entity is not sharable or if entity is already shared with organizations, we can return without doing anything
-  if (!objectOrganization.isRefExistingForTypes(from.entity_type, ENTITY_TYPE_IDENTITY_ORGANIZATION)
-    || organizationsCurrentlyGranted.length === 0
+  if (
+    !objectOrganization.isRefExistingForTypes(
+      from.entity_type,
+      ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    ) ||
+    organizationsCurrentlyGranted.length === 0
   ) {
     return from;
   }
   // If container, create a sharing task
   if (isStixDomainObjectShareableContainer(from.entity_type) && !directContainerSharing) {
-    await createSharingTask(context, ACTION_TYPE_UNSHARE, from.internal_id, organizationsCurrentlyGranted);
+    await createSharingTask(
+      context,
+      ACTION_TYPE_UNSHARE,
+      from.internal_id,
+      organizationsCurrentlyGranted,
+    );
     return from;
   }
   // If standard, just share directly
-  const updates = [{ key: INPUT_GRANTED_REFS, value: organizationsCurrentlyGranted, operation: UPDATE_OPERATION_REMOVE }];
+  const updates = [
+    {
+      key: INPUT_GRANTED_REFS,
+      value: organizationsCurrentlyGranted,
+      operation: UPDATE_OPERATION_REMOVE,
+    },
+  ];
   // We skip references validation when updating organization sharing
-  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, { bypassValidation: true });
+  const data = await updateAttribute(context, user, fromId, from.entity_type, updates, {
+    bypassValidation: true,
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_OBJECT].EDIT_TOPIC, data.element, user);
 };

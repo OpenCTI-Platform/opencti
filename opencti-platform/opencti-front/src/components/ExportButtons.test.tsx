@@ -16,9 +16,12 @@ vi.mock('../utils/Image', () => ({
 // Use a Proxy for environment so any method call (retain, check, etc.) is auto-mocked
 vi.mock('../relay/environment', () => ({
   MESSAGING$: { notifyError: vi.fn() },
-  environment: new Proxy({}, {
-    get: () => vi.fn(() => ({ dispose: vi.fn() })),
-  }),
+  environment: new Proxy(
+    {},
+    {
+      get: () => vi.fn(() => ({ dispose: vi.fn() })),
+    },
+  ),
 }));
 
 // Minimal ExportThemeContext mock
@@ -45,7 +48,8 @@ const makeProps = (overrides = {}) => ({
 function createExportButtonsInstance(props: Record<string, unknown>) {
   const instance = new ExportButtons({ setExportTheme: mockSetExportTheme, ...props });
   instance.state = { anchorElImage: null, anchorElPdf: null, exporting: false };
-  instance.setState = (patch) => Object.assign(instance.state, typeof patch === 'function' ? patch(instance.state) : patch);
+  instance.setState = (patch) =>
+    Object.assign(instance.state, typeof patch === 'function' ? patch(instance.state) : patch);
   return instance;
 }
 
@@ -73,7 +77,12 @@ describe('ExportButtons — exportImage()', () => {
     vi.mocked(exportImage).mockResolvedValueOnce(undefined);
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportImage({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     // Theme was set to the selected theme before export
     expect(mockSetExportTheme).toHaveBeenNthCalledWith(1, mockThemeNode);
@@ -86,7 +95,12 @@ describe('ExportButtons — exportImage()', () => {
     vi.mocked(exportImage).mockRejectedValueOnce(new Error('canvas error'));
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportImage({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     // setExportTheme(null) MUST still be called despite the error
     expect(mockSetExportTheme).toHaveBeenCalledWith(null);
@@ -97,7 +111,12 @@ describe('ExportButtons — exportImage()', () => {
   it('resets theme to null in finally when domElementId does not exist', async () => {
     const instance = createExportButtonsInstance(makeProps());
     // Pass a non-existent element ID
-    await instance.exportImage({ domElementId: 'non-existent-id', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportImage({
+      domElementId: 'non-existent-id',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     // Theme must still be reset
     expect(mockSetExportTheme).toHaveBeenCalledWith(null);
@@ -107,7 +126,12 @@ describe('ExportButtons — exportImage()', () => {
     vi.mocked(exportImage).mockRejectedValueOnce(new Error('fail'));
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: false });
+    await instance.exportImage({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: false,
+    });
 
     expect(instance.state.exporting).toBe(false);
   });
@@ -116,7 +140,12 @@ describe('ExportButtons — exportImage()', () => {
     vi.mocked(exportImage).mockResolvedValueOnce(undefined);
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: false });
+    await instance.exportImage({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: false,
+    });
 
     expect(exportImage).toHaveBeenCalledWith(
       'test-container',
@@ -133,7 +162,12 @@ describe('ExportButtons — exportImage()', () => {
     vi.mocked(exportImage).mockResolvedValueOnce(undefined);
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportImage({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportImage({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     expect(exportImage).toHaveBeenCalledWith(
       'test-container',
@@ -170,7 +204,12 @@ describe('ExportButtons — exportPdf()', () => {
     vi.mocked(exportPdf).mockResolvedValueOnce(undefined);
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportPdf({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     expect(mockSetExportTheme).toHaveBeenNthCalledWith(1, mockThemeNode);
     expect(mockSetExportTheme).toHaveBeenNthCalledWith(2, null);
@@ -181,7 +220,12 @@ describe('ExportButtons — exportPdf()', () => {
     vi.mocked(exportPdf).mockRejectedValueOnce(new Error('pdf generation error'));
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportPdf({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     expect(mockSetExportTheme).toHaveBeenCalledWith(null);
     expect(MESSAGING$.notifyError).toHaveBeenCalledWith('Dashboard cannot be exported to pdf');
@@ -191,7 +235,12 @@ describe('ExportButtons — exportPdf()', () => {
     vi.mocked(exportPdf).mockRejectedValueOnce(new Error('fail'));
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportPdf({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     expect(instance.state.exporting).toBe(false);
   });
@@ -200,7 +249,12 @@ describe('ExportButtons — exportPdf()', () => {
     vi.mocked(exportPdf).mockRejectedValueOnce(new Error('fail'));
 
     const instance = createExportButtonsInstance(makeProps());
-    await instance.exportPdf({ domElementId: 'test-container', name: 'test', themeNode: mockThemeNode, background: true });
+    await instance.exportPdf({
+      domElementId: 'test-container',
+      name: 'test',
+      themeNode: mockThemeNode,
+      background: true,
+    });
 
     const buttons = document.getElementById('export-buttons');
     expect(buttons?.style.display).toBe('flex');

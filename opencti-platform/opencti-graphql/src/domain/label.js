@@ -64,10 +64,14 @@ export const labelEditField = async (context, user, labelId, input, opts = {}) =
 
 export const labelCleanContext = async (context, user, labelId) => {
   await delEditContext(user, labelId);
-  return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
+  return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL).then((label) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user),
+  );
 };
 
 export const labelEditContext = async (context, user, labelId, input) => {
   await setEditContext(user, labelId, input);
-  return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
+  return storeLoadById(context, user, labelId, ENTITY_TYPE_LABEL).then((label) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user),
+  );
 };

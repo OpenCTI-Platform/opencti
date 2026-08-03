@@ -38,8 +38,10 @@ const {
 vi.mock('../../../../../components/AppIntlProvider', async () => {
   const { IntlProvider } = await import('react-intl');
   return {
-    default: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
-    ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
+    default: ({ children }: { children: React.ReactNode }) =>
+      React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
+    ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) =>
+      React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
   };
 });
 
@@ -104,13 +106,17 @@ vi.mock('@components/drafts/DraftCreation', () => ({
 // useApiMutation – identify the draft-creation call via its errorMessage option
 // ---------------------------------------------------------------------------
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
-  default: vi.fn().mockImplementation((_mutation: unknown, _fn: unknown, options: { errorMessage?: string } | undefined) => {
-    if (options?.errorMessage) {
-      // This is the DraftCreationMutation (it is the only call with errorMessage)
-      return [mockCommitCreationMutation, false];
-    }
-    return [vi.fn(), false];
-  }),
+  default: vi
+    .fn()
+    .mockImplementation(
+      (_mutation: unknown, _fn: unknown, options: { errorMessage?: string } | undefined) => {
+        if (options?.errorMessage) {
+          // This is the DraftCreationMutation (it is the only call with errorMessage)
+          return [mockCommitCreationMutation, false];
+        }
+        return [vi.fn(), false];
+      },
+    ),
 }));
 
 // ---------------------------------------------------------------------------
@@ -221,9 +227,7 @@ describe('ImportFilesDialog – createDraft', () => {
         },
       );
 
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
+      const { user } = testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
 
       await user.click(screen.getByRole('button', { name: 'Import' }));
 
@@ -253,9 +257,7 @@ describe('ImportFilesDialog – createDraft', () => {
         },
       );
 
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
+      const { user } = testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
 
       await user.click(screen.getByRole('button', { name: 'Import' }));
 
@@ -276,9 +278,7 @@ describe('ImportFilesDialog – createDraft', () => {
         },
       );
 
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
+      const { user } = testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
 
       await user.click(screen.getByRole('button', { name: 'Import' }));
 
@@ -301,9 +301,7 @@ describe('ImportFilesDialog – createDraft', () => {
         draftId: 'existing-draft-id',
       });
 
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
+      const { user } = testRender(<ImportFilesDialog open={true} handleClose={vi.fn()} />);
 
       await user.click(screen.getByRole('button', { name: 'Import' }));
 

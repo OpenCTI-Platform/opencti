@@ -1,5 +1,11 @@
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
-import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
+import {
+  BellCogOutline,
+  BellOutline,
+  BellPlusOutline,
+  BellRemoveOutline,
+  FileTableBoxMultipleOutline,
+} from 'mdi-material-ui';
 import React from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 
@@ -11,7 +17,10 @@ export const colors: Record<string, string> = {
   multiple: indigo[500],
 };
 
-export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
+export const getFirstOperation = ({
+  notification_content,
+  notification_type,
+}: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
   const events = notification_content.map((n) => n.events).flat();
   const firstEvent = events.at(0);
   const isDigest = notification_type === 'digest';
@@ -27,9 +36,7 @@ export const iconSelector = (operation: string) => {
     case 'delete':
       return <BellRemoveOutline style={{ color: colors[operation] }} />;
     case 'multiple':
-      return (
-        <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />
-      );
+      return <FileTableBoxMultipleOutline style={{ color: colors[operation] }} />;
     default:
       return <BellOutline style={{ color: colors[operation] }} />;
   }

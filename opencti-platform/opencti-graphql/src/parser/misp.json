@@ -1325,9 +1325,7 @@
             "description": "",
             "galaxy_id": "32",
             "source": "MISP Project",
-            "authors": [
-              "Various"
-            ],
+            "authors": ["Various"],
             "version": "21",
             "distribution": "3",
             "sharing_group_id": null,
@@ -1428,21 +1426,12 @@
               }
             ],
             "meta": {
-              "country": [
-                "RU"
-              ],
+              "country": ["RU"],
               "refs": [
                 "https://learn.microsoft.com/en-us/microsoft-365/security/intelligence/microsoft-threat-actor-naming?view=o365-worldwide"
               ],
-              "sector": [
-                "Russia"
-              ],
-              "synonyms": [
-                "KRYPTON",
-                "Venomous Bear",
-                "Turla",
-                "Snake"
-              ]
+              "sector": ["Russia"],
+              "synonyms": ["KRYPTON", "Venomous Bear", "Turla", "Snake"]
             },
             "tag_id": 773,
             "event_tag_id": "2005",
@@ -1742,12 +1731,8 @@
               }
             ],
             "meta": {
-              "attribution-confidence": [
-                "50"
-              ],
-              "cfr-suspected-state-sponsor": [
-                "Russian Federation"
-              ],
+              "attribution-confidence": ["50"],
+              "cfr-suspected-state-sponsor": ["Russian Federation"],
               "cfr-suspected-victims": [
                 "France",
                 "Romania",
@@ -1765,16 +1750,9 @@
                 "Uzbekistan",
                 "Iraq"
               ],
-              "cfr-target-category": [
-                "Government",
-                "Military"
-              ],
-              "cfr-type-of-incident": [
-                "Espionage"
-              ],
-              "country": [
-                "RU"
-              ],
+              "cfr-target-category": ["Government", "Military"],
+              "cfr-type-of-incident": ["Espionage"],
+              "country": ["RU"],
               "refs": [
                 "https://www.circl.lu/pub/tr-25/",
                 "https://securelist.com/introducing-whitebear/81638/",
@@ -1883,9 +1861,7 @@
             "description": "Russia",
             "galaxy_id": "15",
             "source": "MISP Project",
-            "authors": [
-              "geonames.org"
-            ],
+            "authors": ["geonames.org"],
             "version": "2",
             "distribution": "3",
             "sharing_group_id": null,
@@ -1943,33 +1919,17 @@
               "landingpage": null
             },
             "meta": {
-              "Capital": [
-                "Moscow"
-              ],
-              "Continent": [
-                "EU"
-              ],
-              "CurrencyCode": [
-                "RUB"
-              ],
-              "CurrencyName": [
-                "Ruble"
-              ],
-              "ISO": [
-                "RU"
-              ],
-              "ISO3": [
-                "RUS"
-              ],
+              "Capital": ["Moscow"],
+              "Continent": ["EU"],
+              "CurrencyCode": ["RUB"],
+              "CurrencyName": ["Ruble"],
+              "ISO": ["RU"],
+              "ISO3": ["RUS"],
               "Languages": [
                 "ru,tt,xal,cau,ady,kv,ce,tyv,cv,udm,tut,mns,bua,myv,mdf,chm,ba,inh,tut,kbd,krc,av,sah,nog"
               ],
-              "Population": [
-                "140702000"
-              ],
-              "tld": [
-                ".ru"
-              ]
+              "Population": ["140702000"],
+              "tld": [".ru"]
             },
             "tag_id": 548,
             "event_tag_id": "2007",
@@ -2006,9 +1966,7 @@
             "description": "",
             "galaxy_id": "84",
             "source": "Various",
-            "authors": [
-              "Unknown"
-            ],
+            "authors": ["Unknown"],
             "version": "9",
             "distribution": "3",
             "sharing_group_id": null,
@@ -2082,36 +2040,18 @@
               }
             ],
             "meta": {
-              "calling-code": [
-                "+92"
-              ],
-              "capital": [
-                "Islamabad"
-              ],
-              "currency": [
-                "Pakistani rupee",
-                "₨",
-                "PKR"
-              ],
-              "iso-code": [
-                "PK",
-                "PAK"
-              ],
-              "official-languages": [
-                "English",
-                "Urdu"
-              ],
+              "calling-code": ["+92"],
+              "capital": ["Islamabad"],
+              "currency": ["Pakistani rupee", "₨", "PKR"],
+              "iso-code": ["PK", "PAK"],
+              "official-languages": ["English", "Urdu"],
               "synonyms": [
                 "Islamic Republic of Pakistan",
                 "اِسلامی جمہوریہ پاكِستان",
                 "Islāmī Jumhūriyah Pākistān"
               ],
-              "territory-type": [
-                "Country"
-              ],
-              "top-level-domain": [
-                ".pk"
-              ]
+              "territory-type": ["Country"],
+              "top-level-domain": [".pk"]
             },
             "tag_id": 637,
             "event_tag_id": "2008",
@@ -2128,9 +2068,7 @@
             "description": "",
             "galaxy_id": "84",
             "source": "Various",
-            "authors": [
-              "Unknown"
-            ],
+            "authors": ["Unknown"],
             "version": "9",
             "distribution": "3",
             "sharing_group_id": null,
@@ -2176,37 +2114,19 @@
               "landingpage": null
             },
             "meta": {
-              "calling-code": [
-                "+93"
-              ],
-              "capital": [
-                "Kabul"
-              ],
-              "currency": [
-                "AFN",
-                "Afs",
-                "Afghani"
-              ],
-              "iso-code": [
-                "AF",
-                "AFG"
-              ],
-              "official-languages": [
-                "Dari",
-                "Pashto"
-              ],
+              "calling-code": ["+93"],
+              "capital": ["Kabul"],
+              "currency": ["AFN", "Afs", "Afghani"],
+              "iso-code": ["AF", "AFG"],
+              "official-languages": ["Dari", "Pashto"],
               "synonyms": [
                 "افغانستان",
                 "Afġānistān",
                 "Afġānestān",
                 "Islamic Republic of Afghanistan"
               ],
-              "territory-type": [
-                "Country"
-              ],
-              "top-level-domain": [
-                ".af"
-              ]
+              "territory-type": ["Country"],
+              "top-level-domain": [".af"]
             },
             "tag_id": 776,
             "event_tag_id": "2010",
@@ -2223,9 +2143,7 @@
             "description": "",
             "galaxy_id": "84",
             "source": "Various",
-            "authors": [
-              "Unknown"
-            ],
+            "authors": ["Unknown"],
             "version": "9",
             "distribution": "3",
             "sharing_group_id": null,
@@ -2271,35 +2189,14 @@
               "landingpage": null
             },
             "meta": {
-              "calling-code": [
-                "+91"
-              ],
-              "capital": [
-                "New Delhi"
-              ],
-              "currency": [
-                "Indian rupee",
-                "₹",
-                "INR"
-              ],
-              "iso-code": [
-                "IN",
-                "IND"
-              ],
-              "official-languages": [
-                "Hindi",
-                "English"
-              ],
-              "synonyms": [
-                "Republic of India",
-                "Bhārat Gaṇarājya"
-              ],
-              "territory-type": [
-                "Country"
-              ],
-              "top-level-domain": [
-                ".in"
-              ]
+              "calling-code": ["+91"],
+              "capital": ["New Delhi"],
+              "currency": ["Indian rupee", "₹", "INR"],
+              "iso-code": ["IN", "IND"],
+              "official-languages": ["Hindi", "English"],
+              "synonyms": ["Republic of India", "Bhārat Gaṇarājya"],
+              "territory-type": ["Country"],
+              "top-level-domain": [".in"]
             },
             "tag_id": 600,
             "event_tag_id": "2011",
@@ -2639,10 +2536,7 @@
                 "https://www.pwc.co.uk/cyber-security/pdf/pwc-cyber-threats-2020-a-year-in-retrospect.pdf",
                 "https://securelist.com/apt-trends-report-q3-2020/99204/"
               ],
-              "synonyms": [
-                "SEEDOOR",
-                "Scarimson"
-              ]
+              "synonyms": ["SEEDOOR", "Scarimson"]
             },
             "tag_id": 777,
             "event_tag_id": "2012",

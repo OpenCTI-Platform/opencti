@@ -12,21 +12,13 @@ type DecayExclusionRuleCreationProps = {
 };
 
 const CreateDecayExclusionRuleControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="DecayExclusionRule"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="DecayExclusionRule" {...props} />
 );
 const DecayExclusionRuleCreation = ({ paginationOptions }: DecayExclusionRuleCreationProps) => {
   const { t_i18n } = useFormatter();
 
   const updater = (store: RecordSourceSelectorProxy, rootField: string) => {
-    insertNode(
-      store,
-      'Pagination_decayExclusionRules',
-      paginationOptions,
-      rootField,
-    );
+    insertNode(store, 'Pagination_decayExclusionRules', paginationOptions, rootField);
   };
 
   return (
@@ -35,11 +27,7 @@ const DecayExclusionRuleCreation = ({ paginationOptions }: DecayExclusionRuleCre
       controlledDial={CreateDecayExclusionRuleControlledDial}
     >
       {({ onClose }) => (
-        <DecayExclusionRuleCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <DecayExclusionRuleCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );

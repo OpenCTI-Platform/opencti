@@ -1,5 +1,8 @@
 import React from 'react';
-import { EventsLinesPaginationQuery, EventsLinesPaginationQuery$variables } from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
+import {
+  EventsLinesPaginationQuery,
+  EventsLinesPaginationQuery$variables,
+} from '@components/entities/events/__generated__/EventsLinesPaginationQuery.graphql';
 import { EventLineDummy } from '@components/entities/events/EventLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import EventsLines, { eventsLinesQuery } from './events/EventsLines';
@@ -19,26 +22,17 @@ const Events = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Events | Entities'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EventsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<EventsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
       filters: emptyFilterGroup,
-    },
-  );
+    });
 
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -89,27 +83,24 @@ const Events = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <EventCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <EventLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <EventLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <EventsLines
               queryRef={queryRef}
@@ -124,7 +115,9 @@ const Events = () => {
   };
   return (
     <div data-testid="event-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

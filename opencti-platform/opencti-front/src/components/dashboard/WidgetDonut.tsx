@@ -13,11 +13,7 @@ interface WidgetDonutProps {
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
-const WidgetDonut = ({
-  data,
-  groupBy,
-  onMounted,
-}: WidgetDonutProps) => {
+const WidgetDonut = ({ data, groupBy, onMounted }: WidgetDonutProps) => {
   const theme = useTheme<Theme>();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
 
@@ -27,19 +23,25 @@ const WidgetDonut = ({
     const labels = buildWidgetLabelsOption(data, groupBy);
     let chartColors: (string | undefined)[] = [];
     if (data.at(0)?.entity?.color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
-        ? '#000000'
-        : n.entity?.color));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n.entity?.color === '#ffffff'
+          ? '#000000'
+          : n.entity?.color,
+      );
     }
     if (data.at(0)?.entity?.x_opencti_color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
-        ? '#000000'
-        : n.entity?.x_opencti_color));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n.entity?.x_opencti_color === '#ffffff'
+          ? '#000000'
+          : n.entity?.x_opencti_color,
+      );
     }
     if (data.at(0)?.entity?.template?.color) {
-      chartColors = data.map((n) => (theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
-        ? '#000000'
-        : n.entity?.template.color));
+      chartColors = data.map((n) =>
+        theme.palette.mode === 'light' && n.entity?.template.color === '#ffffff'
+          ? '#000000'
+          : n.entity?.template.color,
+      );
     }
 
     return donutChartOptions(

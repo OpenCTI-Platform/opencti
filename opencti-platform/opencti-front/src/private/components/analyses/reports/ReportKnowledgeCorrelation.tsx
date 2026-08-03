@@ -1,7 +1,9 @@
 import { graphql } from 'react-relay';
 import React, { Suspense } from 'react';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import GraphContainerCorrelation, { graphContainerCorrelationObjectsQuery } from '../../../../components/graph/GraphContainerCorrelation';
+import GraphContainerCorrelation, {
+  graphContainerCorrelationObjectsQuery,
+} from '../../../../components/graph/GraphContainerCorrelation';
 import { GraphContainerCorrelationObjectsQuery } from '../../../../components/graph/__generated__/GraphContainerCorrelationObjectsQuery.graphql';
 import useReportKnowledgeCorrelationEdit from './useReportKnowledgeCorrelationEdit';
 import { OctiGraphPositions } from '../../../../components/graph/graph.types';
@@ -22,10 +24,7 @@ interface ReportKnowledgeCorrelationProps {
   id: string;
 }
 
-const ReportKnowledgeCorrelation = ({
-  data,
-  id,
-}: ReportKnowledgeCorrelationProps) => {
+const ReportKnowledgeCorrelation = ({ data, id }: ReportKnowledgeCorrelationProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<GraphContainerCorrelationObjectsQuery>(
     graphContainerCorrelationObjectsQuery,
@@ -38,10 +37,12 @@ const ReportKnowledgeCorrelation = ({
     commitEditPositions({
       variables: {
         id,
-        input: [{
-          key: 'x_opencti_graph_data',
-          value: [serializeObjectB64(positions)],
-        }],
+        input: [
+          {
+            key: 'x_opencti_graph_data',
+            value: [serializeObjectB64(positions)],
+          },
+        ],
       },
     });
   };

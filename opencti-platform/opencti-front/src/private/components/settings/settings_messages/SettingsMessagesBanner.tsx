@@ -81,9 +81,9 @@ const BANNER_DIV = 'banner_div';
 const isDisplayMessage = (messageFromLocalStorage: MessageFromLocalStorage) => {
   // Message not activated or already dismiss
   if (
-    !messageFromLocalStorage
-    || !messageFromLocalStorage.activated
-    || messageFromLocalStorage.dismiss
+    !messageFromLocalStorage ||
+    !messageFromLocalStorage.activated ||
+    messageFromLocalStorage.dismiss
   ) {
     return false;
   }
@@ -91,9 +91,7 @@ const isDisplayMessage = (messageFromLocalStorage: MessageFromLocalStorage) => {
   return true;
 };
 
-const extractMessagesToDisplay = (
-  messagesFromLocalStorage: MessageFromLocalStorage[],
-) => {
+const extractMessagesToDisplay = (messagesFromLocalStorage: MessageFromLocalStorage[]) => {
   return (messagesFromLocalStorage ?? [])
     .filter((m) => isDisplayMessage(m))
     .sort((m1, m2) => {
@@ -107,7 +105,7 @@ const extractMessagesToDisplay = (
 const ref = React.createRef<HTMLDivElement>();
 export const useSettingsMessagesBannerHeight = () => {
   const [bannerHeight, setBannerHeight] = useState<number>(
-    ref.current?.clientHeight as number ?? 0,
+    (ref.current?.clientHeight as number) ?? 0,
   );
   useBus(
     `${BANNER_LOCAL_STORAGE_KEY}_bus`,
@@ -148,8 +146,7 @@ const SettingsMessagesBannerComponent = ({
     [settings, settingsSubscription],
   );
   useSubscription(config);
-  const messagesSettings = (settings.platform_messages
-    ?? []) as MessageFromLocalStorage[];
+  const messagesSettings = (settings.platform_messages ?? []) as MessageFromLocalStorage[];
   const [{ messages: messagesLocalStorage }, setMessages] = useLocalStorage(
     BANNER_LOCAL_STORAGE_KEY,
     { messages: messagesSettings },
@@ -160,13 +157,11 @@ const SettingsMessagesBannerComponent = ({
   useEffect(() => {
     // 1. New message -> Update local storage
     const messagesUpdated = messagesSettings.map((message) => {
-      const messageLocalStorage = messagesLocalStorage?.find(
-        (m) => m.id === message.id,
-      );
+      const messageLocalStorage = messagesLocalStorage?.find((m) => m.id === message.id);
       if (messageLocalStorage) {
         if (
-          messageLocalStorage.updated_at < message.updated_at
-          || messageLocalStorage?.dismissible !== message.dismissible
+          messageLocalStorage.updated_at < message.updated_at ||
+          messageLocalStorage?.dismissible !== message.dismissible
         ) {
           return { ...message, dismiss: false };
         }
@@ -196,9 +191,7 @@ const SettingsMessagesBannerComponent = ({
   }
   // 5. Message activated and not dismiss
   const handleDismiss = () => {
-    const otherMessages = messagesLocalStorage.filter(
-      (m) => m.id !== messageToDisplay.id,
-    );
+    const otherMessages = messagesLocalStorage.filter((m) => m.id !== messageToDisplay.id);
     setMessages({
       messages: [...otherMessages, { ...messageToDisplay, dismiss: true }],
     });
@@ -237,9 +230,7 @@ const SettingsMessagesBannerComponent = ({
 };
 
 const SettingsMessagesBanner = () => {
-  const queryRef = useQueryLoading<SettingsMessagesBannerQuery>(
-    settingsMessagesQuery,
-  );
+  const queryRef = useQueryLoading<SettingsMessagesBannerQuery>(settingsMessagesQuery);
   return queryRef ? (
     <React.Suspense fallback={<span />}>
       <SettingsMessagesBannerComponent queryRef={queryRef} />

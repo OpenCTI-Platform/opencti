@@ -9,7 +9,10 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -17,175 +20,175 @@ import ItemEntityType from '../../../components/ItemEntityType';
 import { useComputeLink } from '../../../utils/hooks/useAppData';
 
 const draftRelationshipsLineFragment = graphql`
-    fragment DraftRelationships_node on StixCoreRelationship {
+  fragment DraftRelationships_node on StixCoreRelationship {
+    id
+    standard_id
+    entity_type
+    parent_types
+    relationship_type
+    confidence
+    start_time
+    stop_time
+    description
+    fromRole
+    toRole
+    created_at
+    updated_at
+    is_inferred
+    draftVersion {
+      draft_operation
+    }
+    createdBy {
+      ... on Identity {
+        name
+      }
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    createdBy {
+      ... on Identity {
         id
-        standard_id
+        name
+        entity_type
+      }
+    }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    from {
+      ... on BasicObject {
+        id
         entity_type
         parent_types
-        relationship_type
-        confidence
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
         start_time
         stop_time
-        description
-        fromRole
-        toRole
-        created_at
-        updated_at
-        is_inferred
-        draftVersion {
-            draft_operation
+        created
+        representative {
+          main
         }
-        createdBy {
-            ... on Identity {
-                name
-            }
-        }
-        objectMarking {
-            id
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        objectLabel {
-            id
-            value
-            color
-        }
-        createdBy {
-            ... on Identity {
-                id
-                name
-                entity_type
-            }
-        }
-        creators {
-            id
-            name
-        }
-        objectMarking {
-            id
-            definition
-            x_opencti_order
-            x_opencti_color
-        }
-        from {
-            ... on BasicObject {
-                id
-                entity_type
-                parent_types
-            }
-            ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-            }
-            ... on StixCoreObject {
-                created_at
-                representative {
-                    main
-                }
-            }
-            ... on StixCoreRelationship {
-                created_at
-                start_time
-                stop_time
-                created
-                representative {
-                    main
-                }
-            }
-        }
-        to {
-            ... on BasicObject {
-                id
-                entity_type
-                parent_types
-            }
-            ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-            }
-            ... on StixCoreObject {
-                created_at
-                representative {
-                    main
-                }
-            }
-            ... on StixCoreRelationship {
-                created_at
-                start_time
-                stop_time
-                created
-                representative {
-                    main
-                }
-            }
-        }
+      }
     }
+    to {
+      ... on BasicObject {
+        id
+        entity_type
+        parent_types
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+        parent_types
+      }
+      ... on StixCoreObject {
+        created_at
+        representative {
+          main
+        }
+      }
+      ... on StixCoreRelationship {
+        created_at
+        start_time
+        stop_time
+        created
+        representative {
+          main
+        }
+      }
+    }
+  }
 `;
 
 const draftRelationshipsLinesQuery = graphql`
-    query DraftRelationshipsLinesPaginationQuery(
-        $draftId: String!
-        $types: [String]
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: StixRelationshipsOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...DraftRelationshipsLines_data
-        @arguments(
-            draftId: $draftId
-            types: $types
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query DraftRelationshipsLinesPaginationQuery(
+    $draftId: String!
+    $types: [String]
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: StixRelationshipsOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...DraftRelationshipsLines_data
+      @arguments(
+        draftId: $draftId
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 export const draftRelationshipsLinesFragment = graphql`
-    fragment DraftRelationshipsLines_data on Query
-    @argumentDefinitions(
-        draftId: { type: "String!" }
-        types: { type: "[String]" }
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "StixRelationshipsOrdering", defaultValue: created }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "DraftRelationshipsLinesRefetchQuery") {
-        draftWorkspaceRelationships(
-            draftId: $draftId
-            types: $types
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_draftWorkspaceRelationships") {
-            edges {
-                node {
-                    id
-                    ...DraftRelationships_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment DraftRelationshipsLines_data on Query
+  @argumentDefinitions(
+    draftId: { type: "String!" }
+    types: { type: "[String]" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixRelationshipsOrdering", defaultValue: created }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DraftRelationshipsLinesRefetchQuery") {
+    draftWorkspaceRelationships(
+      draftId: $draftId
+      types: $types
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_draftWorkspaceRelationships") {
+      edges {
+        node {
+          id
+          ...DraftRelationships_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draft_relationships';
@@ -216,12 +219,15 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftRelationshipsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
-  const {
-    filters,
-  } = viewStorage;
+  } = usePaginationLocalStorage<DraftRelationshipsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const { filters } = viewStorage;
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters, { draftId });
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters, {
+    draftId,
+  });
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -278,8 +284,12 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRedirectionLink = (stixRelationship: any) => {
     if (isReadOnly) {
-      const isUpdatedEntity = stixRelationship.draftVersion?.draft_operation === 'update' || stixRelationship.draftVersion?.draft_operation === 'update_linked';
-      return isUpdatedEntity ? `/dashboard/id/${stixRelationship.id}` : `/dashboard/id/${stixRelationship.standard_id}`;
+      const isUpdatedEntity =
+        stixRelationship.draftVersion?.draft_operation === 'update' ||
+        stixRelationship.draftVersion?.draft_operation === 'update_linked';
+      return isUpdatedEntity
+        ? `/dashboard/id/${stixRelationship.id}`
+        : `/dashboard/id/${stixRelationship.standard_id}`;
     }
     return computeLink(stixRelationship);
   };
@@ -289,7 +299,9 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
+          resolvePath={(data: DraftRelationshipsLines_data$data) =>
+            data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           getComputeLink={getRedirectionLink}

@@ -44,20 +44,40 @@ const UserEditionFragment = graphql`
         source {
           type
           object {
-            ... on User { entity_type id name }
-            ... on Group { entity_type id name }
+            ... on User {
+              entity_type
+              id
+              name
+            }
+            ... on Group {
+              entity_type
+              id
+              name
+            }
           }
         }
       }
       source {
         type
         object {
-          ... on User { entity_type id name }
-          ... on Group { entity_type id name }
+          ... on User {
+            entity_type
+            id
+            name
+          }
+          ... on Group {
+            entity_type
+            id
+            name
+          }
         }
       }
     }
-    objectAssignedOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+    objectAssignedOrganization(
+      first: $organizationsCount
+      orderBy: $organizationsOrderBy
+      orderMode: $organizationsOrderMode
+    ) {
       edges {
         node {
           id
@@ -107,10 +127,7 @@ interface UserEditionDrawerProps {
 }
 
 const UpdateUserControlledDial = (props: DrawerControlledDialProps) => (
-  <EditEntityControlledDial
-    style={{ float: 'right' }}
-    {...props}
-  />
+  <EditEntityControlledDial style={{ float: 'right' }} {...props} />
 );
 
 const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
@@ -137,44 +154,38 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
       {user ? (
         <>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={currentTab}
-              onChange={(event, value) => handleChangeTab(value)}
-            >
+            <Tabs value={currentTab} onChange={(event, value) => handleChangeTab(value)}>
               <Tab label={t_i18n('Overview')} />
-              <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
+              <Tab
+                disabled={!!user.external || isServiceAccount === true}
+                label={t_i18n('Password')}
+              />
               <Tab label={t_i18n('Groups')} />
-              {hasSetAccess
-                && (
-                  <Tab
-                    disabled={user.objectAssignedOrganization?.edges.length === 0}
-                    label={(
-                      <div style={{ alignItems: 'center', display: 'flex', textTransform: 'none' }}>
-                        {t_i18n('Organizations admin')}<EEChip />
-                      </div>
-                    )}
-                  />
-                )
-              }
+              {hasSetAccess && (
+                <Tab
+                  disabled={user.objectAssignedOrganization?.edges.length === 0}
+                  label={
+                    <div style={{ alignItems: 'center', display: 'flex', textTransform: 'none' }}>
+                      {t_i18n('Organizations admin')}
+                      <EEChip />
+                    </div>
+                  }
+                />
+              )}
               {hasSetAccess && <Tab label={t_i18n('Confidences')} />}
             </Tabs>
           </Box>
-          {currentTab === 0 && (
-            <UserEditionOverview user={user} context={user.editContext} />
-          )}
-          {currentTab === 1 && (
-            <UserEditionPassword user={user} />
-          )}
+          {currentTab === 0 && <UserEditionOverview user={user} context={user.editContext} />}
+          {currentTab === 1 && <UserEditionPassword user={user} />}
           {currentTab === 2 && <UserEditionGroups user={user} />}
-          {hasSetAccess && currentTab === 3 && (
-            <UserEditionOrganizationsAdmin user={user} />
-          )}
+          {hasSetAccess && currentTab === 3 && <UserEditionOrganizationsAdmin user={user} />}
           {hasSetAccess && currentTab === 4 && (
             <UserEditionConfidence user={user} context={user.editContext} />
           )}
         </>
-      )
-        : (<Loader />)}
+      ) : (
+        <Loader />
+      )}
     </Drawer>
   );
 };
@@ -191,13 +202,7 @@ const UserEdition: FunctionComponent<UserEditionProps> = ({
   open,
 }) => {
   if (!userEditionData) return <Loader />;
-  return (
-    <UserEditionDrawer
-      handleClose={handleClose}
-      open={open}
-      userRef={userEditionData.user}
-    />
-  );
+  return <UserEditionDrawer handleClose={handleClose} open={open} userRef={userEditionData.user} />;
 };
 
 export default UserEdition;

@@ -19,9 +19,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -120,7 +118,7 @@ class SyncLineLineComponent extends Component {
         <ListItem
           divider={true}
           disablePadding
-          secondaryAction={(
+          secondaryAction={
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <SyncPopover
                 syncId={node.id}
@@ -128,7 +126,7 @@ class SyncLineLineComponent extends Component {
                 running={node.running}
               />
             </Security>
-          )}
+          }
         >
           <ListItemButton
             classes={{ root: classes.item }}
@@ -138,30 +136,18 @@ class SyncLineLineComponent extends Component {
               <DatabaseImportOutline />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.name.width }}
-                  >
+                  <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                     {node.name}
                   </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.uri.width }}
-                  >
+                  <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
                     {node.uri}
                   </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.messages.width }}
-                  >
+                  <div className={classes.bodyItem} style={{ width: dataColumns.messages.width }}>
                     {n(node.queue_messages)}
                   </div>
-                  <div
-                    className={classes.bodyItem}
-                    style={{ width: dataColumns.running.width }}
-                  >
+                  <div className={classes.bodyItem} style={{ width: dataColumns.running.width }}>
                     <ItemBoolean
                       variant="inList"
                       label={node.running ? t('Active') : t('Inactive')}
@@ -178,25 +164,25 @@ class SyncLineLineComponent extends Component {
                     className={classes.producerItem}
                     style={{ width: dataColumns.producer.width }}
                   >
-                    {!health.hexColor
-                      ? <span style={{ color: '#9e9e9e' }}>-</span>
-                      : (
-                          <Chip
-                            label={health.label}
-                            style={{
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              borderRadius: 4,
-                              height: 20,
-                              backgroundColor: `${health.hexColor}33`,
-                              color: health.hexColor,
-                              border: `2px solid ${health.hexColor}`,
-                            }}
-                          />
-                        )}
+                    {!health.hexColor ? (
+                      <span style={{ color: '#9e9e9e' }}>-</span>
+                    ) : (
+                      <Chip
+                        label={health.label}
+                        style={{
+                          fontSize: 12,
+                          lineHeight: '12px',
+                          borderRadius: 4,
+                          height: 20,
+                          backgroundColor: `${health.hexColor}33`,
+                          color: health.hexColor,
+                          border: `2px solid ${health.hexColor}`,
+                        }}
+                      />
+                    )}
                   </div>
                 </>
-              )}
+              }
             />
           </ListItemButton>
         </ListItem>
@@ -239,10 +225,7 @@ const SyncLineFragment = createFragmentContainer(SyncLineLineComponent, {
   `,
 });
 
-export const SyncLine = compose(
-  inject18n,
-  withStyles(styles),
-)(SyncLineFragment);
+export const SyncLine = compose(inject18n, withStyles(styles))(SyncLineFragment);
 
 class SyncDummyComponent extends Component {
   render() {
@@ -251,89 +234,37 @@ class SyncDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
-          <MoreVert classes={classes.itemIconDisabled} />
-        }
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.uri.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.messages.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.messages.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.running.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.running.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.current_state_date.width }}
               >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
+                <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.producer.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.producer.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
             </div>
-          )}
+          }
         />
       </ListItem>
     );
@@ -345,7 +276,4 @@ SyncDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const SyncLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(SyncDummyComponent);
+export const SyncLineDummy = compose(inject18n, withStyles(styles))(SyncDummyComponent);

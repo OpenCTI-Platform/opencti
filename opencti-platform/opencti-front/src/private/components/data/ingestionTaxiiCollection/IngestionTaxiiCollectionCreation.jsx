@@ -36,19 +36,19 @@ const IngestionTaxiiCollectionCreationMutation = graphql`
   }
 `;
 
-const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  user_id: Yup.object().nullable(),
-  confidence_to_score: Yup.bool().nullable(),
-  authorized_members: Yup.array().required(t('This field is required')).min(1, t('This field is required')),
-});
+const ingestionTaxiiCollectionCreationValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    user_id: Yup.object().nullable(),
+    confidence_to_score: Yup.bool().nullable(),
+    authorized_members: Yup.array()
+      .required(t('This field is required'))
+      .min(1, t('This field is required')),
+  });
 
 const CreateIngestionTaxiiCollectionControlledDial = (props) => (
-  <CreateEntityControlledDial
-    entityType="IngestionTaxiiCollection"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="IngestionTaxiiCollection" {...props} />
 );
 
 const IngestionTaxiiCollectionCreation = (props) => {
@@ -146,17 +146,10 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {drawerSettings?.button ?? t('Create')}
                 </Button>
               </FormButtonContainer>

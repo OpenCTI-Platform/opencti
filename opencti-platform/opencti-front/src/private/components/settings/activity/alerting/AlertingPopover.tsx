@@ -24,7 +24,13 @@ export const alertingPopoverDeletionMutation = graphql`
   }
 `;
 
-const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$data; paginationOptions?: AlertingPaginationQuery$variables }) => {
+const AlertingPopover = ({
+  data,
+  paginationOptions,
+}: {
+  data: AlertingLine_node$data;
+  paginationOptions?: AlertingPaginationQuery$variables;
+}) => {
   const { t_i18n } = useFormatter();
   const [queryRef, loadQuery] = useQueryLoader<AlertEditionQuery>(alertEditionQuery);
   const isLiveEdition = data.trigger_type === 'live';
@@ -90,15 +96,23 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         message={t_i18n('Do you want to delete this trigger?')}
       />
       {displayEdit && (
-        <Drawer
-          open={true}
-          title={title}
-          onClose={() => setDisplayEdit(false)}
-        >
+        <Drawer open={true} title={title} onClose={() => setDisplayEdit(false)}>
           {queryRef && (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-              {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+              {isLiveEdition && (
+                <AlertLiveEdition
+                  queryRef={queryRef}
+                  paginationOptions={paginationOptions}
+                  handleClose={() => setDisplayEdit(false)}
+                />
+              )}
+              {isDigestEdition && (
+                <AlertDigestEdition
+                  queryRef={queryRef}
+                  paginationOptions={paginationOptions}
+                  handleClose={() => setDisplayEdit(false)}
+                />
+              )}
             </React.Suspense>
           )}
         </Drawer>

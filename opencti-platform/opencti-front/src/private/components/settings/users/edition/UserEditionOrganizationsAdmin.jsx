@@ -35,7 +35,13 @@ const userEditionOrganizationsAdminAddMutation = graphql`
   ) {
     organizationAdminAdd(id: $id, memberId: $memberId) {
       id
-      members (filters: { mode: and, filters: [{ key: "user_email", values: [$userEmail] }], filterGroups: [] } ) {
+      members(
+        filters: {
+          mode: and
+          filters: [{ key: "user_email", values: [$userEmail] }]
+          filterGroups: []
+        }
+      ) {
         edges {
           node {
             id
@@ -54,7 +60,13 @@ const userEditionOrganizationsAdminRemoveMutation = graphql`
   ) {
     organizationAdminRemove(id: $id, memberId: $memberId) {
       id
-      members (filters: { mode: and, filters: [{ key: "user_email", values: [$userEmail] }], filterGroups: [] } ) {
+      members(
+        filters: {
+          mode: and
+          filters: [{ key: "user_email", values: [$userEmail] }]
+          filterGroups: []
+        }
+      ) {
         edges {
           node {
             id
@@ -93,7 +105,11 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
     }
   };
   if (!isEnterpriseEdition) {
-    return <div style={{ marginTop: 20 }}><EnterpriseEdition feature={t_i18n('Organization sharing')} /></div>;
+    return (
+      <div style={{ marginTop: 20 }}>
+        <EnterpriseEdition feature={t_i18n('Organization sharing')} />
+      </div>
+    );
   }
   return (
     <List>
@@ -103,7 +119,12 @@ const UserEditionOrganizationsAdminComponent = ({ user }) => {
           <ListItem
             key={organization.id}
             divider={true}
-            secondaryAction={<Checkbox onChange={(event) => handleToggle(organization.id, event)} checked={isAdmin} />}
+            secondaryAction={
+              <Checkbox
+                onChange={(event) => handleToggle(organization.id, event)}
+                checked={isAdmin}
+              />
+            }
           >
             <ListItemIcon color="primary">
               <AccountBalanceOutlined />
@@ -120,28 +141,35 @@ UserEditionOrganizationsAdminComponent.propTypes = {
   user: PropTypes.object,
 };
 
-const UserEditionOrganizationsAdmin = createFragmentContainer(UserEditionOrganizationsAdminComponent, {
-  user: graphql`
-    fragment UserEditionOrganizationsAdmin_user on User
-    @argumentDefinitions(
-      organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
-      organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
-      organizationsCount: { type: "Int", defaultValue: 500 }
-    ) {
-      id
-      user_email
-      objectOrganization(orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode, first: $organizationsCount) {
-        edges {
-          node {
-            id
-            name
-            description
-            authorized_authorities
+const UserEditionOrganizationsAdmin = createFragmentContainer(
+  UserEditionOrganizationsAdminComponent,
+  {
+    user: graphql`
+      fragment UserEditionOrganizationsAdmin_user on User
+      @argumentDefinitions(
+        organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+        organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+        organizationsCount: { type: "Int", defaultValue: 500 }
+      ) {
+        id
+        user_email
+        objectOrganization(
+          orderBy: $organizationsOrderBy
+          orderMode: $organizationsOrderMode
+          first: $organizationsCount
+        ) {
+          edges {
+            node {
+              id
+              name
+              description
+              authorized_authorities
+            }
           }
         }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default UserEditionOrganizationsAdmin;

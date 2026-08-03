@@ -5,11 +5,18 @@ import { useTheme } from '@mui/styles';
 import { Theme } from '../../../components/Theme';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useFiltersState from '../../../utils/filters/useFiltersState';
-import { isDraftWorkspaceFilterGroup, isFilterGroupNotEmpty, useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
+import {
+  isDraftWorkspaceFilterGroup,
+  isFilterGroupNotEmpty,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetDataSelection, WidgetPerspective } from '../../../utils/widget/widget';
-import WidgetSavedFiltersSelection, { widgetSavedFiltersSelectionQuery } from './WidgetSavedFiltersSelection';
+import useHelper from '../../../utils/hooks/useHelper';
+import WidgetSavedFiltersSelection, {
+  widgetSavedFiltersSelectionQuery,
+} from './WidgetSavedFiltersSelection';
 import WidgetSavedFilterChips from './WidgetSavedFilterChips';
 import WidgetSavedFiltersIcon from 'src/components/saved_filters/WidgetSavedFiltersIcon';
 import Divider from '@mui/material/Divider';
@@ -17,7 +24,10 @@ import { WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilter
 import { fetchQuery } from '../../../relay/environment';
 import type { WidgetSavedFiltersSelectionQuery } from './__generated__/WidgetSavedFiltersSelectionQuery.graphql';
 
-const isSavedFilterScopeCompatible = (filterScope: string | null | undefined, scope: WidgetSavedFilterScope) => {
+const isSavedFilterScopeCompatible = (
+  filterScope: string | null | undefined,
+  scope: WidgetSavedFilterScope,
+) => {
   if (!filterScope) return false;
   if (scope === 'stix-core-relationship') {
     return filterScope === 'relationships';
@@ -37,18 +47,30 @@ interface WidgetFiltersProps {
   setDataSelection: (data: WidgetDataSelection) => void;
 }
 
-const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, type, dataSelection, setDataSelection }) => {
+const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({
+  perspective,
+  type,
+  dataSelection,
+  setDataSelection,
+}) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+
+  const isDashboardSavedFiltersFeatureEnabled = isFeatureEnable('DASHBOARD_SAVED_FILTERS');
 
   const [filters, helpers] = useFiltersState(dataSelection.filters);
   const [filtersDynamicFrom, helpersDynamicFrom] = useFiltersState(dataSelection.dynamicFrom);
   const [filtersDynamicTo, helpersDynamicTo] = useFiltersState(dataSelection.dynamicTo);
   const { host } = useWidgetConfigContext();
-  const isSavedFiltersAccessible = host.kind === 'workspace' || host.kind === 'custom-view';
+  const isSavedFiltersAccessible =
+    isDashboardSavedFiltersFeatureEnabled &&
+    (host.kind === 'workspace' || host.kind === 'custom-view');
 
   const [isSavedFiltersMode, setIsSavedFiltersMode] = useState(!!dataSelection.filters_id);
-  const [isSavedDynamicFromMode, setIsSavedDynamicFromMode] = useState(!!dataSelection.dynamicFrom_id);
+  const [isSavedDynamicFromMode, setIsSavedDynamicFromMode] = useState(
+    !!dataSelection.dynamicFrom_id,
+  );
   const [isSavedDynamicToMode, setIsSavedDynamicToMode] = useState(!!dataSelection.dynamicTo_id);
   const [availableSavedFiltersScopes, setAvailableSavedFiltersScopes] = useState<string[]>([]);
 
@@ -72,18 +94,22 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   let searchContext;
   let savedFiltersScope: WidgetSavedFilterScope;
   if (perspective === 'relationships') {
-    searchContext = { entityTypes: ['stix-core-relationship', 'stix-sighting-relationship', 'contains', 'object-label'] };
+    searchContext = {
+      entityTypes: [
+        'stix-core-relationship',
+        'stix-sighting-relationship',
+        'contains',
+        'object-label',
+      ],
+    };
     savedFiltersScope = 'stix-core-relationship';
   } else if (perspective === 'audits') {
     availableEntityTypes = ['History', 'Activity'];
     searchContext = { entityTypes: ['History'] };
     savedFiltersScope = 'History';
-  } else { // perspective = 'entities'
-    availableEntityTypes = [
-      'Stix-Domain-Object',
-      'Stix-Cyber-Observable',
-      'DraftWorkspace',
-    ];
+  } else {
+    // perspective = 'entities'
+    availableEntityTypes = ['Stix-Domain-Object', 'Stix-Cyber-Observable', 'DraftWorkspace'];
     const isDraftWorkspaceOnly = isDraftWorkspaceFilterGroup(filters);
     searchContext = isDraftWorkspaceOnly
       ? { entityTypes: ['Stix-Core-Object', 'DraftWorkspace'] }
@@ -102,9 +128,10 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       .toPromise()
       .then((result) => {
         if (!isMounted) return;
-        const scopes = result?.savedFilters?.edges
-          ?.map((edge) => edge?.node?.scope)
-          .filter((scope): scope is string => Boolean(scope)) ?? [];
+        const scopes =
+          result?.savedFilters?.edges
+            ?.map((edge) => edge?.node?.scope)
+            .filter((scope): scope is string => Boolean(scope)) ?? [];
         setAvailableSavedFiltersScopes(scopes);
       })
       .catch(() => {
@@ -119,7 +146,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
   }, [isSavedFiltersAccessible]);
 
   const hasAvailableSavedFilters = (contextScope: WidgetSavedFilterScope) => {
-    return availableSavedFiltersScopes.some((scope) => isSavedFilterScopeCompatible(scope, contextScope));
+    return availableSavedFiltersScopes.some((scope) =>
+      isSavedFilterScopeCompatible(scope, contextScope),
+    );
   };
 
   let availableFilterKeys = useAvailableFilterKeysForEntityTypes(searchContext.entityTypes);
@@ -131,7 +160,13 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
 
   const entitiesFilters = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object']);
 
-  const bookmarkAvailableEntityTypes = ['Malware', 'Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign'];
+  const bookmarkAvailableEntityTypes = [
+    'Malware',
+    'Threat-Actor-Individual',
+    'Threat-Actor-Group',
+    'Intrusion-Set',
+    'Campaign',
+  ];
 
   const handleSavedFilterClear = () => {
     setDataSelection({
@@ -257,10 +292,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 <>
                   <Filters
                     availableFilterKeys={entitiesFilters}
-                    availableEntityTypes={[
-                      'Stix-Domain-Object',
-                      'Stix-Cyber-Observable',
-                    ]}
+                    availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                     helpers={helpersDynamicFrom}
                     type="from"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
@@ -290,10 +322,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
                 <>
                   <Filters
                     availableFilterKeys={entitiesFilters}
-                    availableEntityTypes={[
-                      'Stix-Domain-Object',
-                      'Stix-Cyber-Observable',
-                    ]}
+                    availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
                     helpers={helpersDynamicTo}
                     type="to"
                     searchContext={{ entityTypes: ['Stix-Core-Object'] }}
@@ -313,14 +342,14 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
-          || (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom)))
-        && (
+        {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id) ||
+          (!isSavedDynamicFromMode && isFilterGroupNotEmpty(filtersDynamicFrom))) && (
           <div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
+            {t_i18n(
+              'Pre-query to get data to be used as source entity of the relationship (limited to 5000)',
+            )}
           </div>
-        )
-        }
+        )}
         {isSavedDynamicFromMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicFrom_id}
@@ -334,22 +363,19 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             chipColor="warning"
             entityTypes={['Stix-Core-Object']}
             searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
+            availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
             host={host}
           />
         )}
 
-        {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
-          || (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo)))
-        && (
+        {((isSavedDynamicToMode && dataSelection.dynamicTo_id) ||
+          (!isSavedDynamicToMode && isFilterGroupNotEmpty(filtersDynamicTo))) && (
           <div style={{ marginTop: 8, color: theme.palette.success.main, marginBottom: 4 }}>
-            {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
+            {t_i18n(
+              'Pre-query to get data to be used as target entity of the relationship (limited to 5000)',
+            )}
           </div>
-        )
-        }
+        )}
         {isSavedDynamicToMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.dynamicTo_id}
@@ -363,22 +389,19 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             chipColor="success"
             entityTypes={['Stix-Core-Object']}
             searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
+            availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
             host={host}
           />
         )}
 
-        {perspective === 'relationships'
-          && (dataSelection.filters_id || isFilterGroupNotEmpty(filters))
-          && (
+        {perspective === 'relationships' &&
+          (dataSelection.filters_id || isFilterGroupNotEmpty(filters)) && (
             <div style={{ marginTop: 8, marginBottom: 4 }}>
-              {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
+              {t_i18n(
+                'Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:',
+              )}
             </div>
-          )
-        }
+          )}
         {isSavedFiltersMode ? (
           <WidgetSavedFilterChips
             filterId={dataSelection.filters_id}
@@ -389,7 +412,9 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
             filters={filters}
             helpers={helpers}
             searchContext={searchContext}
-            availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
+            availableEntityTypes={
+              type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes
+            }
             entityTypes={searchContext.entityTypes}
             host={host}
           />

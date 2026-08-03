@@ -48,13 +48,10 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
   const [commitApprove, approving] = useApiMutation(draftApproveMutation);
   const [displayApprove, setDisplayApprove] = useState(false);
 
-  const {
-    id,
-    entity_id,
-    currentUserAccessRight,
-    objectsCount,
-    processingCount,
-  } = useFragment(draftFragment, data);
+  const { id, entity_id, currentUserAccessRight, objectsCount, processingCount } = useFragment(
+    draftFragment,
+    data,
+  );
 
   const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
   const canApprove = canDeleteKnowledge && currentAccessRight.canEdit;
@@ -78,7 +75,10 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
         onError: (error: Error) => {
           setDisplayApprove(false);
           MESSAGING$.notifyError(
-            error.message ?? t_i18n('An error occurred while approving the draft. Please try again or contact your administrator.'),
+            error.message ??
+              t_i18n(
+                'An error occurred while approving the draft. Please try again or contact your administrator.',
+              ),
           );
         },
       });
@@ -86,10 +86,7 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
   };
 
   let button = (
-    <Button
-      onClick={() => setDisplayApprove(true)}
-      disabled={objectsCount.totalCount < 1}
-    >
+    <Button onClick={() => setDisplayApprove(true)} disabled={objectsCount.totalCount < 1}>
       {t_i18n('Approve draft')}
     </Button>
   );
@@ -97,9 +94,7 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
     button = (
       <Tooltip title={t_i18n('You do not have the access rights to approve a draft')}>
         <span>
-          <Button disabled>
-            {t_i18n('Approve draft')}
-          </Button>
+          <Button disabled>{t_i18n('Approve draft')}</Button>
         </span>
       </Tooltip>
     );
@@ -123,22 +118,18 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
           {processingCount > 0 && (
             <Alert sx={{ marginTop: 1 }} severity="warning">
               <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-              {t_i18n('There are processes still running that could impact the data of the draft. '
-                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+              {t_i18n(
+                'There are processes still running that could impact the data of the draft. ' +
+                  'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.',
+              )}
             </Alert>
           )}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={() => setDisplayApprove(false)}
-          >
+          <Button variant="secondary" onClick={() => setDisplayApprove(false)}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={approveDraft}
-            disabled={approving}
-          >
+          <Button onClick={approveDraft} disabled={approving}>
             {t_i18n('Approve')}
           </Button>
         </DialogActions>

@@ -12,7 +12,10 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -22,7 +25,10 @@ import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQue
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
 import { CaseTemplateTasksLines_DataQuery$variables } from './__generated__/CaseTemplateTasksLines_DataQuery.graphql';
-import { CaseTemplateTasksLinesPaginationQuery, CaseTemplateTasksLinesPaginationQuery$variables } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
+import {
+  CaseTemplateTasksLinesPaginationQuery,
+  CaseTemplateTasksLinesPaginationQuery$variables,
+} from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import CaseTemplateEdition, { caseTemplateQuery } from './CaseTemplateEdition';
 import { CaseTemplateLineFragment } from './CaseTemplateLine';
 import CaseTemplateTasksLines, { tasksLinesQuery } from './CaseTemplateTasksLines';
@@ -66,11 +72,9 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('CaseTemplate') },
   });
-  const [commitDeleteMutation] = useApiMutation(
-    caseTemplateTasksDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commitDeleteMutation] = useApiMutation(caseTemplateTasksDeletionMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
 
   const deletion = useDeletion({ handleClose });
   const submitDelete = () => {
@@ -88,10 +92,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       onError: undefined,
     });
   };
-  const caseTemplate = usePreloadedFragment<
-    CaseTemplateEditionQuery,
-    CaseTemplateLine_node$key
-  >({
+  const caseTemplate = usePreloadedFragment<CaseTemplateEditionQuery, CaseTemplateLine_node$key>({
     queryRef,
     fragmentDef: CaseTemplateLineFragment,
     queryDef: caseTemplateQuery,
@@ -111,15 +112,16 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
 
       <HeaderMainEntityLayout
         title={caseTemplate.name}
-        rightActions={(
+        rightActions={
           <>
             <PopoverMenu>
               {({ closeMenu }) => (
                 <Box>
-                  <MenuItem onClick={() => {
-                    handleOpenDelete();
-                    closeMenu();
-                  }}
+                  <MenuItem
+                    onClick={() => {
+                      handleOpenDelete();
+                      closeMenu();
+                    }}
                   >
                     {t_i18n('Delete')}
                   </MenuItem>
@@ -140,7 +142,7 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
               message={t_i18n('Do you want to delete this template?')}
             />
           </>
-        )}
+        }
       />
     </>
   );
@@ -151,25 +153,20 @@ const LOCAL_STORAGE_KEY = 'case-template-tasks';
 const CaseTemplateTasks = () => {
   const classes = useStyles();
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
-  const caseTemplateQueryRef = useQueryLoading<CaseTemplateEditionQuery>(
-    caseTemplateQuery,
-    { id: caseTemplateId },
-  );
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const caseTemplateQueryRef = useQueryLoading<CaseTemplateEditionQuery>(caseTemplateQuery, {
+    id: caseTemplateId,
+  });
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(LOCAL_STORAGE_KEY, {
       sortBy: 'name',
       orderAsc: true,
       searchTerm: '',
-    },
-  );
+    });
   const { filters } = viewStorage;
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Template']);
   const contextTaskFilters: FilterGroup = {
     mode: 'and',
-    filters: [
-      { key: 'tasks', operator: 'eq', mode: 'or', values: [caseTemplateId] },
-    ],
+    filters: [{ key: 'tasks', operator: 'eq', mode: 'or', values: [caseTemplateId] }],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
   const queryTaskTemplatePaginationOptions = {
@@ -213,9 +210,7 @@ const CaseTemplateTasks = () => {
       >
         {CaseTemplateTasksLinesQueryRef && (
           <>
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
               <CaseTemplateTasksLines
                 queryRef={CaseTemplateTasksLinesQueryRef}
                 paginationOptions={queryTaskTemplatePaginationOptions}
@@ -232,9 +227,7 @@ const CaseTemplateTasks = () => {
     <div className={classes.container}>
       {caseTemplateQueryRef && (
         <>
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <CaseHeaderMenu
               caseTemplateId={caseTemplateId}
               paginationOptions={queryTaskTemplatePaginationOptions}

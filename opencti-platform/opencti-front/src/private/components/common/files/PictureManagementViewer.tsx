@@ -4,7 +4,10 @@ import { graphql, useFragment } from 'react-relay';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
 import PictureLine from './PictureLine';
-import { PictureManagementViewer_entity$data, PictureManagementViewer_entity$key } from './__generated__/PictureManagementViewer_entity.graphql';
+import {
+  PictureManagementViewer_entity$data,
+  PictureManagementViewer_entity$key,
+} from './__generated__/PictureManagementViewer_entity.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import Card from '../../../../components/common/card/Card';
 
@@ -28,9 +31,7 @@ interface PictureManagementViewerProps {
   entity: PictureManagementViewer_entity$key;
 }
 
-const PictureManagementViewer: FunctionComponent<
-  PictureManagementViewerProps
-> = ({ entity }) => {
+const PictureManagementViewer: FunctionComponent<PictureManagementViewerProps> = ({ entity }) => {
   const { t_i18n } = useFormatter();
 
   const data: PictureManagementViewer_entity$data = useFragment(
@@ -55,29 +56,25 @@ const PictureManagementViewer: FunctionComponent<
       isSortable: false,
     },
   };
-  const images = data?.images?.edges
-    ?.filter((edge) => edge?.node)
-    .map((edge) => edge?.node) ?? [];
+  const images = data?.images?.edges?.filter((edge) => edge?.node).map((edge) => edge?.node) ?? [];
   return (
     <Grid item xs={6}>
       <div style={{ height: '100%' }} className="break">
         <Card title={t_i18n('Pictures Management')}>
           {images && images.length > 0 ? (
             <>
-              <ColumnsLinesTitles
-                dataColumns={dataColumns}
-                handleSort={() => {}}
-              />
+              <ColumnsLinesTitles dataColumns={dataColumns} handleSort={() => {}} />
               <List>
                 {images.map(
-                  (file, idx) => file && (
-                    <PictureLine
-                      picture={file}
-                      key={idx}
-                      dataColumns={dataColumns}
-                      entityId={data.id}
-                    />
-                  ),
+                  (file, idx) =>
+                    file && (
+                      <PictureLine
+                        picture={file}
+                        key={idx}
+                        dataColumns={dataColumns}
+                        entityId={data.id}
+                      />
+                    ),
                 )}
               </List>
             </>

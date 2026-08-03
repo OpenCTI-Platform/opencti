@@ -10,9 +10,16 @@ type OtherCustomViewsTabProps = {
   otherCustomViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   value: string;
-} & TabProps<'a'> & TabProps<'div'>;
+} & TabProps<'a'> &
+  TabProps<'div'>;
 
-export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode, dropDownMenuState, value, ...tabProps }: OtherCustomViewsTabProps) => {
+export const OtherCustomViewsTab = ({
+  otherCustomViews: customViews,
+  displayMode,
+  dropDownMenuState,
+  value,
+  ...tabProps
+}: OtherCustomViewsTabProps) => {
   const { t_i18n } = useFormatter();
   if (displayMode.others === 'single') {
     return (
@@ -23,9 +30,9 @@ export const OtherCustomViewsTab = ({ otherCustomViews: customViews, displayMode
         value={value}
         label={customViews[0].name}
         sx={{
-        // Override the theme/global rule set to have all
-        // tabs in first-letter-capitalized case, to display
-        // exactly what customers want.
+          // Override the theme/global rule set to have all
+          // tabs in first-letter-capitalized case, to display
+          // exactly what customers want.
           textTransform: 'none',
           '&::first-letter': {
             textTransform: 'none',
@@ -54,9 +61,15 @@ type DefaultCustomViewTabProps = {
   value: string;
   displayMode: CustomViewDisplayMode;
   defaultCustomView: ReturnType<typeof useCustomViews>['customViews'][number] | undefined;
-} & TabProps<'a'> & TabProps<'div'>;
+} & TabProps<'a'> &
+  TabProps<'div'>;
 
-export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ...tabProps }: DefaultCustomViewTabProps) => {
+export const DefaultCustomViewTab = ({
+  value,
+  displayMode,
+  defaultCustomView,
+  ...tabProps
+}: DefaultCustomViewTabProps) => {
   if (!displayMode.default) {
     return null;
   }
@@ -72,9 +85,9 @@ export const DefaultCustomViewTab = ({ value, displayMode, defaultCustomView, ..
       value={value}
       label={defaultCustomView.name}
       sx={{
-      // Override the theme/global rule set to have all
-      // tabs in first-letter-capitalized case, to display
-      // exactly what customers want.
+        // Override the theme/global rule set to have all
+        // tabs in first-letter-capitalized case, to display
+        // exactly what customers want.
         textTransform: 'none',
         '&::first-letter': {
           textTransform: 'none',

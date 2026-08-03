@@ -9,7 +9,10 @@ describe('PIR form utils', () => {
       description: 'Super description',
       pir_rescan_days: 30,
       confidence: 80,
-      locations: [{ label: 'FR', value: 'fr' }, { label: 'EN', value: 'en' }],
+      locations: [
+        { label: 'FR', value: 'fr' },
+        { label: 'EN', value: 'en' },
+      ],
       sectors: [{ label: 'Energy', value: 'energy' }],
     };
 
@@ -57,12 +60,14 @@ describe('PIR form utils', () => {
         pir_filters: {
           mode: 'and',
           filterGroups: [],
-          filters: [{
-            key: ['confidence'],
-            values: ['80'],
-            operator: 'gte',
-            mode: 'or',
-          }],
+          filters: [
+            {
+              key: ['confidence'],
+              values: ['80'],
+              operator: 'gte',
+              mode: 'or',
+            },
+          ],
         },
       });
     });
@@ -83,12 +88,14 @@ describe('PIR form utils', () => {
       expect(input.pir_filters).toEqual({
         mode: 'and',
         filterGroups: [],
-        filters: [{
-          key: ['confidence'],
-          values: ['0'],
-          operator: 'gte',
-          mode: 'or',
-        }],
+        filters: [
+          {
+            key: ['confidence'],
+            values: ['0'],
+            operator: 'gte',
+            mode: 'or',
+          },
+        ],
       });
     });
   });

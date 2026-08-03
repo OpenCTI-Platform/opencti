@@ -59,15 +59,17 @@ export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
 export const hasCapabilitiesInDraft = (capabilities: string[]) => {
   const { me } = useAuth();
   const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
-  return capabilities.some((capability) => (
-    userCapabilitiesInDraft.includes(capability)
-  ));
+  return capabilities.some((capability) => userCapabilitiesInDraft.includes(capability));
 };
 
 export const isOnlyOrganizationAdmin = () => {
   const { me: user } = useAuth();
   const userCapabilities = user.capabilities.map((n) => n.name);
-  return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
+  return (
+    userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) &&
+    !userCapabilities.includes(BYPASS) &&
+    !userCapabilities.includes(SETTINGS_SETACCESSES)
+  );
 };
 
 export const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
@@ -79,7 +81,11 @@ export const isBypassUser = (me: { id: string; capabilities: readonly { name: st
   return userCapabilities.includes(BYPASS);
 };
 
-const checkCapabilities = (capabilities: string[], userCapabilities: string[], matchAll: boolean): boolean => {
+const checkCapabilities = (
+  capabilities: string[],
+  userCapabilities: string[],
+  matchAll: boolean,
+): boolean => {
   if (capabilities.length === 0) return false;
   const capabilityMatches = (requestedCapability: string) =>
     userCapabilities.some((u) => requestedCapability !== BYPASS && u.includes(requestedCapability));
@@ -119,7 +125,11 @@ const useGranted = (
 
   // Check base and draft capabilities in draft context
   const draftGrantedInDraftContext = me.draftContext
-    ? checkCapabilities(capabilities, [...userBaseCapabilities, ...userCapabilitiesInDraft], matchAll)
+    ? checkCapabilities(
+        capabilities,
+        [...userBaseCapabilities, ...userCapabilitiesInDraft],
+        matchAll,
+      )
     : false;
 
   // Access is granted if EITHER check passes

@@ -32,14 +32,20 @@ import { subscribeToAiEvents } from '../../graphql/subscriptionWrapper';
 
 const aiResolvers: Resolvers = {
   Mutation: {
-    aiContainerGenerateReport: (_, args, context) => generateContainerReport(context, context.user, args),
+    aiContainerGenerateReport: (_, args, context) =>
+      generateContainerReport(context, context.user, args),
     aiSummarizeFiles: (_, args, context) => summarizeFiles(context, context.user, args),
     aiConvertFilesToStix: (_, args, context) => convertFilesToStix(context, context.user, args),
-    aiFixSpelling: (_, { id, content, format }, context) => fixSpelling(context, context.user, id, content, format),
-    aiMakeShorter: (_, { id, content, format }, context) => makeShorter(context, context.user, id, content, format),
-    aiMakeLonger: (_, { id, content, format }, context) => makeLonger(context, context.user, id, content, format),
-    aiChangeTone: (_, { id, content, format, tone }, context) => changeTone(context, context.user, id, content, format, tone),
-    aiSummarize: (_, { id, content, format }, context) => summarize(context, context.user, id, content, format),
+    aiFixSpelling: (_, { id, content, format }, context) =>
+      fixSpelling(context, context.user, id, content, format),
+    aiMakeShorter: (_, { id, content, format }, context) =>
+      makeShorter(context, context.user, id, content, format),
+    aiMakeLonger: (_, { id, content, format }, context) =>
+      makeLonger(context, context.user, id, content, format),
+    aiChangeTone: (_, { id, content, format, tone }, context) =>
+      changeTone(context, context.user, id, content, format, tone),
+    aiSummarize: (_, { id, content, format }, context) =>
+      summarize(context, context.user, id, content, format),
     aiExplain: (_, { id, content }, context) => explain(context, context.user, id, content),
     aiNLQ: (_, args, context) => generateNLQresponse(context, context.user, args),
   },

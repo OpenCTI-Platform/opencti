@@ -6,7 +6,9 @@ import { ThreatActorsGroupCards_data$key } from '@components/threats/threat_acto
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import ThreatActorGroupCard from './ThreatActorGroupCard';
 import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
-import StixDomainObjectBookmarks, { stixDomainObjectBookmarksQuery } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { QueryRenderer } from '../../../../relay/environment';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -22,14 +24,14 @@ export const threatActorsGroupCardsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ThreatActorsGroupCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -75,9 +77,11 @@ interface ThreatActorsGroupCardsProps {
   onLabelClick: HandleAddFilter;
 }
 
-const ThreatActorsGroupCards: FunctionComponent<
-  ThreatActorsGroupCardsProps
-> = ({ setNumberOfElements, queryRef, onLabelClick }) => {
+const ThreatActorsGroupCards: FunctionComponent<ThreatActorsGroupCardsProps> = ({
+  setNumberOfElements,
+  queryRef,
+  onLabelClick,
+}) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     ThreatActorsGroupCardsPaginationQuery,
@@ -110,9 +114,7 @@ const ThreatActorsGroupCards: FunctionComponent<
             isLoading={isLoadingMore}
             DummyCardComponent={GenericAttackCardDummy}
             dataList={data?.threatActorsGroup?.edges ?? []}
-            globalCount={
-              data?.threatActorsGroup?.pageInfo?.globalCount ?? nbOfCardsToLoad
-            }
+            globalCount={data?.threatActorsGroup?.pageInfo?.globalCount ?? nbOfCardsToLoad}
             CardComponent={ThreatActorGroupCard}
             nbOfCardsToLoad={nbOfCardsToLoad}
             onLabelClick={onLabelClick}

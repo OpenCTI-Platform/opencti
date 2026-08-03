@@ -1,7 +1,12 @@
 import { v4 as uuid } from 'uuid';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useQueryLoader } from 'react-relay';
-import { LogsOrdering, OrderingMode, UserHistoryLinesQuery, UserHistoryLinesQuery$variables } from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
+import {
+  LogsOrdering,
+  OrderingMode,
+  UserHistoryLinesQuery,
+  UserHistoryLinesQuery$variables,
+} from '@components/settings/users/__generated__/UserHistoryLinesQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
@@ -13,16 +18,17 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
-import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  SETTINGS_SECURITYACTIVITY,
+} from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 
 interface UserHistoryProps {
   userId: string;
 }
 
-const UserHistory: FunctionComponent<UserHistoryProps> = ({
-  userId,
-}) => {
+const UserHistory: FunctionComponent<UserHistoryProps> = ({ userId }) => {
   const { t_i18n } = useFormatter();
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
   const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
@@ -60,9 +66,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
     filters: [
       {
         key: 'creator_id',
-        values: [
-          userId,
-        ],
+        values: [userId],
         operator: 'eq',
         mode: 'or',
         id: uuid(), // because filters in the URL
@@ -78,7 +82,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
   return (
     <Card
       title={t_i18n('History')}
-      action={(
+      action={
         <Stack direction="row" gap={1}>
           <div>
             <Tooltip title={t_i18n('View all entities created by user')}>
@@ -109,7 +113,7 @@ const UserHistory: FunctionComponent<UserHistoryProps> = ({
             keyword={entitySearchTerm}
           />
         </Stack>
-      )}
+      }
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

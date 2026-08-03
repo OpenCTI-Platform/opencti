@@ -16,7 +16,11 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { parse } from '../../../../utils/Time';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -26,7 +30,10 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
+import {
+  ObservedDataCreationMutation,
+  ObservedDataCreationMutation$variables,
+} from './__generated__/ObservedDataCreationMutation.graphql';
 
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
@@ -72,9 +79,7 @@ interface ObservedDataFormProps {
   defaultConfidence?: number;
 }
 
-export const ObservedDataCreationForm: FunctionComponent<
-  ObservedDataFormProps
-> = ({
+export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -84,23 +89,27 @@ export const ObservedDataCreationForm: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    objects: Yup.array(),
-    first_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_observed: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    number_observed: Yup.number(),
-    confidence: Yup.number().nullable(),
-  }, mandatoryAttributes);
-  const observedDataValidator = useDynamicSchemaCreationValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      objects: Yup.array(),
+      first_observed: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      last_observed: Yup.date().typeError(
+        t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'),
+      ),
+      number_observed: Yup.number(),
+      confidence: Yup.number().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+  const observedDataValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
     observedDataCreationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}` },
+    {
+      successMessage: `${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}`,
+    },
   );
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
     values,
@@ -163,16 +172,13 @@ export const ObservedDataCreationForm: FunctionComponent<
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form>
-          <StixCoreObjectsField
-            name="objects"
-            required={(mandatoryAttributes.includes('objects'))}
-          />
+          <StixCoreObjectsField name="objects" required={mandatoryAttributes.includes('objects')} />
           <Field
             component={DateTimePickerField}
             name="first_observed"
             textFieldProps={{
               label: t_i18n('First observed'),
-              required: (mandatoryAttributes.includes('first_observed')),
+              required: mandatoryAttributes.includes('first_observed'),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -183,7 +189,7 @@ export const ObservedDataCreationForm: FunctionComponent<
             name="last_observed"
             textFieldProps={{
               label: t_i18n('Last observed'),
-              required: (mandatoryAttributes.includes('last_observed')),
+              required: mandatoryAttributes.includes('last_observed'),
               variant: 'standard',
               fullWidth: true,
               style: { ...fieldSpacingContainerStyle },
@@ -195,53 +201,43 @@ export const ObservedDataCreationForm: FunctionComponent<
             name="number_observed"
             type="number"
             label={t_i18n('Number observed')}
-            required={(mandatoryAttributes.includes('number_observed'))}
+            required={mandatoryAttributes.includes('number_observed')}
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
-          <ConfidenceField
-            entityType="Observed-Data"
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          <ConfidenceField entityType="Observed-Data" containerStyle={fieldSpacingContainerStyle} />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ExternalReferencesField
             name="externalReferences"
-            required={(mandatoryAttributes.includes('externalReferences'))}
+            required={mandatoryAttributes.includes('externalReferences')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -257,12 +253,8 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_observedDatas',
-    paginationOptions,
-    'observedDataAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_observedDatas', paginationOptions, 'observedDataAdd');
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Observed-Data" {...props} />
   );
@@ -272,11 +264,7 @@ const ObservedDataCreation = ({
       controlledDial={CreateObservedDataControlledDial}
     >
       {({ onClose }) => (
-        <ObservedDataCreationForm
-          updater={updater}
-          onCompleted={onClose}
-          onReset={onClose}
-        />
+        <ObservedDataCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
     </Drawer>
   );

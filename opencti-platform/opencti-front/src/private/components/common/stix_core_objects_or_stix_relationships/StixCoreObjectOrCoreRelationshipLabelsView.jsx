@@ -1,6 +1,5 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import RawTag from '@common/tag/RawTag';
 import Tag from '@common/tag/Tag';
 import { Add } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
@@ -19,7 +18,10 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  SETTINGS_SETLABELS,
+} from '../../../../utils/hooks/useGranted';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import CommitMessage from '../form/CommitMessage';
@@ -88,15 +90,12 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       orderMode: 'asc',
     }).toPromise();
 
-    const existingLabelIds = new Set((labels ?? []).map((l) => l.id));
     const edges = data?.labels?.edges ?? [];
-    const labelOptions = edges
-      .filter((n) => !existingLabelIds.has(n.node.id))
-      .map((n) => ({
-        label: n.node.value,
-        value: n.node.id,
-        color: n.node.color,
-      }));
+    const labelOptions = edges.map((n) => ({
+      label: n.node.value,
+      value: n.node.id,
+      color: n.node.color,
+    }));
 
     setStateLabels(labelOptions);
   };
@@ -153,7 +152,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   return (
     <Box sx={sx}>
       <Label
-        action={(
+        action={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <IconButton
               size="small"
@@ -165,15 +164,18 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               <Add fontSize="small" />
             </IconButton>
           </Security>
-        )}
+        }
       >
         {t_i18n('Labels')}
       </Label>
-      <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
+      <div
+        className={classes.objectLabel}
+        style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}
+      >
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
-              <RawTag
+              <Tag
                 key={label.id}
                 label={label.value}
                 color={label.color}
@@ -187,21 +189,13 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 }
               />
             ),
-            (labels ? R.take(12, labels) : []),
+            labels ? R.take(12, labels) : [],
           )}
           {labels && labels.length > 12 && (
-            <Tag
-              tooltipTitle={t_i18n('See more')}
-              label="..."
-              onClick={handleOpenLabels}
-            />
+            <Tag tooltipTitle={t_i18n('See more')} label="..." onClick={handleOpenLabels} />
           )}
           {labels && labels.length > 12 && (
-            <Dialog
-              open={openLabels}
-              onClose={handleCloseLabels}
-              title={t_i18n('All labels')}
-            >
+            <Dialog open={openLabels} onClose={handleCloseLabels} title={t_i18n('All labels')}>
               <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
                 {map(
                   (label) => (
@@ -209,7 +203,6 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       key={label.id}
                       label={label.value}
                       color={label.color}
-                      labelTextTransform="none"
                       onDelete={
                         canUpdateKnowledge
                           ? () =>
@@ -224,9 +217,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 )}
               </Stack>
               <DialogActions>
-                <Button onClick={handleCloseLabels}>
-                  {t_i18n('Close')}
-                </Button>
+                <Button onClick={handleCloseLabels}>{t_i18n('Close')}</Button>
               </DialogActions>
             </Dialog>
           )}
@@ -249,11 +240,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
           </Formik>
         )}
       </div>
-      <Formik
-        initialValues={{ new_labels: [] }}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      >
+      <Formik initialValues={{ new_labels: [] }} onSubmit={onSubmit} onReset={onReset}>
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
             slotProps={{ paper: { elevation: 1 } }}
@@ -274,17 +261,13 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   label: t_i18n('Labels'),
                   onFocus: searchLabels,
                 }}
-                preserveCase
                 noOptionsText={t_i18n('No available options')}
                 options={stateLabels}
                 onInputChange={searchLabels}
                 openCreate={isLabelManager ? handleOpenCreate : null}
                 renderOption={(optionsProps, option) => (
                   <li {...optionsProps}>
-                    <div
-                      className={classes.icon}
-                      style={{ color: option.color }}
-                    >
+                    <div className={classes.icon} style={{ color: option.color }}>
                       <MdiLabel />
                     </div>
                     <div className={classes.text}>{option.label}</div>
@@ -325,7 +308,6 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 const newLabel = {
                   label: data.labelAdd.value,
                   value: data.labelAdd.id,
-                  color: data.labelAdd.color ?? undefined,
                 };
                 setFieldValue('new_labels', [...values.new_labels, newLabel]);
               }}

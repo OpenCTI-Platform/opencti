@@ -15,7 +15,9 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
 import Security from '../../../../utils/Security';
-import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
+import StreamCollectionEdition, {
+  streamCollectionMutationFieldPatch,
+} from './StreamCollectionEdition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import { StreamLine_node$data } from '../__generated__/StreamLine_node.graphql';
@@ -67,12 +69,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
     commitDelete({
       variables: { id: streamCollection.id },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_streamCollections',
-          paginationOptions,
-          streamCollection.id,
-        );
+        deleteNode(store, 'Pagination_streamCollections', paginationOptions, streamCollection.id);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -114,22 +111,14 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
           <>
             <MenuItem onClick={handleOnOff}>
               {t_i18n(streamCollection.stream_live ? 'Stop' : 'Start')}
             </MenuItem>
-            <MenuItem onClick={handleOpenUpdate}>
-              {t_i18n('Update')}
-            </MenuItem>
-            <MenuItem onClick={handleOpenDelete}>
-              {t_i18n('Delete')}
-            </MenuItem>
+            <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+            <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
           </>
         </Security>
         <MenuItem onClick={handleOpenStream} disabled={!streamCollection.stream_live}>
@@ -146,9 +135,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
             title={t_i18n('Update a live stream')}
             onClose={handleCloseUpdate}
           >
-            <StreamCollectionEdition
-              streamCollection={streamCollection}
-            />
+            <StreamCollectionEdition streamCollection={streamCollection} />
           </Drawer>
           <DeleteDialog
             deletion={deletion}

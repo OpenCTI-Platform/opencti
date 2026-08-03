@@ -21,9 +21,7 @@ export const up = async (next) => {
       },
       query: {
         bool: {
-          must: [
-            { term: { 'x_opencti_main_observable_type.keyword': { value: source } } },
-          ],
+          must: [{ term: { 'x_opencti_main_observable_type.keyword': { value: source } } }],
         },
       },
     };

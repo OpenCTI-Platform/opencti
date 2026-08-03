@@ -22,9 +22,7 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'RetentionRule' } } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'RetentionRule' } } }],
         should: [
           { bool: { must_not: [{ exists: { field: 'base_type' } }] } },
           { bool: { must_not: [{ exists: { field: 'parent_types' } }] } },
@@ -60,7 +58,9 @@ export const up = async (next) => {
       retention_unit: 'days',
       scope: 'workbench',
     });
-    logMigration.info(`${message} > Created workbench retention rule (30 days for all workbenches)`);
+    logMigration.info(
+      `${message} > Created workbench retention rule (30 days for all workbenches)`,
+    );
   } else {
     logMigration.info(`${message} > Workbench retention rule already exists, skipping`);
   }

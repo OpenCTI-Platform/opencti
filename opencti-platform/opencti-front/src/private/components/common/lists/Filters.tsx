@@ -2,13 +2,23 @@ import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ListFiltersWithoutLocalStorage from '@components/common/lists/ListFiltersWithoutLocalStorage';
 import { uniq } from 'ramda';
-import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, FilterSearchContext, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import {
+  constructHandleAddFilter,
+  constructHandleRemoveFilter,
+  emptyFilterGroup,
+  FilterSearchContext,
+  FiltersVariant,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { Filter, FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
+import {
+  Filter,
+  FilterGroup,
+  handleFilterHelpers,
+} from '../../../../utils/filters/filtersHelpers-types';
 
 interface FiltersProps {
   variant?: string;
@@ -54,9 +64,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [filters, setFilters] = useState<FilterGroup | undefined>(emptyFilterGroup);
-  const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>(
-    [],
-  );
+  const [inputValues, setInputValues] = useState<FilterElementsInputValue[]>([]);
   const [keyword, setKeyword] = useState('');
   const entityTypes: string[] = searchContext?.entityTypes ?? ['Stix-Core-Object'];
 
@@ -69,8 +77,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setAnchorEl(null);
   };
   const { filterKeysSchema } = useAuth().schema;
-  const defaultHandleAddFilter = handleAddFilter
-    || ((key, id, operator = 'eq', event = undefined) => {
+  const defaultHandleAddFilter =
+    handleAddFilter ||
+    ((key, id, operator = 'eq', event = undefined) => {
       if (event) {
         event.stopPropagation();
         event.preventDefault();
@@ -81,8 +90,9 @@ const Filters: FunctionComponent<FiltersProps> = ({
         setFilters(constructHandleAddFilter(filters, key, id, filterKeysSchema, operator));
       }
     });
-  const defaultHandleRemoveFilter = handleRemoveFilter
-    || ((key, operator = 'eq') => {
+  const defaultHandleRemoveFilter =
+    handleRemoveFilter ||
+    ((key, operator = 'eq') => {
       if (handleFiltersChange) {
         handleFiltersChange(constructHandleRemoveFilter(filters, key, operator));
       } else {
@@ -93,12 +103,11 @@ const Filters: FunctionComponent<FiltersProps> = ({
     handleCloseFilters();
     const urlParams = { filters: JSON.stringify(filters) };
     navigate(
-      `/dashboard/search/knowledge${
-        keyword.length > 0 ? `/${keyword}` : ''
-      }?${new URLSearchParams(urlParams).toString()}`,
+      `/dashboard/search/knowledge${keyword.length > 0 ? `/${keyword}` : ''}?${new URLSearchParams(urlParams).toString()}`,
     );
   };
-  const handleChangeKeyword = (event: ChangeEvent) => setKeyword((event.target as HTMLInputElement).value);
+  const handleChangeKeyword = (event: ChangeEvent) =>
+    setKeyword((event.target as HTMLInputElement).value);
   const filterElement = (
     <FiltersElement
       variant={variant}

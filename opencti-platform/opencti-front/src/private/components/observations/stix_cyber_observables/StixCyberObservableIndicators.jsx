@@ -56,9 +56,7 @@ const inlineStyles = {
 };
 
 const stixCyberObservableIndicatorsPromoteMutation = graphql`
-  mutation StixCyberObservableIndicatorsPromoteMutation(
-    $id: ID!
-  ) {
+  mutation StixCyberObservableIndicatorsPromoteMutation($id: ID!) {
     stixCyberObservableEdit(id: $id) {
       promoteToIndicator {
         id
@@ -130,30 +128,27 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
 
   return (
     <div>
-      <Label action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IconButton
-            ref={AddOrCreateIndicatorsButtonRef}
-            aria-label="Add or create indicators button"
-            color="primary"
-            onClick={handleOpenAddOrCreateIndicatorMenu}
-          >
-            <Add fontSize="small" />
-          </IconButton>
-          <Menu
-            anchorEl={AddOrCreateIndicatorsButtonRef.current}
-            open={isAddOrCreateIndicatorsMenuOpen}
-            onClose={handleCloseAddOrCreateIndicatorMenu}
-          >
-            <MenuItem onClick={handleOpenCreateIndicatorMenu}>
-              {t_i18n('Create')}
-            </MenuItem>
-            <MenuItem onClick={handleOpenAddIndicatorDrawer}>
-              {t_i18n('Add')}
-            </MenuItem>
-          </Menu>
-        </Security>
-      )}
+      <Label
+        action={
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IconButton
+              ref={AddOrCreateIndicatorsButtonRef}
+              aria-label="Add or create indicators button"
+              color="primary"
+              onClick={handleOpenAddOrCreateIndicatorMenu}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+            <Menu
+              anchorEl={AddOrCreateIndicatorsButtonRef.current}
+              open={isAddOrCreateIndicatorsMenuOpen}
+              onClose={handleCloseAddOrCreateIndicatorMenu}
+            >
+              <MenuItem onClick={handleOpenCreateIndicatorMenu}>{t_i18n('Create')}</MenuItem>
+              <MenuItem onClick={handleOpenAddIndicatorDrawer}>{t_i18n('Add')}</MenuItem>
+            </Menu>
+          </Security>
+        }
       >
         {t_i18n('Indicators composed with this observable')}
       </Label>
@@ -164,12 +159,12 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
             key={indicatorEdge.node.id}
             divider={true}
             disablePadding
-            secondaryAction={(
+            secondaryAction={
               <StixCyberObservableIndicatorPopover
                 observableId={stixCyberObservable.id}
                 indicatorId={indicatorEdge.node.id}
               />
-            )}
+            }
           >
             <ListItemButton
               aria-label="stix cyber observable indicators item"
@@ -181,13 +176,10 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                 <ItemIcon type={indicatorEdge.node.entity_type} />
               </ListItemIcon>
               <ListItemText
-                primary={(
+                primary={
                   <div>
                     <div style={{ ...inlineStyles.pattern_type, ...inlineStyles.bodyItem }}>
-                      <ItemPatternType
-                        label={indicatorEdge.node.pattern_type}
-                        variant="inList"
-                      />
+                      <ItemPatternType label={indicatorEdge.node.pattern_type} variant="inList" />
                     </div>
                     <div style={{ ...inlineStyles.observable_value, ...inlineStyles.bodyItem }}>
                       {indicatorEdge.node.name}
@@ -196,7 +188,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                       {fd(indicatorEdge.node.created_at)}
                     </div>
                   </div>
-                )}
+                }
               />
             </ListItemButton>
           </ListItem>
@@ -208,9 +200,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         title={t_i18n('Are you sure?')}
       >
         <DialogContentText>
-          {t_i18n(
-            'Do you want to create a STIX Indicator from this observable?',
-          )}
+          {t_i18n('Do you want to create a STIX Indicator from this observable?')}
         </DialogContentText>
         <DialogActions>
           <Button
@@ -220,10 +210,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           >
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitPromoteStix}
-            disabled={isCreatingIndicator}
-          >
+          <Button onClick={submitPromoteStix} disabled={isCreatingIndicator}>
             {t_i18n('Create')}
           </Button>
         </DialogActions>

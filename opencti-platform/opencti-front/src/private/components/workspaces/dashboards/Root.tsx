@@ -61,10 +61,7 @@ const RootCustomDashboard = () => {
   const { workspaceId } = useParams();
   if (!workspaceId) return <ErrorNotFound />;
 
-  const queryRef = useQueryLoading<RootCustomDashboardQuery>(
-    dashboardQuery,
-    { id: workspaceId },
-  );
+  const queryRef = useQueryLoading<RootCustomDashboardQuery>(dashboardQuery, { id: workspaceId });
 
   return (
     <Suspense fallback={<Loader />}>

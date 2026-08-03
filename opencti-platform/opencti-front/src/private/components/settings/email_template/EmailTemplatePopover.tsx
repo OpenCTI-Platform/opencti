@@ -26,10 +26,7 @@ const EmailTemplatePopover = ({
   const [commitDeleteMutation] = useEmailTemplateDelete();
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(undefined) });
-  const {
-    handleOpenDelete,
-    handleCloseDelete,
-  } = deletion;
+  const { handleOpenDelete, handleCloseDelete } = deletion;
 
   const onOpenMenu = (e: UIEvent) => {
     stopEvent(e);

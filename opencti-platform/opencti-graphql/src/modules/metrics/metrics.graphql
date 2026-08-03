@@ -1,11 +1,11 @@
 type Metric {
-    name: ID!
-    value: Float!
+  name: ID!
+  value: Float!
 }
 
 input PatchMetricInput {
-    name: String!
-    value: Float!
+  name: String!
+  value: Float!
 }
 
 type Mutation {

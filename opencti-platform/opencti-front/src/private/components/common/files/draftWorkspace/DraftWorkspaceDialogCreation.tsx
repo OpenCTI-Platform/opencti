@@ -16,12 +16,19 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { insertNode } from '../../../../../utils/store';
-import { DraftWorkspaceDialogCreationMutation, DraftWorkspaceDialogCreationMutation$variables } from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
+import {
+  DraftWorkspaceDialogCreationMutation,
+  DraftWorkspaceDialogCreationMutation$variables,
+} from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 
@@ -57,27 +64,29 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     undefined,
   );
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_draftWorkspaces',
-    paginationOptions,
-    'draftWorkspaceAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_draftWorkspaces', paginationOptions, 'draftWorkspaceAdd');
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
-    description: Yup.string().nullable(),
-    objectAssignee: Yup.array().nullable(),
-    objectParticipant: Yup.array().nullable(),
-    createdBy: Yup.object().nullable(),
-    authorized_members: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+      description: Yup.string().nullable(),
+      objectAssignee: Yup.array().nullable(),
+      objectParticipant: Yup.array().nullable(),
+      createdBy: Yup.object().nullable(),
+      authorized_members: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const draftWorkspaceValidator = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
   );
 
-  const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<DraftAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: DraftWorkspaceDialogCreationMutation$variables['input'] = {
       name: values.name,
       entity_id: entityId,
@@ -92,9 +101,10 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
             .map((member) => ({
               id: member.value,
               access_right: member.accessRight,
-              groups_restriction_ids: member.groupsRestriction?.length > 0
-                ? member.groupsRestriction.map((group) => group.value)
-                : undefined,
+              groups_restriction_ids:
+                member.groupsRestriction?.length > 0
+                  ? member.groupsRestriction.map((group) => group.value)
+                  : undefined,
             })),
     };
     commit({
@@ -134,11 +144,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
         <Form>
-          <Dialog
-            open={!!openCreate}
-            onClose={handleCloseCreate}
-            title={t_i18n('Create a Draft')}
-          >
+          <Dialog open={!!openCreate} onClose={handleCloseCreate} title={t_i18n('Create a Draft')}>
             <Field
               component={TextField}
               variant="standard"
@@ -188,11 +194,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                type="submit"
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button type="submit" onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </DialogActions>

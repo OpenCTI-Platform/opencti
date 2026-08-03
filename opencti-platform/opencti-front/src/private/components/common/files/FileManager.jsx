@@ -15,7 +15,12 @@ import * as Yup from 'yup';
 import SelectField from '../../../../components/fields/SelectField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { convertMarkings } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -45,7 +50,8 @@ const styles = (theme) => ({
 });
 
 export const CONTENT_MAX_MARKINGS_TITLE = 'Content max marking definition levels';
-export const CONTENT_MAX_MARKINGS_HELPERTEXT = 'Entities with higher marking definition levels won\'t be included in the file content.';
+export const CONTENT_MAX_MARKINGS_HELPERTEXT =
+  "Entities with higher marking definition levels won't be included in the file content.";
 
 export const fileManagerAskJobImportMutation = graphql`
   mutation FileManagerAskJobImportMutation(
@@ -102,14 +108,9 @@ export const fileManagerCreateDraftAskJobImportMutation = graphql`
 `;
 
 export const fileManagerExportMutation = graphql`
-  mutation FileManagerExportMutation(
-    $id: ID!
-    $input: ExportAskInput!
-  ) {
+  mutation FileManagerExportMutation($id: ID!, $input: ExportAskInput!) {
     stixCoreObjectEdit(id: $id) {
-      exportAsk(
-        input: $input
-      ) {
+      exportAsk(input: $input) {
         id
         name
         uploadStatus
@@ -149,23 +150,18 @@ const fileManagerExportDialogQuery = graphql`
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
-      exportConnectors,
-    );
-    return map(
-      (x) => ({ data: { name: x.name, active: x.active } }),
-      filteredConnectors,
-    );
+    const filteredConnectors = filter((e) => includes(s, e.connector_scope), exportConnectors);
+    return map((x) => ({ data: { name: x.name, active: x.active } }), filteredConnectors);
   }, scopes);
   const zipped = zip(scopes, connectors);
   return fromPairs(zipped);
 };
 
-const exportValidation = (t_i18n) => Yup.object().shape({
-  format: Yup.string().trim().required(t_i18n('This field is required')),
-  type: Yup.string().trim().required(t_i18n('This field is required')),
-});
+const exportValidation = (t_i18n) =>
+  Yup.object().shape({
+    format: Yup.string().trim().required(t_i18n('This field is required')),
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
 const importValidation = (t_i18n, configurations) => {
   const shape = {
@@ -200,19 +196,22 @@ const FileManager = ({
 
   const entityMarkings = convertMarkings(entity);
 
-  const handleSelectedContentMaxMarkingsChange = (values, setFieldValue, fallbackEntityMarkings) => {
+  const handleSelectedContentMaxMarkingsChange = (
+    values,
+    setFieldValue,
+    fallbackEntityMarkings,
+  ) => {
     const nextValues = values ?? [];
     setSelectedContentMaxMarkingsIds(nextValues.map(({ value }) => value));
     setFieldValue('fileMarkings', nextValues.length > 0 ? nextValues : fallbackEntityMarkings);
   };
 
-  const exportScopes = uniq(
-    flatten(map((c) => c.connector_scope, connectorsExport)),
-  );
+  const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
 
   const exportConnsPerFormat = scopesConn(connectorsExport);
 
-  const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+  const isExportActive = (format) =>
+    filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenImport = (file) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
@@ -272,10 +271,7 @@ const FileManager = ({
           },
         });
         const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
+        const conn = ConnectionHandler.getConnection(entityPage, 'Pagination_exportFiles');
         for (let index = 0; index < payloads.length; index += 1) {
           const payload = payloads[index];
           const newEdge = payload.setLinkedRecord(payload, 'node');
@@ -322,16 +318,13 @@ const FileManager = ({
       ...parsedOption,
       representations: [...parsedRepresentations],
     };
-    const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+    const hasUserChoiceCsvMapperRepresentations =
+      resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
     setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
   };
   return (
     <div className={classes.container} data-testid="FileManager">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <FileImportViewer
           entity={entity}
           connectors={importConnsPerFormat}
@@ -344,26 +337,17 @@ const FileManager = ({
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
-        <WorkbenchFileViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
+        <WorkbenchFileViewer entity={entity} handleOpenImport={handleOpenImport} />
         <DraftWorkspaceViewer entityId={entity.id} />
 
-        <FileExternalReferencesViewer
-          entity={entity}
-          handleOpenImport={handleOpenImport}
-        />
+        <FileExternalReferencesViewer entity={entity} handleOpenImport={handleOpenImport} />
         {hasPictureManagement && <PictureManagementViewer entity={entity} />}
       </Grid>
       <div>
         <Formik
           enableReinitialize={true}
           initialValues={{ connector_id: '', configuration: '', objectMarking: [] }}
-          validationSchema={importValidation(
-            t,
-            selectedConnector?.configurations?.length > 0,
-          )}
+          validationSchema={importValidation(t, selectedConnector?.configurations?.length > 0)}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
         >
@@ -384,12 +368,10 @@ const FileManager = ({
                   onChange={handleSelectConnector}
                 >
                   {(connectorsImport || []).map((connector, i) => {
-                    const disabled = !fileToImport
-                      || (connector.connector_scope.length > 0
-                        && !includes(
-                          fileToImport.metaData.mimetype,
-                          connector.connector_scope,
-                        ));
+                    const disabled =
+                      !fileToImport ||
+                      (connector.connector_scope.length > 0 &&
+                        !includes(fileToImport.metaData.mimetype, connector.connector_scope));
                     return (
                       <MenuItem
                         key={i}
@@ -413,36 +395,27 @@ const FileManager = ({
                   >
                     {selectedConnector.configurations.map((config) => {
                       return (
-                        <MenuItem
-                          key={config.id}
-                          value={config.configuration}
-                        >
+                        <MenuItem key={config.id} value={config.configuration}>
                           {config.name}
                         </MenuItem>
                       );
                     })}
                   </Field>
                 )}
-                {selectedConnector?.name === 'ImportCsv'
-                  && hasUserChoiceCsvMapper
-                  && (
-                    <>
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )
-                }
+                {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
+                  <>
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                    />
+                  </>
+                )}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t('Create')}
                   </Button>
                 </DialogActions>
@@ -470,26 +443,32 @@ const FileManager = ({
                 open={openExport}
                 onClose={resetForm}
                 data-testid="FileManagerExportDialog"
-                title={(
+                title={
                   <Stack direction="row" alignItems="center" gap={1}>
                     {t_i18n('Generate an export')}
-                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                    <Tooltip
+                      title={t_i18n(
+                        'Your max shareable markings will be applied to the content max markings',
+                      )}
+                    >
                       <InfoOutlined fontSize="small" color="primary" />
                     </Tooltip>
                   </Stack>
-                )}
+                }
               >
                 <QueryRenderer
                   query={fileManagerExportDialogQuery}
                   variables={{ id }}
                   render={({ props }) => {
                     if (props) {
-                      const resolvedEntityMarkings = convertMarkings(props.stixCoreObject ?? entity);
+                      const resolvedEntityMarkings = convertMarkings(
+                        props.stixCoreObject ?? entity,
+                      );
 
                       if (
-                        values.fileMarkings.length === 0
-                        && values.contentMaxMarkings.length === 0
-                        && resolvedEntityMarkings.length > 0
+                        values.fileMarkings.length === 0 &&
+                        values.contentMaxMarkings.length === 0 &&
+                        resolvedEntityMarkings.length > 0
                       ) {
                         setFieldValue('fileMarkings', resolvedEntityMarkings);
                       }
@@ -504,11 +483,7 @@ const FileManager = ({
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem
-                                key={i}
-                                value={value}
-                                disabled={!isExportActive(value)}
-                              >
+                              <MenuItem key={i} value={value} disabled={!isExportActive(value)}>
                                 {value}
                               </MenuItem>
                             ))}
@@ -531,11 +506,13 @@ const FileManager = ({
                           <ObjectMarkingField
                             name="contentMaxMarkings"
                             label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                            onChange={(_, updatedValues) => handleSelectedContentMaxMarkingsChange(
-                              updatedValues,
-                              setFieldValue,
-                              resolvedEntityMarkings,
-                            )}
+                            onChange={(_, updatedValues) =>
+                              handleSelectedContentMaxMarkingsChange(
+                                updatedValues,
+                                setFieldValue,
+                                resolvedEntityMarkings,
+                              )
+                            }
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                             limitToMaxSharing
@@ -558,11 +535,7 @@ const FileManager = ({
                   <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
                     {t('Cancel')}
                   </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button color="secondary" onClick={submitForm} disabled={isSubmitting}>
                     {t('Create')}
                   </Button>
                 </DialogActions>

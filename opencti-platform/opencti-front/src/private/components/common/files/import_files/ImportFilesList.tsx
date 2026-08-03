@@ -1,5 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Collapse, Grid, IconButton, List, ListItem, MenuItem, Select, Tooltip, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Collapse,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  MenuItem,
+  Select,
+  Tooltip,
+  Typography,
+} from '@mui/material';
 import { TransitionGroup } from 'react-transition-group';
 import { DeleteOutlined, UploadFileOutlined } from '@mui/icons-material';
 import { CSV_MAPPER_NAME } from '@components/common/files/import_files/ImportFilesDialog';
@@ -9,7 +21,11 @@ import { ImportFilesContextQuery$data } from '@components/common/files/import_fi
 import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
-import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../../utils/ai/agentApi';
+import {
+  AgentOption,
+  fetchAgentsForIntent,
+  isXtmOneIntentWithoutAgents,
+} from '../../../../../utils/ai/agentApi';
 
 interface ImportFilesListProps {
   connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
@@ -34,9 +50,8 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
 
   // A connector is only blocked when XTM One is configured but the intent has no
   // agent. When XTM One is off, intent connectors stay usable via their legacy path.
-  const connectorMissingAgent = (intent?: string | null): boolean => (
-    isXtmOneIntentWithoutAgents(xtmOneConfigured, intent, agentCountForIntent(intent))
-  );
+  const connectorMissingAgent = (intent?: string | null): boolean =>
+    isXtmOneIntentWithoutAgents(xtmOneConfigured, intent, agentCountForIntent(intent));
 
   // Collect unique xtm_one_intent values from ALL available connectors (not just selected)
   const allIntents = useMemo(() => {
@@ -77,7 +92,11 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
         const agents = full?.xtm_one_intent ? agentsByIntent[full.xtm_one_intent] : undefined;
         if (agents && agents.length > 0) {
           changed = true;
-          return { file, connectors, configuration: JSON.stringify({ agent_slug: agents[0].slug }) };
+          return {
+            file,
+            connectors,
+            configuration: JSON.stringify({ agent_slug: agents[0].slug }),
+          };
         }
       }
       return { file, connectors, configuration };
@@ -92,9 +111,10 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
   const handleConnectorChange = (fileName: string, selectedConnectorIds: string[]) => {
     const updatedFiles = files.map(({ file, connectors, configuration }) => {
       if (file.name === fileName) {
-        const newConnectors = connectorsForImport
-          ?.filter((connector) => connector?.id && selectedConnectorIds.includes(connector.id))
-          .map((connector) => ({ id: connector?.id ?? '', name: connector?.name ?? '' })) || [];
+        const newConnectors =
+          connectorsForImport
+            ?.filter((connector) => connector?.id && selectedConnectorIds.includes(connector.id))
+            .map((connector) => ({ id: connector?.id ?? '', name: connector?.name ?? '' })) || [];
         // Auto-select first agent when a XTM One connector is added
         let newConfiguration = configuration;
         const xtmConnector = connectorsForImport?.find(
@@ -168,7 +188,10 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
       const hasCsvMapper = connectors?.some((connector) => connector?.name === CSV_MAPPER_NAME);
       const hasXtmOne = connectors?.some((connector) => {
         const fullConnector = connectorsForImport?.find((c) => c?.id === connector?.id);
-        return fullConnector?.xtm_one_intent && (agentsByIntent[fullConnector.xtm_one_intent]?.length ?? 0) > 0;
+        return (
+          fullConnector?.xtm_one_intent &&
+          (agentsByIntent[fullConnector.xtm_one_intent]?.length ?? 0) > 0
+        );
       });
       return hasCsvMapper || hasXtmOne;
     });
@@ -189,23 +212,17 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
               <Grid container columnSpacing={2}>
                 <Grid item xs={0.5}></Grid>
                 <Grid item xs={fileNameColumnSize}>
-                  <Typography fontWeight="bold">
-                    {t_i18n('Files')}
-                  </Typography>
+                  <Typography fontWeight="bold">{t_i18n('Files')}</Typography>
                 </Grid>
                 {importMode !== 'auto' && (
                   <>
                     <Grid item xs={3}>
-                      <Typography fontWeight="bold">
-                        {t_i18n('Connectors')}
-                      </Typography>
+                      <Typography fontWeight="bold">{t_i18n('Connectors')}</Typography>
                     </Grid>
 
                     {isConfigurationColumn && (
                       <Grid item xs={3}>
-                        <Typography fontWeight="bold">
-                          {t_i18n('Configuration')}
-                        </Typography>
+                        <Typography fontWeight="bold">{t_i18n('Configuration')}</Typography>
                       </Grid>
                     )}
                   </>
@@ -217,8 +234,9 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
         )}
 
         {files.map(({ file, connectors = [], configuration }) => {
-          const canSelectConnectors = !!connectorsForImport
-            ?.find((connector) => connector?.connector_scope?.includes(file.type));
+          const canSelectConnectors = !!connectorsForImport?.find((connector) =>
+            connector?.connector_scope?.includes(file.type),
+          );
 
           return (
             <Collapse key={file.name}>
@@ -232,131 +250,143 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                   {/* Column 2: File Name */}
                   <Grid item xs={fileNameColumnSize}>
                     <Tooltip title={file.name}>
-                      <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                      <Box
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          width: '100%',
+                        }}
+                      >
                         {file.name}
                       </Box>
                     </Tooltip>
                   </Grid>
                   {importMode !== 'auto' && (
                     <>
-                      {
-                        canSelectConnectors ? (
-                          <>
-                            {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
-                            <Grid item xs={3}>
-                              <Select
-                                variant="standard"
-                                fullWidth
-                                multiple
-                                displayEmpty
-                                renderValue={(selectedIds) => {
-                                  if (selectedIds.length === 0) {
-                                    return canSelectConnectors ? t_i18n('No active connectors') : t_i18n('Select a connector');
-                                  }
+                      {canSelectConnectors ? (
+                        <>
+                          {/* Column 3: Select - Show all connectors but disable those that haven't matching file type */}
+                          <Grid item xs={3}>
+                            <Select
+                              variant="standard"
+                              fullWidth
+                              multiple
+                              displayEmpty
+                              renderValue={(selectedIds) => {
+                                if (selectedIds.length === 0) {
+                                  return canSelectConnectors
+                                    ? t_i18n('No active connectors')
+                                    : t_i18n('Select a connector');
+                                }
 
-                                  // Displays connectors name
-                                  return selectedIds
-                                    .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
-                                    .join(', ');
-                                }}
-                                value={connectors?.map((c) => c?.id)}
-                                onChange={(e) => handleConnectorChange(file.name, e.target.value as string[])}
-                              >
-                                <MenuItem value="" disabled>
-                                  {t_i18n('Select a connector')}
-                                </MenuItem>
-                                {connectorsForImport?.map((connector) => (
-                                  <MenuItem
-                                    key={connector?.id}
-                                    value={connector?.id}
-                                    disabled={
-                                      !connector?.active
-                                      || !connector?.connector_scope?.includes(file.type)
-                                      || connectorMissingAgent(connector?.xtm_one_intent)
-                                    }
-                                  >
-                                    {connector?.name}
-                                    {connectorMissingAgent(connector?.xtm_one_intent)
-                                      ? ` (${t_i18n('No agent available')})`
-                                      : ''}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </Grid>
-
-                            {/* Column 4: Configuration (CSV Mapper or XTM One Agent) */}
-                            {isConfigurationColumn
-                              && (
-                                <Grid item xs={3}>
-                                  {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
-                                    <Select
-                                      variant="standard"
-                                      fullWidth
-                                      value={configuration || ''}
-                                      onChange={(e) => handleMapperChange(file.name, e.target.value as string)}
-                                      error={!configuration}
-                                      displayEmpty
-                                      sx={{
-                                        '& .MuiSelect-select': {
-                                          color: !configuration ? theme.palette.error.main : 'inherit',
-                                        },
-                                      }}
-                                    >
-                                      <MenuItem value="" disabled>
-                                        {t_i18n('Select a configuration')}
-                                      </MenuItem>
-                                      {connectorsForImport
-                                        ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
-                                        ?.configurations?.map((mapper) => (
-                                          <MenuItem key={mapper?.id} value={mapper?.configuration}>
-                                            {mapper?.name}
-                                          </MenuItem>
-                                        ))}
-                                    </Select>
-                                  )}
-                                  {(() => {
-                                    const intent = getXtmOneIntentForFile(connectors);
-                                    const agents = intent ? agentsByIntent[intent] : null;
-                                    if (!intent || !agents || agents.length === 0) return null;
-                                    return (
-                                      <Select
-                                        variant="standard"
-                                        fullWidth
-                                        value={getAgentSlugFromConfig(configuration)}
-                                        onChange={(e) => handleAgentChange(file.name, e.target.value as string)}
-                                        displayEmpty
-                                      >
-                                        <MenuItem value="" disabled>
-                                          {t_i18n('Select agent')}
-                                        </MenuItem>
-                                        {agents.map((agent) => (
-                                          <MenuItem key={agent.id} value={agent.slug}>
-                                            {agent.name}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    );
-                                  })()}
-                                </Grid>
-                              )}
-                          </>
-                        ) : (
-                          <Grid item xs={isConfigurationColumn ? 6 : 3}>
-                            <Alert
-                              variant="outlined"
-                              severity="warning"
-                              sx={{
-                                border: 'none',
-                                padding: 0,
-                                backgroundColor: 'transparent',
-                                boxShadow: 'none',
+                                // Displays connectors name
+                                return selectedIds
+                                  .map((id) => connectorsForImport?.find((c) => c?.id === id)?.name)
+                                  .join(', ');
                               }}
+                              value={connectors?.map((c) => c?.id)}
+                              onChange={(e) =>
+                                handleConnectorChange(file.name, e.target.value as string[])
+                              }
                             >
-                              {t_i18n('No connector was found to process this file type')}
-                            </Alert>
+                              <MenuItem value="" disabled>
+                                {t_i18n('Select a connector')}
+                              </MenuItem>
+                              {connectorsForImport?.map((connector) => (
+                                <MenuItem
+                                  key={connector?.id}
+                                  value={connector?.id}
+                                  disabled={
+                                    !connector?.active ||
+                                    !connector?.connector_scope?.includes(file.type) ||
+                                    connectorMissingAgent(connector?.xtm_one_intent)
+                                  }
+                                >
+                                  {connector?.name}
+                                  {connectorMissingAgent(connector?.xtm_one_intent)
+                                    ? ` (${t_i18n('No agent available')})`
+                                    : ''}
+                                </MenuItem>
+                              ))}
+                            </Select>
                           </Grid>
-                        )
-                      }
+
+                          {/* Column 4: Configuration (CSV Mapper or XTM One Agent) */}
+                          {isConfigurationColumn && (
+                            <Grid item xs={3}>
+                              {!!connectors.filter((c) => c?.name === CSV_MAPPER_NAME).length && (
+                                <Select
+                                  variant="standard"
+                                  fullWidth
+                                  value={configuration || ''}
+                                  onChange={(e) =>
+                                    handleMapperChange(file.name, e.target.value as string)
+                                  }
+                                  error={!configuration}
+                                  displayEmpty
+                                  sx={{
+                                    '& .MuiSelect-select': {
+                                      color: !configuration ? theme.palette.error.main : 'inherit',
+                                    },
+                                  }}
+                                >
+                                  <MenuItem value="" disabled>
+                                    {t_i18n('Select a configuration')}
+                                  </MenuItem>
+                                  {connectorsForImport
+                                    ?.find((connector) => connector?.name === CSV_MAPPER_NAME)
+                                    ?.configurations?.map((mapper) => (
+                                      <MenuItem key={mapper?.id} value={mapper?.configuration}>
+                                        {mapper?.name}
+                                      </MenuItem>
+                                    ))}
+                                </Select>
+                              )}
+                              {(() => {
+                                const intent = getXtmOneIntentForFile(connectors);
+                                const agents = intent ? agentsByIntent[intent] : null;
+                                if (!intent || !agents || agents.length === 0) return null;
+                                return (
+                                  <Select
+                                    variant="standard"
+                                    fullWidth
+                                    value={getAgentSlugFromConfig(configuration)}
+                                    onChange={(e) =>
+                                      handleAgentChange(file.name, e.target.value as string)
+                                    }
+                                    displayEmpty
+                                  >
+                                    <MenuItem value="" disabled>
+                                      {t_i18n('Select agent')}
+                                    </MenuItem>
+                                    {agents.map((agent) => (
+                                      <MenuItem key={agent.id} value={agent.slug}>
+                                        {agent.name}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                );
+                              })()}
+                            </Grid>
+                          )}
+                        </>
+                      ) : (
+                        <Grid item xs={isConfigurationColumn ? 6 : 3}>
+                          <Alert
+                            variant="outlined"
+                            severity="warning"
+                            sx={{
+                              border: 'none',
+                              padding: 0,
+                              backgroundColor: 'transparent',
+                              boxShadow: 'none',
+                            }}
+                          >
+                            {t_i18n('No connector was found to process this file type')}
+                          </Alert>
+                        </Grid>
+                      )}
                     </>
                   )}
                   {/* Column 5: Delete Button */}

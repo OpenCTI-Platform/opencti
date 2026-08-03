@@ -8,7 +8,13 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Collapse from '@mui/material/Collapse';
-import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined, LibraryBooksOutlined } from '@mui/icons-material';
+import {
+  Domain,
+  ExpandLess,
+  ExpandMore,
+  FileDownloadOutlined,
+  LibraryBooksOutlined,
+} from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { createRefetchContainer, graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,7 +31,10 @@ import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size, isNotEmptyField } from '../../../../utils/utils';
@@ -61,11 +70,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     super(props);
     let params = {};
     if (!props.noState) {
-      params = buildViewParamsFromUrlAndStorage(
-        props.navigate,
-        props.location,
-        LOCAL_STORAGE_KEY,
-      );
+      params = buildViewParamsFromUrlAndStorage(props.navigate, props.location, LOCAL_STORAGE_KEY);
     }
     this.state = {
       sortBy: R.propOr('created_at', 'sortBy', params),
@@ -82,12 +87,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
   saveView() {
     if (!this.props.noState) {
       const LOCAL_STORAGE_KEY = `victimology-sectors-${this.props.entityId}`;
-      saveViewParameters(
-        this.props.navigate,
-        this.props.location,
-        LOCAL_STORAGE_KEY,
-        this.state,
-      );
+      saveViewParameters(this.props.navigate, this.props.location, LOCAL_STORAGE_KEY, this.state);
     }
   }
 
@@ -107,9 +107,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     this.setState({
       expandedLines: R.assoc(
         lineKey,
-        this.state.expandedLines[lineKey] !== undefined
-          ? !this.state.expandedLines[lineKey]
-          : true,
+        this.state.expandedLines[lineKey] !== undefined ? !this.state.expandedLines[lineKey] : true,
         this.state.expandedLines,
       ),
     });
@@ -128,12 +126,11 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       defaultStartTime,
       defaultStopTime,
     } = this.props;
-    const filterByKeyword = (n) => searchTerm === ''
-      || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || R.propOr('', 'subsectors_text', n)
-        .toLowerCase()
-        .indexOf(searchTerm.toLowerCase()) !== -1;
+    const filterByKeyword = (n) =>
+      searchTerm === '' ||
+      n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1 ||
+      n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1 ||
+      R.propOr('', 'subsectors_text', n).toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
     const concatAll = R.reduce(R.concat, []);
     // Extract all sectors
@@ -163,34 +160,32 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
         ),
         relations: [],
       }));
-    const subSectorsParentSectors = concatAll(
-      R.pluck('parentSectors', subSectors),
-    );
+    const subSectorsParentSectors = concatAll(R.pluck('parentSectors', subSectors));
     const organizations = data.stixCoreRelationships.edges
       .filter((n) => n.node.to.entity_type === 'Organization')
       .map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
-        sectors: n.node.to.sectors.edges.map(
-          (o) => ({
-            id: o.node.id,
-            name: o.node.name,
-            isSubSector: o.node.isSubSector,
+        sectors: n.node.to.sectors.edges.map((o) => ({
+          id: o.node.id,
+          name: o.node.name,
+          isSubSector: o.node.isSubSector,
+          subSectors: {},
+          parentSectors: o.node.parentSectors.edges.map((p) => ({
+            id: p.node.id,
+            name: p.node.name,
             subSectors: {},
-            parentSectors: o.node.parentSectors.edges.map(
-              (p) => ({
-                id: p.node.id,
-                name: p.node.name,
-                subSectors: {},
-                relations: [],
-              })),
             relations: [],
           })),
+          relations: [],
+        })),
         relations: [],
       }));
     const organizationsSectors = concatAll(organizations.flatMap((e) => e.sectors));
     const organizationsTopLevelSectors = organizationsSectors.filter((n) => !n.isSubSector);
-    const organizationsParentSectors = concatAll(organizationsSectors.flatMap((e) => e.parentSectors));
+    const organizationsParentSectors = concatAll(
+      organizationsSectors.flatMap((e) => e.parentSectors),
+    );
     const finalSectors = R.pipe(
       R.concat(subSectorsParentSectors),
       R.concat(organizationsTopLevelSectors),
@@ -201,17 +196,15 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     for (const subSector of subSectors) {
       for (const parentSector of subSector.parentSectors) {
         finalSectors[parentSector.id].subSectors[subSector.id] = subSector;
-        finalSectors[parentSector.id].subsectors_text = `${
-          finalSectors[parentSector.id].subsectors_text
-        } ${subSector.name} ${subSector.description}`;
+        finalSectors[parentSector.id].subsectors_text =
+          `${finalSectors[parentSector.id].subsectors_text} ${subSector.name} ${subSector.description}`;
       }
     }
     for (const organizationSector of organizationsSectors) {
       for (const parentSector of organizationSector.parentSectors) {
         finalSectors[parentSector.id].subSectors[organizationSector.id] = organizationSector;
-        finalSectors[parentSector.id].subsectors_text = `${
-          finalSectors[parentSector.id].subsectors_text
-        } ${organizationSector.name} ${organizationSector.description}`;
+        finalSectors[parentSector.id].subsectors_text =
+          `${finalSectors[parentSector.id].subsectors_text} ${organizationSector.name} ${organizationSector.description}`;
       }
     }
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
@@ -235,16 +228,12 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       );
       if (stixCoreRelationship.to.entity_type === 'Sector') {
         if (stixCoreRelationship.to.isSubSector) {
-          const parentSectorId = R.head(
-            stixCoreRelationship.to.parentSectors.edges,
-          ).node.id;
-          finalSectors[parentSectorId].subSectors[
-            stixCoreRelationship.to.id
-          ].relations.push(stixCoreRelationship);
-        } else {
-          finalSectors[stixCoreRelationship.to.id].relations.push(
+          const parentSectorId = R.head(stixCoreRelationship.to.parentSectors.edges).node.id;
+          finalSectors[parentSectorId].subSectors[stixCoreRelationship.to.id].relations.push(
             stixCoreRelationship,
           );
+        } else {
+          finalSectors[stixCoreRelationship.to.id].relations.push(stixCoreRelationship);
         }
       }
       if (stixCoreRelationship.to.entity_type === 'Organization') {
@@ -252,19 +241,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           const sector = R.head(stixCoreRelationship.to.sectors.edges).node;
           if (sector.isSubSector) {
             const parentSectorId = R.head(sector.parentSectors.edges).node.id;
-            finalSectors[parentSectorId].subSectors[sector.id].relations.push(
-              stixCoreRelationship,
-            );
-            finalSectors[
-              parentSectorId
-            ].subsectors_text = `${finalSectors[parentSectorId].subsectors_text} ${stixCoreRelationship.to.name} ${stixCoreRelationship.to.description}`;
+            finalSectors[parentSectorId].subSectors[sector.id].relations.push(stixCoreRelationship);
+            finalSectors[parentSectorId].subsectors_text =
+              `${finalSectors[parentSectorId].subsectors_text} ${stixCoreRelationship.to.name} ${stixCoreRelationship.to.description}`;
           } else {
             finalSectors[sector.id].relations.push(stixCoreRelationship);
-            finalSectors[sector.id].subsectors_text = `${
-              finalSectors[sector.id].subsectors_text
-            } ${stixCoreRelationship.to.name} ${
-              stixCoreRelationship.to.description
-            }`;
+            finalSectors[sector.id].subsectors_text =
+              `${finalSectors[sector.id].subsectors_text} ${stixCoreRelationship.to.name} ${stixCoreRelationship.to.description}`;
           }
         } else {
           if (!(unknownSectorId in finalSectors)) {
@@ -287,17 +270,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
 
     const renderRelationshipDescription = (description, inferred) => {
       if (isNotEmptyField(description)) {
-        return (
-          <MarkdownDisplay
-            content={description}
-            remarkGfmPlugin={true}
-            commonmark={true}
-          />
-        );
+        return <MarkdownDisplay content={description} remarkGfmPlugin={true} commonmark={true} />;
       }
-      return inferred
-        ? (<i>{t('This relation is inferred')}</i>)
-        : EMPTY_VALUE;
+      return inferred ? <i>{t('This relation is inferred')}</i> : EMPTY_VALUE;
     };
 
     return (
@@ -328,10 +303,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
               >
                 <ToggleButton value="entities" aria-label="entities">
                   <Tooltip title={t('Entities view')}>
-                    <LibraryBooksOutlined
-                      fontSize="small"
-                      color="primary"
-                    />
+                    <LibraryBooksOutlined fontSize="small" color="primary" />
                   </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="relationships" aria-label="lines">
@@ -356,17 +328,10 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 )}
                 {exportDisabled && (
                   <Tooltip
-                    title={`${
-                      t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size
-                    })`}
+                    title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}
                   >
                     <span>
-                      <ToggleButton
-                        size="small"
-                        value="export"
-                        aria-label="export"
-                        disabled={true}
-                      >
+                      <ToggleButton size="small" value="export" aria-label="export" disabled={true}>
                         <FileDownloadOutlined fontSize="small" />
                       </ToggleButton>
                     </span>
@@ -392,7 +357,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 <ListItem
                   divider={true}
                   disablePadding
-                  secondaryAction={(
+                  secondaryAction={
                     <IconButton
                       aria-label={this.state.expandedLines[sector.id] ? t('Collapse') : t('Expand')}
                       onClick={this.handleToggleLine.bind(this, sector.id)}
@@ -404,7 +369,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                         <ExpandMore />
                       )}
                     </IconButton>
-                  )}
+                  }
                 >
                   <ListItemButton onClick={this.handleToggleLine.bind(this, sector.id)}>
                     <ListItemIcon>
@@ -423,27 +388,24 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                           divider={true}
                           dense={true}
                           disablePadding
-                          secondaryAction={stixCoreRelationship.is_inferred ? (
-                            <Tooltip
-                              title={
-                                t('Inferred knowledge based on the rule ')
-                                + R.head(
-                                  stixCoreRelationship.x_opencti_inferences,
-                                ).rule.name
-                              }
-                            >
-                              <AutoFix
-                                fontSize="small"
-                                style={{ marginLeft: -30 }}
+                          secondaryAction={
+                            stixCoreRelationship.is_inferred ? (
+                              <Tooltip
+                                title={
+                                  t('Inferred knowledge based on the rule ') +
+                                  R.head(stixCoreRelationship.x_opencti_inferences).rule.name
+                                }
+                              >
+                                <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+                              </Tooltip>
+                            ) : (
+                              <StixCoreRelationshipPopover
+                                stixCoreRelationshipId={stixCoreRelationship.id}
+                                paginationOptions={paginationOptions}
+                                onDelete={this.props.relay.refetch.bind(this)}
                               />
-                            </Tooltip>
-                          ) : (
-                            <StixCoreRelationshipPopover
-                              stixCoreRelationshipId={stixCoreRelationship.id}
-                              paginationOptions={paginationOptions}
-                              onDelete={this.props.relay.refetch.bind(this)}
-                            />
-                          )}
+                            )
+                          }
                         >
                           <ListItemButton
                             component={Link}
@@ -455,17 +417,20 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             }}
                           >
                             <ListItemIcon className={classes.itemIcon}>
-                              <ItemIcon
-                                type={stixCoreRelationship.to.entity_type}
-                              />
+                              <ItemIcon type={stixCoreRelationship.to.entity_type} />
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                stixCoreRelationship.to.id === sector.id
-                                  ? <em>{t('Direct targeting of this sector')}</em>
-                                  : stixCoreRelationship.to.name
+                                stixCoreRelationship.to.id === sector.id ? (
+                                  <em>{t('Direct targeting of this sector')}</em>
+                                ) : (
+                                  stixCoreRelationship.to.name
+                                )
                               }
-                              secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
+                              secondary={renderRelationshipDescription(
+                                stixCoreRelationship.description,
+                                stixCoreRelationship.inferred,
+                              )}
                             />
                             <Box
                               sx={{
@@ -481,9 +446,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               />
                             </Box>
                             <Box sx={{ marginRight: 8 }}>
-                              <ItemYears
-                                years={stixCoreRelationship.years}
-                              />
+                              <ItemYears years={stixCoreRelationship.years} />
                             </Box>
                           </ListItemButton>
                         </ListItem>
@@ -499,30 +462,27 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                           <ListItem
                             divider={true}
                             disablePadding
-                            secondaryAction={(
+                            secondaryAction={
                               <IconButton
-                                aria-label={this.state.expandedLines[subsector.id] ? t('Collapse') : t('Expand')}
-                                onClick={this.handleToggleLine.bind(
-                                  this,
-                                  subsector.id,
-                                )}
+                                aria-label={
+                                  this.state.expandedLines[subsector.id]
+                                    ? t('Collapse')
+                                    : t('Expand')
+                                }
+                                onClick={this.handleToggleLine.bind(this, subsector.id)}
                                 aria-haspopup="true"
                               >
-                                {this.state.expandedLines[subsector.id]
-                                  === true ? (
-                                      <ExpandLess />
-                                    ) : (
-                                      <ExpandMore />
-                                    )}
+                                {this.state.expandedLines[subsector.id] === true ? (
+                                  <ExpandLess />
+                                ) : (
+                                  <ExpandMore />
+                                )}
                               </IconButton>
-                            )}
+                            }
                           >
                             <ListItemButton
                               classes={{ root: classes.nested }}
-                              onClick={this.handleToggleLine.bind(
-                                this,
-                                subsector.id,
-                              )}
+                              onClick={this.handleToggleLine.bind(this, subsector.id)}
                             >
                               <ListItemIcon>
                                 <Domain role="img" />
@@ -530,91 +490,69 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               <ListItemText primary={subsector.name} />
                             </ListItemButton>
                           </ListItem>
-                          <Collapse
-                            in={this.state.expandedLines[subsector.id] === true}
-                          >
+                          <Collapse in={this.state.expandedLines[subsector.id] === true}>
                             <List>
-                              {orderedSubRelations.map(
-                                (stixCoreRelationship) => {
-                                  const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
-                                  return (
-                                    <ListItem
-                                      key={stixCoreRelationship.id}
-                                      divider={true}
-                                      dense={true}
-                                      disablePadding
-                                      secondaryAction={stixCoreRelationship.is_inferred ? (
+                              {orderedSubRelations.map((stixCoreRelationship) => {
+                                const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
+                                return (
+                                  <ListItem
+                                    key={stixCoreRelationship.id}
+                                    divider={true}
+                                    dense={true}
+                                    disablePadding
+                                    secondaryAction={
+                                      stixCoreRelationship.is_inferred ? (
                                         <Tooltip
                                           title={
-                                            t(
-                                              'Inferred knowledge based on the rule ',
-                                            )
-                                            + R.head(
-                                              stixCoreRelationship.x_opencti_inferences,
-                                            ).rule.name
+                                            t('Inferred knowledge based on the rule ') +
+                                            R.head(stixCoreRelationship.x_opencti_inferences).rule
+                                              .name
                                           }
                                         >
-                                          <AutoFix
-                                            fontSize="small"
-                                            style={{ marginLeft: -30 }}
-                                          />
+                                          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
                                         </Tooltip>
                                       ) : (
                                         <StixCoreRelationshipPopover
-                                          stixCoreRelationshipId={
-                                            stixCoreRelationship.id
-                                          }
-                                          paginationOptions={
-                                            paginationOptions
-                                          }
-                                          onDelete={this.props.relay.refetch.bind(
-                                            this,
-                                          )}
+                                          stixCoreRelationshipId={stixCoreRelationship.id}
+                                          paginationOptions={paginationOptions}
+                                          onDelete={this.props.relay.refetch.bind(this)}
                                         />
-                                      )}
+                                      )
+                                    }
+                                  >
+                                    <ListItemButton
+                                      classes={{ root: classes.subnested }}
+                                      component={Link}
+                                      to={link}
                                     >
-                                      <ListItemButton
-                                        classes={{ root: classes.subnested }}
-                                        component={Link}
-                                        to={link}
-                                      >
-                                        <ListItemIcon
-                                          className={classes.itemIcon}
-                                        >
-                                          <ItemIcon
-                                            type={
-                                              stixCoreRelationship.to.entity_type
-                                            }
-                                          />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                          primary={
-                                            stixCoreRelationship.to.id
-                                            === subsector.id ? (
-                                                  <em>
-                                                    {t(
-                                                      'Direct targeting of this sector',
-                                                    )}
-                                                  </em>
-                                                ) : (
-                                                  stixCoreRelationship.to.name
-                                                )
-                                          }
-                                          secondary={renderRelationshipDescription(stixCoreRelationship.description, stixCoreRelationship.inferred)}
-                                        />
-                                        <ItemMarkings
-                                          variant="inList"
-                                          markingDefinitions={stixCoreRelationship.objectMarking ?? []}
-                                          limit={1}
-                                        />
-                                        <ItemYears
-                                          years={stixCoreRelationship.years}
-                                        />
-                                      </ListItemButton>
-                                    </ListItem>
-                                  );
-                                },
-                              )}
+                                      <ListItemIcon className={classes.itemIcon}>
+                                        <ItemIcon type={stixCoreRelationship.to.entity_type} />
+                                      </ListItemIcon>
+                                      <ListItemText
+                                        primary={
+                                          stixCoreRelationship.to.id === subsector.id ? (
+                                            <em>{t('Direct targeting of this sector')}</em>
+                                          ) : (
+                                            stixCoreRelationship.to.name
+                                          )
+                                        }
+                                        secondary={renderRelationshipDescription(
+                                          stixCoreRelationship.description,
+                                          stixCoreRelationship.inferred,
+                                        )}
+                                      />
+                                      <ItemMarkings
+                                        variant="inList"
+                                        markingDefinitions={
+                                          stixCoreRelationship.objectMarking ?? []
+                                        }
+                                        limit={1}
+                                      />
+                                      <ItemYears years={stixCoreRelationship.years} />
+                                    </ListItemButton>
+                                  </ListItem>
+                                );
+                              })}
                             </List>
                           </Collapse>
                         </div>

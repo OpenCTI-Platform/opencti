@@ -10,7 +10,9 @@ import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixSightingRelationshipExternalReferencesLines, { stixSightingRelationshipExternalReferencesLinesQuery } from './StixSightingRelationshipExternalReferencesLines';
+import StixSightingRelationshipExternalReferencesLines, {
+  stixSightingRelationshipExternalReferencesLinesQuery,
+} from './StixSightingRelationshipExternalReferencesLines';
 import Card from '@common/card/Card';
 
 const styles = (theme) => ({
@@ -51,18 +53,12 @@ class StixSightingRelationshipExternalReferences extends Component {
               <Card title={t('External references')}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-                    >
+                    <ListItem key={i} dense={true} divider={true}>
                       <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
-                          {i}
-                        </Avatar>
+                        <Avatar classes={{ root: classes.avatarDisabled }}>{i}</Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -70,15 +66,15 @@ class StixSightingRelationshipExternalReferences extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        )}
-                        secondary={(
+                        }
+                        secondary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        )}
+                        }
                       />
                     </ListItem>
                   ))}
@@ -100,7 +96,4 @@ StixSightingRelationshipExternalReferences.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipExternalReferences);
+export default compose(inject18n, withStyles(styles))(StixSightingRelationshipExternalReferences);

@@ -36,10 +36,7 @@ const PirOverviewCountFlagged = ({ data }: PirOverviewCountFlaggedProps) => {
 
   return (
     <Grid size={{ xs: 12 }}>
-      <Card
-        padding="small"
-        title={t_i18n('Number of threats over time')}
-      >
+      <Card padding="small" title={t_i18n('Number of threats over time')}>
         <PirRelationshipsMultiAreaChart pirId={id} />
       </Card>
     </Grid>

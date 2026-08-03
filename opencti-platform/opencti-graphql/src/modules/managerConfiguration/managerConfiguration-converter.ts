@@ -1,9 +1,14 @@
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { buildStixObject } from '../../database/stix-2-1-converter';
-import type { StixManagerConfiguration, StoreEntityManagerConfiguration } from './managerConfiguration-types';
+import type {
+  StixManagerConfiguration,
+  StoreEntityManagerConfiguration,
+} from './managerConfiguration-types';
 import { cleanObject } from '../../database/stix-converter-utils';
 
-const convertManagerConfigurationToStix = (instance: StoreEntityManagerConfiguration): StixManagerConfiguration => {
+const convertManagerConfigurationToStix = (
+  instance: StoreEntityManagerConfiguration,
+): StixManagerConfiguration => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

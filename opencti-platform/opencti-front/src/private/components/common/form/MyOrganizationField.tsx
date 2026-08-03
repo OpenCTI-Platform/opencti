@@ -16,14 +16,7 @@ interface MyOrganizationFieldProps {
 }
 
 const MyOrganizationField = (props: MyOrganizationFieldProps) => {
-  const {
-    name,
-    label,
-    disabled,
-    multiple = true,
-    style = {},
-    onChange = null,
-  } = props;
+  const { name, label, disabled, multiple = true, style = {}, onChange = null } = props;
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const myOrganizationList: FieldOption[] = [];
@@ -56,7 +49,9 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
             <ItemIcon type="Organization" />
           </div>
-          <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label ?? ''}</div>
+          <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>
+            {option.label ?? ''}
+          </div>
         </li>
       )}
     />

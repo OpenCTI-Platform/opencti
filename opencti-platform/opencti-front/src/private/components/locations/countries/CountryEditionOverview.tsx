@@ -15,7 +15,11 @@ import StatusField from '../../common/form/StatusField';
 import { CountryEditionOverview_country$key } from './__generated__/CountryEditionOverview_country.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
@@ -29,11 +33,7 @@ const countryMutationFieldPatch = graphql`
     $references: [String]
   ) {
     countryEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...CountryEditionOverview_country
         ...Country_country
       }
@@ -133,21 +133,27 @@ interface CountryEditionFormValues {
   references?: FieldOption[];
 }
 
-const CountryEditionOverviewComponent: FunctionComponent<
-  CountryEditionOverviewProps
-> = ({ countryRef, context, enableReferences = false, handleClose }) => {
+const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewProps> = ({
+  countryRef,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(COUNTRY_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const countryValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const queries = {
     fieldPatch: countryMutationFieldPatch,
@@ -155,12 +161,7 @@ const CountryEditionOverviewComponent: FunctionComponent<
     relationDelete: countryMutationRelationDelete,
     editionFocus: countryEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    country as GenericData,
-    enableReferences,
-    queries,
-    countryValidator,
-  );
+  const editor = useFormEditor(country as GenericData, enableReferences, queries, countryValidator);
   const onSubmit: FormikConfig<CountryEditionFormValues>['onSubmit'] = (
     values,
     { setSubmitting },
@@ -179,8 +180,7 @@ const CountryEditionOverviewComponent: FunctionComponent<
       variables: {
         id: country.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -226,14 +226,7 @@ const CountryEditionOverviewComponent: FunctionComponent<
       validationSchema={countryValidator}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={country} />
           <Field
@@ -241,19 +234,17 @@ const CountryEditionOverviewComponent: FunctionComponent<
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -261,9 +252,7 @@ const CountryEditionOverviewComponent: FunctionComponent<
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={country.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -281,31 +270,22 @@ const CountryEditionOverviewComponent: FunctionComponent<
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

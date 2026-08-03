@@ -26,7 +26,12 @@ import {
   ENTITY_TYPE_VULNERABILITY,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
-import { ENTITY_TYPE_CHANNEL, type Stix2Channel, type StixChannel, type StoreEntityChannel } from './channel-types';
+import {
+  ENTITY_TYPE_CHANNEL,
+  type Stix2Channel,
+  type StixChannel,
+  type StoreEntityChannel,
+} from './channel-types';
 import { ENTITY_TYPE_LANGUAGE } from '../language/language-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
@@ -73,9 +78,40 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
     { key: 'notes', width: 12, label: 'Notes about this entity' },
   ],
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'channel_types', label: 'Channel types', type: 'string', format: 'vocabulary', vocabularyCategory: 'channel_types_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'channel_types',
+      label: 'Channel types',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'channel_types_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
   ],
   relations: [
     {
@@ -134,26 +170,18 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
     },
     {
       name: RELATION_DELIVERS,
-      targets: [
-        { name: ENTITY_TYPE_MALWARE, type: REL_BUILT_IN },
-      ],
+      targets: [{ name: ENTITY_TYPE_MALWARE, type: REL_BUILT_IN }],
     },
     {
       name: RELATION_DROPS,
-      targets: [
-        { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
-      ],
+      targets: [{ name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED }],
     },
     {
       name: RELATION_DERIVED_FROM,
-      targets: [
-        { name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN },
-      ],
+      targets: [{ name: ENTITY_TYPE_CHANNEL, type: REL_BUILT_IN }],
     },
   ],
-  relationsRefs: [
-    objectOrganization,
-  ],
+  relationsRefs: [objectOrganization],
   representative: (stix: StixChannel) => {
     return stix.name;
   },

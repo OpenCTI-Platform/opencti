@@ -20,9 +20,7 @@ interface IndicatorEditionProps {
   indicatorId: string;
 }
 
-const IndicatorEdition: FunctionComponent<IndicatorEditionProps> = ({
-  indicatorId,
-}) => {
+const IndicatorEdition: FunctionComponent<IndicatorEditionProps> = ({ indicatorId }) => {
   const [commit] = useApiMutation(indicatorEditionOverviewFocus);
 
   const handleClose = () => {

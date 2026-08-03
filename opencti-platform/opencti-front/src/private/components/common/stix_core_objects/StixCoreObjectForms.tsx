@@ -1,4 +1,7 @@
-import { StixCoreObjectFormsFormsQuery, StixCoreObjectFormsFormsQuery$variables } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
+import {
+  StixCoreObjectFormsFormsQuery,
+  StixCoreObjectFormsFormsQuery$variables,
+} from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
 import { AssignmentOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
@@ -35,7 +38,9 @@ const stixCoreObjectFormsFormsQuery = graphql`
   }
 `;
 
-const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsComponentProps> = ({ queryRef }) => {
+const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsComponentProps> = ({
+  queryRef,
+}) => {
   const { t_i18n } = useFormatter();
   const [isFormSelectorOpen, setIsFormSelectorOpen] = useState(false);
   const data = usePreloadedQuery(stixCoreObjectFormsFormsQuery, queryRef);
@@ -55,17 +60,26 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
           </IconButton>
         </Tooltip>
       )}
-      <StixCoreObjectFormSelector data={data} open={isFormSelectorOpen} handleClose={() => setIsFormSelectorOpen(false)} />
+      <StixCoreObjectFormSelector
+        data={data}
+        open={isFormSelectorOpen}
+        handleClose={() => setIsFormSelectorOpen(false)}
+      />
     </>
   );
 };
 
 const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ entityType }) => {
-  const [queryRef, loadQuery] = useQueryLoader<StixCoreObjectFormsFormsQuery>(stixCoreObjectFormsFormsQuery);
+  const [queryRef, loadQuery] = useQueryLoader<StixCoreObjectFormsFormsQuery>(
+    stixCoreObjectFormsFormsQuery,
+  );
   const formsPaginationOptions: StixCoreObjectFormsFormsQuery$variables = {
     filters: {
       mode: 'and',
-      filters: [{ key: ['main_entity_type'], values: [entityType] }, { key: ['active'], values: [true] }],
+      filters: [
+        { key: ['main_entity_type'], values: [entityType] },
+        { key: ['active'], values: [true] },
+      ],
       filterGroups: [],
     },
   };
@@ -75,18 +89,22 @@ const StixCoreObjectForms: FunctionComponent<StixCoreObjectFormsProps> = ({ enti
 
   // Remove create button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
-  const isGrantedAskImportInDraft = useGranted([], false, { capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT] });
+  const isGrantedAskImportInDraft = useGranted([], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT],
+  });
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit || isGrantedAskImportInDraft;
 
-  return canDisplayButton && (
-    <>
-      {queryRef && (
-        <Suspense>
-          <StixCoreObjectFormsComponent queryRef={queryRef} />
-        </Suspense>
-      )}
-    </>
+  return (
+    canDisplayButton && (
+      <>
+        {queryRef && (
+          <Suspense>
+            <StixCoreObjectFormsComponent queryRef={queryRef} />
+          </Suspense>
+        )}
+      </>
+    )
   );
 };
 

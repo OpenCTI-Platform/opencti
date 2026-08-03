@@ -79,7 +79,10 @@ const formatDuration = (seconds: number): string => {
   return parts.join(' ');
 };
 
-const eventIdToDate = (eventId: string, dateFormatter: (date: string | Date) => string): string | null => {
+const eventIdToDate = (
+  eventId: string,
+  dateFormatter: (date: string | Date) => string,
+): string | null => {
   if (!eventId) return null;
   const ts = parseInt(eventId.split('-')[0], 10);
   if (Number.isNaN(ts) || ts <= 0) return null;
@@ -132,15 +135,14 @@ const MetricBlock: FunctionComponent<MetricBlockProps> = ({ label, value, theme,
         {label}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: 0.5 }}>
-        <Typography
-          variant="body1"
-          sx={{ fontWeight: 600 }}
-        >
+        <Typography variant="body1" sx={{ fontWeight: 600 }}>
           {value}
         </Typography>
         {tooltip && (
           <Tooltip title={tooltip} arrow>
-            <InfoOutlined sx={{ fontSize: 16, color: theme?.palette?.text?.secondary, cursor: 'pointer' }} />
+            <InfoOutlined
+              sx={{ fontSize: 16, color: theme?.palette?.text?.secondary, cursor: 'pointer' }}
+            />
           </Tooltip>
         )}
       </Box>
@@ -202,10 +204,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
           borderRadius: 1,
         }}
       >
-        <AccordionSummary
-          expandIcon={<ExpandMore />}
-          sx={{ minHeight: 56 }}
-        >
+        <AccordionSummary expandIcon={<ExpandMore />} sx={{ minHeight: 56 }}>
           <Box
             sx={{
               display: 'flex',
@@ -305,11 +304,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
         </Alert>
       );
     }
-    return (
-      <Box>
-        {consumers.map((consumer) => renderConsumerCard(consumer))}
-      </Box>
-    );
+    return <Box>{consumers.map((consumer) => renderConsumerCard(consumer))}</Box>;
   };
 
   return (

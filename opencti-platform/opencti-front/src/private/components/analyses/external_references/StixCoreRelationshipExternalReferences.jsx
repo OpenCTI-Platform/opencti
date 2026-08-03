@@ -10,7 +10,9 @@ import Avatar from '@mui/material/Avatar';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipExternalReferencesLines, { stixCoreRelationshipExternalReferencesLinesQuery } from './StixCoreRelationshipExternalReferencesLines';
+import StixCoreRelationshipExternalReferencesLines, {
+  stixCoreRelationshipExternalReferencesLinesQuery,
+} from './StixCoreRelationshipExternalReferencesLines';
 import Card from '../../../../components/common/card/Card';
 
 const styles = (theme) => ({
@@ -51,19 +53,12 @@ class StixCoreRelationshipExternalReferences extends Component {
               <Card title={t('External references')}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      dense={true}
-                      divider={true}
-
-                    >
+                    <ListItem key={i} dense={true} divider={true}>
                       <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatarDisabled }}>
-                          {i}
-                        </Avatar>
+                        <Avatar classes={{ root: classes.avatarDisabled }}>{i}</Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -71,15 +66,15 @@ class StixCoreRelationshipExternalReferences extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        )}
-                        secondary={(
+                        }
+                        secondary={
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        )}
+                        }
                       />
                     </ListItem>
                   ))}
@@ -101,7 +96,4 @@ StixCoreRelationshipExternalReferences.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipExternalReferences);
+export default compose(inject18n, withStyles(styles))(StixCoreRelationshipExternalReferences);

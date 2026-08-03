@@ -3,8 +3,8 @@ import { UnsupportedError } from '../config/errors';
 export const columnNameToIdx = (columnName: string) => {
   const split = columnName.split('');
   if (
-    split.length === 0
-    || split.some((char) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char) === -1)
+    split.length === 0 ||
+    split.some((char) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char) === -1)
   ) {
     return -1;
   }

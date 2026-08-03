@@ -10,9 +10,9 @@ import stopEvent from '../../../../../utils/domEvent';
 import { deleteNode } from '../../../../../utils/store';
 
 const customViewDeletionDialogMutation = graphql`
-    mutation CustomViewDeletionDialog_Mutation($id: ID!) {
-        customViewDelete(id: $id)
-    }
+  mutation CustomViewDeletionDialog_Mutation($id: ID!) {
+    customViewDelete(id: $id)
+  }
 `;
 
 interface CustomViewDeletionDialogProps {

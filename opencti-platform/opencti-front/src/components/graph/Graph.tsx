@@ -22,11 +22,7 @@ export interface GraphProps {
   children?: ReactNode;
 }
 
-const Graph = ({
-  parentRef,
-  onPositionsChanged,
-  children,
-}: GraphProps) => {
+const Graph = ({ parentRef, onPositionsChanged, children }: GraphProps) => {
   const graphId = `graph-${uuid()}`;
   const theme = useTheme<Theme>();
   const { width, height } = useResizeObserver(parentRef);
@@ -106,15 +102,18 @@ const Graph = ({
     }, 100);
   }, [mode3D, isLoadingData]);
 
-  const shouldDisplayLinks = graphData?.links.length ?? 0 < 200;
+  const shouldDisplayLinks = (graphData?.links.length ?? 0) < 200;
   const selectedEntities = [...selectedLinks, ...selectedNodes];
 
   const onNodeDragEnd = (node: GraphNode) => {
     fixPositionsOnDragEnd(node);
-    const newPositions = (graphData?.nodes ?? []).reduce((acc, { id, x, y }) => ({
-      ...acc,
-      [id]: { id, x, y },
-    }), {});
+    const newPositions = (graphData?.nodes ?? []).reduce(
+      (acc, { id, x, y }) => ({
+        ...acc,
+        [id]: { id, x, y },
+      }),
+      {},
+    );
     setRawPositions(newPositions);
     onPositionsChanged?.(newPositions);
   };
@@ -152,7 +151,7 @@ const Graph = ({
             backgroundColor={theme.palette.background.default}
             graphData={graphData}
             dagMode={modeTree ?? undefined}
-            cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
+            cooldownTicks={!withForces || isLoadingData ? 0 : 100}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
             linkWidth={0.5}
@@ -200,18 +199,22 @@ const Graph = ({
               dagMode={modeTree ?? undefined}
               dagLevelDistance={50}
               nodeRelSize={4}
-              cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
+              cooldownTicks={!withForces || isLoadingData ? 0 : 100}
               enablePanInteraction={!selectFree && !selectFreeRectangle}
               linkDirectionalArrowLength={3}
               linkDirectionalArrowRelPos={0.99}
               linkCanvasObjectMode={() => 'after'}
-              linkCanvasObject={(link, ctx) => (shouldDisplayLinks ? linkLabelPaint(link, ctx) : null)}
+              linkCanvasObject={(link, ctx) =>
+                shouldDisplayLinks ? linkLabelPaint(link, ctx) : null
+              }
               linkLineDash={(link) => (link.isNestedInferred ? [2, 1] : null)}
               linkColor={linkColorPaint}
               nodePointerAreaPaint={nodePointerAreaPaint} // What's for?
-              nodeCanvasObject={(node, ctx) => nodePaint(node, ctx, {
-                showNbConnectedElements: context === 'investigation',
-              })}
+              nodeCanvasObject={(node, ctx) =>
+                nodePaint(node, ctx, {
+                  showNbConnectedElements: context === 'investigation',
+                })
+              }
               onZoomEnd={saveZoom}
               onLinkClick={toggleLink}
               onBackgroundClick={clearSelection}

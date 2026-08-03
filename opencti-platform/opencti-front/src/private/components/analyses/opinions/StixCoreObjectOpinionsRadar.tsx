@@ -17,12 +17,7 @@ export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
     $operation: StatsOperation!
     $limit: Int
   ) {
-    opinionsDistribution(
-      objectId: $objectId
-      field: $field
-      operation: $operation
-      limit: $limit
-    ) {
+    opinionsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit) {
       label
       value
       entity {
@@ -45,10 +40,19 @@ interface StixCoreObjectOpinionsRadarProps {
   onHasDataChange?: (hasData: boolean) => void;
 }
 
-const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({ queryRef, opinionOptions, height, handleOpen, onHasDataChange }) => {
+const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({
+  queryRef,
+  opinionOptions,
+  height,
+  handleOpen,
+  onHasDataChange,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(stixCoreObjectOpinionsRadarDistributionQuery, queryRef);
+  const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(
+    stixCoreObjectOpinionsRadarDistributionQuery,
+    queryRef,
+  );
   const distributionData = R.indexBy(
     R.prop('label'),
     (opinionsDistribution || []).map((n) => ({
@@ -100,7 +104,16 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
-      options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, 'transparent', (height / 2) - 20, handleRadarOpen)}
+      options={radarChartOptions(
+        theme,
+        labels,
+        simpleNumberFormat,
+        colors,
+        true,
+        'transparent',
+        height / 2 - 20,
+        handleRadarOpen,
+      )}
       series={chartData}
       type="radar"
       width="100%"

@@ -41,39 +41,45 @@ const DashboardRefreshControl = ({
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const manualResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (manualResetRef.current) {
-      clearTimeout(manualResetRef.current);
-      manualResetRef.current = null;
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (manualResetRef.current) {
+        clearTimeout(manualResetRef.current);
+        manualResetRef.current = null;
+      }
+    },
+    [],
+  );
 
   const handleIntervalChange = (event: SelectChangeEvent<number>) => {
     onIntervalChange(Number(event.target.value));
   };
 
-  const getIntervalLabel = useCallback((value: number) => {
-    switch (value) {
-      case 0:
-        return t_i18n('Off');
-      case 60:
-        return t_i18n('1m');
-      case 300:
-        return t_i18n('5m');
-      case 900:
-        return t_i18n('15m');
-      case 1800:
-        return t_i18n('30m');
-      case 3600:
-        return t_i18n('1h');
-      case 43200:
-        return t_i18n('12h');
-      case 86400:
-        return t_i18n('1d');
-      default:
-        return '';
-    }
-  }, [t_i18n]);
+  const getIntervalLabel = useCallback(
+    (value: number) => {
+      switch (value) {
+        case 0:
+          return t_i18n('Off');
+        case 60:
+          return t_i18n('1m');
+        case 300:
+          return t_i18n('5m');
+        case 900:
+          return t_i18n('15m');
+        case 1800:
+          return t_i18n('30m');
+        case 3600:
+          return t_i18n('1h');
+        case 43200:
+          return t_i18n('12h');
+        case 86400:
+          return t_i18n('1d');
+        default:
+          return '';
+      }
+    },
+    [t_i18n],
+  );
 
   const handleRefreshClick = () => {
     // Lock the button immediately: widget queries take a tick to register as
@@ -104,9 +110,9 @@ const DashboardRefreshControl = ({
         variant="outlined"
         size="small"
         displayEmpty
-        renderValue={(selected) => (Number(selected) === 0
-          ? ''
-          : getIntervalLabel(Number(selected)))}
+        renderValue={(selected) =>
+          Number(selected) === 0 ? '' : getIntervalLabel(Number(selected))
+        }
         sx={{
           minWidth: 0,
           borderRadius: '0 4px 4px 0',
@@ -121,7 +127,9 @@ const DashboardRefreshControl = ({
         }}
       >
         {REFRESH_INTERVALS.map(({ value }) => (
-          <MenuItem key={value} value={value}>{getIntervalLabel(value)}</MenuItem>
+          <MenuItem key={value} value={value}>
+            {getIntervalLabel(value)}
+          </MenuItem>
         ))}
       </Select>
     </ButtonGroup>

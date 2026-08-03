@@ -19,21 +19,15 @@ export interface AssociatedEntityOption {
 }
 
 export const associatedEntityFieldQuery = graphql`
-  query AssociatedEntityFieldQuery(
-    $search: String
-    $types: [String]
-  ) {
-    stixCoreObjects(
-      search: $search
-      types: $types
-    ) {
+  query AssociatedEntityFieldQuery($search: String, $types: [String]) {
+    stixCoreObjects(search: $search, types: $types) {
       edges {
         node {
           id
           entity_type
           parent_types
           representative {
-              main
+            main
           }
           objectMarking {
             id
@@ -70,11 +64,12 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
         const { stixCoreObjects } = data as AssociatedEntityFieldQuery$data;
         const elements = stixCoreObjects?.edges.map((e) => e.node);
         if (elements) {
-          const newAssociatedEntities = elements.map((n) => ({
-            label: n.representative.main,
-            type: n.entity_type,
-            value: n.id,
-          }))
+          const newAssociatedEntities = elements
+            .map((n) => ({
+              label: n.representative.main,
+              type: n.entity_type,
+              value: n.id,
+            }))
             .sort((a, b) => a.label.localeCompare(b.label))
             .sort((a, b) => a.type.localeCompare(b.type));
           setAssociatedEntities(newAssociatedEntities);
@@ -84,7 +79,10 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       });
   };
 
-  const handleChangeSelectedValue = (event: React.SyntheticEvent, newSelectedValue: AssociatedEntityOption | null) => {
+  const handleChangeSelectedValue = (
+    event: React.SyntheticEvent,
+    newSelectedValue: AssociatedEntityOption | null,
+  ) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -99,7 +97,7 @@ const AssociatedEntityField: FunctionComponent<AssociatedEntityFieldProps> = ({
       fullWidth={true}
       selectOnFocus={true}
       autoHighlight={true}
-      getOptionLabel={(option) => (option.label ?? '')}
+      getOptionLabel={(option) => option.label ?? ''}
       value={value ?? null}
       multiple={false}
       renderInput={(params) => (

@@ -1,10 +1,19 @@
 import * as R from 'ramda';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  STIX_TYPE_RELATION,
+  STIX_TYPE_SIGHTING,
+} from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
 import type { TesterFunction, FilterEventContext } from '../boolean-logic-engine';
-import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
+import {
+  testBooleanFilter,
+  testNumericFilter,
+  testStringFilter,
+  toValidArray,
+} from '../boolean-logic-engine';
 import {
   ASSIGNEE_FILTER,
   AUTHORIZED_FILTER,
@@ -70,7 +79,11 @@ import { pushAll } from '../../arrayUtil';
  * MARKINGS
  * - objectMarking is object_marking_refs in stix
  */
-export const testMarkingFilter = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testMarkingFilter = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = stix.object_marking_refs ?? [];
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -80,8 +93,16 @@ export const testMarkingFilter = (stix: any, filter: Filter, changeContext?: { f
  * - ids is type in stix (in extension or generated from stix data)
  * - we must also search in other ids
  */
-export const testIds = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValues: string[] = [stix.extensions?.[STIX_EXT_OCTI]?.id, stix.id, ...(stix.extensions?.[STIX_EXT_OCTI]?.stix_ids ?? [])];
+export const testIds = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValues: string[] = [
+    stix.extensions?.[STIX_EXT_OCTI]?.id,
+    stix.id,
+    ...(stix.extensions?.[STIX_EXT_OCTI]?.stix_ids ?? []),
+  ];
   return testStringFilter(filter, stixValues, changeContext);
 };
 
@@ -90,7 +111,11 @@ export const testIds = (stix: any, filter: Filter, changeContext?: { filterKey: 
  * - entity_type is type in stix (in extension or generated from stix data)
  * - we must also search in parent types
  */
-export const testEntityType = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testEntityType = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string = stix.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(stix);
   const extendedStixValues = [stixValue, ...getParentTypes(stixValue)];
   return testStringFilter(filter, extendedStixValues, changeContext);
@@ -100,7 +125,11 @@ export const testEntityType = (stix: any, filter: Filter, changeContext?: { filt
  * INDICATORS
  * - search must be insensitive to case due to constraint in frontend keywords (using "runtimeAttribute" based on keyword which is always lowercase)
  */
-export const testIndicatorTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testIndicatorTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = stix.indicator_types ?? [];
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -109,7 +138,11 @@ export const testIndicatorTypes = (stix: any, filter: Filter, changeContext?: { 
  * REPORTS
  * - report types is report_types in stix
  */
-export const testReportTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testReportTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string[] = stix.report_types ?? [];
   return testStringFilter(filter, stixValue, changeContext);
 };
@@ -118,7 +151,11 @@ export const testReportTypes = (stix: any, filter: Filter, changeContext?: { fil
  * IR
  * - incident response types is response_types in stix
  */
-export const testResponseTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testResponseTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string[] = stix.response_types ?? [];
   return testStringFilter(filter, stixValue, changeContext);
 };
@@ -127,7 +164,11 @@ export const testResponseTypes = (stix: any, filter: Filter, changeContext?: { f
  * RFI
  * - RFI types is information_types in stix
  */
-export const testRFITypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRFITypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string[] = stix.information_types ?? [];
   return testStringFilter(filter, stixValue, changeContext);
 };
@@ -136,7 +177,11 @@ export const testRFITypes = (stix: any, filter: Filter, changeContext?: { filter
  * RFT
  * - RFT types is takedown_types in stix
  */
-export const testRFTTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRFTTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string[] = stix.takedown_types ?? [];
   return testStringFilter(filter, stixValue, changeContext);
 };
@@ -145,7 +190,11 @@ export const testRFTTypes = (stix: any, filter: Filter, changeContext?: { filter
  * NOTE
  * - note types is note_types in stix
  */
-export const testNoteTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testNoteTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string[] = stix.note_types ?? [];
   return testStringFilter(filter, stixValue, changeContext);
 };
@@ -154,7 +203,11 @@ export const testNoteTypes = (stix: any, filter: Filter, changeContext?: { filte
  * INCIDENT
  * - incident type is incident_type in stix
  */
-export const testIncidentType = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testIncidentType = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string | null = stix.incident_type;
   return testStringFilter(filter, toValidArray(stixValue), changeContext);
 };
@@ -164,10 +217,16 @@ export const testIncidentType = (stix: any, filter: Filter, changeContext?: { fi
  * - x_opencti_workflow_id is workflow_id in stix (in extension)
  * - the internal attribute name is x_opencti_workflow_id, so we rewrite the changeContext filterKey
  */
-export const testWorkflow = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testWorkflow = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: string | null = stix.extensions?.[STIX_EXT_OCTI].workflow_id;
   // Rewrite filterKey to match the internal attribute name used in event changes
-  const adjustedContext = changeContext ? { ...changeContext, filterKey: X_OPENCTI_WORKFLOW_ID } : undefined;
+  const adjustedContext = changeContext
+    ? { ...changeContext, filterKey: X_OPENCTI_WORKFLOW_ID }
+    : undefined;
   return testStringFilter(filter, toValidArray(stixValue), adjustedContext);
 };
 
@@ -175,8 +234,15 @@ export const testWorkflow = (stix: any, filter: Filter, changeContext?: { filter
  * CREATED BY
  * - createdBy is created_by_ref in stix (in first level or in extension)
  */
-export const testCreatedBy = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValues: string[] = [...toValidArray(stix.created_by_ref), ...toValidArray(stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref)];
+export const testCreatedBy = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValues: string[] = [
+    ...toValidArray(stix.created_by_ref),
+    ...toValidArray(stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref),
+  ];
   return testStringFilter(filter, stixValues, changeContext);
 };
 
@@ -184,7 +250,11 @@ export const testCreatedBy = (stix: any, filter: Filter, changeContext?: { filte
  * TECHNICAL CREATORS
  * - creator is creator_ids in stix (in extension)
  */
-export const testCreator = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testCreator = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.creator_ids ?? [];
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -193,7 +263,11 @@ export const testCreator = (stix: any, filter: Filter, changeContext?: { filterK
  * ASSIGNEES
  * - assigneeTo is assignee_ids in stix (in extension)
  */
-export const testAssignee = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testAssignee = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.assignee_ids ?? [];
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -202,7 +276,11 @@ export const testAssignee = (stix: any, filter: Filter, changeContext?: { filter
  * ASSIGNEES
  * - participantTo is participant_ids in stix (in extension)
  */
-export const testParticipant = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testParticipant = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = stix.extensions?.[STIX_EXT_OCTI]?.participant_ids ?? [];
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -211,8 +289,13 @@ export const testParticipant = (stix: any, filter: Filter, changeContext?: { fil
  * RESTRICTED_MEMBERS
  * - user is declared in authorized_members in stix (in extension)
  */
-export const testAuthorize = (stix: any, filter: Filter, _changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const restricted_members: AuthorizedMember[] = stix.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
+export const testAuthorize = (
+  stix: any,
+  filter: Filter,
+  _changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const restricted_members: AuthorizedMember[] =
+    stix.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
   if (filter.values.length !== 1) {
     throw UnsupportedError('Filter only support one user in parameter', { filter });
   }
@@ -226,8 +309,15 @@ export const testAuthorize = (stix: any, filter: Filter, _changeContext?: { filt
  * - "no-label" is defined by using the operator nil (no longer a "fake" value with id=null)
  * - labelledBy is labels in stix (in first level or in extension)
  */
-export const testLabel = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValues: string[] = [...(stix.labels ?? []), ...(stix.extensions?.[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+export const testLabel = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValues: string[] = [
+    ...(stix.labels ?? []),
+    ...(stix.extensions?.[STIX_EXT_OCTI_SCO]?.labels ?? []),
+  ];
   return testStringFilter(filter, stixValues, changeContext);
 };
 
@@ -235,7 +325,11 @@ export const testLabel = (stix: any, filter: Filter, changeContext?: { filterKey
  * REVOKED
  * - boolean stored in id that must be parsed from string "true" or "false"
  */
-export const testRevoked = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRevoked = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: boolean | undefined = stix.revoked;
   return testBooleanFilter(filter, stixValue, changeContext);
 };
@@ -245,7 +339,11 @@ export const testRevoked = (stix: any, filter: Filter, changeContext?: { filterK
  * - x_opencti_detection is detection in stix extension
  * - boolean stored in id that must be parsed from string "true" or "false"
  */
-export const testDetection = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testDetection = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: boolean | undefined = stix.extensions?.[STIX_EXT_OCTI]?.detection;
   return testBooleanFilter(filter, stixValue, changeContext);
 };
@@ -255,10 +353,18 @@ export const testDetection = (stix: any, filter: Filter, changeContext?: { filte
  * - x_opencti_score is x_opencti_score or score in stix (first level or extensions)
  * - numerical value stored in id that must be parsed from string
  */
-export const testScore = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testScore = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   // path depends on entity type
   // do not take all possible scores in stix, we implement a priority order
-  const stixValue: number | null = stix.x_opencti_score ?? stix.extensions?.[STIX_EXT_OCTI]?.score ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score ?? null;
+  const stixValue: number | null =
+    stix.x_opencti_score ??
+    stix.extensions?.[STIX_EXT_OCTI]?.score ??
+    stix.extensions?.[STIX_EXT_OCTI_SCO]?.score ??
+    null;
   return testNumericFilter(filter, stixValue, changeContext);
 };
 
@@ -266,7 +372,11 @@ export const testScore = (stix: any, filter: Filter, changeContext?: { filterKey
  * CONFIDENCE
  * - numerical value stored in id that must be parsed from string
  */
-export const testConfidence = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testConfidence = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValue: number | null = stix.confidence ?? null;
   return testNumericFilter(filter, stixValue, changeContext);
 };
@@ -274,7 +384,11 @@ export const testConfidence = (stix: any, filter: Filter, changeContext?: { filt
 /**
  * PATTERN TYPE
  */
-export const testPatternType = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testPatternType = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = toValidArray(stix.pattern_type);
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -282,7 +396,11 @@ export const testPatternType = (stix: any, filter: Filter, changeContext?: { fil
 /**
  * PATTERN
  */
-export const testPattern = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testPattern = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = toValidArray(stix.pattern);
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -291,7 +409,11 @@ export const testPattern = (stix: any, filter: Filter, changeContext?: { filterK
  * MAIN OBSERVABLE TYPES
  * - x_opencti_main_observable_type is main_observable_type in stix extension
  */
-export const testMainObservableType = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testMainObservableType = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = toValidArray(stix.extensions?.[STIX_EXT_OCTI]?.main_observable_type);
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -300,15 +422,26 @@ export const testMainObservableType = (stix: any, filter: Filter, changeContext?
  * OBJECT CONTAINS
  * - objectContains is object_refs+object_refs_inferred in stix (first level and extension)
  */
-export const testObjectContains = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValues: string[] = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
+export const testObjectContains = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValues: string[] = [
+    ...(stix.object_refs ?? []),
+    ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? []),
+  ];
   return testStringFilter(filter, stixValues, changeContext);
 };
 
 /**
  * SEVERITY
  */
-export const testSeverity = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testSeverity = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = toValidArray(stix.severity);
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -316,7 +449,11 @@ export const testSeverity = (stix: any, filter: Filter, changeContext?: { filter
 /**
  * PRIORITY
  */
-export const testPriority = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testPriority = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const stixValues: string[] = toValidArray(stix.priority);
   return testStringFilter(filter, stixValues, changeContext);
 };
@@ -325,7 +462,11 @@ export const testPriority = (stix: any, filter: Filter, changeContext?: { filter
  * RELATION FROM
  * - depending on stix type (relation or sighting), we might search in source_ref or sighting_of_ref
  */
-export const testRelationFrom = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRelationFrom = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValues: string[] = toValidArray(stix.source_ref);
     return testStringFilter(filter, stixValues, changeContext);
@@ -341,7 +482,11 @@ export const testRelationFrom = (stix: any, filter: Filter, changeContext?: { fi
  * RELATION FROM
  * - depending on stix type (relation or sighting), we might search in target_ref or where_sighted_refs (plurals!)
  */
-export const testRelationTo = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRelationTo = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   if (stix.type === STIX_TYPE_RELATION || stix.type === ABSTRACT_INTERNAL_RELATIONSHIP) {
     const stixValues: string[] = toValidArray(stix.target_ref);
     return testStringFilter(filter, stixValues, changeContext);
@@ -358,7 +503,11 @@ export const testRelationTo = (stix: any, filter: Filter, changeContext?: { filt
  * - depending on stix type (relation or sighting), we might search in source_type or sighting_of_type (in extension)
  * - we must also search in parent types
  */
-export const testRelationFromTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRelationFromTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValue = stix.extensions?.[STIX_EXT_OCTI].source_type ?? [];
     const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
@@ -377,7 +526,11 @@ export const testRelationFromTypes = (stix: any, filter: Filter, changeContext?:
  * - depending on stix type (relation or sighting), we might search in target_type or where_sighted_types (in extension)
  * - we must also search in parent types
  */
-export const testRelationToTypes = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRelationToTypes = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   if (stix.type === STIX_TYPE_RELATION) {
     const stixValue: string = stix.extensions?.[STIX_EXT_OCTI].target_type ?? [];
     const extendedStixValues: string[] = [...toValidArray(stixValue), ...getParentTypes(stixValue)];
@@ -394,7 +547,11 @@ export const testRelationToTypes = (stix: any, filter: Filter, changeContext?: {
 /**
  * REPRESENTATIVE
  */
-export const testRepresentative = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testRepresentative = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   const representative: string = extractStixRepresentative(stix);
   return testStringFilter(filter, [representative], changeContext);
 };
@@ -403,12 +560,19 @@ export const testRepresentative = (stix: any, filter: Filter, changeContext?: { 
  * CONNECTED TO for DIRECT EVENTS ONLY
  * test if the stix is directly related to the instance id
  */
-export const testConnectedTo = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testConnectedTo = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   // only applies with "eq" operator
   if (filter.operator && filter.operator !== 'eq') {
     return false;
   }
-  const value = R.path(STIX_RESOLUTION_MAP_PATHS[CONNECTED_TO_INSTANCE_FILTER] as string[], stix) as string;
+  const value = R.path(
+    STIX_RESOLUTION_MAP_PATHS[CONNECTED_TO_INSTANCE_FILTER] as string[],
+    stix,
+  ) as string;
   return testStringFilter(filter, [value], changeContext);
 };
 
@@ -417,7 +581,11 @@ export const testConnectedTo = (stix: any, filter: Filter, changeContext?: { fil
  * test if the stix is indirectly related to the instance id (= relationship, refs)
  - depending on stix type (relation or sighting), we might search in different paths, aggregated
  */
-export const testConnectedToSideEvents = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testConnectedToSideEvents = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   // only applies with "eq" operator
   if (filter.operator && filter.operator !== 'eq') {
     return false;
@@ -431,7 +599,7 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter, changeConte
     pushAll(aggregatedStixValues, toValidArray(stix.source_ref)); // from
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
-    pushAll(aggregatedStixValues, (stix.where_sighted_refs ?? [])); // to
+    pushAll(aggregatedStixValues, stix.where_sighted_refs ?? []); // to
     pushAll(aggregatedStixValues, toValidArray(stix.sighting_of_ref)); // from
   }
   // refs
@@ -440,49 +608,88 @@ export const testConnectedToSideEvents = (stix: any, filter: Filter, changeConte
   return testStringFilter(filter, aggregatedStixValues, changeContext);
 };
 
-export const testCisaKev = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: boolean | null = stix.x_opencti_cisa_kev ?? stix.extensions?.[STIX_EXT_OCTI].cisa_kev ?? null;
+export const testCisaKev = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: boolean | null =
+    stix.x_opencti_cisa_kev ?? stix.extensions?.[STIX_EXT_OCTI].cisa_kev ?? null;
   return testBooleanFilter(filter, stixValue, changeContext);
 };
 
-export const testEpssPercentile = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: number | null = stix.x_opencti_epss_percentile ?? stix.extensions?.[STIX_EXT_OCTI].epss_percentile ?? null;
+export const testEpssPercentile = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: number | null =
+    stix.x_opencti_epss_percentile ?? stix.extensions?.[STIX_EXT_OCTI].epss_percentile ?? null;
   return testNumericFilter(filter, stixValue, changeContext);
 };
 
-export const testEpssScore = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: number | null = stix.x_opencti_epss_score ?? stix.extensions?.[STIX_EXT_OCTI].epss_score ?? null;
+export const testEpssScore = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: number | null =
+    stix.x_opencti_epss_score ?? stix.extensions?.[STIX_EXT_OCTI].epss_score ?? null;
   return testNumericFilter(filter, stixValue, changeContext);
 };
 
-export const testCvssScore = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: number | null = stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_score ?? null;
+export const testCvssScore = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: number | null =
+    stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_score ?? null;
   return testNumericFilter(filter, stixValue, changeContext);
 };
 
-export const testCvssSeverity = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.x_opencti_cvss_base_severity ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_severity ?? null;
+export const testCvssSeverity = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: string | null =
+    stix.x_opencti_cvss_base_severity ??
+    stix.extensions?.[STIX_EXT_OCTI].cvss_base_severity ??
+    null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };
 
-export const testPirScore = (stix: any, filter: Filter, _changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
+export const testPirScore = (
+  stix: any,
+  filter: Filter,
+  _changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
   // Retrieve data from the filter.
   const pirIds = filter.values.find((v) => v.key === PIR_IDS_SUBFILTER)?.values ?? [];
   const pirScoreFilter = filter.values.find((v) => v.key === PIR_SCORE_SUBFILTER);
   // Determine which PIR of the stix entity is of interest.
   // If no PIR IDs set in the filter, then we want to check on all PIR of the stix entity.
-  const pirInformation: PirInformation[] | undefined = pirIds.length === 0
-    ? stix.extensions[STIX_EXT_OCTI].pir_information
-    : stix.extensions[STIX_EXT_OCTI].pir_information?.filter((pir: PirInformation) => pirIds.includes(pir.pir_id));
+  const pirInformation: PirInformation[] | undefined =
+    pirIds.length === 0
+      ? stix.extensions[STIX_EXT_OCTI].pir_information
+      : stix.extensions[STIX_EXT_OCTI].pir_information?.filter((pir: PirInformation) =>
+          pirIds.includes(pir.pir_id),
+        );
 
   // If at least one of the PIR matches the score filter then it's True.
   const stixValues: number[] = pirInformation?.map((pir: PirInformation) => pir.pir_score) ?? [];
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 
-export const testDescription = (stix: any, filter: Filter, changeContext?: { filterKey: string; eventContext: FilterEventContext }) => {
-  const stixValue: string | null = stix.description ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.description ?? null;
+export const testDescription = (
+  stix: any,
+  filter: Filter,
+  changeContext?: { filterKey: string; eventContext: FilterEventContext },
+) => {
+  const stixValue: string | null =
+    stix.description ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.description ?? null;
   const value = stixValue ? [stixValue] : [];
   return testStringFilter(filter, value, changeContext);
 };

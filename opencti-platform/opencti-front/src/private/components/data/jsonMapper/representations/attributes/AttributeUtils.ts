@@ -5,9 +5,7 @@ import {
   JsonMapperRepresentationAttributeFormData,
 } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
-import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { SchemaAttribute } from './JsonMapperRepresentationAttributesForm';
 import { isNotEmptyField } from '../../../../../../utils/utils';
 import { defaultValuesToStringArray } from '../../../../../../utils/defaultValues';
@@ -27,10 +25,12 @@ export const getBasedOnRepresentations = (
   attribute: JsonMapperRepresentationAttributeFormData | undefined,
   representations: JsonMapperRepresentationFormData[],
 ) => {
-  return (attribute?.based_on?.representations ?? []).flatMap((r) => {
-    const rep = representations.find((o) => o.id === r);
-    return rep ?? [];
-  }) ?? [];
+  return (
+    (attribute?.based_on?.representations ?? []).flatMap((r) => {
+      const rep = representations.find((o) => o.id === r);
+      return rep ?? [];
+    }) ?? []
+  );
 };
 
 // get the entity type of given ref "from" or "to"
@@ -45,8 +45,7 @@ export const getInfoForRef = (
   if (ref && isNotEmptyField(ref.based_on)) {
     const firstRepresentationId = ref.based_on.representations?.[0];
     if (firstRepresentationId) {
-      fromType = representations.find((r) => r.id === firstRepresentationId)
-        ?.target?.entity_type;
+      fromType = representations.find((r) => r.id === firstRepresentationId)?.target?.entity_type;
       return [fromType, firstRepresentationId];
     }
   }
@@ -73,13 +72,15 @@ export const jsonMapperAttributeToFormData = (
     mode: attribute.mode,
     attr_path: attribute.attr_path,
     based_on: attribute.based_on as BasedOn,
-    default_values: schemaAttribute ? computeDefaultValues(
-      entityType,
-      attribute.key,
-      schemaAttribute.multiple,
-      schemaAttribute.type,
-      attribute.default_values ?? [],
-    ) : null,
+    default_values: schemaAttribute
+      ? computeDefaultValues(
+          entityType,
+          attribute.key,
+          schemaAttribute.multiple,
+          schemaAttribute.type,
+          attribute.default_values ?? [],
+        )
+      : null,
   };
 };
 

@@ -1,5 +1,9 @@
 import { DateTime } from 'luxon';
-import type { AttributeDefinition, AttrType, ObjectAttribute } from '../schema/attribute-definition';
+import type {
+  AttributeDefinition,
+  AttrType,
+  ObjectAttribute,
+} from '../schema/attribute-definition';
 import { entityType, relationshipType, standardId } from '../schema/attribute-definition';
 import { generateStandardId } from '../schema/identifier';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -8,10 +12,22 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { extractValueFromCsv } from './csv-helper';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import type { AttributeColumn, CsvMapperParsed, CsvMapperRepresentation, CsvMapperRepresentationAttribute } from '../modules/internal/csvMapper/csvMapper-types';
+import type {
+  AttributeColumn,
+  CsvMapperParsed,
+  CsvMapperRepresentation,
+  CsvMapperRepresentationAttribute,
+} from '../modules/internal/csvMapper/csvMapper-types';
 import { CsvMapperRepresentationType } from '../modules/internal/csvMapper/csvMapper-types';
-import { getHashesNames, isCsvValidRepresentationType } from '../modules/internal/csvMapper/csvMapper-utils';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import {
+  getHashesNames,
+  isCsvValidRepresentationType,
+} from '../modules/internal/csvMapper/csvMapper-utils';
+import {
+  fillDefaultValues,
+  getAttributesConfiguration,
+  getEntitySettingFromCache,
+} from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { UnsupportedError } from '../config/errors';
 import { internalFindByIdsMapped } from '../database/middleware-loader';
@@ -19,14 +35,23 @@ import type { BasicStoreObject } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { CsvMapperOperator } from '../generated/graphql';
-import type { ComplexAttributePath, JsonMapperParsed, JsonMapperRepresentation, SimpleAttributePath } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type {
+  ComplexAttributePath,
+  JsonMapperParsed,
+  JsonMapperRepresentation,
+  SimpleAttributePath,
+} from '../modules/internal/jsonMapper/jsonMapper-types';
 
 export type InputType = string | string[] | boolean | number | Record<string, any>;
 const USER_CHOICE_MARKING_CONFIG = 'user-choice';
 
 // -- HANDLE VALUE --
 
-export const formatValue = (value: string | boolean, type: AttrType, column: AttributeColumn | SimpleAttributePath | ComplexAttributePath | undefined) => {
+export const formatValue = (
+  value: string | boolean,
+  type: AttrType,
+  column: AttributeColumn | SimpleAttributePath | ComplexAttributePath | undefined,
+) => {
   const pattern_date = column?.configuration?.pattern_date;
   const timezone = column?.configuration?.timezone;
   if ((type === 'string' || type === 'ref') && typeof value === 'string') {
@@ -40,9 +65,13 @@ export const formatValue = (value: string | boolean, type: AttrType, column: Att
     try {
       if (isNotEmptyField(pattern_date)) {
         if (isNotEmptyField(timezone)) {
-          return DateTime.fromFormat(value, pattern_date as string, { zone: timezone }).toUTC().toISO();
+          return DateTime.fromFormat(value, pattern_date as string, { zone: timezone })
+            .toUTC()
+            .toISO();
         }
-        return DateTime.fromFormat(value, pattern_date as string).toUTC().toISO();
+        return DateTime.fromFormat(value, pattern_date as string)
+          .toUTC()
+          .toISO();
       }
       return DateTime.fromISO(value).toUTC().toISO();
     } catch (_error: any) {
@@ -60,14 +89,20 @@ export const formatValue = (value: string | boolean, type: AttrType, column: Att
   return value;
 };
 
-export const computeValue = (value: string | undefined, column: AttributeColumn, attributeDef: AttributeDefinition) => {
+export const computeValue = (
+  value: string | undefined,
+  column: AttributeColumn,
+  attributeDef: AttributeDefinition,
+) => {
   if (value === undefined || isEmptyField(value)) {
     return null;
   }
   // Handle multiple
   if (attributeDef.multiple) {
     if (column.configuration?.separator) {
-      return value.split(column.configuration.separator).map((v) => formatValue(v, attributeDef.type, column));
+      return value
+        .split(column.configuration.separator)
+        .map((v) => formatValue(v, attributeDef.type, column));
     }
     return [formatValue(value, attributeDef.type, column)];
   }
@@ -118,10 +153,13 @@ const isValidInput = (input: Record<string, InputType>) => {
 
   // Verify mandatory attributes are filled
   // TODO: Removed it when it will be handle in schema-validator
-  const mandatoryAttributes = Array.from(schemaAttributesDefinition.getAttributes(input[entityType.name] as string).values())
+  const mandatoryAttributes = Array.from(
+    schemaAttributesDefinition.getAttributes(input[entityType.name] as string).values(),
+  )
     .filter((attr) => attr.mandatoryType === 'external')
     .map((attr) => attr.name);
-  const mandatoryRefs = schemaRelationsRefDefinition.getRelationsRef(input[entityType.name] as string)
+  const mandatoryRefs = schemaRelationsRefDefinition
+    .getRelationsRef(input[entityType.name] as string)
     .filter((ref) => ref.mandatoryType === 'external')
     .map((ref) => ref.name);
 
@@ -150,7 +188,11 @@ const handleDirectAttribute = (
 ) => {
   const isAttributeHash = hashesNames.includes(attribute.key);
 
-  if (attribute.default_values !== null && attribute.default_values !== undefined && !isAttributeHash) {
+  if (
+    attribute.default_values !== null &&
+    attribute.default_values !== undefined &&
+    !isAttributeHash
+  ) {
     const computedDefault = computeDefaultValue(attribute.default_values, attribute, definition);
     if (computedDefault !== null && computedDefault !== undefined) {
       input[attribute.key] = computedDefault;
@@ -178,7 +220,12 @@ const handleBasedOnAttribute = (
   refEntities: Record<string, BasicStoreObject>,
 ) => {
   // Handle default value based_on attribute except markings which are handled later on.
-  if (definition && attribute.default_values && attribute.default_values.length > 0 && attribute.key !== INPUT_MARKINGS) {
+  if (
+    definition &&
+    attribute.default_values &&
+    attribute.default_values.length > 0 &&
+    attribute.key !== INPUT_MARKINGS
+  ) {
     if (definition.multiple) {
       input[attribute.key] = attribute.default_values.flatMap((id) => {
         const entity = refEntities[id];
@@ -247,8 +294,9 @@ const handleAttributes = (
 
     if (attributeDef) {
       if (hashesNames.includes(attribute.key)) {
-        const definitionHash = (attributeDef as ObjectAttribute).mappings
-          .find((definition) => (definition.name === attribute.key));
+        const definitionHash = (attributeDef as ObjectAttribute).mappings.find(
+          (definition) => definition.name === attribute.key,
+        );
         if (definitionHash) {
           handleDirectAttribute(attribute, input, record, definitionHash, hashesNames);
         }
@@ -282,18 +330,17 @@ export const handleDefaultMarkings = (
 
   // Find default markings policy in entity settings ("true" or undefined).
   const settingAttributes = entitySetting ? getAttributesConfiguration(entitySetting) : undefined;
-  const settingMarkingValue = settingAttributes
-    ?.find((attribute) => attribute.name === INPUT_MARKINGS)
-    ?.default_values?.[0];
+  const settingMarkingValue = settingAttributes?.find(
+    (attribute) => attribute.name === INPUT_MARKINGS,
+  )?.default_values?.[0];
   // Find default markings policy in mapper representation ("user-default" or "user-choice"  or undefined).
-  const representationMarkingValue = representation.attributes
-    .find((attribute) => attribute.key === INPUT_MARKINGS)
-    ?.default_values?.[0];
+  const representationMarkingValue = representation.attributes.find(
+    (attribute) => attribute.key === INPUT_MARKINGS,
+  )?.default_values?.[0];
 
   // Retrieve default markings of the user.
-  const userDefaultMarkings = (user.default_marking ?? [])
-    .find((entry) => entry.entity_type === 'GLOBAL')
-    ?.values ?? [];
+  const userDefaultMarkings =
+    (user.default_marking ?? []).find((entry) => entry.entity_type === 'GLOBAL')?.values ?? [];
 
   if (representationMarkingValue) {
     if (representationMarkingValue === USER_CHOICE_MARKING_CONFIG) {
@@ -352,28 +399,29 @@ export const handleRefEntities = async (
 ) => {
   const { representations, user_chosen_markings } = mapper;
   // IDs of entity refs retrieved from default values of based_on attributes in csv mapper.
-  const refIdsToResolve = new Set(representations.flatMap((representation) => {
-    const { target } = representation;
-    return representation.attributes.flatMap((attribute) => {
-      if (attribute.default_values && attribute.default_values.length > 0) {
-        const refDef = schemaRelationsRefDefinition.getRelationRef(target.entity_type, attribute.key);
-        if (refDef) {
-          return attribute.default_values;
+  const refIdsToResolve = new Set(
+    representations.flatMap((representation) => {
+      const { target } = representation;
+      return representation.attributes.flatMap((attribute) => {
+        if (attribute.default_values && attribute.default_values.length > 0) {
+          const refDef = schemaRelationsRefDefinition.getRelationRef(
+            target.entity_type,
+            attribute.key,
+          );
+          if (refDef) {
+            return attribute.default_values;
+          }
         }
-      }
-      return [];
-    });
-  }));
-
-  return internalFindByIdsMapped(
-    context,
-    user,
-    [
-      ...refIdsToResolve,
-      // Also resolve the markings chosen by the user if any.
-      ...(user_chosen_markings || []),
-    ],
+        return [];
+      });
+    }),
   );
+
+  return internalFindByIdsMapped(context, user, [
+    ...refIdsToResolve,
+    // Also resolve the markings chosen by the user if any.
+    ...(user_chosen_markings || []),
+  ]);
 };
 
 export const mappingProcess = async (
@@ -386,25 +434,34 @@ export const mappingProcess = async (
   // Resolution des representations & markings - refIds = default values for representation attributes
   const { representations, user_chosen_markings } = mapper;
 
-  const representationRelationships = representations.filter((r) => r.type === CsvMapperRepresentationType.Relationship);
+  const representationRelationships = representations.filter(
+    (r) => r.type === CsvMapperRepresentationType.Relationship,
+  );
 
   const representationEntitiesWithoutBasedOnRelationships = representations
     .filter((r) => {
       const isEntity = r.type === CsvMapperRepresentationType.Entity;
       const entityHasRefToRelations = !r.attributes.some((a) => {
-      // Check for each attribute of entity if it has based_on representations
+        // Check for each attribute of entity if it has based_on representations
         return a.based_on?.representations?.some((b) => {
-        // Check if at least one of based_on ref is a relation in CSV Mapper
+          // Check if at least one of based_on ref is a relation in CSV Mapper
           return representationRelationships.some((rel) => rel.id === b);
         });
       });
       return isEntity && entityHasRefToRelations;
     })
-    .sort((r1, r2) => r1.attributes.filter((attr) => attr.based_on).length - r2.attributes.filter((attr) => attr.based_on).length);
+    .sort(
+      (r1, r2) =>
+        r1.attributes.filter((attr) => attr.based_on).length -
+        r2.attributes.filter((attr) => attr.based_on).length,
+    );
 
   // representations thar are not in representationEntitiesWithoutBasedOnRelationships
-  const representationEntitiesWithBasedOnRelationships = representations
-    .filter((r) => r.type === CsvMapperRepresentationType.Entity && !representationEntitiesWithoutBasedOnRelationships.some((r1) => r1.id === r.id));
+  const representationEntitiesWithBasedOnRelationships = representations.filter(
+    (r) =>
+      r.type === CsvMapperRepresentationType.Entity &&
+      !representationEntitiesWithoutBasedOnRelationships.some((r1) => r1.id === r.id),
+  );
 
   const results = new Map<string, Record<string, InputType>>();
 

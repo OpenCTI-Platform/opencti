@@ -122,7 +122,9 @@ class ChatbotManager {
         title: this.t_i18n('Ask Ariane'),
         titleAvatarSrc: embleme,
         titleBackgroundColor: 'linear-gradient(90deg, #3C108C 0%, #5E1AD5 100%)',
-        welcomeMessage: this.t_i18n('Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?'),
+        welcomeMessage: this.t_i18n(
+          "Hi there 👋 You're speaking with an AI Agent. I'm here to answer your questions, so what brings you here today?",
+        ),
         errorMessage: this.t_i18n('Sorry, an error has occurred, please try again later.'),
         backgroundColor: this.theme.palette.ai.background,
         fontSize: 14,
@@ -145,7 +147,9 @@ class ChatbotManager {
           textColor: this.theme.palette.text?.primary,
           sendButtonColor: this.theme.palette.ai.main,
           maxChars: 2000,
-          maxCharsWarningMessage: this.t_i18n('You exceeded the characters limit. Please input less than 2000 characters.'),
+          maxCharsWarningMessage: this.t_i18n(
+            'You exceeded the characters limit. Please input less than 2000 characters.',
+          ),
           autoFocus: true,
           sendMessageSound: false,
           receiveMessageSound: false,

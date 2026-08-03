@@ -47,16 +47,9 @@ const mockStatusesResponse = {
 
 const renderStatusField = (props: Record<string, unknown> = {}) => {
   return testRender(
-    <Formik
-      initialValues={{ x_opencti_workflow_id: null }}
-      onSubmit={vi.fn()}
-    >
+    <Formik initialValues={{ x_opencti_workflow_id: null }} onSubmit={vi.fn()}>
       <Form>
-        <StatusField
-          name="x_opencti_workflow_id"
-          type="Case-Incident"
-          {...props}
-        />
+        <StatusField name="x_opencti_workflow_id" type="Case-Incident" {...props} />
       </Form>
     </Formik>,
   );

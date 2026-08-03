@@ -18,11 +18,7 @@ export const up = async (next) => {
       },
     },
   };
-  await elUpdateByQueryForMigration(
-    message,
-    READ_DATA_INDICES,
-    updateQuery,
-  );
+  await elUpdateByQueryForMigration(message, READ_DATA_INDICES, updateQuery);
   logApp.info(`${message} > done`);
   next();
 };

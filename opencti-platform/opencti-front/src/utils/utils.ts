@@ -3,10 +3,10 @@ import { APP_BASE_PATH, MESSAGING$ } from '../relay/environment';
 
 export const export_max_size = 50000;
 
-export const isNotEmptyField = <T>(field: T | null | undefined): field is T => !R.isEmpty(field) && !R.isNil(field);
-export const isEmptyField = <T>(
-  field: T | null | undefined,
-): field is null | undefined => !isNotEmptyField(field);
+export const isNotEmptyField = <T>(field: T | null | undefined): field is T =>
+  !R.isEmpty(field) && !R.isNil(field);
+export const isEmptyField = <T>(field: T | null | undefined): field is null | undefined =>
+  !isNotEmptyField(field);
 
 export const isNilField = <T>(field: T | null | undefined) => field === null || field === undefined;
 
@@ -55,11 +55,13 @@ export const uniqueArray = <T>(items: IterableIterator<T> | Array<T>) => Array.f
  * @param applyKnowledgePadding - Whether to apply padding on knowledge routes (default: true).
  * @returns The right padding value
  */
-export const getPaddingRight = (locationPath: string, entityBasePath: string, applyKnowledgePadding = true) => {
+export const getPaddingRight = (
+  locationPath: string,
+  entityBasePath: string,
+  applyKnowledgePadding = true,
+) => {
   let paddingRight = 0;
-  if (
-    applyKnowledgePadding && locationPath.includes(`${entityBasePath}/knowledge`)
-  ) {
+  if (applyKnowledgePadding && locationPath.includes(`${entityBasePath}/knowledge`)) {
     paddingRight = 200;
   }
   if (locationPath.includes(`${entityBasePath}/content`)) {

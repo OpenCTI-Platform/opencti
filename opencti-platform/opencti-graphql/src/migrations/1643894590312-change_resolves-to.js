@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { BULK_TIMEOUT, elBulk, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
+import {
+  BULK_TIMEOUT,
+  elBulk,
+  elUpdateByQueryForMigration,
+  ES_MAX_CONCURRENCY,
+  MAX_BULK_OPERATIONS,
+} from '../database/engine';
 import { logApp } from '../config/conf';
 import { executionContext } from '../utils/access';
 
@@ -17,7 +23,9 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logApp.info(`[OPENCTI] Rewriting IDs and types: ${currentProcessing} / ${bulkOperations.length}`);
+    logApp.info(
+      `[OPENCTI] Rewriting IDs and types: ${currentProcessing} / ${bulkOperations.length}`,
+    );
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
   logApp.info(`[MIGRATION] Rewriting IDs and types done in ${new Date() - start} ms`);
@@ -59,7 +67,9 @@ export const up = async (next) => {
     READ_RELATIONSHIPS_INDICES,
     updateQuery,
   );
-  logApp.info(`[MIGRATION] Migrating all relationships connections done in ${new Date() - startMigrateRelationships} ms`);
+  logApp.info(
+    `[MIGRATION] Migrating all relationships connections done in ${new Date() - startMigrateRelationships} ms`,
+  );
   next();
 };
 

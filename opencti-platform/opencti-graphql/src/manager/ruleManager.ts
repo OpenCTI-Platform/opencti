@@ -1,12 +1,21 @@
 import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import {
+  createEntity,
+  patchAttribute,
+  stixLoadById,
+  storeLoadByIdWithRefs,
+} from '../database/middleware';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -25,20 +34,41 @@ import { isBasicRelationship, isStixRelationship } from '../schema/stixRelations
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { internalLoadById, fullRelationsList } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
-import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
+import type {
+  BasicManagerEntity,
+  BasicStoreBase,
+  BasicStoreCommon,
+  BasicStoreEntity,
+  BasicStoreRelation,
+  StoreObject,
+} from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { type RuleManager } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
-import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, StreamDataEventType, UpdateEvent } from '../types/event';
+import type {
+  BaseEvent,
+  DataEvent,
+  DeleteEvent,
+  MergeEvent,
+  SseEvent,
+  StreamDataEvent,
+  StreamDataEventType,
+  UpdateEvent,
+} from '../types/event';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { isModuleActivated } from '../database/cluster-module';
 import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
-import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
+import {
+  buildCreateEvent,
+  EVENT_CURRENT_VERSION,
+  LIVE_STREAM_NAME,
+  type StreamProcessor,
+} from '../database/stream/stream-utils';
 import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
 
@@ -53,14 +83,28 @@ const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const SCHEDULE_TIME = 10000;
 const RULE_MANAGER_NAME = 'rule_manager';
 
-export const getManagerInfo = async (context: AuthContext, user: AuthUser): Promise<RuleManager> => {
+export const getManagerInfo = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<RuleManager> => {
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
-  const ruleStatus = await internalLoadById(context, user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
+  const ruleStatus = (await internalLoadById(
+    context,
+    user,
+    RULE_ENGINE_ID,
+  )) as unknown as BasicManagerEntity;
   const lastEventState = await redisGetManagerEventState(RULE_MANAGER_NAME);
-  return { activated: isRuleEngineActivated, ...ruleStatus, lastEventId: lastEventState ?? ruleStatus.lastEventId };
+  return {
+    activated: isRuleEngineActivated,
+    ...ruleStatus,
+    lastEventId: lastEventState ?? ruleStatus.lastEventId,
+  };
 };
 
-export const buildInternalEvent = (type: StreamDataEventType, stix: StixCoreObject): StreamDataEvent => {
+export const buildInternalEvent = (
+  type: StreamDataEventType,
+  stix: StixCoreObject,
+): StreamDataEvent => {
   return {
     version: EVENT_CURRENT_VERSION,
     type,
@@ -76,12 +120,18 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<BaseEvent>> =>
   const events: Array<BaseEvent> = [];
   // region 01 - Generate events for sources deletion
   // -- sources
-  const sourceDeleteEvents = (eventContext.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const sourceDeleteEvents = (eventContext.sources || []).map((s) =>
+    buildInternalEvent(EVENT_TYPE_DELETE, s),
+  );
   pushAll(events, sourceDeleteEvents);
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
-  updateEvent.context = { patch: eventContext.patch, reverse_patch: eventContext.reverse_patch, changes: [] };
+  updateEvent.context = {
+    patch: eventContext.patch,
+    reverse_patch: eventContext.reverse_patch,
+    changes: [],
+  };
   events.push(updateEvent);
   // endregion
   return events;
@@ -93,11 +143,13 @@ const isAttributesImpactDependencies = (rule: RuleDefinition, operations: Operat
     .flat()
     .filter((a) => a.dependency === true)
     .map((a) => a.name);
-  const operationAttributes = R.uniq(operations.map((o) => {
-    const parts = o.path.substring(1).split('/');
+  const operationAttributes = R.uniq(
+    operations.map((o) => {
+      const parts = o.path.substring(1).split('/');
 
-    return parts.filter((p) => isNaN(Number(p))).join('.');
-  }));
+      return parts.filter((p) => isNaN(Number(p))).join('.');
+    }),
+  );
   return operationAttributes.filter((f) => rulesAttributes.includes(f)).length > 0;
 };
 
@@ -160,11 +212,20 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
   logApp.error('[OPENCTI-MODULE] Rule manager error', { cause: error, event, type });
 };
 
-const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Array<RuleRuntime>) => {
+const applyCleanupOnDependencyIds = async (
+  deletionIds: Array<string>,
+  rules: Array<RuleRuntime>,
+) => {
   const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
   const filters = {
     mode: FilterMode.And,
-    filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: deletionIds, operator: FilterOperator.Wildcard }],
+    filters: [
+      {
+        key: [`${RULE_PREFIX}*.dependencies`],
+        values: deletionIds,
+        operator: FilterOperator.Wildcard,
+      },
+    ],
     filterGroups: [],
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {
@@ -175,7 +236,12 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Ar
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
-export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<DataEvent>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (
+  context: AuthContext,
+  user: AuthUser,
+  events: Array<DataEvent>,
+  forRules: Array<RuleRuntime> = [],
+) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -203,7 +269,10 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
         const updateEvent = event as UpdateEvent;
         const internalId = updateEvent.data.extensions[STIX_EXT_OCTI].id;
         const previousPatch = updateEvent.context.reverse_patch;
-        const previousStix = jsonpatch.applyPatch<StixCoreObject>(structuredClone(data), previousPatch).newDocument;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>(
+          structuredClone(data),
+          previousPatch,
+        ).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values
@@ -250,7 +319,11 @@ export const rulesCleanHandler = async (
       try {
         const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
         if (isElementCleanable) {
-          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, user, instance.internal_id) as unknown as StoreObject;
+          const processingElement: StoreObject = (await storeLoadByIdWithRefs(
+            context,
+            user,
+            instance.internal_id,
+          )) as unknown as StoreObject;
           // In case of "inference of inference", element can be recursively cleanup by the deletion system
           if (processingElement) {
             await rule.clean(processingElement, deletedDependencies);
@@ -258,7 +331,10 @@ export const rulesCleanHandler = async (
         }
       } catch (err: any) {
         if (err.name !== ALREADY_DELETED_ERROR) {
-          logApp.error('[OPENCTI-MODULE] Rule manager clean error', { cause: err, manager: 'RULE_ENGINE' });
+          logApp.error('[OPENCTI-MODULE] Rule manager clean error', {
+            cause: err,
+            manager: 'RULE_ENGINE',
+          });
         }
       }
     }
@@ -287,7 +363,12 @@ const ruleStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastE
 const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
   const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
   const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
-  const created = await createEntity(context, RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+  const created = await createEntity(
+    context,
+    RULE_MANAGER_USER,
+    ruleSettingsInput,
+    ENTITY_TYPE_RULE_MANAGER,
+  );
   return created as BasicStoreEntity;
 };
 
@@ -310,7 +391,9 @@ const initRuleManager = () => {
       if (lastEventId) {
         await redisSetManagerEventState(RULE_MANAGER_NAME, lastEventId);
         const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
-        await patchAttribute(context, RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId: null });
+        await patchAttribute(context, RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, {
+          lastEventId: null,
+        });
       }
       const lastEventState = await redisGetManagerEventState(RULE_MANAGER_NAME);
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventState ?? 'start'}`);
@@ -327,7 +410,10 @@ const initRuleManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Rule engine already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Rule engine handler error', { cause: e, manager: 'RULE_ENGINE' });
+        logApp.error('[OPENCTI-MODULE] Rule engine handler error', {
+          cause: e,
+          manager: 'RULE_ENGINE',
+        });
       }
     } finally {
       running = false;
@@ -364,7 +450,12 @@ const initRuleManager = () => {
 };
 const ruleEngine = initRuleManager();
 
-export const executeRuleApply = async (context: AuthContext, user: AuthUser, rule: RuleRuntime, id: string) => {
+export const executeRuleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: RuleRuntime,
+  id: string,
+) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
   if (!instance) {
@@ -374,16 +465,27 @@ export const executeRuleApply = async (context: AuthContext, user: AuthUser, rul
   await rulesApplyHandler(context, user, [event], [rule]);
 };
 
-export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
-  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+export const ruleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+) => {
+  const rule = (await getRule(context, user, ruleId)) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
   return executeRuleApply(context, user, rule, elementId);
 };
 
-export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string, executionId: string): Promise<boolean> => {
-  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+export const ruleApplyAsync = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+  executionId: string,
+): Promise<boolean> => {
+  const rule = (await getRule(context, user, ruleId)) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
@@ -395,15 +497,24 @@ export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, eleme
   return runFunctionAsLongRunning(context, user, ruleApplyFunction, ruleApplyId);
 };
 
-export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
-  const rule = await getRule(context, user, ruleId) as RuleRuntime;
-  const element = await internalLoadById(context, user, elementId) as BasicStoreCommon;
+export const ruleClear = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+) => {
+  const rule = (await getRule(context, user, ruleId)) as RuleRuntime;
+  const element = (await internalLoadById(context, user, elementId)) as BasicStoreCommon;
   if (element) {
     await rulesCleanHandler(context, user, [element], [rule]);
   }
 };
 
-export const executeRuleElementRescan = async (context: AuthContext, user: AuthUser, element: BasicStoreBase) => {
+export const executeRuleElementRescan = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreBase,
+) => {
   const activatedRules = await getActivatedRules(context, SYSTEM_USER);
   if (activatedRules.length > 0) {
     const ruleRescanTypes = activatedRules.map((r) => r.scan.types).flat();
@@ -444,7 +555,12 @@ export const rulesRescan = async (context: AuthContext, user: AuthUser, elementI
   }
   return false;
 };
-export const rulesRescanAsync = async (context: AuthContext, user: AuthUser, elementId: string, executionId: string): Promise<boolean> => {
+export const rulesRescanAsync = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  executionId: string,
+): Promise<boolean> => {
   const elem = await internalLoadById(context, user, elementId, { baseData: true });
   if (elem) {
     const dataCanonicalize = jsonCanonicalize({ elementId, executionId }) as string;
@@ -462,7 +578,13 @@ export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eve
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
   // Clear the elastic status
   const patch = { lastEventId: eventId, errors: [] };
-  const { element } = await patchAttribute(context, user, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, patch);
+  const { element } = await patchAttribute(
+    context,
+    user,
+    RULE_ENGINE_ID,
+    ENTITY_TYPE_RULE_MANAGER,
+    patch,
+  );
   // Restart the manager
   await ruleEngine.shutdown();
   await ruleEngine.start();

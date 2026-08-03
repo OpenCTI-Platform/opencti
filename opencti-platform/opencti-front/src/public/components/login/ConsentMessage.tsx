@@ -18,16 +18,9 @@ interface ConsentMessageProps {
   onToggle: () => void;
 }
 
-const ConsentMessage = ({
-  data,
-  value,
-  onToggle,
-}: ConsentMessageProps) => {
+const ConsentMessage = ({ data, value, onToggle }: ConsentMessageProps) => {
   const { t_i18n } = useFormatter();
-  const {
-    platform_consent_message,
-    platform_consent_confirm_text,
-  } = useFragment(fragment, data);
+  const { platform_consent_message, platform_consent_confirm_text } = useFragment(fragment, data);
 
   if (!platform_consent_message) return null;
 
@@ -37,9 +30,7 @@ const ConsentMessage = ({
 
   return (
     <Card variant="outlined" padding="horizontal">
-      <LoginMarkdown>
-        {platform_consent_message}
-      </LoginMarkdown>
+      <LoginMarkdown>{platform_consent_message}</LoginMarkdown>
       <Box
         mt={1}
         gap={0.5}
@@ -55,11 +46,8 @@ const ConsentMessage = ({
           checked={value}
           onChange={onToggle}
           style={{ margin: 0, padding: 0 }}
-        >
-        </Checkbox>
-        <LoginMarkdown>
-          {consentConfirmText}
-        </LoginMarkdown>
+        ></Checkbox>
+        <LoginMarkdown>{consentConfirmText}</LoginMarkdown>
       </Box>
     </Card>
   );

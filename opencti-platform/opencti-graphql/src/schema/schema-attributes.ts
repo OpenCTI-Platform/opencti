@@ -2,7 +2,12 @@ import * as R from 'ramda';
 import { GraphQLDateTime } from 'graphql-scalars';
 import { RULE_PREFIX } from './general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import type { AttributeDefinition, AttrType, ComplexAttributeWithMappings, MappingDefinition } from './attribute-definition';
+import type {
+  AttributeDefinition,
+  AttrType,
+  ComplexAttributeWithMappings,
+  MappingDefinition,
+} from './attribute-definition';
 import { shortStringFormats } from './attribute-definition';
 import { getParentTypes } from './schemaUtils';
 import { isFeatureEnabled } from '../config/conf';
@@ -20,9 +25,13 @@ export const depsKeysRegister = {
 
 // -- Utilities to manipulate AttributeDefinitions --
 
-const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
+const isMandatoryAttributeDefinition = (schemaDef: AttributeDefinition) =>
+  schemaDef.mandatoryType === 'external' || schemaDef.mandatoryType === 'internal';
 const isDateAttributeDefinition = (schemaDef: AttributeDefinition) => schemaDef.type === 'date';
-const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): schemaDef is ComplexAttributeWithMappings => { // handy typeguard
+const isNonFlatObjectAttributeDefinition = (
+  schemaDef: AttributeDefinition,
+): schemaDef is ComplexAttributeWithMappings => {
+  // handy typeguard
   return schemaDef.type === 'object' && schemaDef.format !== 'flat';
 };
 
@@ -30,7 +39,10 @@ const isNonFlatObjectAttributeDefinition = (schemaDef: AttributeDefinition): sch
  * Returns the attribute definition for a given dotted path inside the given AttributeDefinition,
  * following the mappings recursively.
  */
-const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinition | MappingDefinition): MappingDefinition => {
+const getAttributeMappingFromPath = (
+  path: string,
+  schemaDef: AttributeDefinition | MappingDefinition,
+): MappingDefinition => {
   const pathTokens = path.split('.');
   if (pathTokens.length === 1) {
     return schemaDef;
@@ -40,7 +52,9 @@ const getAttributeMappingFromPath = (path: string, schemaDef: AttributeDefinitio
   }
   const mapping = schemaDef.mappings.find((m) => m.name === pathTokens[1]);
   if (!mapping) {
-    throw FunctionalError(`Schema definition named [${schemaDef.name}] is missing mapping for attribute [${pathTokens[1]}]`);
+    throw FunctionalError(
+      `Schema definition named [${schemaDef.name}] is missing mapping for attribute [${pathTokens[1]}]`,
+    );
   }
 
   if (pathTokens.length > 2) {
@@ -80,99 +94,150 @@ export const schemaAttributesDefinition = {
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
     // Register given attribute
     const currentAttributes = Object.values(this.attributes);
-    attributes.filter((a) => (!a.featureFlag || isFeatureEnabled(a.featureFlag))).forEach((attribute) => {
-      // Check different attributes have different labels
-      currentAttributes
-        .forEach((m) => {
+    attributes
+      .filter((a) => !a.featureFlag || isFeatureEnabled(a.featureFlag))
+      .forEach((attribute) => {
+        // Check different attributes have different labels
+        currentAttributes.forEach((m) => {
           const attributeDefinitionsList = Array.from(m.values());
-          const attributesWithSameLabelAndDifferentName = attributeDefinitionsList.filter((a) => (a.label === attribute.label) && (a.name !== attribute.name));
+          const attributesWithSameLabelAndDifferentName = attributeDefinitionsList.filter(
+            (a) => a.label === attribute.label && a.name !== attribute.name,
+          );
           if (attributesWithSameLabelAndDifferentName.length > 0) {
-            throw UnsupportedError('You can\'t have two attributes with the same label and a different name in the platform', {
-              attributesWithSameLabelAndDifferentName,
-              attribute,
-            });
+            throw UnsupportedError(
+              "You can't have two attributes with the same label and a different name in the platform",
+              {
+                attributesWithSameLabelAndDifferentName,
+                attribute,
+              },
+            );
           }
         });
-      // Check the homogeneity of attribute types
-      const existingAttribute = currentAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
-      if (existingAttribute) {
-        if (existingAttribute.type === 'string') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
+        // Check the homogeneity of attribute types
+        const existingAttribute = currentAttributes
+          .find((a) => a.get(attribute.name))
+          ?.get(attribute.name); // Maybe better way ?
+        if (existingAttribute) {
+          if (existingAttribute.type === 'string') {
+            if (existingAttribute.type !== attribute.type) {
+              throw UnsupportedError(
+                "You can't have two attributes with the same name and a different type in the platform",
+                {
+                  existingAttribute,
+                  attribute,
+                },
+              );
+            }
+            if (existingAttribute.format !== attribute.format) {
+              if (
+                !(
+                  shortStringFormats.includes(existingAttribute.format) &&
+                  shortStringFormats.includes(attribute.format)
+                )
+              ) {
+                throw UnsupportedError(
+                  "You can't have two string attributes with the same name and different format if the formats are not both short format",
+                  {
+                    existingAttribute,
+                    attribute,
+                  },
+                );
+              }
+            }
           }
-          if (existingAttribute.format !== attribute.format) {
-            if (!(shortStringFormats.includes(existingAttribute.format) && shortStringFormats.includes(attribute.format))) {
-              throw UnsupportedError('You can\'t have two string attributes with the same name and different format if the formats are not both short format', {
-                existingAttribute,
-                attribute,
-              });
+          if (existingAttribute.type === 'numeric') {
+            if (
+              existingAttribute.type !== attribute.type ||
+              existingAttribute.precision !== attribute.precision
+            ) {
+              throw UnsupportedError(
+                "You can't have two attributes with the same name and a different type in the platform",
+                {
+                  existingAttribute,
+                  attribute,
+                },
+              );
+            }
+          }
+          if (existingAttribute.type === 'object') {
+            if (
+              existingAttribute.type !== attribute.type ||
+              existingAttribute.format !== attribute.format
+            ) {
+              throw UnsupportedError(
+                "You can't have two attributes with the same name and a different type in the platform",
+                {
+                  existingAttribute,
+                  attribute,
+                },
+              );
+            }
+          }
+          if (existingAttribute.type === 'date' || existingAttribute.type === 'boolean') {
+            if (existingAttribute.type !== attribute.type) {
+              throw UnsupportedError(
+                "You can't have two attributes with the same name and a different type in the platform",
+                {
+                  existingAttribute,
+                  attribute,
+                },
+              );
             }
           }
         }
-        if (existingAttribute.type === 'numeric') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.precision !== attribute.precision) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
+        // Check duplicate attributes
+        if (directAttributes.has(attribute.name)) {
+          throw UnsupportedError(
+            "You can't register two attributes with the same name on an entity",
+            {
+              attributeName: attribute.name,
+              entityType,
+            },
+          );
+        }
+        // Check sortBy on object
+        if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.sortBy) {
+          const correspondingMapping = getAttributeMappingFromPath(
+            attribute.sortBy.path,
+            attribute,
+          );
+          if (correspondingMapping.type !== attribute.sortBy.type) {
+            throw UnsupportedError(
+              "You can't define a sortBy with path and type that do not match the corresponding mapping",
+              {
+                attributeName: attribute.name,
+                entityType,
+              },
+            );
           }
         }
-        if (existingAttribute.type === 'object') {
-          if (existingAttribute.type !== attribute.type || existingAttribute.format !== attribute.format) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
+        let registeredAttribute: AttributeDefinition = { ...attribute };
+        if (
+          registeredAttribute.type === 'object' &&
+          registeredAttribute.format !== 'flat' &&
+          registeredAttribute.mappings.length > 0
+        ) {
+          registeredAttribute = {
+            ...registeredAttribute,
+            // filter feature flagged attributes
+            mappings: registeredAttribute.mappings.filter(
+              (a) => !a.featureFlag || isFeatureEnabled(a.featureFlag),
+            ),
+          };
         }
-        if (existingAttribute.type === 'date' || existingAttribute.type === 'boolean') {
-          if (existingAttribute.type !== attribute.type) {
-            throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
-              existingAttribute,
-              attribute,
-            });
-          }
-        }
-      }
-      // Check duplicate attributes
-      if (directAttributes.has(attribute.name)) {
-        throw UnsupportedError('You can\'t register two attributes with the same name on an entity', {
-          attributeName: attribute.name,
-          entityType,
-        });
-      }
-      // Check sortBy on object
-      if (attribute.type === 'object' && attribute.format !== 'flat' && attribute.sortBy) {
-        const correspondingMapping = getAttributeMappingFromPath(attribute.sortBy.path, attribute);
-        if (correspondingMapping.type !== attribute.sortBy.type) {
-          throw UnsupportedError('You can\'t define a sortBy with path and type that do not match the corresponding mapping', {
-            attributeName: attribute.name,
-            entityType,
-          });
-        }
-      }
-      let registeredAttribute: AttributeDefinition = { ...attribute };
-      if (registeredAttribute.type === 'object' && registeredAttribute.format !== 'flat' && registeredAttribute.mappings.length > 0) {
-        registeredAttribute = {
-          ...registeredAttribute,
-          // filter feature flagged attributes
-          mappings: registeredAttribute.mappings.filter((a) => !a.featureFlag || isFeatureEnabled(a.featureFlag)),
-        };
-      }
-      // set attribute
-      directAttributes.set(registeredAttribute.name, registeredAttribute);
-      // add the attribute name and type in the map of all the attributes
-      // to do so, we overwrite an eventual attribute having the same name for an other entity type
-      // it's not a problem because if 2 attributes have the same name, they also have the same type
-      this.allAttributes.set(registeredAttribute.name, registeredAttribute);
-    });
-    const parentAttributes = new Map(getParentTypes(entityType)
-      .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
-      .flat()
-      .map((e) => [e.name, e]));
+        // set attribute
+        directAttributes.set(registeredAttribute.name, registeredAttribute);
+        // add the attribute name and type in the map of all the attributes
+        // to do so, we overwrite an eventual attribute having the same name for an other entity type
+        // it's not a problem because if 2 attributes have the same name, they also have the same type
+        this.allAttributes.set(registeredAttribute.name, registeredAttribute);
+      });
+    const parentAttributes = new Map(
+      getParentTypes(entityType)
+        .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
+        .flat()
+        .map((e) => [e.name, e]),
+    );
     const computedWithParentAttributes = new Map([...parentAttributes, ...directAttributes]);
     this.attributes[entityType] = computedWithParentAttributes;
     computedWithParentAttributes.forEach((attr) => {
@@ -180,7 +245,10 @@ export const schemaAttributesDefinition = {
       this.attributesByTypes[attr.type as AttrType].set(attr.name);
       // Generate map of upsert by entity type
       if (attr.upsert) {
-        this.upsertByEntity.set(entityType, [...this.upsertByEntity.get(entityType) ?? [], attr.name]);
+        this.upsertByEntity.set(entityType, [
+          ...(this.upsertByEntity.get(entityType) ?? []),
+          attr.name,
+        ]);
       }
     });
   },
@@ -203,7 +271,12 @@ export const schemaAttributesDefinition = {
   // Usage of raw attributes
   getAllAttributes() {
     usageProtection = true;
-    return R.uniqBy((a) => a.name, Object.values(this.attributes).map((a) => Array.from(a.values())).flat());
+    return R.uniqBy(
+      (a) => a.name,
+      Object.values(this.attributes)
+        .map((a) => Array.from(a.values()))
+        .flat(),
+    );
   },
 
   getIdAttributes() {
@@ -260,35 +333,35 @@ export const schemaAttributesDefinition = {
       }
     }
     usageProtection = true;
-    return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
+    return attributeType.reduce(
+      (r, fn) => this.attributesByTypes[fn].has(attributeName) || r,
+      false,
+    );
   },
 
   getAttributeMappingFromPath(path: string): MappingDefinition {
     const pathTokens = path.split('.');
     const schemaDef = this.getAttributeByName(pathTokens[0]);
     if (!schemaDef) {
-      throw FunctionalError(`Cannot resolve path [${path}], missing schema definition for attribute [${pathTokens[0]}}]`);
+      throw FunctionalError(
+        `Cannot resolve path [${path}], missing schema definition for attribute [${pathTokens[0]}}]`,
+      );
     }
     return getAttributeMappingFromPath(path, schemaDef);
   },
 };
 
 // -- TYPE --
-export const isBooleanAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
-);
-export const isDateAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date')
-);
-export const isNumericAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'numeric')
-);
-export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
-);
-export const isObjectAttribute = (k: string): boolean => (
-  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object')
-);
+export const isBooleanAttribute = (k: string): boolean =>
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean');
+export const isDateAttribute = (k: string): boolean =>
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date');
+export const isNumericAttribute = (k: string): boolean =>
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'numeric');
+export const isDateNumericOrBooleanAttribute = (k: string): boolean =>
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean');
+export const isObjectAttribute = (k: string): boolean =>
+  schemaAttributesDefinition.isSpecificTypeAttribute(k, 'object');
 export const isObjectFlatAttribute = (k: string): boolean => {
   const definition = schemaAttributesDefinition.getAttributeByName(k.split('.')[0]);
   if (!definition) return false;
@@ -297,9 +370,8 @@ export const isObjectFlatAttribute = (k: string): boolean => {
 
 // -- MULTIPLE --
 
-export const isMultipleAttribute = (entityType: string, k: string): boolean => (
-  k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(entityType, k)
-);
+export const isMultipleAttribute = (entityType: string, k: string): boolean =>
+  k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(entityType, k);
 
 /**
  * Validates that the given input conforms to the constraints in the corresponding schema definition.
@@ -310,13 +382,17 @@ export const isMultipleAttribute = (entityType: string, k: string): boolean => (
 const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) => {
   const isMandatory = isMandatoryAttributeDefinition(schemaDef);
   if (isMandatory && R.isNil(input)) {
-    throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`);
+    throw FunctionalError(
+      `Validation against schema failed on attribute [${schemaDef.name}]: this mandatory field cannot be nil`,
+    );
   }
   if (isDateAttributeDefinition(schemaDef) && !R.isNil(input)) {
     try {
       GraphQLDateTime.parseValue(input);
     } catch {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: this date field is not in a valid format`);
+      throw FunctionalError(
+        `Validation against schema failed on attribute [${schemaDef.name}]: this date field is not in a valid format`,
+      );
     }
   }
 
@@ -326,10 +402,14 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
     }
     // check 'multiple' constraint
     if (schemaDef.multiple && !Array.isArray(input)) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`);
+      throw FunctionalError(
+        `Validation against schema failed on attribute [${schemaDef.name}]: value must be an array`,
+      );
     }
     if (!schemaDef.multiple && (Array.isArray(input) || !R.is(Object, input))) {
-      throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`);
+      throw FunctionalError(
+        `Validation against schema failed on attribute [${schemaDef.name}]: value must be an object`,
+      );
     }
 
     const inputValues = Array.isArray(input) ? input : [input];
@@ -339,7 +419,9 @@ const validateInputAgainstSchema = (input: any, schemaDef: AttributeDefinition) 
       schemaDef.mappings.forEach((mapping) => {
         // mandatory fields: the value must have a field with this name
         if (isMandatoryAttributeDefinition(mapping) && !valueKeys.includes(mapping.name)) {
-          throw FunctionalError(`Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`);
+          throw FunctionalError(
+            `Validation against schema failed on attribute [${schemaDef.name}]: mandatory field [${mapping.name}] is not present`,
+          );
         }
         // ...we might add more constraints such as a numeric range.
 
@@ -361,7 +443,10 @@ export const validateDataBeforeIndexing = (element: any) => {
 
   Object.keys(element).forEach((elementKey) => {
     const input = element[elementKey];
-    const attributeSchemaDef = schemaAttributesDefinition.getAttribute(element.entity_type, elementKey);
+    const attributeSchemaDef = schemaAttributesDefinition.getAttribute(
+      element.entity_type,
+      elementKey,
+    );
     if (!attributeSchemaDef) {
       return; // no validation to do, happens for meta fields like "_index"
     }

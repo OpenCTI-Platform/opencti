@@ -25,10 +25,7 @@ const styles = () => ({
 });
 
 export const noteLinesMutationRelationAdd = graphql`
-  mutation AddNotesLinesRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation AddNotesLinesRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     noteEdit(id: $id) {
       relationAdd(input: $input) {
         id
@@ -61,17 +58,11 @@ class AddNotesLinesContainer extends Component {
       stixCoreObjectOrStixCoreRelationshipNotes,
       paginationOptions,
     } = this.props;
-    const entityNotesIds = R.map(
-      (n) => n.node.id,
-      stixCoreObjectOrStixCoreRelationshipNotes,
-    );
+    const entityNotesIds = R.map((n) => n.node.id, stixCoreObjectOrStixCoreRelationshipNotes);
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (alreadyAdded) {
       const existingNote = R.head(
-        R.filter(
-          (n) => n.node.id === note.id,
-          stixCoreObjectOrStixCoreRelationshipNotes,
-        ),
+        R.filter((n) => n.node.id === note.id, stixCoreObjectOrStixCoreRelationshipNotes),
       );
       commitMutation({
         mutation: noteMutationRelationDelete,
@@ -81,12 +72,7 @@ class AddNotesLinesContainer extends Component {
           relationship_type: 'object',
         },
         updater: (store) => {
-          deleteNode(
-            store,
-            'Pagination_notes',
-            paginationOptions,
-            existingNote.node.id,
-          );
+          deleteNode(store, 'Pagination_notes', paginationOptions, existingNote.node.id);
         },
       });
     } else {
@@ -118,10 +104,7 @@ class AddNotesLinesContainer extends Component {
 
   render() {
     const { classes, data, stixCoreObjectOrStixCoreRelationshipNotes } = this.props;
-    const entityNotesIds = R.map(
-      (n) => n.node.id,
-      stixCoreObjectOrStixCoreRelationshipNotes,
-    );
+    const entityNotesIds = R.map((n) => n.node.id, stixCoreObjectOrStixCoreRelationshipNotes);
 
     return (
       <TableContainer>
@@ -146,10 +129,7 @@ class AddNotesLinesContainer extends Component {
                 >
                   <TableCell sx={{ width: 48, paddingY: 1, paddingX: 2 }}>
                     {alreadyAdded ? (
-                      <CheckCircle
-                        color="primary"
-                        sx={{ marginTop: 0.5 }}
-                      />
+                      <CheckCircle color="primary" sx={{ marginTop: 0.5 }} />
                     ) : (
                       <WorkOutline sx={{ marginTop: 0.5 }} />
                     )}
@@ -158,18 +138,13 @@ class AddNotesLinesContainer extends Component {
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {`${note.attribute_abstract} ${noteId}`}
                     </Typography>
-                    <Typography variant="body1">
-                      {truncate(note.content, 120)}
-                    </Typography>
+                    <Typography variant="body1">{truncate(note.content, 120)}</Typography>
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2, whiteSpace: 'nowrap' }}>
                     {note.createdBy?.name ?? EMPTY_VALUE}
                   </TableCell>
                   <TableCell sx={{ paddingY: 1, paddingX: 2 }}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitions={note.objectMarking ?? []}
-                    />
+                    <ItemMarkings variant="inList" markingDefinitions={note.objectMarking ?? []} />
                   </TableCell>
                 </TableRow>
               );
@@ -194,8 +169,7 @@ AddNotesLinesContainer.propTypes = {
 
 export const addNotesLinesQuery = graphql`
   query AddNotesLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddNotesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddNotesLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -209,8 +183,7 @@ const AddNotesLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
       ) {
-        notes(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_notes") {
+        notes(search: $search, first: $count, after: $cursor) @connection(key: "Pagination_notes") {
           edges {
             node {
               id

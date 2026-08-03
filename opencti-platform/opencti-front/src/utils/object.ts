@@ -15,7 +15,8 @@ export function getObjectProperty<T extends object>(object: T, path = ''): unkno
   // If at the end of the path, stop recursion.
   if (splitPath.length === 0) return property;
   // If not at the end of the path but the value is not an object, throw error.
-  if (typeof property !== 'object' || property === null) throw Error(`Invalid path "${path}", a subpart is not an object`);
+  if (typeof property !== 'object' || property === null)
+    throw Error(`Invalid path "${path}", a subpart is not an object`);
   // Continue deeper, if it's array then need to continue for each element of the array.
   return Array.isArray(property)
     ? property.map((el) => getObjectProperty(el, splitPath.join('.')))
@@ -31,7 +32,10 @@ export function getObjectProperty<T extends object>(object: T, path = ''): unkno
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-export function getObjectPropertyWithoutEmptyValues<T extends object>(object: T, path = ''): unknown {
+export function getObjectPropertyWithoutEmptyValues<T extends object>(
+  object: T,
+  path = '',
+): unknown {
   const property = getObjectProperty(object, path);
   if (Array.isArray(property)) {
     return property.filter((p) => !!p);

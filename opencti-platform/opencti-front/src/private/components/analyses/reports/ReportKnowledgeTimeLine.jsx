@@ -10,7 +10,10 @@ import TimelineDot from '@mui/lab/TimelineDot';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Typography from '@mui/material/Typography';
-import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import {
+  getSecondaryRepresentative,
+  getMainRepresentative,
+} from '../../../../utils/defaultRepresentatives';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
@@ -54,11 +57,7 @@ const useStyles = makeStyles({
   },
 });
 
-const ReportKnowledgeTimeLineComponent = ({
-  report,
-  dateAttribute,
-  displayRelationships,
-}) => {
+const ReportKnowledgeTimeLineComponent = ({ report, dateAttribute, displayRelationships }) => {
   const classes = useStyles();
   const { fldt, t_i18n } = useFormatter();
   const { edges } = report.objects;
@@ -67,19 +66,12 @@ const ReportKnowledgeTimeLineComponent = ({
       <Timeline position="alternate">
         {edges.map((edge) => {
           const { node } = edge;
-          const link = `${resolveLink(
-            displayRelationships ? node.from.entity_type : node.entity_type,
-          )}/${
-            displayRelationships
-              ? `${node.from.id}/knowledge/relations/${node.id}`
-              : node.id
+          const link = `${resolveLink(displayRelationships ? node.from.entity_type : node.entity_type)}/${
+            displayRelationships ? `${node.from.id}/knowledge/relations/${node.id}` : node.id
           }`;
           return (
             <TimelineItem key={node.id}>
-              <TimelineOppositeContent
-                sx={{ paddingTop: '18px' }}
-                color="text.secondary"
-              >
+              <TimelineOppositeContent sx={{ paddingTop: '18px' }} color="text.secondary">
                 {fldt(node[dateAttribute])}
                 {displayRelationships && (
                   <span>
@@ -90,10 +82,7 @@ const ReportKnowledgeTimeLineComponent = ({
               </TimelineOppositeContent>
               <TimelineSeparator>
                 <Link to={link}>
-                  <TimelineDot
-                    sx={{ borderColor: itemColor(node.entity_type) }}
-                    variant="outlined"
-                  >
+                  <TimelineDot sx={{ borderColor: itemColor(node.entity_type) }} variant="outlined">
                     <ItemIcon type={node.entity_type} />
                   </TimelineDot>
                 </Link>
@@ -103,10 +92,7 @@ const ReportKnowledgeTimeLineComponent = ({
                 <Card>
                   <Typography variant="h2">{getMainRepresentative(node)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                    <MarkdownDisplay
-                      content={getSecondaryRepresentative(node)}
-                      limit={150}
-                    />
+                    <MarkdownDisplay content={getSecondaryRepresentative(node)} limit={150} />
                   </div>
                 </Card>
               </TimelineContent>
@@ -124,10 +110,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
     @argumentDefinitions(
       types: { type: "[String]" }
       search: { type: "String" }
-      orderBy: {
-        type: "StixObjectOrStixRelationshipsOrdering"
-        defaultValue: name
-      }
+      orderBy: { type: "StixObjectOrStixRelationshipsOrdering", defaultValue: name }
       orderMode: { type: "OrderingMode", defaultValue: asc }
       filters: { type: "FilterGroup" }
     ) {

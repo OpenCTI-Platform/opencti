@@ -20,13 +20,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'objects',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'objects',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -46,13 +48,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'objects',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'objects',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -74,13 +78,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'regardingOf',
-              values: [{ key: 'id', values: [SELF_ID] }],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'regardingOf',
+                values: [{ key: 'id', values: [SELF_ID] }],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -100,13 +106,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'fromId',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'fromId',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -130,13 +138,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'objects',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'objects',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -156,13 +166,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'objects',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'objects',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -182,13 +194,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'objects',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'objects',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -208,13 +222,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'regardingOf',
-              values: [{ key: 'id', values: [SELF_ID] }],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'regardingOf',
+                values: [{ key: 'id', values: [SELF_ID] }],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -232,13 +248,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'fromOrToId',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'fromOrToId',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });
@@ -256,13 +274,15 @@ describe('buildInitialFilters', () => {
           );
           expect(filters).toStrictEqual({
             mode: 'and',
-            filters: [{
-              id: expect.any(String),
-              key: 'contextEntityId',
-              values: [SELF_ID],
-              operator: 'eq',
-              mode: 'or',
-            }],
+            filters: [
+              {
+                id: expect.any(String),
+                key: 'contextEntityId',
+                values: [SELF_ID],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
             filterGroups: [],
           });
         });

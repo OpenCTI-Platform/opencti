@@ -18,11 +18,7 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 
 // Helper to render with theme
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(
-    <ThemeProvider theme={testTheme}>
-      {component}
-    </ThemeProvider>,
-  );
+  return render(<ThemeProvider theme={testTheme}>{component}</ThemeProvider>);
 };
 
 describe('PublishButton', () => {

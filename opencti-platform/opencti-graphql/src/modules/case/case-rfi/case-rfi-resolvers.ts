@@ -3,20 +3,35 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 
-import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findRfiPaginated, findById } from './case-rfi-domain';
+import {
+  addCaseRfi,
+  caseRfiContainsStixObjectOrStixRelationship,
+  findRfiPaginated,
+  findById,
+} from './case-rfi-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
-import { approveRequestAccess, declineRequestAccess, getRfiAccessConfiguration } from '../../requestAccess/requestAccess-domain';
+import {
+  approveRequestAccess,
+  declineRequestAccess,
+  getRfiAccessConfiguration,
+} from '../../requestAccess/requestAccess-domain';
 
 const caseRfiResolvers: Resolvers = {
   Query: {
     caseRfi: (_, { id }, context) => findById(context, context.user, id),
     caseRfis: (_, args, context) => findRfiPaginated(context, context.user, args),
     caseRfiContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return caseRfiContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return caseRfiContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   CaseRfi: {
-    requestAccessConfiguration: (caseRfi, _, context) => getRfiAccessConfiguration(context, context.user, caseRfi),
+    requestAccessConfiguration: (caseRfi, _, context) =>
+      getRfiAccessConfiguration(context, context.user, caseRfi),
   },
   CaseRfisOrdering: {
     creator: 'creator_id',

@@ -22,7 +22,10 @@ import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { FilterValuesContentQuery } from '../../../components/__generated__/FilterValuesContentQuery.graphql';
 import { filterValuesContentQuery } from '../../../components/FilterValuesContent';
-import { isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  normalizeFilterGroupForBackend,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Tag from '@common/tag/Tag';
@@ -44,13 +47,19 @@ const PirCriteriaDisplayComponent = ({
   const { t_i18n } = useFormatter();
   const { filtersRepresentatives } = usePreloadedQuery(filterValuesContentQuery, queryRef);
 
-  const data = Object.values(Object.groupBy(criteria.flatMap(({ filters }) => {
-    const relationship = filters.find((filter) => filter.key.includes('entity_type'))?.values[0];
-    const targetId = filters.find((filter) => filter.key.includes('toId'))?.values[0];
-    const target = filtersRepresentatives.find((rep) => rep.id === targetId)?.value;
-    if (!relationship || !target) return [];
-    return { relationship, target };
-  }), ({ relationship }) => relationship));
+  const data = Object.values(
+    Object.groupBy(
+      criteria.flatMap(({ filters }) => {
+        const relationship = filters.find((filter) => filter.key.includes('entity_type'))
+          ?.values[0];
+        const targetId = filters.find((filter) => filter.key.includes('toId'))?.values[0];
+        const target = filtersRepresentatives.find((rep) => rep.id === targetId)?.value;
+        if (!relationship || !target) return [];
+        return { relationship, target };
+      }),
+      ({ relationship }) => relationship,
+    ),
+  );
 
   return (
     <div style={{ display: 'flex', gap: theme.spacing(1) }}>
@@ -77,10 +86,10 @@ const PirCriteriaDisplayComponent = ({
               },
             }}
           >
-            {children ? <div>{children}</div> : (
-              <Tag
-                label={full ? fullTargetsStr : shortTargetsStr}
-              />
+            {children ? (
+              <div>{children}</div>
+            ) : (
+              <Tag label={full ? fullTargetsStr : shortTargetsStr} />
             )}
           </Tooltip>
         );
@@ -97,19 +106,21 @@ const PirCriteriaDisplay = ({ criteria, ...props }: PirCriteriaDisplayProps) => 
     filters: [],
     filterGroups: criteria,
   });
-  if (!filters || !isFilterGroupNotEmpty((filters))) return null;
+  if (!filters || !isFilterGroupNotEmpty(filters)) return null;
 
   const filtersRepresentativesQueryRef = useQueryLoading<FilterValuesContentQuery>(
     filterValuesContentQuery,
     { filters },
   );
 
-  return filtersRepresentativesQueryRef && (
-    <PirCriteriaDisplayComponent
-      {...props}
-      criteria={criteria}
-      queryRef={filtersRepresentativesQueryRef}
-    />
+  return (
+    filtersRepresentativesQueryRef && (
+      <PirCriteriaDisplayComponent
+        {...props}
+        criteria={criteria}
+        queryRef={filtersRepresentativesQueryRef}
+      />
+    )
   );
 };
 

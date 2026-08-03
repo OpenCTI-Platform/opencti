@@ -22,18 +22,14 @@ const useComputeLinkFn = () => {
   const computeLink = (node: ComputeLinkNode): string | undefined => {
     let redirectLink;
     if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
-      redirectLink = `${resolveLink(node.from.entity_type)}/${
-        node.from.id
-      }/knowledge/sightings/${node.id}`;
+      redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/sightings/${node.id}`;
     } else if (node.relationship_type) {
-      if (node.from && !isRelationship(node.from.entity_type)) { // 'from' not restricted and not a relationship
-        redirectLink = `${resolveLink(node.from.entity_type)}/${
-          node.from.id
-        }/knowledge/relations/${node.id}`;
-      } else if (node.to && !isRelationship(node.to.entity_type)) { // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
-        redirectLink = `${resolveLink(node.to.entity_type)}/${
-          node.to.id
-        }/knowledge/relations/${node.id}`;
+      if (node.from && !isRelationship(node.from.entity_type)) {
+        // 'from' not restricted and not a relationship
+        redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`;
+      } else if (node.to && !isRelationship(node.to.entity_type)) {
+        // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
+        redirectLink = `${resolveLink(node.to.entity_type)}/${node.to.id}/knowledge/relations/${node.id}`;
       } else {
         redirectLink = undefined; // no redirection if from and to are restricted
       }
@@ -68,7 +64,10 @@ type PrivateAppDataProviderProps = {
   metricsDefinition: MetricsDefinition[];
 };
 
-const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ children, metricsDefinition }) => {
+const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({
+  children,
+  metricsDefinition,
+}) => {
   const computeLink = useComputeLinkFn();
 
   const appData: AppDataProps = {
@@ -76,11 +75,7 @@ const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ childre
     metricsDefinition,
   };
 
-  return (
-    <AppDataContext.Provider value={appData}>
-      {children}
-    </AppDataContext.Provider>
-  );
+  return <AppDataContext.Provider value={appData}>{children}</AppDataContext.Provider>;
 };
 
 type AppDataProviderProps = {
@@ -100,11 +95,7 @@ export const AppDataProvider = ({
       metricsDefinition,
     };
 
-    return (
-      <AppDataContext.Provider value={appData}>
-        {children}
-      </AppDataContext.Provider>
-    );
+    return <AppDataContext.Provider value={appData}>{children}</AppDataContext.Provider>;
   }
 
   return (

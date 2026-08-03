@@ -1,5 +1,9 @@
 import * as R from 'ramda';
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { type StreamProcessor } from '../database/stream/stream-utils';
@@ -68,12 +72,15 @@ export interface HistoryData extends BasicStoreEntity {
  * @param context
  * @param events
  */
-export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+export const resolveGrantedRefsIds = async (
+  context: AuthContext,
+  events: Array<SseEvent<StreamDataEvent>>,
+) => {
   const grantedRefsToResolve: StixId[] = [];
   events.forEach((event) => {
     const stix = event.data.data;
-    const eventGrantedRefsIds = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
-    const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
+    const eventGrantedRefsIds = stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? [];
+    const eventGrantedRefsStandardIds = stix.extensions[STIX_EXT_OCTI].granted_refs ?? [];
     if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
       pushAll(grantedRefsToResolve, eventGrantedRefsStandardIds);
     }
@@ -82,18 +89,25 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
   if (grantedRefsToResolve.length === 0) {
     return organizationByIdsMap; // nothing to resolve
   }
-  const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, R.uniq(grantedRefsToResolve), {
-    type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-    baseData: true,
-    baseFields: ['standard_id', 'internal_id'],
-  }) as BasicStoreBase[];
+  const organizationsByIds = (await internalFindByIds(
+    context,
+    SYSTEM_USER,
+    R.uniq(grantedRefsToResolve),
+    {
+      type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      baseData: true,
+      baseFields: ['standard_id', 'internal_id'],
+    },
+  )) as BasicStoreBase[];
   organizationsByIds.forEach((o) => {
     organizationByIdsMap.set(o.standard_id, o.internal_id);
   });
   return organizationByIdsMap;
 };
 
-export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partial<HistoryContext> => {
+export const generatePirContextData = (
+  event: SseEvent<StreamDataEvent>,
+): Partial<HistoryContext> => {
   let pir_ids: string[] = [];
   let from_id: string | undefined;
   let to_id: string | undefined;
@@ -115,9 +129,11 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
         pir_ids = extensions.target_ref_pir_refs ?? [];
       }
     }
-  } else if (eventData.type === 'internal-relationship'
-    && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
-  ) { // 2. detect in-pir relations
+  } else if (
+    eventData.type === 'internal-relationship' &&
+    eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+  ) {
+    // 2. detect in-pir relations
     const relationEvent = eventData as StixRelation;
     const extensions = relationEvent.extensions[STIX_EXT_OCTI];
     from_id = extensions.source_ref;
@@ -140,9 +156,16 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-export const buildHistoryElementsFromEvents = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+export const buildHistoryElementsFromEvents = async (
+  context: AuthContext,
+  events: Array<SseEvent<StreamDataEvent>>,
+) => {
   // load all markings to resolve object_marking_refs
-  const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
   // resolve granted_refs
   const grantedRefsResolved = await resolveGrantedRefsIds(context, events);
   // Build the history data
@@ -153,8 +176,8 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o)) as string[];
-    let eventGrantedRefsIds: string[] = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
-    const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
+    let eventGrantedRefsIds: string[] = stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? [];
+    const eventGrantedRefsStandardIds = stix.extensions[STIX_EXT_OCTI].granted_refs ?? [];
     if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
       eventGrantedRefsIds = eventGrantedRefsStandardIds
         .map((stixId) => grantedRefsResolved.get(stixId))
@@ -174,7 +197,10 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
       contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
       // Previous markings must be kept to ensure data visibility restrictions
-      const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);
+      const { newDocument: previous } = jsonpatch.applyPatch(
+        structuredClone(stix),
+        updateEvent.context.reverse_patch,
+      );
       const previousMarkingRefs = (previous.object_marking_refs ?? [])
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o)) as string[];
@@ -185,26 +211,36 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         pushAll(eventMarkingRefs, relatedMarkings);
       }
       // See GitHub issue #14537, we need to discard invalid changes events that have been generated in buggy OpenCTI versions (6.8.16, 6.8.17 and 6.9.0)
-      contextData.history_changes = Array.isArray(updateEvent.context.changes) ? updateEvent.context.changes : [];
+      contextData.history_changes = Array.isArray(updateEvent.context.changes)
+        ? updateEvent.context.changes
+        : [];
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
       contextData.from_id = rel.extensions[STIX_EXT_OCTI].source_ref;
       contextData.to_id = rel.extensions[STIX_EXT_OCTI].target_ref;
       // Markings of the source/target must be taken into account to ensure data visibility restrictions
-      pushAll(eventMarkingRefs, (rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []));
-      pushAll(eventMarkingRefs, (rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []));
+      pushAll(eventMarkingRefs, rel.extensions[STIX_EXT_OCTI].source_ref_object_marking_refs ?? []);
+      pushAll(eventMarkingRefs, rel.extensions[STIX_EXT_OCTI].target_ref_object_marking_refs ?? []);
     }
     if (stix.type === STIX_TYPE_SIGHTING) {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
       contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
       // Markings of the source/target must be taken into account to ensure data visibility restrictions
-      pushAll(eventMarkingRefs, (sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? []));
-      pushAll(eventMarkingRefs, (sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? []));
+      pushAll(
+        eventMarkingRefs,
+        sighting.extensions[STIX_EXT_OCTI].sighting_of_ref_object_marking_refs ?? [],
+      );
+      pushAll(
+        eventMarkingRefs,
+        sighting.extensions[STIX_EXT_OCTI].where_sighted_refs_object_marking_refs ?? [],
+      );
     }
     if (R.uniq(eventMarkingRefs).length > 0) {
-      contextData.marking_definitions = R.uniq(eventMarkingRefs).map((n) => markingsById.get(n)?.definition ?? 'Unknown');
+      contextData.marking_definitions = R.uniq(eventMarkingRefs).map(
+        (n) => markingsById.get(n)?.definition ?? 'Unknown',
+      );
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
@@ -215,9 +251,11 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
     };
     // history type is different for events concerning pir relationships
     const eventData = event.data.data;
-    const entity_type = eventData.type === 'internal-relationship' && eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
-      ? ENTITY_TYPE_PIR_HISTORY
-      : ENTITY_TYPE_HISTORY;
+    const entity_type =
+      eventData.type === 'internal-relationship' &&
+      eventData.extensions[STIX_EXT_OCTI].type === RELATION_IN_PIR
+        ? ENTITY_TYPE_PIR_HISTORY
+        : ENTITY_TYPE_HISTORY;
     // return history object
     return {
       _index: INDEX_HISTORY,
@@ -243,7 +281,10 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
   });
 };
 
-const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+const eventsApplyHandler = async (
+  context: AuthContext,
+  events: Array<SseEvent<StreamDataEvent>>,
+) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -264,8 +305,9 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
       const validEvent = HISTORY_WITH_INFERENCES || !isInference;
       const eventVersion = parseInt(event.data?.version ?? '0', 10);
       const noHistory = event.data?.noHistory === true;
-      const isExternalScopeOrInPir = event.data?.scope !== 'internal'
-        || event.data?.data?.extensions?.[STIX_EXT_OCTI]?.type === RELATION_IN_PIR; // if scope=internal, only keep in-pir relations
+      const isExternalScopeOrInPir =
+        event.data?.scope !== 'internal' ||
+        event.data?.data?.extensions?.[STIX_EXT_OCTI]?.type === RELATION_IN_PIR; // if scope=internal, only keep in-pir relations
       return eventVersion >= 4 && !noHistory && validEvent && isExternalScopeOrInPir;
     });
     if (compatibleEvents.length > 0) {
@@ -274,7 +316,10 @@ const historyStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent
       await eventsApplyHandler(context, compatibleEvents);
     }
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] History manager stream error', { cause: e, manager: 'HISTORY_MANAGER' });
+    logApp.error('[OPENCTI-MODULE] History manager stream error', {
+      cause: e,
+      manager: 'HISTORY_MANAGER',
+    });
   }
 };
 
@@ -292,7 +337,10 @@ const initHistoryManager = () => {
       lock = await lockResources([HISTORY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running history manager');
-      streamProcessor = createStreamProcessor('History manager', historyStreamHandler, { bufferTime: 5000, withInternal: true });
+      streamProcessor = createStreamProcessor('History manager', historyStreamHandler, {
+        bufferTime: 5000,
+        withInternal: true,
+      });
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
@@ -303,7 +351,10 @@ const initHistoryManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] History manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] History manager handling error', { cause: e, manager: 'HISTORY_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] History manager handling error', {
+          cause: e,
+          manager: 'HISTORY_MANAGER',
+        });
       }
     } finally {
       running = false;
@@ -316,18 +367,23 @@ const initHistoryManager = () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
       const context = executionContext('history_manager');
-      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
-        first: 1,
-        indices: [INDEX_HISTORY],
-        orderBy: ['timestamp'],
-        orderMode: OrderingMode.Desc,
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
-          filterGroups: [],
+      const histoElements = await topEntitiesList<HistoryData>(
+        context,
+        SYSTEM_USER,
+        [ENTITY_TYPE_HISTORY],
+        {
+          first: 1,
+          indices: [INDEX_HISTORY],
+          orderBy: ['timestamp'],
+          orderMode: OrderingMode.Desc,
+          filters: {
+            mode: FilterMode.And,
+            filters: [{ key: ['event_access'], values: [], operator: FilterOperator.Nil }],
+            filterGroups: [],
+          },
+          noFiltersChecking: true,
         },
-        noFiltersChecking: true,
-      });
+      );
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;

@@ -12,19 +12,16 @@ const BulkTextModalButton = ({ onClick, title, disabled }: BulkTextModalButtonPr
   const { t_i18n } = useFormatter();
 
   const bulkButton = (
-    <Button
-      variant="secondary"
-      onClick={onClick}
-      disabled={disabled}
-
-    >
+    <Button variant="secondary" onClick={onClick} disabled={disabled}>
       {title || t_i18n('Create multiple entities')}
     </Button>
   );
 
-  return disabled
-    ? <Tooltip title={t_i18n('Bulk creation not supported for this type')}>{bulkButton}</Tooltip>
-    : bulkButton;
+  return disabled ? (
+    <Tooltip title={t_i18n('Bulk creation not supported for this type')}>{bulkButton}</Tooltip>
+  ) : (
+    bulkButton
+  );
 };
 
 export default BulkTextModalButton;

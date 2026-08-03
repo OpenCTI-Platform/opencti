@@ -66,12 +66,8 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
       variables: {
         id: data.id,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_statusTemplates',
-        paginationOptions,
-        data.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        deleteNode(store, 'Pagination_statusTemplates', paginationOptions, data.id),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -85,7 +81,12 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
 
   return (
     <>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
@@ -100,11 +101,7 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
         <QueryRenderer
           query={statusTemplateEditionQuery}
           variables={{ id: data.id }}
-          render={({
-            props,
-          }: {
-            props: StatusTemplatePopoverEditionQuery$data;
-          }) => {
+          render={({ props }: { props: StatusTemplatePopoverEditionQuery$data }) => {
             if (props && props.statusTemplate) {
               return (
                 <StatusTemplateEdition

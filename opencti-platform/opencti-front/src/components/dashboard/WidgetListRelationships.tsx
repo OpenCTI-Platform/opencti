@@ -27,14 +27,12 @@ const WidgetListRelationships = ({
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const percentWidth = 100 / (columns.length ?? 1);
 
-    return (
-      columnKeys.reduce<DataTableProps['dataColumns']>(
-        (acc, current) => ({
-          ...acc,
-          [current]: { percentWidth, isSortable: false },
-        }),
-        {},
-      )
+    return columnKeys.reduce<DataTableProps['dataColumns']>(
+      (acc, current) => ({
+        ...acc,
+        [current]: { percentWidth, isSortable: false },
+      }),
+      {},
     ) as DataTableProps['dataColumns'];
   }, [columns]);
 

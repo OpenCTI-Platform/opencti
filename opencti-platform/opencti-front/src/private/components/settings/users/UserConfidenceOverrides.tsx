@@ -7,14 +7,20 @@ type UserConfidenceOverridesProps = {
   overrides: readonly {
     readonly entity_type: string;
     readonly max_confidence: number;
-    readonly source: {
-      readonly object: {
-        readonly entity_type?: string | undefined;
-        readonly id?: string | undefined;
-        readonly name?: string | undefined;
-      } | null | undefined;
-      readonly type: EffectiveConfidenceLevelSourceType;
-    } | null | undefined;
+    readonly source:
+      | {
+          readonly object:
+            | {
+                readonly entity_type?: string | undefined;
+                readonly id?: string | undefined;
+                readonly name?: string | undefined;
+              }
+            | null
+            | undefined;
+          readonly type: EffectiveConfidenceLevelSourceType;
+        }
+      | null
+      | undefined;
   }[];
 };
 
@@ -22,7 +28,10 @@ type OverrideConfidenceSourceProps = {
   override: UserConfidenceOverridesProps['overrides'][0];
 };
 
-const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({ override, ...rest }) => {
+const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({
+  override,
+  ...rest
+}) => {
   const { t_i18n } = useFormatter();
   const { max_confidence, source, entity_type } = override;
 
@@ -45,10 +54,7 @@ const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({
   return (
     <div {...rest}>
       {`- ${t_i18n(`entity_${entity_type}`)}: ${max_confidence}`}&nbsp;
-      {source
-        ? <span>({from})</span>
-        : null
-      }
+      {source ? <span>({from})</span> : null}
     </div>
   );
 };

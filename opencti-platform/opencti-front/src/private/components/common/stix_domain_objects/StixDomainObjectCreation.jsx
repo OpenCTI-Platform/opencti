@@ -14,7 +14,10 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { GroupingCreationForm } from '../../analyses/groupings/GroupingCreation';
 import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
-import { OpinionCreationFormKnowledgeEditor, OpinionCreationFormKnowledgeParticipant } from '../../analyses/opinions/OpinionCreation';
+import {
+  OpinionCreationFormKnowledgeEditor,
+  OpinionCreationFormKnowledgeParticipant,
+} from '../../analyses/opinions/OpinionCreation';
 import { ReportCreationForm } from '../../analyses/reports/ReportCreation';
 import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
 import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
@@ -63,20 +66,8 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
 `;
 
 const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion', 'Feedback']; // Language as no ui, note and opinion are not useful
-const IDENTITY_ENTITIES = [
-  'Sector',
-  'Organization',
-  'Individual',
-  'System',
-  'Event',
-];
-const LOCATION_ENTITIES = [
-  'Region',
-  'Country',
-  'City',
-  'Location',
-  'Administrative-Area',
-];
+const IDENTITY_ENTITIES = ['Sector', 'Organization', 'Individual', 'System', 'Event'];
+const LOCATION_ENTITIES = ['Region', 'Country', 'City', 'Location', 'Administrative-Area'];
 const CONTAINER_ENTITIES = [
   'Report',
   'Grouping',
@@ -85,11 +76,7 @@ const CONTAINER_ENTITIES = [
   'Case-Rfi',
   'Case-Rft',
 ];
-const THREAT_ACTOR_ENTITIES = [
-  'Threat-Actor-Group',
-  'Threat-Actor-Individual',
-  'Threat-Actor',
-];
+const THREAT_ACTOR_ENTITIES = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Threat-Actor'];
 
 const BULK_ENTITIES = [
   'Administrative-Area',
@@ -116,22 +103,12 @@ const BULK_ENTITIES = [
   'Vulnerability',
 ];
 
-const sharedUpdater = (
-  store,
-  userId,
-  paginationOptions,
-  paginationKey,
-  newEdge,
-) => {
+const sharedUpdater = (store, userId, paginationOptions, paginationKey, newEdge) => {
   const userProxy = store.get(userId);
   const params = { ...paginationOptions };
   delete params.count;
   delete params.id;
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    paginationKey,
-    params,
-  );
+  const conn = ConnectionHandler.getConnection(userProxy, paginationKey, params);
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
   const pageInfo = conn.getLinkedRecord('pageInfo');
   if (pageInfo) {
@@ -143,43 +120,30 @@ const sharedUpdater = (
 };
 
 const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
-  const choices = (queryData.sdoTypes?.edges ?? [])
-    .map((edge) => ({
-      label: t(`entity_${edge.node.label}`),
-      value: edge.node.label,
-      type: edge.node.label,
-    }));
+  const choices = (queryData.sdoTypes?.edges ?? []).map((edge) => ({
+    label: t(`entity_${edge.node.label}`),
+    value: edge.node.label,
+    type: edge.node.label,
+  }));
   const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
   return entitiesTypes.filter((n) => {
     if (
-      !stixDomainObjectTypes
-      || stixDomainObjectTypes.length === 0
-      || stixDomainObjectTypes.includes('Stix-Domain-Object')
+      !stixDomainObjectTypes ||
+      stixDomainObjectTypes.length === 0 ||
+      stixDomainObjectTypes.includes('Stix-Domain-Object')
     ) {
       return !UNSUPPORTED_TYPES.includes(n.value);
     }
-    if (
-      stixDomainObjectTypes.includes('Identity')
-      && IDENTITY_ENTITIES.includes(n.value)
-    ) {
+    if (stixDomainObjectTypes.includes('Identity') && IDENTITY_ENTITIES.includes(n.value)) {
       return true;
     }
-    if (
-      stixDomainObjectTypes.includes('Threat-Actor')
-      && THREAT_ACTOR_ENTITIES.includes(n.value)
-    ) {
+    if (stixDomainObjectTypes.includes('Threat-Actor') && THREAT_ACTOR_ENTITIES.includes(n.value)) {
       return true;
     }
-    if (
-      stixDomainObjectTypes.includes('Location')
-      && LOCATION_ENTITIES.includes(n.value)
-    ) {
+    if (stixDomainObjectTypes.includes('Location') && LOCATION_ENTITIES.includes(n.value)) {
       return true;
     }
-    if (
-      stixDomainObjectTypes.includes('Container')
-      && CONTAINER_ENTITIES.includes(n.value)
-    ) {
+    if (stixDomainObjectTypes.includes('Container') && CONTAINER_ENTITIES.includes(n.value)) {
       return true;
     }
     return !!stixDomainObjectTypes.includes(n.value);
@@ -200,16 +164,12 @@ const StixDomainPanel = ({
 }) => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const { t_i18n } = useFormatter();
-  const queryData = usePreloadedQuery(
-    stixDomainObjectCreationAllTypesQuery,
-    queryRef,
-  );
-  const availableEntityTypes = buildEntityTypes(
-    t_i18n,
-    queryData,
-    stixDomainObjectTypes,
-  );
-  const selectedType = (stixDomainObjectTypes?.length && availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) ?? availableEntityTypes.at(0);
+  const queryData = usePreloadedQuery(stixDomainObjectCreationAllTypesQuery, queryRef);
+  const availableEntityTypes = buildEntityTypes(t_i18n, queryData, stixDomainObjectTypes);
+  const selectedType =
+    (stixDomainObjectTypes?.length &&
+      availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) ??
+    availableEntityTypes.at(0);
   const [type, setType] = useState(selectedType.value);
   const baseCreatedBy = defaultCreatedBy
     ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
@@ -763,11 +723,7 @@ const StixDomainPanel = ({
   const renderUnavailableBulkMessage = () => {
     if (isFromBulkRelation && !BULK_ENTITIES.includes(type)) {
       return (
-        <Alert
-          severity="info"
-          variant="outlined"
-          style={{ marginBottom: 10 }}
-        >
+        <Alert severity="info" variant="outlined" style={{ marginBottom: 10 }}>
           {t_i18n('This entity has several key fields, which is incompatible with bulk creation')}
         </Alert>
       );
@@ -779,7 +735,7 @@ const StixDomainPanel = ({
     <Dialog
       open={true}
       onClose={onClose}
-      title={(
+      title={
         <Stack direction="row" justifyContent="space-between">
           <span>{t_i18n('Create an entity')}</span>
           {!isFromBulkRelation && (
@@ -790,7 +746,7 @@ const StixDomainPanel = ({
             />
           )}
         </Stack>
-      )}
+      }
     >
       {renderUnavailableBulkMessage()}
       <Select
@@ -805,9 +761,7 @@ const StixDomainPanel = ({
           </MenuItem>
         ))}
       </Select>
-      <div style={{ marginTop: '20px' }}>
-        {renderEntityCreationInterface()}
-      </div>
+      <div style={{ marginTop: '20px' }}>{renderEntityCreationInterface()}</div>
     </Dialog>
   );
 };
@@ -831,9 +785,7 @@ const StixDomainObjectCreation = ({
   isFromBulkRelation,
 }) => {
   const [status, setStatus] = useState({ open: false, type: null });
-  const [queryRef, loadQuery] = useQueryLoader(
-    stixDomainObjectCreationAllTypesQuery,
-  );
+  const [queryRef, loadQuery] = useQueryLoader(stixDomainObjectCreationAllTypesQuery);
   const isOpen = speeddial ? open : status.open;
   // In speed dial mode the open/close is handled by a parent
   // So we need to load only once directly
@@ -868,7 +820,9 @@ const StixDomainObjectCreation = ({
     <>
       {!speeddial && (
         <CreateEntityControlledDial
-          entityType={stixDomainObjectTypes?.length === 1 ? stixDomainObjectTypes[0] : 'Stix-Domain-Object'}
+          entityType={
+            stixDomainObjectTypes?.length === 1 ? stixDomainObjectTypes[0] : 'Stix-Domain-Object'
+          }
           onOpen={stateHandleOpen}
           onClose={() => {}}
           style={controlledDialStyles}

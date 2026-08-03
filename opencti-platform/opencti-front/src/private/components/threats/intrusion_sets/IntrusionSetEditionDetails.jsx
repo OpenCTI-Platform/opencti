@@ -4,7 +4,11 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { intrusionSetEditionOverviewFocus, intrusionSetMutationRelationAdd, intrusionSetMutationRelationDelete } from './IntrusionSetEditionOverview';
+import {
+  intrusionSetEditionOverviewFocus,
+  intrusionSetMutationRelationAdd,
+  intrusionSetMutationRelationDelete,
+} from './IntrusionSetEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -27,11 +31,7 @@ const intrusionSetMutationFieldPatch = graphql`
     $references: [String]
   ) {
     intrusionSetEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...IntrusionSetEditionDetails_intrusionSet
         ...IntrusionSet_intrusionSet
       }
@@ -40,10 +40,7 @@ const intrusionSetMutationFieldPatch = graphql`
 `;
 
 const intrusionSetEditionDetailsFocus = graphql`
-  mutation IntrusionSetEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation IntrusionSetEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     intrusionSetEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -63,10 +60,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     last_seen: Yup.date()
       .nullable()
-      .min(
-        Yup.ref('first_seen'),
-        "The last seen date can't be before first seen date",
-      )
+      .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     resource_level: Yup.string().nullable(),
     primary_motivation: Yup.string().nullable(),
@@ -75,10 +69,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     references: Yup.array(),
   };
 
-  const intrusionSetValidator = useSchemaEditionValidation(
-    'Intrusion-Set',
-    basicShape,
-  );
+  const intrusionSetValidator = useSchemaEditionValidation('Intrusion-Set', basicShape);
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,
@@ -87,22 +78,18 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     editionFocus: intrusionSetEditionOverviewFocus,
   };
 
-  const editor = useFormEditor(
-    intrusionSet,
-    enableReferences,
-    queries,
-    intrusionSetValidator,
-  );
+  const editor = useFormEditor(intrusionSet, enableReferences, queries, intrusionSetValidator);
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: intrusionSetEditionDetailsFocus,
-    variables: {
-      id: intrusionSet.id,
-      input: {
-        focusOn: name,
+  const handleChangeFocus = (name) =>
+    commitMutation({
+      mutation: intrusionSetEditionDetailsFocus,
+      variables: {
+        id: intrusionSet.id,
+        input: {
+          focusOn: name,
+        },
       },
-    },
-  });
+    });
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -110,18 +97,9 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
-      R.assoc(
-        'goals',
-        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
-      ),
+      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
+      R.assoc('goals', values.goals && values.goals.length ? R.split('\n', values.goals) : []),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -129,8 +107,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       variables: {
         id: intrusionSet.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -161,14 +138,9 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
     R.assoc(
       'secondary_motivations',
-      intrusionSet.secondary_motivations
-        ? intrusionSet.secondary_motivations
-        : [],
+      intrusionSet.secondary_motivations ? intrusionSet.secondary_motivations : [],
     ),
-    R.assoc(
-      'goals',
-      R.join('\n', intrusionSet.goals ? intrusionSet.goals : []),
-    ),
+    R.assoc('goals', R.join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
     R.assoc('references', []),
     R.pick([
       'references',
@@ -187,14 +159,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       validationSchema={intrusionSetValidator}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={intrusionSet} />
           <Field
@@ -206,9 +171,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
             }}
           />
           <Field
@@ -221,9 +184,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
             }}
           />
           <OpenVocabField
@@ -272,9 +233,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="goals" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="goals" />}
           />
           {enableReferences && (
             <CommitMessage

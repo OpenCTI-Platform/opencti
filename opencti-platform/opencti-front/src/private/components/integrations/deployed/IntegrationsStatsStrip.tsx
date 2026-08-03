@@ -3,7 +3,16 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
-import { DnsOutlined, DownloadOutlined, EngineeringOutlined, RocketLaunchOutlined, SpeedOutlined, StorageOutlined, SwapVertOutlined, UploadOutlined } from '@mui/icons-material';
+import {
+  DnsOutlined,
+  DownloadOutlined,
+  EngineeringOutlined,
+  RocketLaunchOutlined,
+  SpeedOutlined,
+  StorageOutlined,
+  SwapVertOutlined,
+  UploadOutlined,
+} from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import { interval } from 'rxjs';
 import { IntegrationsStatsStripQuery } from './__generated__/IntegrationsStatsStripQuery.graphql';
@@ -215,13 +224,17 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
       <Tooltip title={t_i18n('Read operations')}>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <DownloadOutlined sx={{ fontSize: 11, color: theme.palette.primary.main }} />
-          <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>{safeValue(metrics.readOperations, '/s')}</Box>
+          <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>
+            {safeValue(metrics.readOperations, '/s')}
+          </Box>
         </Stack>
       </Tooltip>
       <Tooltip title={t_i18n('Write operations')}>
         <Stack direction="row" alignItems="center" gap={0.5}>
           <UploadOutlined sx={{ fontSize: 11, color: theme.palette.primary.main }} />
-          <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>{safeValue(metrics.writeOperations, '/s')}</Box>
+          <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>
+            {safeValue(metrics.writeOperations, '/s')}
+          </Box>
         </Stack>
       </Tooltip>
     </Stack>
@@ -236,11 +249,36 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
       label: t_i18n('Deployed integrations'),
       to: '/dashboard/integrations/deployed',
     },
-    { id: 'queued', icon: DnsOutlined, value: safeValue(metrics.queuedBundles), label: t_i18n('Queued bundles') },
-    { id: 'workers', icon: EngineeringOutlined, value: safeValue(metrics.consumers), label: t_i18n('Connected workers') },
-    { id: 'processed', icon: SpeedOutlined, value: safeValue(metrics.ackRate, '/s'), label: t_i18n('Bundles processed') },
-    { id: 'operations', icon: SwapVertOutlined, value: operationsValue, label: t_i18n('Operations') },
-    { id: 'documents', icon: StorageOutlined, value: safeValue(metrics.docsCount), label: t_i18n('Total documents') },
+    {
+      id: 'queued',
+      icon: DnsOutlined,
+      value: safeValue(metrics.queuedBundles),
+      label: t_i18n('Queued bundles'),
+    },
+    {
+      id: 'workers',
+      icon: EngineeringOutlined,
+      value: safeValue(metrics.consumers),
+      label: t_i18n('Connected workers'),
+    },
+    {
+      id: 'processed',
+      icon: SpeedOutlined,
+      value: safeValue(metrics.ackRate, '/s'),
+      label: t_i18n('Bundles processed'),
+    },
+    {
+      id: 'operations',
+      icon: SwapVertOutlined,
+      value: operationsValue,
+      label: t_i18n('Operations'),
+    },
+    {
+      id: 'documents',
+      icon: StorageOutlined,
+      value: safeValue(metrics.docsCount),
+      label: t_i18n('Total documents'),
+    },
   ];
 
   return (
@@ -289,7 +327,8 @@ const StatsStripContent = ({ queryRef, deployedCount }: StatsStripContentProps) 
     ? Number(data.elasticSearchMetrics.search.query_total)
     : null;
   const currentWriteOperations = data.elasticSearchMetrics?.indexing
-    ? Number(data.elasticSearchMetrics.indexing.index_total) + Number(data.elasticSearchMetrics.indexing.delete_total)
+    ? Number(data.elasticSearchMetrics.indexing.index_total) +
+      Number(data.elasticSearchMetrics.indexing.delete_total)
     : null;
 
   // Read/write totals are monotonic counters: the per-second rate is derived
@@ -326,7 +365,9 @@ interface IntegrationsStatsStripProps {
 // the MODULES capability still get the ribbon shape with the deployed count.
 const IntegrationsStatsStrip = ({ deployedCount }: IntegrationsStatsStripProps) => {
   const isConnectorReader = useGranted([MODULES]);
-  const [queryRef, loadQuery] = useQueryLoader<IntegrationsStatsStripQuery>(integrationsStatsStripQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IntegrationsStatsStripQuery>(
+    integrationsStatsStripQuery,
+  );
 
   useEffect(() => {
     if (!isConnectorReader) return undefined;

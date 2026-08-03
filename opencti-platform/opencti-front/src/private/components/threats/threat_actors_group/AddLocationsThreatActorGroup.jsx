@@ -9,7 +9,9 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import LocationCreation from '../../common/location/LocationCreation';
-import AddLocationsThreatActorGroupLines, { addLocationsThreatActorGroupLinesQuery } from './AddLocationsThreatActorGroupLines';
+import AddLocationsThreatActorGroupLines, {
+  addLocationsThreatActorGroupLinesQuery,
+} from './AddLocationsThreatActorGroupLines';
 import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
@@ -42,19 +44,11 @@ class AddLocationsThreatActorGroup extends Component {
     const paginationOptions = {
       search: this.state.search,
     };
-    const updater = (store) => insertNode(
-      store,
-      'Pagination_threatActorGroup_locations',
-      paginationOptions,
-      'locationAdd',
-    );
+    const updater = (store) =>
+      insertNode(store, 'Pagination_threatActorGroup_locations', paginationOptions, 'locationAdd');
     return (
       <>
-        <IconButton
-          color="primary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-        >
+        <IconButton color="primary" aria-label="Add" onClick={this.handleOpen.bind(this)}>
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -62,7 +56,7 @@ class AddLocationsThreatActorGroup extends Component {
           onClose={this.handleClose.bind(this)}
           title={t('Add locations')}
           subHeader={{
-            right: [(
+            right: [
               <LocationCreation
                 display={this.state.open}
                 contextual={true}
@@ -70,15 +64,15 @@ class AddLocationsThreatActorGroup extends Component {
                 paginationOptions={paginationOptions}
                 updater={updater}
                 key="rightButton"
-              />
-            )],
-            left: [(
+              />,
+            ],
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="leftInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -98,7 +92,6 @@ class AddLocationsThreatActorGroup extends Component {
             }}
           />
         </Drawer>
-
       </>
     );
   }
@@ -111,7 +104,4 @@ AddLocationsThreatActorGroup.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddLocationsThreatActorGroup);
+export default compose(inject18n, withStyles(styles))(AddLocationsThreatActorGroup);

@@ -27,10 +27,11 @@ const CustomChip = ({ color, ...props }: CustomChipProps) => {
       {...props}
       color={isMuiColor ? (color as ChipProps['color']) : undefined}
       sx={{
-        ...(color && !isMuiColor && {
-          borderColor: color,
-          color,
-        }),
+        ...(color &&
+          !isMuiColor && {
+            borderColor: color,
+            color,
+          }),
         ...props.sx,
       }}
     />
@@ -47,7 +48,7 @@ const IngestionCatalogChip = ({
 }: IngestionCatalogChipProps) => {
   const theme = useTheme<Theme>();
 
-  const tooltipContent = withTooltip ? (tooltipLabel || label) : undefined;
+  const tooltipContent = withTooltip ? tooltipLabel || label : undefined;
 
   return (
     <Tooltip title={tooltipContent}>

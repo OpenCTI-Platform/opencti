@@ -132,12 +132,10 @@ const InvestigationExpandFormContent = ({
   // Nodes and edges we have in our graph.
   // // Used to compute the difference between total count returned by
   // the query and what is already displayed.
-  const [existingTargets, setExistingTargets] = useState<
-    Map<string, Map<string, number>>
-  >(new Map());
-  const [existingRels, setExistingRels] = useState<
-    Map<string, Map<string, string[]>>
-  >(new Map());
+  const [existingTargets, setExistingTargets] = useState<Map<string, Map<string, number>>>(
+    new Map(),
+  );
+  const [existingRels, setExistingRels] = useState<Map<string, Map<string, string[]>>>(new Map());
 
   // How many entity types and rel types we already have in the graph.
   useEffect(() => {
@@ -246,26 +244,23 @@ const InvestigationExpandFormContent = ({
         .map((ref) => ref.name.toLowerCase()),
     );
 
-    const nonNullDistribution = (
-      distributionRel.stixRelationshipsDistribution ?? []
-    )
+    const nonNullDistribution = (distributionRel.stixRelationshipsDistribution ?? [])
       // Use of flatMap() to do both filter() and map() in one step.
-      .flatMap((rel) => (rel
-        ? [
-            {
-              label: rel.label.toLowerCase(),
-              // Decrease from the count of already displayed elements.
-              // toLowerCase() because relationship names are pascalized
-              // in elAggregationRelationsCount().
-              value:
-                  (rel.value ?? 0)
-                  - (
-                    existingRelsSelected.get(rel.label.toLowerCase())
-                    ?? new Set()
-                  ).size,
-            },
-          ]
-        : []))
+      .flatMap((rel) =>
+        rel
+          ? [
+              {
+                label: rel.label.toLowerCase(),
+                // Decrease from the count of already displayed elements.
+                // toLowerCase() because relationship names are pascalized
+                // in elAggregationRelationsCount().
+                value:
+                  (rel.value ?? 0) -
+                  (existingRelsSelected.get(rel.label.toLowerCase()) ?? new Set()).size,
+              },
+            ]
+          : [],
+      )
       // Remove from the list relations with nothing to add and relations ref involving the user
       .filter(({ label, value }) => value > 0 && !relationRefsWithUser?.has(label.replace('-', '')))
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
@@ -301,25 +296,21 @@ const InvestigationExpandFormContent = ({
 
     // Merge both 'from' relationships and 'to' relationships.
     const distribution: { label: string; value: number }[] = [];
-    [distributionFrom, distributionTo].forEach(
-      ({ stixRelationshipsDistribution }) => {
-        stixRelationshipsDistribution?.forEach((newTarget) => {
-          if (newTarget) {
-            const target = distribution.find(
-              (item) => item.label === newTarget.label,
-            );
-            if (target) {
-              target.value += newTarget.value ?? 0;
-            } else {
-              distribution.push({
-                label: newTarget.label,
-                value: newTarget.value ?? 0,
-              });
-            }
+    [distributionFrom, distributionTo].forEach(({ stixRelationshipsDistribution }) => {
+      stixRelationshipsDistribution?.forEach((newTarget) => {
+        if (newTarget) {
+          const target = distribution.find((item) => item.label === newTarget.label);
+          if (target) {
+            target.value += newTarget.value ?? 0;
+          } else {
+            distribution.push({
+              label: newTarget.label,
+              value: newTarget.value ?? 0,
+            });
           }
-        });
-      },
-    );
+        }
+      });
+    });
 
     const graphDistribution = distribution
       .map((target) => ({
@@ -327,9 +318,7 @@ const InvestigationExpandFormContent = ({
         // Decrease from the count of already displayed elements.
         // toLowerCase() because relationship names are pascalized
         // in elAggregationRelationsCount().
-        value:
-          target.value
-          - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
+        value: target.value - (existingTargetsSelected.get(target.label.toLowerCase()) ?? 0),
       }))
       // Remove from the list entities with nothing to add and entities that are not knowledge
       .filter(({ label, value }) => label !== 'User' && value > 0)
@@ -350,13 +339,7 @@ const InvestigationExpandFormContent = ({
         };
       }),
     );
-  }, [
-    distributionFrom,
-    distributionTo,
-    selectedNodes,
-    existingTargets,
-    setTargets,
-  ]);
+  }, [distributionFrom, distributionTo, selectedNodes, existingTargets, setTargets]);
 
   return (
     <Formik<FormData>
@@ -399,10 +382,7 @@ const InvestigationExpandFormContent = ({
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Expand')}
               </Button>
             </DialogActions>
@@ -418,19 +398,22 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
   const classes = useStyles();
 
   // Number of relations grouped by type of relation.
-  const [distributionRelQueryRef, loadDistributionRelQuery] = useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
-    investigationExpandFormRelDistributionQuery,
-  );
+  const [distributionRelQueryRef, loadDistributionRelQuery] =
+    useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
+      investigationExpandFormRelDistributionQuery,
+    );
 
   // Number of targets source of a relation grouped by entity type.
-  const [distributionFromQueryRef, loadDistributionFromQuery] = useQueryLoader<InvestigationExpandFormTargetsDistributionFromQuery>(
-    investigationExpandFormTargetsDistributionFromQuery,
-  );
+  const [distributionFromQueryRef, loadDistributionFromQuery] =
+    useQueryLoader<InvestigationExpandFormTargetsDistributionFromQuery>(
+      investigationExpandFormTargetsDistributionFromQuery,
+    );
 
   // Number of targets destination of a relation grouped by entity type.
-  const [distributionToQueryRef, loadDistributionToQuery] = useQueryLoader<InvestigationExpandFormTargetsDistributionToQuery>(
-    investigationExpandFormTargetsDistributionToQuery,
-  );
+  const [distributionToQueryRef, loadDistributionToQuery] =
+    useQueryLoader<InvestigationExpandFormTargetsDistributionToQuery>(
+      investigationExpandFormTargetsDistributionToQuery,
+    );
 
   useEffect(() => {
     const ids = Array.from(props.selectedNodes).map((node) => node.id);
@@ -445,20 +428,18 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
     </div>
   );
 
-  return distributionRelQueryRef
-    && distributionFromQueryRef
-    && distributionToQueryRef ? (
-        <Suspense fallback={Fallback}>
-          <InvestigationExpandFormContent
-            {...props}
-            distributionRelQueryRef={distributionRelQueryRef}
-            distributionFromQueryRef={distributionFromQueryRef}
-            distributionToQueryRef={distributionToQueryRef}
-          />
-        </Suspense>
-      ) : (
-        Fallback
-      );
+  return distributionRelQueryRef && distributionFromQueryRef && distributionToQueryRef ? (
+    <Suspense fallback={Fallback}>
+      <InvestigationExpandFormContent
+        {...props}
+        distributionRelQueryRef={distributionRelQueryRef}
+        distributionFromQueryRef={distributionFromQueryRef}
+        distributionToQueryRef={distributionToQueryRef}
+      />
+    </Suspense>
+  ) : (
+    Fallback
+  );
 };
 
 export default InvestigationExpandForm;
