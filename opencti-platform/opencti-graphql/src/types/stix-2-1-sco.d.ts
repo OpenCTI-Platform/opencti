@@ -548,7 +548,12 @@ export interface StixURL extends StixCyberObject {
 // user_id, credential, account_login, account_type, display_name, is_service_account, is_privileged,
 // can_escalate_privs, is_disabled, account_created, account_expires, credential_last_changed,
 // account_first_login, account_last_login
+// x_opencti_has_login, x_opencti_has_password (OpenCTI SCO extension)
 // unix-account-ext
+export interface UserAccountExtension extends CyberObjectExtension {
+  has_login: boolean; // optional
+  has_password: boolean; // optional
+}
 export interface StixUserAccount extends StixCyberObject {
   user_id: string; // optional
   credential: string; // optional
@@ -566,7 +571,7 @@ export interface StixUserAccount extends StixCyberObject {
   account_last_login: StixDate; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO]?: CyberObjectExtension;
+    [STIX_EXT_OCTI_SCO]?: UserAccountExtension;
     // UNIX™ Account Extension
     'unix-account-ext'?: {
       gid: number; // optional

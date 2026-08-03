@@ -1116,6 +1116,8 @@ export const convertUserAccountToStix = (instance: StoreCyberObservable): SCO.St
     credential_last_changed: convertToStixDate(instance.credential_last_changed),
     account_first_login: convertToStixDate(instance.account_first_login),
     account_last_login: convertToStixDate(instance.account_last_login),
+    x_opencti_has_login: instance.x_opencti_has_login,
+    x_opencti_has_password: instance.x_opencti_has_password,
   };
 };
 

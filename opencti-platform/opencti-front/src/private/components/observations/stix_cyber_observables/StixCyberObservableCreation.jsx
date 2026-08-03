@@ -903,13 +903,16 @@ const StixCyberObservableCreation = ({
                             );
                           }
                           if (includes(attribute.value, booleanAttributes)) {
+                            const fieldLabel = attribute.value === 'x_opencti_has_login' ? 'Has login'
+                              : attribute.value === 'x_opencti_has_password' ? 'Has password'
+                              : attribute.value;
                             return (
                               <Field
                                 component={SwitchField}
                                 type="checkbox"
                                 key={attribute.value}
                                 name={attribute.value}
-                                label={attribute.value}
+                                label={t_i18n(fieldLabel)}
                                 fullWidth={true}
                                 containerstyle={{ marginTop: 20 }}
                               />

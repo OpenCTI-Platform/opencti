@@ -145,6 +145,8 @@ const booleanAttributes = [
   'can_escalate_privs',
   'aslr_enabled',
   'dep_enabled',
+  'x_opencti_has_login',
+  'x_opencti_has_password',
 ];
 
 const multipleAttributes = [

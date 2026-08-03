@@ -459,13 +459,16 @@ const StixCyberObservableEditionOverviewComponent = ({
                       );
                     }
                     if (includes(attribute.value, booleanAttributes)) {
+                      const fieldLabel = attribute.value === 'x_opencti_has_login' ? 'Has login'
+                        : attribute.value === 'x_opencti_has_password' ? 'Has password'
+                        : attribute.value;
                       return (
                         <Field
                           component={SwitchField}
                           type="checkbox"
                           key={attribute.value}
                           name={attribute.value}
-                          label={attribute.value}
+                          label={t_i18n(fieldLabel)}
                           containerstyle={{ marginTop: 20 }}
                           onChange={handleSubmitField}
                         />
@@ -747,6 +750,8 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           credential_last_changed
           account_first_login
           account_last_login
+          x_opencti_has_login
+          x_opencti_has_password
         }
         ... on WindowsRegistryKey {
           attribute_key

@@ -218,6 +218,8 @@ const stixCyberObservableDetailsFragment = graphql`
       credential_last_changed
       account_first_login
       account_last_login
+      x_opencti_has_login
+      x_opencti_has_password
     }
     ... on WindowsRegistryKey {
       attribute_key
@@ -513,9 +515,15 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
             const finalValue = attributeToReadableValue(value, key);
 
+            const formatLabel = (attrKey: string) => {
+              if (attrKey === 'x_opencti_has_login') return 'Has login';
+              if (attrKey === 'x_opencti_has_password') return 'Has password';
+              return attrKey.replace('attribute_', '');
+            };
+
             return (
               <Grid key={key} size={6}>
-                <LabelItemCopy label={t_i18n(key.replace('attribute_', ''))} value={finalValue} />
+                <LabelItemCopy label={t_i18n(formatLabel(key))} value={finalValue} />
               </Grid>
             );
           })}

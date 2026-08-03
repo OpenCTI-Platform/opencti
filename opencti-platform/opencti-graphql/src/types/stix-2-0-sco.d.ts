@@ -209,6 +209,8 @@ export interface StixUserAccount extends StixCyberObject {
   credential_last_changed: StixDate;
   account_first_login: StixDate;
   account_last_login: StixDate;
+  x_opencti_has_login: boolean;
+  x_opencti_has_password: boolean;
 }
 
 // Windows Registry Key

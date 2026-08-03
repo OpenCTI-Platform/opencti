@@ -1114,8 +1114,9 @@ const convertUserAgentToStix = (instance: StoreCyberObservable, type: string): S
 };
 const convertUserAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAccount => {
   assertType(ENTITY_USER_ACCOUNT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
   return {
-    ...buildStixCyberObservable(instance),
+    ...stixCyberObject,
     user_id: instance.user_id,
     credential: instance.credential,
     account_login: instance.account_login,
@@ -1130,6 +1131,14 @@ const convertUserAccountToStix = (instance: StoreCyberObservable, type: string):
     credential_last_changed: convertToStixDate(instance.credential_last_changed),
     account_first_login: convertToStixDate(instance.account_first_login),
     account_last_login: convertToStixDate(instance.account_last_login),
+    extensions: {
+      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI_SCO]: cleanObject({
+        ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
+        has_login: instance.x_opencti_has_login,
+        has_password: instance.x_opencti_has_password,
+      }),
+    },
   };
 };
 const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixWindowsRegistryKey => {
