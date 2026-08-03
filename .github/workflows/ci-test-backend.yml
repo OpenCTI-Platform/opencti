@@ -347,6 +347,21 @@ jobs:
             yarn lint
         '
 
+    # Non-blocking preview while migrating from ESLint to Oxlint/Oxfmt (see CONTRIBUTING.md)
+    - name: Backend oxlint/oxfmt (non-blocking)
+      continue-on-error: true
+      run: |
+        docker run --name backend-oxlint \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e PYTHONUNBUFFERED=1  \
+          filigran/builder:${{ github.sha }} \
+          sh -c 'set -eux
+            cd /home/workspace/opencti-platform/opencti-graphql
+            yarn lint:oxlint
+            yarn fmt:check
+        '
+
     - name: Start unit tests (aka yarn test:ci-unit)
       if: '!cancelled()'
       run: |

@@ -6,6 +6,7 @@
     "module": "es2022",
     "lib": ["es2023"],
     "strict": true,
+    "noEmit": true,
     "allowJs": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,

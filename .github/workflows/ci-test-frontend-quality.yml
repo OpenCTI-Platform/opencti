@@ -52,6 +52,22 @@ jobs:
             yarn lint
             '
 
+    # Non-blocking preview while migrating from ESLint to Oxlint/Oxfmt (see CONTRIBUTING.md)
+    - name: Frontend oxlint/oxfmt (non-blocking)
+      if: '!cancelled()'
+      continue-on-error: true
+      run: |
+        docker run  \
+          --name frontend-oxlint \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine3.23 \
+          sh -c 'set -eux
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            yarn lint:oxlint
+            yarn fmt:check
+            '
+
     - name: Frontend tests
       if: '!cancelled()'
       run: |
