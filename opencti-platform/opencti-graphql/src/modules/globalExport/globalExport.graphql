@@ -1,0 +1,3 @@
+extend type Query {
+  globalConfigurationExport(categories: [String!]!): String! @auth(for: [BYPASS])
+}
