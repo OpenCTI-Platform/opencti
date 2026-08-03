@@ -56,9 +56,9 @@ roles on the platform:
 
     Use SSD-backed storage for ElasticSearch / OpenSearch in production.
     For large or extra-large deployments, NVMe storage is recommended. OpenCTI
-    queries current and historical knowledge data, so storage performance affects
-    both ingestion and analysis. Slower disks or slow network-attached storage can
-    limit indexing throughput before CPU or RAM are saturated.
+    queries current and historical knowledge data (no hot/warm/cold tiering), so
+    storage performance affects both ingestion and analysis. Slower disks or slow
+    network-attached storage can limit indexing throughput before CPU or RAM are saturated.
 
     For more information about indices that can grow rapidly, see the
     [indices and rollover policies](advanced/rollover.md).
