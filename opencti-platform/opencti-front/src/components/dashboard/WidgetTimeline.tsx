@@ -27,6 +27,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
   const { fldt } = useFormatter();
   const theme = useTheme<Theme>();
 
+
   return (
     <div
       id="container"
@@ -75,7 +76,7 @@ const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelinePr
                   <Typography variant="h2">
                     {getMainRepresentative(value)}
                   </Typography>
-                  <div style={{ marginTop: -5, color: '#a8a8a8' }}>
+                  <div style={{ marginTop: -5, color: theme.palette.text.tertiary }}>
                     <MarkdownDisplay
                       content={getSecondaryRepresentative(value)}
                       limit={150}
