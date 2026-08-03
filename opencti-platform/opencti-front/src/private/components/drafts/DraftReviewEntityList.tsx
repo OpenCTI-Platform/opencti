@@ -41,16 +41,16 @@ const draftReviewEntitiesLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...DraftReviewEntityList_data
-    @arguments(
-      draftId: $draftId
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      draftOperation: $draftOperation
-      search: $search
-      filters: $filters
-    )
+      @arguments(
+        draftId: $draftId
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        draftOperation: $draftOperation
+        search: $search
+        filters: $filters
+      )
   }
 `;
 
@@ -130,18 +130,21 @@ const DraftReviewEntityList: FunctionComponent<DraftReviewEntityListProps> = ({
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftReviewEntityListPaginationQuery$variables>(getLocalStorageKey(draftId), initialValues);
+  } = usePaginationLocalStorage<DraftReviewEntityListPaginationQuery$variables>(
+    getLocalStorageKey(draftId),
+    initialValues,
+  );
 
-  const {
-    filters,
-    searchTerm,
-  } = viewStorage;
+  const { filters, searchTerm } = viewStorage;
 
   React.useEffect(() => {
     onQueryChange?.();
   }, [searchTerm, filters, onQueryChange]);
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters, { excludedEntityTypesParam: 'Container', draftId });
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters, {
+    excludedEntityTypesParam: 'Container',
+    draftId,
+  });
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -176,7 +179,14 @@ const DraftReviewEntityList: FunctionComponent<DraftReviewEntityListProps> = ({
       isSortable: false,
       render: (node: DraftReviewEntityList_node$data) => (
         <Tooltip title={node.representative?.main ?? node.id}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+            }}
+          >
             {node.representative?.main ?? node.id}
           </span>
         </Tooltip>
@@ -190,8 +200,9 @@ const DraftReviewEntityList: FunctionComponent<DraftReviewEntityListProps> = ({
         <DataTable
           rootRef={rootRef}
           dataColumns={dataColumns}
-          resolvePath={(data: DraftReviewEntityList_data$data) => data.draftWorkspaceEntities?.edges
-            ?.map((n) => n?.node)}
+          resolvePath={(data: DraftReviewEntityList_data$data) =>
+            data.draftWorkspaceEntities?.edges?.map((n) => n?.node)
+          }
           storageKey={getLocalStorageKey(draftId)}
           initialValues={initialValues}
           contextFilters={contextFilters}

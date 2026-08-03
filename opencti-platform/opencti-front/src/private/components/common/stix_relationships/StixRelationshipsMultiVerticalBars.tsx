@@ -49,10 +49,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
   onMounted,
 }: StixRelationshipsMultiVerticalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsMultiVerticalBarsTimeSeriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsMultiVerticalBarsTimeSeriesQuery, queryRef);
 
   if (!data?.stixRelationshipsMultiTimeSeries) {
     return <WidgetNoData />;
@@ -63,15 +60,18 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
         const serie = data.stixRelationshipsMultiTimeSeries?.[i];
         return {
           name: selection.label || t_i18n('Number of entities'),
-          data: serie?.data?.flatMap((entry) => {
-            if (!entry) {
-              return [];
-            }
-            return [{
-              x: new Date(entry.date),
-              y: entry.value,
-            }];
-          }) ?? [],
+          data:
+            serie?.data?.flatMap((entry) => {
+              if (!entry) {
+                return [];
+              }
+              return [
+                {
+                  x: new Date(entry.date),
+                  y: entry.value,
+                },
+              ];
+            }) ?? [],
         };
       })}
       interval={parameters?.interval}
@@ -88,7 +88,10 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'] => {
   return buildRelationshipMultiWidgetBaseQueryVariables(
-    resolvedDataSelection, config, parameters) as StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'];
+    resolvedDataSelection,
+    config,
+    parameters,
+  ) as StixRelationshipsMultiVerticalBarsTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiVerticalBarsProps {
@@ -116,7 +119,13 @@ const StixRelationshipsMultiVerticalBars = ({
 }: StixRelationshipsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

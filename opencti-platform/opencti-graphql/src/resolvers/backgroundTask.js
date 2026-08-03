@@ -1,4 +1,9 @@
-import { deleteTask, createQueryTask, findBackgroundTaskPaginated, findById } from '../domain/backgroundTask';
+import {
+  deleteTask,
+  createQueryTask,
+  findBackgroundTaskPaginated,
+  findById,
+} from '../domain/backgroundTask';
 import { createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { loadCreator } from '../database/members';
@@ -23,7 +28,9 @@ const taskResolvers = {
     },
     initiator: (task, _, context) => loadCreator(context, context.user, task.initiator_id),
     work: (task, _, context) => {
-      return task.work_id ? context.batch.idsBatchLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK }) : undefined;
+      return task.work_id
+        ? context.batch.idsBatchLoader.load({ id: task.work_id, type: ENTITY_TYPE_WORK })
+        : undefined;
     },
   },
 };

@@ -12,9 +12,7 @@ import useApiMutation from '../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../relay/environment';
 
 export const forcePasswordChangeMutation = graphql`
-  mutation ForcePasswordChangeFormMutation(
-    $input: [EditInput]!
-  ) {
+  mutation ForcePasswordChangeFormMutation($input: [EditInput]!) {
     meEdit(input: $input) {
       id
       password_valid_until
@@ -22,12 +20,13 @@ export const forcePasswordChangeMutation = graphql`
   }
 `;
 
-const passwordValidation = (t: (v: string) => string) => Yup.object().shape({
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), undefined], t('The values do not match'))
-    .required(t('This field is required')),
-});
+const passwordValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    password: Yup.string().required(t('This field is required')),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), undefined], t('The values do not match'))
+      .required(t('This field is required')),
+  });
 
 interface ForcePasswordChangeFormProps {
   onSuccess: () => void;
@@ -48,7 +47,11 @@ const ForcePasswordChangeForm = ({
 
   const onSubmit = (
     values: { password: string; confirmation: string },
-    { setSubmitting, resetForm, setErrors }: {
+    {
+      setSubmitting,
+      resetForm,
+      setErrors,
+    }: {
       setSubmitting: (isSubmitting: boolean) => void;
       resetForm: () => void;
       setErrors: (errors: Record<string, string>) => void;
@@ -114,10 +117,7 @@ const ForcePasswordChangeForm = ({
             justifyContent={secondaryAction ? 'space-between' : 'flex-end'}
           >
             {secondaryAction}
-            <Button
-              type="submit"
-              disabled={isSubmitting || !isValid}
-            >
+            <Button type="submit" disabled={isSubmitting || !isValid}>
               {submitLabel ?? t_i18n('Change your password')}
             </Button>
           </Stack>

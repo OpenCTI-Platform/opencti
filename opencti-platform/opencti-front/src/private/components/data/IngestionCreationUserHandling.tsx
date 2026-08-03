@@ -6,9 +6,7 @@ import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import CreatorField from '@components/common/form/CreatorField';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import {
-  IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery,
-} from '@components/data/__generated__/IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery.graphql';
+import { IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery } from '@components/data/__generated__/IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery.graphql';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { type FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
@@ -42,13 +40,21 @@ export interface BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
+export const IngestionCreationUserHandlingComponent = ({
+  queryRef,
+  default_confidence_level,
+  labelTag,
+  isSensitive,
+}: IngestionCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const { values, setFieldValue, validateField } = useFormikContext<BasicUserHandlingValues>();
   const [displayDefaultGroupWarning, setDisplayDefaultGroupWarning] = useState<boolean>(false);
   const [isConfidenceLevelEditable, setIsConfidenceLevelEditable] = React.useState(!isSensitive);
-  const data = usePreloadedQuery(ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery, queryRef);
+  const data = usePreloadedQuery(
+    ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery,
+    queryRef,
+  );
 
   useEffect(() => {
     const userName = values.display_name ?? values.name;
@@ -61,10 +67,7 @@ export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confi
   }, [values.display_name, values.name, values.automatic_user, labelTag]);
 
   useEffect(() => {
-    setFieldValue(
-      'confidence_level',
-      default_confidence_level,
-    );
+    setFieldValue('confidence_level', default_confidence_level);
     if (values.automatic_user !== false && data.defaultIngestionGroupCount === 0) {
       setDisplayDefaultGroupWarning(true);
     } else {
@@ -96,13 +99,17 @@ export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confi
         />
         {displayDefaultGroupWarning && values.automatic_user && (
           <Box sx={{ width: '100%', marginTop: 3 }}>
-            <Alert
-              severity="warning"
-              variant="outlined"
-              sx={{ padding: '0px 10px 0px 10px' }}
-            >
-              {t_i18n('User cannot be created automatically for this connector since no default group has been defined.')} {' '}
-              {setAccess ? <Link to="/dashboard/settings/accesses/policies">{t_i18n('Click here to add one')}</Link> : <Box>{t_i18n('Please contact your admin')}</Box>}
+            <Alert severity="warning" variant="outlined" sx={{ padding: '0px 10px 0px 10px' }}>
+              {t_i18n(
+                'User cannot be created automatically for this connector since no default group has been defined.',
+              )}{' '}
+              {setAccess ? (
+                <Link to="/dashboard/settings/accesses/policies">
+                  {t_i18n('Click here to add one')}
+                </Link>
+              ) : (
+                <Box>{t_i18n('Please contact your admin')}</Box>
+              )}
             </Alert>
           </Box>
         )}
@@ -119,11 +126,7 @@ export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confi
           {isSensitive && (
             <FormControlLabel
               control={<Switch onChange={handleEditConfidence} />}
-              label={(
-                <>
-                  {t_i18n('Edit confidence level')}
-                </>
-              )}
+              label={<>{t_i18n('Edit confidence level')}</>}
             />
           )}
           <ConfidenceField
@@ -138,7 +141,11 @@ export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confi
   );
 };
 
-const IngestionCreationUserHandling = ({ default_confidence_level, labelTag, isSensitive = false }: IngestionCreationUserHandlingProps) => {
+const IngestionCreationUserHandling = ({
+  default_confidence_level,
+  labelTag,
+  isSensitive = false,
+}: IngestionCreationUserHandlingProps) => {
   const queryRef = useQueryLoading<IngestionCreationUserHandlingDefaultGroupForIngestionUsersQuery>(
     ingestionCreationUserHandlingDefaultGroupForIngestionUsersQuery,
   );

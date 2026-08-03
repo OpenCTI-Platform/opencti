@@ -71,30 +71,33 @@ const ContainerStixCoreObjectLineComponent = (props) => {
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-  const mappedString = Object.keys(contentMappingData).find((key) => contentMappingData[key] === node.standard_id);
+  const mappedString = Object.keys(contentMappingData).find(
+    (key) => contentMappingData[key] === node.standard_id,
+  );
   return (
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={isOnlyThroughInference ? (
-        <Tooltip title={t_i18n('Inferred knowledge')}>
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-        </Tooltip>
-      ) : (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerStixCoreObjectPopover
-            containerId={containerId}
-            toId={node.id}
-            toStandardId={node.standard_id}
-            relationshipType="object"
-            paginationKey="Pagination_objects"
-            paginationOptions={paginationOptions}
-            contentMappingData={contentMappingData}
-            mapping={contentMappingCount[mappedString]}
-            enableReferences={enableReferences}
-          />
-        </Security>
-      )
+      secondaryAction={
+        isOnlyThroughInference ? (
+          <Tooltip title={t_i18n('Inferred knowledge')}>
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ContainerStixCoreObjectPopover
+              containerId={containerId}
+              toId={node.id}
+              toStandardId={node.standard_id}
+              relationshipType="object"
+              paginationKey="Pagination_objects"
+              paginationOptions={paginationOptions}
+              contentMappingData={contentMappingData}
+              mapping={contentMappingCount[mappedString]}
+              enableReferences={enableReferences}
+            />
+          </Security>
+        )
       }
     >
       <ListItemButton
@@ -106,58 +109,40 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                 <ItemEntityType entityType={node.entity_type} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
                 {node.representative?.main}
-                {node.draftVersion && (<DraftChip />)}
+                {node.draftVersion && <DraftChip />}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.createdBy.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
                 {node.createdBy?.name ?? EMPTY_VALUE}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
                 {fd(node.created_at)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
                 <ItemMarkings
                   variant="inList"
                   markingDefinitions={node.objectMarking ?? []}
                   limit={1}
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.mapping.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.mapping.width }}>
                 <Chip
                   classes={{ root: classes.chipInList }}
                   label={
-                    (mappedString && contentMappingCount[mappedString])
+                    mappedString && contentMappingCount[mappedString]
                       ? contentMappingCount[mappedString]
                       : '0'
                   }
                 />
               </div>
             </>
-          )}
+          }
         />
       </ListItemButton>
     </ListItem>
@@ -210,7 +195,7 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <IconButton
           aria-label={t_i18n('Open menu')}
           classes={classes.itemIconDisabled}
@@ -219,30 +204,21 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
         >
           <MoreVert />
         </IconButton>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

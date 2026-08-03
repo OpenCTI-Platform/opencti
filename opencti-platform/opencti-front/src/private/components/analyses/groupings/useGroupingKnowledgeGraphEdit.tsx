@@ -11,9 +11,7 @@ const groupingKnowledgeGraphEdit = graphql`
 `;
 
 const useGroupingKnowledgeGraphEdit = () => {
-  return useApiMutation<useGroupingKnowledgeGraphEditMutation>(
-    groupingKnowledgeGraphEdit,
-  );
+  return useApiMutation<useGroupingKnowledgeGraphEditMutation>(groupingKnowledgeGraphEdit);
 };
 
 export default useGroupingKnowledgeGraphEdit;

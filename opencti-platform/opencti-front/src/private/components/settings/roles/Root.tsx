@@ -12,7 +12,10 @@ import Role from './Role';
 import { groupsSearchQuery } from '../Groups';
 import { RootRoleQuery } from './__generated__/RootRoleQuery.graphql';
 import { GroupsSearchQuery } from '../__generated__/GroupsSearchQuery.graphql';
-import useGranted, { SETTINGS_SETACCESSES, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -60,18 +63,12 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   const handleCloseDelete = () => setOpenDelete(false);
 
   const { isAllowed, isSensitive } = useSensitiveModifications('roles', role?.standard_id);
-  const roleEditionData = useLazyLoadQuery<RootRoleEditionQuery>(
-    roleEditionQuery,
-    { id: roleId },
-  );
+  const roleEditionData = useLazyLoadQuery<RootRoleEditionQuery>(roleEditionQuery, { id: roleId });
 
-  const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(
-    groupsSearchQuery,
-    {
-      groupsOrderBy: 'name',
-      groupsOrderMode: 'asc',
-    },
-  );
+  const groupsQueryRef = useQueryLoading<GroupsSearchQuery>(groupsSearchQuery, {
+    groupsOrderBy: 'name',
+    groupsOrderMode: 'asc',
+  });
 
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
@@ -87,9 +84,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             ]}
           />
           <Stack direction="row" alignItems="center" paddingRight="200px" marginBottom={3}>
-            <TitleMainEntity sx={{ flex: 1 }}>
-              {role.name}
-            </TitleMainEntity>
+            <TitleMainEntity sx={{ flex: 1 }}>{role.name}</TitleMainEntity>
             <div style={{ marginRight: theme.spacing(0.5) }}>
               {canDelete && (
                 <PopoverMenu>
@@ -114,10 +109,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
               isOpen={openDelete}
               handleClose={handleCloseDelete}
             />
-            <RoleEdition
-              roleEditionData={roleEditionData}
-              disabled={!isAllowed && isSensitive}
-            />
+            <RoleEdition roleEditionData={roleEditionData} disabled={!isAllowed && isSensitive} />
           </Stack>
           <>
             {groupsQueryRef ? (
@@ -125,16 +117,13 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
                 <Routes>
                   <Route
                     path="/"
-                    element={(
-                      <Role roleData={role} groupsQueryRef={groupsQueryRef} />
-                    )}
+                    element={<Role roleData={role} groupsQueryRef={groupsQueryRef} />}
                   />
                 </Routes>
               </React.Suspense>
             ) : (
               <Loader variant={LoaderVariant.inElement} />
-            )
-            }
+            )}
           </>
         </>
       ) : (

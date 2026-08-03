@@ -7,10 +7,16 @@ const message = '[MIGRATION] Change CSV mapper capability description';
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
-  const CSVCapability = await elLoadById(context, SYSTEM_USER, 'capability--c3d1af09-14d2-5172-9673-200de7f7f386');
+  const CSVCapability = await elLoadById(
+    context,
+    SYSTEM_USER,
+    'capability--c3d1af09-14d2-5172-9673-200de7f7f386',
+  );
   if (CSVCapability) {
     const CSVCapabilityPatch = { description: 'Manage data mappers' };
-    await elReplace(context, CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
+    await elReplace(context, CSVCapability._index, CSVCapability.internal_id, {
+      doc: CSVCapabilityPatch,
+    });
   }
   logMigration.info(`${message} > done`);
   next();

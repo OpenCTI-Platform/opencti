@@ -75,7 +75,7 @@ const resolveFilter = async (
   resolutionMap: FilterResolutionMap,
 ): Promise<Filter> => {
   const { key, values } = filter;
-  let newFilterValues: string [] = [];
+  let newFilterValues: string[] = [];
 
   // 1. add the values from the resolution map if needed
   values.forEach((v) => {
@@ -90,10 +90,19 @@ const resolveFilter = async (
   // 2. handle the special case of workflow filter
   if (key.includes(WORKFLOW_FILTER)) {
     // get all the statuses
-    let statuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) as BasicWorkflowStatus[];
+    let statuses = (await getEntitiesListFromCache(
+      context,
+      user,
+      ENTITY_TYPE_STATUS,
+    )) as BasicWorkflowStatus[];
     // keep the statuses with their id corresponding to the filter values, or with their template id corresponding to the filter values
-    statuses = statuses.filter((status) => values.includes(status.id) || values.includes(status.template_id));
-    const statusIds = statuses.length > 0 ? statuses.map((status) => status.internal_id) : ['<no-status-matching-filter>'];
+    statuses = statuses.filter(
+      (status) => values.includes(status.id) || values.includes(status.template_id),
+    );
+    const statusIds =
+      statuses.length > 0
+        ? statuses.map((status) => status.internal_id)
+        : ['<no-status-matching-filter>'];
     // replace filter values with the statusIds
     // !!! it works to do the mode/operator filter on the status (and not on the template)
     // because a status can only have a single template and because the operators are full-match operators (eq/not_eq) !!!
@@ -122,8 +131,12 @@ export const resolveFilterGroup = async (
   filterGroup: FilterGroup,
   resolutionMap: FilterResolutionMap,
 ): Promise<FilterGroup> => {
-  const newFilterGroups = await Promise.all(filterGroup.filterGroups.map((fg) => resolveFilterGroup(context, user, fg, resolutionMap)));
-  const newFilters = await Promise.all(filterGroup.filters.map((f) => resolveFilter(context, user, f, resolutionMap)));
+  const newFilterGroups = await Promise.all(
+    filterGroup.filterGroups.map((fg) => resolveFilterGroup(context, user, fg, resolutionMap)),
+  );
+  const newFilters = await Promise.all(
+    filterGroup.filters.map((f) => resolveFilter(context, user, f, resolutionMap)),
+  );
   return {
     ...filterGroup,
     filters: newFilters,
@@ -136,7 +149,12 @@ export const resolveFilterGroup = async (
 /**
  * Build a resolution map thanks to the cache
  */
-const buildResolutionMapForFilter = async (context: AuthContext, user: AuthUser, filter: Filter, cache: Map<string, StixObject>): Promise<FilterResolutionMap> => {
+const buildResolutionMapForFilter = async (
+  context: AuthContext,
+  user: AuthUser,
+  filter: Filter,
+  cache: Map<string, StixObject>,
+): Promise<FilterResolutionMap> => {
   const map: Map<string, string> = new Map();
   if (Object.keys(STIX_RESOLUTION_MAP_PATHS).includes(filter.key[0])) {
     for (let index = 0; index < filter.values.length; index += 1) {
@@ -186,10 +204,19 @@ export const buildResolutionMapForFilterGroup = async (
   filterGroup: FilterGroup,
   cache: Map<string, StixObject>,
 ): Promise<FilterResolutionMap> => {
-  const filtersMaps = await Promise.all(filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)));
-  const filterGroupsMaps = await Promise.all(filterGroup.filterGroups.map((fg) => buildResolutionMapForFilterGroup(context, user, fg, cache)));
+  const filtersMaps = await Promise.all(
+    filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)),
+  );
+  const filterGroupsMaps = await Promise.all(
+    filterGroup.filterGroups.map((fg) =>
+      buildResolutionMapForFilterGroup(context, user, fg, cache),
+    ),
+  );
   // merge all maps into one; for a given unique key the last value wins
-  return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
+  return mergeMaps<string, string>([
+    mergeMaps<string, string>(filtersMaps),
+    mergeMaps<string, string>(filterGroupsMaps),
+  ]);
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -204,10 +231,18 @@ export const extractFilterGroupValuesToResolveForCache = (filterGroup: FilterGro
 
 // build a map ([id]: StixObject) with the resolved filters accessible for a user
 // used for instance trigger side events message display only !!!
-export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthUser, inputFilters?: FilterGroup) => {
+export const resolveFiltersMapForUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  inputFilters?: FilterGroup,
+) => {
   const resolveUserMap = new Map();
   if (!inputFilters) return resolveUserMap;
-  const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const resolvedMap = await getEntitiesMapFromCache<StixObject>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_RESOLVED_FILTERS,
+  );
   const { filters } = inputFilters; // instance triggers don't handle imbricated filterGroups, we only handle filters at the first level
   for (let index = 0; index < filters.length; index += 1) {
     const { values = [] } = filters[index];
@@ -215,7 +250,8 @@ export const resolveFiltersMapForUser = async (context: AuthContext, user: AuthU
       const v = values[vIndex];
       if (resolvedMap.has(v)) {
         const stixInstance = resolvedMap.get(v);
-        const isUserHasAccessToElement = !!stixInstance && await isUserCanAccessStixElement(context, user, stixInstance);
+        const isUserHasAccessToElement =
+          !!stixInstance && (await isUserCanAccessStixElement(context, user, stixInstance));
         if (isUserHasAccessToElement) {
           resolveUserMap.set(stixInstance.id, stixInstance);
         }
@@ -235,15 +271,23 @@ export const convertFiltersToQueryOptions = async (filters: FilterGroup | null, 
   if (after || before || extraFilters.length > 0) {
     const filtersContent = [...extraFilters];
     if (after) {
-      filtersContent.push({ key: field, values: [after], operator: after_exclude ? FilterOperator.Gt : FilterOperator.Gte });
+      filtersContent.push({
+        key: field,
+        values: [after],
+        operator: after_exclude ? FilterOperator.Gt : FilterOperator.Gte,
+      });
     }
     if (before) {
-      filtersContent.push({ key: field, values: [before], operator: before_exclude ? FilterOperator.Lt : FilterOperator.Lte });
+      filtersContent.push({
+        key: field,
+        values: [before],
+        operator: before_exclude ? FilterOperator.Lt : FilterOperator.Lte,
+      });
     }
     finalFilters = {
       mode: FilterMode.And,
       filters: filtersContent,
-      filterGroups: (finalFilters && isFilterGroupNotEmpty(finalFilters)) ? [finalFilters] : [],
+      filterGroups: finalFilters && isFilterGroupNotEmpty(finalFilters) ? [finalFilters] : [],
     };
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: finalFilters };

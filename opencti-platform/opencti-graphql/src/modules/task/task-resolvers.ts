@@ -1,5 +1,14 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findTaskPaginated, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
+import {
+  findById,
+  findTaskPaginated,
+  taskAdd,
+  taskAddRelation,
+  taskContainsStixObjectOrStixRelationship,
+  taskDelete,
+  taskDeleteRelation,
+  taskEdit,
+} from './task-domain';
 import { loadParticipants } from '../../database/members';
 
 const taskResolvers: Resolvers = {
@@ -7,11 +16,17 @@ const taskResolvers: Resolvers = {
     task: (_, { id }, context) => findById(context, context.user, id),
     tasks: (_, args, context) => findTaskPaginated(context, context.user, args),
     taskContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return taskContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return taskContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   Task: {
-    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
+    objectParticipant: async (container, _, context) =>
+      loadParticipants(context, context.user, container),
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),

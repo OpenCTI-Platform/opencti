@@ -30,7 +30,12 @@ interface PlaybookFlowAddComponentsProps {
   setSelectedEdge: (node: null) => void; // null as type because useManipulateComponents is in JS
   playbookComponents: PlaybookComponents;
   onConfigAdd: (component: unknown, name: string, config: unknown, description?: string) => void;
-  onConfigReplace: (component: unknown, name: string, config: unknown, description?: string) => void;
+  onConfigReplace: (
+    component: unknown,
+    name: string,
+    config: unknown,
+    description?: string,
+  ) => void;
 }
 
 const PlaybookFlowAddComponents = ({
@@ -72,8 +77,12 @@ const PlaybookFlowAddComponents = ({
   const componentName = selectedComponent?.name ?? selectedNode?.data?.component?.name;
 
   const drawerTitle = isUpdate
-    ? t_i18n('Update component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } })
-    : t_i18n('Add component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } });
+    ? t_i18n('Update component: {component_name}', {
+        values: { component_name: componentName ? t_i18n(componentName) : '' },
+      })
+    : t_i18n('Add component: {component_name}', {
+        values: { component_name: componentName ? t_i18n(componentName) : '' },
+      });
 
   return (
     <Drawer

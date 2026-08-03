@@ -9,9 +9,18 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertMarkings, convertParticipants, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertMarkings,
+  convertParticipants,
+  convertStatus,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -89,10 +98,7 @@ const tasksEditionOverviewFragment = graphql`
 `;
 
 const tasksMutationRelationAdd = graphql`
-  mutation TasksEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation TasksEditionOverviewRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     stixDomainObjectEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -147,16 +153,17 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
   const { t_i18n } = useFormatter();
   const taskData = useFragment(tasksEditionOverviewFragment, taskRef);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    TASK_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(TASK_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      x_opencti_workflow_id: Yup.object().nullable(),
+      objectParticipant: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object().nullable(),
-    objectParticipant: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -165,12 +172,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     relationDelete: tasksMutationRelationDelete,
     editionFocus: tasksEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    taskData as GenericData,
-    enableReferences,
-    queries,
-    validator,
-  );
+  const editor = useFormEditor(taskData as GenericData, enableReferences, queries, validator);
 
   const onSubmit: FormikConfig<TasksEditionFormValues>['onSubmit'] = (
     values,
@@ -190,8 +192,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       variables: {
         id: taskData.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -226,28 +227,24 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
             style={{ marginBottom: 10 }}
           />
           <Field
             component={DateTimePickerField}
             name="due_date"
-            required={(mandatoryAttributes.includes('due_date'))}
+            required={mandatoryAttributes.includes('due_date')}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             textFieldProps={{
               label: t_i18n('Due Date'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="due_date" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="due_date" />,
               style: fieldSpacingContainerStyle,
             }}
           />
@@ -255,7 +252,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -263,22 +260,18 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             uploadEntityId={taskData.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectAssignee" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectAssignee" />}
             onChange={editor.changeAssignee}
           />
           <ObjectParticipantField
             name="objectParticipant"
-            required={(mandatoryAttributes.includes('objectParticipant'))}
+            required={mandatoryAttributes.includes('objectParticipant')}
             style={fieldSpacingContainerStyle}
             onChange={editor.changeParticipant}
           />
@@ -290,21 +283,14 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               onChange={editor.changeField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

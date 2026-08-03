@@ -10,7 +10,10 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -55,14 +58,14 @@ const coursesOfActionLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...CoursesOfActionLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -152,7 +155,12 @@ const CoursesOfAction = () => {
 
   return (
     <div data-testid="course-of-action-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Courses of action'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Techniques') },
+          { label: t_i18n('Courses of action'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -161,13 +169,15 @@ const CoursesOfAction = () => {
           contextFilters={contextFilters}
           exportContext={{ entity_type: 'Course-Of-Action' }}
           lineFragment={CourseOfActionLineFragment}
-          resolvePath={(data: CoursesOfActionLines_data$data) => data.coursesOfAction?.edges?.map((e) => e?.node)}
+          resolvePath={(data: CoursesOfActionLines_data$data) =>
+            data.coursesOfAction?.edges?.map((e) => e?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <CourseOfActionCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </div>

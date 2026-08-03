@@ -29,10 +29,7 @@ export interface EligiblePlaybook {
   jsonFilters: FilterGroup | null;
 }
 
-export type StixFilterMatchFn = (
-  stixEntity: StixEntity,
-  filters: FilterGroup,
-) => Promise<boolean>;
+export type StixFilterMatchFn = (stixEntity: StixEntity, filters: FilterGroup) => Promise<boolean>;
 
 const MANUAL_ENROLLMENT_TRIGGERS = new Set([
   'PLAYBOOK_INTERNAL_DATA_STREAM',
@@ -54,7 +51,7 @@ export const getEnrollmentEligibility = (
   if (!(config.canEnrollManually ?? true)) return null;
 
   const jsonFilters: FilterGroup | null = config.filters
-    ? JSON.parse(config.filters) as FilterGroup
+    ? (JSON.parse(config.filters) as FilterGroup)
     : null;
 
   if (jsonFilters === null) return { playbook, jsonFilters: null };
@@ -84,13 +81,20 @@ export const matchPlaybooksToEntities = async (
       result.push(playbook);
       continue;
     }
-    const allMatch = await allEntitiesMatchFilters(stixEntities, jsonFilters, isEntityMatchingFilterGroup);
+    const allMatch = await allEntitiesMatchFilters(
+      stixEntities,
+      jsonFilters,
+      isEntityMatchingFilterGroup,
+    );
     if (allMatch) result.push(playbook);
   }
   return result;
 };
 
-export const excludeEntitiesByIds = (entities: Stix21Object[], excludedIds: string[]): Stix21Object[] => {
+export const excludeEntitiesByIds = (
+  entities: Stix21Object[],
+  excludedIds: string[],
+): Stix21Object[] => {
   if (excludedIds.length === 0) return entities;
   return entities.filter((entity) => {
     const internalId = entity.extensions[STIX_EXT_OCTI]?.id;

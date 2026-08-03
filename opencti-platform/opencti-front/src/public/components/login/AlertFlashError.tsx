@@ -21,11 +21,7 @@ const AlertFlashError = () => {
 
   const displayMessage = FLASH_CODE_MESSAGES[flashError] ?? flashError;
 
-  return (
-    <LoginAlert severity="error">
-      {t_i18n(displayMessage)}
-    </LoginAlert>
-  );
+  return <LoginAlert severity="error">{t_i18n(displayMessage)}</LoginAlert>;
 };
 
 export default AlertFlashError;

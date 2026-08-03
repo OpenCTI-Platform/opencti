@@ -15,20 +15,51 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import { type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  AUTOMATION_MANAGER_USER_UUID,
+  executionContext,
+  SYSTEM_USER,
+} from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ENTITY_TYPE_CONTAINER,
+} from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
 import { utcDate } from '../../utils/format';
-import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
+import type {
+  StixCampaign,
+  StixContainer,
+  StixIncident,
+  StixInfrastructure,
+  StixMalware,
+  StixReport,
+  StixThreatActor,
+} from '../../types/stix-2-1-sdo';
 import { generateInternalType } from '../../schema/schemaUtils';
-import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import {
+  ENTITY_TYPE_CONTAINER_REPORT,
+  isStixDomainObjectContainer,
+} from '../../schema/stixDomainObject';
+import type {
+  CyberObjectExtension,
+  StixBundle,
+  StixCyberObject,
+  StixObject,
+  StixOpenctiExtension,
+} from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { logApp } from '../../config/conf';
-import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+} from '../../database/utils';
 import { stixLoadByIds } from '../../database/middleware';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
@@ -87,7 +118,9 @@ const PLAYBOOK_LOGGER_COMPONENT: PlaybookComponent<LoggerConfiguration> = {
   schema: async () => PLAYBOOK_LOGGER_COMPONENT_SCHEMA,
   executor: async ({ bundle, playbookNode }) => {
     if (playbookNode.configuration.level) {
-      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', { bundle });
+      logApp._log(playbookNode.configuration.level, '[PLAYBOOK MANAGER] Logger component output', {
+        bundle,
+      });
     }
     return { output_port: 'out', bundle, forceBundleTracking: true };
   },
@@ -123,7 +156,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   configuration_schema: PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   schema: async () => PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA,
   executor: async ({ bundle }) => {
-    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+    return { output_port: 'out', bundle, forceBundleTracking: true };
   },
 };
 
@@ -149,7 +182,7 @@ const PLAYBOOK_INTERNAL_MANUAL_TRIGGER: PlaybookComponent<ManualTriggerConfigura
   configuration_schema: PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
   schema: async () => PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA,
   executor: async ({ bundle }) => {
-    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+    return { output_port: 'out', bundle, forceBundleTracking: true };
   },
 };
 
@@ -165,8 +198,16 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
   properties: {
     period: { type: 'string', default: 'hour' },
     triggerTime: { type: 'string' },
-    onlyLast: { type: 'boolean', $ref: 'Only last modified entities after the last run', default: false },
-    includeAll: { type: 'boolean', $ref: 'Include all entities in a single bundle', default: false },
+    onlyLast: {
+      type: 'boolean',
+      $ref: 'Only last modified entities after the last run',
+      default: false,
+    },
+    includeAll: {
+      type: 'boolean',
+      $ref: 'Include all entities in a single bundle',
+      default: false,
+    },
     filters: { type: 'string' },
   },
   required: ['period', 'triggerTime', 'onlyLast', 'filters'],
@@ -183,7 +224,7 @@ export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> =
   configuration_schema: PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA,
   schema: async () => PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA,
   executor: async ({ bundle }) => {
-    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+    return { output_port: 'out', bundle, forceBundleTracking: true };
   },
 };
 
@@ -234,7 +275,10 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
   category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'no-match', type: 'out' }],
+  ports: [
+    { id: 'out', type: 'out' },
+    { id: 'no-match', type: 'out' },
+  ],
   configuration_schema: PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_MATCHING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -246,7 +290,12 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
       let matchedElements = 0;
       for (let index = 0; index < bundle.objects.length; index += 1) {
         const bundleElement = bundle.objects[index];
-        const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+        const isMatch = await isStixMatchFilterGroup(
+          context,
+          SYSTEM_USER,
+          bundleElement,
+          jsonFilters,
+        );
         if (isMatch) matchedElements += 1;
       }
       return { output_port: matchedElements > 0 ? 'out' : 'no-match', bundle };
@@ -271,12 +320,16 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
 export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
-  description: 'Remove data from STIX bundle that does not match the filter. The main element will always remain.',
+  description:
+    'Remove data from STIX bundle that does not match the filter. The main element will always remain.',
   icon: 'reduce',
   category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'unmatch', type: 'out' }],
+  ports: [
+    { id: 'out', type: 'out' },
+    { id: 'unmatch', type: 'out' },
+  ],
   configuration_schema: PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_REDUCING_COMPONENT_SCHEMA,
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
@@ -287,7 +340,12 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
-      const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
+      const isMatch = await isStixMatchFilterGroup(
+        context,
+        SYSTEM_USER,
+        bundleElement,
+        jsonFilters,
+      );
       if (isMatch) {
         matchedElements.push(bundleElement);
       }
@@ -322,12 +380,17 @@ const extendsBundleElementsWithExtensions = (bundle: StixBundle): StixBundle => 
     // @ts-ignore
     data.extensions = isEmptyField(element.extensions) ? {} : element.extensions;
     if (isEmptyField(data.extensions[STIX_EXT_OCTI])) {
-      data.extensions[STIX_EXT_OCTI] = { extension_type: 'property-extension', type: openctiType } as StixOpenctiExtension;
+      data.extensions[STIX_EXT_OCTI] = {
+        extension_type: 'property-extension',
+        type: openctiType,
+      } as StixOpenctiExtension;
     }
     if (isStixCyberObservable(openctiType)) {
       const cyberObject = data as StixCyberObject;
       if (isEmptyField(cyberObject.extensions[STIX_EXT_OCTI_SCO])) {
-        cyberObject.extensions[STIX_EXT_OCTI_SCO] = { extension_type: 'property-extension' } as CyberObjectExtension;
+        cyberObject.extensions[STIX_EXT_OCTI_SCO] = {
+          extension_type: 'property-extension',
+        } as CyberObjectExtension;
       }
     }
     return data;
@@ -347,12 +410,24 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
   schema: async () => {
     const context = executionContext('playbook_components');
     const connectors = await connectorsForPlaybook(context, SYSTEM_USER);
-    const elements = connectors.map((c) => ({ const: c.id, title: c.name }))
+    const elements = connectors
+      .map((c) => ({ const: c.id, title: c.name }))
       .sort((a, b) => (a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1));
     const schemaElement = { properties: { connector: { oneOf: elements } } };
-    return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA, schemaElement);
+    return R.mergeDeepRight<JSONSchemaType<ConnectorConfiguration>, any>(
+      PLAYBOOK_CONNECTOR_COMPONENT_SCHEMA,
+      schemaElement,
+    );
   },
-  notify: async ({ executionId, eventId, playbookId, playbookNode, previousPlaybookNodeId, dataInstanceId, bundle }) => {
+  notify: async ({
+    executionId,
+    eventId,
+    playbookId,
+    playbookNode,
+    previousPlaybookNodeId,
+    dataInstanceId,
+    bundle,
+  }) => {
     if (playbookNode.configuration.connector) {
       const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const message = {
@@ -426,9 +501,24 @@ const RESOLVE_INDICATORS = 'resolve_indicators';
 const RESOLVE_OBSERVABLES = 'resolve_observables';
 const RESOLVE_CONTAINER_CONTAINING = 'resolve_containers_containing';
 
-type StixWithSeenDates = StixThreatActor | StixCampaign | StixIncident | StixInfrastructure | StixMalware;
-const ENTITIES_DATE_SEEN_PREFIX = ['threat-actor--', 'campaign--', 'incident--', 'infrastructure--', 'malware--'];
-type SeenFilter = { element: StixWithSeenDates; isImpactedBefore: boolean; isImpactedAfter: boolean };
+type StixWithSeenDates =
+  | StixThreatActor
+  | StixCampaign
+  | StixIncident
+  | StixInfrastructure
+  | StixMalware;
+const ENTITIES_DATE_SEEN_PREFIX = [
+  'threat-actor--',
+  'campaign--',
+  'incident--',
+  'infrastructure--',
+  'malware--',
+];
+type SeenFilter = {
+  element: StixWithSeenDates;
+  isImpactedBefore: boolean;
+  isImpactedAfter: boolean;
+};
 interface RuleConfiguration {
   rule: string;
   inferences: boolean;
@@ -440,12 +530,27 @@ const PLAYBOOK_RULE_COMPONENT_SCHEMA: JSONSchemaType<RuleConfiguration> = {
       type: 'string',
       $ref: 'Rule to apply',
       oneOf: [
-        { const: DATE_SEEN_RULE, title: 'First/Last seen computing extension from report publication date' },
-        { const: RESOLVE_INDICATORS, title: 'Resolve indicators based on observables (add in bundle)' },
-        { const: RESOLVE_OBSERVABLES, title: 'Resolve observables an indicator is based on (add in bundle)' },
+        {
+          const: DATE_SEEN_RULE,
+          title: 'First/Last seen computing extension from report publication date',
+        },
+        {
+          const: RESOLVE_INDICATORS,
+          title: 'Resolve indicators based on observables (add in bundle)',
+        },
+        {
+          const: RESOLVE_OBSERVABLES,
+          title: 'Resolve observables an indicator is based on (add in bundle)',
+        },
         { const: RESOLVE_CONTAINER, title: 'Resolve container references (add in bundle)' },
-        { const: RESOLVE_NEIGHBORS, title: 'Resolve neighbors relations and entities (add in bundle)' },
-        { const: RESOLVE_CONTAINER_CONTAINING, title: 'Resolve containers containing the entity (add in bundle)' },
+        {
+          const: RESOLVE_NEIGHBORS,
+          title: 'Resolve neighbors relations and entities (add in bundle)',
+        },
+        {
+          const: RESOLVE_CONTAINER_CONTAINING,
+          title: 'Resolve containers containing the entity (add in bundle)',
+        },
       ],
     },
     inferences: { type: 'boolean', $ref: 'Include inferred objects', default: false },
@@ -460,7 +565,10 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   category: 'transform_and_enrich',
   is_entry_point: false,
   is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
+  ports: [
+    { id: 'out', type: 'out' },
+    { id: 'unmodified', type: 'out' },
+  ],
   configuration_schema: PLAYBOOK_RULE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_RULE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
@@ -472,11 +580,26 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       // RESOLVE_INDICATORS is for now only triggered on observable creation / update
       if (isStixCyberObservable(type)) {
         // Observable <-- (based on) -- Indicator
-        const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
-        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const relationOpts = {
+          toId: id,
+          fromTypes: [ENTITY_TYPE_INDICATOR],
+          indices: inferences
+            ? READ_RELATIONSHIPS_INDICES
+            : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+        };
+        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(
+          context,
+          AUTOMATION_MANAGER_USER,
+          RELATION_BASED_ON,
+          relationOpts,
+        );
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
-          const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixObject[];
+          const indicators = (await stixLoadByIds(
+            context,
+            AUTOMATION_MANAGER_USER,
+            targetIds,
+          )) as StixObject[];
           pushAll(bundle.objects, indicators);
           return { output_port: 'out', bundle };
         }
@@ -487,11 +610,26 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (type === ENTITY_TYPE_INDICATOR && isNotEmptyField(id)) {
         // Indicator (based on) --> Observable
         // eslint-disable-next-line max-len
-        const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
-        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const relationOpts = {
+          fromId: id,
+          toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE],
+          indices: inferences
+            ? READ_RELATIONSHIPS_INDICES
+            : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+        };
+        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(
+          context,
+          AUTOMATION_MANAGER_USER,
+          RELATION_BASED_ON,
+          relationOpts,
+        );
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
-          const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixObject[];
+          const observables = (await stixLoadByIds(
+            context,
+            AUTOMATION_MANAGER_USER,
+            targetIds,
+          )) as StixObject[];
           pushAll(bundle.objects, observables);
           return { output_port: 'out', bundle };
         }
@@ -500,26 +638,37 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
     if (rule === DATE_SEEN_RULE) {
       // DATE_SEEN_RULE is only triggered on report creation / update
       if (type === ENTITY_TYPE_CONTAINER_REPORT) {
-      // Handle first seen synchro for reports creation / modification
+        // Handle first seen synchro for reports creation / modification
         const report = baseData as StixReport;
         const publicationDate = utcDate(report.published);
-        const targetIds = (report.object_refs ?? [])
-          .filter((o) => ENTITIES_DATE_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)));
+        const targetIds = (report.object_refs ?? []).filter((o) =>
+          ENTITIES_DATE_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)),
+        );
         if (targetIds.length > 0) {
-          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixWithSeenDates[];
+          const elements = (await stixLoadByIds(
+            context,
+            AUTOMATION_MANAGER_USER,
+            targetIds,
+          )) as StixWithSeenDates[];
           const elementsToPatch = elements
             .map((e: StixWithSeenDates) => {
               // Check if seen dates will be impacted.
-              const isImpactedBefore = isEmptyField(e.first_seen) || publicationDate.isBefore(e.first_seen);
-              const isImpactedAfter = isEmptyField(e.last_seen) || publicationDate.isAfter(e.last_seen);
+              const isImpactedBefore =
+                isEmptyField(e.first_seen) || publicationDate.isBefore(e.first_seen);
+              const isImpactedAfter =
+                isEmptyField(e.last_seen) || publicationDate.isAfter(e.last_seen);
               return { element: e, isImpactedBefore, isImpactedAfter };
             })
             .filter((data: SeenFilter) => {
               return data.isImpactedBefore || data.isImpactedAfter;
             })
             .map((data: SeenFilter) => {
-              const first_seen = data.isImpactedBefore ? publicationDate.toISOString() : data.element.first_seen;
-              const last_seen = data.isImpactedAfter ? publicationDate.toISOString() : data.element.last_seen;
+              const first_seen = data.isImpactedBefore
+                ? publicationDate.toISOString()
+                : data.element.first_seen;
+              const last_seen = data.isImpactedAfter
+                ? publicationDate.toISOString()
+                : data.element.last_seen;
               return { ...data.element, first_seen, last_seen };
             });
           if (elementsToPatch.length > 0) {
@@ -535,14 +684,24 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         // Handle first seen synchro for reports creation / modification
         const container = baseData as StixContainer;
         const objectRefsToResolve: string[] = [];
-        const objectRefsWithoutMetas = container.object_refs?.filter((o) => !o.startsWith('relationship-meta'));
+        const objectRefsWithoutMetas = container.object_refs?.filter(
+          (o) => !o.startsWith('relationship-meta'),
+        );
         if (objectRefsWithoutMetas && objectRefsWithoutMetas.length > 0) {
           pushAll(objectRefsToResolve, objectRefsWithoutMetas);
         }
-        if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
+        if (
+          inferences &&
+          container.extensions[STIX_EXT_OCTI].object_refs_inferred &&
+          container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0
+        ) {
           pushAll(objectRefsToResolve, container.extensions[STIX_EXT_OCTI].object_refs_inferred);
         }
-        const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve) as StixObject[];
+        const elements = (await stixLoadByIds(
+          context,
+          AUTOMATION_MANAGER_USER,
+          objectRefsToResolve,
+        )) as StixObject[];
         if (elements.length > 0) {
           pushAll(bundle.objects, elements);
           return { output_port: 'out', bundle };
@@ -555,33 +714,54 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         filters: [{ key: ['objects'], values: [id] }],
         filterGroups: [],
       };
-      const containers = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, baseData: true });
+      const containers = await fullEntitiesList(
+        context,
+        AUTOMATION_MANAGER_USER,
+        [ENTITY_TYPE_CONTAINER],
+        { filters, baseData: true },
+      );
       const containersToResolve = containers.map((container) => container.id);
-      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve) as StixObject[];
+      const elements = (await stixLoadByIds(
+        context,
+        AUTOMATION_MANAGER_USER,
+        containersToResolve,
+      )) as StixObject[];
       if (elements.length > 0) {
         pushAll(bundle.objects, elements);
         return { output_port: 'out', bundle };
       }
     }
     if (rule === RESOLVE_NEIGHBORS) {
-      const relations = await fullRelationsList(
+      const relations = (await fullRelationsList(
         context,
         AUTOMATION_MANAGER_USER,
         ABSTRACT_STIX_CORE_RELATIONSHIP,
-        { fromOrToId: id, baseData: true, indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED },
-      ) as StoreRelation[];
-      let idsToResolve = R.uniq(
-        [
-          ...relations.map((r) => r.id),
-          ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId)),
-        ],
-      );
+        {
+          fromOrToId: id,
+          baseData: true,
+          indices: inferences
+            ? READ_RELATIONSHIPS_INDICES
+            : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+        },
+      )) as StoreRelation[];
+      let idsToResolve = R.uniq([
+        ...relations.map((r) => r.id),
+        ...relations.map((r) => (id === r.fromId ? r.toId : r.fromId)),
+      ]);
       // In case of relation, we also resolve the from and to
       const baseDataRelation = baseData as StixRelation;
       if (baseDataRelation.source_ref && baseDataRelation.target_ref) {
-        idsToResolve = R.uniq([...idsToResolve, baseDataRelation.source_ref, baseDataRelation.target_ref]);
+        idsToResolve = R.uniq([
+          ...idsToResolve,
+          baseDataRelation.source_ref,
+          baseDataRelation.target_ref,
+        ]);
       }
-      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve) as StixObject[];
+      const elements = (await stixLoadByIds(
+        context,
+        AUTOMATION_MANAGER_USER,
+        idsToResolve,
+      )) as StixObject[];
       if (elements.length > 0) {
         pushAll(bundle.objects, elements);
         return { output_port: 'out', bundle };

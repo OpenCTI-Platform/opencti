@@ -8,7 +8,10 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
+import {
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
@@ -18,7 +21,10 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import ListLines from '../../../../components/list_lines/ListLines';
 import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
-import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import Card from '../../../../components/common/card/Card';
@@ -34,14 +40,12 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   const caseRft = useFragment(caseFragment, caseRftData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(caseRft.entity_type);
   const LOCAL_STORAGE_KEY_CASE_TASKS = `cases-${caseRft.id}-caseTask`;
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_TASKS,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CaseTasksLinesQuery$variables>(LOCAL_STORAGE_KEY_CASE_TASKS, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
-    },
-  );
+    });
   const { sortBy, orderAsc, filters } = viewStorage;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Case-Rft']);
@@ -63,135 +67,125 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   );
   return (
     <div data-testid="rft-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <CaseRftDetails caseRftData={caseRft} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <StixDomainObjectOverview
-                      stixDomainObject={caseRft}
-                      displayAssignees
-                      displayParticipants
-                    />
-                  </Grid>
-                );
-              case 'task':
-                return (
-                  <Grid key={key} size={{ xs: width }} ref={ref}>
-                    {queryRef && (
-                      <React.Suspense
-                        fallback={(
-                          <Card title={t_i18n('Tasks')}>
-                            <ListLines
-                              helpers={helpers}
-                              sortBy={sortBy}
-                              orderAsc={orderAsc}
-                              handleSort={helpers.handleSort}
-                              dataColumns={tasksDataColumns}
-                              inline={true}
-                              secondaryAction={true}
-                            >
-                              {Array(20)
-                                .fill(0)
-                                .map((_, idx) => (
-                                  <CaseTasksLineDummy key={idx} />
-                                ))}
-                            </ListLines>
-                          </Card>
-                        )}
-                      >
-                        <CaseTasksLines
-                          queryRef={queryRef}
-                          paginationOptions={queryTaskPaginationOptions}
-                          caseId={caseRft.id}
-                          sortBy={sortBy}
-                          orderAsc={orderAsc}
-                          handleSort={helpers.handleSort}
-                          defaultMarkings={convertMarkings(caseRft)}
-                          containerRef={ref}
-                          enableReferences={enableReferences}
-                        />
-                      </React.Suspense>
-                    )}
-                  </Grid>
-                );
-              case 'originOfTheCase':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <ContainerStixObjectsOrStixRelationships
-                      isSupportParticipation={false}
-                      container={caseRft}
-                      types={['Incident', 'stix-sighting-relationship', 'Report']}
-                      title={t_i18n('Origin of the case')}
-                      enableReferences={enableReferences}
-                    />
-                  </Grid>
-                );
-              case 'observables':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <ContainerStixObjectsOrStixRelationships
-                      isSupportParticipation={false}
-                      container={caseRft}
-                      types={['Stix-Cyber-Observable']}
-                      title={t_i18n('Observables')}
-                      enableReferences={enableReferences}
-                    />
-                  </Grid>
-                );
-              case 'relatedEntities':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <ContainerStixObjectsOrStixRelationships
-                      isSupportParticipation={false}
-                      container={caseRft}
-                      types={['Stix-Domain-Object']}
-                      enableReferences={enableReferences}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={caseRft.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={caseRft.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} size={{ xs: width }}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={caseRft.id}
-                      defaultMarkings={caseRft.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <CaseRftDetails caseRftData={caseRft} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <StixDomainObjectOverview
+                    stixDomainObject={caseRft}
+                    displayAssignees
+                    displayParticipants
+                  />
+                </Grid>
+              );
+            case 'task':
+              return (
+                <Grid key={key} size={{ xs: width }} ref={ref}>
+                  {queryRef && (
+                    <React.Suspense
+                      fallback={
+                        <Card title={t_i18n('Tasks')}>
+                          <ListLines
+                            helpers={helpers}
+                            sortBy={sortBy}
+                            orderAsc={orderAsc}
+                            handleSort={helpers.handleSort}
+                            dataColumns={tasksDataColumns}
+                            inline={true}
+                            secondaryAction={true}
+                          >
+                            {Array(20)
+                              .fill(0)
+                              .map((_, idx) => (
+                                <CaseTasksLineDummy key={idx} />
+                              ))}
+                          </ListLines>
+                        </Card>
+                      }
+                    >
+                      <CaseTasksLines
+                        queryRef={queryRef}
+                        paginationOptions={queryTaskPaginationOptions}
+                        caseId={caseRft.id}
+                        sortBy={sortBy}
+                        orderAsc={orderAsc}
+                        handleSort={helpers.handleSort}
+                        defaultMarkings={convertMarkings(caseRft)}
+                        containerRef={ref}
+                        enableReferences={enableReferences}
+                      />
+                    </React.Suspense>
+                  )}
+                </Grid>
+              );
+            case 'originOfTheCase':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={false}
+                    container={caseRft}
+                    types={['Incident', 'stix-sighting-relationship', 'Report']}
+                    title={t_i18n('Origin of the case')}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'observables':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={false}
+                    container={caseRft}
+                    types={['Stix-Cyber-Observable']}
+                    title={t_i18n('Observables')}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'relatedEntities':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={false}
+                    container={caseRft}
+                    types={['Stix-Domain-Object']}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={caseRft.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={caseRft.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} size={{ xs: width }}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={caseRft.id}
+                    defaultMarkings={caseRft.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </div>
   );

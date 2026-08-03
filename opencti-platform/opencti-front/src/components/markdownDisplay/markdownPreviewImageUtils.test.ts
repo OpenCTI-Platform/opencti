@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
+import {
+  extractMarkdownPreviewImages,
+  isAllowedUploadedImageUrl,
+} from './markdownPreviewImageUtils';
 
 describe('markdown preview image utils', () => {
   describe('isAllowedUploadedImageUrl', () => {
@@ -19,7 +22,11 @@ describe('markdown preview image utils', () => {
       expect(isAllowedUploadedImageUrl('https://example.org/image.png')).toBe(true);
       expect(isAllowedUploadedImageUrl('http://example.org/image.png')).toBe(true);
       expect(isAllowedUploadedImageUrl('javascript:alert(1)')).toBe(false);
-      expect(isAllowedUploadedImageUrl('javascript:alert(1)//storage/view/embedded/Report/r-1/image.png')).toBe(false);
+      expect(
+        isAllowedUploadedImageUrl(
+          'javascript:alert(1)//storage/view/embedded/Report/r-1/image.png',
+        ),
+      ).toBe(false);
       expect(isAllowedUploadedImageUrl('data:image/png;base64,abcd')).toBe(false);
       expect(isAllowedUploadedImageUrl('storage/view/embedded/Report/r-1/image.png')).toBe(false);
     });

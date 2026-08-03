@@ -71,14 +71,26 @@ export interface ProviderUserInfo {
   provider_metadata?: any;
 }
 
-export const providerLoginHandler = async (userInfo: ProviderUserInfo, done: (error: any, user?: any) => void, opts: any = {}) => {
+export const providerLoginHandler = async (
+  userInfo: ProviderUserInfo,
+  done: (error: any, user?: any) => void,
+  opts: any = {},
+) => {
   if (!userInfo.email) {
-    logAuthError('Login has no resolved user email', opts.strategy ?? 'unknown', { userInfo, name: opts.name, identifier: opts.identifier });
+    logAuthError('Login has no resolved user email', opts.strategy ?? 'unknown', {
+      userInfo,
+      name: opts.name,
+      identifier: opts.identifier,
+    });
     done(Error('No user email found, please verify provider configuration and server response'));
     return;
   }
 
-  logAuthInfo('Login with resolved user info groups and organizations', opts.strategy ?? 'unknown', { userInfo, name: opts.name, identifier: opts.identifier });
+  logAuthInfo(
+    'Login with resolved user info groups and organizations',
+    opts.strategy ?? 'unknown',
+    { userInfo, name: opts.name, identifier: opts.identifier },
+  );
   try {
     const user = await loginFromProvider(userInfo, opts);
     addUserLoginCount();
@@ -101,12 +113,18 @@ export const genConfigMapper = (elements: string[]) => {
   );
 };
 
-export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
-export const isAuthenticationActivatedByIdentifier = (identifier: string) => PROVIDERS.some((p) => p.provider === identifier);
+export const isStrategyActivated = (strategy: EnvStrategyType) =>
+  PROVIDERS.map((p) => p.strategy).includes(strategy);
+export const isAuthenticationActivatedByIdentifier = (identifier: string) =>
+  PROVIDERS.some((p) => p.provider === identifier);
 
-export const isProviderRegisteredByInternalId = (internalId: string) => PROVIDERS.some((p) => p.internal_id === internalId);
+export const isProviderRegisteredByInternalId = (internalId: string) =>
+  PROVIDERS.some((p) => p.internal_id === internalId);
 
-export const isAuthenticationProviderMigrated = (migratedIdentifiers: string[], authIdentifier: string) => {
+export const isAuthenticationProviderMigrated = (
+  migratedIdentifiers: string[],
+  authIdentifier: string,
+) => {
   return migratedIdentifiers.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
 };
 

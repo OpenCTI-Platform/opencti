@@ -16,7 +16,10 @@ import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollec
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
-import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../modules/workflow/types/workflow-types';
+import {
+  ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
+} from '../modules/workflow/types/workflow-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -110,13 +113,11 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
 ];
-const HISTORY_OBJECTS = [
-  ENTITY_TYPE_WORK,
-  ENTITY_TYPE_HISTORY,
-  ENTITY_TYPE_ACTIVITY,
-];
+const HISTORY_OBJECTS = [ENTITY_TYPE_WORK, ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
 
-export const isInternalObject = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT) || type === ABSTRACT_INTERNAL_OBJECT;
+export const isInternalObject = (type: string) =>
+  schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT) ||
+  type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type: string) => DATED_INTERNAL_OBJECTS.includes(type);
 export const isHistoryObject = (type: string) => HISTORY_OBJECTS.includes(type);
 

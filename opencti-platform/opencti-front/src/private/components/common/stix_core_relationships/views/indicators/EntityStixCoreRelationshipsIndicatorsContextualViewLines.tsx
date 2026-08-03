@@ -36,7 +36,7 @@ const contextualViewLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    )  @connection(key: "Pagination_indicators") {
+    ) @connection(key: "Pagination_indicators") {
       edges {
         node {
           ...EntityStixCoreRelationshipsIndicatorsContextualViewLine_node
@@ -61,14 +61,14 @@ export const contextualViewLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsIndicatorsContextualViewLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      filters: $filters
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -83,7 +83,9 @@ interface EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
-const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: FunctionComponent<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps> = ({
+const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: FunctionComponent<
+  EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps
+> = ({
   queryRef,
   dataColumns,
   paginationOptions,
@@ -134,7 +136,10 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLines: FunctionComponen
   );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent {...props} queryRef={queryRef} />
+      <EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent
+        {...props}
+        queryRef={queryRef}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

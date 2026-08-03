@@ -50,11 +50,7 @@ const EETooltip = ({
 
   if (isEnterpriseEdition && (!forAi || (forAi && enabled && configured))) {
     return (
-      <EETooltipComponent
-        title={title ? t_i18n(title) : undefined}
-      >
-        {children}
-      </EETooltipComponent>
+      <EETooltipComponent title={title ? t_i18n(title) : undefined}>{children}</EETooltipComponent>
     );
   }
 
@@ -62,11 +58,12 @@ const EETooltip = ({
     return (
       <>
         <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-          <span onClick={(e) => {
-            setOpenConfigAI(true);
-            e.preventDefault();
-            e.stopPropagation();
-          }}
+          <span
+            onClick={(e) => {
+              setOpenConfigAI(true);
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             {children}
           </span>
@@ -78,7 +75,9 @@ const EETooltip = ({
           title={t_i18n('Enable AI powered platform')}
         >
           <DialogContent>
-            {t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.')}
+            {t_i18n(
+              'The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.',
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenConfigAI(false)}>{t_i18n('Close')}</Button>
@@ -90,11 +89,12 @@ const EETooltip = ({
   return (
     <>
       <EETooltipComponent title={title ? t_i18n(title) : undefined}>
-        <span onClickCapture={(e) => {
-          setFeedbackCreation(true);
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        <span
+          onClickCapture={(e) => {
+            setFeedbackCreation(true);
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           {children}
         </span>

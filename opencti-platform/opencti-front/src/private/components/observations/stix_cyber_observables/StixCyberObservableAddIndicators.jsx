@@ -7,7 +7,9 @@ import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import Drawer from '../../common/drawer/Drawer';
 import IndicatorCreation from '../indicators/IndicatorCreation';
-import StixCyberObservableAddIndicatorsLines, { stixCyberObservableAddIndicatorsLinesQuery } from './StixCyberObservableAddIndicatorsLines';
+import StixCyberObservableAddIndicatorsLines, {
+  stixCyberObservableAddIndicatorsLinesQuery,
+} from './StixCyberObservableAddIndicatorsLines';
 
 const styles = () => ({
   createButton: {
@@ -27,14 +29,8 @@ class StixCyberObservableAddIndicators extends Component {
   }
 
   render() {
-    const {
-      t,
-      classes,
-      stixCyberObservable,
-      stixCyberObservableIndicators,
-      open,
-      handleClose,
-    } = this.props;
+    const { t, classes, stixCyberObservable, stixCyberObservableIndicators, open, handleClose } =
+      this.props;
     const paginationOptions = {
       search: this.state.search,
       orderBy: 'created_at',
@@ -47,13 +43,13 @@ class StixCyberObservableAddIndicators extends Component {
           onClose={handleClose.bind(this)}
           title={t('Add indicators')}
           subHeader={{
-            left: [(
+            left: [
               <SearchInput
                 variant="inDrawer"
                 onSubmit={this.handleSearch.bind(this)}
                 key="searchInput"
-              />
-            )],
+              />,
+            ],
           }}
         >
           <QueryRenderer
@@ -69,9 +65,7 @@ class StixCyberObservableAddIndicators extends Component {
                 <div>
                   <StixCyberObservableAddIndicatorsLines
                     stixCyberObservable={stixCyberObservable}
-                    stixCyberObservableIndicators={
-                      stixCyberObservableIndicators
-                    }
+                    stixCyberObservableIndicators={stixCyberObservableIndicators}
                     data={props}
                   />
                   <div className={classes.createButton}>
@@ -101,7 +95,4 @@ StixCyberObservableAddIndicators.propTypes = {
   handleClose: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableAddIndicators);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableAddIndicators);

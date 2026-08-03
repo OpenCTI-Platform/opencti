@@ -18,9 +18,12 @@ const jsonMapperResolvers: Resolvers = {
     jsonMappers: (_, args, context) => findJsonMapperPaginated(context, context.user, args),
   },
   JsonMapper: {
-    errors: (jsonMapper, _, context) => getJsonMapperErrorMessage(context, context.user, jsonMapper),
-    representations: (jsonMapper, _, context) => getParsedRepresentations(context, context.user, jsonMapper),
-    toConfigurationExport: (jsonMapper, _, context) => jsonMapperExport(context, context.user, jsonMapper),
+    errors: (jsonMapper, _, context) =>
+      getJsonMapperErrorMessage(context, context.user, jsonMapper),
+    representations: (jsonMapper, _, context) =>
+      getParsedRepresentations(context, context.user, jsonMapper),
+    toConfigurationExport: (jsonMapper, _, context) =>
+      jsonMapperExport(context, context.user, jsonMapper),
   },
   Mutation: {
     jsonMapperAdd: (_, { input }, context) => {

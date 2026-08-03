@@ -4,34 +4,32 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 interface SecurityCoverageInformationProps {
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information:
+    | ReadonlyArray<{
+        readonly coverage_name: string;
+        readonly coverage_score: number;
+      }>
+    | null
+    | undefined;
 }
 
-const SecurityCoverageInformation = ({ coverage_information }: SecurityCoverageInformationProps) => {
+const SecurityCoverageInformation = ({
+  coverage_information,
+}: SecurityCoverageInformationProps) => {
   const { t_i18n } = useFormatter();
   const hasCoverageInformation = (coverage_information ?? []).length > 0;
 
   return (
     <div>
-      <Label>
-        {t_i18n('Is covered')}
-      </Label>
+      <Label>{t_i18n('Is covered')}</Label>
       <ItemBoolean
         status={hasCoverageInformation}
         label={hasCoverageInformation ? t_i18n('True') : t_i18n('False')}
       />
       {hasCoverageInformation && (
         <>
-          <Label sx={{ marginTop: 2 }}>
-            {t_i18n('Coverage scores')}
-          </Label>
-          <SecurityCoverageScores
-            coverage_information={coverage_information}
-            variant="details"
-          />
+          <Label sx={{ marginTop: 2 }}>{t_i18n('Coverage scores')}</Label>
+          <SecurityCoverageScores coverage_information={coverage_information} variant="details" />
         </>
       )}
     </div>

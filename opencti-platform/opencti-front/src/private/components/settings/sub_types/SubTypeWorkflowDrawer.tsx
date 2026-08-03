@@ -54,14 +54,14 @@ export const subTypeWorkflowDrawerEditionFragment = graphql`
       }
     }
     statusesRequestAccess {
-          id
-          order
-          scope
-          template {
-              name
-              color
-          }
-      } 
+      id
+      order
+      scope
+      template {
+        name
+        color
+      }
+    }
   }
 `;
 
@@ -100,24 +100,22 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
         size="medium"
       >
         <>
-          <List
-            component="nav"
-            aria-labelledby="nested-list-subheader"
-          >
-            {statusesToDisplay?.filter((status) => Boolean(status.template))
+          <List component="nav" aria-labelledby="nested-list-subheader">
+            {statusesToDisplay
+              ?.filter((status) => Boolean(status.template))
               .map((status, idx) => {
                 if (status === null || status.template === null) {
                   return (
                     <ListItemText
                       key={idx}
-                      primary={(
+                      primary={
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
                           width="90%"
                           height="100%"
                         />
-                      )}
+                      }
                     />
                   );
                 }
@@ -125,12 +123,9 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
                   <ListItem
                     key={status.id}
                     divider={true}
-                    secondaryAction={(
-                      <SubTypeWorkflowStatusPopover
-                        subTypeId={subType.id}
-                        statusId={status.id}
-                      />
-                    )}
+                    secondaryAction={
+                      <SubTypeWorkflowStatusPopover subTypeId={subType.id} statusId={status.id} />
+                    }
                   >
                     <ListItemAvatar>
                       <Avatar
@@ -140,28 +135,23 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
                             color: status.template.color,
                             borderColor: status.template.color,
                             backgroundColor: hexToRGB(status.template.color),
-                          }}
+                          }
+                        }
                       >
                         {status.order}
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary={(
+                      primary={
                         <>
-                          <div
-                            className={classes.bodyItem}
-                            style={{ width: '30%' }}
-                          >
+                          <div className={classes.bodyItem} style={{ width: '30%' }}>
                             {status.template?.name ?? ''}
                           </div>
-                          <div
-                            className={classes.bodyItem}
-                            style={{ width: '60%' }}
-                          >
+                          <div className={classes.bodyItem} style={{ width: '60%' }}>
                             <ItemCopy content={status.id} variant="inLine" />
                           </div>
                         </>
-                      )}
+                      }
                     />
                   </ListItem>
                 );

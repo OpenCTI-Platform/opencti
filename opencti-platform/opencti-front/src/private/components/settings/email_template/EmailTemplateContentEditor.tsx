@@ -7,18 +7,16 @@ import RichTextField from '../../../../components/fields/RichTextField';
 import { EmailTemplateContentEditor_template$key } from './__generated__/EmailTemplateContentEditor_template.graphql';
 
 const editorFragment = graphql`
-    fragment EmailTemplateContentEditor_template on EmailTemplate {
-        template_body
-    }
+  fragment EmailTemplateContentEditor_template on EmailTemplate {
+    template_body
+  }
 `;
 
 interface EmailTemplateContentEditorProps {
   data: EmailTemplateContentEditor_template$key;
 }
 
-const EmailTemplateContentEditor = ({
-  data,
-}: EmailTemplateContentEditorProps) => {
+const EmailTemplateContentEditor = ({ data }: EmailTemplateContentEditorProps) => {
   const template = useFragment(editorFragment, data);
   const { setEditorValue } = useEmailTemplateContext();
 

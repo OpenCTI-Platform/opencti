@@ -69,6 +69,4 @@ ChannelEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(ChannelEdition);
+export default compose(inject18n)(ChannelEdition);

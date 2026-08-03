@@ -48,10 +48,7 @@ const StixRelationshipsMultiHeatMapComponent = ({
   onMounted,
 }: StixRelationshipsMultiHeatMapComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsMultiHeatMapTimeSeriesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsMultiHeatMapTimeSeriesQuery, queryRef);
   const series = data?.stixRelationshipsMultiTimeSeries ?? [];
 
   if (!series.length) {
@@ -63,20 +60,18 @@ const StixRelationshipsMultiHeatMapComponent = ({
     return {
       name: selection.label ?? t_i18n('Number of relationships'),
       data:
-          s?.data
-            ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
-            .map((entry) => ({
-              x: new Date(entry.date),
-              y: entry.value,
-            })) ?? [],
+        s?.data
+          ?.filter((entry): entry is { date: string; value: number } => Boolean(entry))
+          .map((entry) => ({
+            x: new Date(entry.date),
+            y: entry.value,
+          })) ?? [],
     };
   });
   const allValues = series
     .filter((s): s is NonNullable<typeof s> => !!s)
     .flatMap((s) =>
-      (s.data ?? [])
-        .filter((d): d is NonNullable<typeof d> => !!d)
-        .map((d) => d.value),
+      (s.data ?? []).filter((d): d is NonNullable<typeof d> => !!d).map((d) => d.value),
     );
   const minValue = allValues.length ? Math.min(...allValues) : 0;
   const maxValue = allValues.length ? Math.max(...allValues) : 0;
@@ -98,7 +93,10 @@ const buildQueryVariables = (
   parameters?: WidgetParameters,
 ): StixRelationshipsMultiHeatMapTimeSeriesQuery['variables'] => {
   return buildRelationshipMultiWidgetBaseQueryVariables(
-    resolvedDataSelection, config, parameters) as StixRelationshipsMultiHeatMapTimeSeriesQuery['variables'];
+    resolvedDataSelection,
+    config,
+    parameters,
+  ) as StixRelationshipsMultiHeatMapTimeSeriesQuery['variables'];
 };
 
 interface StixRelationshipsMultiHeatMapProps {
@@ -124,15 +122,20 @@ const StixRelationshipsMultiHeatMap = ({
 }: StixRelationshipsMultiHeatMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
     refreshRate,
     query: stixRelationshipsMultiHeatMapTimeSeriesQuery,
     config,
-    buildQueryVariables: (selection, cfg) =>
-      buildQueryVariables(selection, cfg, parameters),
+    buildQueryVariables: (selection, cfg) => buildQueryVariables(selection, cfg, parameters),
   });
 
   return (

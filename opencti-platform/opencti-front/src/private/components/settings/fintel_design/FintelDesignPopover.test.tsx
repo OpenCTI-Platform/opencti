@@ -72,11 +72,7 @@ describe('Component: FintelDesignPopover', () => {
   it('should call onUpdate when clicking update', async () => {
     const onUpdate = vi.fn();
     const { user } = testRender(
-      <FintelDesignPopover
-        fintelDesignId="design-1"
-        isDefault={false}
-        onUpdate={onUpdate}
-      />,
+      <FintelDesignPopover fintelDesignId="design-1" isDefault={false} onUpdate={onUpdate} />,
     );
 
     await user.click(screen.getByRole('button'));
@@ -88,11 +84,7 @@ describe('Component: FintelDesignPopover', () => {
   it('should call onDelete when clicking delete', async () => {
     const onDelete = vi.fn();
     const { user } = testRender(
-      <FintelDesignPopover
-        fintelDesignId="design-1"
-        isDefault={false}
-        onDelete={onDelete}
-      />,
+      <FintelDesignPopover fintelDesignId="design-1" isDefault={false} onDelete={onDelete} />,
     );
 
     await user.click(screen.getByRole('button'));

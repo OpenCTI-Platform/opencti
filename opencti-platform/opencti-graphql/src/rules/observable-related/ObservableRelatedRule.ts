@@ -27,7 +27,13 @@ const ruleRelatedObservableBuilder = () => {
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
-        const { internal_id: foundRelationId, toId, confidence, start_time, stop_time } = rels[relIndex];
+        const {
+          internal_id: foundRelationId,
+          toId,
+          confidence,
+          start_time,
+          stop_time,
+        } = rels[relIndex];
         const { [RELATION_OBJECT_MARKING]: object_marking_refs } = rels[relIndex];
         const existingRange = buildPeriodFromDates(start_time, stop_time);
         const range = computeRangeIntersection(creationRange, existingRange);
@@ -50,13 +56,22 @@ const ruleRelatedObservableBuilder = () => {
         // -----------------------------------------------------------------------------------------------------------
         // Create relation TO = FROM
         // Create the inferred relation
-        const reverseRuleContent = createRuleContent(def.id, dependencies, [createdId, foundRelationId], {
-          confidence: computedConfidence,
-          start_time: range.start,
-          stop_time: range.end,
-          objectMarking: elementMarkings,
-        });
-        const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
+        const reverseRuleContent = createRuleContent(
+          def.id,
+          dependencies,
+          [createdId, foundRelationId],
+          {
+            confidence: computedConfidence,
+            start_time: range.start,
+            stop_time: range.end,
+            objectMarking: elementMarkings,
+          },
+        );
+        const reverseInput = {
+          fromId: toId,
+          toId: targetRef,
+          relationship_type: RELATION_RELATED_TO,
+        };
         await createInferredRelation(context, reverseInput, reverseRuleContent);
       }
     };

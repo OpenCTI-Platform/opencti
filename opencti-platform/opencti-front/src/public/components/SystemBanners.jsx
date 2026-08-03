@@ -73,24 +73,12 @@ const SystemBanners = ({ settings }) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
   const bannerColor = bannerColorClassName(bannerLevel);
-  const bannerTextColor = bannerColorClassName(
-    bannerLevel,
-    'classificationText',
+  const bannerTextColor = bannerColorClassName(bannerLevel, 'classificationText');
+  const topBannerClasses = [classes.banner, classes.bannerTop, classes[bannerColor]].join(' ');
+  const bottomBannerClasses = [classes.banner, classes.bannerBottom, classes[bannerColor]].join(
+    ' ',
   );
-  const topBannerClasses = [
-    classes.banner,
-    classes.bannerTop,
-    classes[bannerColor],
-  ].join(' ');
-  const bottomBannerClasses = [
-    classes.banner,
-    classes.bannerBottom,
-    classes[bannerColor],
-  ].join(' ');
-  const bannerTextClasses = [
-    classes.classificationText,
-    classes[bannerTextColor],
-  ].join(' ');
+  const bannerTextClasses = [classes.classificationText, classes[bannerTextColor]].join(' ');
   if (isEmptyField(bannerLevel) || isEmptyField(bannerText)) {
     return <></>;
   }

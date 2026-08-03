@@ -14,7 +14,11 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -27,11 +31,7 @@ const sectorMutationFieldPatch = graphql`
     $references: [String]
   ) {
     sectorEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...SectorEditionOverview_sector
         ...Sector_sector
       }
@@ -84,15 +84,18 @@ const SectorEditionOverviewComponent = (props) => {
   const { sector, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECTOR_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const sectorValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -120,8 +123,7 @@ const SectorEditionOverviewComponent = (props) => {
       variables: {
         id: sector.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -178,14 +180,7 @@ const SectorEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={sector} />
           <Field
@@ -193,19 +188,17 @@ const SectorEditionOverviewComponent = (props) => {
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             uploadEntityId={sector.id}
             fullWidth={true}
             multiline={true}
@@ -213,9 +206,7 @@ const SectorEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -233,28 +224,22 @@ const SectorEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -276,36 +261,36 @@ const SectorEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(SectorEditionOverviewComponent, {
   sector: graphql`
-      fragment SectorEditionOverview_sector on Sector {
-        id
-        name
-        description
-        isSubSector
-        confidence
-        entity_type
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
+    fragment SectorEditionOverview_sector on Sector {
+      id
+      name
+      description
+      isSubSector
+      confidence
+      entity_type
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
+          name
+          entity_type
         }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
       }
-    `,
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

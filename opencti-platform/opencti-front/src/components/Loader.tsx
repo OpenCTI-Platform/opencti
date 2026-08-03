@@ -70,7 +70,9 @@ const Loader: FunctionComponent<LoaderProps> = ({
   const { settings } = useContext(UserContext);
   const [currentText, setCurrentText] = useState(0);
   // if you have EE and whitemark set, you can remove the loader
-  const hasFiligranLoader = theme && !(settings?.platform_enterprise_edition?.license_validated && settings?.platform_whitemark);
+  const hasFiligranLoader =
+    theme &&
+    !(settings?.platform_enterprise_edition?.license_validated && settings?.platform_whitemark);
   if (rotatingTexts && rotatingTexts.length > 0) {
     useEffect(() => {
       const subscription = interval$.subscribe(() => {
@@ -87,20 +89,22 @@ const Loader: FunctionComponent<LoaderProps> = ({
   }
   if (variant === 'inline') {
     return (
-      <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        style={{
+          display: 'inline-flex',
+          width: '4rem',
+          height: 35,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         {hasFiligranLoader ? (
           <FiligranLoader height={24} color={theme?.palette?.common?.grey} />
         ) : (
-          <CircularProgress
-            size={24}
-            thickness={1}
-            className={classes.loaderCircle}
-          />
+          <CircularProgress size={24} thickness={1} className={classes.loaderCircle} />
         )}
         {rotatingTexts && rotatingTexts.length > 0 && (
-          <Typography variant="body2">
-            {rotatingTexts[currentText]}...
-          </Typography>
+          <Typography variant="body2">{rotatingTexts[currentText]}...</Typography>
         )}
       </div>
     );
@@ -118,17 +122,14 @@ const Loader: FunctionComponent<LoaderProps> = ({
       }
     >
       <div
-        className={
-          variant === 'inElement' ? classes.loaderInElement : classes.loader
-        }
-        style={
-          variant !== 'inElement'
-            ? { paddingRight: withRightPadding ? 100 : 0 }
-            : {}
-        }
+        className={variant === 'inElement' ? classes.loaderInElement : classes.loader}
+        style={variant !== 'inElement' ? { paddingRight: withRightPadding ? 100 : 0 } : {}}
       >
         {hasFiligranLoader ? (
-          <FiligranLoader height={variant === 'inElement' ? 40 : 80} color={theme?.palette?.common?.grey} />
+          <FiligranLoader
+            height={variant === 'inElement' ? 40 : 80}
+            color={theme?.palette?.common?.grey}
+          />
         ) : (
           <CircularProgress
             size={variant === 'inElement' ? 40 : 80}
@@ -137,9 +138,7 @@ const Loader: FunctionComponent<LoaderProps> = ({
           />
         )}
         {rotatingTexts && rotatingTexts.length > 0 && (
-          <Typography variant="body2">
-            {rotatingTexts[currentText]}...
-          </Typography>
+          <Typography variant="body2">{rotatingTexts[currentText]}...</Typography>
         )}
       </div>
     </div>

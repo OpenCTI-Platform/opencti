@@ -65,8 +65,7 @@ class CourseOfActionAttackPatternComponent extends Component {
         const attackPatterns = node.getLinkedRecord('attackPatterns');
         const edges = attackPatterns.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id')
-            !== attackPatternEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id') !== attackPatternEdge.node.id,
           edges,
         );
         attackPatterns.setLinkedRecords(newEdges, 'edges');
@@ -81,66 +80,62 @@ class CourseOfActionAttackPatternComponent extends Component {
     const expandable = attackPatternsEdges.length > 7;
     return (
       <Box sx={{ marginTop: 2 }}>
-        <Label action={(
-          <>
-            <AddAttackPatterns
-              courseOfAction={courseOfAction}
-              courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
-            />
-            {expandable && (
-              <IconButton
-                aria-label={expanded ? t('Collapse') : t('Expand')}
-                color="primary"
-                onClick={this.handleToggleExpand.bind(this)}
-              >
-                {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-              </IconButton>
-            )}
-          </>
-        )}
+        <Label
+          action={
+            <>
+              <AddAttackPatterns
+                courseOfAction={courseOfAction}
+                courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
+              />
+              {expandable && (
+                <IconButton
+                  aria-label={expanded ? t('Collapse') : t('Expand')}
+                  color="primary"
+                  onClick={this.handleToggleExpand.bind(this)}
+                >
+                  {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+                </IconButton>
+              )}
+            </>
+          }
         >
           {t('Mitigated attack patterns')}
         </Label>
         <List classes={{ root: classes.list }}>
-          {R.take(expanded ? 200 : 7, attackPatternsEdges).map(
-            (attackPatternEdge) => {
-              const attackPattern = attackPatternEdge.node;
-              return (
-                <ListItem
-                  key={attackPattern.id}
-                  dense={true}
-                  divider={true}
-                  disablePadding={true}
-                  secondaryAction={(
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.removeAttackPattern.bind(
-                        this,
-                        attackPatternEdge,
-                      )}
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemButton
-                    component={Link}
-                    to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+          {R.take(expanded ? 200 : 7, attackPatternsEdges).map((attackPatternEdge) => {
+            const attackPattern = attackPatternEdge.node;
+            return (
+              <ListItem
+                key={attackPattern.id}
+                dense={true}
+                divider={true}
+                disablePadding={true}
+                secondaryAction={
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={this.removeAttackPattern.bind(this, attackPatternEdge)}
                   >
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
-                        {attackPattern.name.substring(0, 1)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={attackPattern.name}
-                      secondary={truncate(attackPattern.description, 60)}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            },
-          )}
+                    <LinkOff />
+                  </IconButton>
+                }
+              >
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                >
+                  <ListItemIcon>
+                    <Avatar classes={{ root: classes.avatar }}>
+                      {attackPattern.name.substring(0, 1)}
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={attackPattern.name}
+                    secondary={truncate(attackPattern.description, 60)}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
       </Box>
     );
@@ -154,31 +149,25 @@ CourseOfActionAttackPatternComponent.propTypes = {
   courseOfAction: PropTypes.object,
 };
 
-const CourseOfActionAttackPattern = createFragmentContainer(
-  CourseOfActionAttackPatternComponent,
-  {
-    courseOfAction: graphql`
-      fragment CourseOfActionAttackPatterns_courseOfAction on CourseOfAction {
-        id
-        name
-        parent_types
-        entity_type
-        attackPatterns {
-          edges {
-            node {
-              id
-              parent_types
-              name
-              description
-            }
+const CourseOfActionAttackPattern = createFragmentContainer(CourseOfActionAttackPatternComponent, {
+  courseOfAction: graphql`
+    fragment CourseOfActionAttackPatterns_courseOfAction on CourseOfAction {
+      id
+      name
+      parent_types
+      entity_type
+      attackPatterns {
+        edges {
+          node {
+            id
+            parent_types
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfActionAttackPattern);
+export default compose(inject18n, withStyles(styles))(CourseOfActionAttackPattern);

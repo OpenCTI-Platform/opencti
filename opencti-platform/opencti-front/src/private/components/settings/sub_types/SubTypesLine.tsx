@@ -2,7 +2,11 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, CheckCircleOutlined, DoNotDisturbOnOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRightOutlined,
+  CheckCircleOutlined,
+  DoNotDisturbOnOutlined,
+} from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
@@ -72,11 +76,7 @@ interface SubTypeLineProps {
   deSelectedElements: Record<string, { id: string }>;
   selectAll: boolean;
   onToggleEntity: (entity: { id: string }, event: React.SyntheticEvent) => void;
-  onToggleShiftEntity: (
-    index: number,
-    entity: { id: string },
-    event: React.SyntheticEvent,
-  ) => void;
+  onToggleShiftEntity: (index: number, entity: { id: string }, event: React.SyntheticEvent) => void;
   index: number;
 }
 
@@ -108,9 +108,11 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if (nodeSubType.label === 'DraftWorkspace') {
-      return nodeSubType.settings?.workflow_published_version_id
-        ? <CheckCircleOutlined fontSize="small" color="success" />
-        : <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
+      return nodeSubType.settings?.workflow_published_version_id ? (
+        <CheckCircleOutlined fontSize="small" color="success" />
+      ) : (
+        <DoNotDisturbOnOutlined fontSize="small" color="primary" />
+      );
     }
     if (nodeSubType.workflowEnabled) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
@@ -126,9 +128,10 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       to={`/dashboard/settings/customization/entity_types/${nodeSubType.id}`}
     >
       <ListItemIcon
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, { id: nodeSubType.id }, event)
-          : onToggleEntity({ id: nodeSubType.id }, event))
+        onClick={(event) =>
+          event.shiftKey
+            ? onToggleShiftEntity(index, { id: nodeSubType.id }, event)
+            : onToggleEntity({ id: nodeSubType.id }, event)
         }
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
@@ -136,8 +139,8 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(nodeSubType.id in (deSelectedElements || {})))
-            || nodeSubType.id in (selectedElements || {})
+            (selectAll && !(nodeSubType.id in (deSelectedElements || {}))) ||
+            nodeSubType.id in (selectedElements || {})
           }
           disableRipple={true}
         />
@@ -146,18 +149,12 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               {t_i18n(`entity_${nodeSubType.label}`)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.workflow_status.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.workflow_status.width }}>
               {renderWorkflowStatus()}
             </div>
             <div
@@ -172,14 +169,11 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
             >
               {renderOptionIcon('platform_entity_files_ref')}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.hidden.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.hidden.width }}>
               {renderOptionIcon('platform_hidden_type')}
             </div>
           </div>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -190,11 +184,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 
 export default SubTypeLine;
 
-export const SubTypeLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const SubTypeLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem divider={true} classes={{ root: classes.item }}>
@@ -202,32 +192,18 @@ export const SubTypeLineDummy = ({
         <Checkbox edge="start" disabled={true} disableRipple={true} />
       </ListItemIcon>
       <ListItemIcon>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

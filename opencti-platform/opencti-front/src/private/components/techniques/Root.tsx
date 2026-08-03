@@ -35,46 +35,25 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/techniques/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/attack_patterns"
-          element={boundaryWrapper(AttackPatterns)}
-        />
+        <Route path="/attack_patterns" element={boundaryWrapper(AttackPatterns)} />
         <Route
           path="/attack_patterns/:attackPatternId/*"
           element={boundaryWrapper(RootAttackPattern)}
         />
-        <Route
-          path="/narratives"
-          element={boundaryWrapper(Narratives)}
-        />
-        <Route
-          path="/narratives/:narrativeId/*"
-          element={boundaryWrapper(RootNarrative)}
-        />
-        <Route
-          path="/courses_of_action"
-          element={boundaryWrapper(CoursesOfAction)}
-        />
+        <Route path="/narratives" element={boundaryWrapper(Narratives)} />
+        <Route path="/narratives/:narrativeId/*" element={boundaryWrapper(RootNarrative)} />
+        <Route path="/courses_of_action" element={boundaryWrapper(CoursesOfAction)} />
         <Route
           path="/courses_of_action/:courseOfActionId/*"
           element={boundaryWrapper(RootCourseOfAction)}
         />
-        <Route
-          path="/data_components"
-          element={boundaryWrapper(DataComponents)}
-        />
+        <Route path="/data_components" element={boundaryWrapper(DataComponents)} />
         <Route
           path="/data_components/:dataComponentId/*"
           element={boundaryWrapper(RootDataComponent)}
         />
-        <Route
-          path="/data_sources"
-          element={boundaryWrapper(DataSources)}
-        />
-        <Route
-          path="/data_sources/:dataSourceId/*"
-          element={boundaryWrapper(RootDataSource)}
-        />
+        <Route path="/data_sources" element={boundaryWrapper(DataSources)} />
+        <Route path="/data_sources/:dataSourceId/*" element={boundaryWrapper(RootDataSource)} />
       </Routes>
     </Suspense>
   );

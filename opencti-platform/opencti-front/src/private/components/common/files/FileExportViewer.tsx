@@ -22,7 +22,12 @@ interface FileExportViewerComponentProps {
   isExportPossible: boolean;
 }
 
-const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({ entity, relay, handleOpenExport, isExportPossible }) => {
+const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({
+  entity,
+  relay,
+  handleOpenExport,
+  isExportPossible,
+}) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   let titleToUse = t_i18n('Generate an export');
@@ -47,11 +52,8 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
       <Card
         padding="horizontal"
         title={t_i18n('Exported files')}
-        action={(
-          <Tooltip
-            title={titleToUse}
-            aria-label="generate-export"
-          >
+        action={
+          <Tooltip title={titleToUse} aria-label="generate-export">
             <IconButton
               onClick={handleOpenExport}
               disabled={!isExportPossible || !!draftContext}
@@ -62,20 +64,21 @@ const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProp
               <FileExportOutline fontSize="small" />
             </IconButton>
           </Tooltip>
-        )}
+        }
       >
         {exportFiles?.edges?.length ? (
           <List data-testid="FileExportManager">
-            {exportFiles.edges.map((file) => (
-              file?.node && (
-                <FileLine
-                  key={file?.node.id}
-                  file={file?.node}
-                  dense={true}
-                  disableImport={true}
-                />
-              )
-            ))}
+            {exportFiles.edges.map(
+              (file) =>
+                file?.node && (
+                  <FileLine
+                    key={file?.node.id}
+                    file={file?.node}
+                    dense={true}
+                    disableImport={true}
+                  />
+                ),
+            )}
           </List>
         ) : (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>

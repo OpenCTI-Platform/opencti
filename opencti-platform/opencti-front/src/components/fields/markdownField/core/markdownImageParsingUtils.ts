@@ -61,7 +61,11 @@ export const extractMarkdownImageReferences = (
     let nestedParentheses = 0;
     while (index < markdown.length) {
       const char = markdown[index];
-      if (stopAtLineBreakAtTopLevel && (char === '\n' || char === '\r') && nestedParentheses === 0) {
+      if (
+        stopAtLineBreakAtTopLevel &&
+        (char === '\n' || char === '\r') &&
+        nestedParentheses === 0
+      ) {
         break;
       }
       if (char === '\\') {

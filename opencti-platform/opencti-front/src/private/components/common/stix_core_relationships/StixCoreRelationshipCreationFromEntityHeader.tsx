@@ -1,9 +1,7 @@
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useContext, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import {
-  StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key,
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityHeader_stixCoreObject.graphql';
+import { StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityHeader_stixCoreObject.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import { TargetEntity } from './StixCoreRelationshipCreationFromEntity';
@@ -11,7 +9,10 @@ import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCre
 import StixCoreRelationshipCreationSelectEntityStage from './StixCoreRelationshipCreationSelectEntityStage';
 import StixCoreRelationshipCreationFormStage from './StixCoreRelationshipCreationFormStage';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
-import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
+import {
+  computeTargetStixCyberObservableTypes,
+  computeTargetStixDomainObjectTypes,
+} from '../../../../utils/stixTypeUtils';
 import { PaginationOptions } from '../../../../components/list_lines';
 
 /**
@@ -41,9 +42,9 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
   const stixCoreObject = useFragment(relationshipCreationFromEntityFragment, data);
 
   // Fetch from context
-  const { state: {
-    stixCoreObjectTypes = [],
-  } } = useContext(CreateRelationshipContext);
+  const {
+    state: { stixCoreObjectTypes = [] },
+  } = useContext(CreateRelationshipContext);
 
   // Compute SDOs and SCOs
   const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);
@@ -71,53 +72,42 @@ const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
   return (
     <>
       {/* The controlled dial to open the drawer */}
-      <Button
-        onClick={handleOpen}
-        variant="secondary"
-      >
+      <Button onClick={handleOpen} variant="secondary">
         {t_i18n('Create Relationship')}
       </Button>
 
-      <Drawer
-        title={t_i18n('Create a relationship')}
-        open={open}
-        onClose={handleClose}
-      >
-
-        {step === 0
-          ? (
-              <StixCoreRelationshipCreationSelectEntityStage
-                handleNextStep={() => setStep(1)}
-                storageKey={storageKey}
-                data={stixCoreObject}
-                targetEntities={targetEntities}
-                setTargetEntities={setTargetEntities}
-                virtualEntityTypes={stixCoreObjectTypes}
-                handleClose={handleClose}
-                setSearchPaginationOptions={setSearchPaginationOptions}
-                additionalHeaderButtons={[(
-                  <StixCoreRelationshipCreationHeaderButtons
-                    key="headerButton"
-                    showSDOs={targetStixDomainObjectTypes.length > 0}
-                    showSCOs={targetStixCyberObservableTypes.length > 0}
-                    actualTypeFilterValues={[
-                      ...targetStixDomainObjectTypes,
-                      ...targetStixCyberObservableTypes,
-                    ]}
-                    searchPaginationOptions={searchPaginationOptions}
-                  />
-                )]}
-              />
-            ) : (
-              <StixCoreRelationshipCreationFormStage
-                targetEntities={targetEntities}
-                handleResetSelection={handleResetSelection}
-                handleClose={handleClose}
-                data={stixCoreObject}
-              />
-            )
-        }
-
+      <Drawer title={t_i18n('Create a relationship')} open={open} onClose={handleClose}>
+        {step === 0 ? (
+          <StixCoreRelationshipCreationSelectEntityStage
+            handleNextStep={() => setStep(1)}
+            storageKey={storageKey}
+            data={stixCoreObject}
+            targetEntities={targetEntities}
+            setTargetEntities={setTargetEntities}
+            virtualEntityTypes={stixCoreObjectTypes}
+            handleClose={handleClose}
+            setSearchPaginationOptions={setSearchPaginationOptions}
+            additionalHeaderButtons={[
+              <StixCoreRelationshipCreationHeaderButtons
+                key="headerButton"
+                showSDOs={targetStixDomainObjectTypes.length > 0}
+                showSCOs={targetStixCyberObservableTypes.length > 0}
+                actualTypeFilterValues={[
+                  ...targetStixDomainObjectTypes,
+                  ...targetStixCyberObservableTypes,
+                ]}
+                searchPaginationOptions={searchPaginationOptions}
+              />,
+            ]}
+          />
+        ) : (
+          <StixCoreRelationshipCreationFormStage
+            targetEntities={targetEntities}
+            handleResetSelection={handleResetSelection}
+            handleClose={handleClose}
+            data={stixCoreObject}
+          />
+        )}
       </Drawer>
     </>
   );

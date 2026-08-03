@@ -6,19 +6,15 @@ import { CommentMode } from '../../settings/sub_types/workflow/utils';
 // ---------------------------------------------------------------------------
 // Hoisted mock functions — accessible inside vi.mock factory closures
 // ---------------------------------------------------------------------------
-const {
-  mockCommit,
-  mockCommitClear,
-  mockNotifySuccess,
-  mockExitDraft,
-  mockNavigate,
-} = vi.hoisted(() => ({
-  mockCommit: vi.fn(),
-  mockCommitClear: vi.fn(),
-  mockNotifySuccess: vi.fn(),
-  mockExitDraft: vi.fn(),
-  mockNavigate: vi.fn(),
-}));
+const { mockCommit, mockCommitClear, mockNotifySuccess, mockExitDraft, mockNavigate } = vi.hoisted(
+  () => ({
+    mockCommit: vi.fn(),
+    mockCommitClear: vi.fn(),
+    mockNotifySuccess: vi.fn(),
+    mockExitDraft: vi.fn(),
+    mockNavigate: vi.fn(),
+  }),
+);
 
 // ---------------------------------------------------------------------------
 // Module mocks
@@ -149,7 +145,13 @@ describe('useTransitionWizard – handleTransition', () => {
     const { result } = renderWizard();
 
     act(() => {
-      result.current.handleTransition('submit', ['validateDraft'], CommentMode.required, true, false);
+      result.current.handleTransition(
+        'submit',
+        ['validateDraft'],
+        CommentMode.required,
+        true,
+        false,
+      );
     });
 
     expect(result.current.currentStep).toBe('org-picker');

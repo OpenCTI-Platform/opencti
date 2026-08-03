@@ -13,7 +13,12 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { ToolEditionOverview_tool$key } from './__generated__/ToolEditionOverview_tool.graphql';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
@@ -21,7 +26,11 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -33,11 +42,7 @@ export const toolMutationFieldPatch = graphql`
     $references: [String]
   ) {
     toolEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...ToolEditionOverview_tool
       }
     }
@@ -55,10 +60,7 @@ export const toolEditionOverviewFocus = graphql`
 `;
 
 export const toolMutationRelationAdd = graphql`
-  mutation ToolEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixRefRelationshipAddInput!
-  ) {
+  mutation ToolEditionOverviewRelationAddMutation($id: ID!, $input: StixRefRelationshipAddInput!) {
     stixDomainObjectEdit(id: $id) {
       relationAdd(input: $input) {
         from {
@@ -149,21 +151,22 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
 
   const tool = useFragment(toolEditionOverviewFragment, toolRef);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    TOOL_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(TOOL_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      tool_types: Yup.array().nullable(),
+      tool_version: Yup.string().nullable(),
+      x_opencti_workflow_id: Yup.object().nullable(),
+      references: Yup.array().nullable(),
+      createdBy: Yup.object().nullable(),
+      killChainPhases: Yup.array().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    tool_types: Yup.array().nullable(),
-    tool_version: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object().nullable(),
-    references: Yup.array().nullable(),
-    createdBy: Yup.object().nullable(),
-    killChainPhases: Yup.array().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -173,12 +176,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
     editionFocus: toolEditionOverviewFocus,
   };
 
-  const editor = useFormEditor(
-    tool as GenericData,
-    enableReferences,
-    queries,
-    validator,
-  );
+  const editor = useFormEditor(tool as GenericData, enableReferences, queries, validator);
 
   const handleSubmitField = (name: string, value: string[] | string) => {
     if (!enableReferences) {
@@ -252,7 +250,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -262,7 +260,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             multiline
             fullWidth
             rows="4"
@@ -282,7 +280,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           />
           <KillChainPhasesField
             name="killChainPhases"
-            required={(mandatoryAttributes.includes('killChainPhases'))}
+            required={mandatoryAttributes.includes('killChainPhases')}
             style={{ marginTop: theme.spacing(2) }}
             helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases" />}
             onChange={editor.changeKillChainPhases}
@@ -300,7 +298,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
@@ -308,7 +306,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={{ marginTop: theme.spacing(2) }}
             setFieldValue={setFieldValue}
             helpertext={<SubscriptionFocus context={context} fieldName="objectMarking" />}
@@ -318,7 +316,7 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             type="tool_types_ov"
             name="tool_types"
             label={t_i18n('Tool types')}
-            required={(mandatoryAttributes.includes('tool_types'))}
+            required={mandatoryAttributes.includes('tool_types')}
             onSubmit={(name, value) => handleSubmitField(name, value as string)}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}

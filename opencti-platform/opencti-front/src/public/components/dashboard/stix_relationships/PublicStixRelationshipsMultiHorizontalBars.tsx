@@ -17,13 +17,13 @@ const publicStixRelationshipsMultiHorizontalBarsQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -136,16 +136,15 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
 
   const { t_i18n } = useFormatter();
 
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     const selection = dataSelection[0];
     const finalField = selection.attribute || 'entity_type';
     const subSelection = dataSelection[1];
     const finalSubDistributionField = subSelection.attribute || 'entity_type';
 
-    const categories = publicStixRelationshipsDistribution.map((n) => getMainRepresentative(n?.entity));
+    const categories = publicStixRelationshipsDistribution.map((n) =>
+      getMainRepresentative(n?.entity),
+    );
     const entitiesMapping: Record<string, number> = {};
     for (const distrib of publicStixRelationshipsDistribution) {
       for (const subDistrib of distrib?.breakdownDistribution ?? []) {
@@ -154,11 +153,12 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
             finalSubDistributionField === 'internal_id'
               ? getMainRepresentative(subDistrib?.entity)
               : subDistrib?.label
-          ] = (entitiesMapping[
-            finalSubDistributionField === 'internal_id'
-              ? getMainRepresentative(subDistrib?.entity)
-              : subDistrib?.label
-          ] || 0) + (subDistrib?.value ?? 0);
+          ] =
+            (entitiesMapping[
+              finalSubDistributionField === 'internal_id'
+                ? getMainRepresentative(subDistrib?.entity)
+                : subDistrib?.label
+            ] || 0) + (subDistrib?.value ?? 0);
         }
       }
     }
@@ -171,9 +171,10 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
       for (const sortedEntity of sortedEntityMapping) {
         const entityData = R.head(
           (distrib?.breakdownDistribution ?? []).filter(
-            (n) => (finalSubDistributionField === 'internal_id'
-              ? getMainRepresentative(n?.entity, t_i18n('Restricted'))
-              : n?.label) === sortedEntity[0],
+            (n) =>
+              (finalSubDistributionField === 'internal_id'
+                ? getMainRepresentative(n?.entity, t_i18n('Restricted'))
+                : n?.label) === sortedEntity[0],
           ),
         );
         let value = 0;
@@ -186,17 +187,14 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
           categoriesValues[getMainRepresentative(distrib?.entity)] = [value];
         }
       }
-      const sum = (
-        categoriesValues[getMainRepresentative(distrib?.entity)] || []
-      ).reduce((partialSum, a) => partialSum + a, 0);
+      const sum = (categoriesValues[getMainRepresentative(distrib?.entity)] || []).reduce(
+        (partialSum, a) => partialSum + a,
+        0,
+      );
       if (categoriesValues[getMainRepresentative(distrib?.entity)]) {
-        categoriesValues[getMainRepresentative(distrib?.entity)].push(
-          (distrib?.value ?? 0) - sum,
-        );
+        categoriesValues[getMainRepresentative(distrib?.entity)].push((distrib?.value ?? 0) - sum);
       } else {
-        categoriesValues[getMainRepresentative(distrib?.entity)] = [
-          (distrib?.value ?? 0) - sum,
-        ];
+        categoriesValues[getMainRepresentative(distrib?.entity)] = [(distrib?.value ?? 0) - sum];
       }
     }
     sortedEntityMapping.push(['Others', 0]);
@@ -207,16 +205,13 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
       };
     });
     const subSectionIds: Record<string, number> = {};
-    if (
-      finalField === 'internal_id'
-      && finalSubDistributionField === 'internal_id'
-    ) {
+    if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') {
       // find subbars orders for entity subbars redirection
       for (const distrib of publicStixRelationshipsDistribution) {
-        for (const subDistrib of (distrib?.breakdownDistribution ?? [])) {
+        for (const subDistrib of distrib?.breakdownDistribution ?? []) {
           if (subDistrib?.label) {
-            subSectionIds[subDistrib.label] = (subSectionIds[subDistrib.label] || 0)
-              + (subDistrib.value ?? 0);
+            subSectionIds[subDistrib.label] =
+              (subSectionIds[subDistrib.label] || 0) + (subDistrib.value ?? 0);
           }
         }
       }
@@ -227,21 +222,22 @@ const PublicStixRelationshipsMultiHorizontalBarsComponent = ({
         .sort(([, a], [, b]) => b - a)
         .map((k) => k[0]),
     );
-    const redirectionUtils = finalField === 'internal_id'
-      ? publicStixRelationshipsDistribution.map((n) => ({
-          id: n?.label,
-          entity_type: n?.entity?.entity_type,
-          series: subSectionIdsOrder.map((subSectionId) => {
-            const [entity] = (n?.breakdownDistribution ?? []).filter(
-              (e) => e?.label === subSectionId,
-            );
-            return {
-              id: subSectionId,
-              entity_type: entity ? entity.entity?.entity_type : null,
-            };
-          }),
-        }))
-      : undefined;
+    const redirectionUtils =
+      finalField === 'internal_id'
+        ? publicStixRelationshipsDistribution.map((n) => ({
+            id: n?.label,
+            entity_type: n?.entity?.entity_type,
+            series: subSectionIdsOrder.map((subSectionId) => {
+              const [entity] = (n?.breakdownDistribution ?? []).filter(
+                (e) => e?.label === subSectionId,
+              );
+              return {
+                id: subSectionId,
+                entity_type: entity ? entity.entity?.entity_type : null,
+              };
+            }),
+          }))
+        : undefined;
 
     return (
       <WidgetHorizontalBars
@@ -278,9 +274,7 @@ const PublicStixRelationshipsMultiHorizontalBars = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsMultiHorizontalBarsComponent

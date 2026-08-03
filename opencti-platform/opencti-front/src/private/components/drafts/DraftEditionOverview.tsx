@@ -11,7 +11,11 @@ import { DraftRootFragment$data } from '@components/drafts/__generated__/DraftRo
 import CreatedByField from '@components/common/form/CreatedByField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../utils/hooks/useEntitySettings';
 import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useFormEditor, { GenericData } from '../../../utils/hooks/useFormEditor';
 import { convertCreatedBy, convertAssignees, convertParticipants } from '../../../utils/edition';
@@ -66,9 +70,7 @@ interface DraftEditionFormValues {
   objectParticipant: FieldOption[] | undefined;
 }
 
-const DraftEditionOverviewComponent: FunctionComponent<
-  DraftEditionOverviewProps
-> = ({ draft }) => {
+const DraftEditionOverviewComponent: FunctionComponent<DraftEditionOverviewProps> = ({ draft }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const [commit] = useApiMutation(draftEditionPatchMutation);
@@ -76,13 +78,16 @@ const DraftEditionOverviewComponent: FunctionComponent<
   const objectAssignee = convertAssignees(draft);
   const objectParticipant = convertParticipants(draft);
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
-    description: Yup.string().nullable(),
-    createdBy: Yup.object().nullable(),
-    objectAssignee: Yup.array().nullable(),
-    objectParticipant: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')),
+      description: Yup.string().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectAssignee: Yup.array().nullable(),
+      objectParticipant: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
 
   const draftValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -110,12 +115,7 @@ const DraftEditionOverviewComponent: FunctionComponent<
     editionFocus: draftEditionFocus,
   };
 
-  const editor = useFormEditor(
-    draft as GenericData,
-    false,
-    queries,
-    draftValidator,
-  );
+  const editor = useFormEditor(draft as GenericData, false, queries, draftValidator);
 
   return (
     <Formik
@@ -149,7 +149,7 @@ const DraftEditionOverviewComponent: FunctionComponent<
           />
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             onChange={editor.changeCreated}

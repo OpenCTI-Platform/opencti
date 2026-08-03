@@ -65,14 +65,15 @@ class IndicatorEntityLineComponent extends Component {
     const restricted = isEmptyField(element);
     const link = `${entityLink}/relations/${node.id}`;
 
-    const isRelationship = t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
+    const isRelationship =
+      t(`relationship_${element.entity_type}`) !== `relationship_${element.entity_type}`;
 
     const displayName = !restricted
       ? isRelationship
-        ? element.representative?.main
-        ?? `${element.from?.name ?? element.from?.observable_value ?? EMPTY_VALUE}
+        ? (element.representative?.main ??
+          `${element.from?.name ?? element.from?.observable_value ?? EMPTY_VALUE}
          ${String.fromCharCode(8594)}
-         ${element.to?.name ?? element.to?.observable_value ?? EMPTY_VALUE}`
+         ${element.to?.name ?? element.to?.observable_value ?? EMPTY_VALUE}`)
         : element.name || element.observable_value
       : t('Restricted');
 
@@ -80,7 +81,7 @@ class IndicatorEntityLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={(
+        secondaryAction={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <StixCoreRelationshipPopover
               stixCoreRelationshipId={node.id}
@@ -88,7 +89,7 @@ class IndicatorEntityLineComponent extends Component {
               disabled={restricted}
             />
           </Security>
-        )}
+        }
       >
         <ListItemButton
           classes={{ root: classes.item }}
@@ -100,70 +101,53 @@ class IndicatorEntityLineComponent extends Component {
             <ItemIcon type={node.entity_type} />
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <div>
                 {displayRelation && (
                   <div
                     className={classes.bodyItem}
                     style={{ width: dataColumns.relationship_type.width }}
                   >
-                    <ItemEntityType
-                      entityType={node.relationship_type}
-                    />
+                    <ItemEntityType entityType={node.relationship_type} />
                   </div>
                 )}
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.entity_type.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
                   <ItemEntityType
-                    entityType={element.entity_type === 'stix_relation'
-                      || element.entity_type === 'stix-relation'
-                      ? element.parent_types[0]
-                      : element.entity_type}
+                    entityType={
+                      element.entity_type === 'stix_relation' ||
+                      element.entity_type === 'stix-relation'
+                        ? element.parent_types[0]
+                        : element.entity_type
+                    }
                     isRestricted={restricted}
                     size="large"
                     showIcon
                   />
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                   {displayName}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.createdBy.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
                   {node.createdBy?.name ?? EMPTY_VALUE}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.creator.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
                   {(node.creators ?? []).map((c) => c?.name).join(', ')}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.start_time.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.start_time.width }}>
                   {fsd(node.start_time)}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stop_time.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.stop_time.width }}>
                   {fsd(node.stop_time)}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.confidence.width }}
-                >
-                  <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
+                <div className={classes.bodyItem} style={{ width: dataColumns.confidence.width }}>
+                  <ItemConfidence
+                    confidence={node.confidence}
+                    entityType="stix-core-relationship"
+                    variant="inList"
+                  />
                 </div>
               </div>
-            )}
+            }
           />
         </ListItemButton>
       </ListItem>
@@ -182,521 +166,518 @@ IndicatorEntityLineComponent.propTypes = {
   entityId: PropTypes.string,
 };
 
-const IndicatorEntityLineFragment = createFragmentContainer(
-  IndicatorEntityLineComponent,
-  {
-    node: graphql`
-      fragment IndicatorEntityLine_node on StixCoreRelationship {
-        id
-        entity_type
-        relationship_type
-        confidence
-        start_time
-        stop_time
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        objectLabel {
-          id
-          value
-          color
-        }
-        creators {
+const IndicatorEntityLineFragment = createFragmentContainer(IndicatorEntityLineComponent, {
+  node: graphql`
+    fragment IndicatorEntityLine_node on StixCoreRelationship {
+      id
+      entity_type
+      relationship_type
+      confidence
+      start_time
+      stop_time
+      description
+      createdBy {
+        ... on Identity {
           id
           name
+          entity_type
         }
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreObject {
-            created_at
-            updated_at
-          }
-          ... on StixCoreRelationship {
-            created_at
-            updated_at
-            representative {
-              main
-            }
-          }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on AdministrativeArea {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on AdministrativeArea {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
-            to {
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on AdministrativeArea {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      creators {
+        id
+        name
+      }
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreObject {
+          created_at
+          updated_at
+        }
+        ... on StixCoreRelationship {
+          created_at
+          updated_at
+          representative {
+            main
           }
         }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreObject {
-            created_at
-            updated_at
-          }
-          ... on StixCoreRelationship {
-            created_at
-            updated_at
-            representative {
-              main
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+        ... on StixCoreRelationship {
+          from {
+            ... on AttackPattern {
+              name
+            }
+            ... on Campaign {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on AdministrativeArea {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+            }
+            ... on ThreatActor {
+              name
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+            }
+            ... on StixCyberObservable {
+              observable_value
             }
           }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on AdministrativeArea {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on AdministrativeArea {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
+          to {
+            ... on AttackPattern {
+              name
             }
-            to {
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on AdministrativeArea {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
+            ... on Campaign {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on AdministrativeArea {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+            }
+            ... on ThreatActor {
+              name
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+            }
+            ... on StixCyberObservable {
+              observable_value
             }
           }
         }
       }
-    `,
-  },
-);
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreObject {
+          created_at
+          updated_at
+        }
+        ... on StixCoreRelationship {
+          created_at
+          updated_at
+          representative {
+            main
+          }
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on System {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on Incident {
+          name
+          description
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+        ... on StixCoreRelationship {
+          from {
+            ... on AttackPattern {
+              name
+            }
+            ... on Campaign {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on AdministrativeArea {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+            }
+            ... on ThreatActor {
+              name
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+          }
+          to {
+            ... on AttackPattern {
+              name
+            }
+            ... on Campaign {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on AdministrativeArea {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+            }
+            ... on ThreatActor {
+              name
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+          }
+        }
+      }
+    }
+  `,
+});
 
 export const IndicatorEntityLine = compose(
   inject18n,
@@ -710,93 +691,43 @@ class IndicatorEntityLineDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={(
+        secondaryAction={
           <Box sx={{ root: classes.itemIconDisabled }}>
             <MoreVert />
           </Box>
-        )}
+        }
       >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
               {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
-                  <Skeleton
-                    animation="wave"
-                    variant="rectangular"
-                    width="90%"
-                    height="100%"
-                  />
+                  <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
                 </div>
               )}
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.start_time.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.stop_time.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.confidence.width }}>
+                <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
               </div>
             </div>
-          )}
+          }
         />
       </ListItem>
     );

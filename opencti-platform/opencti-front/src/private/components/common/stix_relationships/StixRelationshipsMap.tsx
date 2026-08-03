@@ -7,9 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import {
-  StixRelationshipsMapStixRelationshipsDistributionQuery,
-} from '@components/common/stix_relationships/__generated__/StixRelationshipsMapStixRelationshipsDistributionQuery.graphql';
+import { StixRelationshipsMapStixRelationshipsDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMapStixRelationshipsDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { buildRelationshipSingleWidgetBaseQueryVariables } from '../../../../components/dashboard/dashboardVizUtils';
@@ -96,10 +94,7 @@ const StixRelationshipsMapComponent = ({
   queryRef,
   dataSelection,
 }: StixRelationshipsMapComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsMapStixRelationshipsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsMapStixRelationshipsDistributionQuery, queryRef);
   const distribution = data?.stixRelationshipsDistribution ?? [];
   const selection = dataSelection[0];
 
@@ -107,9 +102,7 @@ const StixRelationshipsMapComponent = ({
     return <WidgetNoData />;
   }
 
-  const safeDistribution = distribution.filter(
-    (d): d is NonNullable<typeof d> => Boolean(d),
-  );
+  const safeDistribution = distribution.filter((d): d is NonNullable<typeof d> => Boolean(d));
 
   const values = safeDistribution
     .map((d) => d.value ?? 0)
@@ -122,11 +115,7 @@ const StixRelationshipsMapComponent = ({
     .filter((n) => n.entity?.entity_type === 'Country')
     .map((x) => ({
       ...x.entity,
-      level: computeLevel(
-        x.value ?? 0,
-        max,
-        min + 1,
-      ),
+      level: computeLevel(x.value ?? 0, max, min + 1),
     }));
 
   const cities = safeDistribution
@@ -135,10 +124,7 @@ const StixRelationshipsMapComponent = ({
 
   return (
     <LocationMiniMapTargets
-      center={[
-        selection.centerLat ?? 48.8566969,
-        selection.centerLng ?? 2.3514616,
-      ]}
+      center={[selection.centerLat ?? 48.8566969, selection.centerLng ?? 2.3514616]}
       countries={countries}
       cities={cities}
       zoom={selection.zoom ?? 2}
@@ -151,7 +137,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsMapStixRelationshipsDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -189,7 +176,13 @@ const StixRelationshipsMap = ({
   refreshRate = null,
 }: StixRelationshipsMapProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -214,10 +207,7 @@ const StixRelationshipsMap = ({
         queryRef={queryRef}
         host={host}
       >
-        <StixRelationshipsMapComponent
-          queryRef={queryRef!}
-          dataSelection={resolvedDataSelection}
-        />
+        <StixRelationshipsMapComponent queryRef={queryRef!} dataSelection={resolvedDataSelection} />
       </WidgetRenderContent>
     </WidgetContainer>
   );

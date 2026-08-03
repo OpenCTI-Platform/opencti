@@ -26,10 +26,20 @@ const convertFilters = (filters, perspective) => {
       const newFilters = keyFilterRemover(filters, ['elementId', 'relationship_type']);
       const regardingOfValues = [];
       if (elementIdFilter && isNotEmptyField(elementIdFilter.values)) {
-        regardingOfValues.push({ key: 'id', operator: 'eq', mode: 'or', values: elementIdFilter.values });
+        regardingOfValues.push({
+          key: 'id',
+          operator: 'eq',
+          mode: 'or',
+          values: elementIdFilter.values,
+        });
       }
       if (relationshipTypeIdFilter && isNotEmptyField(relationshipTypeIdFilter.values)) {
-        regardingOfValues.push({ key: 'type', operator: 'eq', mode: 'or', values: relationshipTypeIdFilter.values });
+        regardingOfValues.push({
+          key: 'type',
+          operator: 'eq',
+          mode: 'or',
+          values: relationshipTypeIdFilter.values,
+        });
       }
       if (regardingOfValues.length > 0) {
         newFilters.push({
@@ -87,14 +97,18 @@ export const up = async (next) => {
       }
       const newManifest = { ...decodedManifest, widgets: newWidgets };
       const newEncodedManifest = toBase64(JSON.stringify(newManifest));
-      workspacesManifestConvertor = { ...workspacesManifestConvertor, [workspace.internal_id]: newEncodedManifest };
+      workspacesManifestConvertor = {
+        ...workspacesManifestConvertor,
+        [workspace.internal_id]: newEncodedManifest,
+      };
     }
   });
 
   const workspacesUpdateQuery = {
     script: {
       params: { convertor: workspacesManifestConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.manifest = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.manifest = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {

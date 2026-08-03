@@ -59,7 +59,15 @@ interface SortConnectorsHeaderProps {
   textAlign?: CSSProperties['textAlign'];
 }
 
-const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, label, isSortable, orderAsc, sortBy, reverseBy, textAlign = 'left' }) => {
+const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({
+  field,
+  label,
+  isSortable,
+  orderAsc,
+  sortBy,
+  reverseBy,
+  textAlign = 'left',
+}) => {
   const { t_i18n } = useFormatter();
 
   const sortComponent = orderAsc ? (
@@ -70,10 +78,7 @@ const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, labe
 
   if (isSortable) {
     return (
-      <Box
-        sx={{ ...sortHeaderStyle[field], textAlign }}
-        onClick={() => reverseBy(field)}
-      >
+      <Box sx={{ ...sortHeaderStyle[field], textAlign }} onClick={() => reverseBy(field)}>
         <span>{t_i18n(label)}</span>
         {sortBy === field ? sortComponent : ''}
       </Box>

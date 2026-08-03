@@ -31,26 +31,39 @@ export interface LabelledDecayHistory {
   style: SxProps<Theme>;
 }
 
-const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indicator, open = false, onClose }) => {
+const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({
+  indicator,
+  open = false,
+  onClose,
+}) => {
   const theme = useTheme<Theme>();
   const { t_i18n, mhd, rd } = useFormatter();
 
   const indicatorDecayDetails = indicator.decayLiveDetails;
 
   const decayHistory = indicator.decay_history ? [...indicator.decay_history] : [];
-  const decayLivePoints = indicatorDecayDetails?.live_points ? [...indicatorDecayDetails.live_points] : [];
+  const decayLivePoints = indicatorDecayDetails?.live_points
+    ? [...indicatorDecayDetails.live_points]
+    : [];
 
   const getDateAsTextFor = (history: DecayHistory) => {
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
       return EMPTY_VALUE;
     }
-    if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
+    if (
+      history.score < indicator.x_opencti_score &&
+      history.updated_at > indicator.decay_base_score_date
+    ) {
       return rd(history.updated_at);
     }
     return mhd(history.updated_at);
   };
 
-  const getDisplayForHistory = (history: DecayHistory, index: number, currentScoreIndex: number) => {
+  const getDisplayForHistory = (
+    history: DecayHistory,
+    index: number,
+    currentScoreIndex: number,
+  ) => {
     if (index === currentScoreIndex) {
       return {
         label: t_i18n('Current stable score'),
@@ -104,14 +117,16 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
   };
 
   const labelledHistoryList: LabelledDecayHistory[] = [];
-  const currentScoreIndex = decayHistory.findLastIndex((history) => history.score === indicator.x_opencti_score);
-  decayHistory.forEach((history, index) => (
-    labelledHistoryList.push(getDisplayForHistory(history, index, currentScoreIndex))
-  ));
+  const currentScoreIndex = decayHistory.findLastIndex(
+    (history) => history.score === indicator.x_opencti_score,
+  );
+  decayHistory.forEach((history, index) =>
+    labelledHistoryList.push(getDisplayForHistory(history, index, currentScoreIndex)),
+  );
 
-  decayLivePoints.forEach((history) => (
-    labelledHistoryList.push(getDisplayForUpcomingUpdates(history))
-  ));
+  decayLivePoints.forEach((history) =>
+    labelledHistoryList.push(getDisplayForUpcomingUpdates(history)),
+  );
 
   labelledHistoryList.sort((a, b) => {
     return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
@@ -119,7 +134,9 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
 
   let chartCurvePoints: DecayHistory[] = [];
   if (indicator.decayChartData?.live_score_serie) {
-    chartCurvePoints = indicator.decayChartData.live_score_serie.map((historyPoint) => historyPoint);
+    chartCurvePoints = indicator.decayChartData.live_score_serie.map(
+      (historyPoint) => historyPoint,
+    );
   }
 
   let chartDecayReactionPoints: number[] = [];
@@ -128,17 +145,8 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      size="large"
-      title={t_i18n('Lifecycle details')}
-    >
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ borderColor: 'white', borderWidth: 1 }}
-      >
+    <Dialog open={open} onClose={onClose} size="large" title={t_i18n('Lifecycle details')}>
+      <Grid container={true} spacing={3} style={{ borderColor: 'white', borderWidth: 1 }}>
         <Grid item xs={7}>
           <DecayChart
             currentScore={indicator.x_opencti_score || 0}
@@ -174,9 +182,7 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
         </Grid>
       </Grid>
       <DialogActions>
-        <Button onClick={onClose}>
-          {t_i18n('Close')}
-        </Button>
+        <Button onClick={onClose}>{t_i18n('Close')}</Button>
       </DialogActions>
     </Dialog>
   );

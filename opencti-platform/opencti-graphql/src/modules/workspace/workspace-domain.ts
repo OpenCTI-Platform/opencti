@@ -1,11 +1,25 @@
 import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  createEntity,
+  deleteElementById,
+  fullEntitiesOrRelationsConnection,
+  pageEntitiesOrRelationsConnection,
+  updateAttribute,
+} from '../../database/middleware';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
+import {
+  type BasicStoreEntityWorkspace,
+  ENTITY_TYPE_WORKSPACE,
+  type StoreEntityWorkspace,
+} from './workspace-types';
 import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
@@ -19,18 +33,36 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs,
 } from '../../generated/graphql';
-import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import {
+  getUserAccessRight,
+  isUserHasCapability,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SYSTEM_USER,
+} from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import {
+  buildPagination,
+  isEmptyField,
+  READ_DATA_INDICES_WITHOUT_INTERNAL,
+  READ_INDEX_INTERNAL_OBJECTS,
+} from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
+import {
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+  type PublicDashboardCached,
+} from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
-import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import {
+  checkDashboardConfigurationImport,
+  convertDashboardManifestIds,
+  exportDashboardWidget,
+  importDashboardWidgetConfiguration,
+} from '../dashboard/dashboard-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -39,11 +71,7 @@ export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspa
   return { ...element, manifest: undefined };
 };
 
-export const findById = (
-  context: AuthContext,
-  user: AuthUser,
-  workspaceId: string,
-) => {
+export const findById = (context: AuthContext, user: AuthUser, workspaceId: string) => {
   if (workspaceId === PLATFORM_DASHBOARD) {
     return {
       id: PLATFORM_DASHBOARD,
@@ -57,12 +85,25 @@ export const findById = (
   );
 };
 
-export const findAllWorkspaces = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
+export const findAllWorkspaces = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryWorkspacesArgs,
+) => {
   return fullEntitiesList(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
-export const findWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
+export const findWorkspacePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryWorkspacesArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityWorkspace>(
+    context,
+    user,
+    [ENTITY_TYPE_WORKSPACE],
+    args,
+  );
 };
 
 export const workspaceEditAuthorizedMembers = async (
@@ -91,9 +132,7 @@ export const getCurrentUserAccessRight = async (
 
 export const getOwnerId = (workspace: BasicStoreEntityWorkspace) => {
   if (Array.isArray(workspace.creator_id)) {
-    return workspace.creator_id.length > 0
-      ? workspace.creator_id[0]
-      : undefined;
+    return workspace.creator_id.length > 0 ? workspace.creator_id[0] : undefined;
   }
   return workspace.creator_id;
 };
@@ -113,7 +152,12 @@ export const objects = async (
   if (args.all) {
     return fullEntitiesOrRelationsConnection(context, user, finalTypes, finalArgs);
   }
-  return await pageEntitiesOrRelationsConnection(context, user, finalTypes, finalArgs) as BasicConnection<BasicStoreBase>;
+  return (await pageEntitiesOrRelationsConnection(
+    context,
+    user,
+    finalTypes,
+    finalArgs,
+  )) as BasicConnection<BasicStoreBase>;
 };
 
 const checkInvestigatedEntitiesInputs = async (
@@ -123,8 +167,8 @@ const checkInvestigatedEntitiesInputs = async (
 ): Promise<void> => {
   const addedOrReplacedInvestigatedEntitiesIds = inputs
     .filter(
-      ({ key, operation }) => key === 'investigated_entities_ids'
-        && (operation === 'add' || operation === 'replace'),
+      ({ key, operation }) =>
+        key === 'investigated_entities_ids' && (operation === 'add' || operation === 'replace'),
     )
     .flatMap(({ value }) => value) as string[];
   const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
@@ -173,12 +217,14 @@ export const addWorkspace = async (
     throw ForbiddenAccess();
   }
   // construct final creation input
-  const authorizedMembers = initializeAuthorizedMembers(
-    input.authorized_members,
-    user,
-  );
+  const authorizedMembers = initializeAuthorizedMembers(input.authorized_members, user);
   const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
-  return createInternalObject<StoreEntityWorkspace>(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  return createInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceToCreate,
+    ENTITY_TYPE_WORKSPACE,
+  );
 };
 
 export const workspaceDelete = async (
@@ -217,10 +263,10 @@ export const workspaceDelete = async (
         },
       },
     }).catch((err: Error) => {
-      throw DatabaseError(
-        '[DELETE] Error deleting public dashboard for workspace ',
-        { cause: err, workspace_id: workspaceId },
-      );
+      throw DatabaseError('[DELETE] Error deleting public dashboard for workspace ', {
+        cause: err,
+        workspace_id: workspaceId,
+      });
     });
   }
   // endregion
@@ -247,7 +293,13 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
+  return editInternalObject<StoreEntityWorkspace>(
+    context,
+    user,
+    workspaceId,
+    ENTITY_TYPE_WORKSPACE,
+    inputs,
+  );
 };
 
 export const workspaceCleanContext = async (
@@ -256,15 +308,9 @@ export const workspaceCleanContext = async (
   workspaceId: string,
 ) => {
   await delEditContext(user, workspaceId);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then(
-    (userToReturn) => {
-      return notify(
-        BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
-        userToReturn,
-        user,
-      );
-    },
-  );
+  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user);
+  });
 };
 
 export const workspaceEditContext = async (
@@ -275,19 +321,25 @@ export const workspaceEditContext = async (
 ) => {
   await setEditContext(user, workspaceId, input);
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then(
-    (workspaceToReturn) => notify(
-      BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC,
-      workspaceToReturn,
-      user,
-    ),
+    (workspaceToReturn) =>
+      notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user),
   );
 };
 
-export const generateWorkspaceExportConfiguration = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace) => {
+export const generateWorkspaceExportConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspace: BasicStoreEntityWorkspace,
+) => {
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
-  const generatedManifest = await convertDashboardManifestIds(context, user, workspace.manifest, 'internal');
+  const generatedManifest = await convertDashboardManifestIds(
+    context,
+    user,
+    workspace.manifest,
+    'internal',
+  );
   const exportConfigration = {
     openCTI_version: pjson.version,
     type: 'dashboard',
@@ -299,7 +351,12 @@ export const generateWorkspaceExportConfiguration = async (context: AuthContext,
   return JSON.stringify(exportConfigration);
 };
 
-export const generateWidgetExportConfiguration = async (context: AuthContext, user: AuthUser, workspace: BasicStoreEntityWorkspace, widgetId: string) => {
+export const generateWidgetExportConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspace: BasicStoreEntityWorkspace,
+  widgetId: string,
+) => {
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
@@ -310,7 +367,11 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
   return result.data;
 };
 
-export const workspaceImportConfiguration = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const workspaceImportConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>,
+) => {
   const parsedData = await extractContentFrom(file);
   checkDashboardConfigurationImport('dashboard', parsedData);
   const authorizedMembers = initializeAuthorizedMembers([], user);
@@ -324,7 +385,12 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
     manifest: generatedManifest,
     restricted_members: authorizedMembers,
   };
-  const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);
+  const importWorkspaceCreation = await createEntity(
+    context,
+    user,
+    mappedData,
+    ENTITY_TYPE_WORKSPACE,
+  );
   const workspaceId = importWorkspaceCreation.id;
   await publishUserAction({
     user,
@@ -342,7 +408,11 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   return workspaceId;
 };
 
-export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
+export const duplicateWorkspace = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: WorkspaceDuplicateInput,
+) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
@@ -393,14 +463,17 @@ export const workspaceImportWidgetConfiguration = async (
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
-export const isDashboardShared = async (context: AuthContext, workspace: BasicStoreEntityWorkspace) => {
+export const isDashboardShared = async (
+  context: AuthContext,
+  workspace: BasicStoreEntityWorkspace,
+) => {
   if (workspace.type !== 'dashboard') return false;
   const publicDashboards = await getEntitiesListFromCache<PublicDashboardCached>(
     context,
     SYSTEM_USER,
     ENTITY_TYPE_PUBLIC_DASHBOARD,
   );
-  return publicDashboards.some((publicDashboard) => (
-    publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled
-  ));
+  return publicDashboards.some(
+    (publicDashboard) => publicDashboard.dashboard_id === workspace.id && publicDashboard.enabled,
+  );
 };

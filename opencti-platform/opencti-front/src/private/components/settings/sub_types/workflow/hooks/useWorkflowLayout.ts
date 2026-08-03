@@ -1,5 +1,13 @@
 import { useEffect } from 'react';
-import { type Node, type Edge, useReactFlow, useNodesInitialized, useStore, getIncomers, Position } from 'reactflow';
+import {
+  type Node,
+  type Edge,
+  useReactFlow,
+  useNodesInitialized,
+  useStore,
+  getIncomers,
+  Position,
+} from 'reactflow';
 import { type HierarchyPointNode, stratify, tree } from 'd3-hierarchy';
 import { NODE_SIZE } from '../utils';
 
@@ -55,7 +63,11 @@ const rootNode = {
   data: {},
 };
 
-const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { direction: 'TB', spacing: [50, 50] }) => {
+const layoutAlgorithm = async (
+  nodes: Node[],
+  edges: Edge[],
+  options = { direction: 'TB', spacing: [50, 50] },
+) => {
   const initialNodes = [] as NodeWithPosition[];
   let maxNodeWidth = 0;
   let maxNodeHeight = 0;
@@ -154,7 +166,7 @@ const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { directi
           return {
             ...node,
             position: {
-              x: ((sourcePos.x + targetPos.x) / 2) + horizontalOffset - (node.width ?? 0) / 2,
+              x: (sourcePos.x + targetPos.x) / 2 + horizontalOffset - (node.width ?? 0) / 2,
               y: (sourcePos.y + targetPos.y) / 2 - (node.height ?? 0) / 2,
             },
           };
@@ -189,10 +201,7 @@ const useAutoLayout = (options: LayoutOptions) => {
   const elements = useStore(
     (state) => ({
       nodeMap: state.nodeInternals,
-      edgeMap: state.edges.reduce(
-        (acc, edge) => acc.set(edge.id, edge),
-        new Map(),
-      ),
+      edgeMap: state.edges.reduce((acc, edge) => acc.set(edge.id, edge), new Map()),
     }),
     // The compare elements function will only update `elements` if something has
     // changed that should trigger a layout. This includes changes to a node's
@@ -213,11 +222,7 @@ const useAutoLayout = (options: LayoutOptions) => {
       const nodes = Array.from(elements.nodeMap.values());
       const edges = Array.from(elements.edgeMap.values());
 
-      const { nodes: nextNodes, edges: nextEdges } = await layoutAlgorithm(
-        nodes,
-        edges,
-        options,
-      );
+      const { nodes: nextNodes, edges: nextEdges } = await layoutAlgorithm(nodes, edges, options);
 
       // Mutating the nodes and edges directly here is fine because we expect our
       // layouting algorithms to return a new array of nodes/edges.
@@ -247,9 +252,7 @@ type Elements = {
 };
 
 const compareElements = (xs: Elements, ys: Elements) => {
-  return (
-    compareNodes(xs.nodeMap, ys.nodeMap) && compareEdges(xs.edgeMap, ys.edgeMap)
-  );
+  return compareNodes(xs.nodeMap, ys.nodeMap) && compareEdges(xs.edgeMap, ys.edgeMap);
 };
 
 const compareNodes = (xs: Map<string, Node>, ys: Map<string, Node>) => {

@@ -20,7 +20,11 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { ThreatActorIndividualEditionDetails_ThreatActorIndividual$key } from './__generated__/ThreatActorIndividualEditionDetails_ThreatActorIndividual.graphql';
 import { ThreatActorIndividualEditionDetailsFocusMutation } from './__generated__/ThreatActorIndividualEditionDetailsFocusMutation.graphql';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -46,10 +50,7 @@ const threatActorIndividualMutationFieldPatch = graphql`
 `;
 
 const ThreatActorIndividualEditionDetailsFocus = graphql`
-  mutation ThreatActorIndividualEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorIndividualEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     threatActorIndividualContextPatch(id: $id, input: $input) {
       id
     }
@@ -107,27 +108,31 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
     threatActorIndividualEditionDetailsFragment,
     threatActorIndividualRef,
   );
-  const [commitEditionDetailsFocus] = useApiMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
-    ThreatActorIndividualEditionDetailsFocus,
-  );
+  const [commitEditionDetailsFocus] =
+    useApiMutation<ThreatActorIndividualEditionDetailsFocusMutation>(
+      ThreatActorIndividualEditionDetailsFocus,
+    );
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    sophistication: Yup.string().nullable(),
-    resource_level: Yup.string().nullable(),
-    roles: Yup.array().nullable(),
-    primary_motivation: Yup.string().nullable(),
-    secondary_motivations: Yup.array().nullable(),
-    personal_motivations: Yup.array().nullable(),
-    goals: Yup.string().nullable(),
-    references: Yup.array(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      first_seen: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      last_seen: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      sophistication: Yup.string().nullable(),
+      resource_level: Yup.string().nullable(),
+      roles: Yup.array().nullable(),
+      primary_motivation: Yup.string().nullable(),
+      secondary_motivations: Yup.array().nullable(),
+      personal_motivations: Yup.array().nullable(),
+      goals: Yup.string().nullable(),
+      references: Yup.array(),
+    },
+    mandatoryAttributes,
+  );
   const individualThreatActorValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -157,7 +162,10 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
       },
     });
   };
-  const onSubmit: FormikConfig<ThreatActorIndividualEditionDetailsFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<ThreatActorIndividualEditionDetailsFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -190,9 +198,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
           editor.fieldPatch({
             variables: {
               id: threatActorIndividual.id,
-              input: [
-                { key: name, value: Array.isArray(value) ? value : [value] },
-              ],
+              input: [{ key: name, value: Array.isArray(value) ? value : [value] }],
             },
           });
         })
@@ -218,12 +224,8 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
   };
 
   const initialValues = {
-    first_seen: !isNone(threatActorIndividual.first_seen)
-      ? threatActorIndividual.first_seen
-      : null,
-    last_seen: !isNone(threatActorIndividual.last_seen)
-      ? threatActorIndividual.last_seen
-      : null,
+    first_seen: !isNone(threatActorIndividual.first_seen) ? threatActorIndividual.first_seen : null,
+    last_seen: !isNone(threatActorIndividual.last_seen) ? threatActorIndividual.last_seen : null,
     secondary_motivations: threatActorIndividual.secondary_motivations ?? [],
     personal_motivations: threatActorIndividual.personal_motivations ?? [],
     primary_motivation: threatActorIndividual.primary_motivation ?? '',
@@ -242,14 +244,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
         validateOnBlur={true}
         onSubmit={onSubmit}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
           <div>
             <Form style={{ marginTop: theme.spacing(2) }}>
               <AlertConfidenceForEntity entity={threatActorIndividual} />
@@ -260,15 +255,10 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('First seen'),
-                  required: (mandatoryAttributes.includes('first_seen')),
+                  required: mandatoryAttributes.includes('first_seen'),
                   variant: 'standard',
                   fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="first_seen"
-                    />
-                  ),
+                  helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
                 }}
               />
               <Field
@@ -278,23 +268,18 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 onSubmit={handleSubmitField}
                 textFieldProps={{
                   label: t_i18n('Last seen'),
-                  required: (mandatoryAttributes.includes('last_seen')),
+                  required: mandatoryAttributes.includes('last_seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="last_seen"
-                    />
-                  ),
+                  helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
                 }}
               />
               <OpenVocabField
                 label={t_i18n('Sophistication')}
                 type="threat_actor_individual_sophistication_ov"
                 name="sophistication"
-                required={(mandatoryAttributes.includes('sophistication'))}
+                required={mandatoryAttributes.includes('sophistication')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -307,7 +292,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 label={t_i18n('Resource level')}
                 type="attack-resource-level-ov"
                 name="resource_level"
-                required={(mandatoryAttributes.includes('resource_level'))}
+                required={mandatoryAttributes.includes('resource_level')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -320,7 +305,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 label={t_i18n('Roles')}
                 type="threat-actor-individual-role-ov"
                 name="roles"
-                required={(mandatoryAttributes.includes('roles'))}
+                required={mandatoryAttributes.includes('roles')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -333,7 +318,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 label={t_i18n('Primary motivation')}
                 type="attack-motivation-ov"
                 name="primary_motivation"
-                required={(mandatoryAttributes.includes('primary_motivation'))}
+                required={mandatoryAttributes.includes('primary_motivation')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -346,7 +331,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 label={t_i18n('Secondary motivations')}
                 type="attack-motivation-ov"
                 name="secondary_motivations"
-                required={(mandatoryAttributes.includes('secondary_motivations'))}
+                required={mandatoryAttributes.includes('secondary_motivations')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -359,7 +344,7 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 label={t_i18n('Personal motivations')}
                 type="attack-motivation-ov"
                 name="personal_motivations"
-                required={(mandatoryAttributes.includes('personal_motivations'))}
+                required={mandatoryAttributes.includes('personal_motivations')}
                 onFocus={handleChangeFocus}
                 onChange={(name, value) => setFieldValue(name, value)}
                 onSubmit={handleSubmitField}
@@ -372,16 +357,14 @@ const ThreatActorIndividualEditionDetailsComponent: FunctionComponent<
                 component={TextField}
                 name="goals"
                 label={t_i18n('Goals (1 / line)')}
-                required={(mandatoryAttributes.includes('goals'))}
+                required={mandatoryAttributes.includes('goals')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitGoals}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="goals" />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="goals" />}
               />
               {enableReferences && (
                 <CommitMessage

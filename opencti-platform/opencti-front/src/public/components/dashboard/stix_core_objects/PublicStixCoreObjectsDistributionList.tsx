@@ -15,13 +15,13 @@ const publicStixCoreObjectsDistributionListQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -39,7 +39,7 @@ const publicStixCoreObjectsDistributionListQuery = graphql`
             main
           }
         }
-        
+
         # need colors when available
         ... on Label {
           color
@@ -116,9 +116,7 @@ const PublicStixCoreObjectsDistributionList = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsDistributionListComponent queryRef={queryRef} />

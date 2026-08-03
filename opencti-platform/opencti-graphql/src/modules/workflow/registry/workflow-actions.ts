@@ -1,12 +1,19 @@
 import { logApp } from '../../../config/conf';
-import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
+import {
+  draftWorkspaceEditAuthorizedMembers,
+  validateDraftWorkspace,
+} from '../../draftWorkspace/draftWorkspace-domain';
 import type { AsyncActionSlot, Context } from '../types/workflow-types';
 import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_PARTICIPANT,
+} from '../../../schema/stixRefRelationship';
 
 /**
  * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
@@ -23,30 +30,39 @@ const resolveDynamicAuthorizedMembers = (
       const createdByRef = entity[RELATION_CREATED_BY];
       const createdByIds: string[] = Array.isArray(createdByRef)
         ? createdByRef
-        : (createdByRef ? [createdByRef] : []);
+        : createdByRef
+          ? [createdByRef]
+          : [];
       for (const authorId of createdByIds) {
         if (authorId) resolved.push({ id: authorId, access_right, groups_restriction_ids });
       }
     } else if (id === 'CREATORS') {
       const creatorIds: string[] = Array.isArray(entity.creator_id)
         ? entity.creator_id
-        : (entity.creator_id ? [entity.creator_id] : []);
+        : entity.creator_id
+          ? [entity.creator_id]
+          : [];
       for (const creatorId of creatorIds) {
         if (creatorId) resolved.push({ id: creatorId, access_right, groups_restriction_ids });
       }
     } else if (id === 'ASSIGNEES') {
       const assigneeIds: string[] = Array.isArray(entity[RELATION_OBJECT_ASSIGNEE])
         ? entity[RELATION_OBJECT_ASSIGNEE]
-        : (entity[RELATION_OBJECT_ASSIGNEE] ? [entity[RELATION_OBJECT_ASSIGNEE]] : []);
+        : entity[RELATION_OBJECT_ASSIGNEE]
+          ? [entity[RELATION_OBJECT_ASSIGNEE]]
+          : [];
       for (const assigneeId of assigneeIds) {
         if (assigneeId) resolved.push({ id: assigneeId, access_right, groups_restriction_ids });
       }
     } else if (id === 'PARTICIPANTS') {
       const participantIds: string[] = Array.isArray(entity[RELATION_OBJECT_PARTICIPANT])
         ? entity[RELATION_OBJECT_PARTICIPANT]
-        : (entity[RELATION_OBJECT_PARTICIPANT] ? [entity[RELATION_OBJECT_PARTICIPANT]] : []);
+        : entity[RELATION_OBJECT_PARTICIPANT]
+          ? [entity[RELATION_OBJECT_PARTICIPANT]]
+          : [];
       for (const participantId of participantIds) {
-        if (participantId) resolved.push({ id: participantId, access_right, groups_restriction_ids });
+        if (participantId)
+          resolved.push({ id: participantId, access_right, groups_restriction_ids });
       }
     } else {
       resolved.push({ id, access_right, groups_restriction_ids });
@@ -55,7 +71,10 @@ const resolveDynamicAuthorizedMembers = (
   return resolved;
 };
 
-export type ActionFunction<TContext extends Context = Context> = (executionContext: TContext, params?: any) => Promise<void> | void;
+export type ActionFunction<TContext extends Context = Context> = (
+  executionContext: TContext,
+  params?: any,
+) => Promise<void> | void;
 
 export interface ActionDefinition {
   fn: ActionFunction;
@@ -80,7 +99,9 @@ export const asyncBulkActionParamsSchema = z.object({
 export const ActionRegistry: Record<string, ActionFunction> = {
   // actions examples:
   log: async (executionContext, params) => {
-    logApp.info(`[Action: LOG] Context: ${JSON.stringify(executionContext)} | Message: ${params?.message || 'No message'}`);
+    logApp.info(
+      `[Action: LOG] Context: ${JSON.stringify(executionContext)} | Message: ${params?.message || 'No message'}`,
+    );
   },
   validateDraft: async (executionContext) => {
     const { entity, user, context } = executionContext;
@@ -88,11 +109,17 @@ export const ActionRegistry: Record<string, ActionFunction> = {
   },
   updateAuthorizedMembers: async (executionContext, params) => {
     const { entity, context, user } = executionContext;
-    const rawMembers: Array<{ id: string; access_right: string; groups_restriction_ids?: string[] }> = params?.authorized_members ?? [];
+    const rawMembers: Array<{
+      id: string;
+      access_right: string;
+      groups_restriction_ids?: string[];
+    }> = params?.authorized_members ?? [];
     const resolvedMembers = resolveDynamicAuthorizedMembers(entity, rawMembers);
 
     if (entity?.entity_type === 'DraftWorkspace') {
-      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers, { skipAdminValidation: true });
+      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, resolvedMembers, {
+        skipAdminValidation: true,
+      });
     } else {
       await editAuthorizedMembers(context, user, {
         entityId: entity.id ?? entity.internal_id,
@@ -110,7 +137,15 @@ export const ActionRegistry: Record<string, ActionFunction> = {
    * a direct import cycle between the registry and backgroundTask-common.js.
    */
   asyncBulkAction: async (executionContext, params) => {
-    const { entity, user, context, pendingAsyncSlots, __createListTask, __workflowInstanceId, __draftEntityIds } = executionContext as any;
+    const {
+      entity,
+      user,
+      context,
+      pendingAsyncSlots,
+      __createListTask,
+      __workflowInstanceId,
+      __draftEntityIds,
+    } = executionContext as any;
     if (typeof __createListTask !== 'function') {
       logApp.error('[asyncBulkAction] __createListTask not injected into context — action skipped');
       return;
@@ -123,11 +158,17 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     // This handles transitions where orgs are collected at trigger time (not pre-filled in definition).
     const actions = ((params?.actions ?? []) as any[]).map((a: any) => {
       if (a.type === 'SHARE' && !a.context?.values?.length) {
-        const orgIds: string[] = (runtimeParams.shareOrganizationIds as string[]) ?? (runtimeParams.organizationIds as string[]) ?? [];
+        const orgIds: string[] =
+          (runtimeParams.shareOrganizationIds as string[]) ??
+          (runtimeParams.organizationIds as string[]) ??
+          [];
         if (orgIds.length > 0) return { ...a, context: { ...a.context, values: orgIds } };
       }
       if (a.type === 'UNSHARE' && !a.context?.values?.length) {
-        const orgIds: string[] = (runtimeParams.unshareOrganizationIds as string[]) ?? (runtimeParams.organizationIds as string[]) ?? [];
+        const orgIds: string[] =
+          (runtimeParams.unshareOrganizationIds as string[]) ??
+          (runtimeParams.organizationIds as string[]) ??
+          [];
         if (orgIds.length > 0) return { ...a, context: { ...a.context, values: orgIds } };
       }
       return a;
@@ -140,8 +181,9 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     // - DraftWorkspace with pre-queried contents → use those STIX entity IDs
     // - DraftWorkspace linked to a specific entity (entity_id set) → use that ID
     // - Any other entity → use its own ID
-    const fallbackId = (isDraft && entity?.entity_id) ? entity.entity_id : entity?.id;
-    const ids: string[] = (isDraft && draftEntityIds.length > 0) ? draftEntityIds : (fallbackId ? [fallbackId] : []);
+    const fallbackId = isDraft && entity?.entity_id ? entity.entity_id : entity?.id;
+    const ids: string[] =
+      isDraft && draftEntityIds.length > 0 ? draftEntityIds : fallbackId ? [fallbackId] : [];
 
     // When targeting a DraftWorkspace, run the task in the draft context
     // so internalFindByIds can locate the entities (they live in the draft index).
@@ -186,13 +228,19 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
   },
   updateAuthorizedMembers: {
     fn: ActionRegistry.updateAuthorizedMembers,
-    paramsSchema: z.object({
-      authorized_members: z.array(z.object({
-        id: z.string(),
-        access_right: z.string(),
-        groups_restriction_ids: z.array(z.string()).optional(),
-      })).optional(),
-    }).optional(),
+    paramsSchema: z
+      .object({
+        authorized_members: z
+          .array(
+            z.object({
+              id: z.string(),
+              access_right: z.string(),
+              groups_restriction_ids: z.array(z.string()).optional(),
+            }),
+          )
+          .optional(),
+      })
+      .optional(),
     allowedModes: ['sync', 'async'],
   },
   asyncBulkAction: {

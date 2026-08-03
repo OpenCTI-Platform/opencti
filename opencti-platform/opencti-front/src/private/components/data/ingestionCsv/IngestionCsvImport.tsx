@@ -70,12 +70,18 @@ interface IngestionCsvImportProps {
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
 }
-const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [ingestCSVData, setIngestCSVData] = useState<IngestionCsvImportQuery$data['csvFeedAddInputFromImport'] | undefined>(undefined);
+  const [ingestCSVData, setIngestCSVData] = useState<
+    IngestionCsvImportQuery$data['csvFeedAddInputFromImport'] | undefined
+  >(undefined);
   const { t_i18n } = useFormatter();
 
   const handleFileImport = (file: File) => {
@@ -146,9 +152,11 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         onChange={fileImport}
       />
       <IngestionCsvCreationContainer
-        ingestionCsvData={{
-          ...ingestCSVData,
-        } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
+        ingestionCsvData={
+          {
+            ...ingestCSVData,
+          } as unknown as IngestionCsvEditionFragment_ingestionCsv$data
+        }
         triggerButton={false}
         handleClose={() => {
           setOpen(false);

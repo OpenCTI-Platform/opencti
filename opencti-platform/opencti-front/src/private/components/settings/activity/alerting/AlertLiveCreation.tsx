@@ -23,25 +23,31 @@ import NotifierField from '../../../common/form/NotifierField';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import Filters from '../../../common/lists/Filters';
 import { TriggersLinesPaginationQuery$variables } from '../../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
-import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
+import {
+  AlertLiveCreationActivityMutation,
+  AlertLiveCreationActivityMutation$data,
+} from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import { useTheme } from '@mui/material/styles';
 
 export const triggerLiveActivityCreationMutation = graphql`
-    mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
-        triggerActivityLiveAdd(input: $input) {
-            id
-            name
-            ...AlertingLine_node
-        }
+  mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
+    triggerActivityLiveAdd(input: $input) {
+      id
+      name
+      ...AlertingLine_node
     }
+  }
 `;
 
-export const liveActivityTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  notifiers: Yup.array().nullable(),
-  recipients: Yup.array().min(1, t('Minimum one recipient')).required(t('This field is required')),
-});
+export const liveActivityTriggerValidation = (t: (message: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    notifiers: Yup.array().nullable(),
+    recipients: Yup.array()
+      .min(1, t('Minimum one recipient'))
+      .required(t('This field is required')),
+  });
 
 interface TriggerActivityLiveAddInput {
   name: string;
@@ -74,7 +80,9 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     handleClose?.();
     helpers.handleClearAllFilters();
   };
-  const [commitActivity] = useApiMutation<AlertLiveCreationActivityMutation>(triggerLiveActivityCreationMutation);
+  const [commitActivity] = useApiMutation<AlertLiveCreationActivityMutation>(
+    triggerLiveActivityCreationMutation,
+  );
   const liveInitialValues: TriggerActivityLiveAddInput = {
     name: inputValue || '',
     description: '',
@@ -100,7 +108,12 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       },
       updater: (store) => {
         if (paginationOptions) {
-          insertNode(store, 'Pagination_triggersActivity', paginationOptions, 'triggerActivityLiveAdd');
+          insertNode(
+            store,
+            'Pagination_triggersActivity',
+            paginationOptions,
+            'triggerActivityLiveAdd',
+          );
         }
       },
       onError: (error: Error) => {
@@ -117,7 +130,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     });
   };
 
-  const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
+  const renderActivityTrigger = (
+    values: TriggerActivityLiveAddInput,
+    setFieldValue: (name: string, value: FieldOption[]) => void,
+  ) => {
     return (
       <>
         <ObjectMembersField
@@ -155,7 +171,10 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
     );
   };
 
-  const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (
+  const liveFields = (
+    setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void,
+    values: TriggerActivityLiveAddInput,
+  ) => (
     <React.Fragment>
       <Field
         component={TextField}
@@ -175,49 +194,27 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
       />
       <NotifierField name="notifiers" onChange={setFieldValue} />
       {renderActivityTrigger(values, setFieldValue)}
-      <FilterIconButton
-        filters={filters}
-        redirection
-        helpers={helpers}
-        entityTypes={['History']}
-      />
+      <FilterIconButton filters={filters} redirection helpers={helpers} entityTypes={['History']} />
     </React.Fragment>
   );
 
   const renderClassic = () => (
     <div>
-      <Drawer
-        title={t_i18n('Create a live activity trigger')}
-        open={open}
-        onClose={handleClose}
-      >
+      <Drawer title={t_i18n('Create a live activity trigger')} open={open} onClose={handleClose}>
         <Formik<TriggerActivityLiveAddInput>
           initialValues={liveInitialValues}
           validationSchema={liveActivityTriggerValidation(t_i18n)}
           onSubmit={onLiveSubmit}
           onReset={onReset}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
             <Form>
               {liveFields(setFieldValue, values)}
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

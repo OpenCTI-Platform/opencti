@@ -42,15 +42,17 @@ export const entitySettingsOverviewLayoutCustomizationEdit = graphql`
 type NonNullableFields<T> = {
   [P in keyof T]: NonNullable<T[P]>;
 };
-export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingsFragment_entitySetting$data, 'id' | 'overview_layout_customization'>>;
+export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<
+  Pick<EntitySettingsFragment_entitySetting$data, 'id' | 'overview_layout_customization'>
+>;
 
 interface EntitySettingsOverviewLayoutCustomizationProps {
   entitySettingsData: EntitySettingsOverviewLayoutCustomizationData;
 }
 
-const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverviewLayoutCustomizationProps> = ({
-  entitySettingsData: { id, overview_layout_customization },
-}) => {
+const EntitySettingsOverviewLayoutCustomization: React.FC<
+  EntitySettingsOverviewLayoutCustomizationProps
+> = ({ entitySettingsData: { id, overview_layout_customization } }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -60,24 +62,34 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
 
   const getFormValuesFromData = (data: typeof overview_layout_customization) => {
     return {
-      ...data.reduce((accumulator, widgetConfiguration, currentIndex) => ({
-        ...accumulator,
-        [`${widgetConfiguration.key}_isFullWidth`]: widgetConfiguration.width === 12,
-        [`${widgetConfiguration.key}_order`]: currentIndex,
-      }), {}),
+      ...data.reduce(
+        (accumulator, widgetConfiguration, currentIndex) => ({
+          ...accumulator,
+          [`${widgetConfiguration.key}_isFullWidth`]: widgetConfiguration.width === 12,
+          [`${widgetConfiguration.key}_order`]: currentIndex,
+        }),
+        {},
+      ),
     };
   };
 
   const initialValues = getFormValuesFromData(overview_layout_customization);
 
-  const [commitUpdate, updateInFlight] = useApiMutation(entitySettingsOverviewLayoutCustomizationEdit);
+  const [commitUpdate, updateInFlight] = useApiMutation(
+    entitySettingsOverviewLayoutCustomizationEdit,
+  );
   const editInputsKeys = overview_layout_customization.map(({ key }) => key);
-  const editLabels: Record<string, string> = overview_layout_customization.reduce((o, { key, label }) => ({ ...o, [key]: label }), {});
+  const editLabels: Record<string, string> = overview_layout_customization.reduce(
+    (o, { key, label }) => ({ ...o, [key]: label }),
+    {},
+  );
   const updateLayout = (values: Record<string, boolean | number>) => {
     const input = {
       key: 'overview_layout_customization',
       value: editInputsKeys
-        .sort((keyA, keyB) => (values[`${keyA}_order`] as number) - (values[`${keyB}_order`] as number))
+        .sort(
+          (keyA, keyB) => (values[`${keyA}_order`] as number) - (values[`${keyB}_order`] as number),
+        )
         .map((inputKey) => ({
           key: inputKey,
           width: (values[`${inputKey}_isFullWidth`] as boolean) ? 12 : 6,
@@ -95,7 +107,10 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
     updateLayout(values);
   };
 
-  const onDragEndHandler = (values: typeof initialValues, { draggableId, source, destination }: DropResult) => {
+  const onDragEndHandler = (
+    values: typeof initialValues,
+    { draggableId, source, destination }: DropResult,
+  ) => {
     // dropped outside the list
     if (!destination) {
       return;
@@ -138,53 +153,54 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
             <DragDropContext onDragEnd={(props) => onDragEndHandler(values, props)}>
               <Droppable droppableId="custom_overview_droppable">
                 {(providedDrop) => (
-                  <TableBody
-                    ref={providedDrop.innerRef}
-                    {...providedDrop.droppableProps}
-                  >
-                    {
-                      overview_layout_customization.map(({ key, label }, index) => (
-                        <Draggable key={key} draggableId={`${key}_order`} index={index} isDragDisabled={updateInFlight}>
-                          {(providedDrag, snapshotDrag) => (
-                            <TableRow
-                              key={key}
-                              ref={providedDrag.innerRef}
-                              sx={{
-                                '& td, & th': { borderColor: 'border.lightBackground' },
-                                background: snapshotDrag.isDragging ? theme.palette.background.accent : undefined,
+                  <TableBody ref={providedDrop.innerRef} {...providedDrop.droppableProps}>
+                    {overview_layout_customization.map(({ key, label }, index) => (
+                      <Draggable
+                        key={key}
+                        draggableId={`${key}_order`}
+                        index={index}
+                        isDragDisabled={updateInFlight}
+                      >
+                        {(providedDrag, snapshotDrag) => (
+                          <TableRow
+                            key={key}
+                            ref={providedDrag.innerRef}
+                            sx={{
+                              '& td, & th': { borderColor: 'border.lightBackground' },
+                              background: snapshotDrag.isDragging
+                                ? theme.palette.background.accent
+                                : undefined,
+                            }}
+                            {...providedDrag.draggableProps}
+                          >
+                            <TableCell
+                              component="th"
+                              scope="row"
+                              style={{
+                                verticalAlign: 'bottom',
                               }}
-                              {...providedDrag.draggableProps}
+                              {...providedDrag.dragHandleProps}
                             >
-                              <TableCell
-                                component="th"
-                                scope="row"
-                                style={{
-                                  verticalAlign: 'bottom',
+                              <DragIndicatorOutlined />
+                            </TableCell>
+                            <TableCell>{t_i18n(label)}</TableCell>
+                            <TableCell>
+                              <Switch
+                                name={`${key}_isFullWidth`}
+                                checked={(values as Record<string, boolean>)[`${key}_isFullWidth`]}
+                                onChange={async (_: unknown, value) => {
+                                  handleSubmitIsFullWidthField({
+                                    ...values,
+                                    [`${key}_isFullWidth`]: value,
+                                  });
                                 }}
-                                {...providedDrag.dragHandleProps}
-                              >
-                                <DragIndicatorOutlined />
-                              </TableCell>
-                              <TableCell>
-                                {t_i18n(label)}
-                              </TableCell>
-                              <TableCell>
-                                <Switch
-                                  name={`${key}_isFullWidth`}
-                                  checked={((values as Record<string, boolean>)[`${key}_isFullWidth`])}
-                                  onChange={
-                                    async (_: unknown, value) => {
-                                      handleSubmitIsFullWidthField({ ...values, [`${key}_isFullWidth`]: value });
-                                    }
-                                  }
-                                  disabled={updateInFlight}
-                                />
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </Draggable>
-                      ))
-                    }
+                                disabled={updateInFlight}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Draggable>
+                    ))}
                     {providedDrop.placeholder}
                   </TableBody>
                 )}

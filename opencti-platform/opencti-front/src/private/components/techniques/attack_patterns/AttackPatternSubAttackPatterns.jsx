@@ -41,9 +41,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
     });
   };
 
-  const sortByXMitreIdCaseInsensitive = R.sortBy(
-    R.compose(R.toLower, R.propOr('', 'x_mitre_id')),
-  );
+  const sortByXMitreIdCaseInsensitive = R.sortBy(R.compose(R.toLower, R.propOr('', 'x_mitre_id')));
   const subAttackPatterns = R.pipe(
     R.map((n) => n.node),
     sortByXMitreIdCaseInsensitive,
@@ -51,16 +49,15 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
   return (
     <div style={{ height: '100%', marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Label action={(
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <AddSubAttackPattern
-              attackPattern={attackPattern}
-              attackPatternSubAttackPatterns={
-                attackPattern.subAttackPatterns.edges
-              }
-            />
-          </Security>
-        )}
+        <Label
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <AddSubAttackPattern
+                attackPattern={attackPattern}
+                attackPatternSubAttackPatterns={attackPattern.subAttackPatterns.edges}
+              />
+            </Security>
+          }
         >
           {t_i18n('Sub attack patterns')}
         </Label>
@@ -73,17 +70,13 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               dense={true}
               divider={true}
               disablePadding={true}
-              secondaryAction={(
+              secondaryAction={
                 <Tooltip title={t_i18n('Delete relationship')}>
-                  <IconButton
-                    onClick={() => removeSubAttackPattern(
-                      subAttackPattern,
-                    )}
-                  >
+                  <IconButton onClick={() => removeSubAttackPattern(subAttackPattern)}>
                     <Delete />
                   </IconButton>
                 </Tooltip>
-              )}
+              }
             >
               <ListItemButton
                 component={Link}

@@ -1,8 +1,13 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
 import React, { useContext } from 'react';
-import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
-import { IngestionCsvLinesPaginationQuery, IngestionCsvLinesPaginationQuery$variables } from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
+import IngestionCsvLines, {
+  ingestionCsvLinesQuery,
+} from '@components/data/ingestionCsv/IngestionCsvLines';
+import {
+  IngestionCsvLinesPaginationQuery,
+  IngestionCsvLinesPaginationQuery$variables,
+} from '@components/data/ingestionCsv/__generated__/IngestionCsvLinesPaginationQuery.graphql';
 import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCsvLine';
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
@@ -41,19 +46,16 @@ const IngestionCsv = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers,
-  } = usePaginationLocalStorage<IngestionCsvLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
-    sortBy: 'name',
-    orderAsc: false,
-    searchTerm: '',
-    numberOfElements: {
-      number: 0,
-      symbol: '',
-    },
-  });
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<IngestionCsvLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
+      sortBy: 'name',
+      orderAsc: false,
+      searchTerm: '',
+      numberOfElements: {
+        number: 0,
+        symbol: '',
+      },
+    });
 
   const renderLines = () => {
     const { searchTerm, sortBy, orderAsc, numberOfElements } = viewStorage;
@@ -102,12 +104,10 @@ const IngestionCsv = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={(
+        createButton={
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
-              <IngestionCsvImport
-                paginationOptions={paginationOptions}
-              />
+              <IngestionCsvImport paginationOptions={paginationOptions} />
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <Button
                   gradient
@@ -121,21 +121,19 @@ const IngestionCsv = () => {
               )}
               <IngestionCsvCreationContainer
                 paginationOptions={paginationOptions}
-                drawerSettings={
-                  {
-                    title: t_i18n('Create a CSV Feed'),
-                    button: t_i18n('Create'),
-                  }
-                }
+                drawerSettings={{
+                  title: t_i18n('Create a CSV Feed'),
+                  button: t_i18n('Create'),
+                }}
               />
             </>
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -143,7 +141,7 @@ const IngestionCsv = () => {
                     <IngestionCsvLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <IngestionCsvLines
               queryRef={queryRef}
@@ -168,7 +166,13 @@ const IngestionCsv = () => {
 
   return (
     <div className={classes.container} data-testid="csv-feeds-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=csv' }, { label: t_i18n('CSV feeds'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Integrations') },
+          { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=csv' },
+          { label: t_i18n('CSV feeds'), current: true },
+        ]}
+      />
       {renderLines()}
     </div>
   );

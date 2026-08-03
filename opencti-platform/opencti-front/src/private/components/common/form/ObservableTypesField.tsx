@@ -61,10 +61,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       onChange={typeof onChange === 'function' ? onChange : null}
       isOptionEqualToValue={(option: string, value: string) => option === value}
       style={style}
-      renderOption={(
-        props: React.HTMLAttributes<HTMLLIElement>,
-        option: string,
-      ) => (
+      renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: string) => (
         <li {...props} key={option}>
           <div className={classes.icon}>
             <ItemIcon type={option} />

@@ -9,9 +9,8 @@ let healthMonitorInterval: NodeJS.Timeout | null = null;
 const elGetClusterHealth = async () => {
   try {
     // 1. Cluster health
-    const healthResult = engine instanceof ElkClient
-      ? await engine.cluster.health()
-      : await engine.cluster.health();
+    const healthResult =
+      engine instanceof ElkClient ? await engine.cluster.health() : await engine.cluster.health();
     const health = oebp(healthResult);
     logApp.info('[SEARCH] Cluster health', {
       status: health.status,
@@ -26,9 +25,10 @@ const elGetClusterHealth = async () => {
     });
 
     // 2. Node stats (JVM heap, CPU, OS memory)
-    const nodesStatsResult = engine instanceof ElkClient
-      ? await engine.nodes.stats({ metric: ['jvm', 'os', 'process'] as any })
-      : await engine.nodes.stats({ metric: 'jvm,os,process' } as any);
+    const nodesStatsResult =
+      engine instanceof ElkClient
+        ? await engine.nodes.stats({ metric: ['jvm', 'os', 'process'] as any })
+        : await engine.nodes.stats({ metric: 'jvm,os,process' } as any);
     const nodesStats = oebp(nodesStatsResult);
     const nodeEntries = Object.entries(nodesStats.nodes ?? {}) as [string, any][];
     for (const [nodeId, node] of nodeEntries) {
@@ -54,13 +54,22 @@ const elGetClusterHealth = async () => {
     }
 
     // 3. Thread pool stats (queue sizes, rejections)
-    const threadPoolResult = engine instanceof ElkClient
-      ? await engine.cat.threadPool({ format: 'json', h: 'node_name,name,active,queue,rejected,completed' as any })
-      : await engine.cat.threadPool({ format: 'json', h: ['node_name', 'name', 'active', 'queue', 'rejected', 'completed'] } as any);
+    const threadPoolResult =
+      engine instanceof ElkClient
+        ? await engine.cat.threadPool({
+            format: 'json',
+            h: 'node_name,name,active,queue,rejected,completed' as any,
+          })
+        : await engine.cat.threadPool({
+            format: 'json',
+            h: ['node_name', 'name', 'active', 'queue', 'rejected', 'completed'],
+          } as any);
     const threadPools = oebp(threadPoolResult) as any[];
     const monitoredPools = ['search', 'write', 'bulk', 'get', 'analyze', 'management'];
     const relevantPools = (threadPools ?? []).filter(
-      (tp: any) => monitoredPools.includes(tp.name) && (Number(tp.active) > 0 || Number(tp.queue) > 0 || Number(tp.rejected) > 0),
+      (tp: any) =>
+        monitoredPools.includes(tp.name) &&
+        (Number(tp.active) > 0 || Number(tp.queue) > 0 || Number(tp.rejected) > 0),
     );
     if (relevantPools.length > 0) {
       for (const tp of relevantPools) {
@@ -74,7 +83,9 @@ const elGetClusterHealth = async () => {
         });
       }
     } else {
-      logApp.info('[SEARCH] Thread pool stats: all monitored pools idle (no active, queued, or rejected tasks)');
+      logApp.info(
+        '[SEARCH] Thread pool stats: all monitored pools idle (no active, queued, or rejected tasks)',
+      );
     }
   } catch (e) {
     logApp.error('[SEARCH] Error fetching cluster health', { cause: e });

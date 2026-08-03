@@ -17,7 +17,11 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -42,10 +46,7 @@ const dataSourceMutationFieldPatch = graphql`
 `;
 
 export const dataSourceEditionOverviewFocus = graphql`
-  mutation DataSourceEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation DataSourceEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     dataSourceContextPatch(id: $id, input: $input) {
       id
     }
@@ -71,11 +72,7 @@ const dataSourceMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    dataSourceRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    dataSourceRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       ...DataSourceEditionOverview_dataSource
     }
   }
@@ -123,10 +120,11 @@ interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key;
   context:
     | readonly ({
-      readonly focusOn: string | null | undefined;
-      readonly name: string;
-    } | null)[]
-    | null | undefined;
+        readonly focusOn: string | null | undefined;
+        readonly name: string;
+      } | null)[]
+    | null
+    | undefined;
   enableReferences?: boolean;
   handleClose: () => void;
 }
@@ -144,27 +142,30 @@ interface DataSourceEditionFormValues {
   references?: FieldOption[];
 }
 
-const DataSourceEditionOverview: FunctionComponent<
-  DataSourceEditionOverviewProps
-> = ({ data, context, enableReferences = false, handleClose }) => {
+const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProps> = ({
+  data,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    x_mitre_platforms: Yup.array().nullable(),
-    collection_layers: Yup.array().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
-  const dataSourceValidator = useDynamicSchemaEditionValidation(
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      x_mitre_platforms: Yup.array().nullable(),
+      collection_layers: Yup.array().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
     mandatoryAttributes,
-    basicShape,
   );
+  const dataSourceValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
     fieldPatch: dataSourceMutationFieldPatch,
@@ -179,7 +180,10 @@ const DataSourceEditionOverview: FunctionComponent<
     dataSourceValidator,
   );
 
-  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -195,8 +199,7 @@ const DataSourceEditionOverview: FunctionComponent<
       variables: {
         id: dataSource.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -250,14 +253,7 @@ const DataSourceEditionOverview: FunctionComponent<
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={dataSource} />
           <Field
@@ -265,13 +261,11 @@ const DataSourceEditionOverview: FunctionComponent<
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -285,7 +279,7 @@ const DataSourceEditionOverview: FunctionComponent<
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -293,44 +287,33 @@ const DataSourceEditionOverview: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {dataSource.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
               type="Data-Source"
-              required={(mandatoryAttributes.includes('x_opencti_workflow_id'))}
+              required={mandatoryAttributes.includes('x_opencti_workflow_id')}
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -338,7 +321,7 @@ const DataSourceEditionOverview: FunctionComponent<
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
-            required={(mandatoryAttributes.includes('x_mitre_platforms'))}
+            required={mandatoryAttributes.includes('x_mitre_platforms')}
             variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
@@ -350,7 +333,7 @@ const DataSourceEditionOverview: FunctionComponent<
             label={t_i18n('Layers')}
             type="collection_layers_ov"
             name="collection_layers"
-            required={(mandatoryAttributes.includes('collection_layers'))}
+            required={mandatoryAttributes.includes('collection_layers')}
             variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}

@@ -2,9 +2,16 @@ import React, { CSSProperties, FunctionComponent, Suspense, useState } from 'rea
 import type { PreloadedQuery } from 'react-relay';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../../utils/widget/widget';
 import { useFormatter } from '../../../../../components/i18n';
-import { buildFiltersAndOptionsForWidgets, normalizeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import {
+  buildFiltersAndOptionsForWidgets,
+  normalizeFilterGroupForBackend,
+} from '../../../../../utils/filters/filtersUtils';
 import type { DashboardConfig } from '../../../../../components/dashboard/dashboard-types';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
@@ -15,9 +22,7 @@ import { computeWidgetFiltersForSelection } from '../../../../../components/dash
 import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
 import WidgetNoSavedFilters from '../../../../../components/dashboard/WidgetNoSavedFilters';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
-import type {
-  StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
-} from './__generated__/StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery.graphql';
+import type { StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery } from './__generated__/StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery.graphql';
 import type { StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery } from './__generated__/StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery.graphql';
 
 // ---------------------------------------------------------------------------
@@ -364,9 +369,9 @@ const stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = graphq
 // Query variables builder
 // ---------------------------------------------------------------------------
 
-type MultiHorizontalBarsQuery
-  = StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
-    | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery;
+type MultiHorizontalBarsQuery =
+  | StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
+  | StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery;
 
 const buildQueryVariables = (
   resolvedDataSelection: WidgetDataSelection[],
@@ -378,7 +383,11 @@ const buildQueryVariables = (
   const finalField = selection.attribute || 'entity_type';
   const finalSubDistributionField = subSelection?.attribute || 'entity_type';
 
-  const { startDate, endDate, dateAttribute, filters } = computeWidgetFiltersForSelection(selection, config, { isKnowledgeRelationshipWidget: true });
+  const { startDate, endDate, dateAttribute, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+    { isKnowledgeRelationshipWidget: true },
+  );
   const subDistributionFiltersAndOptions = subSelection
     ? buildFiltersAndOptionsForWidgets(subSelection.filters)
     : undefined;
@@ -409,7 +418,9 @@ const buildQueryVariables = (
           : 'created_at',
       subDistributionLimit: subSelection.number ?? 15,
       subDistributionTypes: ['Stix-Core-Object'],
-      subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
+      subDistributionFilters: normalizeFilterGroupForBackend(
+        subDistributionFiltersAndOptions?.filters,
+      ),
     } as StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery['variables'];
   }
 
@@ -423,7 +434,9 @@ const buildQueryVariables = (
         : 'created_at',
     subDistributionIsTo: subSelection?.isTo,
     subDistributionLimit: subSelection?.number ?? 15,
-    subDistributionFilters: normalizeFilterGroupForBackend(subDistributionFiltersAndOptions?.filters),
+    subDistributionFilters: normalizeFilterGroupForBackend(
+      subDistributionFiltersAndOptions?.filters,
+    ),
   } as StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery['variables'];
 };
 
@@ -432,7 +445,8 @@ const buildQueryVariables = (
 // ---------------------------------------------------------------------------
 
 interface StixRelationshipsMultiHorizontalBarsComponentProps {
-  queryRef: PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery>
+  queryRef:
+    | PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery>
     | PreloadedQuery<StixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery>;
   queryToCall:
     | typeof stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
@@ -444,7 +458,9 @@ interface StixRelationshipsMultiHorizontalBarsComponentProps {
   onMounted: (chart: ApexCharts) => void;
 }
 
-const StixRelationshipsMultiHorizontalBarsComponent: FunctionComponent<StixRelationshipsMultiHorizontalBarsComponentProps> = ({
+const StixRelationshipsMultiHorizontalBarsComponent: FunctionComponent<
+  StixRelationshipsMultiHorizontalBarsComponentProps
+> = ({
   queryRef,
   parameters = {},
   queryToCall,
@@ -503,7 +519,9 @@ interface StixRelationshipsMultiHorizontalBarsProps {
   refreshRate?: number | null;
 }
 
-const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsMultiHorizontalBarsProps> = ({
+const StixRelationshipsMultiHorizontalBars: FunctionComponent<
+  StixRelationshipsMultiHorizontalBarsProps
+> = ({
   title,
   variant,
   height,
@@ -523,7 +541,13 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
     ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
     : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<MultiHorizontalBarsQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<MultiHorizontalBarsQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

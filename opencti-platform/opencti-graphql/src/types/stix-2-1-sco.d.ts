@@ -1,4 +1,10 @@
-import type { CyberObjectExtension, StixOpenctiExtension, StixCyberObject, StixDate, StixId } from './stix-2-1-common';
+import type {
+  CyberObjectExtension,
+  StixOpenctiExtension,
+  StixCyberObject,
+  StixDate,
+  StixId,
+} from './stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
 import type { StixInternalExternalReference } from './stix-2-1-smo';
 
@@ -381,7 +387,13 @@ export interface StixIMSI extends StixCyberObject {
   };
 }
 
-type StixExtendedObservable = StixCryptographicKey | StixHostname | StixText | StixUserAgent | StixEmailBodyMultipart | StixWindowsRegistryValueType;
+type StixExtendedObservable =
+  | StixCryptographicKey
+  | StixHostname
+  | StixText
+  | StixUserAgent
+  | StixEmailBodyMultipart
+  | StixWindowsRegistryValueType;
 
 // IPv4 Address Object Specific Properties
 // value, resolves_to_refs, belongs_to_refs
@@ -416,8 +428,21 @@ export interface StixMutex extends StixCyberObject {
 // dst_byte_count, src_packets, dst_packets, ipfix, src_payload_ref, dst_payload_ref,
 // encapsulates_refs, encapsulated_by_ref
 // http-request-ext | icmp-ext | socket-ext | tcp-ext
-type network_socket_address_family_enum = 'AF_UNSPEC' | 'AF_INET' | 'AF_IPX' | 'AF_APPLETALK' | 'AF_NETBIOS' | 'AF_INET6' | 'AF_IRDA' | 'AF_BTH';
-type network_socket_type_enum = 'SOCK_STREAM' | 'AF_ISOCK_DGRAMNET' | 'SOCK_RAW' | 'SOCK_RDM' | 'SOCK_SEQPACKET';
+type network_socket_address_family_enum =
+  | 'AF_UNSPEC'
+  | 'AF_INET'
+  | 'AF_IPX'
+  | 'AF_APPLETALK'
+  | 'AF_NETBIOS'
+  | 'AF_INET6'
+  | 'AF_IRDA'
+  | 'AF_BTH';
+type network_socket_type_enum =
+  | 'SOCK_STREAM'
+  | 'AF_ISOCK_DGRAMNET'
+  | 'SOCK_RAW'
+  | 'SOCK_RDM'
+  | 'SOCK_SEQPACKET';
 export interface StixNetworkTraffic extends StixCyberObject {
   start: StixDate; // optional
   end: StixDate; // optional
@@ -476,9 +501,25 @@ export interface StixNetworkTraffic extends StixCyberObject {
 // creator_user_ref, image_ref, parent_ref, child_refs
 // windows-process-ext | windows-service-ext
 type windows_integrity_level_enum = 'low' | 'medium' | 'high' | 'system';
-type windows_service_start_type_enum = 'SERVICE_AUTO_START' | 'SERVICE_BOOT_START' | 'SERVICE_DEMAND_START' | 'SERVICE_DISABLED' | 'SERVICE_SYSTEM_ALERT';
-type windows_service_type_enum = 'SERVICE_KERNEL_DRIVER' | 'SERVICE_FILE_SYSTEM_DRIVER' | 'SERVICE_WIN32_OWN_PROCESS' | 'SERVICE_WIN32_SHARE_PROCESS';
-type windows_service_status_enum = 'SERVICE_CONTINUE_PENDING' | 'SERVICE_PAUSE_PENDING' | 'SERVICE_PAUSED' | 'SERVICE_RUNNING' | 'SERVICE_START_PENDING' | 'SERVICE_STOP_PENDING' | 'SERVICE_STOPPED';
+type windows_service_start_type_enum =
+  | 'SERVICE_AUTO_START'
+  | 'SERVICE_BOOT_START'
+  | 'SERVICE_DEMAND_START'
+  | 'SERVICE_DISABLED'
+  | 'SERVICE_SYSTEM_ALERT';
+type windows_service_type_enum =
+  | 'SERVICE_KERNEL_DRIVER'
+  | 'SERVICE_FILE_SYSTEM_DRIVER'
+  | 'SERVICE_WIN32_OWN_PROCESS'
+  | 'SERVICE_WIN32_SHARE_PROCESS';
+type windows_service_status_enum =
+  | 'SERVICE_CONTINUE_PENDING'
+  | 'SERVICE_PAUSE_PENDING'
+  | 'SERVICE_PAUSED'
+  | 'SERVICE_RUNNING'
+  | 'SERVICE_START_PENDING'
+  | 'SERVICE_STOP_PENDING'
+  | 'SERVICE_STOPPED';
 type ssh_key_type_enum = 'rsa' | 'ecdsa' | 'ed25519' | 'dsa';
 export interface StixProcess extends StixCyberObject {
   is_hidden: boolean; // optional
@@ -583,7 +624,8 @@ export interface StixInternalWindowsRegistryValueType {
   data: string;
   data_type: string;
 }
-export interface StixWindowsRegistryValueType extends StixInternalWindowsRegistryValueType, StixCyberObject {
+export interface StixWindowsRegistryValueType
+  extends StixInternalWindowsRegistryValueType, StixCyberObject {
   labels: Array<string>;
   description: string;
   score: number;

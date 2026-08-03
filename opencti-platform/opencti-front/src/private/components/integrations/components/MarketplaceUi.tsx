@@ -41,7 +41,10 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
   if (count <= 0) return null;
   return (
     <Tooltip
-      title={t_i18n('This integration has {count} deployed instance(s). Manage them from the Deployed tab.', { values: { count } })}
+      title={t_i18n(
+        'This integration has {count} deployed instance(s). Manage them from the Deployed tab.',
+        { values: { count } },
+      )}
       // Neutralize the global tooltip lowercasing: this is a full sentence.
       slotProps={{ popper: { sx: { textTransform: 'none' } } }}
     >
@@ -50,13 +53,15 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
         label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
         size="small"
         variant="outlined"
-        onClick={to
-          ? (event) => {
-            // The chip may live inside a clickable card: do not trigger it.
-              event.stopPropagation();
-              navigate(to);
-            }
-          : undefined}
+        onClick={
+          to
+            ? (event) => {
+                // The chip may live inside a clickable card: do not trigger it.
+                event.stopPropagation();
+                navigate(to);
+              }
+            : undefined
+        }
         sx={{
           height: 24,
           fontSize: 11,
@@ -84,7 +89,13 @@ interface MarketplaceSectionHeaderProps {
   onToggleCollapse?: () => void;
 }
 
-export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed = false, onToggleCollapse }: MarketplaceSectionHeaderProps) => {
+export const MarketplaceSectionHeader = ({
+  icon: Icon,
+  label,
+  count,
+  collapsed = false,
+  onToggleCollapse,
+}: MarketplaceSectionHeaderProps) => {
   const theme = useTheme();
   return (
     <Stack
@@ -139,13 +150,11 @@ export const MarketplaceSectionHeader = ({ icon: Icon, label, count, collapsed =
       >
         {count}
       </Box>
-      <Box sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }} />
+      <Box
+        sx={{ flex: 1, height: '1px', backgroundColor: alpha(theme.palette.text.primary, 0.05) }}
+      />
       {onToggleCollapse && (
-        <IconButton
-          size="small"
-          aria-expanded={!collapsed}
-          aria-label={label}
-        >
+        <IconButton size="small" aria-expanded={!collapsed} aria-label={label}>
           <ExpandMoreOutlined
             fontSize="small"
             sx={{
@@ -191,7 +200,11 @@ interface MarketplaceEmptyStateProps {
   extraAction?: React.ReactNode;
 }
 
-export const MarketplaceEmptyState = ({ hasActiveFilters, onResetFilters, extraAction }: MarketplaceEmptyStateProps) => {
+export const MarketplaceEmptyState = ({
+  hasActiveFilters,
+  onResetFilters,
+  extraAction,
+}: MarketplaceEmptyStateProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Stack
@@ -201,19 +214,24 @@ export const MarketplaceEmptyState = ({ hasActiveFilters, onResetFilters, extraA
         minHeight: '40vh',
       }}
     >
-      <GradientCard sx={{
-        px: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
-      }}
+      <GradientCard
+        sx={{
+          px: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
+        }}
       >
         <Stack flexDirection="row" alignItems="flex-start" gap={1}>
           <GradientCard.Icon icon={Search} size="large" />
           <Stack>
-            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('Sorry, we couldn\'t find any results for your search.')}</GradientCard.Text>
-            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>{t_i18n('For more results, you can search in the ecosystem.')}</GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>
+              {t_i18n("Sorry, we couldn't find any results for your search.")}
+            </GradientCard.Text>
+            <GradientCard.Text sx={{ whiteSpace: 'pre' }}>
+              {t_i18n('For more results, you can search in the ecosystem.')}
+            </GradientCard.Text>
           </Stack>
         </Stack>
         <Stack direction="row" gap={2}>

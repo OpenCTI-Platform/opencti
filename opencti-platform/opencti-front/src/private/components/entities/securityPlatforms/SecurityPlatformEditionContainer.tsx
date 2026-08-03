@@ -1,9 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
 import { createFragmentContainer, graphql } from 'react-relay';
-import {
-  SecurityPlatformEditionContainer_securityPlatform$data,
-} from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionContainer_securityPlatform.graphql';
+import { SecurityPlatformEditionContainer_securityPlatform$data } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformEditionContainer_securityPlatform.graphql';
 import SecurityPlatformEditionOverview from '@components/entities/securityPlatforms/SecurityPlatformEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -39,18 +37,15 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
   );
 };
 
-export default createFragmentContainer(
-  SecurityPlatformEditionContainer,
-  {
-    securityPlatform: graphql`
-      fragment SecurityPlatformEditionContainer_securityPlatform on SecurityPlatform {
-        id
-        ...SecurityPlatformEditionOverview_securityPlatform
-        editContext {
-            name
-            focusOn
-        }
+export default createFragmentContainer(SecurityPlatformEditionContainer, {
+  securityPlatform: graphql`
+    fragment SecurityPlatformEditionContainer_securityPlatform on SecurityPlatform {
+      id
+      ...SecurityPlatformEditionOverview_securityPlatform
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});

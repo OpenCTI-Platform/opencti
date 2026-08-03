@@ -80,63 +80,51 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) =
 
   return (
     <>
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <FeedbackDetails
-                      feedbackData={feedback}
-                    />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview
-                      stixDomainObject={feedback}
-                      displayAssignees={true}
-                      displayConfidence={false}
-                    />
-                  </Grid>
-                );
-              case 'relatedEntities':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ContainerStixObjectsOrStixRelationships
-                      isSupportParticipation={false}
-                      container={feedback}
-                      enableReferences={enableReferences}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={feedback.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={feedback.id}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <FeedbackDetails feedbackData={feedback} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview
+                    stixDomainObject={feedback}
+                    displayAssignees={true}
+                    displayConfidence={false}
+                  />
+                </Grid>
+              );
+            case 'relatedEntities':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={false}
+                    container={feedback}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={feedback.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={feedback.id} />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </>
   );

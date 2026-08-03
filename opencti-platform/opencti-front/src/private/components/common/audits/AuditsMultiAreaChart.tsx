@@ -13,19 +13,39 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { CSSProperties, FunctionComponent, ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  CSSProperties,
+  FunctionComponent,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
 import { AuditsMultiAreaChartTimeSeriesQuery } from '@components/common/audits/__generated__/AuditsMultiAreaChartTimeSeriesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
-import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
+import {
+  normalizeFilterGroupForBackend,
+  removeEntityTypeAllFromFilterGroup,
+} from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import { getWidgetInterval, showEstimationWarningForUniqCount, UNIQUE_COUNT_ESTIMATION_WARNING } from '../../../../utils/widget/widgetUtils';
-import type { WidgetDataSelection, WidgetHost, WidgetMultiTimeSeries, WidgetParameters } from '../../../../utils/widget/widget';
+import {
+  getWidgetInterval,
+  showEstimationWarningForUniqCount,
+  UNIQUE_COUNT_ESTIMATION_WARNING,
+} from '../../../../utils/widget/widgetUtils';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetMultiTimeSeries,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 
@@ -84,9 +104,13 @@ const AuditsMultiAreaChartComponent: FunctionComponent<AuditsMultiAreaChartCompo
   );
 
   useEffect(() => {
-    const warningData: WidgetMultiTimeSeries[] = (data.auditsMultiTimeSeries ?? []).map((series) => ({
-      data: (series?.data ?? []).flatMap((entry) => (entry ? [{ date: entry.date, value: entry.value }] : [])),
-    }));
+    const warningData: WidgetMultiTimeSeries[] = (data.auditsMultiTimeSeries ?? []).map(
+      (series) => ({
+        data: (series?.data ?? []).flatMap((entry) =>
+          entry ? [{ date: entry.date, value: entry.value }] : [],
+        ),
+      }),
+    );
     onShowWarning(showEstimationWarningForUniqCount(dataSelection, warningData));
   }, [dataSelection, data.auditsMultiTimeSeries, onShowWarning]);
 
@@ -142,35 +166,51 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
   const [showWarning, setShowWarning] = useState(false);
   const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
-  const fallbackDates = useMemo(() => ({
-    start: monthsAgo(12),
-    end: now(),
-  }), []);
+  const fallbackDates = useMemo(
+    () => ({
+      start: monthsAgo(12),
+      end: now(),
+    }),
+    [],
+  );
 
-  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsMultiAreaChartTimeSeriesQuery['variables'] => {
-    const timeSeriesParameters = resolvedDataSelection.map((selection) => {
+  const buildQueryVariables = useCallback(
+    (
+      resolvedDataSelection: WidgetDataSelection[],
+    ): AuditsMultiAreaChartTimeSeriesQuery['variables'] => {
+      const timeSeriesParameters = resolvedDataSelection.map((selection) => {
+        return {
+          field:
+            selection.date_attribute && selection.date_attribute.length > 0
+              ? selection.date_attribute
+              : 'timestamp',
+          types: ['History', 'Activity'],
+          filters: normalizeFilterGroupForBackend(
+            removeEntityTypeAllFromFilterGroup(selection.filters),
+          ),
+          countField: selection.attribute,
+          unique: selection.unique,
+        };
+      });
+
       return {
-        field:
-          selection.date_attribute && selection.date_attribute.length > 0
-            ? selection.date_attribute
-            : 'timestamp',
-        types: ['History', 'Activity'],
-        filters: normalizeFilterGroupForBackend(removeEntityTypeAllFromFilterGroup(selection.filters)),
-        countField: selection.attribute,
-        unique: selection.unique,
+        operation: 'count' as const,
+        startDate: startDate ?? fallbackDates.start,
+        endDate: endDate ?? fallbackDates.end,
+        interval: getWidgetInterval(parameters),
+        timeSeriesParameters,
       };
-    });
+    },
+    [startDate, endDate, fallbackDates, parameters.interval],
+  );
 
-    return {
-      operation: 'count' as const,
-      startDate: startDate ?? fallbackDates.start,
-      endDate: endDate ?? fallbackDates.end,
-      interval: getWidgetInterval(parameters),
-      timeSeriesParameters,
-    };
-  }, [startDate, endDate, fallbackDates, parameters.interval]);
-
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,

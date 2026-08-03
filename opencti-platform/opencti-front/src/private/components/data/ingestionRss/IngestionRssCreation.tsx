@@ -40,10 +40,7 @@ const ingestionRssCreationValidation = () => {
 };
 
 const CreateIngestionRssControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="IngestionRss"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="IngestionRss" {...props} />
 );
 
 interface IngestionRssAddInput {
@@ -81,7 +78,8 @@ interface IngestionRssCreationProps {
   };
 }
 
-const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ paginationOptions,
+const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({
+  paginationOptions,
   handleClose,
   ingestionRssData,
   triggerButton = true,
@@ -90,11 +88,11 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
 }) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(IngestionRssCreationMutation);
-  const handleSubmit = (values: IngestionRssAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionRssAddInput>) => {
-    const userId
-      = typeof values.user_id === 'object'
-        ? values.user_id?.value
-        : values.user_id;
+  const handleSubmit = (
+    values: IngestionRssAddInput,
+    { setSubmitting, resetForm }: FormikHelpers<IngestionRssAddInput>,
+  ) => {
+    const userId = typeof values.user_id === 'object' ? values.user_id?.value : values.user_id;
     const input = {
       name: values.name,
       description: values.description,
@@ -106,7 +104,7 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
       current_state_date: values.current_state_date,
       created_by_ref: values.created_by_ref?.value,
       object_marking_refs: values.object_marking_refs?.map((v) => v.value),
-      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
+      ...(values.automatic_user !== false && { confidence_level: Number(values.confidence_level) }),
       ssl_verify: values.ssl_verify,
     };
     commit({
@@ -131,17 +129,18 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
     description: ingestionRssData?.description || '',
     scheduling_period: ingestionRssData?.scheduling_period || '',
     uri: ingestionRssData?.uri || '',
-    report_types: ingestionRssData?.report_types
-      ? [...ingestionRssData.report_types]
-      : [],
+    report_types: ingestionRssData?.report_types ? [...ingestionRssData.report_types] : [],
     user_id: '',
     automatic_user: true,
     ssl_verify: true,
-    current_state_date: ingestionRssData?.current_state_date ? new Date(ingestionRssData.current_state_date) : undefined,
+    current_state_date: ingestionRssData?.current_state_date
+      ? new Date(ingestionRssData.current_state_date)
+      : undefined,
     created_by_ref: undefined,
     object_marking_refs: ingestionRssData?.object_marking_refs
-      ? ingestionRssData.object_marking_refs
-          .filter((v): v is { label: string; value: string } => Boolean(v))
+      ? ingestionRssData.object_marking_refs.filter((v): v is { label: string; value: string } =>
+          Boolean(v),
+        )
       : [],
   };
 
@@ -185,17 +184,12 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <IngestionCreationUserHandling
-                default_confidence_level={50}
-                labelTag="F"
-              />
+              <IngestionCreationUserHandling default_confidence_level={50} labelTag="F" />
               <Field
                 component={DateTimePickerField}
                 name="current_state_date"
                 textFieldProps={{
-                  label: t_i18n(
-                    'Import from date (empty = all RSS feed possible items)',
-                  ),
+                  label: t_i18n('Import from date (empty = all RSS feed possible items)'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -229,17 +223,10 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
                 containerstyle={fieldSpacingContainerStyle}
               />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {drawerSettings?.button ?? t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

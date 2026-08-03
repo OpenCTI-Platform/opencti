@@ -35,8 +35,13 @@ describe('Utils: getObjectPropertyWithoutEmptyValues', () => {
     const listPropertyWithPath = getObjectPropertyWithoutEmptyValues(object, 'objectLabel.value');
     expect(listPropertyWithPath).toEqual(['label1', 'label2']);
     const invalidPathProperty = () => getObjectPropertyWithoutEmptyValues(object, 'createdBy.name');
-    expect(invalidPathProperty).toThrowError('Invalid path "createdBy.name", a subpart is not an object');
-    const listPropertyWithNullValues = getObjectPropertyWithoutEmptyValues(object, 'externalReferences.url');
+    expect(invalidPathProperty).toThrowError(
+      'Invalid path "createdBy.name", a subpart is not an object',
+    );
+    const listPropertyWithNullValues = getObjectPropertyWithoutEmptyValues(
+      object,
+      'externalReferences.url',
+    );
     expect(listPropertyWithNullValues).toEqual(['http://test.com']);
   });
 });

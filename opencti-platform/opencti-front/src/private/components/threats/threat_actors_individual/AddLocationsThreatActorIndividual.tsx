@@ -11,7 +11,9 @@ import { ThreatActorIndividualLocations_locations$data } from '@components/threa
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import AddLocationsThreatActorIndividualLines, { addLocationsThreatActorIndividualLinesQuery } from './AddLocationsThreatActorIndividualLines';
+import AddLocationsThreatActorIndividualLines, {
+  addLocationsThreatActorIndividualLinesQuery,
+} from './AddLocationsThreatActorIndividualLines';
 import LocationCreation from '../../common/location/LocationCreation';
 import { insertNode } from '../../../../utils/store';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -24,12 +26,9 @@ interface AddLocationsThreatActorIndividualComponentProps {
   paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables;
 }
 
-const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocationsThreatActorIndividualComponentProps> = ({
-  threatActorIndividual,
-  queryRef,
-  onSearch,
-  paginationOptions,
-}) => {
+const AddLocationsThreatActorIndividualComponent: FunctionComponent<
+  AddLocationsThreatActorIndividualComponentProps
+> = ({ threatActorIndividual, queryRef, onSearch, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
 
@@ -37,25 +36,18 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
   const handleClose = () => setOpen(false);
 
   const threatActorIndividualLocations = threatActorIndividual.locations?.edges;
-  const data = usePreloadedQuery(
-    addLocationsThreatActorIndividualLinesQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(addLocationsThreatActorIndividualLinesQuery, queryRef);
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_threatActorIndividual_locations',
-    paginationOptions,
-    'locationAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(
+      store,
+      'Pagination_threatActorIndividual_locations',
+      paginationOptions,
+      'locationAdd',
+    );
   return (
     <>
-      <IconButton
-        color="primary"
-        aria-label="Add"
-        onClick={handleOpen}
-
-      >
+      <IconButton color="primary" aria-label="Add" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -63,33 +55,23 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
         onClose={handleClose}
         title={t_i18n('Add locations')}
         subHeader={{
-          right: [(
+          right: [
             <LocationCreation
               display={open}
               contextual={true}
               inputValue={paginationOptions.search ?? ''}
               updater={updater}
               key="rightButton"
-            />
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={onSearch}
-              key="leftInput"
-            />
-          )],
+            />,
+          ],
+          left: [<SearchInput variant="inDrawer" onSubmit={onSearch} key="leftInput" />],
         }}
       >
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <AddLocationsThreatActorIndividualLines
               threatActorIndividual={threatActorIndividual}
-              threatActorIndividualLocations={
-                threatActorIndividualLocations
-              }
+              threatActorIndividualLocations={threatActorIndividualLocations}
               data={data}
             />
           </React.Suspense>
@@ -102,10 +84,14 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
 interface AddLocationsThreatActorIndividualProps {
   threatActorIndividual: ThreatActorIndividualLocations_locations$data;
 }
-const AddLocationsThreatActorIndividual: FunctionComponent<AddLocationsThreatActorIndividualProps> = ({
-  threatActorIndividual,
-}) => {
-  const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '', types: ['Location'] });
+const AddLocationsThreatActorIndividual: FunctionComponent<
+  AddLocationsThreatActorIndividualProps
+> = ({ threatActorIndividual }) => {
+  const [paginationOptions, setPaginationOptions] = useState({
+    count: 50,
+    search: '',
+    types: ['Location'],
+  });
 
   const queryRef = useQueryLoading<AddLocationsThreatActorIndividualLinesQuery>(
     addLocationsThreatActorIndividualLinesQuery,

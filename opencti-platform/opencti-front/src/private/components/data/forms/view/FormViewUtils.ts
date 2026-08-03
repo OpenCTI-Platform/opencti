@@ -16,8 +16,7 @@ const getYupValidationForField = (
       validation = Yup.string();
       break;
     case 'number':
-      validation = Yup.number()
-        .typeError(t_i18n('Must be a number'));
+      validation = Yup.number().typeError(t_i18n('Must be a number'));
       break;
     case 'checkbox':
     case 'toggle':
@@ -57,9 +56,17 @@ const getYupValidationForField = (
   // Read-only fields are hidden for non-bypass users and pre-populated by the form schema,
   // so client-side required validation must not block submission.
   if ((field.isMandatory || field.required) && !field.isReadOnly) {
-    if (field.type === 'multiselect' || field.type === 'objectMarking'
-      || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-      validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
+    if (
+      field.type === 'multiselect' ||
+      field.type === 'objectMarking' ||
+      field.type === 'objectLabel' ||
+      field.type === 'externalReferences' ||
+      field.type === 'files'
+    ) {
+      validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(
+        1,
+        t_i18n('This field is required'),
+      );
     } else if (field.type === 'checkbox' || field.type === 'toggle') {
       // For boolean fields, we might want to ensure they're checked
       // But usually mandatory booleans means they must be explicitly set, not necessarily true
@@ -94,7 +101,9 @@ export const convertFormSchemaToYupSchema = (
     shape.mainEntityParsed = Yup.string().required(t_i18n('This field is required'));
 
     // Also add validation for additional fields in parsed mode
-    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntityFields = schema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
     const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
     mainEntityFields.forEach((field: FormFieldDefinition) => {
       fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
@@ -105,7 +114,9 @@ export const convertFormSchemaToYupSchema = (
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     // For multi mode, validate the field groups
     const fieldShape: Record<string, Yup.Schema<unknown>> = {};
-    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntityFields = schema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
     mainEntityFields.forEach((field: FormFieldDefinition) => {
       fieldShape[field.name] = getYupValidationForField(field, t_i18n);
     });
@@ -113,7 +124,9 @@ export const convertFormSchemaToYupSchema = (
       .of(Yup.object().shape(fieldShape))
       .min(1, t_i18n('At least one entity is required'));
   } else {
-    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntityFields = schema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
     mainEntityFields.forEach((field: FormFieldDefinition) => {
       shape[field.name] = getYupValidationForField(field, t_i18n);
     });
@@ -122,7 +135,9 @@ export const convertFormSchemaToYupSchema = (
   // Process additional entities
   if (schema.additionalEntities) {
     schema.additionalEntities.forEach((entity) => {
-      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+      const entityFields = schema.fields.filter(
+        (field) => field.attributeMapping.entity === entity.id,
+      );
 
       if (entity.lookup) {
         // Lookup mode
@@ -132,9 +147,10 @@ export const convertFormSchemaToYupSchema = (
 
           // StixCoreObjectsField stores an array of objects
           if (minAmount > 0) {
-            const errorMessage = minAmount === 1
-              ? t_i18n('Please select at least one entity')
-              : t_i18n('Please select at least N entities').replace('N', String(minAmount));
+            const errorMessage =
+              minAmount === 1
+                ? t_i18n('Please select at least one entity')
+                : t_i18n('Please select at least N entities').replace('N', String(minAmount));
             shape[fieldName] = Yup.array()
               .of(Yup.object())
               .min(minAmount, errorMessage)
@@ -175,7 +191,8 @@ export const convertFormSchemaToYupSchema = (
             entityFields.forEach((field: FormFieldDefinition) => {
               fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
             });
-            shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape)
+            shape[`additional_${entity.id}_fields`] = Yup.object()
+              .shape(fieldsShape)
               .when(`additional_${entity.id}_parsed`, {
                 is: (value: unknown) => !value || value === '',
                 then: (fieldSchema) => fieldSchema.optional(),
@@ -192,9 +209,10 @@ export const convertFormSchemaToYupSchema = (
         const minAmount = entity.minAmount || 0;
         let validation = Yup.array().of(Yup.object().shape(fieldShape));
         if (minAmount > 0) {
-          const errorMsg = minAmount === 1
-            ? t_i18n('At least one entity is required')
-            : t_i18n('At least N entities required').replace('N', String(minAmount));
+          const errorMsg =
+            minAmount === 1
+              ? t_i18n('At least one entity is required')
+              : t_i18n('At least N entities required').replace('N', String(minAmount));
           validation = validation.min(minAmount, errorMsg);
         }
         shape[`additional_${entity.id}_groups`] = validation;
@@ -230,9 +248,11 @@ export const convertFormSchemaToYupSchema = (
                 fieldValidation = Yup.boolean();
                 break;
               case 'number':
-                fieldValidation = Yup.number().nullable().transform((value, originalValue) => {
-                  return originalValue === '' ? null : value;
-                });
+                fieldValidation = Yup.number()
+                  .nullable()
+                  .transform((value, originalValue) => {
+                    return originalValue === '' ? null : value;
+                  });
                 break;
               case 'createdBy':
                 fieldValidation = Yup.object().nullable();
@@ -255,88 +275,124 @@ export const convertFormSchemaToYupSchema = (
           });
 
           // For optional entities, only validate mandatory fields if ANY field has meaningful content
-          shape[`additional_${entity.id}`] = Yup.object().shape(optionalShape).test(
-            'conditional-required-fields',
-            function validateConditionalRequired(this: Yup.TestContext, value: Record<string, unknown> | undefined) {
-              if (!value) return true;
+          shape[`additional_${entity.id}`] = Yup.object()
+            .shape(optionalShape)
+            .test(
+              'conditional-required-fields',
+              function validateConditionalRequired(
+                this: Yup.TestContext,
+                value: Record<string, unknown> | undefined,
+              ) {
+                if (!value) return true;
 
-              // Check if ANY field (mandatory or not) has meaningful content
-              const hasAnyMeaningfulContent = entityFields.some((field) => {
-                const fieldValue = value[field.name];
+                // Check if ANY field (mandatory or not) has meaningful content
+                const hasAnyMeaningfulContent = entityFields.some((field) => {
+                  const fieldValue = value[field.name];
 
-                // Check for meaningful content based on field type
-                if (field.type === 'multiselect' || field.type === 'objectMarking'
-                  || field.type === 'objectLabel' || field.type === 'externalReferences'
-                  || field.type === 'files') {
-                  return Array.isArray(fieldValue) && fieldValue.length > 0;
-                }
-
-                if (field.type === 'checkbox' || field.type === 'toggle') {
-                  // Checkboxes/toggles are tricky - only consider them filled if explicitly set
-                  if (typeof fieldValue === 'string') {
-                    return fieldValue === 'true' || fieldValue === '1';
+                  // Check for meaningful content based on field type
+                  if (
+                    field.type === 'multiselect' ||
+                    field.type === 'objectMarking' ||
+                    field.type === 'objectLabel' ||
+                    field.type === 'externalReferences' ||
+                    field.type === 'files'
+                  ) {
+                    return Array.isArray(fieldValue) && fieldValue.length > 0;
                   }
-                  return fieldValue === true;
-                }
 
-                if (field.type === 'number') {
-                  return fieldValue !== null && fieldValue !== undefined && fieldValue !== '' && !Number.isNaN(fieldValue);
-                }
-
-                if (field.type === 'createdBy') {
-                  return fieldValue !== null && fieldValue !== undefined
-                    && typeof fieldValue === 'object' && Object.keys(fieldValue).length > 0;
-                }
-
-                // For text fields
-                return fieldValue !== null && fieldValue !== undefined
-                  && fieldValue !== '' && typeof fieldValue === 'string' && fieldValue.trim() !== '';
-              });
-
-              // If no field has meaningful content, the entity is completely optional - skip all validation
-              if (!hasAnyMeaningfulContent) {
-                return true;
-              }
-
-              // If ANY field has meaningful content, then validate mandatory fields
-              const mandatoryFields = entityFields.filter((field) => field.isMandatory || field.required);
-              const errors: string[] = [];
-
-              mandatoryFields.forEach((field) => {
-                const fieldValue = value[field.name];
-
-                // Check if mandatory field is empty
-                if (field.type === 'multiselect' || field.type === 'objectMarking'
-                  || field.type === 'objectLabel' || field.type === 'externalReferences'
-                  || field.type === 'files') {
-                  if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
-                    errors.push(field.label || field.name);
+                  if (field.type === 'checkbox' || field.type === 'toggle') {
+                    // Checkboxes/toggles are tricky - only consider them filled if explicitly set
+                    if (typeof fieldValue === 'string') {
+                      return fieldValue === 'true' || fieldValue === '1';
+                    }
+                    return fieldValue === true;
                   }
-                } else if (field.type === 'createdBy') {
-                  if (!fieldValue || (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)) {
-                    errors.push(field.label || field.name);
-                  }
-                } else if (field.type !== 'checkbox' && field.type !== 'toggle') {
-                  // For non-boolean fields
-                  if (fieldValue === null || fieldValue === undefined || fieldValue === ''
-                    || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
-                    errors.push(field.label || field.name);
-                  }
-                }
-                // Note: We don't validate checkboxes/toggles as mandatory even if marked as such
-                // because boolean fields should have a default value
-              });
 
-              if (errors.length > 0) {
-                return this.createError({
-                  message: `${t_i18n('Required fields missing')}: ${errors.join(', ')}`,
-                  path: this.path,
+                  if (field.type === 'number') {
+                    return (
+                      fieldValue !== null &&
+                      fieldValue !== undefined &&
+                      fieldValue !== '' &&
+                      !Number.isNaN(fieldValue)
+                    );
+                  }
+
+                  if (field.type === 'createdBy') {
+                    return (
+                      fieldValue !== null &&
+                      fieldValue !== undefined &&
+                      typeof fieldValue === 'object' &&
+                      Object.keys(fieldValue).length > 0
+                    );
+                  }
+
+                  // For text fields
+                  return (
+                    fieldValue !== null &&
+                    fieldValue !== undefined &&
+                    fieldValue !== '' &&
+                    typeof fieldValue === 'string' &&
+                    fieldValue.trim() !== ''
+                  );
                 });
-              }
 
-              return true;
-            },
-          );
+                // If no field has meaningful content, the entity is completely optional - skip all validation
+                if (!hasAnyMeaningfulContent) {
+                  return true;
+                }
+
+                // If ANY field has meaningful content, then validate mandatory fields
+                const mandatoryFields = entityFields.filter(
+                  (field) => field.isMandatory || field.required,
+                );
+                const errors: string[] = [];
+
+                mandatoryFields.forEach((field) => {
+                  const fieldValue = value[field.name];
+
+                  // Check if mandatory field is empty
+                  if (
+                    field.type === 'multiselect' ||
+                    field.type === 'objectMarking' ||
+                    field.type === 'objectLabel' ||
+                    field.type === 'externalReferences' ||
+                    field.type === 'files'
+                  ) {
+                    if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
+                      errors.push(field.label || field.name);
+                    }
+                  } else if (field.type === 'createdBy') {
+                    if (
+                      !fieldValue ||
+                      (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)
+                    ) {
+                      errors.push(field.label || field.name);
+                    }
+                  } else if (field.type !== 'checkbox' && field.type !== 'toggle') {
+                    // For non-boolean fields
+                    if (
+                      fieldValue === null ||
+                      fieldValue === undefined ||
+                      fieldValue === '' ||
+                      (typeof fieldValue === 'string' && fieldValue.trim() === '')
+                    ) {
+                      errors.push(field.label || field.name);
+                    }
+                  }
+                  // Note: We don't validate checkboxes/toggles as mandatory even if marked as such
+                  // because boolean fields should have a default value
+                });
+
+                if (errors.length > 0) {
+                  return this.createError({
+                    message: `${t_i18n('Required fields missing')}: ${errors.join(', ')}`,
+                    path: this.path,
+                  });
+                }
+
+                return true;
+              },
+            );
         }
       }
     });
@@ -359,7 +415,16 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
+  values: Record<
+    string,
+    | string
+    | string[]
+    | null
+    | { value: string }
+    | { value: string }[]
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+  >,
   schema: FormSchemaDefinition,
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};
@@ -401,7 +466,9 @@ export const formatFormDataForSubmission = (
     if (field.type === 'objectMarking') {
       // Extract internal IDs from the array of marking objects
       if (Array.isArray(value)) {
-        return value.map((m: Record<string, unknown>) => m?.value || m?.id || m).filter((id: unknown) => id);
+        return value
+          .map((m: Record<string, unknown>) => m?.value || m?.id || m)
+          .filter((id: unknown) => id);
       }
       return value;
     }
@@ -409,14 +476,18 @@ export const formatFormDataForSubmission = (
     if (field.type === 'objectLabel') {
       // Extract label values from the array of label objects
       if (Array.isArray(value)) {
-        return value.map((l: Record<string, unknown>) => l?.label || l?.value || l).filter((label: unknown) => label);
+        return value
+          .map((l: Record<string, unknown>) => l?.label || l?.value || l)
+          .filter((label: unknown) => label);
       }
       return value;
     }
 
     if (field.type === 'externalReferences') {
       if (Array.isArray(value)) {
-        return value.map((l: Record<string, unknown>) => l?.id || l?.value || l).filter((label: unknown) => label);
+        return value
+          .map((l: Record<string, unknown>) => l?.id || l?.value || l)
+          .filter((label: unknown) => label);
       }
       return value;
     }
@@ -426,12 +497,14 @@ export const formatFormDataForSubmission = (
       if (field.multiple) {
         // Multiple selection - array of objects
         if (Array.isArray(value)) {
-          return value.map((v: Record<string, unknown> | string) => {
-            if (typeof v === 'object' && v !== null) {
-              return v.value || v.id || v;
-            }
-            return v;
-          }).filter((v: unknown) => v);
+          return value
+            .map((v: Record<string, unknown> | string) => {
+              if (typeof v === 'object' && v !== null) {
+                return v.value || v.id || v;
+              }
+              return v;
+            })
+            .filter((v: unknown) => v);
         }
         return value;
       }
@@ -449,13 +522,23 @@ export const formatFormDataForSubmission = (
   // If main entity lookup is enabled, include the selected entities
   if (schema.mainEntityLookup && values.mainEntityLookup) {
     if (schema.mainEntityMultiple) {
-      const lookupArr = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+      const lookupArr = values.mainEntityLookup as {
+        value: string;
+        isPendingCreation?: boolean;
+        pendingInputData?: { entityType: string; input: Record<string, unknown> };
+      }[];
       const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
-      const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+      const pendingEntities = lookupArr
+        .filter((n) => n.isPendingCreation && n.pendingInputData)
+        .map((n) => n.pendingInputData!);
       if (existingIds.length > 0) formattedData.mainEntityLookup = existingIds;
       if (pendingEntities.length > 0) formattedData.mainEntityLookupPending = pendingEntities;
     } else {
-      const single = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+      const single = values.mainEntityLookup as {
+        value: string;
+        isPendingCreation?: boolean;
+        pendingInputData?: { entityType: string; input: Record<string, unknown> };
+      };
       if (single.isPendingCreation && single.pendingInputData) {
         formattedData.mainEntityLookupPending = [single.pendingInputData];
       } else {
@@ -479,7 +562,9 @@ export const formatFormDataForSubmission = (
     const mainEntityAdditionalFields = values.mainEntityFields as Record<string, unknown>;
     if (mainEntityAdditionalFields) {
       const processedFields: Record<string, unknown> = {};
-      const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+      const mainEntityFields = schema.fields.filter(
+        (field) => field.attributeMapping.entity === 'main_entity',
+      );
       mainEntityFields.forEach((field: FormFieldDefinition) => {
         const extractedValue = extractFieldValue(field, mainEntityAdditionalFields[field.name]);
         if (extractedValue !== undefined) {
@@ -509,7 +594,9 @@ export const formatFormDataForSubmission = (
     });
   } else if (!schema.mainEntityLookup) {
     // Process main entity fields (only if not in lookup mode)
-    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntityFields = schema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
     mainEntityFields.forEach((field: FormFieldDefinition) => {
       const extractedValue = extractFieldValue(field, values[field.name]);
       if (extractedValue !== undefined) {
@@ -521,20 +608,34 @@ export const formatFormDataForSubmission = (
   // Process additional entities
   if (schema.additionalEntities && schema.additionalEntities.length > 0) {
     schema.additionalEntities.forEach((entity) => {
-      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+      const entityFields = schema.fields.filter(
+        (field) => field.attributeMapping.entity === entity.id,
+      );
 
       if (entity.lookup) {
         // Handle lookup mode – split existing entities (by ID) from pending creations.
         const lookupValue = values[`additional_${entity.id}_lookup`];
         if (lookupValue) {
           if (entity.multiple) {
-            const lookupArr = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+            const lookupArr = lookupValue as {
+              value: string;
+              isPendingCreation?: boolean;
+              pendingInputData?: { entityType: string; input: Record<string, unknown> };
+            }[];
             const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
-            const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
-            if (existingIds.length > 0) formattedData[`additional_${entity.id}_lookup`] = existingIds;
-            if (pendingEntities.length > 0) formattedData[`additional_${entity.id}_lookup_pending`] = pendingEntities;
+            const pendingEntities = lookupArr
+              .filter((n) => n.isPendingCreation && n.pendingInputData)
+              .map((n) => n.pendingInputData!);
+            if (existingIds.length > 0)
+              formattedData[`additional_${entity.id}_lookup`] = existingIds;
+            if (pendingEntities.length > 0)
+              formattedData[`additional_${entity.id}_lookup_pending`] = pendingEntities;
           } else {
-            const single = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+            const single = lookupValue as {
+              value: string;
+              isPendingCreation?: boolean;
+              pendingInputData?: { entityType: string; input: Record<string, unknown> };
+            };
             if (single.isPendingCreation && single.pendingInputData) {
               formattedData[`additional_${entity.id}_lookup_pending`] = [single.pendingInputData];
             } else {
@@ -553,10 +654,15 @@ export const formatFormDataForSubmission = (
             .filter((v) => v);
         }
         // Also handle additional fields for parsed mode
-        const additionalFields = values[`additional_${entity.id}_fields`] as Record<string, unknown>;
+        const additionalFields = values[`additional_${entity.id}_fields`] as Record<
+          string,
+          unknown
+        >;
         if (additionalFields) {
           const processedFields: Record<string, unknown> = {};
-          const additionalEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+          const additionalEntityFields = schema.fields.filter(
+            (field) => field.attributeMapping.entity === entity.id,
+          );
           additionalEntityFields.forEach((field: FormFieldDefinition) => {
             const extractedValue = extractFieldValue(field, additionalFields[field.name]);
             if (extractedValue !== undefined) {
@@ -598,9 +704,13 @@ export const formatFormDataForSubmission = (
             if (value === undefined || value === null) return false;
 
             // Check for meaningful content based on field type
-            if (field.type === 'multiselect' || field.type === 'objectMarking'
-              || field.type === 'objectLabel' || field.type === 'externalReferences'
-              || field.type === 'files') {
+            if (
+              field.type === 'multiselect' ||
+              field.type === 'objectMarking' ||
+              field.type === 'objectLabel' ||
+              field.type === 'externalReferences' ||
+              field.type === 'files'
+            ) {
               return Array.isArray(value) && value.length > 0;
             }
             if (field.type === 'checkbox' || field.type === 'toggle') {
@@ -661,7 +771,10 @@ export const formatFormDataForSubmission = (
       // Process relationship fields
       if (relationship.fields && relationship.fields.length > 0) {
         const relationshipFieldsData: Record<string, unknown> = {};
-        const relationshipValues = values[`relationship_${relationship.id}`] as Record<string, unknown>;
+        const relationshipValues = values[`relationship_${relationship.id}`] as Record<
+          string,
+          unknown
+        >;
 
         if (relationshipValues) {
           relationship.fields.forEach((field: FormFieldDefinition) => {
@@ -715,7 +828,10 @@ export const formatFormDataForSubmission = (
     formattedData.draftObjectAssignee = normalizeDraftSelectionIds(draftObjectAssignee);
   }
 
-  if (Object.hasOwn(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
+  if (
+    Object.hasOwn(values, 'draftObjectParticipant') &&
+    Array.isArray(values.draftObjectParticipant)
+  ) {
     const draftObjectParticipant = values.draftObjectParticipant as unknown[];
     formattedData.draftObjectParticipant = normalizeDraftSelectionIds(draftObjectParticipant);
   }
@@ -729,7 +845,10 @@ export const formatFormDataForSubmission = (
     }
   }
 
-  if (Object.hasOwn(values, 'draftAuthorizedMembers') && Array.isArray(values.draftAuthorizedMembers)) {
+  if (
+    Object.hasOwn(values, 'draftAuthorizedMembers') &&
+    Array.isArray(values.draftAuthorizedMembers)
+  ) {
     const members = values.draftAuthorizedMembers as { value: string }[];
     // Pass the full member objects to support access rights and group restrictions,
     // including empty arrays so users can explicitly clear members.

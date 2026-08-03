@@ -24,14 +24,15 @@ const constructEntity = (overrides: Partial<ObjectToParse> = {}): ObjectToParse 
   ...overrides,
 });
 
-const constructRelationship = (overrides: Partial<ObjectToParse> = {}): ObjectToParse => constructEntity({
-  entity_type: 'uses',
-  relationship_type: 'uses',
-  parent_types: ['basic-relationship', 'stix-core-relationship'],
-  from: { id: 'entity-A', entity_type: 'Malware' },
-  to: { id: 'entity-B', entity_type: 'Attack-Pattern' },
-  ...overrides,
-});
+const constructRelationship = (overrides: Partial<ObjectToParse> = {}): ObjectToParse =>
+  constructEntity({
+    entity_type: 'uses',
+    relationship_type: 'uses',
+    parent_types: ['basic-relationship', 'stix-core-relationship'],
+    from: { id: 'entity-A', entity_type: 'Malware' },
+    to: { id: 'entity-B', entity_type: 'Attack-Pattern' },
+    ...overrides,
+  });
 
 const emptyPositions: OctiGraphPositions = {};
 
@@ -39,9 +40,12 @@ describe('useGraphParser', () => {
   let parser: ReturnType<typeof useGraphParser>;
 
   beforeAll(() => {
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
-      React.createElement(IntlProvider, { locale: 'en', messages: {}, onError: () => {} }, children)
-    );
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(
+        IntlProvider,
+        { locale: 'en', messages: {}, onError: () => {} },
+        children,
+      );
     const { result } = renderHook(() => useGraphParser(), { wrapper });
     parser = result.current;
   });
@@ -140,7 +144,11 @@ describe('useGraphParser', () => {
         previousGraphData,
         [],
         emptyPositions,
-        { id: 'rel-1', relationship_type: 'uses', entity_type: 'uses' },
+        {
+          id: 'rel-1',
+          relationship_type: 'uses',
+          entity_type: 'uses',
+        },
       );
 
       expect(result).toBe(previousGraphData);
@@ -167,7 +175,11 @@ describe('useGraphParser', () => {
         previousGraphData,
         rawObjects,
         emptyPositions,
-        { id: 'rel-1', relationship_type: 'uses', entity_type: 'uses' },
+        {
+          id: 'rel-1',
+          relationship_type: 'uses',
+          entity_type: 'uses',
+        },
       );
 
       // The relationship should now be a node
@@ -189,8 +201,16 @@ describe('useGraphParser', () => {
       const entityA = constructEntity({ id: 'entity-A' });
       const entityB = constructEntity({ id: 'entity-B' });
       const entityC = constructEntity({ id: 'entity-C' });
-      const rel1 = constructRelationship({ id: 'rel-1', from: { id: 'entity-A' }, to: { id: 'entity-B' } });
-      const rel2 = constructRelationship({ id: 'rel-2', from: { id: 'entity-B' }, to: { id: 'entity-C' } });
+      const rel1 = constructRelationship({
+        id: 'rel-1',
+        from: { id: 'entity-A' },
+        to: { id: 'entity-B' },
+      });
+      const rel2 = constructRelationship({
+        id: 'rel-2',
+        from: { id: 'entity-B' },
+        to: { id: 'entity-C' },
+      });
 
       const nodeA = parser.buildNode(entityA, emptyPositions);
       const nodeB = parser.buildNode(entityB, emptyPositions);
@@ -207,7 +227,11 @@ describe('useGraphParser', () => {
         previousGraphData,
         [entityA, entityB, entityC, rel1, rel2],
         emptyPositions,
-        { id: 'rel-1', relationship_type: 'uses', entity_type: 'uses' },
+        {
+          id: 'rel-1',
+          relationship_type: 'uses',
+          entity_type: 'uses',
+        },
       );
 
       // rel-2 link should still be present

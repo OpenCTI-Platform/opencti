@@ -32,8 +32,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
       content: '""',
       top: 10,
       left: 10,
-      height: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
-      width: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
+      height:
+        'calc(100% - 22px)' /* -22px is 2 * 10px gap on either side - 2px border on either side */,
+      width:
+        'calc(100% - 22px)' /* -22px is 2 * 10px gap on either side - 2px border on either side */,
       border: `1px solid ${theme.palette.primary.main}`,
       transform: 'rotate(45deg)',
     },

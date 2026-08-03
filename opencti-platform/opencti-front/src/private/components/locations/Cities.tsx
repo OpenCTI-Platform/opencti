@@ -7,7 +7,10 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { CityLineDummy } from './cities/CityLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { CitiesLinesPaginationQuery, CitiesLinesPaginationQuery$variables } from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
+import {
+  CitiesLinesPaginationQuery,
+  CitiesLinesPaginationQuery$variables,
+} from './cities/__generated__/CitiesLinesPaginationQuery.graphql';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -19,9 +22,8 @@ const Cities: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Cities | Locations'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
@@ -31,17 +33,9 @@ const Cities: FunctionComponent = () => {
         number: 0,
         symbol: '',
       },
-    },
-  );
+    });
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -82,16 +76,16 @@ const Cities: FunctionComponent = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <CityCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -99,7 +93,7 @@ const Cities: FunctionComponent = () => {
                     <CityLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <CitiesLines
               queryRef={queryRef}
@@ -114,7 +108,9 @@ const Cities: FunctionComponent = () => {
   };
   return (
     <div data-testid="city-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Cities'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

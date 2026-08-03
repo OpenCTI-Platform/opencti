@@ -1,8 +1,15 @@
 import { createEntity } from '../database/middleware';
-import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import {
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+} from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
@@ -20,5 +27,13 @@ export const addCourseOfAction = async (context, user, courseOfAction) => {
 };
 
 export const attackPatternsPaginated = async (context, user, attackPatternId, args) => {
-  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return pageRegardingEntitiesConnection(
+    context,
+    user,
+    attackPatternId,
+    RELATION_MITIGATES,
+    ENTITY_TYPE_ATTACK_PATTERN,
+    false,
+    args,
+  );
 };

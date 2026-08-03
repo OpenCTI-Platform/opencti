@@ -19,8 +19,7 @@ import TextList from '../../../../components/common/text/TextList';
 import { Stack } from '@mui/material';
 
 const ThreatActorIndividualDetailsFragment = graphql`
-  fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual
-  {
+  fragment ThreatActorIndividualDetails_ThreatActorIndividual on ThreatActorIndividual {
     id
     first_seen
     last_seen
@@ -74,9 +73,9 @@ interface ThreatActorIndividualDetailsProps {
   threatActorIndividualData: ThreatActorIndividualDetails_ThreatActorIndividual$key;
 }
 
-const ThreatActorIndividualDetails: FunctionComponent<
-  ThreatActorIndividualDetailsProps
-> = ({ threatActorIndividualData }) => {
+const ThreatActorIndividualDetails: FunctionComponent<ThreatActorIndividualDetailsProps> = ({
+  threatActorIndividualData,
+}) => {
   const { t_i18n, fldt } = useFormatter();
   const data: ThreatActorIndividualDetails_ThreatActorIndividual$data = useFragment(
     ThreatActorIndividualDetailsFragment,
@@ -94,13 +93,8 @@ const ThreatActorIndividualDetails: FunctionComponent<
     <Card title={t_i18n('Details')}>
       <Grid container={true} spacing={2}>
         <Grid item xs={12}>
-          <Label>
-            {t_i18n('Description')}
-          </Label>
-          <ExpandableMarkdown
-            source={data.description}
-            limit={hasImages ? 400 : 600}
-          />
+          <Label>{t_i18n('Description')}</Label>
+          <ExpandableMarkdown source={data.description} limit={hasImages ? 400 : 600} />
         </Grid>
         <Grid item xs={hasImages ? 7 : 6}>
           <Grid container={true} spacing={2}>
@@ -110,47 +104,33 @@ const ThreatActorIndividualDetails: FunctionComponent<
               </Grid>
             )}
             <Grid item xs={hasImages ? 8 : 12}>
-              <Label>
-                {t_i18n('Threat actor types')}
-              </Label>
+              <Label>{t_i18n('Threat actor types')}</Label>
               <FieldOrEmpty source={data.threat_actor_types}>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
-                    <Tag
-                      key={threatActorIndividualType}
-                      label={threatActorIndividualType}
-                    />
-                  ))}
+                  {data.threat_actor_types?.map(
+                    (threatActorIndividualType) =>
+                      threatActorIndividualType && (
+                        <Tag key={threatActorIndividualType} label={threatActorIndividualType} />
+                      ),
+                  )}
                 </Stack>
               </FieldOrEmpty>
             </Grid>
           </Grid>
         </Grid>
         <Grid item xs={hasImages ? 5 : 6}>
-          <ThreatActorIndividualDetailsChips
-            data={data}
-            relType="known-as"
-          />
-          <ThreatActorIndividualDetailsChips
-            data={data}
-            relType="impersonates"
-          />
+          <ThreatActorIndividualDetailsChips data={data} relType="known-as" />
+          <ThreatActorIndividualDetailsChips data={data} relType="impersonates" />
           <ThreatActorIndividualLocation threatActorIndividual={data} />
-          <Label sx={{ marginTop: '20px' }}>
-            {t_i18n('First seen')}
-          </Label>
+          <Label sx={{ marginTop: '20px' }}>{t_i18n('First seen')}</Label>
           {fldt(data.first_seen)}
-          <Label sx={{ marginTop: '20px' }}>
-            {t_i18n('Last seen')}
-          </Label>
+          <Label sx={{ marginTop: '20px' }}>{t_i18n('Last seen')}</Label>
           {fldt(data.last_seen)}
         </Grid>
       </Grid>
       <Grid container={true} spacing={2}>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Sophistication')}
-          </Label>
+          <Label>{t_i18n('Sophistication')}</Label>
           <FieldOrEmpty source={data.sophistication}>
             <ItemOpenVocab
               type="threat-actor-individual-sophistication-ov"
@@ -160,60 +140,32 @@ const ThreatActorIndividualDetails: FunctionComponent<
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Resource level')}
-          </Label>
+          <Label>{t_i18n('Resource level')}</Label>
           <FieldOrEmpty source={data.resource_level}>
-            <ItemOpenVocab
-              type="attack-resource-level-ov"
-              value={data.resource_level}
-              small
-            />
+            <ItemOpenVocab type="attack-resource-level-ov" value={data.resource_level} small />
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Primary motivation')}
-          </Label>
+          <Label>{t_i18n('Primary motivation')}</Label>
           <FieldOrEmpty source={data.primary_motivation}>
-            <ItemOpenVocab
-              type="attack-motivation-ov"
-              value={data.primary_motivation}
-              small
-            />
+            <ItemOpenVocab type="attack-motivation-ov" value={data.primary_motivation} small />
           </FieldOrEmpty>
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Roles')}
-          </Label>
-          <TextList
-            list={data.roles}
-          />
+          <Label>{t_i18n('Roles')}</Label>
+          <TextList list={data.roles} />
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Goals')}
-          </Label>
-          <TextList
-            list={data.goals}
-          />
+          <Label>{t_i18n('Goals')}</Label>
+          <TextList list={data.goals} />
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Secondary motivations')}
-          </Label>
-          <TextList
-            list={data.secondary_motivations}
-          />
+          <Label>{t_i18n('Secondary motivations')}</Label>
+          <TextList list={data.secondary_motivations} />
         </Grid>
         <Grid item xs={4}>
-          <Label>
-            {t_i18n('Personal motivations')}
-          </Label>
-          <TextList
-            list={data.personal_motivations}
-          />
+          <Label>{t_i18n('Personal motivations')}</Label>
+          <TextList list={data.personal_motivations} />
         </Grid>
       </Grid>
     </Card>

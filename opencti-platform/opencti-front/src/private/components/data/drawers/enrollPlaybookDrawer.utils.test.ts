@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { mapIdsResponse, mapFiltersResponse, sortPlaybooks, fetchPlaybooks } from './enrollPlaybookDrawer.utils';
+import {
+  mapIdsResponse,
+  mapFiltersResponse,
+  sortPlaybooks,
+  fetchPlaybooks,
+} from './enrollPlaybookDrawer.utils';
 import type { IdsResponseData, FiltersResponseData, Playbook } from './enrollPlaybookDrawer.utils';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 
@@ -27,8 +32,16 @@ describe('mapIdsResponse', () => {
       playbooksForEnrollment: [ENRICH_OBSERVABLE, NOTIFY_ON_MALWARE],
     };
     expect(mapIdsResponse(data)).toEqual([
-      { label: ENRICH_OBSERVABLE.name, value: ENRICH_OBSERVABLE.id, description: ENRICH_OBSERVABLE.description },
-      { label: NOTIFY_ON_MALWARE.name, value: NOTIFY_ON_MALWARE.id, description: NOTIFY_ON_MALWARE.description },
+      {
+        label: ENRICH_OBSERVABLE.name,
+        value: ENRICH_OBSERVABLE.id,
+        description: ENRICH_OBSERVABLE.description,
+      },
+      {
+        label: NOTIFY_ON_MALWARE.name,
+        value: NOTIFY_ON_MALWARE.id,
+        description: NOTIFY_ON_MALWARE.description,
+      },
     ]);
   });
 
@@ -61,7 +74,11 @@ describe('mapFiltersResponse', () => {
       playbooksForEnrollmentByFilters: [TAG_AND_SCORE],
     };
     expect(mapFiltersResponse(data)).toEqual([
-      { label: TAG_AND_SCORE.name, value: TAG_AND_SCORE.id, description: TAG_AND_SCORE.description },
+      {
+        label: TAG_AND_SCORE.name,
+        value: TAG_AND_SCORE.id,
+        description: TAG_AND_SCORE.description,
+      },
     ]);
   });
 });
@@ -103,13 +120,21 @@ describe('fetchPlaybooks', () => {
 
   it('calls fetcher with the provided entityIds when isSelectAll is false', async () => {
     const fetcher = vi.fn().mockResolvedValue(idsResponseFixture);
-    await fetchPlaybooks({ isSelectAll: false, entityIds: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id] }, fetcher);
-    expect(fetcher).toHaveBeenCalledWith(expect.anything(), { ids: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id] });
+    await fetchPlaybooks(
+      { isSelectAll: false, entityIds: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id] },
+      fetcher,
+    );
+    expect(fetcher).toHaveBeenCalledWith(expect.anything(), {
+      ids: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id],
+    });
   });
 
   it('returns playbooks sorted by name when isSelectAll is false', async () => {
     const fetcher = vi.fn().mockResolvedValue(idsResponseFixture);
-    const result = await fetchPlaybooks({ isSelectAll: false, entityIds: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id] }, fetcher);
+    const result = await fetchPlaybooks(
+      { isSelectAll: false, entityIds: [ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id] },
+      fetcher,
+    );
     expect(result.map((p) => p.value)).toEqual([ENRICH_OBSERVABLE.id, TAG_AND_SCORE.id]);
   });
 
@@ -127,7 +152,10 @@ describe('fetchPlaybooks', () => {
   it('calls fetcher with filters, search and excludedIds when isSelectAll is true', async () => {
     const fetcher = vi.fn().mockResolvedValue(filtersResponseFixture);
     const filters = emptyFilterGroup;
-    await fetchPlaybooks({ isSelectAll: true, filters, search: 'malware', excludedIds: [NOTIFY_ON_MALWARE.id] }, fetcher);
+    await fetchPlaybooks(
+      { isSelectAll: true, filters, search: 'malware', excludedIds: [NOTIFY_ON_MALWARE.id] },
+      fetcher,
+    );
     expect(fetcher).toHaveBeenCalledWith(expect.anything(), {
       filters,
       search: 'malware',
@@ -138,7 +166,11 @@ describe('fetchPlaybooks', () => {
   it('returns playbooks sorted by name when isSelectAll is true', async () => {
     const fetcher = vi.fn().mockResolvedValue(filtersResponseFixture);
     const result = await fetchPlaybooks({ isSelectAll: true }, fetcher);
-    expect(result.map((p) => p.value)).toEqual([ENRICH_OBSERVABLE.id, NOTIFY_ON_MALWARE.id, TAG_AND_SCORE.id]);
+    expect(result.map((p) => p.value)).toEqual([
+      ENRICH_OBSERVABLE.id,
+      NOTIFY_ON_MALWARE.id,
+      TAG_AND_SCORE.id,
+    ]);
   });
 
   it('returns empty array when filters response has no playbooks', async () => {

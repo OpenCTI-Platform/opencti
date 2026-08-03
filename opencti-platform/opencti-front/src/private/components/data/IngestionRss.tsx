@@ -4,7 +4,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import { RssBox } from 'mdi-material-ui';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import IngestionRssPopover from './ingestionRss/IngestionRssPopover';
-import { ingestionRssLineFragment, ingestionRssLinesFragment, ingestionRssLinesQuery } from './ingestionRss/IngestionRss.graphql';
+import {
+  ingestionRssLineFragment,
+  ingestionRssLinesFragment,
+  ingestionRssLinesQuery,
+} from './ingestionRss/IngestionRss.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
@@ -19,7 +23,10 @@ import IngestionRssImport from '@components/data/IngestionRssImport';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import ItemBoolean from '../../../components/ItemBoolean';
-import { IngestionRssLinesDataTableQuery, IngestionRssLinesDataTableQuery$variables } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
+import {
+  IngestionRssLinesDataTableQuery,
+  IngestionRssLinesDataTableQuery$variables,
+} from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTableQuery.graphql';
 import { IngestionRssLinesDataTable_data$data } from '@components/data/ingestionRss/__generated__/IngestionRssLinesDataTable_data.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -56,7 +63,10 @@ const IngestionRss = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<IngestionRssLinesDataTableQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  } = usePaginationLocalStorage<IngestionRssLinesDataTableQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('IngestionRss', viewStorage.filters);
   const queryPaginationOptions = {
@@ -95,13 +105,15 @@ const IngestionRss = () => {
       label: 'Last run',
       percentWidth: 20,
       isSortable: false,
-      render: ({ last_execution_date }, helpers) => defaultRender(last_execution_date ? helpers.fd(last_execution_date) : null),
+      render: ({ last_execution_date }, helpers) =>
+        defaultRender(last_execution_date ? helpers.fd(last_execution_date) : null),
     },
     current_state_date: {
       label: 'Current state',
       percentWidth: 20,
       isSortable: false,
-      render: ({ current_state_date }, helpers) => defaultRender(current_state_date ? helpers.fd(current_state_date) : null),
+      render: ({ current_state_date }, helpers) =>
+        defaultRender(current_state_date ? helpers.fd(current_state_date) : null),
     },
   };
   const preloadedPaginationProps = {
@@ -122,18 +134,26 @@ const IngestionRss = () => {
   }
   return (
     <div className={classes.container} data-testid="rss-feeds-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=rss' }, { label: t_i18n('RSS feeds'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Integrations') },
+          { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=rss' },
+          { label: t_i18n('RSS feeds'), current: true },
+        ]}
+      />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
-          resolvePath={(data: IngestionRssLinesDataTable_data$data) => data.ingestionRsss?.edges?.map((n) => n?.node)}
+          resolvePath={(data: IngestionRssLinesDataTable_data$data) =>
+            data.ingestionRsss?.edges?.map((n) => n?.node)
+          }
           dataColumns={dataColumns}
           lineFragment={ingestionRssLineFragment}
           contextFilters={contextFilters}
           searchContextFinal={{ entityTypes: ['IngestionRss'] }}
-          icon={() => (<RssBox color="primary" />)}
+          icon={() => <RssBox color="primary" />}
           disableLineSelection
           disableNavigation
           actions={(row) => (
@@ -145,11 +165,11 @@ const IngestionRss = () => {
               />
             </Security>
           )}
-          createButton={(
+          createButton={
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <>
                 <IngestionRssImport paginationOptions={queryPaginationOptions} />
-                { isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+                {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                   <Button
                     gradient
                     href={importFromHubUrl}
@@ -162,7 +182,7 @@ const IngestionRss = () => {
                 <IngestionRssCreation paginationOptions={queryPaginationOptions} />
               </>
             </Security>
-          )}
+          }
         />
       )}
     </div>

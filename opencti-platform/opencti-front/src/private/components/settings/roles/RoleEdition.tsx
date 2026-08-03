@@ -6,7 +6,9 @@ import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import RoleEditionOverview from './RoleEditionOverview';
-import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
+import RoleEditionCapabilities, {
+  roleEditionCapabilitiesLinesSearch,
+} from './RoleEditionCapabilities';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
@@ -37,23 +39,21 @@ interface RoleEditionDrawerProps {
 }
 
 const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
-  handleClose = () => { },
+  handleClose = () => {},
   roleRef,
   open,
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
   const [currentTab, setCurrentTab] = useState(0);
-  const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
+  const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
+    roleEditionCapabilitiesLinesSearch,
+  );
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
-    <EditEntityControlledDial
-      style={{ float: 'right' }}
-      disabled={disabled}
-      {...props}
-    />
+    <EditEntityControlledDial style={{ float: 'right' }} disabled={disabled} {...props} />
   );
 
   return (
@@ -73,12 +73,12 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
               <Tab label={t_i18n('Capabilities')} />
               <Tab
                 disabled={!isEnterpriseEdition}
-                label={(
+                label={
                   <Box>
                     {t_i18n('Capabilities in Draft')}
                     <EEChip clickable={false} />
                   </Box>
-                )}
+                }
               />
             </Tabs>
           </Box>
@@ -90,8 +90,9 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
             <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
           )}
         </>
-      )
-        : (<Loader />)}
+      ) : (
+        <Loader />
+      )}
     </Drawer>
   );
 };
@@ -105,7 +106,7 @@ interface RoleEditionProps {
 
 const RoleEdition: FunctionComponent<RoleEditionProps> = ({
   roleEditionData,
-  handleClose = () => { },
+  handleClose = () => {},
   open,
   disabled = false,
 }) => {

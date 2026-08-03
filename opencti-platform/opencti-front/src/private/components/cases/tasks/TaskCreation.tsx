@@ -15,13 +15,20 @@ import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
+import {
+  TaskCreationMutation,
+  TaskCreationMutation$variables,
+} from './__generated__/TaskCreationMutation.graphql';
 
 const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
@@ -55,10 +62,7 @@ interface FormikTaskAddInput {
 }
 
 interface TaskCreationProps {
-  updater: (
-    store: RecordSourceSelectorProxy,
-    key: string,
-  ) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onClose?: () => void;
   defaultMarkings?: { value: string; label: string }[];
   inputValue?: string;
@@ -72,26 +76,26 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    TASK_TYPE,
+  const { mandatoryAttributes } = useIsMandatoryAttribute(TASK_TYPE);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+      due_date: Yup.date().nullable(),
+      objectLabel: Yup.array(),
+      objectMarking: Yup.array(),
+      objectAssignee: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+    },
+    mandatoryAttributes,
   );
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
-    due_date: Yup.date().nullable(),
-    objectLabel: Yup.array(),
-    objectMarking: Yup.array(),
-    objectAssignee: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-  }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<TaskCreationMutation>(
-    taskAddMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const [commit] = useApiMutation<TaskCreationMutation>(taskAddMutation, undefined, {
+    successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}`,
+  });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -148,13 +152,13 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             variant="standard"
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth
           />
           <Field
             component={DateTimePickerField}
             name="due_date"
-            required={(mandatoryAttributes.includes('due_date'))}
+            required={mandatoryAttributes.includes('due_date')}
             textFieldProps={{
               label: t_i18n('Due Date'),
               variant: 'standard',
@@ -163,17 +167,17 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            required={(mandatoryAttributes.includes('objectAssignee'))}
+            required={mandatoryAttributes.includes('objectAssignee')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectLabelField
             name="objectLabel"
-            required={(mandatoryAttributes.includes('objectLabel'))}
+            required={mandatoryAttributes.includes('objectLabel')}
             style={fieldSpacingContainerStyle}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
@@ -181,7 +185,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth
             multiline
             rows="4"
@@ -191,17 +195,10 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
-            <Button
-              onClick={handleReset}
-              disabled={isSubmitting}
-              variant="secondary"
-            >
+            <Button onClick={handleReset} disabled={isSubmitting} variant="secondary">
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -217,12 +214,10 @@ const TaskCreation = ({
   paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
-    <Drawer
-      title={t_i18n('Create a task')}
-      variant={DrawerVariant.create}
-    >
+    <Drawer title={t_i18n('Create a task')} variant={DrawerVariant.create}>
       <TaskCreationForm updater={updater} />
     </Drawer>
   );

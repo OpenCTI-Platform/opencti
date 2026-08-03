@@ -39,10 +39,11 @@ const labelEditionFocus = graphql`
   }
 `;
 
-const labelValidation = (t) => Yup.object().shape({
-  value: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-});
+const labelValidation = (t) =>
+  Yup.object().shape({
+    value: Yup.string().required(t('This field is required')),
+    color: Yup.string().required(t('This field is required')),
+  });
 
 class LabelEditionContainer extends Component {
   constructor(props) {
@@ -89,12 +90,7 @@ class LabelEditionContainer extends Component {
     const { editContext } = label;
     const initialValues = pick(['value', 'color'], label);
     return (
-      <Drawer
-        title={t('Update a label')}
-        open={open}
-        onClose={handleClose}
-        context={editContext}
-      >
+      <Drawer title={t('Update a label')} open={open} onClose={handleClose} context={editContext}>
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
@@ -110,12 +106,7 @@ class LabelEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="value"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="value" />}
               />
               <Field
                 component={ColorPickerField}
@@ -125,12 +116,7 @@ class LabelEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={(
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="color"
-                  />
-                )}
+                helperText={<SubscriptionFocus context={editContext} fieldName="color" />}
               />
             </Form>
           )}

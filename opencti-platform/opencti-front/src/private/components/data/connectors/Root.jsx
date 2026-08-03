@@ -25,14 +25,15 @@ class RootConnector extends Component {
             if (props.connector) {
               return (
                 <>
-                  <Breadcrumbs elements={[{ label: t('Integrations') }, { label: t('Deployed'), link: '/dashboard/integrations/deployed' }, { label: props.connector.title, current: true }]} />
+                  <Breadcrumbs
+                    elements={[
+                      { label: t('Integrations') },
+                      { label: t('Deployed'), link: '/dashboard/integrations/deployed' },
+                      { label: props.connector.title, current: true },
+                    ]}
+                  />
                   <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Connector connector={props.connector} />
-                      }
-                    />
+                    <Route path="/" element={<Connector connector={props.connector} />} />
                   </Routes>
                 </>
               );

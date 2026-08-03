@@ -9,10 +9,7 @@ const caseRftKnowledgeGraphDeleteRelation = graphql`
     $relationship_type: String!
   ) {
     stixDomainObjectEdit(id: $id) {
-      relationDelete(
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
     }

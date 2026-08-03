@@ -38,12 +38,13 @@ const PreventDefaultGroupsRow = ({ fieldName }: PreventDefaultGroupsRowProps) =>
   }, []);
 
   return (
-    <Box sx={{
-      display: 'flex',
-      alignItems: 'center',
-      mt: 2,
-      mb: 1,
-    }}
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        mt: 2,
+        mb: 1,
+      }}
     >
       <Box sx={{ flexShrink: 0 }}>
         <Field
@@ -55,13 +56,7 @@ const PreventDefaultGroupsRow = ({ fieldName }: PreventDefaultGroupsRowProps) =>
       </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, alignItems: 'center', ml: 'auto' }}>
         {platformDefaultGroups.map((name) => (
-          <Chip
-            key={name}
-            label={name}
-            size="small"
-            variant="outlined"
-            sx={{ borderRadius: 1 }}
-          />
+          <Chip key={name} label={name} size="small" variant="outlined" sx={{ borderRadius: 1 }} />
         ))}
         {platformDefaultGroups.length === 0 && (
           <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
@@ -69,9 +64,15 @@ const PreventDefaultGroupsRow = ({ fieldName }: PreventDefaultGroupsRowProps) =>
           </Typography>
         )}
         <Tooltip
-          title={t_i18n('When enabled, platform default groups (groups with default assignation) will not be automatically assigned to users authenticated through this provider.')}
+          title={t_i18n(
+            'When enabled, platform default groups (groups with default assignation) will not be automatically assigned to users authenticated through this provider.',
+          )}
         >
-          <InfoOutlined fontSize="small" color="info" sx={{ ml: 0.5, flexShrink: 0, cursor: 'help' }} />
+          <InfoOutlined
+            fontSize="small"
+            color="info"
+            sx={{ ml: 0.5, flexShrink: 0, cursor: 'help' }}
+          />
         </Tooltip>
       </Box>
     </Box>

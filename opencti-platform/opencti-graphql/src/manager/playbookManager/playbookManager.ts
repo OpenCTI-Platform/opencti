@@ -14,7 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import type { Moment } from 'moment/moment';
 import { createStreamProcessor, fetchStreamInfo } from '../../database/stream/stream-handler';
 import { type StreamProcessor } from '../../database/stream/stream-utils';
@@ -22,14 +26,26 @@ import { redisGetManagerEventState, redisSetManagerEventState } from '../../data
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
-import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
+import {
+  AUTOMATION_MANAGER_USER,
+  executionContext,
+  RETENTION_MANAGER_USER,
+  SYSTEM_USER,
+} from '../../utils/access';
 import type { SseEvent, StreamDataEvent, UpdateEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
 import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
-import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
+import {
+  type CronConfiguration,
+  PLAYBOOK_INTERNAL_DATA_CRON,
+  type StreamConfiguration,
+} from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
-import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
+import type {
+  BasicStoreEntityPlaybook,
+  ComponentDefinition,
+} from '../../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../../modules/playbook/playbook-types';
 import { READ_STIX_INDICES } from '../../database/utils';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -44,7 +60,12 @@ import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
-import { buildFilterEventContext, isDebugPlaybook, isValidEventType, StreamDataEventTypeEnum } from './playbookManagerUtils';
+import {
+  buildFilterEventContext,
+  isDebugPlaybook,
+  isValidEventType,
+  StreamDataEventTypeEnum,
+} from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
 import { InterruptibleTimer } from '../interruptible-timer';
@@ -61,14 +82,21 @@ export const getManagerInfo = async () => {
   const isPlaybookManagerActivated = await isModuleActivated('PLAYBOOK_MANAGER');
   const lastProcessedEventId = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
   const lastManagerEventId = lastProcessedEventId ? Number(lastProcessedEventId.split('-')[0]) : 0;
-  const lastProcessedEventDate = lastProcessedEventId ? utcDate(Number(lastProcessedEventId.split('-')[0])).toISOString() : null;
+  const lastProcessedEventDate = lastProcessedEventId
+    ? utcDate(Number(lastProcessedEventId.split('-')[0])).toISOString()
+    : null;
 
   const streamProcessorInfo = await fetchStreamInfo();
   const lastStreamEventId = streamProcessorInfo.lastEventId;
-  const lastStreamEventDate = lastStreamEventId ? utcDate(Number(lastStreamEventId.split('-')[0])).toISOString() : null;
+  const lastStreamEventDate = lastStreamEventId
+    ? utcDate(Number(lastStreamEventId.split('-')[0])).toISOString()
+    : null;
   const firstStreamEventId = streamProcessorInfo.firstEventId;
-  const firstStreamEventDate = firstStreamEventId ? utcDate(Number(firstStreamEventId.split('-')[0])).toISOString() : null;
-  const middleStreamEventId = (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
+  const firstStreamEventDate = firstStreamEventId
+    ? utcDate(Number(firstStreamEventId.split('-')[0])).toISOString()
+    : null;
+  const middleStreamEventId =
+    (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
   const isManagerLate = lastManagerEventId < middleStreamEventId;
   return {
     activated: isPlaybookManagerActivated,
@@ -91,17 +119,28 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
   if (!isEE) {
     return;
   }
-  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_PLAYBOOK,
+  );
   for (let index = 0; index < streamEvents.length; index += 1) {
     const streamEvent = streamEvents[index];
-    const { id: eventId, data: { data, type, origin, scope } } = streamEvent;
+    const {
+      id: eventId,
+      data: { data, type, origin, scope },
+    } = streamEvent;
     // For each event we need to check ifs
     for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
-      try { // try catch per playbook and per event to avoid losing events if an error is thrown on a playbook event
+      try {
+        // try catch per playbook and per event to avoid losing events if an error is thrown on a playbook event
         const playbook = playbooks[playbookIndex];
         const currentPlaybookInDebug = isDebugPlaybook(playbook.id);
         if (currentPlaybookInDebug) {
-          logApp.info(`[OPENCTI-MODULE] Playbook manager processing event ${eventId} for playbook ${playbook.name} (${playbook.id})`, { event: streamEvent.data });
+          logApp.info(
+            `[OPENCTI-MODULE] Playbook manager processing event ${eventId} for playbook ${playbook.name} (${playbook.id})`,
+            { event: streamEvent.data },
+          );
         }
         // Execute only of definition is available
         if (playbook.playbook_definition) {
@@ -113,23 +152,33 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM') {
               if (scope === 'external') {
                 const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-                const configuration = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
-                const {
-                  filters,
-                } = configuration;
+                const configuration = JSON.parse(
+                  instance.configuration ?? '{}',
+                ) as StreamConfiguration;
+                const { filters } = configuration;
                 const jsonFilters = filters ? JSON.parse(filters) : null;
 
                 const isValidEvent = isValidEventType(type, configuration);
                 // Build event context for has_changed/not_has_changed filter evaluation
-                const eventContext = type === StreamDataEventTypeEnum.UPDATE
-                  ? buildFilterEventContext(streamEvent.data as UpdateEvent)
-                  : type === StreamDataEventTypeEnum.CREATE
-                    ? { changedAttributes: [], isCreation: true }
-                    : undefined;
-                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters, eventContext);
+                const eventContext =
+                  type === StreamDataEventTypeEnum.UPDATE
+                    ? buildFilterEventContext(streamEvent.data as UpdateEvent)
+                    : type === StreamDataEventTypeEnum.CREATE
+                      ? { changedAttributes: [], isCreation: true }
+                      : undefined;
+                const isMatch = await isStixMatchFilterGroup(
+                  context,
+                  SYSTEM_USER,
+                  data,
+                  jsonFilters,
+                  eventContext,
+                );
 
                 if (currentPlaybookInDebug) {
-                  logApp.info(`[OPENCTI-MODULE] Event match for playbook ${playbook.name} (${playbook.id})`, { isValidEvent, isMatch, filters: jsonFilters });
+                  logApp.info(
+                    `[OPENCTI-MODULE] Event match for playbook ${playbook.name} (${playbook.id})`,
+                    { isValidEvent, isMatch, filters: jsonFilters },
+                  );
                 }
                 // 02. Execute the component
                 if (isValidEvent && isMatch) {
@@ -164,14 +213,21 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           }
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Playbook manager stream error', {
+          cause: e,
+          manager: 'PLAYBOOK_MANAGER',
+        });
       }
     }
     await redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, streamEvent.id);
   }
 };
 
-export const executePlaybookOnEntity = async (context: AuthContext, id: string, entityId: string) => {
+export const executePlaybookOnEntity = async (
+  context: AuthContext,
+  id: string,
+  entityId: string,
+) => {
   // fetch playbooks allowed for this entity
   const playbooks = await findPlaybooksForEntity(context, RETENTION_MANAGER_USER, entityId);
   let playbook = null;
@@ -188,7 +244,11 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
     const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
     if (instance) {
       const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-      const data = await stixLoadById(context, RETENTION_MANAGER_USER, entityId) as unknown as StixObject;
+      const data = (await stixLoadById(
+        context,
+        RETENTION_MANAGER_USER,
+        entityId,
+      )) as unknown as StixObject;
       if (data) {
         try {
           const eventId = streamEventId();
@@ -213,11 +273,19 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
             previousStepBundle: null,
             bundle,
           }).catch((err) => {
-            logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: err, id: entityId, manager: 'PLAYBOOK_MANAGER' });
+            logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', {
+              cause: err,
+              id: entityId,
+              manager: 'PLAYBOOK_MANAGER',
+            });
           });
           return true;
         } catch (e) {
-          logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: e, id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', {
+            cause: e,
+            id: entityId,
+            manager: 'PLAYBOOK_MANAGER',
+          });
           return false;
         }
       }
@@ -230,9 +298,14 @@ const cronTimer = new InterruptibleTimer();
 const streamTimer = new InterruptibleTimer();
 
 const checkManagerDelay = async () => {
-  const { lastProcessedEventId, lastStreamEventId, firstStreamEventId, managerInGoodHealth } = await getManagerInfo();
+  const { lastProcessedEventId, lastStreamEventId, firstStreamEventId, managerInGoodHealth } =
+    await getManagerInfo();
   if (!managerInGoodHealth) {
-    logApp.warn('[OPENCTI-MODULE] Playbook manager is late to process events', { lastProcessedEventId, firstStreamEventId, lastStreamEventId });
+    logApp.warn('[OPENCTI-MODULE] Playbook manager is late to process events', {
+      lastProcessedEventId,
+      firstStreamEventId,
+      lastStreamEventId,
+    });
   }
 };
 
@@ -251,7 +324,9 @@ const initPlaybookManager = () => {
       lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
+      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, {
+        withInternal: true,
+      });
       const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
       await streamProcessor.start(lastEventState ?? 'live');
       let delayCheckerCounter = 0;
@@ -268,7 +343,10 @@ const initPlaybookManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Playbook manager error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Playbook manager error', {
+          cause: e,
+          manager: 'PLAYBOOK_MANAGER',
+        });
       }
     } finally {
       if (streamProcessor) await streamProcessor.shutdown();
@@ -316,7 +394,11 @@ const initPlaybookManager = () => {
       return;
     }
     // Get playbook crons that need to be executed
-    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+    const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_PLAYBOOK,
+    );
     for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
       const playbook = playbooks[playbookIndex];
       // Execute only of definition is available
@@ -329,7 +411,9 @@ const initPlaybookManager = () => {
           const connector = PLAYBOOK_COMPONENTS[instance.component_id];
           const cronConfiguration = JSON.parse(instance.configuration ?? '{}') as CronConfiguration;
           if (shouldTriggerNow(cronConfiguration, baseDate) && cronConfiguration.filters) {
-            logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`);
+            logApp.info(
+              `[OPENCTI-MODULE] Running playbook ${instance.name} for cron ${cronConfiguration.period} (${cronConfiguration.triggerTime})`,
+            );
             const jsonFilters = JSON.parse(cronConfiguration.filters);
             const convertedFilters = convertRelationRefsFilterKeys(jsonFilters);
             let conversionOpts = {};
@@ -337,7 +421,10 @@ const initPlaybookManager = () => {
               const fromDate = baseDate.clone().subtract(1, cronConfiguration.period).toDate();
               conversionOpts = { ...conversionOpts, after: fromDate };
             }
-            const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
+            const queryOptions = await convertFiltersToQueryOptions(
+              convertedFilters,
+              conversionOpts,
+            );
             if (cronConfiguration.includeAll) {
               const opts = { ...queryOptions };
               const results = await stixLoadByFilters(context, AUTOMATION_MANAGER_USER, null, opts);
@@ -366,17 +453,32 @@ const initPlaybookManager = () => {
                     bundle,
                   });
                 } catch (e) {
-                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: results[0].id, manager: 'PLAYBOOK_MANAGER' });
+                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', {
+                    cause: e,
+                    id: results[0].id,
+                    manager: 'PLAYBOOK_MANAGER',
+                  });
                 }
               }
             } else {
               const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
-              const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts) as BasicConnection<BasicStoreBase>;
+              const result = (await elPaginate(
+                context,
+                RETENTION_MANAGER_USER,
+                READ_STIX_INDICES,
+                opts,
+              )) as BasicConnection<BasicStoreBase>;
               const elements = result.edges;
-              logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`);
+              logApp.info(
+                `[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`,
+              );
               for (let index = 0; index < elements.length; index += 1) {
                 const { node } = elements[index];
-                const data = await stixLoadById(context, RETENTION_MANAGER_USER, node.internal_id) as unknown as StixObject;
+                const data = (await stixLoadById(
+                  context,
+                  RETENTION_MANAGER_USER,
+                  node.internal_id,
+                )) as unknown as StixObject;
                 if (data) {
                   try {
                     const eventId = streamEventId(null, index);
@@ -402,7 +504,11 @@ const initPlaybookManager = () => {
                       bundle,
                     });
                   } catch (e) {
-                    logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                    logApp.error('[OPENCTI-MODULE] Playbook manager cron error', {
+                      cause: e,
+                      id: node.id,
+                      manager: 'PLAYBOOK_MANAGER',
+                    });
                   }
                 }
               }
@@ -429,7 +535,10 @@ const initPlaybookManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager (cron) already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Playbook manager cron handler error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Playbook manager cron handler error', {
+          cause: e,
+          manager: 'PLAYBOOK_MANAGER',
+        });
       }
     } finally {
       if (lock) await lock.unlock();
@@ -447,7 +556,9 @@ const initPlaybookManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'PLAYBOOK_MANAGER',
-        enable: isEnterpriseEditionFromSettings(settings) && booleanConf('playbook_manager:enabled', false),
+        enable:
+          isEnterpriseEditionFromSettings(settings) &&
+          booleanConf('playbook_manager:enabled', false),
         running,
       };
     },
@@ -459,13 +570,19 @@ const initPlaybookManager = () => {
       cronTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
-      logApp.info(`[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`);
+      logApp.info(
+        `[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`,
+      );
       return true;
     },
   };
 };
 
-export const playbookStepExecution = async (context: AuthContext, user: AuthUser, args: MutationPlaybookStepExecutionArgs) => {
+export const playbookStepExecution = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationPlaybookStepExecutionArgs,
+) => {
   const playbook = await findById(context, user, args.playbook_id);
   if (!playbook) {
     return false;

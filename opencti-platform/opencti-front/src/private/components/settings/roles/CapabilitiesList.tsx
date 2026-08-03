@@ -26,10 +26,11 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
-    roleEditionCapabilitiesLinesSearch,
-    queryRef,
-  );
+  const { capabilities, capabilitiesInDraft } =
+    usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
+      roleEditionCapabilitiesLinesSearch,
+      queryRef,
+    );
 
   const capabilitiesType = isCapabilitiesInDraft ? 'capabilitiesInDraft' : 'capabilities';
   const capabilitiesBaseList = isCapabilitiesInDraft ? capabilitiesInDraft : capabilities;
@@ -41,23 +42,18 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
 
   return (
     <List>
-      {(isSensitive && role.can_manage_sensitive_config) && (
-        <ListItem
-          key="sensitive"
-          dense={true}
-          divider={true}
-          style={{ paddingLeft: 0 }}
-        >
+      {isSensitive && role.can_manage_sensitive_config && (
+        <ListItem key="sensitive" dense={true} divider={true} style={{ paddingLeft: 0 }}>
           <ListItemIcon style={{ minWidth: 32 }}>
             <ItemIcon type="Capability" />
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <Stack alignItems="center" direction="row" gap={1}>
                 {t_i18n('Allow modification of sensitive configuration')}
                 <DangerZoneChip />
               </Stack>
-            )}
+            }
           />
         </ListItem>
       )}
@@ -65,26 +61,25 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
         const capability = edge?.node;
         if (capability) {
           const paddingLeft = (capability.name.split('_').length ?? -20) * 20 - 20;
-          const roleCapability = roleCapabilities.find(
-            (r) => r.name === capability.name,
-          );
+          const roleCapability = roleCapabilities.find((r) => r.name === capability.name);
           const matchingCapabilities = roleCapabilities.filter(
-            (r) => capability.name !== r.name
-              && r.name.includes(capability.name)
-              && capability.name !== 'BYPASS',
+            (r) =>
+              capability.name !== r.name &&
+              r.name.includes(capability.name) &&
+              capability.name !== 'BYPASS',
           );
-          const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) => r?.name?.includes(capability.name));
-          const draftCapaLockedByMain = draftCapaMatchingMainCapa.length > 0 && roleCapability === undefined;
-          const isDisabled = isCapabilitiesInDraft ? matchingCapabilities.length > 0 || draftCapaLockedByMain : matchingCapabilities.length > 0;
+          const draftCapaMatchingMainCapa = (role.capabilities ?? []).filter((r) =>
+            r?.name?.includes(capability.name),
+          );
+          const draftCapaLockedByMain =
+            draftCapaMatchingMainCapa.length > 0 && roleCapability === undefined;
+          const isDisabled = isCapabilitiesInDraft
+            ? matchingCapabilities.length > 0 || draftCapaLockedByMain
+            : matchingCapabilities.length > 0;
           const isChecked = isDisabled || roleCapability !== undefined;
           if (isChecked) {
             return (
-              <ListItem
-                key={capability.name}
-                dense={true}
-                divider={true}
-                style={{ paddingLeft }}
-              >
+              <ListItem key={capability.name} dense={true} divider={true} style={{ paddingLeft }}>
                 <ListItemIcon style={{ minWidth: 32 }}>
                   <ItemIcon type="Capability" />
                 </ListItemIcon>

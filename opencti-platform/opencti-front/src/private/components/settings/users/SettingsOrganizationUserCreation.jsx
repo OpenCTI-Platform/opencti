@@ -35,44 +35,38 @@ const userMutation = graphql`
       external
       lastname
       otp_activated
-        effective_confidence_level {
-          max_confidence
-        }
+      effective_confidence_level {
+        max_confidence
+      }
       created_at
     }
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-  objectOrganization: Yup.array()
-    .min(1, t('Minimum one organization'))
-    .required(t('This field is required')),
-  groups: Yup.array().nullable(),
-});
+const userValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    user_email: Yup.string()
+      .required(t('This field is required'))
+      .email(t('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    password: Yup.string().required(t('This field is required')),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+    objectOrganization: Yup.array()
+      .min(1, t('Minimum one organization'))
+      .required(t('This field is required')),
+    groups: Yup.array().nullable(),
+  });
 
 const CreateOrgUserControlledDial = (props) => (
-  <CreateEntityControlledDial
-    entityType="User"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="User" {...props} />
 );
 
-const SettingsOrganizationUserCreation = ({
-  paginationOptions,
-  organization,
-  variant,
-}) => {
+const SettingsOrganizationUserCreation = ({ paginationOptions, organization, variant }) => {
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
   const [openAddUser, setOpenAddUser] = useState(false);
@@ -94,16 +88,8 @@ const SettingsOrganizationUserCreation = ({
         input: finalValues,
       },
       updater: (store) => {
-        const key = organization
-          ? 'Pagination_organization_members'
-          : 'Pagination_users';
-        insertNode(
-          store,
-          key,
-          paginationOptions,
-          'userAdd',
-          organization ? organization.id : null,
-        );
+        const key = organization ? 'Pagination_organization_members' : 'Pagination_users';
+        insertNode(store, key, paginationOptions, 'userAdd', organization ? organization.id : null);
       },
       setSubmitting,
       onCompleted: () => {
@@ -116,23 +102,21 @@ const SettingsOrganizationUserCreation = ({
 
   return (
     <>
-      {variant === 'controlledDial'
-        ? (
-            <CreateOrgUserControlledDial
-              onOpen={() => setOpenAddUser(true)}
-              onClose={() => setOpenAddUser(false)}
-            />
-          ) : (
-            <IconButton
-              color="primary"
-              aria-label="Add"
-              onClick={() => setOpenAddUser(true)}
-              size="small"
-            >
-              <Add fontSize="small" />
-            </IconButton>
-          )
-      }
+      {variant === 'controlledDial' ? (
+        <CreateOrgUserControlledDial
+          onOpen={() => setOpenAddUser(true)}
+          onClose={() => setOpenAddUser(false)}
+        />
+      ) : (
+        <IconButton
+          color="primary"
+          aria-label="Add"
+          onClick={() => setOpenAddUser(true)}
+          size="small"
+        >
+          <Add fontSize="small" />
+        </IconButton>
+      )}
       <Drawer
         open={openAddUser}
         title={t_i18n('Create a user')}
@@ -165,12 +149,7 @@ const SettingsOrganizationUserCreation = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <Field
-                component={TextField}
-                name="name"
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
+              <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
               <Field
                 component={TextField}
                 variant="standard"
@@ -270,22 +249,12 @@ const SettingsOrganizationUserCreation = ({
                   fullWidth: true,
                 }}
               />
-              <EmailTemplateField
-                name="email_template_id"
-                label={t_i18n('Email template')}
-              />
+              <EmailTemplateField name="email_template_id" label={t_i18n('Email template')} />
               <FormButtonContainer>
-                <Button
-                  variant="secondary"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

@@ -15,7 +15,7 @@ import { IngestionRssLinesDataTableQuery$variables } from '@components/data/inge
 export const rssFeedImportQuery = graphql`
   query IngestionRssImportQuery($file: Upload!) {
     ingestionRssAddInputFromImport(file: $file) {
-        name
+      name
       description
       scheduling_period
       uri
@@ -36,12 +36,18 @@ interface IngestionRssImportProps {
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
 }
-const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [ingestRssData, setIngestRssData] = useState<IngestionRssImportQuery$data['ingestionRssAddInputFromImport'] | undefined>(undefined);
+  const [ingestRssData, setIngestRssData] = useState<
+    IngestionRssImportQuery$data['ingestionRssAddInputFromImport'] | undefined
+  >(undefined);
   const { t_i18n } = useFormatter();
 
   const handleFileImport = async (file: File) => {

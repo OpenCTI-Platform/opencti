@@ -6,8 +6,13 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { StixDomainObjectNestedEntitiesLinesQuery, StixDomainObjectNestedEntitiesLinesQuery$variables } from './__generated__/StixDomainObjectNestedEntitiesLinesQuery.graphql';
-import StixDomainObjectNestedEntitiesLines, { stixDomainObjectNestedEntitiesLinesQuery } from './StixDomainObjectNestedEntitiesLines';
+import {
+  StixDomainObjectNestedEntitiesLinesQuery,
+  StixDomainObjectNestedEntitiesLinesQuery$variables,
+} from './__generated__/StixDomainObjectNestedEntitiesLinesQuery.graphql';
+import StixDomainObjectNestedEntitiesLines, {
+  stixDomainObjectNestedEntitiesLinesQuery,
+} from './StixDomainObjectNestedEntitiesLines';
 import Label from '../../../../components/common/label/Label';
 
 interface StixDomainObjectNestedEntitiesProps {
@@ -27,7 +32,10 @@ const StixDomainObjectNestedEntities = ({
     orderBy: null,
     orderMode: 'desc',
   };
-  const queryPaginationOptions = { ...paginationOptions, count: 25 } as StixDomainObjectNestedEntitiesLinesQuery$variables;
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    count: 25,
+  } as StixDomainObjectNestedEntitiesLinesQuery$variables;
 
   const queryRef = useQueryLoading<StixDomainObjectNestedEntitiesLinesQuery>(
     stixDomainObjectNestedEntitiesLinesQuery,
@@ -35,19 +43,17 @@ const StixDomainObjectNestedEntities = ({
   );
   return (
     <div style={{ marginTop: 20 }}>
-      <Label action={(
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
-          <StixNestedRefRelationshipCreationFromEntityContainer
-            paginationOptions={paginationOptions}
-            entityId={entityId}
-            variant="inLine"
-            entityType={entityType}
-          />
-        </Security>
-      )}
+      <Label
+        action={
+          <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
+            <StixNestedRefRelationshipCreationFromEntityContainer
+              paginationOptions={paginationOptions}
+              entityId={entityId}
+              variant="inLine"
+              entityType={entityType}
+            />
+          </Security>
+        }
       >
         {t_i18n('Nested objects')}
       </Label>

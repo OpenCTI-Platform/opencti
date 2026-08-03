@@ -13,19 +13,19 @@ import Label from '../../../../components/common/label/Label';
 import TextList from '../../../../components/common/text/TextList';
 
 const ToolDetailsFragment = graphql`
- fragment ToolDetails_tool on Tool {
-   id
-   description
-   tool_version
-   tool_types
-   killChainPhases {
-     id
-     entity_type
-     kill_chain_name
-     phase_name
-     x_opencti_order
-   }
- }
+  fragment ToolDetails_tool on Tool {
+    id
+    description
+    tool_version
+    tool_types
+    killChainPhases {
+      id
+      entity_type
+      kill_chain_name
+      phase_name
+      x_opencti_order
+    }
+  }
 `;
 
 interface ToolDetailsProps {
@@ -34,24 +34,17 @@ interface ToolDetailsProps {
 
 const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
   const { t_i18n } = useFormatter();
-  const tool = useFragment(
-    ToolDetailsFragment,
-    tools,
-  );
+  const tool = useFragment(ToolDetailsFragment, tools);
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={tool.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Tool version')}
-            </Label>
+            <Label>{t_i18n('Tool version')}</Label>
             <FieldOrEmpty source={tool.tool_version}>
               <Tooltip title={tool.tool_version}>
                 <span>{truncate(tool.tool_version, 20)}</span>
@@ -59,12 +52,8 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Tool types')}
-            </Label>
-            <TextList
-              list={tool.tool_types}
-            />
+            <Label>{t_i18n('Tool types')}</Label>
+            <TextList list={tool.tool_types} />
             <StixCoreObjectKillChainPhasesView killChainPhases={tool.killChainPhases ?? []} />
           </Grid>
         </Grid>

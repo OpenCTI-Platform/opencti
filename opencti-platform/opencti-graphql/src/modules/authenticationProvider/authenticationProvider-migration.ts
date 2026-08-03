@@ -9,10 +9,18 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { convertAllSSOEnvProviders } from './authenticationProvider-migration-converter';
-import { addAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
+import {
+  addAuthenticationProvider,
+  getAllIdentifiers,
+  resolveProviderIdentifier,
+} from './authenticationProvider-domain';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
-import { getProvidersFromEnvironment, isAuthenticationProviderMigrated, isLocalAuthEnabledInEnv } from './providers-configuration';
+import {
+  getProvidersFromEnvironment,
+  isAuthenticationProviderMigrated,
+  isLocalAuthEnabledInEnv,
+} from './providers-configuration';
 import nconf from 'nconf';
 import { getSettings } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -64,11 +72,13 @@ const parseMappingStrings = (mapping: any) => {
  * Returns true if the attribute was absent and had to be created.
  */
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const settings = (await getSettings(context)) as unknown as BasicStoreSettings;
   const envConfigurations = getProvidersFromEnvironment() ?? {};
   if (!settings.local_auth) {
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-    await updateLocalAuth(context, user, settings.id, { enabled: isLocalAuthEnabledInEnv(envConfigurations) });
+    await updateLocalAuth(context, user, settings.id, {
+      enabled: isLocalAuthEnabledInEnv(envConfigurations),
+    });
     logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
   }
 };
@@ -80,10 +90,12 @@ const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) =>
  * - If already nested: no-op
  */
 const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const settings = (await getSettings(context)) as unknown as BasicStoreSettings;
   if (!settings.headers_auth || !settings.headers_auth.button_label_override) {
     const envConfigurations = getProvidersFromEnvironment() ?? {};
-    const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'HeaderStrategy')?.[0];
+    const certProvider: any | undefined = Object.values(envConfigurations).filter(
+      (pr: any) => pr.strategy === 'HeaderStrategy',
+    )?.[0];
     const { config, enabled } = certProvider ?? {};
     const groupsHeader = config?.groups_management?.groups_header;
     const organizationsHeader = config?.organizations_management?.organizations_header;
@@ -111,7 +123,9 @@ const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) 
         default_organizations: config?.organizations_management?.organizations_default ?? [],
         organizations_expr: organizationsHeader ? [organizationsHeader] : [],
         organizations_splitter: config?.organizations_management?.organizations_splitter || null,
-        organizations_mapping: parseMappingStrings(config?.organizations_management?.organizations_mapping),
+        organizations_mapping: parseMappingStrings(
+          config?.organizations_management?.organizations_mapping,
+        ),
         auto_create_organizations: false,
       },
     };
@@ -127,10 +141,12 @@ const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) 
  * - If already nested: no-op
  */
 const migrateCertAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const settings = (await getSettings(context)) as unknown as BasicStoreSettings;
   if (!settings.cert_auth || !settings.cert_auth.button_label_override) {
     const envConfigurations = nconf.get('providers') ?? {};
-    const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'ClientCertStrategy')?.[0];
+    const certProvider: any | undefined = Object.values(envConfigurations).filter(
+      (pr: any) => pr.strategy === 'ClientCertStrategy',
+    )?.[0];
     const { config, enabled } = certProvider ?? {};
     const certAuthentication = {
       enabled: enabled ?? false,
@@ -169,7 +185,10 @@ const migrateCertAuthIfNeeded = async (context: AuthContext, user: AuthUser) => 
  * Parse environment configuration and persist converted providers to database.
  * Accepts the env configuration object directly to allow testing without nconf.
  */
-export const migrateAuthenticationProviders = async (context: AuthContext, user: AuthUser): Promise<void> => {
+export const migrateAuthenticationProviders = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<void> => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw AuthRequired('SETTINGS_SET_ACCESSES is required');
   }
@@ -178,7 +197,9 @@ export const migrateAuthenticationProviders = async (context: AuthContext, user:
   // 2. Get existing identifiers to skip already-migrated providers
   const existingIdentifiers = await getAllIdentifiers(context, user);
   // 3. Persist converted providers
-  logApp.info(`[MIGRATION AUTHENTICATION] Migration of ${existingIdentifiers.length} authenticator.`);
+  logApp.info(
+    `[MIGRATION AUTHENTICATION] Migration of ${existingIdentifiers.length} authenticator.`,
+  );
   for (const { envKey, provider } of conversionResults) {
     // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
     const identifier = resolveProviderIdentifier(provider.base);
@@ -191,7 +212,9 @@ export const migrateAuthenticationProviders = async (context: AuthContext, user:
 
     // Skip if already migrated
     if (isAuthenticationProviderMigrated(existingIdentifiers, identifier)) {
-      logApp.info(`[MIGRATION AUTHENTICATION] Skipped "${envKey}" (${provider.type}): already migrated as "${identifier}".`);
+      logApp.info(
+        `[MIGRATION AUTHENTICATION] Skipped "${envKey}" (${provider.type}): already migrated as "${identifier}".`,
+      );
       continue;
     }
 
@@ -203,10 +226,14 @@ export const migrateAuthenticationProviders = async (context: AuthContext, user:
     try {
       const input = { base: provider.base, configuration: provider.configuration };
       await addAuthenticationProvider(context, user, input, providerType);
-      logApp.info(`[MIGRATION AUTHENTICATION] Created ${provider.type} provider "${identifier}" from "${envKey}".`);
+      logApp.info(
+        `[MIGRATION AUTHENTICATION] Created ${provider.type} provider "${identifier}" from "${envKey}".`,
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      logApp.error(`[MIGRATION AUTHENTICATION] Failed to create ${provider.type} provider "${identifier}": ${message}`);
+      logApp.error(
+        `[MIGRATION AUTHENTICATION] Failed to create ${provider.type} provider "${identifier}": ${message}`,
+      );
     }
   }
 };

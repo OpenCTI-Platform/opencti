@@ -1,9 +1,25 @@
 import { Cluster, Redis } from 'ioredis';
-import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
+import type {
+  ChainableCommander,
+  CommonRedisOptions,
+  ClusterOptions,
+  RedisOptions,
+  SentinelAddress,
+  SentinelConnectionOptions,
+} from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX, TOPIC_PREFIX } from '../config/conf';
+import conf, {
+  booleanConf,
+  configureCA,
+  DEV_MODE,
+  getStoppingState,
+  loadCert,
+  logApp,
+  REDIS_PREFIX,
+  TOPIC_PREFIX,
+} from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { DatabaseError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { mergeDeepRightAll, now } from '../utils/format';
@@ -60,7 +76,9 @@ export const generateClusterNodes = (nodes: string[]): { host: string; port: num
 };
 
 // From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
-export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number }> => {
+export const generateNatMap = (
+  mappings: string[],
+): Record<string, { host: string; port: number }> => {
   const natMap: Record<string, { host: string; port: number }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
@@ -85,7 +103,10 @@ const clusterOptions = async (provider: string): Promise<ClusterOptions> => {
   };
 };
 
-const sentinelOptions = async (provider: string, clusterNodes: Partial<SentinelAddress>[]): Promise<SentinelConnectionOptions & CommonRedisOptions> => {
+const sentinelOptions = async (
+  provider: string,
+  clusterNodes: Partial<SentinelAddress>[],
+): Promise<SentinelConnectionOptions & CommonRedisOptions> => {
   const baseAuth = {
     sentinelUsername: conf.get('redis:sentinel_username'),
     sentinelPassword: conf.get('redis:sentinel_password'),
@@ -107,7 +128,10 @@ const sentinelOptions = async (provider: string, clusterNodes: Partial<SentinelA
   };
 };
 
-export const createRedisClient = async (provider: string, autoReconnect = false): Promise<Cluster | Redis> => {
+export const createRedisClient = async (
+  provider: string,
+  autoReconnect = false,
+): Promise<Cluster | Redis> => {
   let client: Cluster | Redis;
   const redisMode: string = conf.get('redis:mode');
   const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
@@ -119,19 +143,31 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
     client = new Redis(sentinelOpts);
   } else {
     const singleOptions = await redisOptions(provider, autoReconnect);
-    client = new Redis({ ...singleOptions, db: conf.get('redis:database') ?? 0, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
+    client = new Redis({
+      ...singleOptions,
+      db: conf.get('redis:database') ?? 0,
+      port: conf.get('redis:port'),
+      host: conf.get('redis:hostname'),
+    });
   }
 
   client.on('close', () => logApp.debug('[REDIS] Redis client closed', { provider }));
   client.on('ready', () => logApp.debug('[REDIS] Redis client ready', { provider }));
-  client.on('error', (err) => logApp.error('Redis client connection fail', { cause: err, provider }));
+  client.on('error', (err) =>
+    logApp.error('Redis client connection fail', { cause: err, provider }),
+  );
   client.on('reconnecting', () => logApp.debug('[REDIS] Redis client reconnecting', { provider }));
   return client;
 };
 
 // region Initialization of clients
 type RedisConnection = Cluster | Redis;
-interface RedisClients { base: RedisConnection; xrange: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
+interface RedisClients {
+  base: RedisConnection;
+  xrange: RedisConnection;
+  lock: RedisConnection;
+  pubsub: RedisPubSub;
+}
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -198,7 +234,12 @@ const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object
   const data = R.flatten(R.toPairs(input));
   await tx.hset(id, data);
 };
-const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
+const updateObjectCounterRaw = async (
+  tx: ChainableCommander,
+  id: string,
+  field: string,
+  number: number,
+) => {
   await tx.hincrby(id, field, number);
 };
 const deleteOldestKeysFromList = async (listId: string, count: number) => {
@@ -208,13 +249,18 @@ const deleteOldestKeysFromList = async (listId: string, count: number) => {
     await getClientBase().del(oldestKeys);
   }
 };
-const setInList = async (listId: string, keyId: string, expirationTime: number, maxLength?: number) => {
+const setInList = async (
+  listId: string,
+  keyId: string,
+  expirationTime: number,
+  maxLength?: number,
+) => {
   await redisTx(getClientBase(), async (tx) => {
     // add/update the instance with its creation date in the ordered list of instances
     const time = new Date().getTime();
     await tx.zadd(listId, time, keyId);
     // remove the too old keys from the list of instances
-    await tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
+    await tx.zremrangebyscore(listId, '-inf', time - expirationTime * 1000);
   });
   if (maxLength && maxLength > 0) {
     // keep only the top maxLength elements
@@ -226,7 +272,13 @@ const delKeyWithList = async (keyId: string, listIds: string[]) => {
   const listsPromise = listIds.map((listId) => getClientBase().zrem(listId, keyId));
   await Promise.all([keyPromise, ...listsPromise]);
 };
-const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number, maxLength?: number) => {
+const setKeyWithList = async (
+  keyId: string,
+  listIds: string[],
+  keyData: any,
+  expirationTime: number,
+  maxLength?: number,
+) => {
   const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
   const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime, maxLength));
   await Promise.all([keyPromise, ...listsPromise]);
@@ -235,7 +287,7 @@ const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, ex
 const keysFromList = async (listId: string, expirationTime?: number, maxLength?: number) => {
   if (expirationTime) {
     const time = new Date().getTime();
-    await getClientBase().zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
+    await getClientBase().zremrangebyscore(listId, '-inf', time - expirationTime * 1000);
   }
   if (maxLength && maxLength > 0) {
     await deleteOldestKeysFromList(listId, maxLength); // keep only the top maxLength elements
@@ -243,15 +295,18 @@ const keysFromList = async (listId: string, expirationTime?: number, maxLength?:
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
     const fetchKey = (key: string) => getClientBase().multi().ttl(key).get(key).exec();
-    const instancesConfig = await Promise.all(instances.map((i) => fetchKey(i)
-      .then((results) => {
-        if (results === null || results.length !== 2) {
-          return null;
-        }
-        const [, ttl] = results[0];
-        const [, data] = results[1] as string[];
-        return data ? { id: i, ttl, data } : null;
-      })));
+    const instancesConfig = await Promise.all(
+      instances.map((i) =>
+        fetchKey(i).then((results) => {
+          if (results === null || results.length !== 2) {
+            return null;
+          }
+          const [, ttl] = results[0];
+          const [, data] = results[1] as string[];
+          return data ? { id: i, ttl, data } : null;
+        }),
+      ),
+    );
     return instancesConfig.filter(filterEmpty).map((n) => {
       return { redis_key_id: n.id, redis_key_ttl: n.ttl, ...JSON.parse(n.data) };
     });
@@ -322,7 +377,7 @@ export const redisInit = async () => {
   }
 };
 export const getRedisVersion = async () => {
-  const serverInfo = await getClientBase().call('INFO') as string;
+  const serverInfo = (await getClientBase().call('INFO')) as string;
   const versionString = serverInfo.split('\r\n')[1];
   return versionString.split(':')[1];
 };
@@ -354,7 +409,10 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
 };
 
 export const removeResolvedRefs = (instance: any) => {
-  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  const refInputNames = new Set([
+    INPUT_OBJECTS,
+    ...schemaRelationsRefDefinition.getAllInputNames(),
+  ]);
   return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
 };
 
@@ -379,7 +437,10 @@ export const delUserContext = async (user: AuthUser) => {
 // endregion
 
 // region locking (clientContext)
-export const redisAddDeletions = async (internalIds: Array<string>, draftId: string | undefined = undefined) => {
+export const redisAddDeletions = async (
+  internalIds: Array<string>,
+  draftId: string | undefined = undefined,
+) => {
   let ids = Array.isArray(internalIds) ? internalIds : [internalIds];
   if (draftId) {
     ids = ids.map((id) => `${id}${draftId}`);
@@ -387,14 +448,14 @@ export const redisAddDeletions = async (internalIds: Array<string>, draftId: str
   await redisTx(getClientLock(), async (tx) => {
     const time = new Date().getTime();
     // remove the too old keys from the list of instances
-    await tx.zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
+    await tx.zremrangebyscore('platform-deletions', '-inf', time - 5 * 1000);
     // add/update the instance with its creation date in the ordered list of instances
     await tx.zadd('platform-deletions', time, ...ids);
   });
 };
 export const redisFetchLatestDeletions = async () => {
   const time = new Date().getTime();
-  await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
+  await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - 5 * 1000);
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
 interface LockOptions {
@@ -403,16 +464,27 @@ interface LockOptions {
   draftId?: string;
   child_operation?: string;
 }
-const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
+const defaultLockOpts: LockOptions = {
+  automaticExtension: true,
+  retryCount: conf.get('app:concurrency:retry_count'),
+  draftId: '',
+};
 const getStackTrace = () => {
   const obj: any = {};
   Error.captureStackTrace(obj, getStackTrace);
   return obj.stack;
 };
-export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts) => {
+export const lockResource = async (
+  resources: Array<string>,
+  opts: LockOptions = defaultLockOpts,
+) => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
-  const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
+  const {
+    retryCount = defaultLockOpts.retryCount,
+    automaticExtension = defaultLockOpts.automaticExtension,
+    draftId = defaultLockOpts.draftId,
+  } = opts;
   const initialCallStack = getStackTrace();
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
   const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
@@ -436,7 +508,10 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const extend = async () => {
     try {
       if (retryCount !== 0) {
-        logApp.info('Extending resources for long processing task', { locks, stack: initialCallStack });
+        logApp.info('Extending resources for long processing task', {
+          locks,
+          stack: initialCallStack,
+        });
       }
       lock = await lock.extend(maxTtl);
       queue();
@@ -520,7 +595,8 @@ export const redisGetWorkCompletionState = async (workId: string) => {
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
   const clientBase = getClientBase();
-  if (workId.includes('_')) { // Handle a connector status.
+  if (workId.includes('_')) {
+    // Handle a connector status.
     const [, connectorId] = workId.split('_');
     await clientBase.set(`work:${connectorId}`, workId);
   }
@@ -532,7 +608,11 @@ export const redisUpdateWorkFigures = async (workId: string) => {
 export const redisGetConnectorStatus = async (connectorId: string) => {
   return getClientBase().get(`work:${connectorId}`);
 };
-export const redisUpdateActionExpectation = async (user: AuthUser, workId: string, expectation: number) => {
+export const redisUpdateActionExpectation = async (
+  user: AuthUser,
+  workId: string,
+  expectation: number,
+) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectCounterRaw(tx, workId, 'import_expected_number', expectation);
   });
@@ -553,7 +633,13 @@ export const redisInitializeWork = async (workId: string, isMultiPartWork: boole
 // the marker can never recreate or orphan a deleted work key.
 const WORK_COMPLETION_FLAG_TTL = 86400; // 1 day, works complete well within it
 export const redisAcquireWorkCompletionFlag = async (workId: string): Promise<boolean> => {
-  const result = await getClientBase().set(`work_completion_counted:${workId}`, '1', 'EX', WORK_COMPLETION_FLAG_TTL, 'NX');
+  const result = await getClientBase().set(
+    `work_completion_counted:${workId}`,
+    '1',
+    'EX',
+    WORK_COMPLETION_FLAG_TTL,
+    'NX',
+  );
   return result === 'OK';
 };
 // endregion
@@ -561,29 +647,22 @@ export const redisAcquireWorkCompletionFlag = async (workId: string): Promise<bo
 const ASYNC_CALL_TTL = 300;
 const asyncCallKey = (id: string) => `async_status:${id}`;
 export const redisInitializeAsyncCall = async (asyncCallId: string) => {
-  await getClientBase().set(
-    asyncCallKey(asyncCallId),
-    '0',
-    'EX',
-    ASYNC_CALL_TTL,
-  );
+  await getClientBase().set(asyncCallKey(asyncCallId), '0', 'EX', ASYNC_CALL_TTL);
 };
 export const redisGetAsyncCall = async (asyncCallId: string) => {
   return getClientBase().get(asyncCallKey(asyncCallId));
 };
 export const redisFinishAsyncCall = async (asyncCallId: string) => {
-  await getClientBase().set(
-    asyncCallKey(asyncCallId),
-    '1',
-    'EX',
-    ASYNC_CALL_TTL,
-  );
+  await getClientBase().set(asyncCallKey(asyncCallId), '1', 'EX', ASYNC_CALL_TTL);
 };
 // endregion
 // region cluster handling
 const CLUSTER_LIST_KEY = 'platform_cluster';
 const CLUSTER_NODE_EXPIRE = 2 * 60; // 2 minutes
-export const registerClusterInstance = async (instanceId: string, instanceConfig: ClusterConfig) => {
+export const registerClusterInstance = async (
+  instanceId: string,
+  instanceConfig: ClusterConfig,
+) => {
   return setKeyWithList(instanceId, [CLUSTER_LIST_KEY], instanceConfig, CLUSTER_NODE_EXPIRE);
 };
 export const getClusterInstances = async () => {
@@ -600,22 +679,37 @@ export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const follow = await clientBase.get(id);
   const objectFollow = follow ? JSON.parse(follow) : {};
   const toUpdate = mergeDeepRightAll(objectFollow, envelop);
-  await setKeyWithList(id, [`playbook_executions_${envelop.playbook_id}`], toUpdate, PLAYBOOK_EXECUTION_TTL, PLAYBOOK_EXECUTIONS_MAX_LENGTH); // 5 minutes
+  await setKeyWithList(
+    id,
+    [`playbook_executions_${envelop.playbook_id}`],
+    toUpdate,
+    PLAYBOOK_EXECUTION_TTL,
+    PLAYBOOK_EXECUTIONS_MAX_LENGTH,
+  ); // 5 minutes
 };
 export const getLastPlaybookExecutions = async (playbookId: string) => {
-  const executions = await keysFromList(`playbook_executions_${playbookId}`, PLAYBOOK_EXECUTION_TTL, PLAYBOOK_EXECUTIONS_MAX_LENGTH) as ExecutionEnvelop[];
+  const executions = (await keysFromList(
+    `playbook_executions_${playbookId}`,
+    PLAYBOOK_EXECUTION_TTL,
+    PLAYBOOK_EXECUTIONS_MAX_LENGTH,
+  )) as ExecutionEnvelop[];
   return executions.map((e) => {
-    const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
-      const fullData = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+    const steps = Object.entries(e)
+      .filter(([k, _]) => k.startsWith('step_'))
+      .map(([k, v]) => {
+        const fullData = v.bundle
+          ? JSON.stringify([v.bundle], null, 2)
+          : JSON.stringify(v.patch, null, 2);
 
-      const bundle_or_patch = fullData.length > PLAYBOOK_LOG_MAX_SIZE
-        ? `${fullData.substring(0, PLAYBOOK_LOG_MAX_SIZE)}\n\n... (displaying ${PLAYBOOK_LOG_MAX_SIZE} on ${fullData.length - PLAYBOOK_LOG_MAX_SIZE} chars)`
-        : fullData;
+        const bundle_or_patch =
+          fullData.length > PLAYBOOK_LOG_MAX_SIZE
+            ? `${fullData.substring(0, PLAYBOOK_LOG_MAX_SIZE)}\n\n... (displaying ${PLAYBOOK_LOG_MAX_SIZE} on ${fullData.length - PLAYBOOK_LOG_MAX_SIZE} chars)`
+            : fullData;
 
-      // beware, step key is the same for every execution, and we need to avoid id collision in Relay
-      const id = `${e.playbook_execution_id}-${k.split('step_')[1]}`;
-      return ({ id, bundle_or_patch, ...v });
-    });
+        // beware, step key is the same for every execution, and we need to avoid id collision in Relay
+        const id = `${e.playbook_execution_id}-${k.split('step_')[1]}`;
+        return { id, bundle_or_patch, ...v };
+      });
     return {
       id: e.playbook_execution_id,
       playbook_id: e.playbook_id,
@@ -625,7 +719,11 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
   });
 };
 export const deleteAllPlaybookExecutions = async (playbookId: string) => {
-  const playbookExecutionKeys = await getClientBase().zrange(`playbook_executions_${playbookId}`, 0, -1);
+  const playbookExecutionKeys = await getClientBase().zrange(
+    `playbook_executions_${playbookId}`,
+    0,
+    -1,
+  );
   if (playbookExecutionKeys?.length > 0) {
     await getClientBase().del(playbookExecutionKeys); // delete all keys
   }
@@ -644,7 +742,11 @@ export const SUPPORT_NODE_STATUS_IN_ERROR = 100;
  * @param nodeId
  * @param nodeStatus one of SUPPORT_NODE_STATUS_IN_PROGRESS, SUPPORT_NODE_STATUS_READY, SUPPORT_NODE_STATUS_IN_ERROR
  */
-export const redisStoreSupportPackageNodeStatus = (supportPackageId: string, nodeId: string, nodeStatus: number) => {
+export const redisStoreSupportPackageNodeStatus = (
+  supportPackageId: string,
+  nodeId: string,
+  nodeStatus: number,
+) => {
   const setKeyId = `support:${supportPackageId}`;
   // redis score =  nodeStatus
   // redis member = nodeId
@@ -656,7 +758,10 @@ export const redisStoreSupportPackageNodeStatus = (supportPackageId: string, nod
  * @param supportPackageId
  * @param nodeStatus
  */
-export const redisCountSupportPackageNodeWithStatus = (supportPackageId: string, nodeStatus: number) => {
+export const redisCountSupportPackageNodeWithStatus = (
+  supportPackageId: string,
+  nodeStatus: number,
+) => {
   const setKeyId = `support:${supportPackageId}`;
   return getClientBase().zcount(setKeyId, nodeStatus, nodeStatus);
 };
@@ -685,8 +790,10 @@ export const redisGetExclusionListCache = async () => {
   try {
     return rawCache ? JSON.parse(rawCache) : [];
   } catch {
-    logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
-    await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
+    logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', {
+      rawCache,
+    });
+    await redisUpdateExclusionListStatus({ last_refresh_ask_date: new Date().toString() });
     return [];
   }
 };
@@ -702,7 +809,13 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 
 export const redisSetForgotPasswordOtp = async (
   transactionId: string,
-  data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
+  data: {
+    email: string;
+    hashedOtp: string;
+    mfa_activated: boolean;
+    mfa_validated: boolean;
+    userId: string;
+  },
   ttl: number = OTP_TTL,
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
@@ -712,8 +825,14 @@ export const redisSetForgotPasswordOtp = async (
 };
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
-  const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string; email: string; mfa_activated: boolean; mfa_validated: boolean; userId: string } = JSON.parse(str);
+  const str = (await getClientBase().get(keyName)) ?? '{}';
+  const values: {
+    hashedOtp: string;
+    email: string;
+    mfa_activated: boolean;
+    mfa_validated: boolean;
+    userId: string;
+  } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };
@@ -867,13 +986,18 @@ export interface ConnectorHealthMetrics {
   is_in_reboot_loop: boolean;
 }
 
-export const redisSetConnectorHealthMetrics = async (connectorId: string, metrics: ConnectorHealthMetrics) => {
+export const redisSetConnectorHealthMetrics = async (
+  connectorId: string,
+  metrics: ConnectorHealthMetrics,
+) => {
   const data = JSON.stringify(metrics);
   // TTL of 5 minutes (300 seconds)
   await getClientBase().set(`connector-${connectorId}-health`, data, 'EX', 300);
 };
 
-export const redisGetConnectorHealthMetrics = async (connectorId: string): Promise<ConnectorHealthMetrics | null> => {
+export const redisGetConnectorHealthMetrics = async (
+  connectorId: string,
+): Promise<ConnectorHealthMetrics | null> => {
   const rawMetrics = await getClientBase().get(`connector-${connectorId}-health`);
   return rawMetrics ? JSON.parse(rawMetrics) : null;
 };
@@ -910,13 +1034,15 @@ export const redisPushAuthLog = async (id: string, entry: Omit<AuthLogEntry, 'ti
 export const redisGetAuthLogHistory = async (id: string): Promise<AuthLogEntry[]> => {
   const listKey = authLogListKey(id);
   const rawList = await getClientBase().lrange(listKey, 0, AUTH_LOG_MAX_SIZE - 1);
-  return rawList.map((s) => {
-    try {
-      return JSON.parse(s) as AuthLogEntry;
-    } catch {
-      return null;
-    }
-  }).filter((e): e is AuthLogEntry => e !== null);
+  return rawList
+    .map((s) => {
+      try {
+        return JSON.parse(s) as AuthLogEntry;
+      } catch {
+        return null;
+      }
+    })
+    .filter((e): e is AuthLogEntry => e !== null);
 };
 
 export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
@@ -942,7 +1068,10 @@ export interface IngestionLogEntry {
 
 const ingestionLogListKey = (feedId: string) => `${INGESTION_LOG_KEY_PREFIX}${feedId}-history`;
 
-export const redisPushIngestionLog = async (feedId: string, entry: Omit<IngestionLogEntry, 'timestamp'>) => {
+export const redisPushIngestionLog = async (
+  feedId: string,
+  entry: Omit<IngestionLogEntry, 'timestamp'>,
+) => {
   try {
     const key = ingestionLogListKey(feedId);
     const value = JSON.stringify({ timestamp: Date.now(), ...entry });
@@ -958,13 +1087,15 @@ export const redisPushIngestionLog = async (feedId: string, entry: Omit<Ingestio
 export const redisGetIngestionLogHistory = async (feedId: string): Promise<IngestionLogEntry[]> => {
   const listKey = ingestionLogListKey(feedId);
   const rawList = await getClientBase().lrange(listKey, 0, INGESTION_LOG_MAX_SIZE - 1);
-  return rawList.map((s) => {
-    try {
-      return JSON.parse(s) as IngestionLogEntry;
-    } catch {
-      return null;
-    }
-  }).filter((e): e is IngestionLogEntry => e !== null);
+  return rawList
+    .map((s) => {
+      try {
+        return JSON.parse(s) as IngestionLogEntry;
+      } catch {
+        return null;
+      }
+    })
+    .filter((e): e is IngestionLogEntry => e !== null);
 };
 
 export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<void> => {
@@ -1006,14 +1137,18 @@ export interface XtmAgentCachedResponse {
 }
 
 const isXtmAgentCachedResponse = (value: unknown): value is XtmAgentCachedResponse => {
-  return !!value
-    && typeof value === 'object'
-    && !Array.isArray(value)
-    && typeof (value as XtmAgentCachedResponse).content === 'string'
-    && typeof (value as XtmAgentCachedResponse).cached_at === 'string';
+  return (
+    !!value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    typeof (value as XtmAgentCachedResponse).content === 'string' &&
+    typeof (value as XtmAgentCachedResponse).cached_at === 'string'
+  );
 };
 
-export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAgentCachedResponse | null> => {
+export const redisGetXtmAgentResponse = async (
+  cacheKey: string,
+): Promise<XtmAgentCachedResponse | null> => {
   try {
     const raw = await getClientBase().get(`${XTM_AGENT_CACHE_KEY_PREFIX}${cacheKey}`);
     if (!raw) return null;
@@ -1024,7 +1159,9 @@ export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAge
     // object instead of letting the consumer emit a `done` SSE event with
     // `content: undefined`.
     if (!isXtmAgentCachedResponse(parsed)) {
-      logApp.warn('[XTM One] Agent response cache payload has unexpected shape, ignoring', { cacheKey });
+      logApp.warn('[XTM One] Agent response cache payload has unexpected shape, ignoring', {
+        cacheKey,
+      });
       return null;
     }
     return parsed;
@@ -1034,7 +1171,11 @@ export const redisGetXtmAgentResponse = async (cacheKey: string): Promise<XtmAge
   }
 };
 
-export const redisSetXtmAgentResponse = async (cacheKey: string, content: string, ttlSeconds: number): Promise<void> => {
+export const redisSetXtmAgentResponse = async (
+  cacheKey: string,
+  content: string,
+  ttlSeconds: number,
+): Promise<void> => {
   if (ttlSeconds <= 0) return;
   try {
     const value: XtmAgentCachedResponse = { content, cached_at: new Date().toISOString() };

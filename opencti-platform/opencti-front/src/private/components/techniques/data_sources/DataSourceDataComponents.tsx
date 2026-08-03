@@ -23,19 +23,17 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
 
   const [commit] = useApiMutation(addDataComponentsMutationRelationDelete);
 
-  const removeDataComponent = (dataComponentId: string) => commit({
-    variables: {
-      id: dataSource.id,
-      dataComponentId,
-    },
-  });
+  const removeDataComponent = (dataComponentId: string) =>
+    commit({
+      variables: {
+        id: dataSource.id,
+        dataComponentId,
+      },
+    });
 
   return (
     <div>
-      <Label action={(
-        <AddDataComponents dataSource={dataSource} />
-      )}
-      >
+      <Label action={<AddDataComponents dataSource={dataSource} />}>
         {t_i18n('Data components')}
       </Label>
       {dataSource.dataComponents && (
@@ -47,14 +45,9 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height="100%"
-                      />
-                    )}
+                    primary={
+                      <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
+                    }
                   />
                 );
               }
@@ -64,7 +57,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={(
+                  secondaryAction={
                     <Tooltip title={t_i18n('Delete relationship')}>
                       <IconButton
                         aria-label="Remove"
@@ -73,7 +66,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
                         <Delete />
                       </IconButton>
                     </Tooltip>
-                  )}
+                  }
                 >
                   <ListItemButton
                     component={Link}
@@ -95,28 +88,25 @@ const DataSourceDataComponentsComponent: FunctionComponent<{
   );
 };
 
-const DataSourceDataComponents = createFragmentContainer(
-  DataSourceDataComponentsComponent,
-  {
-    dataSource: graphql`
-      fragment DataSourceDataComponents_dataSource on DataSource {
-        id
-        name
-        parent_types
-        entity_type
-        dataComponents {
-          edges {
-            node {
-              id
-              parent_types
-              name
-              description
-            }
+const DataSourceDataComponents = createFragmentContainer(DataSourceDataComponentsComponent, {
+  dataSource: graphql`
+    fragment DataSourceDataComponents_dataSource on DataSource {
+      id
+      name
+      parent_types
+      entity_type
+      dataComponents {
+        edges {
+          node {
+            id
+            parent_types
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default DataSourceDataComponents;

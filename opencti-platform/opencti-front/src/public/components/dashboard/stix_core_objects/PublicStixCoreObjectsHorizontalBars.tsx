@@ -16,13 +16,13 @@ const publicStixCoreObjectsHorizontalBarsQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -87,12 +87,13 @@ const PublicStixCoreObjectsHorizontalBarsComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixCoreObjectsDistribution
-    && publicStixCoreObjectsDistribution.length > 0
-  ) {
+  if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
     const selection = dataSelection[0];
-    const { series, redirectionUtils } = buildWidgetProps(publicStixCoreObjectsDistribution, selection, 'Entities number');
+    const { series, redirectionUtils } = buildWidgetProps(
+      publicStixCoreObjectsDistribution,
+      selection,
+      'Entities number',
+    );
     return (
       <WidgetHorizontalBars
         series={series}
@@ -124,9 +125,7 @@ const PublicStixCoreObjectsHorizontalBars = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Distribution of entities')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsHorizontalBarsComponent

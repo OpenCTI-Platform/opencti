@@ -3,7 +3,10 @@ import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StixCoreObjectOrStixCoreRelationshipContainerLine, StixCoreObjectOrStixCoreRelationshipContainerLineDummy } from './StixCoreObjectOrStixCoreRelationshipContainerLine';
+import {
+  StixCoreObjectOrStixCoreRelationshipContainerLine,
+  StixCoreObjectOrStixCoreRelationshipContainerLineDummy,
+} from './StixCoreObjectOrStixCoreRelationshipContainerLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -33,9 +36,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersLines extends Component {
           this.props.data,
         )}
         LineComponent={<StixCoreObjectOrStixCoreRelationshipContainerLine />}
-        DummyLineComponent={
-          <StixCoreObjectOrStixCoreRelationshipContainerLineDummy />
-        }
+        DummyLineComponent={<StixCoreObjectOrStixCoreRelationshipContainerLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}

@@ -32,7 +32,8 @@ export type MarkdownImageDragFeedback = 'none' | 'valid' | 'invalid';
 const extractEmbeddedStoragePathFromUrl = (url: string): string | null => {
   const trimmed = url.trim();
   const hasUrlScheme = (value: string): boolean => /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(value);
-  const startsWithIgnoreCase = (value: string, prefix: string): boolean => value.toLowerCase().startsWith(prefix.toLowerCase());
+  const startsWithIgnoreCase = (value: string, prefix: string): boolean =>
+    value.toLowerCase().startsWith(prefix.toLowerCase());
 
   const pathCandidate = (() => {
     if (trimmed.startsWith('/')) {
@@ -81,7 +82,9 @@ export const getImageFiles = (files: File[]): File[] => {
   });
 };
 
-export const getMarkdownImageDragFeedback = (dataTransfer?: DataTransfer | null): MarkdownImageDragFeedback => {
+export const getMarkdownImageDragFeedback = (
+  dataTransfer?: DataTransfer | null,
+): MarkdownImageDragFeedback => {
   if (!dataTransfer) {
     return 'none';
   }
@@ -133,13 +136,16 @@ export const clearPendingCleanup = (
   }
 };
 
-export const scheduleTokenCleanup = ({
-  pendingCleanupTimeoutRef,
-  latestMarkdownRef,
-  isFieldFocusedRef,
-  registry,
-  delayMs,
-}: CleanupRefs, token: string) => {
+export const scheduleTokenCleanup = (
+  {
+    pendingCleanupTimeoutRef,
+    latestMarkdownRef,
+    isFieldFocusedRef,
+    registry,
+    delayMs,
+  }: CleanupRefs,
+  token: string,
+) => {
   const timeoutId = setTimeout(() => {
     pendingCleanupTimeoutRef.current.delete(token);
 
@@ -158,25 +164,32 @@ export const scheduleTokenCleanup = ({
       return;
     }
 
-    scheduleTokenCleanup({
-      pendingCleanupTimeoutRef,
-      latestMarkdownRef,
-      isFieldFocusedRef,
-      registry,
-      delayMs,
-    }, token);
+    scheduleTokenCleanup(
+      {
+        pendingCleanupTimeoutRef,
+        latestMarkdownRef,
+        isFieldFocusedRef,
+        registry,
+        delayMs,
+      },
+      token,
+    );
   }, delayMs);
 
   pendingCleanupTimeoutRef.current.set(token, timeoutId);
 };
 
-export const cleanupRemovedTempAttachments = ({
-  pendingCleanupTimeoutRef,
-  latestMarkdownRef,
-  isFieldFocusedRef,
-  registry,
-  delayMs,
-}: CleanupRefs, markdown: string, immediate = false) => {
+export const cleanupRemovedTempAttachments = (
+  {
+    pendingCleanupTimeoutRef,
+    latestMarkdownRef,
+    isFieldFocusedRef,
+    registry,
+    delayMs,
+  }: CleanupRefs,
+  markdown: string,
+  immediate = false,
+) => {
   const knownTokens = registry.listTokens();
   for (let i = 0; i < knownTokens.length; i += 1) {
     const token = knownTokens[i];
@@ -186,13 +199,16 @@ export const cleanupRemovedTempAttachments = ({
       clearPendingCleanup(pendingCleanupTimeoutRef, token);
       registry.removeTempAttachment(token);
     } else if (!pendingCleanupTimeoutRef.current.has(token)) {
-      scheduleTokenCleanup({
-        pendingCleanupTimeoutRef,
-        latestMarkdownRef,
-        isFieldFocusedRef,
-        registry,
-        delayMs,
-      }, token);
+      scheduleTokenCleanup(
+        {
+          pendingCleanupTimeoutRef,
+          latestMarkdownRef,
+          isFieldFocusedRef,
+          registry,
+          delayMs,
+        },
+        token,
+      );
     }
   }
 };
@@ -205,7 +221,9 @@ export const cleanupRemovedTempAttachments = ({
 // Results are deduplicated and paths with ".." are dropped to prevent directory traversal.
 export const extractEmbeddedStoragePathsFromMarkdown = (markdown: string): string[] => {
   const paths = new Set<string>();
-  const imageReferences = extractMarkdownImageReferences(markdown, { stopAtLineBreakAtTopLevel: true });
+  const imageReferences = extractMarkdownImageReferences(markdown, {
+    stopAtLineBreakAtTopLevel: true,
+  });
 
   for (let i = 0; i < imageReferences.length; i += 1) {
     const embeddedPath = extractEmbeddedStoragePathFromUrl(imageReferences[i].imageUrl);

@@ -40,7 +40,12 @@ const errorConverter = (e: any) => {
 };
 
 const escapeCsvField = (separator: string, data: string) => {
-  if (data.includes('"') || data.includes(separator) || data.includes('\n') || data.includes('\r')) {
+  if (
+    data.includes('"') ||
+    data.includes(separator) ||
+    data.includes('\n') ||
+    data.includes('\r')
+  ) {
     const escapedData = data.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
@@ -49,7 +54,11 @@ const escapeCsvField = (separator: string, data: string) => {
 
 const neighborKey = (relType: string, targetType: string) => `${relType}:${targetType}`;
 
-const extractAttributeFromEntity = (entity: BasicStoreBase, attributePath: string, listSeparator = ','): string => {
+const extractAttributeFromEntity = (
+  entity: BasicStoreBase,
+  attributePath: string,
+  listSeparator = ',',
+): string => {
   const isComplexKey = attributePath.includes('.');
   const baseKey = isComplexKey ? attributePath.split('.')[0] : attributePath;
   const data = (entity as any)[baseKey];
@@ -189,7 +198,10 @@ export const resolveNeighborsForFeed = async (
   const resolvedByType = new Map<string, Record<string, BasicStoreBase>>();
   await Promise.all(
     Array.from(allTargetIdsByType.entries()).map(async ([targetType, ids]) => {
-      const resolved = await elFindByIds(context, user, Array.from(ids), { type: targetType, toMap: true }) as Record<string, BasicStoreBase>;
+      const resolved = (await elFindByIds(context, user, Array.from(ids), {
+        type: targetType,
+        toMap: true,
+      })) as Record<string, BasicStoreBase>;
       resolvedByType.set(targetType, resolved);
     }),
   );
@@ -214,7 +226,11 @@ export const resolveNeighborsForFeed = async (
   return neighborsMap;
 };
 
-export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): string[] => {
+export const buildCsvLines = (
+  elements: any[],
+  feed: BasicStoreEntityFeed,
+  neighborsMap?: NeighborsMap,
+): string[] => {
   const lines: string[] = [];
   const separator = feed.separator ?? ',';
   for (let index = 0; index < elements.length; index += 1) {
@@ -276,7 +292,10 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
   return lines;
 };
 
-export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreEntityFeed): Promise<AuthUser> => {
+export const resolveUserForFeed = async (
+  context: AuthContext,
+  feed: BasicStoreEntityFeed,
+): Promise<AuthUser> => {
   if (feed.feed_public) return resolvePublicUser(context, feed.feed_public_user_id);
   if (context.user) return context.user;
   throw ForbiddenAccess();
@@ -310,16 +329,30 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       // User is available or feed is public
       const user = await resolveUserForFeed(context, feed);
       if (feed.feed_public) {
-        const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        const settings = await getEntityFromCache<BasicStoreSettings>(
+          context,
+          SYSTEM_USER,
+          ENTITY_TYPE_SETTINGS,
+        );
         context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       }
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const field = feed.feed_date_attribute ?? 'created_at';
-      const extraOptions = { defaultTypes: feed.feed_types, field, orderMode: 'desc', after: fromDate };
+      const extraOptions = {
+        defaultTypes: feed.feed_types,
+        field,
+        orderMode: 'desc',
+        after: fromDate,
+      };
       const options = await convertFiltersToQueryOptions(filters, extraOptions);
       const args = { maxSize: SIZE_LIMIT, ...options };
-      const paginateElements = await fullEntitiesOrRelationsList(context, user, feed.feed_types, args);
+      const paginateElements = await fullEntitiesOrRelationsList(
+        context,
+        user,
+        feed.feed_types,
+        args,
+      );
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       const neighborsMap = await resolveNeighborsForFeed(context, user, elements, feed);
       if (feed.include_header) {

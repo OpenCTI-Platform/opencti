@@ -5,7 +5,10 @@ import { useTheme } from '@mui/material/styles';
 import { truncate } from '../../../../utils/String';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import Security from '../../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -32,18 +35,17 @@ const StixSightingRelationshipHeader = ({
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && canEdit;
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: theme.spacing(3),
-    }}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: theme.spacing(3),
+      }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
         <Tooltip title={headerName}>
-          <TitleMainEntity>
-            {truncate(headerName, 80)}
-          </TitleMainEntity>
+          <TitleMainEntity>{truncate(headerName, 80)}</TitleMainEntity>
         </Tooltip>
       </div>
       <Stack direction="row" alignItems="center" gap={1}>
@@ -51,10 +53,11 @@ const StixSightingRelationshipHeader = ({
           <PopoverMenu>
             {({ closeMenu }) => (
               <Box>
-                <MenuItem onClick={() => {
-                  onOpenDelete();
-                  closeMenu();
-                }}
+                <MenuItem
+                  onClick={() => {
+                    onOpenDelete();
+                    closeMenu();
+                  }}
                 >
                   {t_i18n('Delete')}
                 </MenuItem>
@@ -64,10 +67,7 @@ const StixSightingRelationshipHeader = ({
         )}
         {canEdit && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Button
-              aria-label={t_i18n('Update')}
-              onClick={onOpenEdit}
-            >
+            <Button aria-label={t_i18n('Update')} onClick={onOpenEdit}>
               {t_i18n('Update')}
             </Button>
           </Security>

@@ -4,7 +4,10 @@ import { Tooltip } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Disposable, graphql } from 'relay-runtime';
 import Box from '@mui/material/Box';
-import { ThemeManagerQuery, ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
+import {
+  ThemeManagerQuery,
+  ThemeManagerQuery$variables,
+} from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
 import { ThemeManager_lines_data$data } from '@components/settings/themes/__generated__/ThemeManager_lines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -20,8 +23,7 @@ import Card from '../../../../components/common/card/Card';
 const LOCAL_STORAGE_KEY = 'themes';
 
 export const refetchableThemesQuery = graphql`
-  fragment ThemeManager_themes on Query
-  @refetchable(queryName: "ThemeManagerThemesRefetchQuery") {
+  fragment ThemeManager_themes on Query @refetchable(queryName: "ThemeManagerThemesRefetchQuery") {
     themes(orderBy: created_at, orderMode: desc) {
       edges {
         node {
@@ -54,12 +56,8 @@ const themeManagerQuery = graphql`
     $orderBy: ThemeOrdering
     $orderMode: OrderingMode
   ) {
-    ...ThemeManager_lines_data @arguments(
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+    ...ThemeManager_lines_data
+      @arguments(count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
   }
 `;
 
@@ -70,15 +68,10 @@ const themesLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "ThemeOrdering" }
     orderMode: { type: "OrderingMode" }
-
   )
   @refetchable(queryName: "ThemeManagerLinesRefetchQuery") {
-    themes(
-      first: $count
-      after: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) @connection(key: "Pagination_themes") {
+    themes(first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+      @connection(key: "Pagination_themes") {
       edges {
         node {
           ...ThemeManager_data
@@ -123,10 +116,7 @@ interface ThemeManagerProps {
   } | null;
 }
 
-const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
-  handleRefetch,
-  defaultTheme,
-}) => {
+const ThemeManager: FunctionComponent<ThemeManagerProps> = ({ handleRefetch, defaultTheme }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
 
@@ -135,19 +125,14 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
     orderAsc: false,
   };
 
-  const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemeManagerQuery>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { helpers: storageHelpers, paginationOptions } =
+    usePaginationLocalStorage<ThemeManagerQuery>(LOCAL_STORAGE_KEY, initialValues);
 
   const queryPaginationOptions = {
     ...paginationOptions,
   } as unknown as ThemeManagerQuery$variables;
 
-  const queryRef = useQueryLoading<ThemeManagerQuery>(
-    themeManagerQuery,
-    queryPaginationOptions,
-  );
+  const queryRef = useQueryLoading<ThemeManagerQuery>(themeManagerQuery, queryPaginationOptions);
 
   const dataColumns = {
     name: {
@@ -167,14 +152,15 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   const handleOpenCreation = () => setDisplayCreation(true);
   const handleCloseCreation = () => setDisplayCreation(false);
 
-  const resolveThemesData = (data: ThemeManager_lines_data$data) => data.themes?.edges?.map((n) => n?.node);
+  const resolveThemesData = (data: ThemeManager_lines_data$data) =>
+    data.themes?.edges?.map((n) => n?.node);
 
   return (
     <>
       <Card
         title={t_i18n('Themes')}
         sx={{ flex: '0 auto' }}
-        action={(
+        action={
           <Box>
             <Tooltip title={t_i18n('Create a custom theme')}>
               <IconButton
@@ -192,7 +178,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
               paginationOptions={queryPaginationOptions}
             />
           </Box>
-        )}
+        }
       >
         {queryRef && (
           <DataTable
@@ -218,7 +204,6 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             initialValues={initialValues}
             lineFragment={themesLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
-
           />
         )}
       </Card>

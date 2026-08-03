@@ -1,6 +1,10 @@
 import { graphql } from 'react-relay';
 import { commitMutation } from '../../../../relay/environment';
-import { extractTempImageTokens, MarkdownTempAttachmentRegistry, replaceTempImageTokenUrl } from '../core/markdownImagePreviewUtils';
+import {
+  extractTempImageTokens,
+  MarkdownTempAttachmentRegistry,
+  replaceTempImageTokenUrl,
+} from '../core/markdownImagePreviewUtils';
 
 type UseMarkdownImagesUploadArgs = {
   uploadEntityId?: string;
@@ -56,7 +60,10 @@ const useMarkdownImagesUpload = ({
   uploadEntityId,
   uploadFileMarkings = [],
 }: UseMarkdownImagesUploadArgs) => {
-  const uploadFile = (file: File, uploadEntityIdOverride?: string): Promise<{ id: string; name: string }> => {
+  const uploadFile = (
+    file: File,
+    uploadEntityIdOverride?: string,
+  ): Promise<{ id: string; name: string }> => {
     return new Promise((resolve, reject) => {
       const resolvedUploadEntityId = uploadEntityIdOverride ?? uploadEntityId;
       if (!resolvedUploadEntityId) {

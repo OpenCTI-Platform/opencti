@@ -85,7 +85,14 @@ const CONNECTOR_TYPE_ORDER: string[] = [
 // cannot produce duplicate filter chips or duplicate React keys.
 const parseListParam = (value: string | null): string[] => {
   if (!value) return [];
-  return [...new Set(value.split(',').map((v) => v.trim()).filter((v) => v.length > 0))];
+  return [
+    ...new Set(
+      value
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v) => v.length > 0),
+    ),
+  ];
 };
 
 const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean => {
@@ -93,7 +100,13 @@ const matchesStatus = (item: CatalogItem, status: CatalogStatusFacet): boolean =
   return !item.verified;
 };
 
-type FacetGroup = 'types' | 'useCases' | 'solutionCategories' | 'licenseTypes' | 'statuses' | 'deployments';
+type FacetGroup =
+  | 'types'
+  | 'useCases'
+  | 'solutionCategories'
+  | 'licenseTypes'
+  | 'statuses'
+  | 'deployments';
 
 const matchesFilters = (
   item: CatalogItem,
@@ -115,7 +128,9 @@ const matchesFilters = (
     if (!useCaseMatch) return false;
   }
   if (skip !== 'solutionCategories' && filters.solutionCategories.length > 0) {
-    const categoryMatch = item.solutionCategories.some((category) => filters.solutionCategories.includes(category));
+    const categoryMatch = item.solutionCategories.some((category) =>
+      filters.solutionCategories.includes(category),
+    );
     if (!categoryMatch) return false;
   }
   if (skip !== 'licenseTypes' && filters.licenseTypes.length > 0) {
@@ -125,7 +140,11 @@ const matchesFilters = (
     const statusMatch = filters.statuses.some((status) => matchesStatus(item, status));
     if (!statusMatch) return false;
   }
-  if (skip !== 'deployments' && filters.deployments.length > 0 && !filters.deployments.includes(item.deployment)) {
+  if (
+    skip !== 'deployments' &&
+    filters.deployments.length > 0 &&
+    !filters.deployments.includes(item.deployment)
+  ) {
     return false;
   }
   return true;
@@ -137,14 +156,19 @@ const parseFiltersFromParams = (searchParams: URLSearchParams): CatalogFilterSta
   useCases: parseListParam(searchParams.get('useCase')),
   solutionCategories: parseListParam(searchParams.get('solutionCategory')),
   licenseTypes: parseListParam(searchParams.get('licenseType')),
-  statuses: parseListParam(searchParams.get('status'))
-    .filter((s): s is CatalogStatusFacet => (CATALOG_STATUS_FACETS as string[]).includes(s)),
-  deployments: parseListParam(searchParams.get('deployment'))
-    .filter((d): d is CatalogDeploymentFacet => (CATALOG_DEPLOYMENT_FACETS as string[]).includes(d)),
+  statuses: parseListParam(searchParams.get('status')).filter((s): s is CatalogStatusFacet =>
+    (CATALOG_STATUS_FACETS as string[]).includes(s),
+  ),
+  deployments: parseListParam(searchParams.get('deployment')).filter(
+    (d): d is CatalogDeploymentFacet => (CATALOG_DEPLOYMENT_FACETS as string[]).includes(d),
+  ),
 });
 
 const parseSortFromParams = (searchParams: URLSearchParams): CatalogSortMode => {
-  return (['name', 'deployed', 'verified'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name';
+  return (
+    (['name', 'deployed', 'verified'] as const).find((mode) => mode === searchParams.get('sort')) ??
+    'name'
+  );
 };
 
 const useIngestionCatalogFilters = ({
@@ -155,7 +179,9 @@ const useIngestionCatalogFilters = ({
 }: UseIngestionCatalogFiltersProps) => {
   const { t_i18n } = useFormatter();
 
-  const [filters, setFilters] = useState<CatalogFilterState>(() => parseFiltersFromParams(searchParams));
+  const [filters, setFilters] = useState<CatalogFilterState>(() =>
+    parseFiltersFromParams(searchParams),
+  );
   const [sort, setSort] = useState<CatalogSortMode>(() => parseSortFromParams(searchParams));
 
   // In-page filter changes are persisted with history.replaceState, which does
@@ -178,14 +204,19 @@ const useIngestionCatalogFilters = ({
     // same canonical URL regardless of selection order.
     if (filters.types.length > 0) params.set('type', [...filters.types].sort().join(','));
     if (filters.useCases.length > 0) params.set('useCase', [...filters.useCases].sort().join(','));
-    if (filters.solutionCategories.length > 0) params.set('solutionCategory', [...filters.solutionCategories].sort().join(','));
-    if (filters.licenseTypes.length > 0) params.set('licenseType', [...filters.licenseTypes].sort().join(','));
+    if (filters.solutionCategories.length > 0)
+      params.set('solutionCategory', [...filters.solutionCategories].sort().join(','));
+    if (filters.licenseTypes.length > 0)
+      params.set('licenseType', [...filters.licenseTypes].sort().join(','));
     if (filters.statuses.length > 0) params.set('status', [...filters.statuses].sort().join(','));
-    if (filters.deployments.length > 0) params.set('deployment', [...filters.deployments].sort().join(','));
+    if (filters.deployments.length > 0)
+      params.set('deployment', [...filters.deployments].sort().join(','));
     if (sort !== 'name') params.set('sort', sort);
 
     const queryString = params.toString();
-    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+    const newUrl = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
     // replace history with the params so on back on browser, reload the page
     // with the last filters set
     window.history.replaceState({}, '', newUrl);
@@ -228,7 +259,9 @@ const useIngestionCatalogFilters = ({
                 connector.short_description,
                 ...(connector.use_cases ?? []),
                 ...(connector.solution_categories ?? []),
-              ].join(' ').toLowerCase(),
+              ]
+                .join(' ')
+                .toLowerCase(),
               sectionKey: connector.container_type,
               deployment: 'connector',
               verified: connector.verified,
@@ -330,7 +363,11 @@ const useIngestionCatalogFilters = ({
 
   // All facet values present in the catalog, in display order.
   const availableTypes = useMemo(() => {
-    const present = [...new Set(items.filter((item) => item.deployment === 'connector').map((item) => item.sectionKey))];
+    const present = [
+      ...new Set(
+        items.filter((item) => item.deployment === 'connector').map((item) => item.sectionKey),
+      ),
+    ];
     const known = present.filter((type) => CONNECTOR_TYPE_ORDER.includes(type));
     const unknown = present.filter((type) => !CONNECTOR_TYPE_ORDER.includes(type)).sort();
     return [
@@ -348,7 +385,9 @@ const useIngestionCatalogFilters = ({
   }, [items]);
 
   const availableLicenseTypes = useMemo(() => {
-    return [...new Set(items.flatMap((item) => (item.licenseType ? [item.licenseType] : [])))].sort();
+    return [
+      ...new Set(items.flatMap((item) => (item.licenseType ? [item.licenseType] : []))),
+    ].sort();
   }, [items]);
 
   const filteredItems = useMemo(
@@ -359,15 +398,16 @@ const useIngestionCatalogFilters = ({
   // Results sectioned by kind (built-in first, then connector types), sorted
   // per the active sort mode.
   const sections: CatalogSection[] = useMemo(() => {
-    const sortItems = (list: CatalogItem[]) => [...list].sort((a, b) => {
-      if (sort === 'deployed' && a.deploymentCount !== b.deploymentCount) {
-        return b.deploymentCount - a.deploymentCount;
-      }
-      if (sort === 'verified' && a.verified !== b.verified) {
-        return a.verified ? -1 : 1;
-      }
-      return a.title.localeCompare(b.title);
-    });
+    const sortItems = (list: CatalogItem[]) =>
+      [...list].sort((a, b) => {
+        if (sort === 'deployed' && a.deploymentCount !== b.deploymentCount) {
+          return b.deploymentCount - a.deploymentCount;
+        }
+        if (sort === 'verified' && a.verified !== b.verified) {
+          return a.verified ? -1 : 1;
+        }
+        return a.title.localeCompare(b.title);
+      });
     const sectionKeys = [BUILT_IN_SECTION_KEY, ...availableTypes];
     return sectionKeys
       .map((key) => ({
@@ -377,16 +417,25 @@ const useIngestionCatalogFilters = ({
       .filter((section) => section.items.length > 0);
   }, [filteredItems, availableTypes, sort]);
 
-  const hasActiveFilters = filters.search !== ''
-    || filters.types.length > 0
-    || filters.useCases.length > 0
-    || filters.solutionCategories.length > 0
-    || filters.licenseTypes.length > 0
-    || filters.statuses.length > 0
-    || filters.deployments.length > 0;
+  const hasActiveFilters =
+    filters.search !== '' ||
+    filters.types.length > 0 ||
+    filters.useCases.length > 0 ||
+    filters.solutionCategories.length > 0 ||
+    filters.licenseTypes.length > 0 ||
+    filters.statuses.length > 0 ||
+    filters.deployments.length > 0;
 
   const clearAllFilters = () => {
-    setFilters({ search: '', types: [], useCases: [], solutionCategories: [], licenseTypes: [], statuses: [], deployments: [] });
+    setFilters({
+      search: '',
+      types: [],
+      useCases: [],
+      solutionCategories: [],
+      licenseTypes: [],
+      statuses: [],
+      deployments: [],
+    });
   };
 
   return {

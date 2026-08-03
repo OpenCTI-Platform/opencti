@@ -14,13 +14,13 @@ const publicStixCoreObjectsNumberQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsNumber(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       total
       count
@@ -81,10 +81,7 @@ const PublicStixCoreObjectsNumber = ({
   );
 
   return (
-    <WidgetContainer
-      padding="medium"
-      title={t_i18n('Entities number')}
-    >
+    <WidgetContainer padding="medium" title={t_i18n('Entities number')}>
       {queryRef ? (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsNumberComponent

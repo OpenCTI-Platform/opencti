@@ -256,22 +256,27 @@ describe('Markings filtering', () => {
           },
         },
       ];
-      const filteredMarkingsOutForPapClear = filterMarkingsOutFor([{
-        label: 'PAP:CLEAR',
-        value: '7f4d0215-1dc0-470d-af27-dad09eb71c29',
-        color: '#ffffff',
-        definition_type: 'PAP',
-        x_opencti_order: 1,
-        entity: {
-          id: '7f4d0215-1dc0-470d-af27-dad09eb71c29',
-          entity_type: 'Marking-Definition',
-          standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
-          definition_type: 'PAP',
-          definition: 'PAP:CLEAR',
-          x_opencti_color: '#ffffff',
-          x_opencti_order: 1,
-        },
-      }], markingsOptions);
+      const filteredMarkingsOutForPapClear = filterMarkingsOutFor(
+        [
+          {
+            label: 'PAP:CLEAR',
+            value: '7f4d0215-1dc0-470d-af27-dad09eb71c29',
+            color: '#ffffff',
+            definition_type: 'PAP',
+            x_opencti_order: 1,
+            entity: {
+              id: '7f4d0215-1dc0-470d-af27-dad09eb71c29',
+              entity_type: 'Marking-Definition',
+              standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
+              definition_type: 'PAP',
+              definition: 'PAP:CLEAR',
+              x_opencti_color: '#ffffff',
+              x_opencti_order: 1,
+            },
+          },
+        ],
+        markingsOptions,
+      );
       expect(filteredMarkingsOutForPapClear).toStrictEqual(expectedFilteredMarkingsOptions);
     });
 
@@ -406,24 +411,27 @@ describe('Markings filtering', () => {
           },
         },
       ];
-      const filteredMarkingsOutForPapAmber = filterMarkingsOutFor([
-        {
-          label: 'PAP:AMBER',
-          value: '63256ea9-f565-48eb-a0d5-4bed950fa68f',
-          color: '#d84315',
-          definition_type: 'PAP',
-          x_opencti_order: 3,
-          entity: {
-            id: '63256ea9-f565-48eb-a0d5-4bed950fa68f',
-            entity_type: 'Marking-Definition',
-            standard_id: 'marking-definition--a6f20d4d-0360-59b6-ba22-3b48707828b1',
+      const filteredMarkingsOutForPapAmber = filterMarkingsOutFor(
+        [
+          {
+            label: 'PAP:AMBER',
+            value: '63256ea9-f565-48eb-a0d5-4bed950fa68f',
+            color: '#d84315',
             definition_type: 'PAP',
-            definition: 'PAP:AMBER',
-            x_opencti_color: '#d84315',
             x_opencti_order: 3,
+            entity: {
+              id: '63256ea9-f565-48eb-a0d5-4bed950fa68f',
+              entity_type: 'Marking-Definition',
+              standard_id: 'marking-definition--a6f20d4d-0360-59b6-ba22-3b48707828b1',
+              definition_type: 'PAP',
+              definition: 'PAP:AMBER',
+              x_opencti_color: '#d84315',
+              x_opencti_order: 3,
+            },
           },
-        },
-      ], markingsOptions);
+        ],
+        markingsOptions,
+      );
       expect(filteredMarkingsOutForPapAmber).toStrictEqual(expectedFilteredMarkingsOptions);
     });
   });

@@ -30,9 +30,7 @@ const ItemCreators = ({ creators }: ItemCreatorsProps) => {
           <Security
             key={creator.id}
             needs={[SETTINGS_SETACCESSES]}
-            placeholder={(
-              <Tag label={creator.name} />
-            )}
+            placeholder={<Tag label={creator.name} />}
           >
             {systemUsers.includes(creator.id) ? (
               <Tag label={creator.name} />

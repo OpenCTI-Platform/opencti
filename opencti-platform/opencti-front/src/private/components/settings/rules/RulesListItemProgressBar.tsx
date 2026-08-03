@@ -22,7 +22,7 @@ const RuleListItemProgressBar = ({ taskEnable, work }: RuleListItemProgressBarPr
   const labelDisableComplete = t_i18n('Rule has been cleaned up on the existing data');
   const labelDisableOngoing = t_i18n('Cleaning up this rule on the existing data');
 
-  const percentProcessed = Math.round(((processedNumber) / (expectedNumber)) * 100);
+  const percentProcessed = Math.round((processedNumber / expectedNumber) * 100);
   let progressValue = 100;
   if (!workCompleted) {
     if (expectedNumber === 0) progressValue = 0;
@@ -39,9 +39,7 @@ const RuleListItemProgressBar = ({ taskEnable, work }: RuleListItemProgressBarPr
   return (
     <div>
       <Stack gap={1}>
-        <Label>
-          {getLabel()}
-        </Label>
+        <Label>{getLabel()}</Label>
         <LinearProgress
           style={{ borderRadius: 4, height: 10 }}
           variant="determinate"

@@ -1,10 +1,22 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { alpha, useTheme } from '@mui/material/styles';
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import { Check, ExtensionOutlined, GroupsOutlined, MoneyOffOutlined, PaidOutlined, VerifiedOutlined, WidgetsOutlined } from '@mui/icons-material';
+import {
+  Check,
+  ExtensionOutlined,
+  GroupsOutlined,
+  MoneyOffOutlined,
+  PaidOutlined,
+  VerifiedOutlined,
+  WidgetsOutlined,
+} from '@mui/icons-material';
 import type { SvgIconComponent } from '@mui/icons-material';
 import Button from '@common/button/Button';
-import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
+import {
+  getConnectorMetadata,
+  getConnectorTypeIcon,
+  IngestionConnectorType,
+} from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
 import { getUseCaseIcon } from '@components/integrations/catalog/utils/useCaseIcons';
 import {
   CATALOG_DEPLOYMENT_FACETS,
@@ -56,7 +68,13 @@ interface FacetCheckboxProps {
   onToggle: () => void;
 }
 
-export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: FacetCheckboxProps) => {
+export const FacetCheckbox = ({
+  checked,
+  label,
+  count,
+  icon: Icon,
+  onToggle,
+}: FacetCheckboxProps) => {
   const theme = useTheme();
   const isDisabled = count === 0 && !checked;
   return (
@@ -97,9 +115,7 @@ export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: F
           transition: 'all 0.2s ease-in-out',
         }}
       >
-        {checked && (
-          <Check sx={{ fontSize: 12, color: theme.palette.primary.contrastText }} />
-        )}
+        {checked && <Check sx={{ fontSize: 12, color: theme.palette.primary.contrastText }} />}
       </Box>
       {Icon && (
         <Icon
@@ -245,11 +261,7 @@ const IngestionCatalogFacetSidebar = ({
             appears to host the clear action when a filter is active. */}
         {hasActiveFilters && (
           <Stack direction="row" alignItems="center" justifyContent="flex-end">
-            <Button
-              variant="tertiary"
-              size="small"
-              onClick={onClearAll}
-            >
+            <Button variant="tertiary" size="small" onClick={onClearAll}>
               {t_i18n('Clear all')}
             </Button>
           </Stack>
@@ -264,7 +276,12 @@ const IngestionCatalogFacetSidebar = ({
               count={facets.deploymentCounts[deployment] ?? 0}
               icon={DEPLOYMENT_FACET_ICONS[deployment]}
               label={deploymentLabel(deployment)}
-              onToggle={() => onFiltersChange((prev) => ({ ...prev, deployments: toggleValue(prev.deployments, deployment) }))}
+              onToggle={() =>
+                onFiltersChange((prev) => ({
+                  ...prev,
+                  deployments: toggleValue(prev.deployments, deployment),
+                }))
+              }
             />
           ))}
         </Box>
@@ -278,7 +295,9 @@ const IngestionCatalogFacetSidebar = ({
               count={facets.typeCounts[type] ?? 0}
               icon={getConnectorTypeIcon(type)}
               label={getConnectorMetadata(type, t_i18n).label}
-              onToggle={() => onFiltersChange((prev) => ({ ...prev, types: toggleValue(prev.types, type) }))}
+              onToggle={() =>
+                onFiltersChange((prev) => ({ ...prev, types: toggleValue(prev.types, type) }))
+              }
             />
           ))}
         </Box>
@@ -293,7 +312,12 @@ const IngestionCatalogFacetSidebar = ({
                 count={facets.useCaseCounts[useCase] ?? 0}
                 icon={getUseCaseIcon(useCase)}
                 label={useCase} // no translation on purpose, values come from the catalog
-                onToggle={() => onFiltersChange((prev) => ({ ...prev, useCases: toggleValue(prev.useCases, useCase) }))}
+                onToggle={() =>
+                  onFiltersChange((prev) => ({
+                    ...prev,
+                    useCases: toggleValue(prev.useCases, useCase),
+                  }))
+                }
               />
             ))}
           </Box>
@@ -309,7 +333,12 @@ const IngestionCatalogFacetSidebar = ({
                 count={facets.solutionCategoryCounts[category] ?? 0}
                 icon={getUseCaseIcon(category)}
                 label={category} // no translation on purpose, values come from the catalog
-                onToggle={() => onFiltersChange((prev) => ({ ...prev, solutionCategories: toggleValue(prev.solutionCategories, category) }))}
+                onToggle={() =>
+                  onFiltersChange((prev) => ({
+                    ...prev,
+                    solutionCategories: toggleValue(prev.solutionCategories, category),
+                  }))
+                }
               />
             ))}
           </Box>
@@ -325,7 +354,12 @@ const IngestionCatalogFacetSidebar = ({
                 count={facets.licenseTypeCounts[licenseType] ?? 0}
                 icon={LICENSE_TYPE_ICONS[licenseType]}
                 label={licenseType} // no translation on purpose, values come from the catalog
-                onToggle={() => onFiltersChange((prev) => ({ ...prev, licenseTypes: toggleValue(prev.licenseTypes, licenseType) }))}
+                onToggle={() =>
+                  onFiltersChange((prev) => ({
+                    ...prev,
+                    licenseTypes: toggleValue(prev.licenseTypes, licenseType),
+                  }))
+                }
               />
             ))}
           </Box>
@@ -340,7 +374,12 @@ const IngestionCatalogFacetSidebar = ({
               count={facets.statusCounts[status] ?? 0}
               icon={STATUS_FACET_ICONS[status]}
               label={statusLabel(status)}
-              onToggle={() => onFiltersChange((prev) => ({ ...prev, statuses: toggleValue(prev.statuses, status) }))}
+              onToggle={() =>
+                onFiltersChange((prev) => ({
+                  ...prev,
+                  statuses: toggleValue(prev.statuses, status),
+                }))
+              }
             />
           ))}
         </Box>

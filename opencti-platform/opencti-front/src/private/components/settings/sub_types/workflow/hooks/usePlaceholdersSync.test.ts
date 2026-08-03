@@ -69,9 +69,7 @@ describe('usePlaceholdersSync', () => {
       { id: 'status-1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} },
       { id: 'trans-1', type: WorkflowNodeType.transition, position: { x: 10, y: 10 }, data: {} },
     ];
-    const edges: Edge[] = [
-      { id: 'e1', source: 'status-1', target: 'trans-1' },
-    ];
+    const edges: Edge[] = [{ id: 'e1', source: 'status-1', target: 'trans-1' }];
 
     renderHook(({ nodes, edges }) => usePlaceholdersSync(nodes, edges), {
       initialProps: { nodes, edges },
@@ -86,12 +84,22 @@ describe('usePlaceholdersSync', () => {
     const nodes: Node[] = [
       { id: 'status-1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} },
       { id: 'trans-1', type: WorkflowNodeType.transition, position: { x: 10, y: 10 }, data: {} },
-      { id: 'placeholder-status-1', type: WorkflowNodeType.placeholder, position: { x: 0, y: 0 }, data: {} },
+      {
+        id: 'placeholder-status-1',
+        type: WorkflowNodeType.placeholder,
+        position: { x: 0, y: 0 },
+        data: {},
+      },
     ];
     // status-1 now has a real transition, making the placeholder obsolete
     const edges: Edge[] = [
       { id: 'e-real', source: 'status-1', target: 'trans-1' },
-      { id: 'e-placeholder', source: 'status-1', target: 'placeholder-status-1', type: WorkflowNodeType.placeholder },
+      {
+        id: 'e-placeholder',
+        source: 'status-1',
+        target: 'placeholder-status-1',
+        type: WorkflowNodeType.placeholder,
+      },
     ];
 
     renderHook(({ nodes, edges }) => usePlaceholdersSync(nodes, edges), {
@@ -113,10 +121,20 @@ describe('usePlaceholdersSync', () => {
   it('should avoid infinite updates if placeholders are already correctly synced', () => {
     const nodes: Node[] = [
       { id: 'status-1', type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data: {} },
-      { id: 'placeholder-status-1', type: WorkflowNodeType.placeholder, position: { x: 0, y: 0 }, data: {} },
+      {
+        id: 'placeholder-status-1',
+        type: WorkflowNodeType.placeholder,
+        position: { x: 0, y: 0 },
+        data: {},
+      },
     ];
     const edges: Edge[] = [
-      { id: 'e-placeholder-status-1', source: 'status-1', target: 'placeholder-status-1', type: WorkflowNodeType.placeholder },
+      {
+        id: 'e-placeholder-status-1',
+        source: 'status-1',
+        target: 'placeholder-status-1',
+        type: WorkflowNodeType.placeholder,
+      },
     ];
 
     renderHook(({ nodes, edges }) => usePlaceholdersSync(nodes, edges), {

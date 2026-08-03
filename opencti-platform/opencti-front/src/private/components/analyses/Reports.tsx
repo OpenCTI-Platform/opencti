@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { ReportsLinesPaginationQuery, ReportsLinesPaginationQuery$variables } from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
+import {
+  ReportsLinesPaginationQuery,
+  ReportsLinesPaginationQuery$variables,
+} from '@components/analyses/__generated__/ReportsLinesPaginationQuery.graphql';
 import { ReportsLines_data$data } from '@components/analyses/__generated__/ReportsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import ReportCreation from './reports/ReportCreation';
@@ -9,7 +12,10 @@ import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -76,14 +82,14 @@ const reportsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ReportsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -143,7 +149,9 @@ const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -157,10 +165,11 @@ const Reports: FunctionComponent = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
-  const {
-    filters,
-  } = viewStorage;
+  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Report', filters);
   const queryPaginationOptions = {
@@ -205,7 +214,9 @@ const Reports: FunctionComponent = () => {
   };
   return (
     <span data-testid="report-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -218,15 +229,19 @@ const Reports: FunctionComponent = () => {
           exportContext={{ entity_type: 'Report' }}
           redirectionModeEnabled
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security
+              key="form-intake"
+              needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+            >
               <StixCoreObjectForms entityType="Report" />
             </Security>,
           ]}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ReportCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </span>

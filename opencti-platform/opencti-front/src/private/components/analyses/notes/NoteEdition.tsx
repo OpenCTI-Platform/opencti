@@ -40,10 +40,7 @@ const NoteEdition = ({ noteId }: { noteId: string }) => {
       render={({ props }: { props: NoteEditionContainerQuery$data }) => {
         if (props?.note) {
           return (
-            <CollaborativeSecurity
-              data={props.note}
-              needs={[KNOWLEDGE_KNUPDATE]}
-            >
+            <CollaborativeSecurity data={props.note} needs={[KNOWLEDGE_KNUPDATE]}>
               <NoteEditionContainer
                 note={props.note}
                 handleClose={handleClose}

@@ -7,7 +7,9 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import IntrusionSetCard from './IntrusionSetCard';
 import { GenericAttackCardDummy } from '../../common/cards/GenericAttackCard';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectBookmarks, { stixDomainObjectBookmarksQuery } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
+import StixDomainObjectBookmarks, {
+  stixDomainObjectBookmarksQuery,
+} from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
@@ -23,14 +25,14 @@ export const intrusionSetsCardsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...IntrusionSetsCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -114,9 +116,7 @@ const IntrusionSetsCards: FunctionComponent<IntrusionSetsCardsProps> = ({
             isLoading={isLoadingMore}
             DummyCardComponent={GenericAttackCardDummy}
             dataList={data?.intrusionSets?.edges ?? []}
-            globalCount={
-              data?.intrusionSets?.pageInfo?.globalCount ?? nbOfCardsToLoad
-            }
+            globalCount={data?.intrusionSets?.pageInfo?.globalCount ?? nbOfCardsToLoad}
             CardComponent={IntrusionSetCard}
             nbOfCardsToLoad={nbOfCardsToLoad}
             onLabelClick={onLabelClick}

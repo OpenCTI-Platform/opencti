@@ -17,7 +17,11 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -69,11 +73,7 @@ const channelMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    channelRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    channelRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       ...ChannelEditionOverview_channel
     }
   }
@@ -82,20 +82,21 @@ const channelMutationRelationDelete = graphql`
 const ChannelEditionOverviewComponent = (props) => {
   const { channel, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CHANNEL_TYPE,
-  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CHANNEL_TYPE);
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    channel_types: Yup.array().nullable(),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      channel_types: Yup.array().nullable(),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -126,8 +127,7 @@ const ChannelEditionOverviewComponent = (props) => {
       variables: {
         id: channel.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -161,7 +161,7 @@ const ChannelEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(channel)),
     R.assoc('objectMarking', convertMarkings(channel)),
     R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, channel)),
-    R.assoc('channel_types', (channel.channel_types || [])),
+    R.assoc('channel_types', channel.channel_types || []),
     R.assoc('references', []),
     R.pick([
       'name',
@@ -183,33 +183,24 @@ const ChannelEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={channel} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             type="channel_types_ov"
             name="channel_types"
             label={t_i18n('Channel types')}
-            required={(mandatoryAttributes.includes('channel_types'))}
+            required={mandatoryAttributes.includes('channel_types')}
             variant="edit"
             multiple={true}
             containerStyle={fieldSpacingContainerStyle}
@@ -220,7 +211,7 @@ const ChannelEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -228,9 +219,7 @@ const ChannelEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             uploadEntityId={channel.id}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -248,28 +237,22 @@ const ChannelEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

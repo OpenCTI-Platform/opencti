@@ -22,7 +22,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
 import IndicatorKnowledge from './IndicatorKnowledge';
@@ -81,20 +84,20 @@ type RootIndicatorProps = {
 };
 
 const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIndicatorSubscription>>(() => ({
-    subscription,
-    variables: { id: indicatorId },
-  }), [indicatorId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIndicatorSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: indicatorId },
+    }),
+    [indicatorId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
-  const {
-    indicator,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootIndicatorQuery>(indicatorQuery, queryRef);
+  const { indicator, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootIndicatorQuery>(indicatorQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INDICATOR(indicatorId);
@@ -104,27 +107,26 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
     <CreateRelationshipContextProvider>
       {indicator ? (
         <div style={{ paddingRight }}>
-          <Breadcrumbs elements={[
-            { label: t_i18n('Observations') },
-            { label: t_i18n('Indicators'), link: PATH_INDICATORS },
-            { label: (indicator.name ?? indicator.pattern ?? ''), current: true },
-          ]}
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Observations') },
+              { label: t_i18n('Indicators'), link: PATH_INDICATORS },
+              { label: indicator.name ?? indicator.pattern ?? '', current: true },
+            ]}
           />
           <StixDomainObjectHeader
             entityType="Indicator"
             stixDomainObject={indicator}
-            EditComponent={(
+            EditComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IndicatorEdition indicatorId={indicator.id} />
               </Security>
-            )}
-            RelateComponent={(
+            }
+            RelateComponent={
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <StixCoreRelationshipCreationFromEntityHeader
-                  data={indicator}
-                />
+                <StixCoreRelationshipCreationFromEntityHeader data={indicator} />
               </Security>
-            )}
+            }
             DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
               <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                 <IndicatorDeletion id={indicator.id} isOpen={isOpen} handleClose={onClose} />
@@ -142,16 +144,10 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               overview: <Indicator indicatorData={indicator} />,
               knowledge: (
                 <div key={forceUpdate}>
-                  <IndicatorKnowledge
-                    indicatorId={indicatorId}
-                  />
+                  <IndicatorKnowledge indicatorId={indicatorId} />
                 </div>
               ),
-              content: (
-                <StixCoreObjectContentRoot
-                  stixCoreObject={indicator}
-                />
-              ),
+              content: <StixCoreObjectContentRoot stixCoreObject={indicator} />,
               analyses: (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={indicator}
@@ -182,11 +178,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                   entity={indicator}
                 />
               ),
-              history: (
-                <StixCoreObjectHistory
-                  stixCoreObjectId={indicatorId}
-                />
-              ),
+              history: <StixCoreObjectHistory stixCoreObjectId={indicatorId} />,
             }}
           />
         </div>

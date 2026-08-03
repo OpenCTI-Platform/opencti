@@ -1,5 +1,11 @@
 import { guessMimeType, loadFile } from '../database/file-storage';
-import { deleteImport, filesMetrics, uploadAndAskJobImport, uploadImport, uploadPending } from '../domain/file';
+import {
+  deleteImport,
+  filesMetrics,
+  uploadAndAskJobImport,
+  uploadImport,
+  uploadPending,
+} from '../domain/file';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { buildDraftVersion } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { getDraftContextFilesPrefix } from '../database/draft-utils';
@@ -11,10 +17,23 @@ const fileResolvers = {
     file: (_, { id }, context) => loadFile(context, context.user, id),
     importFiles: (_, opts, context) => {
       const globalFilesPath = `${getDraftContextFilesPrefix(context)}import/global`;
-      return paginatedForPathWithEnrichment(context, context.user, globalFilesPath, undefined, opts);
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        globalFilesPath,
+        undefined,
+        opts,
+      );
     },
-    pendingFiles: (_, opts, context) => { // correspond to global workbenches (i.e. workbenches in Data > Import)
-      return paginatedForPathWithEnrichment(context, context.user, 'import/pending', undefined, opts);
+    pendingFiles: (_, opts, context) => {
+      // correspond to global workbenches (i.e. workbenches in Data > Import)
+      return paginatedForPathWithEnrichment(
+        context,
+        context.user,
+        'import/pending',
+        undefined,
+        opts,
+      );
     },
     filesMetrics: (_, __, context) => filesMetrics(context, context.user),
     guessMimeType: (_, { fileId }) => guessMimeType(fileId),
@@ -34,7 +53,8 @@ const fileResolvers = {
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
     uploadAndAskJobImport: (_, args, context) => uploadAndAskJobImport(context, context.user, args),
-    createDraftAndAskJobImport: (_, args, context) => createDraftAndAskJobImport(context, context.user, args),
+    createDraftAndAskJobImport: (_, args, context) =>
+      createDraftAndAskJobImport(context, context.user, args),
   },
 };
 

@@ -2,7 +2,14 @@ import { extractEntityRepresentativeName } from './entity-representative';
 import { isStixObject } from '../schema/stixCoreObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isBasicRelationship } from '../schema/stixRelationship';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from './utils';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  isEmptyField,
+  isNotEmptyField,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+} from './utils';
 import { isStoreRelationPir } from '../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -90,8 +97,12 @@ const resolveAttribute = (field: string) => {
   return attributeDefinition || relationsRefDefinition;
 };
 
-export const humanizeRawValue = (resolvedMap: Record<string, string>,
-  attribute: AttributeDefinition, v: ChangeValue, format: Formating = DefaultFormating): string => {
+export const humanizeRawValue = (
+  resolvedMap: Record<string, string>,
+  attribute: AttributeDefinition,
+  v: ChangeValue,
+  format: Formating = DefaultFormating,
+): string => {
   const targetValue = v.raw;
   if (attribute.type === 'date') {
     return humanizeDate(targetValue, format);
@@ -122,8 +133,12 @@ export const humanizeRawValue = (resolvedMap: Record<string, string>,
   return UNTRANSLATED_VALUE;
 };
 
-const humanizeChangeValues = (resolvedMap: Record<string, string>,
-  field: string, changeValues: ChangeValue[] | undefined, format: Formating = DefaultFormating): string[] => {
+const humanizeChangeValues = (
+  resolvedMap: Record<string, string>,
+  field: string,
+  changeValues: ChangeValue[] | undefined,
+  format: Formating = DefaultFormating,
+): string[] => {
   const attribute = resolveAttribute(field);
   if (!attribute) throw UnsupportedError('Cant resolve attribute', { field });
   const humanChangedValues: string[] = [];
@@ -136,16 +151,29 @@ const humanizeChangeValues = (resolvedMap: Record<string, string>,
   return humanChangedValues;
 };
 
-const humanizeHistoryChange = (resolvedMap: Record<string, string>,
-  attribute: AttributeDefinition | null, change: Change, format: Formating = DefaultFormating) => {
+const humanizeHistoryChange = (
+  resolvedMap: Record<string, string>,
+  attribute: AttributeDefinition | null,
+  change: Change,
+  format: Formating = DefaultFormating,
+) => {
   return {
     field: attribute?.label ?? change.field,
     changes_added: humanizeChangeValues(resolvedMap, change.field, change.changes_added, format),
-    changes_removed: humanizeChangeValues(resolvedMap, change.field, change.changes_removed, format),
+    changes_removed: humanizeChangeValues(
+      resolvedMap,
+      change.field,
+      change.changes_removed,
+      format,
+    ),
   };
 };
 
-const humanizeHistoryChanges = (resolvedMap: Record<string, string>, changes: Change[], format: Formating = DefaultFormating) => {
+const humanizeHistoryChanges = (
+  resolvedMap: Record<string, string>,
+  changes: Change[],
+  format: Formating = DefaultFormating,
+) => {
   const humanizeHistoryChanges = [];
   for (let index = 0; index < changes.length; index++) {
     const change = changes[index];
@@ -156,8 +184,11 @@ const humanizeHistoryChanges = (resolvedMap: Record<string, string>, changes: Ch
   return humanizeHistoryChanges;
 };
 
-export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
-  changes: Change[], format: Formating = DefaultFormating): string => {
+export const generateMessageFromChanges = (
+  resolvedMap: Record<string, string>,
+  changes: Change[],
+  format: Formating = DefaultFormating,
+): string => {
   const sliceChanges = changes.slice(0, MAX_OPERATIONS_FOR_MESSAGE);
   const actions: Record<string, { message: string; field?: string }[]> = {};
   for (let index = 0; index < sliceChanges.length; index += 1) {
@@ -173,10 +204,15 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
       const isTooMuch = vals && vals.length > 3;
       const values = isTooMuch ? vals.slice(0, 3) : (vals ?? []);
       if (noValueToEmpty && values.length === 0) return `\`${EMPTY_VALUE}\``;
-      return values.map((v) => {
-        const val = v.length > MAX_TRANSLATE_LENGTH ? v.slice(0, MAX_TRANSLATE_LENGTH) + '...' : v;
-        return `\`${isEmptyField(val) ? EMPTY_VALUE : val}\``;
-      }).join(', ') + (isTooMuch ? ', ...' : '');
+      return (
+        values
+          .map((v) => {
+            const val =
+              v.length > MAX_TRANSLATE_LENGTH ? v.slice(0, MAX_TRANSLATE_LENGTH) + '...' : v;
+            return `\`${isEmptyField(val) ? EMPTY_VALUE : val}\``;
+          })
+          .join(', ') + (isTooMuch ? ', ...' : '')
+      );
     };
     const human = humanizeHistoryChange(resolvedMap, attribute, historyChange, format);
     if (attribute?.multiple) {
@@ -205,17 +241,21 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
       }
     }
   }
-  let newMessage = Object.entries(actions).map(([action, elems]) => {
-    return `${action} ${elems.map((e) => `${e.message} in \`${e.field}\``).join(' - ')}`;
-  }).join(' | ');
+  let newMessage = Object.entries(actions)
+    .map(([action, elems]) => {
+      return `${action} ${elems.map((e) => `${e.message} in \`${e.field}\``).join(' - ')}`;
+    })
+    .join(' | ');
   if (changes.length > MAX_OPERATIONS_FOR_MESSAGE) {
     newMessage += ' and ' + (changes.length - MAX_OPERATIONS_FOR_MESSAGE) + ' more operations';
   }
   return newMessage;
 };
 
-export const buildTranslatedIdsMap = (translatedIds: { id: string; source?: string }[],
-  resolvedMap: Record<string, string>) => {
+export const buildTranslatedIdsMap = (
+  translatedIds: { id: string; source?: string }[],
+  resolvedMap: Record<string, string>,
+) => {
   const translatedIdsMap: Record<string, string> = {};
   for (let index = 0; index < translatedIds.length; index += 1) {
     const { id, source } = translatedIds[index];
@@ -228,8 +268,13 @@ export const buildTranslatedIdsMap = (translatedIds: { id: string; source?: stri
   return JSON.stringify(translatedIdsMap);
 };
 
-const convertAttribute = async (context: AuthContext, user: AuthUser,
-  resolvedMap: Record<string, string>, attribute: AttributeDefinition, item: any): Promise<ChangeValue> => {
+const convertAttribute = async (
+  context: AuthContext,
+  user: AuthUser,
+  resolvedMap: Record<string, string>,
+  attribute: AttributeDefinition,
+  item: any,
+): Promise<ChangeValue> => {
   const getEntitiesMapFromCache = buildMapFromCacheContext(context, user);
   // Complex object
   if (attribute.type === 'ref') {
@@ -237,7 +282,7 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
     return { raw: item.internal_id, translated: JSON.stringify(translated) };
   }
   if (attribute.type === 'object') {
-    const translatedIds = await attribute.attrRawIds?.(item, getEntitiesMapFromCache) ?? [];
+    const translatedIds = (await attribute.attrRawIds?.(item, getEntitiesMapFromCache)) ?? [];
     let workItem = item;
     // Specific cleanup for file due to aggressive loading of inner markings
     // Introduced in [backend] fix file markings that could be undefined when building OCTI extensions (#9301)
@@ -246,10 +291,13 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
       const { [INPUT_MARKINGS]: _, ...existingFileWithoutMarkings } = item;
       workItem = existingFileWithoutMarkings;
     }
-    return { raw: JSON.stringify(workItem), translated: buildTranslatedIdsMap(translatedIds, resolvedMap) };
+    return {
+      raw: JSON.stringify(workItem),
+      translated: buildTranslatedIdsMap(translatedIds, resolvedMap),
+    };
   }
   if (attribute.type === 'string' && attribute.format === 'json') {
-    const translatedIds = await attribute.attrRawIds?.(item, getEntitiesMapFromCache) ?? [];
+    const translatedIds = (await attribute.attrRawIds?.(item, getEntitiesMapFromCache)) ?? [];
     return { raw: item, translated: buildTranslatedIdsMap(translatedIds, resolvedMap) };
   }
   // Native type
@@ -257,7 +305,8 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
     // String representing an id
     if (attribute.format === 'id') {
       const translatedIds = attribute.attrRawIds
-        ? await attribute.attrRawIds?.(item, getEntitiesMapFromCache) : [{ id: item }];
+        ? await attribute.attrRawIds?.(item, getEntitiesMapFromCache)
+        : [{ id: item }];
       return { raw: item, translated: buildTranslatedIdsMap(translatedIds, resolvedMap) };
     }
     // Other string representation are never translated
@@ -275,8 +324,14 @@ const convertAttribute = async (context: AuthContext, user: AuthUser,
   throw UnsupportedError('Change build error, unknown attribute', { attribute });
 };
 
-const buildAttribute = async (context: AuthContext, user: AuthUser,
-  resolvedMap: Record<string, string>, entityType: string, key: string, values: unknown[]) => {
+const buildAttribute = async (
+  context: AuthContext,
+  user: AuthUser,
+  resolvedMap: Record<string, string>,
+  entityType: string,
+  key: string,
+  values: unknown[],
+) => {
   const attributeDef = schemaAttributesDefinition.getAttribute(entityType, key);
   const refDef = schemaRelationsRefDefinition.getRelationRef(entityType, key);
   const attribute = attributeDef || refDef;
@@ -293,8 +348,12 @@ const buildAttribute = async (context: AuthContext, user: AuthUser,
   return converted;
 };
 
-export const buildChanges = async (context: AuthContext, user: AuthUser,
-  entityType: string, inputs: any[]) => {
+export const buildChanges = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  inputs: any[],
+) => {
   // Build the resolution maps converting inputs to changes to use standard resolution function
   const inputsChangesResolver = inputs.flatMap((input) => {
     const { key: field, previous: prevValues, value } = input;
@@ -304,12 +363,15 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
     if (!attr) throw UnsupportedError('Cant resolve attribute', { entityType, field });
     const prev = Array.isArray(prevValues) ? prevValues : [prevValues];
     const next = Array.isArray(value) ? value : [value];
-    const changes_added = [...prev, ...next].filter((i) => isNotEmptyField(i))
+    const changes_added = [...prev, ...next]
+      .filter((i) => isNotEmptyField(i))
       .map((item) => ({ raw: attr.type === 'object' ? JSON.stringify(item) : item }));
     return { field: entityType + '--' + field, changes_added };
   });
-  const resolvedMap = inputsChangesResolver.length > 0
-    ? await attributesChangesResolver(context, user, [inputsChangesResolver]) : {};
+  const resolvedMap =
+    inputsChangesResolver.length > 0
+      ? await attributesChangesResolver(context, user, [inputsChangesResolver])
+      : {};
   // Build the changes with raw and translated json map.
   const changes = [];
   for (const input of inputs) {
@@ -327,20 +389,43 @@ export const buildChanges = async (context: AuthContext, user: AuthUser,
 
     const previousArrayFull = Array.isArray(prevValues) ? prevValues : [prevValues];
     const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previous = await buildAttribute(context, user, resolvedMap, entityType, field, previousArrayFull);
-    const valueArray = await buildAttribute(context, user, resolvedMap, entityType, field, valueArrayFull);
+    const previous = await buildAttribute(
+      context,
+      user,
+      resolvedMap,
+      entityType,
+      field,
+      previousArrayFull,
+    );
+    const valueArray = await buildAttribute(
+      context,
+      user,
+      resolvedMap,
+      entityType,
+      field,
+      valueArrayFull,
+    );
 
     const changeField = entityType + '--' + field;
     if (isMultiple) {
       let added: ChangeValue[] = [];
       let removed: ChangeValue[] = [];
       if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw));
+        added = valueArray.filter(
+          (valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw),
+        );
       } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray.filter((valueItem) => previous.find((previousItem) => previousItem.raw === valueItem.raw));
-      } else { // Replace
-        removed = previous.filter((previousItem) => !valueArray.find((valueItem) => previousItem.raw === valueItem.raw));
-        added = valueArray.filter((valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw));
+        removed = valueArray.filter((valueItem) =>
+          previous.find((previousItem) => previousItem.raw === valueItem.raw),
+        );
+      } else {
+        // Replace
+        removed = previous.filter(
+          (previousItem) => !valueArray.find((valueItem) => previousItem.raw === valueItem.raw),
+        );
+        added = valueArray.filter(
+          (valueItem) => !previous.find((previousItem) => previousItem.raw === valueItem.raw),
+        );
       }
       if (added.length > 0 || removed.length > 0) {
         changes.push({
@@ -385,7 +470,11 @@ const legacyHistoryChanges = (log: any) => {
   });
 };
 
-export const changeIdsExtractor = async (context: AuthContext, user: AuthUser, changes: Change[]) => {
+export const changeIdsExtractor = async (
+  context: AuthContext,
+  user: AuthUser,
+  changes: Change[],
+) => {
   const ids = [];
   const getEntitiesMapFromCache = buildMapFromCacheContext(context, user);
   for (let index = 0; index < changes.length; index++) {
@@ -397,11 +486,15 @@ export const changeIdsExtractor = async (context: AuthContext, user: AuthUser, c
         values.push(...(change.changes_removed ?? []).map((c) => c.raw));
         for (const v of values) {
           const translatedIds = attribute.attrRawIds
-            ? await attribute.attrRawIds?.(v, getEntitiesMapFromCache) : [{ id: v }];
+            ? await attribute.attrRawIds?.(v, getEntitiesMapFromCache)
+            : [{ id: v }];
           ids.push(...(translatedIds ?? []));
         }
       }
-      if (attribute.type === 'object' || (attribute.type === 'string' && attribute.format === 'json')) {
+      if (
+        attribute.type === 'object' ||
+        (attribute.type === 'string' && attribute.format === 'json')
+      ) {
         const values = (change.changes_added ?? []).map((c) => JSON.parse(c.raw));
         values?.push(...(change.changes_removed ?? []).map((c) => JSON.parse(c.raw)));
         for (const v of values) {
@@ -414,13 +507,19 @@ export const changeIdsExtractor = async (context: AuthContext, user: AuthUser, c
   return ids;
 };
 
-const enrichContextDataWithMessageAndChanges = (resolvedMap: Record<string, string>, log: any, args: Formating) => {
+const enrichContextDataWithMessageAndChanges = (
+  resolvedMap: Record<string, string>,
+  log: any,
+  args: Formating,
+) => {
   const { context_data } = log;
   // For retro compatibility directly use the message if available
   const historyChanges = context_data.history_changes ?? [];
-  const message = historyChanges.length > 0
-    ? generateMessageFromChanges(resolvedMap, context_data.history_changes, args) : context_data.message;
-    // For retro compatibility use context._data.changes if available
+  const message =
+    historyChanges.length > 0
+      ? generateMessageFromChanges(resolvedMap, context_data.history_changes, args)
+      : context_data.message;
+  // For retro compatibility use context._data.changes if available
   if (context_data.changes) {
     const changes = legacyHistoryChanges(log);
     return { ...context_data, message, changes, entity_id: log.entity_id ?? log.context_data.id };
@@ -430,7 +529,11 @@ const enrichContextDataWithMessageAndChanges = (resolvedMap: Record<string, stri
   return { ...context_data, message, changes, entity_id: log.entity_id ?? log.context_data.id };
 };
 
-export const attributesChangesResolver = async (context: AuthContext, user: AuthUser, attributesChanges: Array<Change[]>) => {
+export const attributesChangesResolver = async (
+  context: AuthContext,
+  user: AuthUser,
+  attributesChanges: Array<Change[]>,
+) => {
   const idsMap: Record<string, string> = {};
   const lookingIds = [];
   for (let index = 0; index < attributesChanges.length; index++) {
@@ -458,9 +561,17 @@ export const historyLogsResolver = async (context: AuthContext, user: AuthUser, 
   return attributesChangesResolver(context, user, allChanges);
 };
 
-export const batchContextDataForLog = async (context: AuthContext, user: AuthUser, batches: any[]) => {
+export const batchContextDataForLog = async (
+  context: AuthContext,
+  user: AuthUser,
+  batches: any[],
+) => {
   const results = [];
-  const translatedMap = await historyLogsResolver(context, user, batches.map((b) => b.log));
+  const translatedMap = await historyLogsResolver(
+    context,
+    user,
+    batches.map((b) => b.log),
+  );
   for (let index = 0; index < batches.length; index += 1) {
     await doYield();
     const { log, args } = batches[index];

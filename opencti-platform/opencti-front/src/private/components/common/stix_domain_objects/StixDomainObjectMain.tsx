@@ -1,6 +1,8 @@
 import { ReactElement, ReactNode } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+import StixDomainObjectTabsBox, {
+  type StixDomainObjectTabsBoxTab,
+} from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
 
@@ -8,7 +10,9 @@ interface StixDomainObjectMainProps {
   entity: { id: string; entity_type: string };
   basePath: string;
   /** The overview page is mandatory **/
-  pages: { overview: ReactNode } & Partial<Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>>;
+  pages: { overview: ReactNode } & Partial<
+    Omit<Record<StixDomainObjectTabsBoxTab, ReactNode>, 'overview'>
+  >;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
@@ -31,43 +35,24 @@ const StixDomainObjectMain = ({
       />
       <Routes>
         <Route path="/overview" element={pages.overview} />
-        {tabs.includes('result') && (
-          <Route path="/result" element={pages.result} />
-        )}
-        {tabs.includes('knowledge') && (
-          <Route path="/knowledge/*" element={pages.knowledge} />
-        )}
-        {tabs.includes('content') && (
-          <Route path="/content/*" element={pages.content} />
-        )}
-        {tabs.includes('analyses') && (
-          <Route path="/analyses" element={pages.analyses} />
-        )}
-        {tabs.includes('sightings') && (
-          <Route path="/sightings" element={pages.sightings} />
-        )}
-        {tabs.includes('entities') && (
-          <Route path="/entities" element={pages.entities} />
-        )}
-        {tabs.includes('observables') && (
-          <Route path="/observables" element={pages.observables} />
-        )}
-        {tabs.includes('files') && (
-          <Route path="/files" element={pages.files} />
-        )}
-        {tabs.includes('history') && (
-          <Route path="/history" element={pages.history} />
-        )}
+        {tabs.includes('result') && <Route path="/result" element={pages.result} />}
+        {tabs.includes('knowledge') && <Route path="/knowledge/*" element={pages.knowledge} />}
+        {tabs.includes('content') && <Route path="/content/*" element={pages.content} />}
+        {tabs.includes('analyses') && <Route path="/analyses" element={pages.analyses} />}
+        {tabs.includes('sightings') && <Route path="/sightings" element={pages.sightings} />}
+        {tabs.includes('entities') && <Route path="/entities" element={pages.entities} />}
+        {tabs.includes('observables') && <Route path="/observables" element={pages.observables} />}
+        {tabs.includes('files') && <Route path="/files" element={pages.files} />}
+        {tabs.includes('history') && <Route path="/history" element={pages.history} />}
         {extraRoutes}
         <Route
           path="*"
-          element={(
+          element={
             <CustomViewRedirector
               entity={entity}
               Fallback={<ErrorNotFound />}
               indexFallback={<Navigate to="overview" replace />}
             />
-          )
           }
         />
       </Routes>

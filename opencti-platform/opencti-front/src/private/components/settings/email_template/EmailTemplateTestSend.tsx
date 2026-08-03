@@ -9,9 +9,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 
 const emailTemplateTestSendMutation = graphql`
-    mutation EmailTemplateTestSendMutation($id: ID!) {
-        emailTemplateTestSend(id: $id)
-    }
+  mutation EmailTemplateTestSendMutation($id: ID!) {
+    emailTemplateTestSend(id: $id)
+  }
 `;
 
 interface EmailTemplateTestSendProps {
@@ -31,7 +31,9 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
         id: templateId,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(`${t_i18n('Test email successfully sent to you.')} (${me.user_email})`);
+        MESSAGING$.notifySuccess(
+          `${t_i18n('Test email successfully sent to you.')} (${me.user_email})`,
+        );
         setSending(false);
       },
       onError: (error: Error) => {
@@ -43,12 +45,7 @@ const EmailTemplateTestSend = ({ templateId }: EmailTemplateTestSendProps) => {
 
   return (
     <>
-      <ToggleButton
-        disabled={sending}
-        onClick={submitSendEmail}
-        value="sendEmail"
-        size="small"
-      >
+      <ToggleButton disabled={sending} onClick={submitSendEmail} value="sendEmail" size="small">
         <Tooltip title={t_i18n('Send test email')}>
           <SendOutline fontSize="small" color={sending ? 'disabled' : 'primary'} />
         </Tooltip>

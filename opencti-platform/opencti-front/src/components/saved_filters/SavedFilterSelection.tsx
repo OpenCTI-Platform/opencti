@@ -6,7 +6,9 @@ import SavedFiltersAutocomplete from 'src/components/saved_filters/SavedFiltersA
 import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplete/useAutocomplete';
 import useBuildSavedFiltersOptions from 'src/components/saved_filters/useBuildSavedFiltersOptions';
 
-export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
+export type SavedFiltersSelectionData = NonNullable<
+  NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']
+>[0]['node'];
 
 type SavedFilterSelectionProps = {
   isDisabled: boolean;
@@ -43,7 +45,8 @@ const SavedFilterSelection = ({
     },
   } = useDataTableContext();
 
-  const [selectedSavedFilter, setSelectedSavedFilter] = useState<SavedFiltersAutocompleteOptionType>();
+  const [selectedSavedFilter, setSelectedSavedFilter] =
+    useState<SavedFiltersAutocompleteOptionType>();
   const [inputValue, setInputValue] = useState<string>('');
   const [savedFilterToDelete, setSavedFilterToDelete] = useState<SavedFiltersSelectionData>();
 
@@ -108,7 +111,11 @@ const SavedFilterSelection = ({
     helpers.handleChangeSavedFilters(selectionOption.value);
   };
 
-  const onInputChange = (_: SyntheticEvent, value: string, reason: AutocompleteInputChangeReason) => {
+  const onInputChange = (
+    _: SyntheticEvent,
+    value: string,
+    reason: AutocompleteInputChangeReason,
+  ) => {
     if (reason === 'input') setInputValue(value);
   };
 

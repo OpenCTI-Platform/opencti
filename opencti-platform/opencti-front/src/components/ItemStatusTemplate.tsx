@@ -50,9 +50,7 @@ const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusT
               />
             ))}
           </Stack>
-          {index < statusByOrder.length - 1 && (
-            <ArrowRightAltOutlined />
-          )}
+          {index < statusByOrder.length - 1 && <ArrowRightAltOutlined />}
         </React.Fragment>
       ))}
       {actionComponent}

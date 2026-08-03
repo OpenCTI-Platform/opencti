@@ -18,9 +18,16 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { EventCreationMutation, EventCreationMutation$variables } from './__generated__/EventCreationMutation.graphql';
+import {
+  EventCreationMutation,
+  EventCreationMutation$variables,
+} from './__generated__/EventCreationMutation.graphql';
 import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -70,7 +77,11 @@ interface EventAddInput {
 }
 
 interface EventFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: EventCreationMutation['response']['eventAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: EventCreationMutation['response']['eventAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -94,43 +105,40 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(EVENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    event_types: Yup.array().nullable(),
-    start_time: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    stop_time: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
-      .nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      event_types: Yup.array().nullable(),
+      start_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .nullable(),
+      stop_time: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .min(Yup.ref('start_time'), "The end date can't be before start date")
+        .nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const eventValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<EventCreationMutation>(
-    eventMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Event')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<EventCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'eventAdd', response?.eventAdd);
-      }
-    },
+  const [commit] = useApiMutation<EventCreationMutation>(eventMutation, undefined, {
+    successMessage: `${t_i18n('entity_Event')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<EventCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'eventAdd', response?.eventAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -230,7 +238,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Event']}
             />
@@ -238,7 +246,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               label={t_i18n('Event types')}
               type="event-type-ov"
               name="event_types"
-              required={(mandatoryAttributes.includes('event_types'))}
+              required={mandatoryAttributes.includes('event_types')}
               containerStyle={fieldSpacingContainerStyle}
               multiple
               onChange={setFieldValue}
@@ -247,7 +255,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows={4}
@@ -261,7 +269,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               name="start_time"
               textFieldProps={{
                 label: t_i18n('Start date'),
-                required: (mandatoryAttributes.includes('start_time')),
+                required: mandatoryAttributes.includes('start_time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
@@ -272,38 +280,35 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               name="stop_time"
               textFieldProps={{
                 label: t_i18n('End date'),
-                required: (mandatoryAttributes.includes('stop_time')),
+                required: mandatoryAttributes.includes('stop_time'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { ...fieldSpacingContainerStyle },
               }}
             />
-            <ConfidenceField
-              entityType="Event"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Event" containerStyle={fieldSpacingContainerStyle} />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -313,23 +318,17 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -347,7 +346,8 @@ const EventCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
 
   const CreateEventControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Event" {...props} />

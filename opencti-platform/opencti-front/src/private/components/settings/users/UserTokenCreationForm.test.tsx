@@ -35,15 +35,17 @@ describe('Component: UserTokenCreationForm', () => {
     const commitMutationMock = commitMutation as Mock;
 
     await waitFor(() => {
-      expect(commitMutationMock).toHaveBeenCalledWith(expect.objectContaining({
-        variables: {
-          userId: 'target-user-id',
-          input: expect.objectContaining({
-            name: 'New Admin Token',
-            duration: 'UNLIMITED',
-          }),
-        },
-      }));
+      expect(commitMutationMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          variables: {
+            userId: 'target-user-id',
+            input: expect.objectContaining({
+              name: 'New Admin Token',
+              duration: 'UNLIMITED',
+            }),
+          },
+        }),
+      );
     });
   });
 });

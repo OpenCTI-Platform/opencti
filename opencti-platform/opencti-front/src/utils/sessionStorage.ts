@@ -28,11 +28,7 @@ export function getSessionStorageItem<T>(key: string): T | null {
  * @param valueToStore What to add in the stack.
  * @param stackSize The max size of the stack.
  */
-export function addInSessionStorageStack<T>(
-  key: string,
-  valueToStore: T,
-  stackSize: number,
-): void {
+export function addInSessionStorageStack<T>(key: string, valueToStore: T, stackSize: number): void {
   const storedStackData = sessionStorage.getItem(key) ?? '[]';
   const currentStoredStackData = JSON.parse(storedStackData) as T[];
   // Add the current state at the beginning of the array.

@@ -24,7 +24,11 @@ const infrastructureKnowledgeFragment = graphql`
   }
 `;
 
-const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: InfrastructureKnowledge_infrastructure$key }) => {
+const InfrastructureKnowledge = ({
+  infrastructure,
+}: {
+  infrastructure: InfrastructureKnowledge_infrastructure$key;
+}) => {
   const infrastructureData = useFragment<InfrastructureKnowledge_infrastructure$key>(
     infrastructureKnowledgeFragment,
     infrastructure,
@@ -32,7 +36,10 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
   const location = useLocation();
   const link = `/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`;
   const { schema } = useAuth();
-  const allRelationshipsTypes = getRelationshipTypesForEntityType(infrastructureData.entity_type, schema);
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(
+    infrastructureData.entity_type,
+    schema,
+  );
   return (
     <div data-testid="infrastructure-knowledge">
       <StixCoreObjectKnowledgeBar
@@ -58,35 +65,27 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
       <Routes>
         <Route
           path="/relations/:relationId/"
-          element={(
-            <StixCoreRelationship
-              entityId={infrastructureData.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={infrastructureData.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId/"
-          element={(
-            <StixSightingRelationship
-              entityId={infrastructureData.id}
-              paddingRight={true}
-            />
-          )}
+          element={
+            <StixSightingRelationship entityId={infrastructureData.id} paddingRight={true} />
+          }
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={infrastructureData.id}
               stixDomainObjectName={infrastructureData.name}
               stixDomainObjectType="Infrastructure"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -94,11 +93,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               entityLink={link}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -124,11 +123,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/infrastructures"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -145,22 +144,22 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/indicators"
-          element={(
+          element={
             <EntityStixCoreRelationshipsIndicators
               entityId={infrastructureData.id}
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={infrastructureData.id}
               entityLink={link}
@@ -176,11 +175,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               ]}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/observed_data"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -191,11 +190,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route
           path="/threats"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -211,11 +210,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               ]}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/threat_actors"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -226,11 +225,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/intrusion_sets"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -241,11 +240,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/campaigns"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -256,11 +255,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -271,11 +270,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -286,11 +285,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               allDirections={true}
             />
-          )}
+          }
         />
         <Route
           path="/vulnerabilities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -300,11 +299,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/sightings"
-          element={(
+          element={
             <EntityStixSightingRelationships
               entityId={infrastructureData.id}
               entityLink={link}
@@ -320,11 +319,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               ]}
               isTo={false}
             />
-          )}
+          }
         />
         <Route
           path="/incidents"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -335,11 +334,11 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/organizations"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={infrastructureData.id}
@@ -350,7 +349,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               defaultStopTime={infrastructureData.last_seen}
               isRelationReversed={false}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

@@ -8,7 +8,9 @@ const useWidgetColumnsCustomization = (
   onChange: (columns: WidgetColumn[]) => void,
 ) => {
   useEffect(() => {
-    const filteredColumns = value.filter((col) => availableColumns.some((availableCol) => availableCol.attribute === col.attribute));
+    const filteredColumns = value.filter((col) =>
+      availableColumns.some((availableCol) => availableCol.attribute === col.attribute),
+    );
     if (filteredColumns.length !== value.length) {
       onChange(filteredColumns);
     }
@@ -61,7 +63,8 @@ const useWidgetColumnsCustomization = (
     }
   };
 
-  const formatColumnName = ({ attribute, label }: WidgetColumn) => (label ? label : attribute ?? '');
+  const formatColumnName = ({ attribute, label }: WidgetColumn) =>
+    label ? label : (attribute ?? '');
 
   return {
     handleDragEndSingleColumn,

@@ -15,13 +15,13 @@ const publicStixRelationshipsTreeMapsQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -69,10 +69,7 @@ const PublicStixRelationshipsTreeMapComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     return (
       <WidgetTree
         data={[...publicStixRelationshipsDistribution]}
@@ -104,9 +101,7 @@ const PublicStixRelationshipsTreeMap = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsTreeMapComponent

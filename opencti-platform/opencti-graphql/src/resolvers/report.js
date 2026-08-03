@@ -55,13 +55,21 @@ const reportResolvers = {
       return distributionEntities(context, context.user, [ENTITY_TYPE_CONTAINER_REPORT], args);
     },
     reportContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return reportContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return reportContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   Report: {
-    deleteWithElementsCount: (report, _, context) => reportDeleteElementsCount(context, context.user, report.id),
-    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
-    securityCoverage: (report, _, context) => findSecurityCoverageByCoveredId(context, context.user, report.id),
+    deleteWithElementsCount: (report, _, context) =>
+      reportDeleteElementsCount(context, context.user, report.id),
+    objectParticipant: async (container, _, context) =>
+      loadParticipants(context, context.user, container),
+    securityCoverage: (report, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, report.id),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({
@@ -71,13 +79,21 @@ const reportResolvers = {
         }
         return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
       },
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input, commitMessage, references }) => stixDomainObjectAddRelation(context, context.user, id, input, { commitMessage, references }),
+      relationAdd: ({ input, commitMessage, references }) =>
+        stixDomainObjectAddRelation(context, context.user, id, input, {
+          commitMessage,
+          references,
+        }),
       // eslint-disable-next-line max-len
-      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
-
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, {
+          commitMessage,
+          references,
+        }),
     }),
     reportAdd: (_, { input }, context) => addReport(context, context.user, input),
   },

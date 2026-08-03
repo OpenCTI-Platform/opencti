@@ -28,12 +28,26 @@ import { loadFormEntity } from './form-utils';
  * silently lose attributes (aliases, x_mitre_id, goals, channel_types, …).
  */
 const PENDING_NON_SCALAR_INPUT_FIELDS = new Set<string>([
-  'createdBy', 'objectMarking', 'objectLabel', 'objectOrganization',
-  'objectAssignee', 'objectParticipant', 'externalReferences', 'killChainPhases',
-  'objects', 'caseTemplates', 'content_mapping', 'file', 'files', 'x_opencti_files',
+  'createdBy',
+  'objectMarking',
+  'objectLabel',
+  'objectOrganization',
+  'objectAssignee',
+  'objectParticipant',
+  'externalReferences',
+  'killChainPhases',
+  'objects',
+  'caseTemplates',
+  'content_mapping',
+  'file',
+  'files',
+  'x_opencti_files',
   // `files` / `embedded` are injected by useMarkdownCreationFilesInput() for markdown
   // image uploads; `embedded` is a boolean[] and would otherwise pass the scalar filter.
-  'embedded', 'update', 'clientMutationId', 'type',
+  'embedded',
+  'update',
+  'clientMutationId',
+  'type',
 ]);
 
 const isScalarOrScalarArray = (value: unknown): boolean => {
@@ -41,7 +55,10 @@ const isScalarOrScalarArray = (value: unknown): boolean => {
   const valueType = typeof value;
   if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') return true;
   if (Array.isArray(value)) {
-    return value.length > 0 && value.every((item) => ['string', 'number', 'boolean'].includes(typeof item));
+    return (
+      value.length > 0 &&
+      value.every((item) => ['string', 'number', 'boolean'].includes(typeof item))
+    );
   }
   return false;
 };
@@ -82,11 +99,14 @@ const buildPendingEntities = (
       // The observable-specific attributes are nested under the type key (the only nested
       // object, e.g. 'IPv4Addr', 'DomainName', 'EmailMessage'). Copy all of its scalar
       // attributes (value, but also subject, body, dst_port, ...), still skipping refs/files.
-      const obsTypeKey = Object.keys(input).find((key) => key !== 'type'
-        && !PENDING_NON_SCALAR_INPUT_FIELDS.has(key)
-        && typeof input[key] === 'object'
-        && input[key] !== null
-        && !Array.isArray(input[key]));
+      const obsTypeKey = Object.keys(input).find(
+        (key) =>
+          key !== 'type' &&
+          !PENDING_NON_SCALAR_INPUT_FIELDS.has(key) &&
+          typeof input[key] === 'object' &&
+          input[key] !== null &&
+          !Array.isArray(input[key]),
+      );
       if (obsTypeKey) {
         const observableData = input[obsTypeKey] as Record<string, any>;
         for (const [key, value] of Object.entries(observableData)) {
@@ -128,10 +148,14 @@ export const buildMainStixEntities = async (
     // Existing entities selected through the lookup (skipped when the user only created
     // on-the-fly entities: values.mainEntityLookup is then undefined).
     if (isNotEmptyField(values.mainEntityLookup)) {
-      const vals = Array.isArray(values.mainEntityLookup) ? values.mainEntityLookup : [values.mainEntityLookup];
-      const mainEntities = await Promise.all(vals.map((id: string) => {
-        return loadFormEntity(context, user, id, mainEntityType);
-      }));
+      const vals = Array.isArray(values.mainEntityLookup)
+        ? values.mainEntityLookup
+        : [values.mainEntityLookup];
+      const mainEntities = await Promise.all(
+        vals.map((id: string) => {
+          return loadFormEntity(context, user, id, mainEntityType);
+        }),
+      );
       for (let index = 0; index < mainEntities.length; index += 1) {
         mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
         mainEntityStixId = mainEntities[index].standard_id;
@@ -142,28 +166,40 @@ export const buildMainStixEntities = async (
     if (isNotEmptyField(values.mainEntityLookupPending)) {
       const pendingEntities = buildPendingEntities(values.mainEntityLookupPending);
       for (let index = 0; index < pendingEntities.length; index += 1) {
-        const pendingEntity = completeEntity(pendingEntities[index].entity_type, pendingEntities[index]);
+        const pendingEntity = completeEntity(
+          pendingEntities[index].entity_type,
+          pendingEntities[index],
+        );
         const stixPending = convertStoreToStix_2_1(pendingEntity);
         mainStixEntities.push(stixPending);
         mainEntityStixId = pendingEntity.standard_id;
       }
     }
   } else {
-    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const mainEntityFields = schema.fields.filter(
+      (field) => field.attributeMapping.entity === 'main_entity',
+    );
     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
       for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
           const field = mainEntityFields[i];
-          const fieldValue = (field.isReadOnly && !isBypass)
-            ? field.defaultValue
-            : values.mainEntityGroups[index][field.name];
+          const fieldValue =
+            field.isReadOnly && !isBypass
+              ? field.defaultValue
+              : values.mainEntityGroups[index][field.name];
           const convertedValue = convertFieldType(fieldValue, field);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
-        mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
+        mainEntity = await transformSpecialFields(
+          context,
+          user,
+          mainEntity,
+          mainEntityFields,
+          false,
+        );
         if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
           mainEntity.is_family = true;
         }
@@ -187,7 +223,10 @@ export const buildMainStixEntities = async (
       const refangedMainEntityParsed = refangValues(values.mainEntityParsed);
       for (let index = 0; index < refangedMainEntityParsed.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
-        if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
+        if (
+          schema.mainEntityParseFieldMapping === 'pattern' &&
+          schema.mainEntityAutoConvertToStixPattern
+        ) {
           const observableValue = refangedMainEntityParsed[index];
           const observableType = detectObservableType(observableValue);
           const pattern = await createStixPattern(context, user, observableType, observableValue);
@@ -201,12 +240,15 @@ export const buildMainStixEntities = async (
           mainEntity[schema.mainEntityParseFieldMapping] = refangedMainEntityParsed[index];
         }
         if (values.mainEntityFields) {
-          const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+          const additionalMainEntityFields = schema.fields.filter(
+            (field) => field.attributeMapping.entity === 'main_entity',
+          );
           for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
             const field = additionalMainEntityFields[i];
-            const fieldValue = (field.isReadOnly && !isBypass)
-              ? field.defaultValue
-              : values.mainEntityFields[field.attributeMapping.attributeName];
+            const fieldValue =
+              field.isReadOnly && !isBypass
+                ? field.defaultValue
+                : values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -214,7 +256,13 @@ export const buildMainStixEntities = async (
               mainEntity[field.attributeMapping.attributeName] = convertedValue;
             }
           }
-          mainEntity = await transformSpecialFields(context, user, mainEntity, additionalMainEntityFields, false);
+          mainEntity = await transformSpecialFields(
+            context,
+            user,
+            mainEntity,
+            additionalMainEntityFields,
+            false,
+          );
         }
         if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
           mainEntity.is_family = true;
@@ -239,9 +287,7 @@ export const buildMainStixEntities = async (
       let mainEntity = { entity_type: mainEntityType } as StoreEntity;
       for (let i = 0; i < mainEntityFields.length; i += 1) {
         const field = mainEntityFields[i];
-        const fieldValue = (field.isReadOnly && !isBypass)
-          ? field.defaultValue
-          : values[field.name];
+        const fieldValue = field.isReadOnly && !isBypass ? field.defaultValue : values[field.name];
         const convertedValue = convertFieldType(fieldValue, field);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
@@ -282,10 +328,14 @@ export const buildAdditionalEntities = async (
     const additionalEntityType = additionalEntity.entityType;
     if (additionalEntity.lookup) {
       if (isNotEmptyField(values[`additional_${additionalEntity.id}_lookup`])) {
-        const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`]) ? values[`additional_${additionalEntity.id}_lookup`] : [values[`additional_${additionalEntity.id}_lookup`]];
-        const additionalEntities = await Promise.all(vals.map((id: string) => {
-          return loadFormEntity(context, user, id, additionalEntityType);
-        }));
+        const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`])
+          ? values[`additional_${additionalEntity.id}_lookup`]
+          : [values[`additional_${additionalEntity.id}_lookup`]];
+        const additionalEntities = await Promise.all(
+          vals.map((id: string) => {
+            return loadFormEntity(context, user, id, additionalEntityType);
+          }),
+        );
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
           const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntities[index2]);
           bundle.objects.push(stixAdditionalEntity);
@@ -302,7 +352,10 @@ export const buildAdditionalEntities = async (
       if (isNotEmptyField(values[pendingKey])) {
         const pendingEntities = buildPendingEntities(values[pendingKey]);
         for (let index2 = 0; index2 < pendingEntities.length; index2 += 1) {
-          const pendingEntity = completeEntity(pendingEntities[index2].entity_type, pendingEntities[index2]);
+          const pendingEntity = completeEntity(
+            pendingEntities[index2].entity_type,
+            pendingEntities[index2],
+          );
           const stixPending = convertStoreToStix_2_1(pendingEntity);
           bundle.objects.push(stixPending);
           if (additionalEntitiesMap[additionalEntity.id]) {
@@ -313,36 +366,60 @@ export const buildAdditionalEntities = async (
         }
       }
     } else {
-      const additionalEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
+      const additionalEntityFields = schema.fields.filter(
+        (field) => field.attributeMapping.entity === additionalEntity.id,
+      );
       if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
         if (isNotEmptyField(values[`additional_${additionalEntity.id}_groups`])) {
-          for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
+          for (
+            let index2 = 0;
+            index2 < values[`additional_${additionalEntity.id}_groups`].length;
+            index2 += 1
+          ) {
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
               const field = additionalEntityFields[i];
-              const fieldValue = (field.isReadOnly && !isBypass)
-                ? field.defaultValue
-                : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
+              const fieldValue =
+                field.isReadOnly && !isBypass
+                  ? field.defaultValue
+                  : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
               const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
             }
-            newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
+            newAdditionalEntity = await transformSpecialFields(
+              context,
+              user,
+              newAdditionalEntity,
+              additionalEntityFields,
+              false,
+            );
+            if (
+              additionalEntityType === ENTITY_TYPE_MALWARE &&
+              isEmptyField(newAdditionalEntity.is_family)
+            ) {
               newAdditionalEntity.is_family = true;
             }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
+            if (
+              additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING &&
+              isEmptyField(newAdditionalEntity.context)
+            ) {
               newAdditionalEntity.context = 'form';
             }
             newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
             if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                });
+              if (
+                checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true
+              ) {
+                throw FunctionalError(
+                  `Observable ${additionalEntity.label} is not correctly formatted`,
+                  {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  },
+                );
               }
             }
             const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
@@ -356,13 +433,23 @@ export const buildAdditionalEntities = async (
         }
       } else if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
         if (isNotEmptyField(values[`additional_${additionalEntity.id}_parsed`])) {
-          const refangedAdditionalParsed = refangValues(values[`additional_${additionalEntity.id}_parsed`]);
+          const refangedAdditionalParsed = refangValues(
+            values[`additional_${additionalEntity.id}_parsed`],
+          );
           for (let index2 = 0; index2 < refangedAdditionalParsed.length; index2 += 1) {
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-            if (additionalEntity.parseFieldMapping === 'pattern' && additionalEntity.autoConvertToStixPattern) {
+            if (
+              additionalEntity.parseFieldMapping === 'pattern' &&
+              additionalEntity.autoConvertToStixPattern
+            ) {
               const observableValue = refangedAdditionalParsed[index2];
               const observableType = detectObservableType(observableValue);
-              const pattern = await createStixPattern(context, user, observableType, observableValue);
+              const pattern = await createStixPattern(
+                context,
+                user,
+                observableType,
+                observableValue,
+              );
               newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
               newAdditionalEntity.pattern_type = 'stix';
               newAdditionalEntity.name = observableValue;
@@ -370,14 +457,18 @@ export const buildAdditionalEntities = async (
             } else {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
-              newAdditionalEntity[additionalEntity.parseFieldMapping] = refangedAdditionalParsed[index2];
+              newAdditionalEntity[additionalEntity.parseFieldMapping] =
+                refangedAdditionalParsed[index2];
             }
             if (values[`additional_${additionalEntity.id}_fields`]) {
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
-                const fieldValue = (field.isReadOnly && !isBypass)
-                  ? field.defaultValue
-                  : values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
+                const fieldValue =
+                  field.isReadOnly && !isBypass
+                    ? field.defaultValue
+                    : values[`additional_${additionalEntity.id}_fields`][
+                        field.attributeMapping.attributeName
+                      ];
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   const convertedValue = convertFieldType(fieldValue, field);
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -385,22 +476,39 @@ export const buildAdditionalEntities = async (
                   newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
                 }
               }
-              newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
+              newAdditionalEntity = await transformSpecialFields(
+                context,
+                user,
+                newAdditionalEntity,
+                additionalEntityFields,
+                false,
+              );
             }
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
+            if (
+              additionalEntityType === ENTITY_TYPE_MALWARE &&
+              isEmptyField(newAdditionalEntity.is_family)
+            ) {
               newAdditionalEntity.is_family = true;
             }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
+            if (
+              additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING &&
+              isEmptyField(newAdditionalEntity.context)
+            ) {
               newAdditionalEntity.context = 'form';
             }
             newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
             if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                });
+              if (
+                checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true
+              ) {
+                throw FunctionalError(
+                  `Observable ${additionalEntity.label} is not correctly formatted`,
+                  {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  },
+                );
               }
             }
             const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
@@ -423,9 +531,8 @@ export const buildAdditionalEntities = async (
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
               const field = additionalEntityFields[i];
-              const fieldValue = (field.isReadOnly && !isBypass)
-                ? field.defaultValue
-                : entityData[field.name];
+              const fieldValue =
+                field.isReadOnly && !isBypass ? field.defaultValue : entityData[field.name];
               if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                 const convertedValue = convertFieldType(fieldValue, field);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -433,21 +540,38 @@ export const buildAdditionalEntities = async (
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }
             }
-            newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
-            if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
+            newAdditionalEntity = await transformSpecialFields(
+              context,
+              user,
+              newAdditionalEntity,
+              additionalEntityFields,
+              false,
+            );
+            if (
+              additionalEntityType === ENTITY_TYPE_MALWARE &&
+              isEmptyField(newAdditionalEntity.is_family)
+            ) {
               newAdditionalEntity.is_family = true;
             }
-            if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
+            if (
+              additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING &&
+              isEmptyField(newAdditionalEntity.context)
+            ) {
               newAdditionalEntity.context = 'form';
             }
             newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
             if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
-              if (checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true) {
-                throw FunctionalError(`Observable ${additionalEntity.label} is not correctly formatted`, {
-                  type: newAdditionalEntity.entity_type,
-                  input: newAdditionalEntity,
-                  doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
-                });
+              if (
+                checkObservableSyntax(newAdditionalEntity.entity_type, newAdditionalEntity) !== true
+              ) {
+                throw FunctionalError(
+                  `Observable ${additionalEntity.label} is not correctly formatted`,
+                  {
+                    type: newAdditionalEntity.entity_type,
+                    input: newAdditionalEntity,
+                    doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+                  },
+                );
               }
             }
             const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
@@ -494,7 +618,13 @@ export const buildRelationships = async (
             target_ref: additionalEntitiesMap[rel.toEntity][k],
           };
           if (submittedRel?.fields && rel.fields) {
-            relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            relationshipData = await transformSpecialFields(
+              context,
+              user,
+              { ...relationshipData, fields: submittedRel.fields },
+              rel.fields,
+              true,
+            );
           }
           bundle.objects.push(relationshipData);
         }
@@ -513,7 +643,13 @@ export const buildRelationships = async (
             target_ref: mainStixEntities[j].id,
           };
           if (submittedRel?.fields && rel.fields) {
-            relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            relationshipData = await transformSpecialFields(
+              context,
+              user,
+              { ...relationshipData, fields: submittedRel.fields },
+              rel.fields,
+              true,
+            );
           }
           bundle.objects.push(relationshipData);
         }
@@ -532,7 +668,13 @@ export const buildRelationships = async (
             target_ref: additionalEntitiesMap[rel.toEntity][k],
           };
           if (submittedRel?.fields && rel.fields) {
-            relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            relationshipData = await transformSpecialFields(
+              context,
+              user,
+              { ...relationshipData, fields: submittedRel.fields },
+              rel.fields,
+              true,
+            );
           }
           bundle.objects.push(relationshipData);
         }

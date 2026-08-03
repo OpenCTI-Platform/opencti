@@ -1,5 +1,7 @@
 import React from 'react';
-import InfrastructureEditionContainer, { infrastructureEditionContainerQuery } from './InfrastructureEditionContainer';
+import InfrastructureEditionContainer, {
+  infrastructureEditionContainerQuery,
+} from './InfrastructureEditionContainer';
 import { infrastructureEditionOverviewFocus } from './InfrastructureEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -26,9 +28,7 @@ const InfrastructureEdition = ({ infrastructureId }: { infrastructureId: string 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <InfrastructureEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

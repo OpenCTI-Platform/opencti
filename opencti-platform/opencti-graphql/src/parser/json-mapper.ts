@@ -36,7 +36,13 @@ import {
   type SimpleAttributePath,
 } from '../modules/internal/jsonMapper/jsonMapper-types';
 import { createStixPatternSync } from '../python/pythonBridge';
-import { type AttributeDefinition, entityType, id as idType, type ObjectAttribute, relationshipType } from '../schema/attribute-definition';
+import {
+  type AttributeDefinition,
+  entityType,
+  id as idType,
+  type ObjectAttribute,
+  relationshipType,
+} from '../schema/attribute-definition';
 import { INPUT_MARKINGS } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -47,17 +53,29 @@ import type { BasicStoreObject, StoreCommon } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
-import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
+import {
+  computeDefaultValue,
+  formatValue,
+  handleDefaultMarkings,
+  handleRefEntities,
+  type InputType,
+} from './csv-mapper';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { pushAll } from '../utils/arrayUtil';
 
-const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
+const format = (
+  value: string | string[],
+  def: AttributeDefinition,
+  attribute: SimpleAttributePath | ComplexAttributePath | undefined,
+) => {
   if (Array.isArray(value)) {
     if (def.multiple) {
       return value.map((val) => formatValue(val, def.type, attribute));
     }
     if (value.length > 1) {
-      throw UnsupportedError('Only one value expected as attribute definition is not multiple', { value });
+      throw UnsupportedError('Only one value expected as attribute definition is not multiple', {
+        value,
+      });
     }
     return formatValue(value[0], def.type, attribute);
   }
@@ -157,9 +175,16 @@ const extractSimpleIdentifierFromJson = (
   return Array.isArray(value) ? value.join('-') : value;
 };
 
-const extractIdentifierFromJson = (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
+const extractIdentifierFromJson = (
+  base: JSON,
+  record: JSON,
+  identifier: string,
+  attrDef: AttributeDefinition,
+) => {
   const identifiers = identifier.split(',');
-  return identifiers.map((id) => extractSimpleIdentifierFromJson(base, record, { path: id }, attrDef)).join('-');
+  return identifiers
+    .map((id) => extractSimpleIdentifierFromJson(base, record, { path: id }, attrDef))
+    .join('-');
 };
 
 const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
@@ -180,7 +205,12 @@ const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
   return result;
 };
 
-const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition): string[] => {
+const extractTargetIdentifierFromJson = (
+  base: JSON,
+  record: JSON,
+  identifier: string,
+  attrDef: AttributeDefinition,
+): string[] => {
   const identifiers = identifier.split(',');
   const arrayOfMappedIdentifiers = [];
   for (let i = 0; i < identifiers.length; i += 1) {
@@ -201,14 +231,23 @@ const handleDirectAttribute = async (
   hashesNames: string[],
 ) => {
   const isAttributeHash = hashesNames.includes(attribute.key);
-  if (attribute.default_values !== null && attribute.default_values !== undefined && !isAttributeHash) {
+  if (
+    attribute.default_values !== null &&
+    attribute.default_values !== undefined &&
+    !isAttributeHash
+  ) {
     const computedDefault = computeDefaultValue(attribute.default_values, attribute, definition);
     if (computedDefault !== null && computedDefault !== undefined) {
       input[attribute.key] = computedDefault;
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(
+      base,
+      record,
+      attribute.attr_path,
+      definition,
+    );
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -219,7 +258,13 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(
+      base,
+      metaData,
+      record,
+      attribute.complex_path,
+      definition,
+    );
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -260,8 +305,18 @@ const handleBasedOnAttribute = async (
         }
       }
     } else {
-      const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
-      handleDefaultMarkings(entitySetting, representation, input, refEntities, chosenMarkings, user);
+      const entitySetting = await getEntitySettingFromCache(
+        context,
+        representation.target.entity_type,
+      );
+      handleDefaultMarkings(
+        entitySetting,
+        representation,
+        input,
+        refEntities,
+        chosenMarkings,
+        user,
+      );
     }
   }
   // endregion
@@ -278,21 +333,35 @@ const handleBasedOnAttribute = async (
         emptyMatching = false;
         mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
       } else {
-        const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
-        const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
+        const identifiers = (attribute.based_on.identifier ??
+          []) as AttributeBasedOnIdentifierComplex[];
+        const targetIdentifier = identifiers.find(
+          (ident) => ident.representation === representation,
+        );
         if (targetIdentifier?.identifier) {
           emptyMatching = false;
-          mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
+          mappedIdentifiers = extractTargetIdentifierFromJson(
+            base,
+            record,
+            targetIdentifier.identifier,
+            definition,
+          );
         }
       }
       const byRepresentation = otherEntities.get(representation);
       const elementsByRepresentation = Array.from(byRepresentation?.values() ?? []);
       if (!emptyMatching) {
-        pushAll(entities, elementsByRepresentation.filter((e) => e !== undefined
-          && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
+        pushAll(
+          entities,
+          elementsByRepresentation.filter(
+            (e) => e !== undefined && mappedIdentifiers.includes(e.__identifier as string),
+          ) as Record<string, InputType>[],
+        );
       } else {
-        pushAll(entities, elementsByRepresentation
-          .filter((e) => e !== undefined) as Record<string, InputType>[]);
+        pushAll(
+          entities,
+          elementsByRepresentation.filter((e) => e !== undefined) as Record<string, InputType>[],
+        );
       }
     }
 
@@ -328,22 +397,34 @@ const handleBasedOnAttribute = async (
 };
 
 const computeOrderedRepresentations = (representations: JsonMapperRepresentation[]) => {
-  const relationships = representations.filter((r) => r.type === JsonMapperRepresentationType.Relationship);
-  const baseEntities = representations.filter((r) => {
-    const isEntity = r.type === JsonMapperRepresentationType.Entity;
-    const entityHasRefToRelations = !r.attributes.some((a) => {
-      // Check for each attribute of entity if it has based_on representations
-      return a.mode === 'base' && a.based_on?.representations?.some((b) => {
-        // Check if at least one of based_on ref is a relation in CSV Mapper
-        return relationships.some((rel) => rel.id === b);
+  const relationships = representations.filter(
+    (r) => r.type === JsonMapperRepresentationType.Relationship,
+  );
+  const baseEntities = representations
+    .filter((r) => {
+      const isEntity = r.type === JsonMapperRepresentationType.Entity;
+      const entityHasRefToRelations = !r.attributes.some((a) => {
+        // Check for each attribute of entity if it has based_on representations
+        return (
+          a.mode === 'base' &&
+          a.based_on?.representations?.some((b) => {
+            // Check if at least one of based_on ref is a relation in CSV Mapper
+            return relationships.some((rel) => rel.id === b);
+          })
+        );
       });
-    });
-    return isEntity && entityHasRefToRelations;
-  }).sort((r1, r2) => r1.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length
-    - r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length);
+      return isEntity && entityHasRefToRelations;
+    })
+    .sort(
+      (r1, r2) =>
+        r1.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length -
+        r2.attributes.filter((attr) => attr.mode === 'base' && attr.based_on).length,
+    );
   // representations thar are not in representationEntitiesWithoutBasedOnRelationships
-  const basedOnEntities = representations
-    .filter((r) => r.type === JsonMapperRepresentationType.Entity && !baseEntities.some((r1) => r1.id === r.id));
+  const basedOnEntities = representations.filter(
+    (r) =>
+      r.type === JsonMapperRepresentationType.Entity && !baseEntities.some((r1) => r1.id === r.id),
+  );
   return [baseEntities, basedOnEntities, relationships];
 };
 
@@ -408,7 +489,12 @@ const jsonMappingExecution = async (
     const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
-      dataVars[variable.name] = await extractComplexPathFromJson(baseJson, {}, element, variable.path);
+      dataVars[variable.name] = await extractComplexPathFromJson(
+        baseJson,
+        {},
+        element,
+        variable.path,
+      );
     }
     // endregion
     // region representations
@@ -420,7 +506,7 @@ const jsonMappingExecution = async (
         const { entity_type, path: base_path } = representation.target;
         const hashesNames = getHashesNames(entity_type);
         const baseData = JSONPath.JSONPath({ path: base_path, json: element, flatten: true });
-        const baseDatas = (Array.isArray(baseData) ? baseData : [baseData]);
+        const baseDatas = Array.isArray(baseData) ? baseData : [baseData];
         for (let baseInfo = 0; baseInfo < baseDatas.length; baseInfo += 1) {
           let input: any = {};
           input[entityType.name] = entity_type;
@@ -437,26 +523,83 @@ const jsonMappingExecution = async (
             }
             const refDef = schemaRelationsRefDefinition.getRelationRef(entity_type, attributeKey);
             if (attribute.mode === 'simple' || attribute.mode === 'complex') {
-              const attributeDef = schemaAttributesDefinition.getAttribute(entity_type, attributeKey);
+              const attributeDef = schemaAttributesDefinition.getAttribute(
+                entity_type,
+                attributeKey,
+              );
               if (attributeDef) {
                 if (hashesNames.includes(attribute.key)) {
-                  const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
+                  const definitionHash = (attributeDef as ObjectAttribute).mappings.find(
+                    (definition) => definition.name === attribute.key,
+                  );
                   if (definitionHash) {
-                    await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
+                    await handleDirectAttribute(
+                      baseJson,
+                      dataVars,
+                      attribute,
+                      input,
+                      baseDatum,
+                      attributeDef,
+                      hashesNames,
+                    );
                   }
                 } else {
-                  await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
+                  await handleDirectAttribute(
+                    baseJson,
+                    dataVars,
+                    attribute,
+                    input,
+                    baseDatum,
+                    attributeDef,
+                    [],
+                  );
                 }
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
             } else if (attribute.mode === 'base') {
               if (refDef) {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(
+                  context,
+                  user,
+                  baseJson,
+                  attribute,
+                  input,
+                  baseDatum,
+                  refDef,
+                  results,
+                  refEntities,
+                  representation,
+                  chosenMarkings,
+                );
               } else if (attribute.key === 'from') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(
+                  context,
+                  user,
+                  baseJson,
+                  attribute,
+                  input,
+                  baseDatum,
+                  fromRef,
+                  results,
+                  refEntities,
+                  representation,
+                  chosenMarkings,
+                );
               } else if (attribute.key === 'to') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(
+                  context,
+                  user,
+                  baseJson,
+                  attribute,
+                  input,
+                  baseDatum,
+                  toRef,
+                  results,
+                  refEntities,
+                  representation,
+                  chosenMarkings,
+                );
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
@@ -486,7 +629,12 @@ const jsonMappingExecution = async (
           } else {
             input.standard_id = generateStandardId(entity_type, input);
             if (representation.identifier) {
-              const identifier = extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
+              const identifier = extractIdentifierFromJson(
+                baseJson,
+                baseDatum,
+                representation.identifier,
+                idType,
+              );
               input.__identifier = identifier ? identifier.trim() : identifier;
             } else {
               input.__identifier = uuidv4();

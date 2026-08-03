@@ -45,7 +45,9 @@ export const normalizeMarkingForFileName = (markings?: FieldOption[] | null): st
     return null;
   }
 
-  return normalized.length > MAX_MARKING_LENGTH ? normalized.slice(0, MAX_MARKING_LENGTH) : normalized;
+  return normalized.length > MAX_MARKING_LENGTH
+    ? normalized.slice(0, MAX_MARKING_LENGTH)
+    : normalized;
 };
 
 export const normalizeExportSourceEntityName = (fileName?: string | null): string | null => {

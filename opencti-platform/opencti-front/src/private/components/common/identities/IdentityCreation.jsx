@@ -75,10 +75,11 @@ const identityMutation = graphql`
   }
 `;
 
-const identityValidation = (t) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-  type: Yup.string().trim().required(t('This field is required')),
-});
+const identityValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().trim().required(t('This field is required')),
+    type: Yup.string().trim().required(t('This field is required')),
+  });
 
 class IdentityCreation extends Component {
   constructor(props) {
@@ -150,19 +151,9 @@ class IdentityCreation extends Component {
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
             <Form>
-              <Dialog
-                open={open}
-                onClose={handleClose.bind(this)}
-                title={t('Create an entity')}
-              >
+              <Dialog open={open} onClose={handleClose.bind(this)} title={t('Create an entity')}>
                 <Field
                   component={TextField}
                   variant="standard"
@@ -188,7 +179,7 @@ class IdentityCreation extends Component {
                   fullWidth={true}
                   containerstyle={fieldSpacingContainerStyle}
                 >
-                  {!onlyAuthors && (<MenuItem value="Sector">{t('Sector')}</MenuItem>)}
+                  {!onlyAuthors && <MenuItem value="Sector">{t('Sector')}</MenuItem>}
                   <MenuItem value="Organization">{t('Organization')}</MenuItem>
                   <MenuItem value="System">{t('System')}</MenuItem>
                   <MenuItem value="Individual">{t('Individual')}</MenuItem>
@@ -220,10 +211,7 @@ class IdentityCreation extends Component {
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t('Create')}
                   </Button>
                 </DialogActions>
@@ -249,7 +237,4 @@ IdentityCreation.propTypes = {
   creationCallback: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+export default compose(inject18n, withStyles(styles, { withTheme: true }))(IdentityCreation);

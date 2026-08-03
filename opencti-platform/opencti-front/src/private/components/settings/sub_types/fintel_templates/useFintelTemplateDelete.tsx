@@ -13,7 +13,9 @@ const fintelTemplateDeleteMutation = graphql`
 
 const useFintelTemplateFormDelete = (entitySettingId: string) => {
   const [mutating, setMutating] = useState(false);
-  const [commitDeleteMutation] = useApiMutation<useFintelTemplateDeleteMutation>(fintelTemplateDeleteMutation);
+  const [commitDeleteMutation] = useApiMutation<useFintelTemplateDeleteMutation>(
+    fintelTemplateDeleteMutation,
+  );
 
   const mutation = (
     id: string,

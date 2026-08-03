@@ -1,4 +1,10 @@
-import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findCampaignPaginated, findById } from '../domain/campaign';
+import {
+  addCampaign,
+  campaignsTimeSeries,
+  campaignsTimeSeriesByEntity,
+  findCampaignPaginated,
+  findById,
+} from '../domain/campaign';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -22,16 +28,19 @@ const campaignResolvers = {
     },
   },
   Campaign: {
-    securityCoverage: (campaign, _, context) => findSecurityCoverageByCoveredId(context, context.user, campaign.id),
+    securityCoverage: (campaign, _, context) =>
+      findSecurityCoverageByCoveredId(context, context.user, campaign.id),
   },
   Mutation: {
     campaignEdit: (_, { id }, context) => ({
       delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CAMPAIGN),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) =>
+        stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
     campaignAdd: (_, { input }, context) => addCampaign(context, context.user, input),
   },

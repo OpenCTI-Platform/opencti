@@ -70,33 +70,25 @@ interface OrganizationProps {
   viewAs: string;
 }
 
-const Organization: React.FC<OrganizationProps> = ({
-  organizationData,
-  viewAs,
-}) => {
+const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs }) => {
   useInitCreateRelationshipContext();
 
   const organization = useFragment<Organization_organization$key>(
     organizationFragment,
     organizationData,
   );
-  const lastReportsProps = viewAs === 'knowledge'
-    ? { stixCoreObjectOrStixRelationshipId: organization.id }
-    : { authorId: organization.id };
+  const lastReportsProps =
+    viewAs === 'knowledge'
+      ? { stixCoreObjectOrStixRelationshipId: organization.id }
+      : { authorId: organization.id };
   return (
     <div data-testid="organization-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <OrganizationDetails organizationData={organization} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={organization}
-          />
+          <StixDomainObjectOverview stixDomainObject={organization} />
         </Grid>
         {viewAs === 'knowledge' && (
           <Grid item xs={6}>
@@ -106,18 +98,11 @@ const Organization: React.FC<OrganizationProps> = ({
             />
           </Grid>
         )}
-        <Grid
-          item
-          xs={viewAs === 'knowledge' ? 6 : 12}
-        >
-          <StixCoreObjectOrStixRelationshipLastContainers
-            {...lastReportsProps}
-          />
+        <Grid item xs={viewAs === 'knowledge' ? 6 : 12}>
+          <StixCoreObjectOrStixRelationshipLastContainers {...lastReportsProps} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={organization.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={organization.id} />
         </Grid>
         <Grid item xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={organization.id} />

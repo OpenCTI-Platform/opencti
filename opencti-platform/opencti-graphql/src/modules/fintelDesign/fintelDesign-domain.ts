@@ -1,7 +1,22 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN, type StoreEntityFintelDesign } from './fintelDesign-types';
-import { type EditContext, type FintelDesignAddInput, FilterMode, FilterOperator, type MutationFintelDesignFieldPatchArgs } from '../../generated/graphql';
+import {
+  type EntityOptions,
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
+import {
+  type BasicStoreEntityFintelDesign,
+  ENTITY_TYPE_FINTEL_DESIGN,
+  type StoreEntityFintelDesign,
+} from './fintelDesign-types';
+import {
+  type EditContext,
+  type FintelDesignAddInput,
+  FilterMode,
+  FilterOperator,
+  type MutationFintelDesignFieldPatchArgs,
+} from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
@@ -13,17 +28,34 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { lockResources } from '../../lock/master-lock';
 
-export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelDesign> => {
+export const findById = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+): Promise<BasicStoreEntityFintelDesign> => {
   await checkEnterpriseEdition(context);
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_DESIGN);
 };
 
-export const findFintelDesignPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFintelDesign>) => {
+export const findFintelDesignPaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  opts: EntityOptions<BasicStoreEntityFintelDesign>,
+) => {
   await checkEnterpriseEdition(context);
-  return pageEntitiesConnection<BasicStoreEntityFintelDesign>(context, user, [ENTITY_TYPE_FINTEL_DESIGN], opts);
+  return pageEntitiesConnection<BasicStoreEntityFintelDesign>(
+    context,
+    user,
+    [ENTITY_TYPE_FINTEL_DESIGN],
+    opts,
+  );
 };
 
-export const addFintelDesign = async (context: AuthContext, user: AuthUser, fintelDesign: FintelDesignAddInput) => {
+export const addFintelDesign = async (
+  context: AuthContext,
+  user: AuthUser,
+  fintelDesign: FintelDesignAddInput,
+) => {
   await checkEnterpriseEdition(context);
   const fintelDesignWithDefault = { ...fintelDesign, default: fintelDesign.default ?? false };
 
@@ -34,9 +66,16 @@ export const addFintelDesign = async (context: AuthContext, user: AuthUser, fint
   // Locking prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference as a dedicated field on a settings entity,
   // which would make this unicity constraint trivial to enforce.
-  const lock = fintelDesignWithDefault.default ? await lockResources(['fintel-design-default']) : null;
+  const lock = fintelDesignWithDefault.default
+    ? await lockResources(['fintel-design-default'])
+    : null;
   try {
-    const created = await createEntity(context, user, fintelDesignWithDefault, ENTITY_TYPE_FINTEL_DESIGN);
+    const created = await createEntity(
+      context,
+      user,
+      fintelDesignWithDefault,
+      ENTITY_TYPE_FINTEL_DESIGN,
+    );
     if (fintelDesignWithDefault.default) {
       await applyUniqueDefaultFintelDesignConstraint(context, user, created.id);
     }
@@ -70,14 +109,17 @@ const applyUniqueDefaultFintelDesignConstraint = async (
     {
       baseData: true,
       filters: {
-        filters: [{
-          key: ['default'],
-          values: [true],
-        }, {
-          key: ['id'],
-          values: [newDefaultDesignId],
-          operator: FilterOperator.NotEq,
-        }],
+        filters: [
+          {
+            key: ['default'],
+            values: [true],
+          },
+          {
+            key: ['id'],
+            values: [newDefaultDesignId],
+            operator: FilterOperator.NotEq,
+          },
+        ],
         filterGroups: [],
         mode: FilterMode.And,
       },
@@ -89,29 +131,44 @@ const applyUniqueDefaultFintelDesignConstraint = async (
   }
 
   const results = await Promise.all(
-    previousDefaultDesigns.map((entity) => updateAttribute<StoreEntityFintelDesign>(
-      context,
-      user,
-      entity.id,
-      ENTITY_TYPE_FINTEL_DESIGN,
-      [{
-        key: 'default',
-        value: [false],
-      }],
-    )),
+    previousDefaultDesigns.map((entity) =>
+      updateAttribute<StoreEntityFintelDesign>(
+        context,
+        user,
+        entity.id,
+        ENTITY_TYPE_FINTEL_DESIGN,
+        [
+          {
+            key: 'default',
+            value: [false],
+          },
+        ],
+      ),
+    ),
   );
 
   return results.map(({ element }) => element);
 };
 
-const uploadFintelDesignFile = async (context: AuthContext, user: AuthUser, fintelDesignId: string, file: FileUploadData) => {
+const uploadFintelDesignFile = async (
+  context: AuthContext,
+  user: AuthUser,
+  fintelDesignId: string,
+  file: FileUploadData,
+) => {
   const fullFile = await file;
   const mimeType = guessMimeType(fullFile.filename);
   if (!mimeType.includes('image/')) {
     throw UnsupportedError('Fintel design logo file format must be image/', { mimeType });
   }
   const fintelDesignLogoFile = { ...fullFile, filename: `${fintelDesignId}` };
-  const { upload } = await uploadToStorage(context, user, 'fintelDesigns', fintelDesignLogoFile, {});
+  const { upload } = await uploadToStorage(
+    context,
+    user,
+    'fintelDesigns',
+    fintelDesignLogoFile,
+    {},
+  );
   return { upload };
 };
 
@@ -148,7 +205,13 @@ export const fintelDesignEditField = async (
   // which would make this unicity constraint trivial to enforce.
   const lock = settingDefault ? await lockResources(['fintel-design-default']) : null;
   try {
-    const { element } = await updateAttribute<StoreEntityFintelDesign>(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
+    const { element } = await updateAttribute<StoreEntityFintelDesign>(
+      context,
+      user,
+      id,
+      ENTITY_TYPE_FINTEL_DESIGN,
+      finalInput,
+    );
     if (settingDefault) {
       await applyUniqueDefaultFintelDesignConstraint(context, user, element.id);
     }
@@ -170,7 +233,11 @@ export const fintelDesignEditField = async (
   }
 };
 
-export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, designId: string) => {
+export const fintelDesignDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  designId: string,
+) => {
   await checkEnterpriseEdition(context);
   const deleted = await deleteElementById<StoreEntityFintelDesign>(
     context,
@@ -192,15 +259,24 @@ export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, d
     },
   });
 
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].DELETE_TOPIC, deleted, user).then(() => designId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_DESIGN].DELETE_TOPIC, deleted, user).then(
+    () => designId,
+  );
 };
 
-export const fintelDesignEditContext = async (context: AuthContext, user: AuthUser, fintelDesignId: string, input?: EditContext) => {
+export const fintelDesignEditContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  fintelDesignId: string,
+  input?: EditContext,
+) => {
   await checkEnterpriseEdition(context);
   if (input) {
     await setEditContext(user, fintelDesignId, input);
   }
-  return storeLoadById(context, user, fintelDesignId, ABSTRACT_INTERNAL_OBJECT).then((fintelDesign) => {
-    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].CONTEXT_TOPIC, fintelDesign, user);
-  });
+  return storeLoadById(context, user, fintelDesignId, ABSTRACT_INTERNAL_OBJECT).then(
+    (fintelDesign) => {
+      return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].CONTEXT_TOPIC, fintelDesign, user);
+    },
+  );
 };

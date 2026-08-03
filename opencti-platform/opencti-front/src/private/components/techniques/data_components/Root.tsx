@@ -19,7 +19,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import DataComponentDeletion from './DataComponentDeletion';
 import { PATH_DATA_COMPONENT, PATH_DATA_COMPONENTS } from '@components/common/routes/paths';
 
@@ -71,9 +74,7 @@ const dataComponentQuery = graphql`
 
 const RootDataComponent = () => {
   const { dataComponentId } = useParams() as { dataComponentId: string };
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootDataComponentSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootDataComponentSubscription>>(
     () => ({
       subscription,
       variables: { id: dataComponentId },
@@ -96,23 +97,34 @@ const RootDataComponent = () => {
               const paddingRight = getPaddingRight(location.pathname, basePath, false);
               return (
                 <div style={{ paddingRight }}>
-                  <Breadcrumbs elements={[
-                    { label: t_i18n('Techniques') },
-                    { label: t_i18n('Data components'), link: PATH_DATA_COMPONENTS },
-                    { label: dataComponent.name, current: true },
-                  ]}
+                  <Breadcrumbs
+                    elements={[
+                      { label: t_i18n('Techniques') },
+                      { label: t_i18n('Data components'), link: PATH_DATA_COMPONENTS },
+                      { label: dataComponent.name, current: true },
+                    ]}
                   />
                   <StixDomainObjectHeader
                     entityType="Data-Component"
                     stixDomainObject={props.dataComponent}
-                    EditComponent={(
+                    EditComponent={
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <DataComponentEdition dataComponentId={dataComponent.id} />
                       </Security>
-                    )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+                    }
+                    DeleteComponent={({
+                      isOpen,
+                      onClose,
+                    }: {
+                      isOpen: boolean;
+                      onClose: () => void;
+                    }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                        <DataComponentDeletion id={dataComponent.id} isOpen={isOpen} handleClose={onClose} />
+                        <DataComponentDeletion
+                          id={dataComponent.id}
+                          isOpen={isOpen}
+                          handleClose={onClose}
+                        />
                       </Security>
                     )}
                     noAliases={true}
@@ -123,13 +135,8 @@ const RootDataComponent = () => {
                     entity={dataComponent}
                     basePath={basePath}
                     pages={{
-                      overview:
-                        <DataComponent dataComponentData={dataComponent} />,
-                      content: (
-                        <StixCoreObjectContentRoot
-                          stixCoreObject={dataComponent}
-                        />
-                      ),
+                      overview: <DataComponent dataComponentData={dataComponent} />,
+                      content: <StixCoreObjectContentRoot stixCoreObject={dataComponent} />,
                       files: (
                         <FileManager
                           id={dataComponentId}
@@ -138,17 +145,14 @@ const RootDataComponent = () => {
                           entity={dataComponent}
                         />
                       ),
-                      history:
-                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />,
+                      history: <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />,
                     }}
-                    extraRoutes={(
+                    extraRoutes={
                       <Route
                         path="/knowledge/*"
-                        element={
-                          <DataComponentKnowledge data={dataComponent} />
-                        }
+                        element={<DataComponentKnowledge data={dataComponent} />}
                       />
-                    )}
+                    }
                   />
                 </div>
               );

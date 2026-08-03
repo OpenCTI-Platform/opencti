@@ -31,10 +31,14 @@ const PlatformCriticalAlertDialog: React.FC<PlatformCriticalAlertDialogProps> = 
   const getDialogContentFromAlertType = () => {
     switch (alert.type) {
       case 'GROUP_WITH_NULL_CONFIDENCE_LEVEL': {
-        return <GroupWithNullConfidenceLevelAlertContent alert={alert} closeHandler={closeHandler} />;
+        return (
+          <GroupWithNullConfidenceLevelAlertContent alert={alert} closeHandler={closeHandler} />
+        );
       }
       default:
-        return <DialogContent>{t_i18n('Unknown configuration error in the platform.')}</DialogContent>;
+        return (
+          <DialogContent>{t_i18n('Unknown configuration error in the platform.')}</DialogContent>
+        );
     }
   };
 

@@ -14,12 +14,7 @@ describe('Function: getNodes()', () => {
   });
 
   it('should return list of non empty nodes', () => {
-    const nodes = [
-      { node: null },
-      { node: 'hello' },
-      { node: 'there' },
-      { node: undefined },
-    ];
+    const nodes = [{ node: null }, { node: 'hello' }, { node: 'there' }, { node: undefined }];
     expect(getNodes({ edges: nodes })).toEqual(['hello', 'there']);
   });
 });

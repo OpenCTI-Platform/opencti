@@ -7,7 +7,9 @@ describe('note-utils', () => {
   });
 
   it('returns non-embedded URLs unchanged', () => {
-    expect(resolveNoteEmbeddedImageUrl('https://example.org/image.png', 'note-1')).toBe('https://example.org/image.png');
+    expect(resolveNoteEmbeddedImageUrl('https://example.org/image.png', 'note-1')).toBe(
+      'https://example.org/image.png',
+    );
     expect(resolveNoteEmbeddedImageUrl('/storage/view/abc', 'note-1')).toBe('/storage/view/abc');
   });
 
@@ -23,12 +25,16 @@ describe('note-utils', () => {
 
   it('resolves full embedded storage paths to storage/view URL', () => {
     const fullPath = 'embedded/Note/note-123/image-c.png';
-    expect(resolveNoteEmbeddedImageUrl(fullPath, 'note-999')).toBe('/storage/view/embedded/Note/note-123/image-c.png');
+    expect(resolveNoteEmbeddedImageUrl(fullPath, 'note-999')).toBe(
+      '/storage/view/embedded/Note/note-123/image-c.png',
+    );
   });
 
   it('does not double-encode already encoded embedded filenames', () => {
     const encodedPath = 'embedded/Note/note-123/Capture%20e%CC%81cran.png';
-    expect(resolveNoteEmbeddedImageUrl(encodedPath, 'note-999')).toBe('/storage/view/embedded/Note/note-123/Capture%20e%CC%81cran.png');
+    expect(resolveNoteEmbeddedImageUrl(encodedPath, 'note-999')).toBe(
+      '/storage/view/embedded/Note/note-123/Capture%20e%CC%81cran.png',
+    );
   });
 
   it('returns null when embedded path has no filename', () => {

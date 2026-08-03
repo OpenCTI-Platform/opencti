@@ -31,21 +31,30 @@ const AuthProviderUserInfoFields = ({
 
   return (
     <Paper variant="outlined" sx={{ mt: 2.5, borderRadius: 1, overflow: 'hidden' }}>
-      <Box sx={{ px: 2, py: 1.5, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center' }}>
+      <Box
+        sx={{
+          px: 2,
+          py: 1.5,
+          backgroundColor: 'action.hover',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
         <Typography variant="caption" color="textSecondary">
           {t_i18n('User information mapping')}
         </Typography>
       </Box>
       <Divider />
-      <Box sx={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        columnGap: 2,
-        rowGap: 0,
-        px: 2,
-        pt: 1,
-        pb: 2,
-      }}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          columnGap: 2,
+          rowGap: 0,
+          px: 2,
+          pt: 1,
+          pb: 2,
+        }}
       >
         <Field
           component={TextField}

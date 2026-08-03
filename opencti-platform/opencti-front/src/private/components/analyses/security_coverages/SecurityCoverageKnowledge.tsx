@@ -19,21 +19,13 @@ const SecurityCoverageKnowledgeComponent = ({
 }: {
   securityCoverageData: SecurityCoverageKnowledge_securityCoverage$key;
 }) => {
-  const securityCoverage = useFragment(
-    securityCoverageKnowledgeFragment,
-    securityCoverageData,
-  );
+  const securityCoverage = useFragment(securityCoverageKnowledgeFragment, securityCoverageData);
   return (
     <div data-testid="security-coverage-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={securityCoverage.id}
-              paddingRight={false}
-            />
-          )}
+          element={<StixCoreRelationship entityId={securityCoverage.id} paddingRight={false} />}
         />
       </Routes>
     </div>

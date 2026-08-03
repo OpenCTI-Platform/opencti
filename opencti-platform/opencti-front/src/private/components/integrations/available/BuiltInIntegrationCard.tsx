@@ -4,7 +4,11 @@ import { alpha, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { BuiltInIntegrationDefinition } from '@components/integrations/available/builtInIntegrations';
-import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
+import {
+  BuiltInIntegrationHubButton,
+  BuiltInIntegrationImport,
+  isImportableBuiltInKind,
+} from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { useFormatter } from '../../../../components/i18n';
 import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -17,7 +21,11 @@ export interface BuiltInIntegrationCardProps {
   onClickCreate: () => void;
 }
 
-const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: BuiltInIntegrationCardProps) => {
+const BuiltInIntegrationCard = ({
+  definition,
+  deploymentCount,
+  onClickCreate,
+}: BuiltInIntegrationCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const Icon = definition.icon;
@@ -32,7 +40,8 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
         height: '100%',
         '& .MuiCard-root': {
           border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-          transition: 'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+          transition:
+            'transform 0.3s ease-in-out, border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
         },
         '&:hover .MuiCard-root': {
           transform: 'translateY(-2px)',
@@ -145,11 +154,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
                   <BuiltInIntegrationHubButton kind={definition.kind} />
                 </>
               )}
-              <Button
-                size="small"
-                onClick={onClickCreate}
-                sx={{ marginLeft: 1 }}
-              >
+              <Button size="small" onClick={onClickCreate} sx={{ marginLeft: 1 }}>
                 {t_i18n('Create')}
               </Button>
             </Stack>

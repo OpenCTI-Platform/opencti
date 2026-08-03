@@ -31,12 +31,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
         toId: attackPattern.id,
         relationship_type: 'detects',
       },
-      updater: (store) => deleteNodeFromEdge(
-        store,
-        'dataComponents',
-        attackPattern.id,
-        dataComponentId,
-      ),
+      updater: (store) =>
+        deleteNodeFromEdge(store, 'dataComponents', attackPattern.id, dataComponentId),
     });
   };
 
@@ -47,10 +43,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <Label action={(
-          <AddDataComponents attackPattern={attackPattern} />
-        )}
-        >
+        <Label action={<AddDataComponents attackPattern={attackPattern} />}>
           {t_i18n('Data components')}
         </Label>
       </div>
@@ -63,14 +56,9 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                 return (
                   <ListItemText
                     key={idx}
-                    primary={(
-                      <Skeleton
-                        animation="wave"
-                        variant="rectangular"
-                        width="90%"
-                        height="100%"
-                      />
-                    )}
+                    primary={
+                      <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
+                    }
                   />
                 );
               }
@@ -80,15 +68,13 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                   dense={true}
                   divider={true}
                   disablePadding={true}
-                  secondaryAction={(
+                  secondaryAction={
                     <Tooltip title={t_i18n('Delete relationship')}>
-                      <IconButton
-                        onClick={() => removeDataComponent(dataComponent.id)}
-                      >
+                      <IconButton onClick={() => removeDataComponent(dataComponent.id)}>
                         <Delete />
                       </IconButton>
                     </Tooltip>
-                  )}
+                  }
                 >
                   <ListItemButton
                     component={Link}
@@ -106,28 +92,25 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
   );
 };
 
-const AttackPatternDataComponents = createFragmentContainer(
-  AttackPatternDataComponentsComponent,
-  {
-    attackPattern: graphql`
-      fragment AttackPatternDataComponents_attackPattern on AttackPattern {
-        id
-        name
-        parent_types
-        entity_type
-        dataComponents {
-          edges {
-            node {
-              id
-              parent_types
-              name
-              description
-            }
+const AttackPatternDataComponents = createFragmentContainer(AttackPatternDataComponentsComponent, {
+  attackPattern: graphql`
+    fragment AttackPatternDataComponents_attackPattern on AttackPattern {
+      id
+      name
+      parent_types
+      entity_type
+      dataComponents {
+        edges {
+          node {
+            id
+            parent_types
+            name
+            description
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default AttackPatternDataComponents;

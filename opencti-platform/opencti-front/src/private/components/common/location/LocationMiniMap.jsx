@@ -11,24 +11,30 @@ import CityDark from '../../../../static/images/leaflet/city_dark.png';
 import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
 import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
-import { isValidLatitude, isValidLongitude, validateCoordinates } from '../../../../utils/position.utils';
+import {
+  isValidLatitude,
+  isValidLongitude,
+  validateCoordinates,
+} from '../../../../utils/position.utils';
 import Card from '@common/card/Card';
 
-const cityIcon = (dark = true) => new L.Icon({
-  iconUrl: dark ? CityDark : CityLight,
-  iconRetinaUrl: dark ? CityDark : CityLight,
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12],
-  iconSize: [25, 25],
-});
+const cityIcon = (dark = true) =>
+  new L.Icon({
+    iconUrl: dark ? CityDark : CityLight,
+    iconRetinaUrl: dark ? CityDark : CityLight,
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+    iconSize: [25, 25],
+  });
 
-const positionIcon = (dark = true) => new L.Icon({
-  iconUrl: dark ? MarkerDark : MarkerLight,
-  iconRetinaUrl: dark ? MarkerDark : MarkerLight,
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12],
-  iconSize: [25, 25],
-});
+const positionIcon = (dark = true) =>
+  new L.Icon({
+    iconUrl: dark ? MarkerDark : MarkerLight,
+    iconRetinaUrl: dark ? MarkerDark : MarkerLight,
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+    iconSize: [25, 25],
+  });
 
 const LocationMiniMap = (props) => {
   const { settings } = useContext(UserContext);
@@ -108,7 +114,4 @@ LocationMiniMap.propTypes = {
   navigate: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-)(LocationMiniMap);
+export default compose(inject18n, withTheme)(LocationMiniMap);

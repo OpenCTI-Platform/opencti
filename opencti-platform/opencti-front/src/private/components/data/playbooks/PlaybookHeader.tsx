@@ -16,7 +16,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import Dialog from '@common/dialog/Dialog';
 import Tag from '@common/tag/Tag';
 import PlaybookEdition from '@components/data/playbooks/PlaybookEdition';
-import { CheckCircleOutlined, ErrorOutlined, ExpandLessOutlined, ExpandMoreOutlined, ManageHistoryOutlined } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  ErrorOutlined,
+  ExpandLessOutlined,
+  ExpandMoreOutlined,
+  ManageHistoryOutlined,
+} from '@mui/icons-material';
 import { Stack } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Collapse from '@mui/material/Collapse';
@@ -84,9 +90,7 @@ const PlaybookHeaderComponent = ({
     <>
       <Stack direction="row" alignItems="center" gap={1}>
         <Stack sx={{ flex: 1 }} direction="row" alignItems="center" gap={1}>
-          <TitleMainEntity>
-            {playbook.name}
-          </TitleMainEntity>
+          <TitleMainEntity>{playbook.name}</TitleMainEntity>
           <Tag
             {...(playbook.playbook_running ? inlineStyles.green : inlineStyles.red)}
             label={
@@ -104,31 +108,21 @@ const PlaybookHeaderComponent = ({
           exclusive={true}
           onChange={() => setOpenLastExecutions(!openLastExecutions)}
         >
-          <ToggleButton
-            value="cards"
-            aria-label="cards"
-            style={{ padding: '5px' }}
-          >
+          <ToggleButton value="cards" aria-label="cards" style={{ padding: '5px' }}>
             <Stack direction="row" alignItems="center" gap={1}>
               <Tag
                 label={`${n(playbook.queue_messages)} ${t_i18n('messages in queue')}`}
                 labelTextTransform="none"
               />
               <Tooltip title={t_i18n('Open last execution traces')}>
-                <Badge
-                  badgeContent={(playbook.last_executions ?? []).length}
-                  color="secondary"
-                >
+                <Badge badgeContent={(playbook.last_executions ?? []).length} color="secondary">
                   <ManageHistoryOutlined fontSize="small" color="primary" />
                 </Badge>
               </Tooltip>
             </Stack>
           </ToggleButton>
         </ToggleButtonGroup>
-        <PlaybookPopover
-          playbookId={playbook.id}
-          running={!!playbook.playbook_running}
-        />
+        <PlaybookPopover playbookId={playbook.id} running={!!playbook.playbook_running} />
         <PlaybookEdition id={playbook.id} />
       </Stack>
       <Drawer
@@ -143,19 +137,14 @@ const PlaybookHeaderComponent = ({
                 <ListItemButton
                   dense={true}
                   divider={openExecution !== lastExecution.id}
-                  onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
-                  }
+                  onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)}
                 >
                   <ListItemIcon style={{ marginLeft: 10 }}>
                     <ItemIcon type="Playbook" color={theme.palette.primary.main} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={`${t_i18n('Execution at')} ${nsdt(
-                      lastExecution.execution_start,
-                    )}`}
-                    secondary={`${(lastExecution.steps ?? []).length} ${t_i18n(
-                      'steps executed',
-                    )}`}
+                    primary={`${t_i18n('Execution at')} ${nsdt(lastExecution.execution_start)}`}
+                    secondary={`${(lastExecution.steps ?? []).length} ${t_i18n('steps executed')}`}
                   />
                   {openExecution === lastExecution.id ? (
                     <ExpandLessOutlined />
@@ -163,11 +152,7 @@ const PlaybookHeaderComponent = ({
                     <ExpandMoreOutlined />
                   )}
                 </ListItemButton>
-                <Collapse
-                  in={openExecution === lastExecution.id}
-                  timeout="auto"
-                  unmountOnExit
-                >
+                <Collapse in={openExecution === lastExecution.id} timeout="auto" unmountOnExit>
                   <List component="div" disablePadding={true}>
                     {(lastExecution.steps ?? []).map((step) => (
                       <ListItemButton
@@ -179,10 +164,7 @@ const PlaybookHeaderComponent = ({
                         <ListItemIcon>
                           <Tooltip title={t_i18n(step.status)}>
                             {step.status === 'success' ? (
-                              <CheckCircleOutlined
-                                fontSize="small"
-                                color="success"
-                              />
+                              <CheckCircleOutlined fontSize="small" color="success" />
                             ) : (
                               <ErrorOutlined fontSize="small" color="error" />
                             )}
@@ -190,9 +172,7 @@ const PlaybookHeaderComponent = ({
                         </ListItemIcon>
                         <ListItemText
                           primary={step.message}
-                          secondary={`${t_i18n('Execution ended at')} ${nsdt(
-                            step.out_timestamp,
-                          )}`}
+                          secondary={`${t_i18n('Execution ended at')} ${nsdt(step.out_timestamp)}`}
                         />
                       </ListItemButton>
                     ))}
@@ -206,17 +186,11 @@ const PlaybookHeaderComponent = ({
               {t_i18n('Last 20 execution traces are displayed above')}
             </div>
           ) : (
-            <div>
-              {t_i18n('There are no execution traces to display')}
-            </div>
+            <div>{t_i18n('There are no execution traces to display')}</div>
           )}
         </List>
       </Drawer>
-      <Dialog
-        open={rawData !== null}
-        onClose={() => setRawData(null)}
-        title={t_i18n('Raw data')}
-      >
+      <Dialog open={rawData !== null} onClose={() => setRawData(null)} title={t_i18n('Raw data')}>
         <pre>{rawData}</pre>
       </Dialog>
     </>

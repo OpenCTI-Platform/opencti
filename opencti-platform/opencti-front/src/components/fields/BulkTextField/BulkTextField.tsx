@@ -8,19 +8,20 @@ type BulkTextFieldProps = TextFieldProps & {
   bulkType?: 'entities' | 'observables';
 };
 
-const BulkTextField = ({
-  bulkType = 'entities',
-  ...props
-}: BulkTextFieldProps) => {
+const BulkTextField = ({ bulkType = 'entities', ...props }: BulkTextFieldProps) => {
   const { t_i18n } = useFormatter();
-  const { field: { value }, detectDuplicate } = props;
+  const {
+    field: { value },
+    detectDuplicate,
+  } = props;
 
   const values = splitMultilines(value);
   const hasMultipleValues = values.length > 1;
 
-  const creationLabel = bulkType === 'entities'
-    ? t_i18n('entities will be created')
-    : t_i18n('observables will be created');
+  const creationLabel =
+    bulkType === 'entities'
+      ? t_i18n('entities will be created')
+      : t_i18n('observables will be created');
 
   return (
     <>

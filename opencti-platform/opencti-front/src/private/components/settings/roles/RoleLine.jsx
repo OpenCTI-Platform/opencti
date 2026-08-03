@@ -56,7 +56,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
       to={`/dashboard/settings/accesses/roles/${node.id}`}
     >
       <ListItemText
-        primary={(
+        primary={
           <>
             <div
               className={classes.bodyItem}
@@ -68,7 +68,7 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
               }}
             >
               <span>{node.name}</span>
-              { isSensitive && <DangerZoneChip /> }
+              {isSensitive && <DangerZoneChip />}
             </div>
             <QueryRenderer
               query={groupsSearchQuery}
@@ -79,17 +79,14 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
               }}
               render={({ props }) => {
                 if (props) {
-                  const groupIds = props.groups.edges.map((group) => (group.node.roles.edges.map((role) => role.node.id).includes(node.id)
-                    ? group.node.id
-                    : null));
-                  const numberOfGroups = groupIds.filter(
-                    (id) => id !== null,
-                  ).length;
+                  const groupIds = props.groups.edges.map((group) =>
+                    group.node.roles.edges.map((role) => role.node.id).includes(node.id)
+                      ? group.node.id
+                      : null,
+                  );
+                  const numberOfGroups = groupIds.filter((id) => id !== null).length;
                   return (
-                    <div
-                      className={classes.bodyItem}
-                      style={{ width: dataColumns.groups.width }}
-                    >
+                    <div className={classes.bodyItem} style={{ width: dataColumns.groups.width }}>
                       {numberOfGroups}
                     </div>
                   );
@@ -98,25 +95,18 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
                   <div
                     className={classes.bodyItem}
                     style={{ width: dataColumns.groups.width }}
-                  >
-                  </div>
+                  ></div>
                 );
               }}
             />
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.created_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
               {fd(node.created_at)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.updated_at.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.updated_at.width }}>
               {fd(node.updated_at)}
             </div>
           </>
-        )}
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -146,10 +136,7 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
   `,
 });
 
-export const RoleLine = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineFragment);
+export const RoleLine = compose(inject18n, withStyles(styles))(RoleLineFragment);
 
 class RoleLineDummyComponent extends Component {
   render() {
@@ -158,69 +145,32 @@ class RoleLineDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={(
+        secondaryAction={
           <Box sx={{ root: classes.itemIconDisabled }}>
             <KeyboardArrowRightOutlined />
           </Box>
-        )}
+        }
       >
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.groups.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.groups.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.created_at.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.updated_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.updated_at.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
               </div>
             </div>
-          )}
+          }
         />
       </ListItem>
     );
@@ -232,7 +182,4 @@ RoleLineDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const RoleLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(RoleLineDummyComponent);
+export const RoleLineDummy = compose(inject18n, withStyles(styles))(RoleLineDummyComponent);

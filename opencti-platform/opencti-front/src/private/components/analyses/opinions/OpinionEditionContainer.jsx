@@ -18,29 +18,22 @@ const OpinionEditionContainer = (props) => {
       variant={open == null ? DrawerVariant.update : undefined}
       context={editContext}
     >
-      <OpinionEditionOverview
-        opinion={opinion}
-        context={editContext}
-        handleClose={handleClose}
-      />
+      <OpinionEditionOverview opinion={opinion} context={editContext} handleClose={handleClose} />
     </Drawer>
   );
 };
 
-const OpinionEditionFragment = createFragmentContainer(
-  OpinionEditionContainer,
-  {
-    opinion: graphql`
-      fragment OpinionEditionContainer_opinion on Opinion {
-        id
-        ...OpinionEditionOverview_opinion
-        editContext {
-          name
-          focusOn
-        }
+const OpinionEditionFragment = createFragmentContainer(OpinionEditionContainer, {
+  opinion: graphql`
+    fragment OpinionEditionContainer_opinion on Opinion {
+      id
+      ...OpinionEditionOverview_opinion
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default OpinionEditionFragment;

@@ -39,54 +39,24 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/analyses/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/reports"
-          element={boundaryWrapper(Reports)}
-        />
-        <Route
-          path="/reports/:reportId/*"
-          element={boundaryWrapper(RootReport)}
-        />
-        <Route
-          path="/groupings"
-          element={boundaryWrapper(Groupings)}
-        />
-        <Route
-          path="/groupings/:groupingId/*"
-          element={boundaryWrapper(RootGrouping)}
-        />
-        <Route
-          path="/malware_analyses"
-          element={boundaryWrapper(MalwareAnalyses)}
-        />
+        <Route path="/reports" element={boundaryWrapper(Reports)} />
+        <Route path="/reports/:reportId/*" element={boundaryWrapper(RootReport)} />
+        <Route path="/groupings" element={boundaryWrapper(Groupings)} />
+        <Route path="/groupings/:groupingId/*" element={boundaryWrapper(RootGrouping)} />
+        <Route path="/malware_analyses" element={boundaryWrapper(MalwareAnalyses)} />
         <Route
           path="/malware_analyses/:malwareAnalysisId/*"
           element={boundaryWrapper(RootMalwareAnalysis)}
         />
-        <Route
-          path="/security_coverages"
-          element={boundaryWrapper(SecurityCoverages)}
-        />
+        <Route path="/security_coverages" element={boundaryWrapper(SecurityCoverages)} />
         <Route
           path="/security_coverages/:securityCoverageId/*"
           element={boundaryWrapper(RootSecurityCoverages)}
         />
-        <Route
-          path="/notes"
-          element={boundaryWrapper(Notes)}
-        />
-        <Route
-          path="/notes/:noteId/*"
-          element={boundaryWrapper(RootNote)}
-        />
-        <Route
-          path="/opinions/:opinionId/*"
-          element={boundaryWrapper(RootOpinion)}
-        />
-        <Route
-          path="/external_references"
-          element={boundaryWrapper(ExternalReferences)}
-        />
+        <Route path="/notes" element={boundaryWrapper(Notes)} />
+        <Route path="/notes/:noteId/*" element={boundaryWrapper(RootNote)} />
+        <Route path="/opinions/:opinionId/*" element={boundaryWrapper(RootOpinion)} />
+        <Route path="/external_references" element={boundaryWrapper(ExternalReferences)} />
         <Route
           path="/external_references/:externalReferenceId/*"
           element={boundaryWrapper(RootExternalReference)}

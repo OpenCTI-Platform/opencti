@@ -9,7 +9,11 @@ import { VocabulariesLinesPaginationQuery$variables } from '@components/settings
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { VocabularyAddInput, VocabularyCategory, VocabularyCreationMutation } from './__generated__/VocabularyCreationMutation.graphql';
+import {
+  VocabularyAddInput,
+  VocabularyCategory,
+  VocabularyCreationMutation,
+} from './__generated__/VocabularyCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
@@ -46,10 +50,11 @@ const vocabularyAdd = graphql`
   }
 `;
 
-const labelValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  order: Yup.number().nullable(),
-});
+const labelValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    order: Yup.number().nullable(),
+  });
 
 const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   paginationOptions,
@@ -67,10 +72,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
     order: number;
   }
 
-  const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (
-    values,
-    { resetForm },
-  ) => {
+  const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (values, { resetForm }) => {
     const data: VocabularyAddInput = {
       name: values.name,
       description: values.description,
@@ -82,12 +84,8 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
       variables: {
         input: data,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_vocabularies',
-        paginationOptions,
-        'vocabularyAdd',
-      ),
+      updater: (store) =>
+        insertNode(store, 'Pagination_vocabularies', paginationOptions, 'vocabularyAdd'),
       onCompleted: () => {
         resetForm();
       },
@@ -99,10 +97,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   );
 
   return (
-    <Drawer
-      title={t_i18n('Create a vocabulary')}
-      controlledDial={CreateVocabularyControlledDial}
-    >
+    <Drawer title={t_i18n('Create a vocabulary')} controlledDial={CreateVocabularyControlledDial}>
       {({ onClose }) => (
         <Formik<FormInterface>
           initialValues={{
@@ -145,10 +140,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
                   label: t_i18n('Aliases'),
                 }}
                 options={[]}
-                renderOption={(
-                  props: Record<string, unknown>,
-                  option: FieldOption,
-                ) => (
+                renderOption={(props: Record<string, unknown>, option: FieldOption) => (
                   <li {...props}>
                     <div className={classes.text}>{option.label}</div>
                   </li>

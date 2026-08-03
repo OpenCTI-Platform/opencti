@@ -2,7 +2,9 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { SettingsOrganizationLineDummy } from '@components/settings/organizations/SettingsOrganizationLine';
 import ListLines from '../../../components/list_lines/ListLines';
-import SettingsOrganizationsLines, { settingsOrganizationsLinesQuery } from './organizations/SettingsOrganizationsLines';
+import SettingsOrganizationsLines, {
+  settingsOrganizationsLinesQuery,
+} from './organizations/SettingsOrganizationsLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import {
   SettingsOrganizationsLinesPaginationQuery,
@@ -34,22 +36,33 @@ const SettingsOrganizations = () => {
     viewStorage,
     helpers,
     paginationOptions: paginationOptionsFromStorage,
-  } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
-    searchTerm: '',
-    sortBy: 'name',
-    orderAsc: false,
-  });
+  } = usePaginationLocalStorage<SettingsOrganizationsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: false,
+    },
+  );
 
   const userIsOrganizationAdmin = (me.administrated_organizations ?? []).length > 0;
   const userHasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables = {
     ...paginationOptionsFromStorage,
-    filters: userIsOrganizationAdmin && !userHasSetAccess
-      ? { mode: 'and', filters: [{ key: ['authorized_authorities'], values: [me.id] }], filterGroups: [] }
-      : undefined,
+    filters:
+      userIsOrganizationAdmin && !userHasSetAccess
+        ? {
+            mode: 'and',
+            filters: [{ key: ['authorized_authorities'], values: [me.id] }],
+            filterGroups: [],
+          }
+        : undefined,
   };
 
-  const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(
+    settingsOrganizationsLinesQuery,
+    paginationOptions,
+  );
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Organizations | Security | Settings'));
@@ -82,7 +95,13 @@ const SettingsOrganizations = () => {
   };
   return (
     <div className={classes.container} data-testid="orga-settings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Organizations'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Organizations'), current: true },
+        ]}
+      />
       <ListLines
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
@@ -95,7 +114,7 @@ const SettingsOrganizations = () => {
         {queryRef && (
           <>
             <React.Suspense
-              fallback={(
+              fallback={
                 <>
                   {Array(20)
                     .fill(0)
@@ -103,7 +122,7 @@ const SettingsOrganizations = () => {
                       <SettingsOrganizationLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
-              )}
+              }
             >
               <SettingsOrganizationsLines
                 queryRef={queryRef}

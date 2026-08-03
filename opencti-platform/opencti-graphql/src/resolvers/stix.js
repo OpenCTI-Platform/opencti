@@ -4,7 +4,11 @@ import { stixLoadByIdStringify } from '../database/middleware';
 import { connectorsForEnrichment } from '../database/repository';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { INPUT_GRANTED_REFS } from '../schema/general';
-import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, REDACTED_USER } from '../utils/access';
+import {
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  REDACTED_USER,
+} from '../utils/access';
 import { ENABLED_DEMO_MODE } from '../config/conf';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
@@ -28,7 +32,10 @@ const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
   // Some refs defined on API are not part of all entities in schema due to an API/schema misalignment
   if (!ref) {
-    throw FunctionalError('No ref of this type is defined for this entity type in DB schema', { entity_type: element.entity_type, inputName });
+    throw FunctionalError('No ref of this type is defined for this entity type in DB schema', {
+      entity_type: element.entity_type,
+      inputName,
+    });
   }
   return context.batch.relsBatchLoader.load({ element, definition: ref });
 };
@@ -49,7 +56,9 @@ export const loadThroughDenormalized = async (context, user, element, inputName,
       }
       return redactedData;
     }
-    return data ? { ...data, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email } : data;
+    return data
+      ? { ...data, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email }
+      : data;
   }
   // Return sorted elements if needed
   if (args.sortBy) {
@@ -61,14 +70,16 @@ export const loadThroughDenormalized = async (context, user, element, inputName,
 const stixResolvers = {
   Query: {
     stix: async (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
-    enrichmentConnectors: (_, { type }, context) => connectorsForEnrichment(context, context.user, type, true),
+    enrichmentConnectors: (_, { type }, context) =>
+      connectorsForEnrichment(context, context.user, type, true),
   },
   Mutation: {
     stixEdit: (_, { id }, context) => ({
       delete: ({ forceDelete }) => stixDelete(context, context.user, id, { forceDelete }),
       merge: ({ stixObjectsIds }) => stixObjectMerge(context, context.user, id, stixObjectsIds),
     }),
-    stixBundlePush: (_, { connectorId, bundle, work_id }, context) => sendStixBundle(context, context.user, connectorId, bundle, work_id),
+    stixBundlePush: (_, { connectorId, bundle, work_id }, context) =>
+      sendStixBundle(context, context.user, connectorId, bundle, work_id),
   },
   StixObject: {
     __resolveType(obj) {

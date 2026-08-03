@@ -1,5 +1,15 @@
 import { Delete } from '@mui/icons-material';
-import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import {
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+} from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -39,7 +49,11 @@ interface UserTokenListProps {
   onCloseDrawer: () => void;
 }
 
-export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false, onCloseDrawer, node }) => {
+export const UserTokenList: React.FC<UserTokenListProps> = ({
+  openDrawer = false,
+  onCloseDrawer,
+  node,
+}) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
@@ -108,9 +122,7 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
     <div>
       {tokens.length === 0 ? (
         <Paper variant="outlined">
-          <div className={classes.empty}>
-            {t_i18n('No tokens found.')}
-          </div>
+          <div className={classes.empty}>{t_i18n('No tokens found.')}</div>
         </Paper>
       ) : (
         <TableContainer component={Paper} variant="outlined" sx={{ border: 'none' }}>
@@ -137,10 +149,11 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
                   <TableCell component="th" scope="row">
                     {token.name || '-'}
                   </TableCell>
-                  <TableCell>{token.last_used_at ? nsdt(token.last_used_at) : t_i18n('Never used')}</TableCell>
                   <TableCell>
-                    {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}
-                    {' '}
+                    {token.last_used_at ? nsdt(token.last_used_at) : t_i18n('Never used')}
+                  </TableCell>
+                  <TableCell>
+                    {token.expires_at ? nsdt(token.expires_at) : t_i18n('Unlimited')}{' '}
                     {getExpirationStatus(token.expires_at)}
                   </TableCell>
                   <TableCell align="right">
@@ -168,11 +181,7 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
         onDelete={submitDelete}
       />
 
-      <UserTokenCreationDrawer
-        userId={node.id}
-        open={openDrawer}
-        onClose={onCloseDrawer}
-      />
+      <UserTokenCreationDrawer userId={node.id} open={openDrawer} onClose={onCloseDrawer} />
     </div>
   );
 };

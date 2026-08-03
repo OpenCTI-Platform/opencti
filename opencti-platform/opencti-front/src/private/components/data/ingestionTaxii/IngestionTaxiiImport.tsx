@@ -15,14 +15,14 @@ import IngestionTaxiiCreation from '@components/data/ingestionTaxii/IngestionTax
 export const taxiiFeedImportQuery = graphql`
   query IngestionTaxiiImportQuery($file: Upload!) {
     taxiiFeedAddInputFromImport(file: $file) {
-        name
-        description
-        uri
-        scheduling_period
-        version
-        collection
-        authentication_type
-        added_after_start
+      name
+      description
+      uri
+      scheduling_period
+      version
+      collection
+      authentication_type
+      added_after_start
     }
   }
 `;
@@ -34,12 +34,18 @@ interface IngestionTaxiiImportProps {
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
 }
-const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({
+  paginationOptions,
+  hideTrigger,
+  onClose,
+}) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [ingestTaxiiData, setIngestTaxiiData] = useState<IngestionTaxiiImportQuery$data['taxiiFeedAddInputFromImport'] | undefined>(undefined);
+  const [ingestTaxiiData, setIngestTaxiiData] = useState<
+    IngestionTaxiiImportQuery$data['taxiiFeedAddInputFromImport'] | undefined
+  >(undefined);
   const { t_i18n } = useFormatter();
 
   const handleFileImport = async (file: File) => {

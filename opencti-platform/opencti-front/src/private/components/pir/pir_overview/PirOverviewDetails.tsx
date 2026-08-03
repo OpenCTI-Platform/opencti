@@ -25,7 +25,11 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreators from '../../../../components/ItemCreators';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { minutesBetweenDates, streamEventIdToDate, stringFormatMinutes } from '../../../../utils/Time';
+import {
+  minutesBetweenDates,
+  streamEventIdToDate,
+  stringFormatMinutes,
+} from '../../../../utils/Time';
 import PirCriteriaDisplay from '../PirCriteriaDisplay';
 import type { Theme } from '../../../../components/Theme';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
@@ -80,14 +84,15 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
     <Grid size={{ xs: 12 }}>
       <CardAccordion
         title="PIR Details"
-        preview={(
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            gap: theme.spacing(3),
-            justifyContent: 'space-between',
-            marginRight: theme.spacing(5),
-          }}
+        preview={
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              gap: theme.spacing(3),
+              justifyContent: 'space-between',
+              marginRight: theme.spacing(5),
+            }}
           >
             <div>
               <Label>{t_i18n('Rescan period (days)')}</Label>
@@ -108,7 +113,9 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               <Label>{t_i18n('Processing delay')}</Label>
               <Typography variant="body2" gutterBottom style={{ display: 'flex' }}>
                 <span>
-                  {diffInMinutes > 1 ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}` : t_i18n('ON TIME')}
+                  {diffInMinutes > 1
+                    ? `${stringFormatMinutes(diffInMinutes, t_i18n)} ${t_i18n('behind live stream')}`
+                    : t_i18n('ON TIME')}
                 </span>
                 <Tooltip title={`${t_i18n('Last event processed')}: ${fldt(lastEventDate)}`}>
                   <InformationOutline
@@ -129,7 +136,7 @@ const PirOverviewDetails = ({ data, dataStream }: PirOverviewDetailsProps) => {
               <ItemCreators creators={pir.creators ?? []} />
             </div>
           </div>
-        )}
+        }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) }}>
           <div>

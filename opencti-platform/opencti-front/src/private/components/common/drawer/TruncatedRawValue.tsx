@@ -16,7 +16,11 @@ interface TruncatedRawValueProps {
   style?: CSSProperties;
 }
 
-const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, variant = 'code', style }) => {
+const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({
+  value,
+  variant = 'code',
+  style,
+}) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const theme = useTheme<Theme>();
@@ -34,20 +38,14 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   }
 
   const dialog = (
-    <Dialog
-      open={open}
-      onClose={() => setOpen(false)}
-      fullWidth
-      title={t_i18n('Raw value')}
-    >
-      {variant === 'code'
-        ? <pre>{value}</pre>
-        : <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{value}</span>
-      }
+    <Dialog open={open} onClose={() => setOpen(false)} fullWidth title={t_i18n('Raw value')}>
+      {variant === 'code' ? (
+        <pre>{value}</pre>
+      ) : (
+        <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{value}</span>
+      )}
       <DialogActions>
-        <Button onClick={() => setOpen(false)}>
-          {t_i18n('Close')}
-        </Button>
+        <Button onClick={() => setOpen(false)}>{t_i18n('Close')}</Button>
       </DialogActions>
     </Dialog>
   );
@@ -85,18 +83,13 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
   };
 
   if (value.length <= MAX_LENGTH) {
-    return (
-      <pre style={codeStyle}>{value}</pre>
-    );
+    return <pre style={codeStyle}>{value}</pre>;
   }
 
   return (
     <>
       <Tooltip title={t_i18n('Click to view full value')}>
-        <pre
-          onClick={() => setOpen(true)}
-          style={codeStyle}
-        >
+        <pre onClick={() => setOpen(true)} style={codeStyle}>
           {value.substring(0, MAX_LENGTH)}...
         </pre>
       </Tooltip>

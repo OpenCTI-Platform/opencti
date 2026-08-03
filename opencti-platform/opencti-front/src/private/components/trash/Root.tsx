@@ -12,10 +12,7 @@ const Root = () => {
     <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
       <Suspense fallback={<Loader />}>
         <Routes>
-          <Route
-            path="/"
-            element={boundaryWrapper(Trash)}
-          />
+          <Route path="/" element={boundaryWrapper(Trash)} />
         </Routes>
       </Suspense>
     </Security>

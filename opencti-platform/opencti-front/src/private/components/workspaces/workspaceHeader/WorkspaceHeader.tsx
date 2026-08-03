@@ -95,11 +95,7 @@ const WorkspaceHeader = ({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title={workspace.name}>
-            <Typography
-              variant="h1"
-              sx={{ margin: 0 }}
-              style={{ marginRight: canEdit ? 0 : 10 }}
-            >
+            <Typography variant="h1" sx={{ margin: 0 }} style={{ marginRight: canEdit ? 0 : 10 }}>
               {truncate(workspace.name, 40)}
             </Typography>
           </Tooltip>
@@ -109,10 +105,7 @@ const WorkspaceHeader = ({
             canEdit={canEdit}
           />
         </div>
-        <div
-          id="dashboard-buttons"
-          style={DASHBOARD_BUTTONS_STYLE}
-        >
+        <div id="dashboard-buttons" style={DASHBOARD_BUTTONS_STYLE}>
           <ExportButtons
             domElementId="container"
             name={workspace.name}
@@ -124,10 +117,7 @@ const WorkspaceHeader = ({
           <WorkspaceKebabMenu data={workspace} />
           {variant === 'dashboard' && (
             <>
-              <Security
-                needs={[EXPLORE_EXUPDATE]}
-                hasAccess={canEdit}
-              >
+              <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
                 <DashboardWidgetConfig
                   onComplete={handleAddWidget}
                   handleImportWidget={handleImportWidget}
@@ -137,10 +127,7 @@ const WorkspaceHeader = ({
             </>
           )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
-            <Button
-              disableElevation
-              onClick={handleOpenEdit}
-            >
+            <Button disableElevation onClick={handleOpenEdit}>
               {t_i18n('Update')}
             </Button>
           </Security>

@@ -1,6 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import {
+  SystemsLinesPaginationQuery,
+  SystemsLinesPaginationQuery$variables,
+} from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
 import { SystemsLines_data$key } from '@components/entities/systems/__generated__/SystemsLines_data.graphql';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { SystemLine, SystemLineDummy } from './SystemLine';
@@ -28,14 +31,14 @@ export const systemsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SystemsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -99,9 +102,7 @@ const SystemsLines: FunctionComponent<SystemsLinesProps> = ({
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.systems?.edges ?? []}
-      globalCount={
-        data?.systems?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.systems?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={SystemLine}
       DummyLineComponent={SystemLineDummy}
       dataColumns={dataColumns}

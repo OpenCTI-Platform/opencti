@@ -37,7 +37,7 @@ export function refang(input) {
     .replace(/(\s*)(s?)fxp(s?)[\[\]:]*\/\//gi, (m, pre, s1, s2) => `${pre}${s1}ftp${s2}://`)
     // Replace (protocol)[://] or similar -> protocol://
     // eslint-disable-next-line no-useless-escape
-    .replace(/(\s*)\(([-.+a-zA-Z0-9]{1,12})\)[\[\]:]*\/\//gi, (m, pre, proto) => `${pre}${proto}://`)
+    .replace(/(\s*)\(([-.+a-zA-Z0-9]{1,12})\)[[\]:]*\/\//gi, (m, pre, proto) => `${pre}${proto}://`)
     // Replace [://] or similar with ://
     // eslint-disable-next-line no-useless-escape
     .replace(/\[:\/]{3,}/g, '://')
@@ -78,24 +78,14 @@ export function refang(input) {
 
         // Encode path/query safely
         const safePath = encodeURI(decodedPath);
-        const safeQuery = encodeURIComponent(decodedQuery).replace(/%3D/g, '=').replace(/%26/g, '&');
+        const safeQuery = encodeURIComponent(decodedQuery)
+          .replace(/%3D/g, '=')
+          .replace(/%26/g, '&');
 
         // Rebuild URL
-        const rebuilturl = `${
-          parsed.protocol
-        }//${
-          parsed.username ? `${parsed.username}${parsed.password ? `:${parsed.password}` : ''}@` : ''
-        }${
-          parsed.hostname
-        }${
+        const rebuilturl = `${parsed.protocol}//${parsed.username ? `${parsed.username}${parsed.password ? `:${parsed.password}` : ''}@` : ''}${parsed.hostname}${
           parsed.port ? `:${parsed.port}` : ''
-        }${
-          safePath.startsWith('/') ? '' : '/'
-        }${
-          safePath.endsWith('/') ? safePath.slice(0, -1) : safePath
-        }${
-          safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''
-        }`;
+        }${safePath.startsWith('/') ? '' : '/'}${safePath.endsWith('/') ? safePath.slice(0, -1) : safePath}${safeQuery && safeQuery.length > 0 ? `?${safeQuery}` : ''}`;
 
         // Replace original URL in output with rebuilt URL
         output = output.replace(matchedUrl, rebuilturl);

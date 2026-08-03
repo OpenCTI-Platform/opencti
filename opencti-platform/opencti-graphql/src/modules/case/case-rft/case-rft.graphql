@@ -1,9 +1,14 @@
-type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+type CaseRft implements BasicObject &
+  StixObject &
+  StixCoreObject &
+  StixDomainObject &
+  Container &
+  Case {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -214,7 +219,10 @@ type Query {
     search: String
     toStix: Boolean
   ): CaseRftConnection @auth(for: [KNOWLEDGE])
-  caseRftContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  caseRftContainsStixObjectOrStixRelationship(
+    id: String!
+    stixObjectOrStixRelationshipId: String!
+  ): Boolean @auth(for: [KNOWLEDGE])
 }
 
 # Mutations

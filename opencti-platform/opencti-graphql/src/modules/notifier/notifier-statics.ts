@@ -37,18 +37,19 @@ export const NOTIFIER_CONNECTOR_EMAIL_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_
   },
   required: ['title', 'template'],
 };
-export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE> = {
-  type: 'object',
-  properties: {
-    title: { type: 'string' },
-    header: { type: 'string' },
-    logo: { type: 'string' },
-    footer: { type: 'string' },
-    background_color: { type: 'string' },
-    url_suffix: { type: 'string' },
-  },
-  required: ['title'],
-};
+export const NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE> =
+  {
+    type: 'object',
+    properties: {
+      title: { type: 'string' },
+      header: { type: 'string' },
+      logo: { type: 'string' },
+      footer: { type: 'string' },
+      background_color: { type: 'string' },
+      url_suffix: { type: 'string' },
+    },
+    required: ['title'],
+  };
 // endregion
 // region Notifier Webhook
 export const NOTIFIER_CONNECTOR_WEBHOOK = '08f9f00f-4e52-4466-ae27-be9fa9813a88';
@@ -61,45 +62,46 @@ export interface NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE {
   headers: { attribute: string; value: string }[];
 }
 
-export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE> = {
-  type: 'object',
-  properties: {
-    verb: { type: 'string', enum: ['GET', 'POST', 'PUT', ' DELETE'] },
-    url: { type: 'string' },
-    template: { type: 'string' },
-    params: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          attribute: {
-            type: 'string',
+export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE> =
+  {
+    type: 'object',
+    properties: {
+      verb: { type: 'string', enum: ['GET', 'POST', 'PUT', ' DELETE'] },
+      url: { type: 'string' },
+      template: { type: 'string' },
+      params: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            attribute: {
+              type: 'string',
+            },
+            value: {
+              type: 'string',
+            },
           },
-          value: {
-            type: 'string',
-          },
+          required: ['attribute', 'value'],
         },
-        required: ['attribute', 'value'],
+      },
+      headers: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            attribute: {
+              type: 'string',
+            },
+            value: {
+              type: 'string',
+            },
+          },
+          required: ['attribute', 'value'],
+        },
       },
     },
-    headers: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          attribute: {
-            type: 'string',
-          },
-          value: {
-            type: 'string',
-          },
-        },
-        required: ['attribute', 'value'],
-      },
-    },
-  },
-  required: ['url', 'verb', 'template'],
-};
+    required: ['url', 'verb', 'template'],
+  };
 
 // endregion
 
@@ -183,11 +185,12 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
     description: 'Send notification to the user email',
     notifier_connector_id: NOTIFIER_CONNECTOR_EMAIL,
     notifier_configuration: JSON.stringify({
-      title: '<% if(notification.trigger_type === \'live\'){ %>\n'
-        + '[<%=notification.trigger_type%>] <%= notification_content[0].title %>'
-        + ' <% } else{ %>  \n'
-        + '[<%=notification.trigger_type%>] <%= notification.name%>'
-        + '<% } %>',
+      title:
+        "<% if(notification.trigger_type === 'live'){ %>\n" +
+        '[<%=notification.trigger_type%>] <%= notification_content[0].title %>' +
+        ' <% } else{ %>  \n' +
+        '[<%=notification.trigger_type%>] <%= notification.name%>' +
+        '<% } %>',
       template: `
 ${HEADER_TEMPLATE}
    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" bgcolor="#f5f8fa" style="-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; margin: 0; padding:0; font-family: Helvetica, Arial, sans-serif; font-size: 16px; height: 100%; width: 100%; min-width: 100%;">
@@ -665,7 +668,8 @@ export const SIMPLIFIED_EMAIL_TEMPLATE = `
 export const DEFAULT_TEAM_MESSAGE = {
   notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
   name: 'Sample of Microsoft Teams message for live trigger',
-  description: 'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
+  description:
+    'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
   notifier_configuration: `
     {
       "template": "{\\n        \\"type\\": \\"message\\",\\n        \\"attachments\\": [\\n            {\\n                \\"contentType\\": \\"application/vnd.microsoft.card.thumbnail\\",\\n                \\"content\\": {\\n                    \\"subtitle\\": \\"Operation : <%=notification_content[0].events[0].operation%>\\",\\n                    \\"text\\": \\"<%=(new Date(notification.created)).toLocaleString()%>\\",\\n                    \\"title\\": \\"<%=notification_content[0].events[0].message%>\\",\\n                    \\"buttons\\": [\\n                        {\\n                            \\"type\\": \\"openUrl\\",\\n                            \\"title\\": \\"See in OpenCTI\\",\\n                            \\"value\\": \\"https://YOUR_OPENCTI_URL/dashboard/id/<%=notification_content[0].events[0].instance_id%>\\"\\n                        }\\n                    ]\\n                }\\n            }\\n        ]\\n    }",
@@ -678,7 +682,8 @@ export const DEFAULT_TEAM_MESSAGE = {
 export const DEFAULT_TEAM_DIGEST_MESSAGE = {
   notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK,
   name: 'Sample of Microsoft Teams message for digest trigger',
-  description: 'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
+  description:
+    'This is a sample notifier to send a Microsoft Teams message. The template is already filled and fully customizable. You need to add the correct Microsoft Teams endpoint to get it working.',
   notifier_configuration: `
     {
       "template": "{\\n    \\"type\\": \\"message\\",\\n    \\"attachments\\": [\\n        {\\n            \\"contentType\\": \\"application/vnd.microsoft.card.adaptive\\",\\n            \\"content\\": {\\n                \\"$schema\\": \\"http://adaptivecards.io/schemas/adaptive-card.json\\",\\n                \\"type\\": \\"AdaptiveCard\\",\\n                \\"version\\": \\"1.0\\",\\n                \\"body\\": [\\n                    {\\n                        \\"type\\": \\"Container\\",\\n                        \\"items\\": [\\n                            {\\n                                \\"type\\": \\"TextBlock\\",\\n                                \\"text\\": \\"<%=notification.name%>\\",\\n                                \\"weight\\": \\"bolder\\",\\n                                \\"size\\": \\"extraLarge\\"\\n                            }, {\\n                                \\"type\\": \\"TextBlock\\",\\n                                \\"text\\": \\"<%=(new Date(notification.created)).toLocaleString()%>\\",\\n                                \\"size\\": \\"medium\\"\\n                            }\\n                        ]\\n                    },\\n                    <% for(var i=0; i<notification_content.length; i++) { %>\\n                    {\\n                        \\"type\\": \\"Container\\",\\n                        \\"items\\": [<% for(var j=0; j<notification_content[i].events.length; j++) { %>\\n                            {\\n                                \\"type\\" : \\"TextBlock\\",\\n                                \\"text\\" : \\"[<%=notification_content[i].events[j].message%>](https://localhost:3000/dashboard/id/<%=notification_content[i].events[j].instance_id%>)\\"\\n                         \\t}<% if(j<(notification_content[i].events.length - 1)) {%>,<% } %>\\n                        <% } %>]\\n\\t\\t   }<% if(i<(notification_content.length - 1)) {%>,<% } %>\\n                    <% } %>\\n                ]\\n            }\\n        }\\n    ],\\n   \\"dataString\\": <%-JSON.stringify(notification)%>\\n}",

@@ -1,5 +1,13 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addDecayRule, countAppliedIndicators, deleteDecayRule, fieldPatchDecayRule, findDecayRulePaginated, findById, getDecaySettingsChartData } from './decayRule-domain';
+import {
+  addDecayRule,
+  countAppliedIndicators,
+  deleteDecayRule,
+  fieldPatchDecayRule,
+  findDecayRulePaginated,
+  findById,
+  getDecaySettingsChartData,
+} from './decayRule-domain';
 
 const decayRuleResolvers: Resolvers = {
   Query: {
@@ -7,8 +15,10 @@ const decayRuleResolvers: Resolvers = {
     decayRules: (_, args, context) => findDecayRulePaginated(context, context.user, args),
   },
   DecayRule: {
-    appliedIndicatorsCount: (decayRule, _, context) => countAppliedIndicators(context, context.user, decayRule),
-    decaySettingsChartData: (decayRule, _, context) => getDecaySettingsChartData(context, context.user, decayRule),
+    appliedIndicatorsCount: (decayRule, _, context) =>
+      countAppliedIndicators(context, context.user, decayRule),
+    decaySettingsChartData: (decayRule, _, context) =>
+      getDecaySettingsChartData(context, context.user, decayRule),
   },
   Mutation: {
     decayRuleAdd: (_, { input }, context) => {

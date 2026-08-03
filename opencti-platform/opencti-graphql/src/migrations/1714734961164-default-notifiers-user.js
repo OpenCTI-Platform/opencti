@@ -11,20 +11,12 @@ export const up = async (next) => {
     },
     query: {
       bool: {
-        must: [
-          { term: { 'entity_type.keyword': { value: 'User' } } },
-        ],
-        must_not: [
-          { exists: { field: 'personal_notifiers' } },
-        ],
+        must: [{ term: { 'entity_type.keyword': { value: 'User' } } }],
+        must_not: [{ exists: { field: 'personal_notifiers' } }],
       },
     },
   };
-  await elUpdateByQueryForMigration(
-    message,
-    [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery,
-  );
+  await elUpdateByQueryForMigration(message, [READ_INDEX_INTERNAL_OBJECTS], updateQuery);
   next();
 };
 

@@ -1,5 +1,9 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findByManagerId, managerConfigurationEditField } from './managerConfiguration-domain';
+import {
+  findById,
+  findByManagerId,
+  managerConfigurationEditField,
+} from './managerConfiguration-domain';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from './managerConfiguration-types';
 import { supportedMimeTypes } from './managerConfiguration-utils';
@@ -8,7 +12,8 @@ import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 const managerConfigurationResolvers: Resolvers = {
   Query: {
     managerConfiguration: (_, { id }, context) => findById(context, context.user, id),
-    managerConfigurationByManagerId: (_, { managerId }, context) => findByManagerId(context, context.user, managerId),
+    managerConfigurationByManagerId: (_, { managerId }, context) =>
+      findByManagerId(context, context.user, managerId),
   },
   Mutation: {
     managerConfigurationFieldPatch: (_, { id, input }, context) => {
@@ -34,7 +39,10 @@ const managerConfigurationResolvers: Resolvers = {
       },
       subscribe: /* v8 ignore next */ (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_MANAGER_CONFIGURATION, notifySelf: true });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_MANAGER_CONFIGURATION,
+          notifySelf: true,
+        });
       },
     },
   },

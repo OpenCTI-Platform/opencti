@@ -11,11 +11,7 @@ export const addSubNarrativesMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -43,8 +39,7 @@ AddSubNarrativesLinesContainer.propTypes = {
 
 export const addSubNarrativesLinesQuery = graphql`
   query AddSubNarrativesLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddSubNarrativesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    ...AddSubNarrativesLines_data @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 

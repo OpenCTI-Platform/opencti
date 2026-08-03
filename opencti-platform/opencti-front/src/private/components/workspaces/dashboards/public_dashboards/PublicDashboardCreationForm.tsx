@@ -91,11 +91,16 @@ const PublicDashboardCreationFormComponent = ({
     name: Yup.string().required(t_i18n('This field is required')),
     uri_key: Yup.string(),
     enabled: Yup.boolean(),
-    max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
+    max_markings: Yup.array()
+      .min(1, 'This field is required')
+      .required(t_i18n('This field is required')),
     dashboard_id: Yup.string().required(t_i18n('This field is required')),
   });
 
-  const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     commitCreateMutation({
       variables: {
         input: {
@@ -179,11 +184,7 @@ const PublicDashboardCreationFormComponent = ({
             style={fieldSpacingContainerStyle}
             slotProps={{
               input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    public/dashboard/
-                  </InputAdornment>
-                ),
+                startAdornment: <InputAdornment position="start">public/dashboard/</InputAdornment>,
               },
             }}
           />
@@ -219,10 +220,7 @@ const PublicDashboardCreationFormComponent = ({
             >
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              disabled={isSubmitting || !isValid || !dirty}
-              onClick={submitForm}
-            >
+            <Button disabled={isSubmitting || !isValid || !dirty} onClick={submitForm}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -235,17 +233,20 @@ const PublicDashboardCreationFormComponent = ({
 type PublicDashboardCreationFormProps = Omit<PublicDashboardCreationFormComponentProps, 'queryRef'>;
 
 const PublicDashboardCreationForm = (props: PublicDashboardCreationFormProps) => {
-  const [queryRef, fetchDashboards] = useQueryLoader<PublicDashboardCreationFormDashboardsQuery>(dashboardsQuery);
+  const [queryRef, fetchDashboards] =
+    useQueryLoader<PublicDashboardCreationFormDashboardsQuery>(dashboardsQuery);
   const fetchDashboardsWithFilters = () => {
     fetchDashboards(
       {
         filters: {
           mode: 'and',
           filterGroups: [],
-          filters: [{
-            key: ['type'],
-            values: ['dashboard'],
-          }],
+          filters: [
+            {
+              key: ['type'],
+              values: ['dashboard'],
+            },
+          ],
         },
       },
       { fetchPolicy: 'store-and-network' },
@@ -256,13 +257,12 @@ const PublicDashboardCreationForm = (props: PublicDashboardCreationFormProps) =>
     fetchDashboardsWithFilters();
   }, []);
 
-  return queryRef && (
-    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <PublicDashboardCreationFormComponent
-        queryRef={queryRef}
-        {...props}
-      />
-    </Suspense>
+  return (
+    queryRef && (
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+        <PublicDashboardCreationFormComponent queryRef={queryRef} {...props} />
+      </Suspense>
+    )
   );
 };
 

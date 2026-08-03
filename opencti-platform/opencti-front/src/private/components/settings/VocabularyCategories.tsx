@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
-import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
+import {
+  useVocabularyCategoryAsQuery,
+  VocabularyDefinition,
+} from '../../../utils/hooks/useVocabularyCategory';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -20,15 +23,19 @@ const VocabularyCategories = () => {
 
   setTitle(t_i18n('Vocabularies | Taxonomies | Settings'));
 
-  const { categories, sortBy: sortByVocabularyCategory, orderAsc: orderAscVocabularyCategory, searchTerm, handleSearch, handleSort } = useVocabularyCategoryAsQuery();
+  const {
+    categories,
+    sortBy: sortByVocabularyCategory,
+    orderAsc: orderAscVocabularyCategory,
+    searchTerm,
+    handleSearch,
+    handleSort,
+  } = useVocabularyCategoryAsQuery();
 
-  const { viewStorage, helpers } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {
-      sortBy: 'name',
-      orderAsc: true,
-    },
-  );
+  const { viewStorage, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+    sortBy: 'name',
+    orderAsc: true,
+  });
   const { sortBy = 'name', orderAsc = true } = viewStorage;
 
   // Sync local storage sorting with hook sorting
@@ -60,7 +67,9 @@ const VocabularyCategories = () => {
       percentWidth: 60,
       isSortable: false,
       render: (data: { category: VocabularyDefinition }) => {
-        return defaultRender(data.category.description ? t_i18n(data.category.description) : undefined);
+        return defaultRender(
+          data.category.description ? t_i18n(data.category.description) : undefined,
+        );
       },
     },
   };
@@ -86,10 +95,10 @@ const VocabularyCategories = () => {
           isLocalStorageEnabled={false}
           data={categories.map(({ node }) => ({ category: node }))}
           dataColumns={dataColumns}
-          getComputeLink={({ category }: { category: VocabularyDefinition }) => (category.key)}
+          getComputeLink={({ category }: { category: VocabularyDefinition }) => category.key}
           globalCount={categories.length}
           pageSize={categories.length.toString()}
-          icon={() => (<ShortTextOutlined color="primary" />)}
+          icon={() => <ShortTextOutlined color="primary" />}
           onSort={onSort}
         />
       </div>

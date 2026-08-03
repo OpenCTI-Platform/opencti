@@ -10,25 +10,29 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 const StixCyberObservableDeletionDeleteMutation = graphql`
   mutation StixCyberObservableDeletionDeleteMutation($id: ID!) {
     stixCyberObservableEdit(id: $id) {
-        delete
-      }
+      delete
     }
-  `;
+  }
+`;
 
-const StixCyberObservableDeletion = (
-  { id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void },
-) => {
+const StixCyberObservableDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Observable') },
   });
-  const [commit] = useApiMutation(
-    StixCyberObservableDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(StixCyberObservableDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const isArtifactInURL = window.location.href.includes('artifact');
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;

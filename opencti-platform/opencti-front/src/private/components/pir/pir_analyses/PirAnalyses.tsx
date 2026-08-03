@@ -17,9 +17,17 @@ import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Chip, Tooltip, Alert } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { PirAnalysesContainersListQuery, PirAnalysesContainersListQuery$variables } from './__generated__/PirAnalysesContainersListQuery.graphql';
+import {
+  PirAnalysesContainersListQuery,
+  PirAnalysesContainersListQuery$variables,
+} from './__generated__/PirAnalysesContainersListQuery.graphql';
 import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses_ContainersFragment.graphql';
-import { emptyFilterGroup, getFilterKeyValues, normalizeFilterGroupForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  getFilterKeyValues,
+  normalizeFilterGroupForBackend,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -33,9 +41,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 const pirAnalysesContainerFragment = graphql`
   fragment PirAnalyses_ContainerFragment on Container
-  @argumentDefinitions(
-    objectsFilters: { type: "FilterGroup" }
-  ) {
+  @argumentDefinitions(objectsFilters: { type: "FilterGroup" }) {
     id
     entity_type
     created
@@ -67,7 +73,7 @@ const pirAnalysesContainerFragment = graphql`
     objects(first: 100, filters: $objectsFilters) {
       edges {
         node {
-          ...on StixCoreObject {
+          ... on StixCoreObject {
             entity_type
             representative {
               main
@@ -104,8 +110,7 @@ const pirAnalysesContainersFragment = graphql`
         edges {
           node {
             id
-            ...PirAnalyses_ContainerFragment
-            @arguments(objectsFilters: $objectsFilters)
+            ...PirAnalyses_ContainerFragment @arguments(objectsFilters: $objectsFilters)
           }
         }
         pageInfo {
@@ -130,16 +135,16 @@ const pirAnalysesContainersListQuery = graphql`
     $objectsFilters: FilterGroup
   ) {
     ...PirAnalyses_ContainersFragment
-    @arguments(
-      id: $id
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      objectsFilters: $objectsFilters
-    )
+      @arguments(
+        id: $id
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        objectsFilters: $objectsFilters
+      )
   }
 `;
 
@@ -152,7 +157,9 @@ const analysesFragment = graphql`
   }
 `;
 
-type PirContainerObjects = NonNullable<NonNullable<PirAnalyses_ContainersFragment$data['pir']>['pirContainers']>;
+type PirContainerObjects = NonNullable<
+  NonNullable<PirAnalyses_ContainersFragment$data['pir']>['pirContainers']
+>;
 
 interface PirAnalysesProps {
   data: PirAnalysesFragment$key;
@@ -180,7 +187,9 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
   );
   const { viewStorage, paginationOptions, helpers } = localStorage;
 
-  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Container']);
+  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, [
+    'Container',
+  ]);
 
   const pirFilters: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
   const pirToIdFilterIds = pirFilters.flatMap((f) => getFilterKeyValues('toId', f));
@@ -232,15 +241,17 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
         const countLabel = !hasMore ? objects.edges.length : `${max}+`;
         return (
           <Tooltip
-            title={(
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: theme.spacing(1),
-                padding: theme.spacing(1),
-              }}
+            title={
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: theme.spacing(1),
+                  padding: theme.spacing(1),
+                }}
               >
-                {// eslint-disable-next-line @typescript-eslint/no-explicit-any
+                {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   objects.edges.slice(0, max).map((e: any, i: number) => (
                     <div
                       key={i}
@@ -262,16 +273,13 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                         {e.node.representative.main} ({t_i18n(e.node.entity_type)})
                       </div>
                     </div>
-                  ))}
+                  ))
+                }
                 {hasMore && <span>...</span>}
               </div>
-            )}
+            }
           >
-            <Chip
-              size="small"
-              label={countLabel}
-              sx={{ width: 100, borderRadius: 1 }}
-            />
+            <Chip size="small" label={countLabel} sx={{ width: 100, borderRadius: 1 }} />
           </Tooltip>
         );
       },
@@ -296,11 +304,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
 
   return (
     <>
-      <Alert
-        severity="info"
-        variant="outlined"
-        sx={{ marginBottom: 3 }}
-      >
+      <Alert severity="info" variant="outlined" sx={{ marginBottom: 3 }}>
         {t_i18n('Pir analyses disclaimer...')}
       </Alert>
       {queryRef && (

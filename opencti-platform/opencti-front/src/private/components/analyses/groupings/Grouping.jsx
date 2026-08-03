@@ -24,58 +24,46 @@ const GroupingComponent = ({ grouping }) => {
 
   return (
     <div data-testid="grouping-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <GroupingDetails grouping={grouping} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview
-                      stixDomainObject={grouping}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={grouping.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={grouping.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={grouping.id}
-                      defaultMarkings={grouping.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <GroupingDetails grouping={grouping} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview stixDomainObject={grouping} />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={grouping.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={grouping.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={grouping.id}
+                    defaultMarkings={grouping.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </div>
   );

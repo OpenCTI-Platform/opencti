@@ -20,12 +20,14 @@ export type RenderChangeValuesFn = (
 export const EXCLUDED_PATCH_FIELDS = new Set(['standard_id', 'objects']);
 
 /** Matches a STIX ID such as `malware--<uuid>`. */
-export const STIX_ID_REGEX = /^[a-z][a-z0-9-]+--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export const STIX_ID_REGEX =
+  /^[a-z][a-z0-9-]+--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 /** Matches a plain UUID (used as internal OpenCTI identifiers). */
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Returns true if the value looks like a STIX ID or UUID that can be resolved to a label. */
-export const isResolvableId = (value: string): boolean => STIX_ID_REGEX.test(value) || UUID_REGEX.test(value);
+export const isResolvableId = (value: string): boolean =>
+  STIX_ID_REGEX.test(value) || UUID_REGEX.test(value);
 
 /**
  * Parses the raw JSON patch stored in `draft_updates_patch` into a list of `Change` objects
@@ -54,10 +56,7 @@ export const parseUpdatesPatch = (rawPatch: string | null | undefined): Change[]
         const initialList = values.initial_value?.map(String) ?? [];
         const addedItems = values.added_value?.map(String) ?? [];
         const removedItems = values.removed_value?.map(String) ?? [];
-        const newList = [
-          ...initialList.filter((v) => !removedItems.includes(v)),
-          ...addedItems,
-        ];
+        const newList = [...initialList.filter((v) => !removedItems.includes(v)), ...addedItems];
         return {
           field,
           removed: initialList,
@@ -75,13 +74,14 @@ export const parseUpdatesPatch = (rawPatch: string | null | undefined): Change[]
  * does not have a translation for a technical field name.
  */
 export const buildFieldLabelMap = (
-  attributesDefinitions: ReadonlyArray<{ name: string; label: string | null | undefined }> | null | undefined,
+  attributesDefinitions:
+    | ReadonlyArray<{ name: string; label: string | null | undefined }>
+    | null
+    | undefined,
 ): Record<string, string> => {
   if (!attributesDefinitions) return {};
   return Object.fromEntries(
-    attributesDefinitions
-      .filter((a) => a.label)
-      .map((a) => [a.name, a.label as string]),
+    attributesDefinitions.filter((a) => a.label).map((a) => [a.name, a.label as string]),
   );
 };
 

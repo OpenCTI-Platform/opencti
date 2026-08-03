@@ -13,7 +13,12 @@ export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);
   const start = new Date().getTime();
   const relationArgs = { fromTypes: [ENTITY_TYPE_USER] };
-  const currentRolesRelations = await fullRelationsList(context, context.user, [RELATION_HAS_ROLE], relationArgs);
+  const currentRolesRelations = await fullRelationsList(
+    context,
+    context.user,
+    [RELATION_HAS_ROLE],
+    relationArgs,
+  );
   // If remaining user->roles relationships available.
   if (currentRolesRelations.length > 0) {
     const roles = await fullEntitiesList(context, context.user, [ENTITY_TYPE_ROLE]);
@@ -36,7 +41,9 @@ export const up = async (next) => {
       roleGroupAssociations[role.id] = addedGroup.id;
     }
     // Remap each user to the corresponding groups
-    logApp.info(`[MIGRATION] Roles missing groups remapping ${currentRolesRelations.length} roles relations`);
+    logApp.info(
+      `[MIGRATION] Roles missing groups remapping ${currentRolesRelations.length} roles relations`,
+    );
     for (let index = 0; index < currentRolesRelations.length; index += 1) {
       const element = currentRolesRelations[index];
       const { fromId: userId, toId: roleId } = element;
@@ -44,7 +51,10 @@ export const up = async (next) => {
       const role = await storeLoadById(context, context.user, roleId, ENTITY_TYPE_ROLE);
       if (user && role) {
         // ignore because some stuff has been deleted from elastic
-        const groupRelationInput = { relationship_type: RELATION_MEMBER_OF, toId: roleGroupAssociations[roleId] };
+        const groupRelationInput = {
+          relationship_type: RELATION_MEMBER_OF,
+          toId: roleGroupAssociations[roleId],
+        };
         await userAddRelation(context, context.user, userId, groupRelationInput);
       }
       // Delete the old relation

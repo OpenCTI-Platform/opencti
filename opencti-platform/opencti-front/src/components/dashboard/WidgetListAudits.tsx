@@ -46,16 +46,15 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
       <List style={{ marginTop: -10 }}>
         {data.map((auditEdge) => {
           const audit = auditEdge.node;
-          const color = audit.event_status === 'error'
-            ? theme.palette.error.main
-            : undefined;
+          const color = audit.event_status === 'error' ? theme.palette.error.main : undefined;
           const message = useGenerateAuditMessage(audit);
           const link = audit.context_data?.entity_type
             ? `${resolveLink(
-              audit.context_data?.entity_type === 'Workspace' && audit.context_data?.workspace_type
-                ? audit.context_data.workspace_type
-                : audit.context_data.entity_type,
-            )}/${audit.context_data?.entity_id}`
+                audit.context_data?.entity_type === 'Workspace' &&
+                  audit.context_data?.workspace_type
+                  ? audit.context_data.workspace_type
+                  : audit.context_data.entity_type,
+              )}/${audit.context_data?.entity_id}`
             : undefined;
           return (
             <ListItemButton
@@ -75,41 +74,23 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
               <ListItemIcon>
                 <ItemIcon
                   color={color}
-                  type={
-                    audit.context_data?.entity_type
-                    ?? audit.event_type
-                  }
+                  type={audit.context_data?.entity_type ?? audit.event_type}
                 />
               </ListItemIcon>
               <ListItemText
-                primary={(
+                primary={
                   <>
-                    <div
-                      style={{ ...bodyItemStyle, width: '15%' }}
-                    >
-                      <span style={{ color }}>
-                        {fldt(audit.timestamp)}
-                      </span>
+                    <div style={{ ...bodyItemStyle, width: '15%' }}>
+                      <span style={{ color }}>{fldt(audit.timestamp)}</span>
                     </div>
-                    <div
-                      style={{ ...bodyItemStyle, width: '18%' }}
-                    >
+                    <div style={{ ...bodyItemStyle, width: '18%' }}>
                       {audit.user?.name ?? EMPTY_VALUE}
                     </div>
-                    <div
-                      style={{ ...bodyItemStyle, width: '15%' }}
-                    >
-                      {audit.event_scope}
+                    <div style={{ ...bodyItemStyle, width: '15%' }}>{audit.event_scope}</div>
+                    <div style={{ ...bodyItemStyle, width: '22%' }}>
+                      {audit.context_data?.entity_name ?? audit.event_type}
                     </div>
-                    <div
-                      style={{ ...bodyItemStyle, width: '22%' }}
-                    >
-                      {audit.context_data?.entity_name
-                        ?? audit.event_type}
-                    </div>
-                    <div
-                      style={{ ...bodyItemStyle, width: '30%' }}
-                    >
+                    <div style={{ ...bodyItemStyle, width: '30%' }}>
                       <span style={{ color }}>
                         <MarkdownDisplay
                           content={message}
@@ -119,7 +100,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                       </span>
                     </div>
                   </>
-                )}
+                }
               />
             </ListItemButton>
           );

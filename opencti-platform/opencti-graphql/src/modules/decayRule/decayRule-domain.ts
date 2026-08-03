@@ -1,9 +1,24 @@
 import moment, { type Moment } from 'moment/moment';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
+import {
+  countAllThings,
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
+import type {
+  DecayRuleAddInput,
+  EditInput,
+  Label,
+  MarkingDefinition,
+  QueryDecayRulesArgs,
+} from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
+import {
+  type BasicStoreEntityDecayRule,
+  ENTITY_TYPE_DECAY_RULE,
+  type StoreEntityDecayRule,
+} from './decayRule-types';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -13,7 +28,12 @@ import { FunctionalError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
-import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../schema/general';
+import {
+  ABSTRACT_INTERNAL_OBJECT,
+  INPUT_CREATED_BY,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+} from '../../schema/general';
 import { notify } from '../../database/redis';
 import {
   ENTITY_DOMAIN_NAME,
@@ -84,11 +104,25 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
 };
 
-export const findDecayRulePaginated = (context: AuthContext, user: AuthUser, args: QueryDecayRulesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
+export const findDecayRulePaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryDecayRulesArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityDecayRule>(
+    context,
+    user,
+    [ENTITY_TYPE_DECAY_RULE],
+    args,
+  );
 };
 
-export const addDecayRule = async (context: AuthContext, user: AuthUser, input: DecayRuleAddInput, builtIn?: boolean) => {
+export const addDecayRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: DecayRuleAddInput,
+  builtIn?: boolean,
+) => {
   const defaultOps = {
     created_at: now(),
     updated_at: now(),
@@ -108,14 +142,24 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   }
 
   const decayRuleInput = { ...input, ...defaultOps };
-  const created = await createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
+  const created = await createInternalObject<StoreEntityDecayRule>(
+    context,
+    user,
+    decayRuleInput,
+    ENTITY_TYPE_DECAY_RULE,
+  );
   if (!builtIn) {
     await addDecayRuleCreationCount();
   }
   return created;
 };
 
-export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
+export const fieldPatchDecayRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  input: EditInput[],
+) => {
   const finalInput = [...input];
   const decayRule = await findById(context, user, id);
   if (!decayRule) {
@@ -137,7 +181,13 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     }
   }
 
-  const { element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput);
+  const { element } = await updateAttribute<StoreEntityDecayRule>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_DECAY_RULE,
+    finalInput,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -157,7 +207,12 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   if (decayRule.built_in) {
     throw FunctionalError(`Cannot delete built-in decay rule ${id}`);
   }
-  const deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
+  const deleted = await deleteElementById<StoreEntityDecayRule>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_DECAY_RULE,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -170,7 +225,11 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   return id;
 };
 
-export const countAppliedIndicators = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+export const countAppliedIndicators = async (
+  context: AuthContext,
+  user: AuthUser,
+  decayRule: BasicStoreEntityDecayRule,
+) => {
   return countAllThings(context, user, {
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: {
@@ -202,12 +261,20 @@ export const computeScoreList = (maxScore: number): number[] => {
  * @param score the score value requested to calculate time
  * @param model decay configuration to use.
  */
-export const computeTimeFromExpectedScore = (initialScore: number, score: number, model: DecayModel) => {
-  if (initialScore === 0) { // Can't divide by 0 when the initial score is 0
+export const computeTimeFromExpectedScore = (
+  initialScore: number,
+  score: number,
+  model: DecayModel,
+) => {
+  if (initialScore === 0) {
+    // Can't divide by 0 when the initial score is 0
     return 0;
   }
   if (model.decay_pound && model.decay_lifetime) {
-    return (Math.E ** (Math.log(1 - (score / initialScore)) * (DECAY_FACTOR * model.decay_pound))) * model.decay_lifetime;
+    return (
+      Math.E ** (Math.log(1 - score / initialScore) * (DECAY_FACTOR * model.decay_pound)) *
+      model.decay_lifetime
+    );
   }
   return 0;
 };
@@ -218,13 +285,24 @@ export const computeTimeFromExpectedScore = (initialScore: number, score: number
  * @param computeChartInput all data required to compute the decay curve
  * @param userId
  */
-export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartInput): DecayHistoryChart[] => {
+export const computeChartDecayAlgoSerie = (
+  computeChartInput: ComputeDecayChartInput,
+): DecayHistoryChart[] => {
   if (computeChartInput) {
     const decayData: DecayHistoryChart[] = [];
     const startDateInMs = moment(computeChartInput.decayBaseScoreDate).valueOf();
     computeChartInput.scoreList.forEach((scoreValue) => {
-      const timeForScore = dayToMs(computeTimeFromExpectedScore(computeChartInput.decayBaseScore, scoreValue, computeChartInput.decayRule));
-      const point: DecayHistoryChart = { updated_at: moment(startDateInMs + timeForScore).toDate(), score: scoreValue };
+      const timeForScore = dayToMs(
+        computeTimeFromExpectedScore(
+          computeChartInput.decayBaseScore,
+          scoreValue,
+          computeChartInput.decayRule,
+        ),
+      );
+      const point: DecayHistoryChart = {
+        updated_at: moment(startDateInMs + timeForScore).toDate(),
+        score: scoreValue,
+      };
       decayData.push(point);
     });
 
@@ -234,11 +312,20 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
 
       let i = 0;
       const scoreInThePast: DecayHistoryChart[] = [];
-      while ((orderedDecayHistoryAsc[i].updated_at < computeChartInput.decayBaseScoreDate) && i < orderedDecayHistoryAsc.length) {
+      while (
+        orderedDecayHistoryAsc[i].updated_at < computeChartInput.decayBaseScoreDate &&
+        i < orderedDecayHistoryAsc.length
+      ) {
         const historyPointToProcess = orderedDecayHistoryAsc[i];
-        scoreInThePast.push({ updated_at: historyPointToProcess.updated_at, score: historyPointToProcess.score });
+        scoreInThePast.push({
+          updated_at: historyPointToProcess.updated_at,
+          score: historyPointToProcess.score,
+        });
         if (i + 1 < orderedDecayHistoryAsc.length) {
-          scoreInThePast.push({ updated_at: orderedDecayHistoryAsc[i + 1].updated_at, score: historyPointToProcess.score });
+          scoreInThePast.push({
+            updated_at: orderedDecayHistoryAsc[i + 1].updated_at,
+            score: historyPointToProcess.score,
+          });
         }
         i += 1;
       }
@@ -249,7 +336,11 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
   return [];
 };
 
-export const getDecaySettingsChartData = async (context: AuthContext, user: AuthUser, decayRule: BasicStoreEntityDecayRule) => {
+export const getDecaySettingsChartData = async (
+  context: AuthContext,
+  user: AuthUser,
+  decayRule: BasicStoreEntityDecayRule,
+) => {
   const scoreListForChart = computeScoreList(100);
   const chartCurveData: ComputeDecayChartInput = {
     decayBaseScore: 100,
@@ -367,7 +458,12 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
       filterGroups: [],
     },
   };
-  const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
+  const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(
+    context,
+    user,
+    [ENTITY_TYPE_DECAY_RULE],
+    args,
+  );
   if (currentBuiltInDecayRules.length === 0) {
     // no built-in decay rule, we should create the default ones
     const defaultDecayRules = [...BUILT_IN_DECAY_RULES];
@@ -383,17 +479,27 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
 export type ResolvedDecayRule = Record<string, any>;
 
 const getActiveDecayRules = async (context: AuthContext) => {
-  const decayRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
+  const decayRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_DECAY_RULE,
+  );
   return decayRuleList.filter((rule) => rule.active);
 };
 
-export const checkDecayRules = async (context: AuthContext, user: AuthUser, resolvedIndicator: ResolvedDecayRule) => {
+export const checkDecayRules = async (
+  context: AuthContext,
+  user: AuthUser,
+  resolvedIndicator: ResolvedDecayRule,
+) => {
   const enabledRules = await getActiveDecayRules(context);
 
   const formattedIndicator = {
     ...resolvedIndicator,
     type: convertTypeToStixType(resolvedIndicator.entity_type),
-    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
+    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map(
+      (marking: MarkingDefinition) => marking.standard_id,
+    ),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
     extensions: {
@@ -426,24 +532,42 @@ export const checkDecayRules = async (context: AuthContext, user: AuthUser, reso
  * @param daysFromStart elapsed time in days since the start point.
  * @param rule decay configuration to use.
  */
-export const computeScoreFromExpectedTime = (initialScore: number, daysFromStart: number, rule: DecayModel) => {
+export const computeScoreFromExpectedTime = (
+  initialScore: number,
+  daysFromStart: number,
+  rule: DecayModel,
+) => {
   if (!rule) {
     return initialScore;
   }
   if (daysFromStart > rule.decay_lifetime) return 0;
   if (daysFromStart <= 0) return initialScore;
-  return initialScore * (1 - ((daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound))));
+  return (
+    initialScore *
+    (1 - (daysFromStart / rule.decay_lifetime) ** (1 / (DECAY_FACTOR * rule.decay_pound)))
+  );
 };
 
-export const computeDecayPointReactionDate = (initialScore: number, model: DecayModel, startDate: Moment, decayPoint: number) => {
+export const computeDecayPointReactionDate = (
+  initialScore: number,
+  model: DecayModel,
+  startDate: Moment,
+  decayPoint: number,
+) => {
   const daysDelay = computeTimeFromExpectedScore(initialScore, decayPoint, model);
   const duration = moment.duration(daysDelay, 'days');
   return moment(startDate).add(duration.asMilliseconds(), 'ms').toDate();
 };
 
-export const computeNextScoreReactionDate = (initialScore: number, stableScore: number, model: DecayModel, startDate: Moment) => {
+export const computeNextScoreReactionDate = (
+  initialScore: number,
+  stableScore: number,
+  model: DecayModel,
+  startDate: Moment,
+) => {
   if (model.decay_points && model.decay_points.length > 0) {
-    const nextKeyPoint = model.decay_points.find((p) => p < stableScore) || model.decay_revoke_score;
+    const nextKeyPoint =
+      model.decay_points.find((p) => p < stableScore) || model.decay_revoke_score;
     return computeDecayPointReactionDate(initialScore, model, startDate, nextKeyPoint);
   }
   return null;

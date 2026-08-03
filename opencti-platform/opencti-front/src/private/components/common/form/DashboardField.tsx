@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
+import AutocompleteField, {
+  AutocompleteFieldProps,
+} from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -33,7 +35,9 @@ interface DashboardFieldProps {
 
 const workspaceQuery = graphql`
   query DashboardFieldQuery {
-    workspaces(filters: { mode: and, filters: [{ key: "type", values: ["Dashboard"] }], filterGroups: [] }) {
+    workspaces(
+      filters: { mode: and, filters: [{ key: "type", values: ["Dashboard"] }], filterGroups: [] }
+    ) {
       edges {
         node {
           id
@@ -51,10 +55,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { workspaces } = usePreloadedQuery<DashboardFieldQuery>(
-    workspaceQuery,
-    queryRef,
-  );
+  const { workspaces } = usePreloadedQuery<DashboardFieldQuery>(workspaceQuery, queryRef);
   return (
     <Field<AutocompleteFieldProps<false>>
       component={AutocompleteField}
@@ -66,9 +67,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
         variant: 'standard',
         label: t_i18n('Default dashboard'),
         fullWidth: true,
-        helperText: (
-          <SubscriptionFocus context={context} fieldName="default_dashboard" />
-        ),
+        helperText: <SubscriptionFocus context={context} fieldName="default_dashboard" />,
       }}
       options={(workspaces?.edges ?? []).map(({ node: { id, name } }) => ({
         value: id,
@@ -88,9 +87,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
   );
 };
 
-const DashboardField: FunctionComponent<
-  Omit<DashboardFieldProps, 'queryRef'>
-> = (props) => {
+const DashboardField: FunctionComponent<Omit<DashboardFieldProps, 'queryRef'>> = (props) => {
   const queryRef = useQueryLoading<DashboardFieldQuery>(workspaceQuery);
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

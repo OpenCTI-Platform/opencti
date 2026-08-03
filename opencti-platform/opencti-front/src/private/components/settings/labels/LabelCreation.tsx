@@ -12,10 +12,17 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import { useFormatter } from '../../../../components/i18n';
 import { PaginationOptions } from '../../../../components/list_lines';
 import SimpleTextField from '../../../../components/SimpleTextField';
-import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  defaultCommitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
-import { LabelAddInput, LabelCreationContextualMutation$data } from './__generated__/LabelCreationContextualMutation.graphql';
+import {
+  LabelAddInput,
+  LabelCreationContextualMutation$data,
+} from './__generated__/LabelCreationContextualMutation.graphql';
 
 const labelMutation = graphql`
   mutation LabelCreationMutation($input: LabelAddInput!) {
@@ -34,22 +41,15 @@ const labelContextualMutation = graphql`
   }
 `;
 
-const CreateLabelsControlledDial = (
-  props: DrawerControlledDialProps,
-) => (
-  <CreateEntityControlledDial
-    entityType="Label"
-    {...props}
-  />
+const CreateLabelsControlledDial = (props: DrawerControlledDialProps) => (
+  <CreateEntityControlledDial entityType="Label" {...props} />
 );
 
 interface LabelCreationProps {
   contextual: boolean;
   inputValueContextual: string;
   required: boolean;
-  creationCallback: (
-    data: LabelCreationContextualMutation$data,
-  ) => void;
+  creationCallback: (data: LabelCreationContextualMutation$data) => void;
   handleClose: () => void;
   open: boolean;
   paginationOptions?: PaginationOptions;
@@ -77,7 +77,10 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
   };
   const onSubmit = (
     values: typeof initialValues,
-    { setSubmitting, resetForm }: {
+    {
+      setSubmitting,
+      resetForm,
+    }: {
       setSubmitting: (flag: boolean) => void;
       resetForm: () => void;
     },
@@ -87,17 +90,10 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     };
     commitMutation({
       ...defaultCommitMutation,
-      mutation: contextual
-        ? labelContextualMutation
-        : labelMutation,
+      mutation: contextual ? labelContextualMutation : labelMutation,
       variables: { input: finalValues },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_labels',
-          paginationOptions,
-          'labelAdd',
-        );
+        insertNode(store, 'Pagination_labels', paginationOptions, 'labelAdd');
       },
       setSubmitting,
       onCompleted: () => {
@@ -107,7 +103,10 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
     });
   };
 
-  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmitContextual: FormikConfig<LabelAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const finalValues = {
       ...values,
     };
@@ -126,9 +125,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (
-        response: LabelCreationContextualMutation$data,
-      ) => {
+      onCompleted: (response: LabelCreationContextualMutation$data) => {
         setSubmitting(false);
         resetForm();
         creationCallback(response);
@@ -141,10 +138,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
 
   const renderClassic = () => {
     return (
-      <Drawer
-        title={t_i18n('Create a label')}
-        controlledDial={CreateLabelsControlledDial}
-      >
+      <Drawer title={t_i18n('Create a label')} controlledDial={CreateLabelsControlledDial}>
         {({ onClose }) => (
           <Formik
             initialValues={initialValues}
@@ -169,17 +163,10 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
                   style={{ marginTop: 20 }}
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>
@@ -204,11 +191,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
-              <Dialog
-                open={open}
-                onClose={handleClose}
-                title={t_i18n('Create a label')}
-              >
+              <Dialog open={open} onClose={handleClose} title={t_i18n('Create a label')}>
                 <Field
                   component={SimpleTextField}
                   variant="standard"
@@ -227,10 +210,7 @@ const LabelCreation: FunctionComponent<LabelCreationProps> = ({
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </DialogActions>

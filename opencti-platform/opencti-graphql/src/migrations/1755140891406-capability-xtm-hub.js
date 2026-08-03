@@ -18,7 +18,9 @@ export const up = async (next) => {
     },
   });
   if (isNotEmptyField(capability)) {
-    await updateCapability(context, SYSTEM_USER, capability.id, [{ key: 'attribute_order', value: [3450] }]);
+    await updateCapability(context, SYSTEM_USER, capability.id, [
+      { key: 'attribute_order', value: [3450] },
+    ]);
   } else {
     await addCapability(context, SYSTEM_USER, {
       name: 'SETTINGS_SETMANAGEXTMHUB',

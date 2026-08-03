@@ -82,7 +82,12 @@ export const callAgent = async (agentSlug: string, content: string): Promise<Age
     body: JSON.stringify({ agent_slug: agentSlug, content }),
   });
   if (!response.ok) {
-    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
+    return {
+      content: '',
+      status: 'error',
+      error: await readAgentErrorBody(response),
+      code: response.status,
+    };
   }
   const data = await response.json();
   return {
@@ -116,7 +121,12 @@ export const callAgentStream = async (
   });
 
   if (!response.ok) {
-    return { content: '', status: 'error', error: await readAgentErrorBody(response), code: response.status };
+    return {
+      content: '',
+      status: 'error',
+      error: await readAgentErrorBody(response),
+      code: response.status,
+    };
   }
 
   const reader = response.body?.getReader();

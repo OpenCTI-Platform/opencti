@@ -54,12 +54,11 @@ const CustomViewForm = ({
 
   const validation = Yup.object().shape(validators);
 
-  const handleFieldSubmit = (
-    setSubmitting: (v: boolean) => void,
-  ) => (name: keyof typeof validators, value: unknown) => {
-    setSubmitting(true);
-    onSubmitField(name, validators[name].cast(value), { setSubmitting });
-  };
+  const handleFieldSubmit =
+    (setSubmitting: (v: boolean) => void) => (name: keyof typeof validators, value: unknown) => {
+      setSubmitting(true);
+      onSubmitField(name, validators[name].cast(value), { setSubmitting });
+    };
 
   const initialValues = values ?? DEFAULT_VALUES;
   return (
@@ -117,10 +116,7 @@ const CustomViewForm = ({
                   >
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>

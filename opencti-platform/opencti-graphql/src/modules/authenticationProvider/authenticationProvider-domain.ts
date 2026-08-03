@@ -13,7 +13,11 @@ import {
   type SecretInfo,
   SecretSource,
 } from '../../generated/graphql';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import {
   type BasicStoreEntityAuthenticationProvider,
   ENTITY_TYPE_AUTHENTICATION_PROVIDER,
@@ -35,7 +39,11 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-import { enrichWithRemoteCredentials, getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
+import {
+  enrichWithRemoteCredentials,
+  getRemoteCredentialsProviderFields,
+  getRemoteCredentialsProviderSelector,
+} from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -151,14 +159,17 @@ const graphQLToStoreConfiguration = async (
 ) => {
   const secretsFields = secretFieldsByType[type];
   // duplicate input -> remove cleartext values and normalize null/undefined value to undefined
-  const output = Object.fromEntries(Object.entries(input)
-    .map(([key, value]) => [key, value ?? undefined]));
+  const output = Object.fromEntries(
+    Object.entries(input).map(([key, value]) => [key, value ?? undefined]),
+  );
   output.type = type;
   for await (const fieldName of secretsFields) {
     delete output[fieldName]; // remove cleartext field if provided, it should not be stored
     const encryptedFieldName = `${fieldName}_encrypted`;
     const refFieldName = `${fieldName}_ref`;
-    const overrideInput = input[fieldName] as { new_value_cleartext?: string | null; external_secret_name?: string | null } | undefined;
+    const overrideInput = input[fieldName] as
+      | { new_value_cleartext?: string | null; external_secret_name?: string | null }
+      | undefined;
     if (overrideInput) {
       const newValue = overrideInput.new_value_cleartext;
       const secretName = overrideInput.external_secret_name;
@@ -214,16 +225,38 @@ export const checkAuthenticationByEnvVariables = () => {
   }
 };
 
-export const findAuthenticationProviderById
-  = async <T extends OidcConfiguration | SamlConfiguration | LdapConfiguration | unknown = unknown>(context: AuthContext, user: AuthUser, id: string) => {
-    return storeLoadById<BasicStoreEntityAuthenticationProvider<T>>(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER);
-  };
-
-export const findAuthenticationProviderByIdPaginated = async (context: AuthContext, user: AuthUser, args: any) => {
-  return pageEntitiesConnection<BasicStoreEntityAuthenticationProvider>(context, user, [ENTITY_TYPE_AUTHENTICATION_PROVIDER], args);
+export const findAuthenticationProviderById = async <
+  T extends OidcConfiguration | SamlConfiguration | LdapConfiguration | unknown = unknown,
+>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+) => {
+  return storeLoadById<BasicStoreEntityAuthenticationProvider<T>>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_AUTHENTICATION_PROVIDER,
+  );
 };
 
-export const findAllAuthenticationProvider = async (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityAuthenticationProvider[]> => {
+export const findAuthenticationProviderByIdPaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: any,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityAuthenticationProvider>(
+    context,
+    user,
+    [ENTITY_TYPE_AUTHENTICATION_PROVIDER],
+    args,
+  );
+};
+
+export const findAllAuthenticationProvider = async (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<BasicStoreEntityAuthenticationProvider[]> => {
   return fullEntitiesList(context, user, [ENTITY_TYPE_AUTHENTICATION_PROVIDER]);
 };
 
@@ -242,7 +275,10 @@ const slugifyName = (name: string): string => {
 /**
  * Resolve the identifier that a provider would have from its configuration: use the override if provided, or slugify the name otherwise.
  */
-export const resolveProviderIdentifier = (conf: { name: string; identifier_override?: string | null }): string => {
+export const resolveProviderIdentifier = (conf: {
+  name: string;
+  identifier_override?: string | null;
+}): string => {
   return conf.identifier_override ?? slugifyName(conf.name);
 };
 
@@ -274,7 +310,10 @@ const ensureUniqueIdentifier = async (
 export const addAuthenticationProvider = async (
   context: AuthContext,
   user: AuthUser,
-  { base, configuration }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
+  {
+    base,
+    configuration,
+  }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
   type: AuthenticationProviderType,
 ) => {
   checkAuthenticationByEnvVariables();
@@ -283,7 +322,11 @@ export const addAuthenticationProvider = async (
   await ensureUniqueIdentifier(context, user, base);
 
   // Create the store object
-  const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration) };
+  const input = {
+    ...base,
+    type,
+    configuration: await graphQLToStoreConfiguration(type, configuration),
+  };
 
   const created: BasicStoreEntityAuthenticationProvider = await createEntity(
     context,
@@ -318,7 +361,10 @@ export const editAuthenticationProvider = async (
   context: AuthContext,
   user: AuthUser,
   id: string,
-  { base, configuration }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
+  {
+    base,
+    configuration,
+  }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
   type: AuthenticationProviderType,
 ) => {
   checkAuthenticationByEnvVariables();
@@ -338,11 +384,23 @@ export const editAuthenticationProvider = async (
   await ensureUniqueIdentifier(context, user, base, id);
 
   // Create the store object
-  const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration, existing) };
+  const input = {
+    ...base,
+    type,
+    configuration: await graphQLToStoreConfiguration(type, configuration, existing),
+  };
 
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER, input);
+  const { element } = await patchAttribute(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_AUTHENTICATION_PROVIDER,
+    input,
+  );
 
-  const identifier = resolveProviderIdentifier(element as unknown as BasicStoreEntityAuthenticationProvider);
+  const identifier = resolveProviderIdentifier(
+    element as unknown as BasicStoreEntityAuthenticationProvider,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -354,7 +412,12 @@ export const editAuthenticationProvider = async (
   return notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, element, user);
 };
 
-export const deleteAuthenticationProvider = async (context: AuthContext, user: AuthUser, id: string, type: AuthenticationProviderType) => {
+export const deleteAuthenticationProvider = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  type: AuthenticationProviderType,
+) => {
   checkAuthenticationByEnvVariables();
   const provider = await findAuthenticationProviderById(context, user, id);
   if (!provider) {
@@ -374,7 +437,12 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
   }
 
   await redisDeleteAuthLogHistory(provider.internal_id);
-  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER) as unknown as BasicStoreEntityAuthenticationProvider;
+  const deleted = (await deleteElementById(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_AUTHENTICATION_PROVIDER,
+  )) as unknown as BasicStoreEntityAuthenticationProvider;
   const deletedIdentifier = resolveProviderIdentifier(deleted);
   await publishUserAction({
     user,

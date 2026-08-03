@@ -25,7 +25,8 @@ const defaultContext: CreateRelationshipContextType = {
   setState: () => {},
 };
 
-export const CreateRelationshipContext = createContext<CreateRelationshipContextType>(defaultContext);
+export const CreateRelationshipContext =
+  createContext<CreateRelationshipContextType>(defaultContext);
 
 const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }) => {
   const [relationshipTypes, setRelationshipTypes] = useState<string[]>([]);
@@ -61,13 +62,17 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
     if (updatedConnectionKey) setConnectionKey(updatedConnectionKey);
     if (updatedReversed !== undefined) setReversed(updatedReversed);
     setHandleReverseRelation(() => updatedHandleReverseRelation);
-    if (paginationOptions !== updatedPaginationOptions) setPaginationOptions(updatedPaginationOptions);
+    if (paginationOptions !== updatedPaginationOptions)
+      setPaginationOptions(updatedPaginationOptions);
     if (onCreate !== updatedOnCreate) setOnCreate(() => updatedOnCreate); // Dispatching inner function to let context consumer call the onCreate function
   };
-  const values = useMemo<CreateRelationshipContextType>(() => ({
-    state,
-    setState,
-  }), [...Object.values(state)]);
+  const values = useMemo<CreateRelationshipContextType>(
+    () => ({
+      state,
+      setState,
+    }),
+    [...Object.values(state)],
+  );
   return (
     <CreateRelationshipContext.Provider value={values}>
       {children}
@@ -77,13 +82,15 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
 
 export default CreateRelationshipContextProvider;
 
-export const useInitCreateRelationshipContext = (state: CreateRelationshipContextStateType = {
-  stixCoreObjectTypes: ['Stix-Core-Object'],
-  relationshipTypes: [],
-  onCreate: undefined,
-  paginationOptions: undefined,
-  reversed: false,
-}) => {
+export const useInitCreateRelationshipContext = (
+  state: CreateRelationshipContextStateType = {
+    stixCoreObjectTypes: ['Stix-Core-Object'],
+    relationshipTypes: [],
+    onCreate: undefined,
+    paginationOptions: undefined,
+    reversed: false,
+  },
+) => {
   const { setState } = useContext(CreateRelationshipContext);
   useEffect(() => {
     setState(state);

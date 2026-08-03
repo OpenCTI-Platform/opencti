@@ -41,11 +41,9 @@ interface PirCreationProps {
 const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   const { t_i18n } = useFormatter();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [createMutation] = useApiMutation<PirCreationMutation>(
-    pirCreateMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully created')}` },
-  );
+  const [createMutation] = useApiMutation<PirCreationMutation>(pirCreateMutation, undefined, {
+    successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully created')}`,
+  });
 
   const handleOpenDialog = () => setDialogOpen(true);
   const handleCloseDialog = () => setDialogOpen(false);
@@ -60,21 +58,14 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
       onError: () => {
         setDialogOpen(false);
       },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(
-        store,
-        'Pagination_pirs',
-        paginationOptions,
-        'pirAdd',
-      ),
+      updater: (store: RecordSourceSelectorProxy) =>
+        insertNode(store, 'Pagination_pirs', paginationOptions, 'pirAdd'),
     });
   };
 
   return (
     <>
-      <CreateEntityControlledDial
-        entityType="Pir"
-        onOpen={handleOpenDialog}
-      />
+      <CreateEntityControlledDial entityType="Pir" onOpen={handleOpenDialog} />
 
       <Dialog
         open={dialogOpen}
@@ -82,10 +73,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
         size="large"
         title={t_i18n('Create priority intelligence requirement')}
       >
-        <PirCreationForm
-          onCancel={handleCloseDialog}
-          onSubmit={submit}
-        />
+        <PirCreationForm onCancel={handleCloseDialog} onSubmit={submit} />
       </Dialog>
     </>
   );

@@ -23,7 +23,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
 import NarrativeDeletion from './NarrativeDeletion';
 import { PATH_NARRATIVE, PATH_NARRATIVES } from '@components/common/routes/paths';
@@ -82,20 +85,20 @@ type RootNarrativeProps = {
   queryRef: PreloadedQuery<RootNarrativeQuery>;
 };
 const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootNarrativeSubscription>>(() => ({
-    subscription,
-    variables: { id: narrativeId },
-  }), [narrativeId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootNarrativeSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: narrativeId },
+    }),
+    [narrativeId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootNarrativeSubscription>(subConfig);
 
-  const {
-    narrative,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootNarrativeQuery>(narrativeQuery, queryRef);
+  const { narrative, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootNarrativeQuery>(narrativeQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -109,7 +112,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -123,32 +126,31 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   ]}
                   data={narrative}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Techniques') },
-              { label: t_i18n('Narratives'), link: PATH_NARRATIVES },
-              { label: narrative.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Techniques') },
+                { label: t_i18n('Narratives'), link: PATH_NARRATIVES },
+                { label: narrative.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Narrative"
               stixDomainObject={narrative}
               enableEnrollPlaybook={true}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={narrative}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={narrative} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <NarrativeDeletion id={narrative.id} isOpen={isOpen} handleClose={onClose} />
@@ -159,20 +161,18 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               entity={narrative}
               basePath={basePath}
               pages={{
-                overview:
-                  <Narrative narrativeData={narrative} />,
+                overview: <Narrative narrativeData={narrative} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <NarrativeKnowledge narrativeData={narrative} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={narrative}
+                content: <StixCoreObjectContentRoot stixCoreObject={narrative} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={narrative}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />,
                 files: (
                   <FileManager
                     id={narrativeId}
@@ -181,8 +181,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                     entity={narrative}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={narrativeId} />,
               }}
             />
           </div>

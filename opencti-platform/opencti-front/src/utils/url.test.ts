@@ -106,7 +106,9 @@ describe('toSafeHttpUrl', () => {
     });
 
     it('should trim newlines and tabs around a valid URL', () => {
-      expect(toSafeHttpUrl('\n\thttps://xtm-one.example.com\t\n')).toBe('https://xtm-one.example.com');
+      expect(toSafeHttpUrl('\n\thttps://xtm-one.example.com\t\n')).toBe(
+        'https://xtm-one.example.com',
+      );
     });
 
     it('should return null for a whitespace-only value', () => {

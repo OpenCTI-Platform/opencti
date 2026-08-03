@@ -9,16 +9,15 @@ interface WidgetSavedFiltersIconProps {
   disabled?: boolean;
 }
 
-const WidgetSavedFiltersIcon = ({
-  onClick,
-  disabled = false,
-}: WidgetSavedFiltersIconProps) => {
+const WidgetSavedFiltersIcon = ({ onClick, disabled = false }: WidgetSavedFiltersIconProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Tooltip
-      title={disabled
-        ? t_i18n('No saved filters compatible with this perspective')
-        : t_i18n('Use a saved filter')}
+      title={
+        disabled
+          ? t_i18n('No saved filters compatible with this perspective')
+          : t_i18n('Use a saved filter')
+      }
     >
       <span>
         <Button

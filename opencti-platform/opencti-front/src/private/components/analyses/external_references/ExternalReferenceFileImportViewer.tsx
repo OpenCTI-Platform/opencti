@@ -82,19 +82,18 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
   ExternalReferenceFileImportViewerBaseProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const { t_i18n } = useFormatter();
-  const [fileToImport, setFileToImport] = useState<
-    FileLine_file$data | null | undefined
-  >(null);
+  const [fileToImport, setFileToImport] = useState<FileLine_file$data | null | undefined>(null);
 
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null);
   const { id, importFiles } = externalReference;
   const importConnsPerFormat = scopesConn(connectorsImport);
   const handleOpenImport = (file: FileLine_file$data | null | undefined) => setFileToImport(file);
   const handleCloseImport = () => setFileToImport(null);
-  const onSubmitImport: FormikConfig<{ connector_id: string; configuration: string; objectMarking: FieldOption[] }>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
+  const onSubmitImport: FormikConfig<{
+    connector_id: string;
+    configuration: string;
+    objectMarking: FieldOption[];
+  }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const variables: FileManagerAskJobImportMutation$variables = {
       fileName: fileToImport?.id ?? '',
       connectorId: values.connector_id,
@@ -144,8 +143,8 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
     setSelectedConnector(connectors?.find((c) => c.id === value) ?? null);
   };
 
-  const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-    && selectedConnector?.configurations?.length === 0;
+  const invalidCsvMapper =
+    selectedConnector?.name === 'ImportCsv' && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (option: string | CsvMapperFieldOption) => {
     if (selectedConnector?.name === 'ImportCsv') {
@@ -155,7 +154,8 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
         ...parsedOption,
         representations: [...parsedRepresentations],
       };
-      const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
+      const hasUserChoiceCsvMapperRepresentations =
+        resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper);
       setHasUserChoiceCsvMapper(hasUserChoiceCsvMapperRepresentations);
     }
   };
@@ -164,7 +164,7 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
       <div style={{ height: '100%' }} className="break">
         <Card
           title={t_i18n('Uploaded files')}
-          action={(
+          action={
             <Security needs={[KNOWLEDGE_KNUPLOAD]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
               <UploadImport
                 size="small"
@@ -177,33 +177,38 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                 }}
               />
             </Security>
-          )}
+          }
         >
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map(
                 (
-                  file: {
-                    node: {
-                      id: string;
-                      metaData: {
-                        mimetype: string | null | undefined;
-                      } | null | undefined;
-                      ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
-                    };
-                  } | null | undefined,
-                ) => file?.node && (
-                  <FileLine
-                    key={file.node.id}
-                    dense={true}
-                    disableImport={disableImport}
-                    file={file.node}
-                    connectors={
-                      importConnsPerFormat[file.node.metaData?.mimetype ?? 0]
-                    }
-                    handleOpenImport={handleOpenImport}
-                  />
-                ),
+                  file:
+                    | {
+                        node: {
+                          id: string;
+                          metaData:
+                            | {
+                                mimetype: string | null | undefined;
+                              }
+                            | null
+                            | undefined;
+                          ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
+                        };
+                      }
+                    | null
+                    | undefined,
+                ) =>
+                  file?.node && (
+                    <FileLine
+                      key={file.node.id}
+                      dense={true}
+                      disableImport={disableImport}
+                      file={file.node}
+                      connectors={importConnsPerFormat[file.node.metaData?.mimetype ?? 0]}
+                      handleOpenImport={handleOpenImport}
+                    />
+                  ),
               )}
             </List>
           ) : (
@@ -224,8 +229,15 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
       <div>
         <Formik
           enableReinitialize={true}
-          initialValues={{ connector_id: '', configuration: '', objectMarking: [] as FieldOption[] }}
-          validationSchema={importValidation(t_i18n, (selectedConnector?.configurations?.length ?? 0) > 0)}
+          initialValues={{
+            connector_id: '',
+            configuration: '',
+            objectMarking: [] as FieldOption[],
+          }}
+          validationSchema={importValidation(
+            t_i18n,
+            (selectedConnector?.configurations?.length ?? 0) > 0,
+          )}
           onSubmit={onSubmitImport}
           onReset={handleCloseImport}
         >
@@ -245,12 +257,10 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                   onChange={handleSelectConnector}
                 >
                   {connectorsImport.map((connector, i: number) => {
-                    const disabled = !fileToImport
-                      || (connector.connector_scope.length > 0
-                        && !includes(
-                          fileToImport.metaData?.mimetype,
-                          connector.connector_scope,
-                        ));
+                    const disabled =
+                      !fileToImport ||
+                      (connector.connector_scope.length > 0 &&
+                        !includes(fileToImport.metaData?.mimetype, connector.connector_scope));
                     return (
                       <MenuItem
                         key={i}
@@ -262,42 +272,38 @@ const ExternalReferenceFileImportViewerBase: FunctionComponent<
                     );
                   })}
                 </Field>
-                {(selectedConnector?.configurations?.length ?? 0) > 0
-                  ? (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t_i18n('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_: string, value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
-                      >
-                        {selectedConnector?.configurations.map((config) => {
-                          return (
-                            <MenuItem
-                              key={config.id}
-                              value={config.configuration}
-                            >
-                              {config.name}
-                            </MenuItem>
-                          );
-                        })}
-                      </Field>
-                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
-                }
-                {selectedConnector?.name === 'ImportCsv'
-                  && hasUserChoiceCsvMapper
-                  && (
-                    <>
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                    </>
-                  )
-                }
+                {(selectedConnector?.configurations?.length ?? 0) > 0 ? (
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="configuration"
+                    label={t_i18n('Configuration')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    onChange={(_: string, value: CsvMapperFieldOption) =>
+                      onCsvMapperSelection(value)
+                    }
+                  >
+                    {selectedConnector?.configurations.map((config) => {
+                      return (
+                        <MenuItem key={config.id} value={config.configuration}>
+                          {config.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Field>
+                ) : (
+                  <ManageImportConnectorMessage name={selectedConnector?.name} />
+                )}
+                {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
+                  <>
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={fieldSpacingContainerStyle}
+                      setFieldValue={setFieldValue}
+                    />
+                  </>
+                )}
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
@@ -360,9 +366,9 @@ const ExternalReferenceFileImportViewer = createRefetchContainer(
         only_contextual
         updated_at
         configurations {
-            id
-            name,
-            configuration
+          id
+          name
+          configuration
         }
       }
     `,

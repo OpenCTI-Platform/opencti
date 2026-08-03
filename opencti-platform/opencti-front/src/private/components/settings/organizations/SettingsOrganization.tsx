@@ -125,11 +125,11 @@ const SettingsOrganization = ({
   );
   const subOrganizations = organization.subOrganizations?.edges ?? [];
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
-  const canAccessDashboard = (
-    organization.default_dashboard?.authorizedMembers || []
-  ).some(({ member_id }) => {
-    return organization.id === member_id || member_id === 'ALL';
-  });
+  const canAccessDashboard = (organization.default_dashboard?.authorizedMembers || []).some(
+    ({ member_id }) => {
+      return organization.id === member_id || member_id === 'ALL';
+    },
+  );
 
   const capabilitiesPerGroup = new Map(
     organization.grantable_groups?.map((group) => [
@@ -143,9 +143,7 @@ const SettingsOrganization = ({
   return (
     <div className={classes.container}>
       <Stack direction="row" alignItems="center" marginBottom={3}>
-        <TitleMainEntity sx={{ flex: 1 }}>
-          {organization.name}
-        </TitleMainEntity>
+        <TitleMainEntity sx={{ flex: 1 }}>{organization.name}</TitleMainEntity>
         <Security needs={[SETTINGS_SETACCESSES]}>
           <SettingsOrganizationEdition
             organization={organization}
@@ -154,11 +152,7 @@ const SettingsOrganization = ({
           />
         </Security>
       </Stack>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={6}>
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
@@ -166,14 +160,10 @@ const SettingsOrganization = ({
           <Card title={t_i18n('More information')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <SettingsOrganizationHiddenTypesChipList
-                  organizationData={organization}
-                />
+                <SettingsOrganizationHiddenTypesChipList organizationData={organization} />
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Parent organizations')}
-                </Label>
+                <Label>{t_i18n('Parent organizations')}</Label>
                 <FieldOrEmpty source={parentOrganizations}>
                   <List sx={{ py: 0 }}>
                     {parentOrganizations.map((parentOrganization) => (
@@ -187,18 +177,14 @@ const SettingsOrganization = ({
                         <ListItemIcon>
                           <ItemIcon type="Organization" />
                         </ListItemIcon>
-                        <ListItemText
-                          primary={parentOrganization.node.name}
-                        />
+                        <ListItemText primary={parentOrganization.node.name} />
                       </ListItemButton>
                     ))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Child organizations')}
-                </Label>
+                <Label>{t_i18n('Child organizations')}</Label>
                 <FieldOrEmpty source={subOrganizations}>
                   <List sx={{ py: 0 }}>
                     {subOrganizations.map((subOrganization) => (
@@ -219,23 +205,23 @@ const SettingsOrganization = ({
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Default dashboard')}
-                </Label>
+                <Label>{t_i18n('Default dashboard')}</Label>
                 <FieldOrEmpty source={organization.default_dashboard}>
                   <List sx={{ py: 0 }}>
                     <ListItem
                       dense={true}
                       divider={true}
-                      secondaryAction={!canAccessDashboard && (
-                        <Tooltip
-                          title={t_i18n(
-                            'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
-                          )}
-                        >
-                          <WarningOutlined color="warning" />
-                        </Tooltip>
-                      )}
+                      secondaryAction={
+                        !canAccessDashboard && (
+                          <Tooltip
+                            title={t_i18n(
+                              'You need to authorize this organization to access this dashboard in the permissions of the workspace.',
+                            )}
+                          >
+                            <WarningOutlined color="warning" />
+                          </Tooltip>
+                        )
+                      }
                     >
                       <ListItemButton
                         component={Link}
@@ -245,10 +231,7 @@ const SettingsOrganization = ({
                           <ItemIcon type="Dashboard" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={truncate(
-                            organization.default_dashboard?.name,
-                            40,
-                          )}
+                          primary={truncate(organization.default_dashboard?.name, 40)}
                         />
                       </ListItemButton>
                     </ListItem>
@@ -256,60 +239,52 @@ const SettingsOrganization = ({
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Grantable groups by organization administrators')}
-                </Label>
+                <Label>{t_i18n('Grantable groups by organization administrators')}</Label>
                 <FieldOrEmpty source={organization.grantable_groups}>
                   <List sx={{ py: 0 }}>
-                    {(organization.grantable_groups ?? []).map((group) => (!isOrganizationAdmin ? (
-                      <ListItemButton
-                        key={group.id}
-                        dense={true}
-                        divider={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/groups/${group.id}`}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={group.name} />
-                        {(capabilitiesPerGroup
-                          .get(group.id)
-                          ?.includes(SETTINGS_SETACCESSES)
-                          || capabilitiesPerGroup
-                            .get(group.id)
-                            ?.includes(BYPASS)) && (
-                          <Tooltip
-                            title={t_i18n(
-                              'This Group allows the user to bypass restriction. It should not be added here.',
-                            )}
-                          >
-                            <WarningOutlined color="warning" />
-                          </Tooltip>
-                        )}
-                      </ListItemButton>
-                    ) : (
-                      <ListItem key={group.id} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <ItemIcon type="Group" />
-                        </ListItemIcon>
-                        <ListItemText primary={group.name} />
-                        {(capabilitiesPerGroup
-                          .get(group.id)
-                          ?.includes(SETTINGS_SETACCESSES)
-                          || capabilitiesPerGroup
-                            .get(group.id)
-                            ?.includes(BYPASS)) && (
-                          <Tooltip
-                            title={t_i18n(
-                              'This Group allows the user to bypass restriction. It should not be added here.',
-                            )}
-                          >
-                            <WarningOutlined color="warning" />
-                          </Tooltip>
-                        )}
-                      </ListItem>
-                    )))}
+                    {(organization.grantable_groups ?? []).map((group) =>
+                      !isOrganizationAdmin ? (
+                        <ListItemButton
+                          key={group.id}
+                          dense={true}
+                          divider={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/groups/${group.id}`}
+                        >
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={group.name} />
+                          {(capabilitiesPerGroup.get(group.id)?.includes(SETTINGS_SETACCESSES) ||
+                            capabilitiesPerGroup.get(group.id)?.includes(BYPASS)) && (
+                            <Tooltip
+                              title={t_i18n(
+                                'This Group allows the user to bypass restriction. It should not be added here.',
+                              )}
+                            >
+                              <WarningOutlined color="warning" />
+                            </Tooltip>
+                          )}
+                        </ListItemButton>
+                      ) : (
+                        <ListItem key={group.id} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <ItemIcon type="Group" />
+                          </ListItemIcon>
+                          <ListItemText primary={group.name} />
+                          {(capabilitiesPerGroup.get(group.id)?.includes(SETTINGS_SETACCESSES) ||
+                            capabilitiesPerGroup.get(group.id)?.includes(BYPASS)) && (
+                            <Tooltip
+                              title={t_i18n(
+                                'This Group allows the user to bypass restriction. It should not be added here.',
+                              )}
+                            >
+                              <WarningOutlined color="warning" />
+                            </Tooltip>
+                          )}
+                        </ListItem>
+                      ),
+                    )}
                   </List>
                 </FieldOrEmpty>
               </Grid>
@@ -323,9 +298,7 @@ const SettingsOrganization = ({
           </>
         ) : (
           <Grid item xs={12}>
-            <EnterpriseEdition
-              feature={t_i18n('Organization sharing')}
-            />
+            <EnterpriseEdition feature={t_i18n('Organization sharing')} />
           </Grid>
         )}
       </Grid>

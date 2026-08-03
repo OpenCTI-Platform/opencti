@@ -35,26 +35,27 @@ const fragment = graphql`
   }
 `;
 
-const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelationshipCreationFormStageProps> = ({
-  targetEntities,
-  data,
-  handleResetSelection,
-  handleClose,
-}) => {
+const StixCoreRelationshipCreationFormStage: FunctionComponent<
+  StixCoreRelationshipCreationFormStageProps
+> = ({ targetEntities, data, handleResetSelection, handleClose }) => {
   const stixCoreObject = useFragment(fragment, data);
 
-  const { state: {
-    relationshipTypes: allowedRelationshipTypes,
-    reversed,
-    handleReverseRelation,
-    paginationOptions,
-    connectionKey,
-    onCreate,
-  } } = useContext(CreateRelationshipContext);
+  const {
+    state: {
+      relationshipTypes: allowedRelationshipTypes,
+      reversed,
+      handleReverseRelation,
+      paginationOptions,
+      connectionKey,
+      onCreate,
+    },
+  } = useContext(CreateRelationshipContext);
 
-  const [commitRelationshipCreationMutation] = useApiMutation(reversed
-    ? stixCoreRelationshipCreationFromEntityToMutation
-    : stixCoreRelationshipCreationFromEntityFromMutation);
+  const [commitRelationshipCreationMutation] = useApiMutation(
+    reversed
+      ? stixCoreRelationshipCreationFromEntityToMutation
+      : stixCoreRelationshipCreationFromEntityFromMutation,
+  );
 
   const sourceEntity: TargetEntity = stixCoreObject;
 
@@ -67,7 +68,10 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
     [reversed, targetEntities, sourceEntity],
   );
 
-  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
       const fromEntityId = reversed ? targetEntity.id : sourceEntity.id;
@@ -88,15 +92,11 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
         commitRelationshipCreationMutation({
           variables: { input: finalValues },
           updater: (store: RecordSourceSelectorProxy) => {
-            if (paginationOptions) { // view update if in Knowledge tab
+            if (paginationOptions) {
+              // view update if in Knowledge tab
               if (connectionKey === 'Pagination_stixCoreRelationships') {
                 // Handles 'Relationships View'
-                insertNode(
-                  store,
-                  connectionKey,
-                  paginationOptions,
-                  'stixCoreRelationshipAdd',
-                );
+                insertNode(store, connectionKey, paginationOptions, 'stixCoreRelationshipAdd');
               } else if (typeof onCreate !== 'function') {
                 // Handle 'Entities View'
                 insertNode(
@@ -138,14 +138,18 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
           fromEntities[0].entity_type,
           toEntities[0].entity_type,
           schema?.schemaRelationsTypesMapping ?? new Map(),
-        ).filter( // Unique filter
-          (value, index, self) => self.indexOf(value) === index,
-        ).filter(
-          (n) => !allowedRelationshipTypes
-            || allowedRelationshipTypes.length === 0
-            || allowedRelationshipTypes.includes('stix-core-relationship')
-            || allowedRelationshipTypes.includes(n),
-        );
+        )
+          .filter(
+            // Unique filter
+            (value, index, self) => self.indexOf(value) === index,
+          )
+          .filter(
+            (n) =>
+              !allowedRelationshipTypes ||
+              allowedRelationshipTypes.length === 0 ||
+              allowedRelationshipTypes.includes('stix-core-relationship') ||
+              allowedRelationshipTypes.includes(n),
+          );
         return (
           <StixCoreRelationshipCreationForm
             fromEntities={fromEntities}
@@ -155,8 +159,8 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             handleResetSelection={handleResetSelection}
             onSubmit={onSubmit}
             handleClose={handleClose}
-            defaultStartTime={(new Date()).toISOString()}
-            defaultStopTime={(new Date()).toISOString()}
+            defaultStartTime={new Date().toISOString()}
+            defaultStopTime={new Date().toISOString()}
             defaultConfidence={undefined}
             defaultCreatedBy={undefined}
             defaultMarkingDefinitions={undefined}

@@ -35,21 +35,17 @@ interface DisseminationInput {
 }
 
 export const DisseminationListSendInputMutation = graphql`
-    mutation StixCoreObjectContentFilesDisseminationMutation(
-        $id: ID!
-        $input: DisseminationListSendInput!
-    ) {
-        disseminationListSend(id: $id, input: $input)
-    }
+  mutation StixCoreObjectContentFilesDisseminationMutation(
+    $id: ID!
+    $input: DisseminationListSendInput!
+  ) {
+    disseminationListSend(id: $id, input: $input)
+  }
 `;
 
-const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectContentFilesDisseminationProps> = ({
-  fileId,
-  entityId,
-  fileName,
-  fileType,
-  onClose,
-}) => {
+const StixCoreObjectContentFilesDissemination: FunctionComponent<
+  StixCoreObjectContentFilesDisseminationProps
+> = ({ fileId, entityId, fileName, fileType, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [useFileContent, setUseFileContent] = useState(false);
@@ -58,7 +54,9 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
   const basicShape = {
     disseminationListId: Yup.string().required(t_i18n('This field is required')),
     emailObject: Yup.string().required(t_i18n('This field is required')),
-    emailBody: useFileContent ? Yup.string() : Yup.string().required(t_i18n('This field is required')),
+    emailBody: useFileContent
+      ? Yup.string()
+      : Yup.string().required(t_i18n('This field is required')),
   };
   const validator = Yup.object().shape(basicShape);
   const [commitMutation, inProgress] = useApiMutation(
@@ -117,13 +115,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             style={{ marginBottom: theme.spacing(2) }}
-            control={(
+            control={
               <Switch
                 checked={useOctiTemplate}
                 onChange={() => setUseOctiTemplate(!useOctiTemplate)}
                 color="primary"
               />
-            )}
+            }
             label={t_i18n('Use OpenCTI template')}
           />
           <DisseminationListField />
@@ -140,13 +138,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               style={{
                 marginTop: theme.spacing(2),
               }}
-              control={(
+              control={
                 <Switch
                   checked={useFileContent}
                   onChange={() => setUseFileContent(!useFileContent)}
                   color="primary"
                 />
-              )}
+              }
               label={t_i18n('Use file content as email body')}
             />
           )}
@@ -171,28 +169,20 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             disabled
             style={fieldSpacingContainerStyle}
           />
-          <div style={{
-            marginTop: theme.spacing(2),
-            gap: theme.spacing(2),
-            display: 'flex',
-            justifyContent: 'right',
-            alignItems: 'center',
-          }}
+          <div
+            style={{
+              marginTop: theme.spacing(2),
+              gap: theme.spacing(2),
+              display: 'flex',
+              justifyContent: 'right',
+              alignItems: 'center',
+            }}
           >
-            { inProgress && (
-              <CircularProgress size={30} thickness={2} />
-            )}
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting || inProgress}
-            >
+            {inProgress && <CircularProgress size={30} thickness={2} />}
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting || inProgress}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting || inProgress}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting || inProgress}>
               {t_i18n('Send')}
             </Button>
           </div>

@@ -38,22 +38,23 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
 
   return (
     <>
-      <Box sx={{
-        borderBottom: 1,
-        borderColor: 'divider',
-        marginBottom: 3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          marginBottom: 3,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
       >
         <Security
           needs={[KNOWLEDGE]}
-          placeholder={(
+          placeholder={
             <Tabs value={index} onChange={(_, i) => setIndex(i)}>
               <Tab label={t_i18n('Template Editor')} />
             </Tabs>
-          )}
+          }
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
             <Tab label={t_i18n('Template Editor')} />

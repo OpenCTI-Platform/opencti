@@ -18,10 +18,7 @@ const usePreloadedFragment = <QueryType extends OperationType, FragmentKey exten
 }: UsePreloadedPaginationFragment<QueryType>) => {
   const queryData = usePreloadedQuery(queryDef, queryRef);
   if (nodePath) {
-    return useFragment(
-      fragmentDef,
-      queryData[nodePath as keyof typeof queryData] as FragmentKey,
-    );
+    return useFragment(fragmentDef, queryData[nodePath as keyof typeof queryData] as FragmentKey);
   }
   return useFragment(fragmentDef, queryData as FragmentKey);
 };

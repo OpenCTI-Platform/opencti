@@ -43,10 +43,14 @@ export const importMutation = graphql`
   }
 `;
 
-const workspaceValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
-  name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
-  description: Yup.string().nullable(),
-});
+const workspaceValidation = (t_i18n: (s: string) => string) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .min(2, t_i18n('Name must be at least 2 characters'))
+      .required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
 
 interface WorkspaceCreationForm {
   name: string;
@@ -67,28 +71,31 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const navigate = useNavigate();
 
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
 
-  const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
-    commitImportMutation({
-      variables: { file },
-      onCompleted: (data) => {
-        navigate(
-          `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
-        );
-        resolve();
-      },
-      onError: (error) => {
-        handleError(error);
-        reject();
-      },
+  const handleImport = (file: File) =>
+    new Promise<void>((resolve, reject) => {
+      commitImportMutation({
+        variables: { file },
+        onCompleted: (data) => {
+          navigate(`${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`);
+          resolve();
+        },
+        onError: (error) => {
+          handleError(error);
+          reject();
+        },
+      });
     });
-  });
   const importHelpers = useDashboardImport({ onImport: handleImport });
 
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
 
-  const onSubmit: FormikConfig<WorkspaceCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
+  const onSubmit: FormikConfig<WorkspaceCreationForm>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
     commitCreationMutation({
       variables: {
         input: {
@@ -100,12 +107,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
         },
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_workspaces',
-          paginationOptions,
-          'workspaceAdd',
-        );
+        insertNode(store, 'Pagination_workspaces', paginationOptions, 'workspaceAdd');
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -134,7 +136,6 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             variant="secondary"
             onClick={importHelpers.handleImport}
             data-testid="ImportDashboard"
-
           >
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>
@@ -159,10 +160,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
       <DashboardHiddenImportInput helpers={importHelpers} />
       <Drawer
         title={t_i18n(`Create ${type}`)}
-        controlledDial={(type === 'dashboard')
-          ? createDashboardButton
-          : createInvestigationButton
-        }
+        controlledDial={type === 'dashboard' ? createDashboardButton : createInvestigationButton}
       >
         {({ onClose }) => (
           <Formik
@@ -176,12 +174,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth={true}
-                />
+                <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth={true} />
                 <Field
                   component={MarkdownField}
                   name="description"
@@ -194,17 +187,10 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                   registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <FormButtonContainer>
-                  <Button
-                    variant="secondary"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={submitForm} disabled={isSubmitting}>
                     {t_i18n('Create')}
                   </Button>
                 </FormButtonContainer>

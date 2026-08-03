@@ -5,7 +5,10 @@ import ItemIcon from 'src/components/ItemIcon';
 import { CheckCircle } from '@mui/icons-material';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { defaultCommitMutation } from 'src/relay/environment';
-import { scoRelationshipAdd, scoRelationshipDelete } from '@components/threats/threat_actors_individual/AddIndividualsThreatActorIndividualLines';
+import {
+  scoRelationshipAdd,
+  scoRelationshipDelete,
+} from '@components/threats/threat_actors_individual/AddIndividualsThreatActorIndividualLines';
 import { ThreatActorIndividualDetails_ThreatActorIndividual$data } from './__generated__/ThreatActorIndividualDetails_ThreatActorIndividual.graphql';
 import { AddPersonasThreatActorIndividualLines_data$key } from './__generated__/AddPersonasThreatActorIndividualLines_data.graphql';
 import { deleteNodeFromEdge } from '../../../../utils/store';
@@ -27,16 +30,12 @@ const AddPersonasThreatActorIndividualLinesFragment = graphql`
   @refetchable(queryName: "AddPersonasThreatActorIndividualLinesRefetchQuery")
   @argumentDefinitions(
     search: { type: "String" }
-    count: { type: "Int", defaultValue: 25 },
+    count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     types: { type: "[String]" }
   ) {
-    stixCyberObservables(
-      search: $search,
-      first: $count,
-      after: $cursor,
-      types: $types,
-    ) @connection(key: "Pagination_tai_stixCyberObservables") {
+    stixCyberObservables(search: $search, first: $count, after: $cursor, types: $types)
+      @connection(key: "Pagination_tai_stixCyberObservables") {
       edges {
         node {
           id
@@ -60,27 +59,18 @@ interface AddPersonasThreatActorIndividualLineProps {
 
 const AddPersonasThreatActorIndividualLine: FunctionComponent<
   AddPersonasThreatActorIndividualLineProps
-> = ({
-  id,
-  name,
-  currentTargets,
-  handleClick,
-}) => {
+> = ({ id, name, currentTargets, handleClick }) => {
   const theme = useTheme();
   return (
-    <ListItemButton
-      divider={true}
-      onClick={handleClick}
-    >
+    <ListItemButton divider={true} onClick={handleClick}>
       <ListItemIcon>
-        {currentTargets.includes(id)
-          ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type="Individual" />
-        }
+        {currentTargets.includes(id) ? (
+          <CheckCircle style={{ color: theme.palette.primary.main }} />
+        ) : (
+          <ItemIcon type="Individual" />
+        )}
       </ListItemIcon>
-      <ListItemText
-        primary={name}
-      />
+      <ListItemText primary={name} />
     </ListItemButton>
   );
 };
@@ -92,29 +82,24 @@ interface AddPersonasThreatActorIndividualLinesProps {
 
 const AddPersonasThreatActorIndividualLines: FunctionComponent<
   AddPersonasThreatActorIndividualLinesProps
-> = ({
-  threatActorIndividual,
-  fragmentKey,
-}) => {
-  const data = useFragment(
-    AddPersonasThreatActorIndividualLinesFragment,
-    fragmentKey,
-  );
+> = ({ threatActorIndividual, fragmentKey }) => {
+  const data = useFragment(AddPersonasThreatActorIndividualLinesFragment, fragmentKey);
 
   const [commitRelationAdd] = useApiMutation(scoRelationshipAdd);
   const [commitRelationDelete] = useApiMutation(scoRelationshipDelete);
 
-  const initialTargets = (threatActorIndividual
-    .stixCoreRelationships?.edges
-    .filter(({ node }) => node.relationship_type === 'known-as')
-    ?? []).map(({ node }) => node.to?.id ?? '');
+  const initialTargets = (
+    threatActorIndividual.stixCoreRelationships?.edges.filter(
+      ({ node }) => node.relationship_type === 'known-as',
+    ) ?? []
+  ).map(({ node }) => node.to?.id ?? '');
 
   const [currentTargets, setCurrentTargets] = useState<string[]>(initialTargets);
 
   const handleToggle = (toId: string) => {
-    const stixCoreRelationshipId = threatActorIndividual
-      .stixCoreRelationships?.edges
-      .find(({ node }) => node.to?.id === toId && node.relationship_type === 'known-as')?.node.id;
+    const stixCoreRelationshipId = threatActorIndividual.stixCoreRelationships?.edges.find(
+      ({ node }) => node.to?.id === toId && node.relationship_type === 'known-as',
+    )?.node.id;
     const isSelected = currentTargets.includes(toId);
     const input = {
       fromId: threatActorIndividual.id,
@@ -125,12 +110,13 @@ const AddPersonasThreatActorIndividualLines: FunctionComponent<
       commitRelationDelete({
         ...defaultCommitMutation,
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(
-          store,
-          'stixCoreRelationships',
-          threatActorIndividual.id,
-          stixCoreRelationshipId,
-        ),
+        updater: (store) =>
+          deleteNodeFromEdge(
+            store,
+            'stixCoreRelationships',
+            threatActorIndividual.id,
+            stixCoreRelationshipId,
+          ),
         onCompleted: () => {
           setCurrentTargets(currentTargets.filter((id) => id !== toId));
         },

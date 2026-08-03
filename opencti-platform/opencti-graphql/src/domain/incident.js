@@ -19,7 +19,11 @@ export const findIncidentPaginated = (context, user, args) => {
 // region time series
 export const incidentsTimeSeriesByEntity = async (context, user, args) => {
   const { relationship_type, objectId } = args;
-  const filters = addFilter(args.filters, relationship_type.map((n) => buildRefRelationKey(n, '*')), objectId);
+  const filters = addFilter(
+    args.filters,
+    relationship_type.map((n) => buildRefRelationKey(n, '*')),
+    objectId,
+  );
   return timeSeriesEntities(context, user, [ENTITY_TYPE_INCIDENT], { ...args, filters });
 };
 

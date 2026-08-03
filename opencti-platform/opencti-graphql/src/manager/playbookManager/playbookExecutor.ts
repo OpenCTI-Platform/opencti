@@ -1,6 +1,10 @@
 import moment from 'moment';
 import * as jsonpatch from 'fast-json-patch';
-import type { ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../../modules/playbook/playbook-types';
+import type {
+  ComponentDefinition,
+  PlaybookExecution,
+  PlaybookExecutionStep,
+} from '../../modules/playbook/playbook-types';
 import type { StixBundle } from '../../types/stix-2-1-common';
 import { utcDate } from '../../utils/format';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../../types/playbookExecution';
@@ -35,8 +39,10 @@ type ObservationFn = {
 };
 
 const registerStepObservation = async (data: ObservationFn) => {
-  const patch = data.previousBundle && data.bundle ? jsonpatch.compare(data.previousBundle, data.bundle) : [];
-  const bundlePatch = data.previousStepId && !data.forceBundleTracking ? { patch } : { bundle: data.bundle };
+  const patch =
+    data.previousBundle && data.bundle ? jsonpatch.compare(data.previousBundle, data.bundle) : [];
+  const bundlePatch =
+    data.previousStepId && !data.forceBundleTracking ? { patch } : { bundle: data.bundle };
   const step: ExecutionEnvelopStep = {
     message: data.message,
     status: data.status,
@@ -95,7 +101,10 @@ export const playbookExecutor = async ({
     addPlaybookExecutionCount();
   }
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
-  const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
+  const instanceWithConfig = {
+    ...nextStep.instance,
+    configuration: JSON.parse(nextStep.instance.configuration ?? '{}'),
+  };
   if (nextStep.component.is_internal || isExternalCallback) {
     let execution: PlaybookExecution;
     const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
@@ -131,17 +140,28 @@ export const playbookExecutor = async ({
         forceBundleTracking: execution.forceBundleTracking ?? false,
       };
       if (currentPlaybookInDebug) {
-        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, {
+          observation,
+        });
       }
       await registerStepObservation(observation);
     } catch (error) {
       // Error executing the step, register
       const executionError = error as Error;
-      logApp.error('[OPENCTI-MODULE] Playbook manager executor error', { cause: error, manager: 'PLAYBOOK_MANAGER', step: instanceWithConfig, bundle: baseBundle });
+      logApp.error('[OPENCTI-MODULE] Playbook manager executor error', {
+        cause: error,
+        manager: 'PLAYBOOK_MANAGER',
+        step: instanceWithConfig,
+        bundle: baseBundle,
+      });
       const end = utcDate();
       const durationDiff = end.diff(start);
       const duration = moment.duration(durationDiff);
-      const logError = { message: executionError.message, stack: executionError.stack, name: executionError.name };
+      const logError = {
+        message: executionError.message,
+        stack: executionError.stack,
+        name: executionError.name,
+      };
       const observation: ObservationFn = {
         message: `${nextStep.component.name.trim()} fail execution in ${duration.humanize()}`,
         status: 'error',
@@ -157,18 +177,24 @@ export const playbookExecutor = async ({
         forceBundleTracking: false,
       };
       if (currentPlaybookInDebug) {
-        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, {
+          observation,
+        });
       }
       await registerStepObservation(observation);
       return;
     }
     if (currentPlaybookInDebug) {
-      logApp.info(`[PLAYBOOK MANAGER] Looking for next port for playbook ${playbookId}`, { output_port: execution.output_port });
+      logApp.info(`[PLAYBOOK MANAGER] Looking for next port for playbook ${playbookId}`, {
+        output_port: execution.output_port,
+      });
     }
     // Send the result to the next component if needed
     if (execution.output_port) {
       // Find the next op for this attachment
-      const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port);
+      const connections = definition.links.filter(
+        (c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port,
+      );
       for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
         const connection = connections[connectionIndex];
         const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);

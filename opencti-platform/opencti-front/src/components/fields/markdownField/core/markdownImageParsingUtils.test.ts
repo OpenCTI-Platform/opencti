@@ -1,18 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { extractMarkdownImageReferences, parseMarkdownImageDestination } from './markdownImageParsingUtils';
+import {
+  extractMarkdownImageReferences,
+  parseMarkdownImageDestination,
+} from './markdownImageParsingUtils';
 
 describe('markdown image parsing utils', () => {
   describe('parseMarkdownImageDestination', () => {
     it('parses plain destinations', () => {
-      expect(parseMarkdownImageDestination('/storage/view/embedded/a.png')).toBe('/storage/view/embedded/a.png');
+      expect(parseMarkdownImageDestination('/storage/view/embedded/a.png')).toBe(
+        '/storage/view/embedded/a.png',
+      );
     });
 
     it('parses angle-bracket destinations', () => {
-      expect(parseMarkdownImageDestination('</storage/get/embedded/a.png>')).toBe('/storage/get/embedded/a.png');
+      expect(parseMarkdownImageDestination('</storage/get/embedded/a.png>')).toBe(
+        '/storage/get/embedded/a.png',
+      );
     });
 
     it('ignores title text after URL', () => {
-      expect(parseMarkdownImageDestination('/storage/view/embedded/a.png "Title"')).toBe('/storage/view/embedded/a.png');
+      expect(parseMarkdownImageDestination('/storage/view/embedded/a.png "Title"')).toBe(
+        '/storage/view/embedded/a.png',
+      );
     });
 
     it('returns null for invalid destination', () => {
@@ -50,18 +59,20 @@ describe('markdown image parsing utils', () => {
         '![also-broken]/storage/view/embedded/Report/r-1/no-paren.png)',
       ].join('\n');
 
-      expect(extractMarkdownImageReferences(markdown, { stopAtLineBreakAtTopLevel: true })).toEqual([
-        { altText: 'ok', imageUrl: '/storage/view/embedded/Report/r-1/a.png' },
-      ]);
+      expect(extractMarkdownImageReferences(markdown, { stopAtLineBreakAtTopLevel: true })).toEqual(
+        [{ altText: 'ok', imageUrl: '/storage/view/embedded/Report/r-1/a.png' }],
+      );
     });
 
     it('stops at top-level line breaks when requested', () => {
       const multiline = '![bad](/storage/view/embedded/Report/r-1/a.png\n"Title")';
 
-      expect(extractMarkdownImageReferences(multiline, { stopAtLineBreakAtTopLevel: true })).toEqual([]);
-      expect(extractMarkdownImageReferences(multiline, { stopAtLineBreakAtTopLevel: false })).toEqual([
-        { altText: 'bad', imageUrl: '/storage/view/embedded/Report/r-1/a.png' },
-      ]);
+      expect(
+        extractMarkdownImageReferences(multiline, { stopAtLineBreakAtTopLevel: true }),
+      ).toEqual([]);
+      expect(
+        extractMarkdownImageReferences(multiline, { stopAtLineBreakAtTopLevel: false }),
+      ).toEqual([{ altText: 'bad', imageUrl: '/storage/view/embedded/Report/r-1/a.png' }]);
     });
   });
 });

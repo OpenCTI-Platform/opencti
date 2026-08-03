@@ -1,7 +1,19 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { AddTaskOutlined, AssistantOutlined } from '@mui/icons-material';
-import { Badge, CircularProgress, DialogActions, IconButton, List, ListItem, ListItemText, MenuItem, Select, ToggleButton, Tooltip } from '@mui/material';
+import {
+  Badge,
+  CircularProgress,
+  DialogActions,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Select,
+  ToggleButton,
+  Tooltip,
+} from '@mui/material';
 import { useState } from 'react';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,12 +25,7 @@ import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships
 
 const StixCoreObjectsSuggestionsComponent = (props) => {
   const { t_i18n } = useFormatter();
-  const {
-    container,
-    currentMode,
-    onApplied,
-    containerHeaderObjectsQuery,
-  } = props;
+  const { container, currentMode, onApplied, containerHeaderObjectsQuery } = props;
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const [displaySuggestions, setDisplaySuggestions] = useState(false);
   const [selectedEntity, setSelectedEntity] = useState({});
@@ -34,42 +41,39 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
     );
   };
   const getAppliedSuggestions = () => {
-    return JSON.parse(
-      localStorage.getItem(`suggestions-rules-${container.id}`) || '[]',
-    );
+    return JSON.parse(localStorage.getItem(`suggestions-rules-${container.id}`) || '[]');
   };
   // Suggestions
-  const resolveThreats = (objects) => objects.filter(
-    (o) => [
-      'Threat-Actor',
-      'Intrusion-Set',
-      'Campaign',
-      'Incident',
-      'Malware',
-      'Tool',
-    ].includes(o.entity_type) && o.types.includes('manual'),
-  );
-  const resolveIndicators = (objects) => objects.filter(
-    (o) => ['Indicator'].includes(o.entity_type) && o.types.includes('manual'),
-  );
-  const resolveArsenal = (objects) => objects.filter(
-    (o) => ['Attack-Pattern', 'Malware', 'Tool', 'Channel', 'Narrative'].includes(
-      o.entity_type,
-    ) && o.types.includes('manual'),
-  );
-  const resolveTargets = (objects) => objects.filter(
-    (o) => [
-      'Sector',
-      'Region',
-      'Country',
-      'City',
-      'Position',
-      'Organization',
-      'System',
-      'Individual',
-      'Vulnerability',
-    ].includes(o.entity_type) && o.types.includes('manual'),
-  );
+  const resolveThreats = (objects) =>
+    objects.filter(
+      (o) =>
+        ['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool'].includes(
+          o.entity_type,
+        ) && o.types.includes('manual'),
+    );
+  const resolveIndicators = (objects) =>
+    objects.filter((o) => ['Indicator'].includes(o.entity_type) && o.types.includes('manual'));
+  const resolveArsenal = (objects) =>
+    objects.filter(
+      (o) =>
+        ['Attack-Pattern', 'Malware', 'Tool', 'Channel', 'Narrative'].includes(o.entity_type) &&
+        o.types.includes('manual'),
+    );
+  const resolveTargets = (objects) =>
+    objects.filter(
+      (o) =>
+        [
+          'Sector',
+          'Region',
+          'Country',
+          'City',
+          'Position',
+          'Organization',
+          'System',
+          'Individual',
+          'Vulnerability',
+        ].includes(o.entity_type) && o.types.includes('manual'),
+    );
   const generateSuggestions = (objects) => {
     const suggestions = [];
     const resolvedThreats = resolveThreats(objects);
@@ -292,17 +296,13 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                   <Tooltip title={t_i18n('Open the suggestions')}>
                     <ToggleButton
                       onClick={() => setDisplaySuggestions(true)}
-                      disabled={
-                        suggestions.length === 0 || currentMode !== 'graph'
-                      }
+                      disabled={suggestions.length === 0 || currentMode !== 'graph'}
                       value="suggestion"
                       size="small"
                     >
                       <Badge
                         badgeContent={
-                          suggestions.filter(
-                            (n) => !appliedSuggestions.includes(n.type),
-                          ).length
+                          suggestions.filter((n) => !appliedSuggestions.includes(n.type)).length
                         }
                         color="secondary"
                       >
@@ -310,7 +310,6 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                           fontSize="small"
                           disabled={suggestions.length === 0}
                           color={
-
                             suggestions.length === 0
                               ? 'disabled'
                               : displaySuggestions
@@ -332,32 +331,30 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                           key={suggestion.type}
                           disableGutters={true}
                           divider={true}
-                          secondaryAction={(
+                          secondaryAction={
                             <Tooltip title={t_i18n('Apply the suggestion')}>
                               <IconButton
                                 edge="end"
                                 aria-label="apply"
-                                onClick={() => applySuggestion(
-                                  suggestion.type,
-                                  containerProps.container.objects.edges.map(
-                                    (o) => ({
+                                onClick={() =>
+                                  applySuggestion(
+                                    suggestion.type,
+                                    containerProps.container.objects.edges.map((o) => ({
                                       ...o.node,
                                       types: o.types,
-                                    }),
-                                  ),
-                                )
+                                    })),
+                                  )
                                 }
                                 color={
                                   applied.some(
-                                    (a) => a[suggestion.type]
-                                      === selectedEntity[suggestion.type],
+                                    (a) => a[suggestion.type] === selectedEntity[suggestion.type],
                                   )
                                     ? 'success'
                                     : 'primary'
                                 }
                                 disabled={
-                                  applying.includes(suggestion.type)
-                                  || !selectedEntity[suggestion.type]
+                                  applying.includes(suggestion.type) ||
+                                  !selectedEntity[suggestion.type]
                                 }
                               >
                                 {applying.includes(suggestion.type) ? (
@@ -367,30 +364,26 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                                 )}
                               </IconButton>
                             </Tooltip>
-                          )}
+                          }
                         >
                           <ListItemText
-                            primary={(
+                            primary={
                               <MarkdownDisplay
                                 content={t_i18n(`suggestion_${suggestion.type}`)}
                                 remarkGfmPlugin={true}
                                 commonmark={true}
                                 markdownComponents={true}
                               />
-                            )}
+                            }
                           />
                           <Select
                             style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}
                             variant="standard"
-                            onChange={(event) => handleSelectEntity(suggestion.type, event)
-                            }
+                            onChange={(event) => handleSelectEntity(suggestion.type, event)}
                             value={selectedEntity[suggestion.type]}
                           >
                             {suggestion.data.map((object) => (
-                              <MenuItem
-                                key={object.id}
-                                value={object.id}
-                              >
+                              <MenuItem key={object.id} value={object.id}>
                                 {getMainRepresentative(object)}
                               </MenuItem>
                             ))}
@@ -399,9 +392,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                       ))}
                     </List>
                     <DialogActions>
-                      <Button
-                        onClick={() => setDisplaySuggestions(false)}
-                      >
+                      <Button onClick={() => setDisplaySuggestions(false)}>
                         {t_i18n('Close')}
                       </Button>
                     </DialogActions>

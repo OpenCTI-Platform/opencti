@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import useRuntimeSortGuard, { FALLBACK_SORT_FIELD, RUNTIME_ONLY_SORT_FIELDS } from './useRuntimeSortGuard';
+import useRuntimeSortGuard, {
+  FALLBACK_SORT_FIELD,
+  RUNTIME_ONLY_SORT_FIELDS,
+} from './useRuntimeSortGuard';
 
 describe('Hook: useRuntimeSortGuard', () => {
   let handleSort: ReturnType<typeof vi.fn<(field: string, orderAsc: boolean) => void>>;
@@ -65,7 +68,9 @@ describe('Hook: useRuntimeSortGuard', () => {
     let isRuntimeSort = true;
     const sortBy = 'objectParticipant';
 
-    const { rerender, result } = renderHook(() => useRuntimeSortGuard(isRuntimeSort, sortBy, handleSort));
+    const { rerender, result } = renderHook(() =>
+      useRuntimeSortGuard(isRuntimeSort, sortBy, handleSort),
+    );
 
     expect(handleSort).not.toHaveBeenCalled();
     expect(result.current).toBe('objectParticipant');

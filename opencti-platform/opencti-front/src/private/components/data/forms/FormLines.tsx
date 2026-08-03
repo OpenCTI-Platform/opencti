@@ -1,6 +1,9 @@
 import { graphql, PreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import { FormLinesPaginationQuery, FormLinesPaginationQuery$variables } from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
+import {
+  FormLinesPaginationQuery,
+  FormLinesPaginationQuery$variables,
+} from '@components/data/forms/__generated__/FormLinesPaginationQuery.graphql';
 import { FormLines_data$key } from '@components/data/forms/__generated__/FormLines_data.graphql';
 import { FormLineComponent, FormLineDummy } from '@components/data/forms/FormLine';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -27,26 +30,26 @@ export const formLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...FormLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
 const formLinesFragment = graphql`
-  fragment FormLines_data on Query 
+  fragment FormLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: { type: "FormsOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-    filters:{ type: "FilterGroup" }
+    filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "FormLinesRefetchQuery") {
     forms(
@@ -80,7 +83,8 @@ const FormLines: FunctionComponent<FormLinesProps> = ({
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     FormLinesPaginationQuery,
-    FormLines_data$key>({
+    FormLines_data$key
+  >({
     queryRef,
     linesQuery: formLinesQuery,
     linesFragment: formLinesFragment,

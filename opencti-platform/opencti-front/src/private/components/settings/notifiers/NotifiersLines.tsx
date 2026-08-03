@@ -2,7 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { NotifierLine, NotifierLineDummy } from './NotifierLine';
 import { NotifierLine_node$data } from './__generated__/NotifierLine_node.graphql';
-import { NotifiersLinesPaginationQuery, NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
+import {
+  NotifiersLinesPaginationQuery,
+  NotifiersLinesPaginationQuery$variables,
+} from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import { NotifiersLines_data$key } from './__generated__/NotifiersLines_data.graphql';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
@@ -54,14 +57,14 @@ export const NotifiersLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...NotifiersLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -88,12 +91,10 @@ const NotifiersLines: FunctionComponent<NotifiersLinesProps> = ({
   deSelectedElements,
   selectAll,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<NotifiersLinesPaginationQuery, NotifiersLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+    NotifiersLinesPaginationQuery,
+    NotifiersLines_data$key
+  >({
     linesQuery: NotifiersLinesQuery,
     linesFragment: NotifierLineFragment,
     queryRef,

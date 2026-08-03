@@ -15,13 +15,13 @@ const publicStixRelationshipsTimelineQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationships(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       edges {
         node {
@@ -967,18 +967,18 @@ const PublicStixRelationshipsTimelineComponent = ({
   );
 
   if (
-    publicStixRelationships
-    && publicStixRelationships?.edges
-    && publicStixRelationships.edges.length > 0
+    publicStixRelationships &&
+    publicStixRelationships?.edges &&
+    publicStixRelationships.edges.length > 0
   ) {
     const stixRelationshipsEdges = publicStixRelationships.edges;
     const data = stixRelationshipsEdges.flatMap((stixRelationshipEdge) => {
       const stixRelationship = stixRelationshipEdge?.node;
       if (!stixRelationship) return [];
-      const remoteNode = stixRelationship.from
-        && dataSelection[0].isTo
-        ? stixRelationship.to
-        : stixRelationship.from;
+      const remoteNode =
+        stixRelationship.from && dataSelection[0].isTo
+          ? stixRelationship.to
+          : stixRelationship.from;
       if (!remoteNode) return [];
 
       return {
@@ -989,9 +989,10 @@ const PublicStixRelationshipsTimelineComponent = ({
       };
     });
     const selection = dataSelection[0];
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
-      ? selection.date_attribute
-      : 'created_at';
+    const dateAttribute =
+      selection.date_attribute && selection.date_attribute.length > 0
+        ? selection.date_attribute
+        : 'created_at';
     return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
   }
   return <WidgetNoData />;
@@ -1017,9 +1018,7 @@ const PublicStixRelationshipsTimeline = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixRelationshipsTimelineComponent

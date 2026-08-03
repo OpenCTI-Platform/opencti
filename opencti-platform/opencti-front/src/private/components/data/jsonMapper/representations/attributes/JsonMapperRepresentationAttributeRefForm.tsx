@@ -3,7 +3,10 @@ import classNames from 'classnames';
 import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
-import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
+import {
+  getBasedOnRepresentations,
+  getInfoForRef,
+} from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
@@ -15,15 +18,20 @@ import { SchemaAttribute } from '@components/data/jsonMapper/representations/att
 import { useTheme } from '@mui/styles';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
+import {
+  resolveTypesForRelationship,
+  resolveTypesForRelationshipRef,
+} from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
-interface JsonMapperRepresentationAttributeRefFormProps
-  extends FieldProps<RepresentationAttributeForm, JsonMapperFormData> {
+interface JsonMapperRepresentationAttributeRefFormProps extends FieldProps<
+  RepresentationAttributeForm,
+  JsonMapperFormData
+> {
   representation: JsonMapperRepresentationFormData;
   schemaAttribute: SchemaAttribute;
   label: string;
@@ -93,9 +101,10 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   let options: JsonMapperRepresentationFormData[] = [];
 
   // We don't need to resolve those different types, as they can link any entity between them.
-  const isGenericRelationship = representation.target?.entity_type === 'related-to'
-    || representation.target?.entity_type === 'revoked-by'
-    || representation.target?.entity_type === 'stix-sighting-relationship';
+  const isGenericRelationship =
+    representation.target?.entity_type === 'related-to' ||
+    representation.target?.entity_type === 'revoked-by' ||
+    representation.target?.entity_type === 'stix-sighting-relationship';
   if (isRelationFromOrTo && isGenericRelationship) {
     options = filterOptions(entity_representations);
   } else if (representation.target?.entity_type) {
@@ -111,17 +120,19 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
       representation.target.entity_type,
       schemaAttribute.name,
     );
-    const everyRepresentationTypes = [
-      ...relationshipTypes,
-      ...relationshipRefTypes,
-    ];
+    const everyRepresentationTypes = [...relationshipTypes, ...relationshipRefTypes];
     if (isStixCoreObjects(everyRepresentationTypes)) {
-      schema.sdos.map((sdo) => sdo.label).forEach((sdoType) => everyRepresentationTypes.push(sdoType));
-      schema.scos.map((sco) => sco.label).forEach((scoType) => everyRepresentationTypes.push(scoType));
+      schema.sdos
+        .map((sdo) => sdo.label)
+        .forEach((sdoType) => everyRepresentationTypes.push(sdoType));
+      schema.scos
+        .map((sco) => sco.label)
+        .forEach((scoType) => everyRepresentationTypes.push(scoType));
     }
     options = filterOptions(
-      entity_representations
-        .filter((r) => r.target?.entity_type && everyRepresentationTypes.includes(r.target?.entity_type)),
+      entity_representations.filter(
+        (r) => r.target?.entity_type && everyRepresentationTypes.includes(r.target?.entity_type),
+      ),
     );
   }
 
@@ -155,7 +166,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     value: JsonMapperRepresentationFormData[],
   ) => {
     const selectedIds = value.map((v) => v.id);
-    const nonStrIdentifiers = (field.value?.based_on?.identifier ?? []).filter((i) => typeof i !== 'string');
+    const nonStrIdentifiers = (field.value?.based_on?.identifier ?? []).filter(
+      (i) => typeof i !== 'string',
+    );
 
     // Add new identifiers for newly selected representations
     const newIdentifiers = [...nonStrIdentifiers];
@@ -166,7 +179,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     });
 
     // Remove identifiers for deselected representations
-    const finalIdentifiers = newIdentifiers.filter((i) => selectedIds.includes(i.representation ?? ''));
+    const finalIdentifiers = newIdentifiers.filter((i) =>
+      selectedIds.includes(i.representation ?? ''),
+    );
 
     const updateAttribute: JsonMapperRepresentationAttributeFormData = {
       ...(field.value ?? {}),
@@ -204,7 +219,10 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   };
 
   return (
-    <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
+    <div
+      className={classes.container}
+      style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}
+    >
       <div>
         {label}
         {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
@@ -216,7 +234,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
           autoSelect={false}
           autoHighlight
           multiple
-          getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
+          getOptionLabel={(option) =>
+            representationLabel(entity_representations.indexOf(option), option, t_i18n)
+          }
           options={options}
           value={getBasedOnRepresentations(field.value, options) ?? []}
           onChange={handleRepresentationChange}
@@ -242,7 +262,9 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
             form={form}
           />
         </JsonMapperRepresentationDialogOption>
-      ) : <div />}
+      ) : (
+        <div />
+      )}
       <>
         {(() => {
           const selectedRepresentations = getBasedOnRepresentations(field.value, options);

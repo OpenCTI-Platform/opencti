@@ -39,7 +39,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
         fullWidth={true}
         style={fieldSpacingContainerStyle}
         {...textFieldProps}
-        {...(isSecret && ({
+        {...(isSecret && {
           onSubmit: (name: string, value: string) => {
             if (textFieldProps?.onSubmit && dirty) {
               textFieldProps.onSubmit(name, value);
@@ -49,7 +49,7 @@ const PasswordTextField: FunctionComponent<PasswordTextFieldProps> = ({
           InputLabelProps: {
             shrink: isUndefinedCredential ? true : undefined,
           },
-        }))}
+        })}
       />
       {!isUndefinedCredential && (
         <IconButton

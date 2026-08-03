@@ -224,15 +224,20 @@ const TimeoutLock: React.FunctionComponent = () => {
     const secondsBetween = secondsBetweenDates(state.startDate, new Date());
     // Ensure that the user is logged out if the page has been open longer than the session allows
     if (
-      secondsBetween >= state.sessionLimit
-      || (state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)
+      secondsBetween >= state.sessionLimit ||
+      (state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)
     ) {
       handleLogout();
     }
     // Lock the screen for the remaining session time
-    if (state.idleLimit > 0 && secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
+    if (
+      state.idleLimit > 0 &&
+      secondsBetween >= state.idleLimit &&
+      secondsBetween < state.sessionLimit
+    ) {
       lockScreen();
-    } else { // To handle close on different tab
+    } else {
+      // To handle close on different tab
       setDialogOpen(false);
     }
   }, [state.idleCount]);
@@ -246,29 +251,25 @@ const TimeoutLock: React.FunctionComponent = () => {
         marginTop: `${topBannerHeight + bannerHeightNumber}px`,
         height: `calc(100% - ${topBannerHeight + bannerHeightNumber * 2}px)`,
       }}
-      title={(
+      title={
         <>
           {t_i18n('Session timeout in')}&nbsp;
           <strong>{formatSeconds(state.idleCount ?? 0)}</strong>
         </>
-      )}
+      }
     >
-
       <DialogContentText>
         {t_i18n('You will be automatically logged out at end of the timer.')}
         <br />
-        {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code>{' '}
-        {t_i18n('to keep working or select')} <code>{t_i18n('LOGOUT')}</code>{' '}
-        {t_i18n('to terminate your session.')}
+        {t_i18n('Select')} <code>{t_i18n('CONTINUE')}</code> {t_i18n('to keep working or select')}{' '}
+        <code>{t_i18n('LOGOUT')}</code> {t_i18n('to terminate your session.')}
       </DialogContentText>
 
       <DialogActions>
         <Button variant="secondary" onClick={() => handleLogout()}>
           {t_i18n('Logout')}
         </Button>
-        <Button onClick={() => unlockScreen()}>
-          {t_i18n('Continue')}
-        </Button>
+        <Button onClick={() => unlockScreen()}>{t_i18n('Continue')}</Button>
       </DialogActions>
     </Dialog>
   );

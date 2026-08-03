@@ -23,8 +23,10 @@ const caseResolvers: Resolvers = {
       }
       return 'Unknown';
     },
-    tasks: (current, args, context) => caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
-    objectParticipant: async (container, _, context) => loadParticipants(context, context.user, container),
+    tasks: (current, args, context) =>
+      caseTasksPaginated<BasicStoreEntityTask>(context, context.user, current.id, args),
+    objectParticipant: async (container, _, context) =>
+      loadParticipants(context, context.user, container),
   },
   CasesOrdering: {
     creator: 'creator_id',
@@ -40,7 +42,9 @@ const caseResolvers: Resolvers = {
       return stixDomainObjectDelete(context, context.user, id, caseEntity.entity_type);
     },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
-      await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
+      await BluePromise.map(caseTemplatesId, (caseTemplateId) =>
+        upsertTemplateForCase(context, context.user, id, caseTemplateId),
+      );
       return findById(context, context.user, id);
     },
   },

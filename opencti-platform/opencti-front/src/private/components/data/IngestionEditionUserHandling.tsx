@@ -18,12 +18,8 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 export const ingestionEditionUserHandlingQuery = graphql`
-  query IngestionEditionUserHandlingQuery(
-    $name: String!
-  ) {
-    userAlreadyExists(
-      name: $name
-    )
+  query IngestionEditionUserHandlingQuery($name: String!) {
+    userAlreadyExists(name: $name)
   }
 `;
 
@@ -38,15 +34,21 @@ interface IngestionEditionUserHandlingProps {
   onAutoUserCreated: () => void;
   mutation: GraphQLTaggedNode;
 }
-const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandlingProps> = ({ feedName, dataId, onAutoUserCreated, mutation }) => {
+const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandlingProps> = ({
+  feedName,
+  dataId,
+  onAutoUserCreated,
+  mutation,
+}) => {
   const { t_i18n } = useFormatter();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [commitUpdate] = useApiMutation(mutation);
-  const validationSchema = () => Yup.object().shape({
-    user_name: Yup.string(),
-    confidence_level: Yup.number(),
-  });
+  const validationSchema = () =>
+    Yup.object().shape({
+      user_name: Yup.string(),
+      confidence_level: Yup.number(),
+    });
 
   const initialValues: IngestionEditionAddAutoUserInput = {
     user_name: `[F] ${feedName}`,
@@ -59,12 +61,16 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
   ) => {
     const existingUsers = await fetchQuery(ingestionEditionUserHandlingQuery, {
       name: values.user_name,
-    })
-      .toPromise();
+    }).toPromise();
 
     if ((existingUsers as IngestionEditionUserHandlingQuery$data)?.userAlreadyExists) {
       setSubmitting(false);
-      setFieldError('user_name', t_i18n('This service account already exists. Change the feed\'s name to change the automatically created service account name'));
+      setFieldError(
+        'user_name',
+        t_i18n(
+          "This service account already exists. Change the feed's name to change the automatically created service account name",
+        ),
+      );
       return;
     }
 
@@ -85,7 +91,6 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
   };
 
   return (
-
     <>
       <Alert
         severity="warning"
@@ -93,10 +98,13 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
         sx={{ padding: '0px 10px 0px 10px', marginTop: '20px' }}
       >
         <Box>
-          {t_i18n('You have set System as a creator. Create a service account for this feed to ensure traceability of your data')}
+          {t_i18n(
+            'You have set System as a creator. Create a service account for this feed to ensure traceability of your data',
+          )}
         </Box>
-        <Button onClick={() => setOpenDialog(true)}>{ t_i18n('Create a service account for this feed')}</Button>
-
+        <Button onClick={() => setOpenDialog(true)}>
+          {t_i18n('Create a service account for this feed')}
+        </Button>
       </Alert>
 
       <Formik<IngestionEditionAddAutoUserInput>
@@ -105,7 +113,6 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
         onSubmit={onSubmit}
       >
         {({ submitForm, resetForm }) => (
-
           <Dialog
             open={openDialog}
             fullWidth={true}
@@ -139,15 +146,15 @@ const IngestionEditionUserHandling: FunctionComponent<IngestionEditionUserHandli
               >
                 {t_i18n('Cancel')}
               </Button>
-              <Button onClick={() => {
-                submitForm();
-              }}
+              <Button
+                onClick={() => {
+                  submitForm();
+                }}
               >
                 {t_i18n('Confirm')}
               </Button>
             </DialogActions>
           </Dialog>
-
         )}
       </Formik>
     </>

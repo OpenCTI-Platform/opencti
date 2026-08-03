@@ -14,7 +14,9 @@ import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
 import useHelper from '../utils/hooks/useHelper';
-import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
+import SettingsMessagesBanner, {
+  useSettingsMessagesBannerHeight,
+} from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
 import Loader from '../components/Loader';
@@ -25,7 +27,9 @@ import { ChatbotProvider } from './components/chatbox/ChatbotContext';
 import useTopBanner from '../utils/hooks/useTopBanner';
 
 const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
-const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
+const StixObjectOrStixRelationship = lazy(
+  () => import('./components/StixObjectOrStixRelationship'),
+);
 const RootSearchBulk = lazy(() => import('./components/SearchBulkContainer'));
 const RootAnalyses = lazy(() => import('./components/analyses/Root'));
 const RootCases = lazy(() => import('./components/cases/Root'));
@@ -101,7 +105,8 @@ const Index = ({ settings }: IndexProps) => {
     <ChatbotProvider>
       <SystemBanners settings={settings} />
       <TopBannersManager />
-      {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
+      {((settings.platform_session_idle_timeout ?? 0) > 0 ||
+        (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
       <Box
@@ -123,11 +128,16 @@ const Index = ({ settings }: IndexProps) => {
               <Routes>
                 <Route
                   path="/"
-                  element={draftContext?.id
-                    ? (
-                        <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                      )
-                    : boundaryWrapper(HomeDashboard)}
+                  element={
+                    draftContext?.id ? (
+                      <Navigate
+                        to={`/dashboard/data/import/draft/${draftContext.id}/`}
+                        replace={true}
+                      />
+                    ) : (
+                      boundaryWrapper(HomeDashboard)
+                    )
+                  }
                 />
                 {/* Search need to be rework */}
                 <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
@@ -145,7 +155,7 @@ const Index = ({ settings }: IndexProps) => {
                 <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
                 <Route path="/data/*" element={boundaryWrapper(RootData)} />
                 <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
-                {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+                {isTrashEnable() && <Route path="/trash/*" element={boundaryWrapper(RootTrash)} />}
                 <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
                 <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
                 <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />

@@ -18,9 +18,7 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnalyses';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { StixCyberObservable_stixCyberObservable$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservable_stixCyberObservable.graphql';
-import {
-  StixCyberObservableDetails_stixCyberObservable$key,
-} from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableDetails_stixCyberObservable.graphql';
+import { StixCyberObservableDetails_stixCyberObservable$key } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservableDetails_stixCyberObservable.graphql';
 import { PopoverProps } from '@mui/material/Popover';
 import useAttributeValueToReadableValue from '../../../../utils/hooks/useAttributeValueToReadableValue';
 import Card from '../../../../components/common/card/Card';
@@ -304,9 +302,10 @@ const stixCyberObservableDetailsFragment = graphql`
 const reorderMediaContentObservablesAttributes = (data: { key: string; value: string }[]) => {
   const desiredOrder = ['content', 'title', 'media_category', 'url', 'publication_date'];
 
-  return desiredOrder
-    .map((key) => data.find((item) => item.key === key))
-    .filter(Boolean) as { key: string; value: string }[];
+  return desiredOrder.map((key) => data.find((item) => item.key === key)).filter(Boolean) as {
+    key: string;
+    value: string;
+  }[];
 };
 
 interface DownloadFileButtonMenuProps {
@@ -314,10 +313,7 @@ interface DownloadFileButtonMenuProps {
   encodedFilePath: string | null;
 }
 
-const DownloadFileButtonMenu = ({
-  fileSize,
-  encodedFilePath,
-}: DownloadFileButtonMenuProps) => {
+const DownloadFileButtonMenu = ({ fileSize, encodedFilePath }: DownloadFileButtonMenuProps) => {
   const { t_i18n } = useFormatter();
 
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
@@ -339,33 +335,20 @@ const DownloadFileButtonMenu = ({
     <>
       <Label>{t_i18n('File')}</Label>
 
-      <Button
-        variant="secondary"
-        size="small"
-        startIcon={<GetAppOutlined />}
-        onClick={handleOpen}
-      >
-        {t_i18n('Download')} ({(fileSize)})
+      <Button variant="secondary" size="small" startIcon={<GetAppOutlined />} onClick={handleOpen}>
+        {t_i18n('Download')} ({fileSize})
       </Button>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
           dense={true}
-          onClick={() => handleLink(
-            `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-          )}
+          onClick={() => handleLink(`${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`)}
         >
           {t_i18n('Encrypted archive')}
         </MenuItem>
         <MenuItem
           dense={true}
-          onClick={() => handleLink(
-            `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-          )}
+          onClick={() => handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`)}
         >
           {t_i18n('Raw file')}
         </MenuItem>
@@ -390,7 +373,10 @@ interface StixCyberObservableDetailsProps {
 }
 
 const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) => {
-  const stixCyberObservable = useFragment<StixCyberObservableDetails_stixCyberObservable$key>(stixCyberObservableDetailsFragment, data);
+  const stixCyberObservable = useFragment<StixCyberObservableDetails_stixCyberObservable$key>(
+    stixCyberObservableDetailsFragment,
+    data,
+  );
 
   const { t_i18n } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
@@ -399,22 +385,15 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
   const observableAttributes = Object.entries(stixCyberObservable)
     // remove unwanted keys
-    .filter(([key, _]) =>
-      key !== 'id'
-      && key !== 'entity_type'
-      && key !== 'obsContent',
-    )
+    .filter(([key, _]) => key !== 'id' && key !== 'entity_type' && key !== 'obsContent')
     .map(([key, value]) => ({ key, value }))
     // final filtering
-    .filter((n) =>
-      n.value
-      && !ignoredAttributes.includes(n.key)
-      && !n.key.startsWith('__'),
-    );
+    .filter((n) => n.value && !ignoredAttributes.includes(n.key) && !n.key.startsWith('__'));
 
-  const file = stixCyberObservable.importFiles && stixCyberObservable.importFiles.edges.length > 0
-    ? stixCyberObservable.importFiles.edges[0].node
-    : null;
+  const file =
+    stixCyberObservable.importFiles && stixCyberObservable.importFiles.edges.length > 0
+      ? stixCyberObservable.importFiles.edges[0].node
+      : null;
 
   const isObservableAnalysable = [
     'StixFile',
@@ -427,9 +406,10 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
 
   const encodedFilePath = file && encodeURIComponent(file.id);
 
-  const orderedObservableAttributes = stixCyberObservable.entity_type === 'Media-Content'
-    ? reorderMediaContentObservablesAttributes(observableAttributes)
-    : observableAttributes;
+  const orderedObservableAttributes =
+    stixCyberObservable.entity_type === 'Media-Content'
+      ? reorderMediaContentObservablesAttributes(observableAttributes)
+      : observableAttributes;
 
   return (
     <div style={{ height: '100%' }} className="break">
@@ -437,13 +417,8 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           <Grid size={12}>
             <>
-              <Label>
-                {t_i18n('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={stixCyberObservable.x_opencti_description}
-                limit={400}
-              />
+              <Label>{t_i18n('Description')}</Label>
+              <ExpandableMarkdown source={stixCyberObservable.x_opencti_description} limit={400} />
             </>
           </Grid>
           {file && (
@@ -466,27 +441,21 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
             }
 
             if (key === 'startup_info') {
-              return (value as { key: string; value: string }[])
-                .map((v) => (
-                  <Grid key={v.key} size={6}>
-                    <LabelItemCopy label={`${v.key} - startup_info`} value={v.value} />
-                  </Grid>
-                ));
+              return (value as { key: string; value: string }[]).map((v) => (
+                <Grid key={v.key} size={6}>
+                  <LabelItemCopy label={`${v.key} - startup_info`} value={v.value} />
+                </Grid>
+              ));
             }
 
             if (isVocabularyField(stixCyberObservable.entity_type, key)) {
               return (
                 <Grid key={key} size={6}>
                   <>
-                    <Label>
-                      {t_i18n(key)}
-                    </Label>
+                    <Label>{t_i18n(key)}</Label>
                     <ItemOpenVocab
                       small={false}
-                      type={fieldToCategory(
-                        stixCyberObservable.entity_type,
-                        key,
-                      ) ?? ''}
+                      type={fieldToCategory(stixCyberObservable.entity_type, key) ?? ''}
                       value={value}
                     />
                   </>
@@ -498,13 +467,8 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               return (
                 <Grid key={key} size={6}>
                   <>
-                    <Label>
-                      {t_i18n('Content')}
-                    </Label>
-                    <ExpandableMarkdown
-                      source={value}
-                      limit={400}
-                    />
+                    <Label>{t_i18n('Content')}</Label>
+                    <ExpandableMarkdown source={value} limit={400} />
                   </>
                 </Grid>
               );
@@ -531,14 +495,10 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
             />
           )}
 
-          <StixCyberObservableIndicators
-            stixCyberObservable={stixCyberObservable}
-          />
+          <StixCyberObservableIndicators stixCyberObservable={stixCyberObservable} />
 
           {isObservableAnalysable && (
-            <StixCyberObservableMalwareAnalyses
-              observableId={stixCyberObservable.id}
-            />
+            <StixCyberObservableMalwareAnalyses observableId={stixCyberObservable.id} />
           )}
         </Box>
       </Card>

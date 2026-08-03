@@ -4,7 +4,12 @@ import AlertInfo from '../../../../components/Alert';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { useFormatter } from '../../../../components/i18n';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -12,7 +17,10 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
-import { RestrictedEntitiesLinesPaginationQuery, RestrictedEntitiesLinesPaginationQuery$variables } from './__generated__/RestrictedEntitiesLinesPaginationQuery.graphql';
+import {
+  RestrictedEntitiesLinesPaginationQuery,
+  RestrictedEntitiesLinesPaginationQuery$variables,
+} from './__generated__/RestrictedEntitiesLinesPaginationQuery.graphql';
 import { RestrictedEntitiesLines_data$data } from './__generated__/RestrictedEntitiesLines_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
@@ -27,19 +35,19 @@ export const managementDefinitionsLinesPaginationQuery = graphql`
     $filters: FilterGroup
   ) {
     ...RestrictedEntitiesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
 const managementDefinitionLineFragment = graphql`
-  fragment RestrictedEntitiesLine_node on StixCoreObject{
+  fragment RestrictedEntitiesLine_node on StixCoreObject {
     id
     entity_type
     created_at
@@ -86,10 +94,7 @@ const managementDefinitionsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCoreObjectsOrdering"
-      defaultValue: entity_type
-    }
+    orderBy: { type: "StixCoreObjectsOrdering", defaultValue: entity_type }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -102,8 +107,7 @@ const managementDefinitionsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    )
-    @connection(key: "Pagination_stixCoreObjectsRestricted") {
+    ) @connection(key: "Pagination_stixCoreObjectsRestricted") {
       edges {
         node {
           id
@@ -152,7 +156,10 @@ const RestrictedEntities = () => {
     viewStorage: { filters },
     paginationOptions,
     helpers,
-  } = usePaginationLocalStorage<RestrictedEntitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  } = usePaginationLocalStorage<RestrictedEntitiesLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
 
   const filtersWithEntityType = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
   const contextFilters = addFilter(filtersWithEntityType, 'authorized_members.id', [], 'not_nil');
@@ -193,10 +200,10 @@ const RestrictedEntities = () => {
     },
   };
 
-  const queryRef = useQueryLoading(
-    managementDefinitionsLinesPaginationQuery,
-    { ...queryPaginationOptions, count: 25 },
-  );
+  const queryRef = useQueryLoading(managementDefinitionsLinesPaginationQuery, {
+    ...queryPaginationOptions,
+    count: 25,
+  });
 
   const preloadedPaginationProps = {
     linesQuery: managementDefinitionsLinesPaginationQuery,
@@ -217,14 +224,18 @@ const RestrictedEntities = () => {
         noMargin
       />
       <AlertInfo
-        content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+        content={t_i18n(
+          'This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.',
+        )}
       />
       {queryRef && (
         <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
             rootRef={ref}
             dataColumns={dataColumns}
-            resolvePath={(data: RestrictedEntitiesLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
+            resolvePath={(data: RestrictedEntitiesLines_data$data) =>
+              data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             lineFragment={managementDefinitionLineFragment}

@@ -1,5 +1,10 @@
 import type { ExclusionListCacheItem } from '../types/exclusionList';
-import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL } from '../schema/stixCyberObservable';
+import {
+  ENTITY_DOMAIN_NAME,
+  ENTITY_IPV4_ADDR,
+  ENTITY_IPV6_ADDR,
+  ENTITY_URL,
+} from '../schema/stixCyberObservable';
 
 export const getIsRange = (value: string) => value.indexOf('/') !== -1;
 
@@ -17,7 +22,7 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
     const binary = ipv6
       .split(':')
       .map((t) => (t === '' ? '0' : t))
-      .map((hex) => (parseInt(hex, 16).toString(2)).padStart(16, '0'))
+      .map((hex) => parseInt(hex, 16).toString(2).padStart(16, '0'))
       .join('');
     return binary.slice(0, range);
   }
@@ -32,12 +37,15 @@ export const convertIpv6ToBinary = (ipv6: string, isRange?: boolean, range?: num
 
   return test
     .map((t) => (t === '' ? '0' : t))
-    .map((hex) => (parseInt(hex, 16).toString(2)).padStart(16, '0'))
+    .map((hex) => parseInt(hex, 16).toString(2).padStart(16, '0'))
     .join('');
 };
 
 export const convertIpv4ToBinary = (ipv4: string, isRange?: boolean, range?: number) => {
-  const binary = ipv4.split('.').map((ip) => (parseInt(ip, 10).toString(2)).padStart(8, '0')).join('');
+  const binary = ipv4
+    .split('.')
+    .map((ip) => parseInt(ip, 10).toString(2).padStart(8, '0'))
+    .join('');
   if (isRange && range) {
     return binary.slice(0, range);
   }
@@ -50,7 +58,10 @@ export interface ConvertedIpAddr {
 }
 
 export const convertIpAddr = (list: string[]) => {
-  const ipAddrConverted: ConvertedIpAddr = { ipv4: { ranges: [], values: [] }, ipv6: { ranges: [], values: [] } };
+  const ipAddrConverted: ConvertedIpAddr = {
+    ipv4: { ranges: [], values: [] },
+    ipv6: { ranges: [], values: [] },
+  };
   for (let i = 0; i < list.length; i += 1) {
     const value = list[i];
     const { isIpv4, isIpv6 } = checkIpAddrType(value);
@@ -124,7 +135,10 @@ const checkIpExclusionLists = (ipToTest: string, exclusionList: ExclusionListCac
   return null;
 };
 
-const checkStringExclusionLists = (valueToTest: string, exclusionList: ExclusionListCacheItem[]) => {
+const checkStringExclusionLists = (
+  valueToTest: string,
+  exclusionList: ExclusionListCacheItem[],
+) => {
   for (let i = 0; i < exclusionList.length; i += 1) {
     const { id, values } = exclusionList[i];
     const isValueInList = binarySearchList(values, valueToTest);
@@ -137,7 +151,10 @@ const checkStringExclusionLists = (valueToTest: string, exclusionList: Exclusion
 
 // check domain/url value and all their subdomains
 // i.e. for values like www.google.com, we want to check for www.google.com AND .google.com
-const checkDomainExclusionLists = (valueToTest: string, exclusionList: ExclusionListCacheItem[]) => {
+const checkDomainExclusionLists = (
+  valueToTest: string,
+  exclusionList: ExclusionListCacheItem[],
+) => {
   const valueCheck = checkStringExclusionLists(valueToTest, exclusionList);
   if (valueCheck) {
     return valueCheck;
@@ -153,7 +170,11 @@ const checkDomainExclusionLists = (valueToTest: string, exclusionList: Exclusion
   return null;
 };
 
-export const checkExclusionLists = (valueToTest: string, valueToTestType: string, allExclusionLists: ExclusionListCacheItem[]) => {
+export const checkExclusionLists = (
+  valueToTest: string,
+  valueToTestType: string,
+  allExclusionLists: ExclusionListCacheItem[],
+) => {
   const relatedExclusionLists = allExclusionLists.filter((e) => e.types.includes(valueToTestType));
   if (relatedExclusionLists.length === 0) {
     return null;

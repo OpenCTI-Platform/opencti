@@ -13,7 +13,11 @@ import {
   type WidgetDataSelection,
 } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
+import {
+  type BasicStoreEntityFintelTemplate,
+  ENTITY_TYPE_FINTEL_TEMPLATE,
+  type StoreEntityFintelTemplate,
+} from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -54,34 +58,43 @@ export const canViewTemplates = async (context: AuthContext) => {
   return isEE;
 };
 
-export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityFintelTemplate> => {
+export const findById = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+): Promise<BasicStoreEntityFintelTemplate> => {
   await canViewTemplates(context);
   return storeLoadById(context, user, id, ENTITY_TYPE_FINTEL_TEMPLATE);
 };
 
 // check validity of variable_name of fintel template widgets
-export const checkFintelTemplateWidgetsValidity = (fintelTemplateWidgets: FintelTemplateWidget[]) => {
+export const checkFintelTemplateWidgetsValidity = (
+  fintelTemplateWidgets: FintelTemplateWidget[],
+) => {
   const invalidVariableNames: string[] = [];
-  (fintelTemplateWidgets ?? [])
-    .forEach(({ variable_name, widget }) => {
-      if (!fintelTemplateVariableNameChecker.test(variable_name)) {
-        invalidVariableNames.push(variable_name);
-      }
-      if (widget.type === 'attribute') {
-        widget.dataSelection.forEach((selection: WidgetDataSelection) => {
-          (selection.columns ?? [])
-            .forEach((c) => {
-              if (!c.variableName) {
-                throw FunctionalError('Attributes should all have a variable name', { variableNameOfTheWidget: variable_name });
-              } else if (!fintelTemplateVariableNameChecker.test(c.variableName)) {
-                invalidVariableNames.push(c.variableName);
-              }
+  (fintelTemplateWidgets ?? []).forEach(({ variable_name, widget }) => {
+    if (!fintelTemplateVariableNameChecker.test(variable_name)) {
+      invalidVariableNames.push(variable_name);
+    }
+    if (widget.type === 'attribute') {
+      widget.dataSelection.forEach((selection: WidgetDataSelection) => {
+        (selection.columns ?? []).forEach((c) => {
+          if (!c.variableName) {
+            throw FunctionalError('Attributes should all have a variable name', {
+              variableNameOfTheWidget: variable_name,
             });
+          } else if (!fintelTemplateVariableNameChecker.test(c.variableName)) {
+            invalidVariableNames.push(c.variableName);
+          }
         });
-      }
-    });
+      });
+    }
+  });
   if (invalidVariableNames.length > 0) {
-    throw FunctionalError('Variable names should not contain spaces or special chars (except - and _)', { invalidVariableNames });
+    throw FunctionalError(
+      'Variable names should not contain spaces or special chars (except - and _)',
+      { invalidVariableNames },
+    );
   }
 };
 
@@ -98,17 +111,21 @@ const applyUniqueDefaultTemplateConstraint = async (
     {
       baseData: true,
       filters: {
-        filters: [{
-          key: ['settings_types'],
-          values: [settingsType],
-        }, {
-          key: ['default'],
-          values: ['true'],
-        }, {
-          key: ['id'],
-          values: [newDefaultTemplateId],
-          operator: FilterOperator.NotEq,
-        }],
+        filters: [
+          {
+            key: ['settings_types'],
+            values: [settingsType],
+          },
+          {
+            key: ['default'],
+            values: ['true'],
+          },
+          {
+            key: ['id'],
+            values: [newDefaultTemplateId],
+            operator: FilterOperator.NotEq,
+          },
+        ],
         filterGroups: [],
         mode: FilterMode.And,
       },
@@ -120,16 +137,20 @@ const applyUniqueDefaultTemplateConstraint = async (
   // There should be only one but we never know as the constraint is not
   // enforced at the DB level.
   const results = await Promise.all(
-    previousDefaultTemplates.map((entity: BasicStoreEntityFintelTemplate) => updateAttribute<StoreEntityFintelTemplate>(
-      context,
-      user,
-      entity.id,
-      ENTITY_TYPE_FINTEL_TEMPLATE,
-      [{
-        key: 'default',
-        value: ['false'],
-      }],
-    )),
+    previousDefaultTemplates.map((entity: BasicStoreEntityFintelTemplate) =>
+      updateAttribute<StoreEntityFintelTemplate>(
+        context,
+        user,
+        entity.id,
+        ENTITY_TYPE_FINTEL_TEMPLATE,
+        [
+          {
+            key: 'default',
+            value: ['false'],
+          },
+        ],
+      ),
+    ),
   );
   return results.map(({ element }) => element);
 };
@@ -145,7 +166,9 @@ export const addFintelTemplate = async (
   // check input validity
   checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
   // get settings type
-  const { settings_types: [settings_type] } = input;
+  const {
+    settings_types: [settings_type],
+  } = input;
   const isContainer = isStixDomainObjectContainer(settings_type);
   // add id to fintel template widgets
   const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
@@ -161,14 +184,18 @@ export const addFintelTemplate = async (
         id: uuidv4(),
         type: 'attribute',
         perspective: null,
-        dataSelection: [{
-          columns: [{
-            label: 'Representative',
-            attribute: 'representative.main',
-            variableName: isContainer ? 'containerRepresentative' : 'entityRepresentative',
-          }],
-          instance_id: SELF_ID,
-        }],
+        dataSelection: [
+          {
+            columns: [
+              {
+                label: 'Representative',
+                attribute: 'representative.main',
+                variableName: isContainer ? 'containerRepresentative' : 'entityRepresentative',
+              },
+            ],
+            instance_id: SELF_ID,
+          },
+        ],
         parameters: {
           title: 'Attributes of the instance',
           description: 'Multi attributes widget for the instance which the template is applied to.',
@@ -206,15 +233,12 @@ export const addFintelTemplate = async (
   // Locking the object list on the entity prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference directly on the entity
   // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
-  const lock = input.default ? await lockResources([`fintel-template-default:${settings_type}`]) : null;
+  const lock = input.default
+    ? await lockResources([`fintel-template-default:${settings_type}`])
+    : null;
   try {
     // create the fintel template
-    const created = await createEntity(
-      context,
-      user,
-      finalInput,
-      ENTITY_TYPE_FINTEL_TEMPLATE,
-    );
+    const created = await createEntity(context, user, finalInput, ENTITY_TYPE_FINTEL_TEMPLATE);
     if (input.default) {
       await applyUniqueDefaultTemplateConstraint(context, user, settings_type, created.id);
     }
@@ -247,9 +271,10 @@ export const fintelTemplateEditField = async (
   await canCustomizeTemplate(context);
   // for add and replace operations on widgets, check fintel template widgets variables names and add widget ids
   const formattedInput = input.map((i) => {
-    if (i.operation !== 'remove'
-      && i.key === 'fintel_template_widgets'
-      && (!i.object_path || i.object_path.split('/').length <= 2)
+    if (
+      i.operation !== 'remove' &&
+      i.key === 'fintel_template_widgets' &&
+      (!i.object_path || i.object_path.split('/').length <= 2)
     ) {
       const values = i.value as FintelTemplateWidgetAddInput[];
       checkFintelTemplateWidgetsValidity(values);
@@ -263,7 +288,12 @@ export const fintelTemplateEditField = async (
   });
   const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
 
-  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, templateId, ENTITY_TYPE_FINTEL_TEMPLATE);
+  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(
+    context,
+    user,
+    templateId,
+    ENTITY_TYPE_FINTEL_TEMPLATE,
+  );
   const settingsType = existing.settings_types[0];
 
   // The default status is stored on the object itself (fintelTemplate) rather than on its parent entity.
@@ -273,7 +303,9 @@ export const fintelTemplateEditField = async (
   // Locking the object list on the entity prevents this race condition.
   // Note: a cleaner long-term approach would be to store the default reference directly on the entity
   // (e.g. a defaultFintelTemplateId field), which would make this unicity constraint trivial to enforce.
-  const lock = defaultFieldValue ? await lockResources([`fintel-template-default:${settingsType}`]) : null;
+  const lock = defaultFieldValue
+    ? await lockResources([`fintel-template-default:${settingsType}`])
+    : null;
   try {
     // edit the fintel template
     const { element } = await updateAttribute<StoreEntityFintelTemplate>(
@@ -285,14 +317,9 @@ export const fintelTemplateEditField = async (
     );
 
     if (defaultFieldValue) {
-    // Unset the `default` fields for other CustomViews of the same
-    // target_entity_type to enforce uniqueness constraint
-      await applyUniqueDefaultTemplateConstraint(
-        context,
-        user,
-        settingsType,
-        element.id,
-      );
+      // Unset the `default` fields for other CustomViews of the same
+      // target_entity_type to enforce uniqueness constraint
+      await applyUniqueDefaultTemplateConstraint(context, user, settingsType, element.id);
     }
 
     await publishUserAction({
@@ -301,7 +328,11 @@ export const fintelTemplateEditField = async (
       event_scope: 'update',
       event_access: 'administration',
       message: `updates \`${input.map((i) => i.key).join(', ')}\` for fintel template ${element.name}`,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_FINTEL_TEMPLATE, input: formattedInput },
+      context_data: {
+        id: element.id,
+        entity_type: ENTITY_TYPE_FINTEL_TEMPLATE,
+        input: formattedInput,
+      },
     });
 
     return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].EDIT_TOPIC, element, user);
@@ -310,7 +341,11 @@ export const fintelTemplateEditField = async (
   }
 };
 
-export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser, templateId: string) => {
+export const fintelTemplateDelete = async (
+  context: AuthContext,
+  user: AuthUser,
+  templateId: string,
+) => {
   await canCustomizeTemplate(context);
   const deleted = await deleteElementById<StoreEntityFintelTemplate>(
     context,
@@ -332,7 +367,9 @@ export const fintelTemplateDelete = async (context: AuthContext, user: AuthUser,
     },
   });
 
-  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].DELETE_TOPIC, deleted, user).then(() => templateId);
+  return notify(BUS_TOPICS[ENTITY_TYPE_FINTEL_TEMPLATE].DELETE_TOPIC, deleted, user).then(
+    () => templateId,
+  );
 };
 
 export const initFintelTemplates = async (context: AuthContext, user: AuthUser) => {
@@ -353,13 +390,18 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
       widget: { ...templateWidget.widget, id: uuidv4() },
     })),
   }));
-  await Promise.all(finalInputs
-    .map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)));
+  await Promise.all(
+    finalInputs.map((input) => createEntity(context, user, input, ENTITY_TYPE_FINTEL_TEMPLATE)),
+  );
 };
 
 const MINIMAL_VERSION_FOR_IMPORT = '6.5.0';
 
-export const fintelTemplateExport = async (context: AuthContext, user: AuthUser, template: BasicStoreEntityFintelTemplate) => {
+export const fintelTemplateExport = async (
+  context: AuthContext,
+  user: AuthUser,
+  template: BasicStoreEntityFintelTemplate,
+) => {
   const {
     name,
     description,
@@ -413,14 +455,21 @@ type FintelTemplateWidgetFromImport = {
   };
 };
 
-export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const fintelTemplateConfigurationImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>,
+) => {
   const parsedData = await extractContentFrom(file);
-  const fintel_template_widgets = parsedData.configuration.fintel_template_widgets as FintelTemplateWidgetFromImport[];
+  const fintel_template_widgets = parsedData.configuration
+    .fintel_template_widgets as FintelTemplateWidgetFromImport[];
 
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_VERSION_FOR_IMPORT)) {
     throw FunctionalError(
       `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_VERSION_FOR_IMPORT}`,
-      { reason: parsedData.openCTI_version },
+      {
+        reason: parsedData.openCTI_version,
+      },
     );
   }
 

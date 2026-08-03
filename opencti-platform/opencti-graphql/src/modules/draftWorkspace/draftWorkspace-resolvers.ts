@@ -37,7 +37,8 @@ const draftWorkspaceResolvers: Resolvers = {
   Query: {
     draftWorkspace: (_, { id }, context) => findById(context, context.user, id),
     draftWorkspaces: (_, args, context) => findDraftWorkspacePaginated(context, context.user, args),
-    draftWorkspacesRestricted: (_, args, context) => findDraftWorkspaceRestrictedPaginated(context, context.user, args),
+    draftWorkspacesRestricted: (_, args, context) =>
+      findDraftWorkspaceRestrictedPaginated(context, context.user, args),
     draftWorkspaceEntities: (_, args, context) => listDraftObjects(context, context.user, args),
     draftWorkspaceRelationships: async (_, args, context) => {
       context.changeDraftContext(args.draftId);
@@ -47,14 +48,20 @@ const draftWorkspaceResolvers: Resolvers = {
       context.changeDraftContext(args.draftId);
       return listDraftSightingRelations(context, context.user, args);
     },
-    draftWorkspaceContainerObjects: (_, args, context) => listDraftContainerObjects(context, context.user, args),
-    draftWorkspaceResolveIds: (_, args, context) => resolveIdRepresentatives(context, context.user, args),
+    draftWorkspaceContainerObjects: (_, args, context) =>
+      listDraftContainerObjects(context, context.user, args),
+    draftWorkspaceResolveIds: (_, args, context) =>
+      resolveIdRepresentatives(context, context.user, args),
     draftWorkspaceEntityFields: (_, args, context) => getEntityFields(context, context.user, args),
-    draftWorkspaceEntityRelations: (_, args, context) => getEntityRelations(context, context.user, args),
-    draftWorkspaceEntityContainerRefs: (_, args, context) => getEntityContainerRefs(context, context.user, args),
+    draftWorkspaceEntityRelations: (_, args, context) =>
+      getEntityRelations(context, context.user, args),
+    draftWorkspaceEntityContainerRefs: (_, args, context) =>
+      getEntityContainerRefs(context, context.user, args),
     draftWorkspacesNumber: (_, args, context) => draftWorkspacesNumber(context, context.user, args),
-    draftWorkspacesTimeSeries: (_, args, context) => draftWorkspacesTimeSeries(context, context.user, args),
-    draftWorkspacesDistribution: (_, args, context) => draftWorkspacesDistribution(context, context.user, args),
+    draftWorkspacesTimeSeries: (_, args, context) =>
+      draftWorkspacesTimeSeries(context, context.user, args),
+    draftWorkspacesDistribution: (_, args, context) =>
+      draftWorkspacesDistribution(context, context.user, args),
   },
   DraftWorkspace: {
     creators: async (draft, _, context) => loadCreators(context, context.user, draft),
@@ -63,13 +70,21 @@ const draftWorkspaceResolvers: Resolvers = {
     works: (draft, args, context) => {
       return worksForDraft(context, context.user, draft.id, args) as unknown as any;
     },
-    validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
+    validationWork: (draft, _, context) =>
+      draft.validation_work_id
+        ? (findWorkById(context, context.user, draft.validation_work_id) as any)
+        : null,
     workflowInstance: (draft, _, context) => getWorkflowInstance(context, context.user, draft.id),
-    authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
-    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
-    objectParticipant: async (workspace, _, context) => loadParticipants(context, context.user, workspace),
-    objectAssignee: async (workspace, _, context) => loadAssignees(context, context.user, workspace),
-    createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
+    authorizedMembers: (workspace, _, context) =>
+      getAuthorizedMembers(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) =>
+      getCurrentUserAccessRight(context.user, workspace),
+    objectParticipant: async (workspace, _, context) =>
+      loadParticipants(context, context.user, workspace),
+    objectAssignee: async (workspace, _, context) =>
+      loadAssignees(context, context.user, workspace),
+    createdBy: (rel, _, context) =>
+      loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
   },
   Mutation: {
     draftWorkspaceAdd: async (_, { input }, context) => {
@@ -78,12 +93,18 @@ const draftWorkspaceResolvers: Resolvers = {
       return draft;
     },
     draftWorkspaceEdit: (_, { id }, context): any => ({
-      relationAdd: ({ input }: { input: StixRefRelationshipAddInput }) => draftWorkspaceAddRelation(context, context.user, id, input),
-      relationDelete: (
-        { toId, relationship_type: relationshipType }: { toId: string; relationship_type: string },
-      ) => draftWorkspaceDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationAdd: ({ input }: { input: StixRefRelationshipAddInput }) =>
+        draftWorkspaceAddRelation(context, context.user, id, input),
+      relationDelete: ({
+        toId,
+        relationship_type: relationshipType,
+      }: {
+        toId: string;
+        relationship_type: string;
+      }) => draftWorkspaceDeleteRelation(context, context.user, id, toId, relationshipType),
     }),
-    draftWorkspaceFieldPatch: (_, { id, input }, context) => draftWorkspaceEditField(context, context.user, id, input),
+    draftWorkspaceFieldPatch: (_, { id, input }, context) =>
+      draftWorkspaceEditField(context, context.user, id, input),
     draftWorkspaceEditAuthorizedMembers: (_, { id, input }, context) => {
       return draftWorkspaceEditAuthorizedMembers(context, context.user, id, input);
     },

@@ -39,9 +39,7 @@ const SubscriptionAvatarsComponent = ({ classes, context, variant }) => {
   const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   return (
-    <div
-      className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}
-    >
+    <div className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}>
       {users.map((user, i) => (
         <Tooltip title={user.name} key={i}>
           <Avatar

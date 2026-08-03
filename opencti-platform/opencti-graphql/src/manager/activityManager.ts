@@ -13,7 +13,11 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import {
+  clearIntervalAsync,
+  setIntervalAsync,
+  type SetIntervalAsyncTimer,
+} from 'set-interval-async/fixed';
 import { createStreamProcessor, storeNotificationEvent } from '../database/stream/stream-handler';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField } from '../database/utils';
@@ -22,7 +26,12 @@ import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { ActivityStreamEvent, SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { topEntitiesList } from '../database/middleware-loader';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_ACTIVITY,
+  ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
@@ -30,8 +39,17 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
-import type { ActivityNotificationEvent, NotificationUser, ResolvedLive, ResolvedTrigger } from './notificationManager';
-import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getNotifications } from './notificationManager';
+import type {
+  ActivityNotificationEvent,
+  NotificationUser,
+  ResolvedLive,
+  ResolvedTrigger,
+} from './notificationManager';
+import {
+  convertToNotificationUser,
+  EVENT_NOTIFICATION_VERSION,
+  getNotifications,
+} from './notificationManager';
 import { isActivityEventMatchFilterGroup } from '../utils/filtering/filtering-activity-event/activity-event-filtering';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { lockResources } from '../lock/master-lock';
@@ -42,16 +60,25 @@ import { InterruptibleTimer } from './interruptible-timer';
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
 
-export const isLiveActivity = (n: ResolvedTrigger): n is ResolvedLive => n.trigger.trigger_type === 'live'
-  && n.trigger.trigger_scope === 'activity';
+export const isLiveActivity = (n: ResolvedTrigger): n is ResolvedLive =>
+  n.trigger.trigger_type === 'live' && n.trigger.trigger_scope === 'activity';
 
-export const getLiveActivityNotifications = async (context: AuthContext): Promise<Array<ResolvedLive>> => {
+export const getLiveActivityNotifications = async (
+  context: AuthContext,
+): Promise<Array<ResolvedLive>> => {
   const liveNotifications = await getNotifications(context);
   return liveNotifications.filter(isLiveActivity);
 };
 
-const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
-  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+const alertingTriggers = async (
+  context: AuthContext,
+  events: Array<SseEvent<ActivityStreamEvent>>,
+) => {
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const triggers = await getLiveActivityNotifications(context);
   for (let index = 0; index < events.length; index += 1) {
     // type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
@@ -66,30 +93,53 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
       const { internal_id: notification_id, notifiers } = trigger;
       const triggerFilters = trigger.filters ? JSON.parse(trigger.filters) : null;
       // Filter the event
-      const isMatchFilter = triggerFilters ? await isActivityEventMatchFilterGroup(event.data, triggerFilters) : true;
+      const isMatchFilter = triggerFilters
+        ? await isActivityEventMatchFilterGroup(event.data, triggerFilters)
+        : true;
       if (isMatchFilter) {
         const targets: Array<{ user: NotificationUser; type: string; message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;
         for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
           const user = users[indexUser];
-          targets.push({ user: convertToNotificationUser(user, notifiers), type: event_scope, message: `\`${sourceUser?.name}\` ${message}` });
+          targets.push({
+            user: convertToNotificationUser(user, notifiers),
+            type: event_scope,
+            message: `\`${sourceUser?.name}\` ${message}`,
+          });
         }
-        const notificationEvent: ActivityNotificationEvent = { version, notification_id, type: 'live', targets, data, origin };
+        const notificationEvent: ActivityNotificationEvent = {
+          version,
+          notification_id,
+          type: 'live',
+          targets,
+          data,
+          origin,
+        };
         await storeNotificationEvent(context, notificationEvent);
       }
     }
   }
 };
 
-export const buildActivityHistoryElements = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
-  const markingDefinitions = await getEntitiesMapFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  return events.filter((e) => !e.data.prevent_indexing)
+export const buildActivityHistoryElements = async (
+  context: AuthContext,
+  events: Array<SseEvent<ActivityStreamEvent>>,
+) => {
+  const markingDefinitions = await getEntitiesMapFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_MARKING_DEFINITION,
+  );
+  return events
+    .filter((e) => !e.data.prevent_indexing)
     .map((event: SseEvent<ActivityStreamEvent>) => {
       const [time] = event.id.split('-');
       const eventDate = utcDate(parseInt(time, 10)).toISOString();
       const contextData = { ...event.data.data, message: event.data.message };
       if ((event.data.data.object_marking_refs_ids ?? []).length > 0) {
-        contextData.marking_definitions = (event.data.data.object_marking_refs_ids ?? []).map((n) => markingDefinitions.get(n)?.definition ?? 'Unknown');
+        contextData.marking_definitions = (event.data.data.object_marking_refs_ids ?? []).map(
+          (n) => markingDefinitions.get(n)?.definition ?? 'Unknown',
+        );
       }
       const activityDate = utcDate(eventDate).toDate();
       const isAdminEvent = event.data.event_access === 'administration';
@@ -117,15 +167,25 @@ export const buildActivityHistoryElements = async (context: AuthContext, events:
     });
 };
 
-const historyIndexing = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
+const historyIndexing = async (
+  context: AuthContext,
+  events: Array<SseEvent<ActivityStreamEvent>>,
+) => {
   const historyElements = await buildActivityHistoryElements(context, events);
   // Bulk the history data insertions
   return elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, historyElements);
 };
 
-const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
+const eventsApplyHandler = async (
+  context: AuthContext,
+  events: Array<SseEvent<ActivityStreamEvent>>,
+) => {
   if (events.length > 0) {
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    const settings = await getEntityFromCache<BasicStoreSettings>(
+      context,
+      SYSTEM_USER,
+      ENTITY_TYPE_SETTINGS,
+    );
     // If no events or enterprise edition is not activated
     if (!isEnterpriseEditionFromSettings(settings) || isEmptyField(events) || events.length === 0) {
       return;
@@ -142,7 +202,10 @@ const activityStreamHandler = async (streamEvents: Array<SseEvent<ActivityStream
     const context = executionContext('activity_manager');
     await eventsApplyHandler(context, streamEvents);
   } catch (e) {
-    logApp.error('Error in activity stream apply handler', { cause: e, manager: 'ACTIVITY_MANAGER' });
+    logApp.error('Error in activity stream apply handler', {
+      cause: e,
+      manager: 'ACTIVITY_MANAGER',
+    });
   }
 };
 
@@ -161,7 +224,11 @@ const initActivityManager = () => {
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME, bufferTime: 5000 };
-      streamProcessor = createStreamProcessor('Activity manager', activityStreamHandler, streamOpts);
+      streamProcessor = createStreamProcessor(
+        'Activity manager',
+        activityStreamHandler,
+        streamOpts,
+      );
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
@@ -172,7 +239,10 @@ const initActivityManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Activity manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Activity manager execution error', { cause: e, manager: 'ACTIVITY_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Activity manager execution error', {
+          cause: e,
+          manager: 'ACTIVITY_MANAGER',
+        });
       }
     } finally {
       running = false;
@@ -186,18 +256,23 @@ const initActivityManager = () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
       const context = executionContext('activity_manager');
-      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
-        first: 1,
-        indices: [INDEX_HISTORY],
-        orderBy: ['timestamp'],
-        orderMode: OrderingMode.Desc,
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['event_access'], values: ['EXISTS'] }],
-          filterGroups: [],
+      const histoElements = await topEntitiesList<HistoryData>(
+        context,
+        SYSTEM_USER,
+        [ENTITY_TYPE_ACTIVITY],
+        {
+          first: 1,
+          indices: [INDEX_HISTORY],
+          orderBy: ['timestamp'],
+          orderMode: OrderingMode.Desc,
+          filters: {
+            mode: FilterMode.And,
+            filters: [{ key: ['event_access'], values: ['EXISTS'] }],
+            filterGroups: [],
+          },
+          noFiltersChecking: true,
         },
-        noFiltersChecking: true,
-      });
+      );
       let lastEventId = '0-0';
       if (histoElements.length > 0) {
         const histoDate = histoElements[0].timestamp;
@@ -211,7 +286,9 @@ const initActivityManager = () => {
     status: (settings?: BasicStoreSettings) => {
       return {
         id: 'ACTIVITY_MANAGER',
-        enable: isEnterpriseEditionFromSettings(settings) && booleanConf('activity_manager:enabled', false),
+        enable:
+          isEnterpriseEditionFromSettings(settings) &&
+          booleanConf('activity_manager:enabled', false),
         running,
       };
     },
@@ -223,7 +300,9 @@ const initActivityManager = () => {
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
-      logApp.info(`[OPENCTI-MODULE] Activity manager stopped in ${new Date().getTime() - startTime} ms`);
+      logApp.info(
+        `[OPENCTI-MODULE] Activity manager stopped in ${new Date().getTime() - startTime} ms`,
+      );
       return true;
     },
   };

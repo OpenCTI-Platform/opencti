@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import { createInferredEntity, createInferredRelation, deleteInferredRuleElement, stixLoadById } from '../../database/middleware';
+import {
+  createInferredEntity,
+  createInferredRelation,
+  deleteInferredRuleElement,
+  stixLoadById,
+} from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { createRuleContent } from '../rules-utils';
@@ -23,7 +28,11 @@ import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
 const ruleSightingIncidentBuilder = () => {
   const { id } = def;
   // Execution
-  const generateDependencies = (indicatorId: string, stixSightingId: string, identityId: string) => {
+  const generateDependencies = (
+    indicatorId: string,
+    stixSightingId: string,
+    identityId: string,
+  ) => {
     return [
       // Entities dependencies
       indicatorId,
@@ -33,15 +42,28 @@ const ruleSightingIncidentBuilder = () => {
       stixSightingId,
     ];
   };
-  const handleIndicatorUpsert = async (context: AuthContext, indicator: StixIndicator): Promise<void> => {
+  const handleIndicatorUpsert = async (
+    context: AuthContext,
+    indicator: StixIndicator,
+  ): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
     const { name, pattern, revoked, object_marking_refs, confidence } = indicator;
     if (!revoked) {
       const sightingsArgs = { toType: ENTITY_TYPE_IDENTITY, fromId: indicatorId };
-      const sightingsRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
+      const sightingsRelations = await fullRelationsList<BasicStoreRelation>(
+        context,
+        RULE_MANAGER_USER,
+        STIX_SIGHTING_RELATIONSHIP,
+        sightingsArgs,
+      );
       for (let index = 0; index < sightingsRelations.length; index += 1) {
-        const { internal_id: sightingId, toId: identityId, first_seen, last_seen } = sightingsRelations[index];
+        const {
+          internal_id: sightingId,
+          toId: identityId,
+          first_seen,
+          last_seen,
+        } = sightingsRelations[index];
         const dependencies = generateDependencies(indicatorId, identityId, sightingId);
         // Create the incident with everything
         const explanation = [indicatorId, identityId, sightingId];
@@ -52,19 +74,35 @@ const ruleSightingIncidentBuilder = () => {
         const ruleBaseContent = { confidence, objectMarking: object_marking_refs };
         const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
-        const inferredEntity = await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
+        const inferredEntity = await createInferredEntity(
+          context,
+          input,
+          ruleContent,
+          ENTITY_TYPE_INCIDENT,
+        );
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         const created = inferredEntity.element as StoreObject;
-        const incidentToIndicator = { fromId: created.internal_id, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
+        const incidentToIndicator = {
+          fromId: created.internal_id,
+          toId: indicatorId,
+          relationship_type: RELATION_RELATED_TO,
+        };
         await createInferredRelation(context, incidentToIndicator, ruleRelContent);
         // Create **Incident C** `targets` **identity B**
-        const incidentToIdentity = { fromId: created.internal_id, toId: identityId, relationship_type: RELATION_TARGETS };
+        const incidentToIdentity = {
+          fromId: created.internal_id,
+          toId: identityId,
+          relationship_type: RELATION_TARGETS,
+        };
         await createInferredRelation(context, incidentToIdentity, ruleRelContent);
       }
     }
   };
-  const handleIndicatorRelationUpsert = async (context: AuthContext, sightingRelation: StixSighting) => {
+  const handleIndicatorRelationUpsert = async (
+    context: AuthContext,
+    sightingRelation: StixSighting,
+  ) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
     return handleIndicatorUpsert(context, sightingIndicator as StixIndicator);

@@ -1,6 +1,11 @@
 import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { FilterSearchContext, FiltersRestrictions, isFilterGroupNotEmpty, normalizeFilterGroupForBackend } from '../utils/filters/filtersUtils';
+import {
+  FilterSearchContext,
+  FiltersRestrictions,
+  isFilterGroupNotEmpty,
+  normalizeFilterGroupForBackend,
+} from '../utils/filters/filtersUtils';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { DataColumns } from './list_lines';
 
@@ -40,7 +45,9 @@ interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
   filterChipsParams: FilterChipsParameter;
   setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
-const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButtonIfFiltersProps> = ({
+const FilterIconButtonWithRepresentativesQuery: FunctionComponent<
+  FilterIconButtonIfFiltersProps
+> = ({
   filters,
   handleRemoveFilter,
   handleSwitchGlobalMode,
@@ -149,11 +156,15 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const displayedFilters = filters
     ? {
         ...filters,
-        filters:
-          filters.filters.filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey)),
+        filters: filters.filters.filter(
+          (currentFilter) =>
+            !availableFilterKeys ||
+            availableFilterKeys?.some((currentKey) => currentFilter.key === currentKey),
+        ),
       }
     : undefined;
-  if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
+  if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) {
+    // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
         filters={displayedFilters}
@@ -180,7 +191,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       />
     );
   }
-  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef} />);
+  return <EmptyFilter setHasRenderedRef={setHasRenderedRef} />;
 };
 
 export default FilterIconButton;

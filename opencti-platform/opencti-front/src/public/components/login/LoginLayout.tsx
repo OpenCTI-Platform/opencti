@@ -14,9 +14,8 @@ import { getLoginAsideType } from '../../../private/components/settings/themes/t
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
-  const logoBaseline = theme.palette.mode === 'dark'
-    ? logoFiligranBaselineDark
-    : logoFiligranBaselineLight;
+  const logoBaseline =
+    theme.palette.mode === 'dark' ? logoFiligranBaselineDark : logoFiligranBaselineLight;
 
   return (
     <img
@@ -37,9 +36,8 @@ const LogoBaseline = () => {
 
 const LogoFiligran = () => {
   const theme = useTheme<Theme>();
-  const logoGradient = theme.palette.mode === 'dark'
-    ? logoFiligranGradientDark
-    : logoFiligranGradientLight;
+  const logoGradient =
+    theme.palette.mode === 'dark' ? logoFiligranGradientDark : logoFiligranGradientLight;
 
   return (
     <img
@@ -117,13 +115,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     <>
       <SystemBanners settings={settings} />
       <Stack data-testid="login-page" direction="row" height="100%">
-        <Stack
-          flex={1}
-          sx={contentSx}
-          justifyContent="center"
-          alignItems="center"
-          gap={4}
-        >
+        <Stack flex={1} sx={contentSx} justifyContent="center" alignItems="center" gap={4}>
           <LoginLogo data={settings} />
           {children}
         </Stack>

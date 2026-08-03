@@ -1,5 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { createRemoteJWKSet, type FlattenedJWSInput, type JWTHeaderParameters, jwtVerify, SignJWT } from 'jose';
+import {
+  createRemoteJWKSet,
+  type FlattenedJWSInput,
+  type JWTHeaderParameters,
+  jwtVerify,
+  SignJWT,
+} from 'jose';
 import conf, { getBaseUrl, logApp } from '../config/conf';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { memoize } from '../utils/memoize';
@@ -53,9 +59,10 @@ const getRemoteJwks = (issuerBaseUrl: string) => {
 
 const resolveKey = async (header: JWTHeaderParameters, token: FlattenedJWSInput) => {
   // Decode iss from the flattened token payload (base64url-encoded)
-  const raw = typeof token.payload === 'string'
-    ? token.payload
-    : Buffer.from(token.payload).toString('base64url');
+  const raw =
+    typeof token.payload === 'string'
+      ? token.payload
+      : Buffer.from(token.payload).toString('base64url');
   const { iss } = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
   if (!iss) {
     throw AuthenticationFailure('JWT missing iss claim');
@@ -80,9 +87,12 @@ const resolveKey = async (header: JWTHeaderParameters, token: FlattenedJWSInput)
 
 const tokenTtl = Math.min(Number(conf.get('xtm:auth:token_ttl') ?? 600), 600);
 
-export const issueXtmJwt = async (user: { id: string; user_email: string }, audience: string): Promise<string> => {
+export const issueXtmJwt = async (
+  user: { id: string; user_email: string },
+  audience: string,
+): Promise<string> => {
   const now = new Date();
-  const exp = new Date(now.getTime() + (tokenTtl * 1000));
+  const exp = new Date(now.getTime() + tokenTtl * 1000);
   const jwt = new SignJWT({ email: user.user_email })
     .setSubject(user.id)
     .setIssuer(platformIssuer)
@@ -93,7 +103,12 @@ export const issueXtmJwt = async (user: { id: string; user_email: string }, audi
     .setJti(uuidv4());
   const keyPair = await getJWTKeyPair();
   const token = await keyPair.signJwt(jwt);
-  logApp.debug('[XTM_AUTH] Issued cross-platform JWT', { issuer: platformIssuer, subject: user.id, audience, ttl: tokenTtl });
+  logApp.debug('[XTM_AUTH] Issued cross-platform JWT', {
+    issuer: platformIssuer,
+    subject: user.id,
+    audience,
+    ttl: tokenTtl,
+  });
   return token;
 };
 

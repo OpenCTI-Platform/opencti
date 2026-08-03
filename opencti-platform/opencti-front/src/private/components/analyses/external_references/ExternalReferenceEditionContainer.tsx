@@ -12,12 +12,9 @@ interface ExternalReferenceEditionContainerProps {
   controlledDial?: DrawerControlledDialType;
 }
 
-const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEditionContainerProps> = ({
-  handleClose,
-  externalReference,
-  open,
-  controlledDial,
-}) => {
+const ExternalReferenceEditionContainer: FunctionComponent<
+  ExternalReferenceEditionContainerProps
+> = ({ handleClose, externalReference, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
 
   const { editContext } = externalReference;

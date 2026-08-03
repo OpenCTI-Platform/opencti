@@ -28,7 +28,10 @@ const DraftReview: FunctionComponent<DraftReviewProps> = ({ draftId }) => {
       }}
     >
       {/* Left column — entity list */}
-      <Box sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }} ref={(r: HTMLDivElement | null) => setContainerRef(r ?? undefined)}>
+      <Box
+        sx={{ flex: 1, minWidth: 0, overflow: 'hidden' }}
+        ref={(r: HTMLDivElement | null) => setContainerRef(r ?? undefined)}
+      >
         <DraftReviewEntityList
           draftId={draftId}
           onSelectEntity={handleSelectEntity}
@@ -39,10 +42,7 @@ const DraftReview: FunctionComponent<DraftReviewProps> = ({ draftId }) => {
       {/* Right column — diff panel */}
 
       <Box sx={{ flex: 2, overflowY: 'auto', padding: 2 }}>
-        <DraftReviewDiffPanel
-          draftId={draftId}
-          entity={selectedEntity}
-        />
+        <DraftReviewDiffPanel draftId={draftId} entity={selectedEntity} />
       </Box>
     </Box>
   );

@@ -23,7 +23,10 @@ export const setCookieError = (res: Response, message: string) => {
   let flashCode: string;
   if (normalized.includes('ip address is not allowed')) {
     flashCode = 'IP_NOT_ALLOWED';
-  } else if (normalized.includes('authentication is not available') || normalized.includes('authentication strategy is not available')) {
+  } else if (
+    normalized.includes('authentication is not available') ||
+    normalized.includes('authentication strategy is not available')
+  ) {
     flashCode = 'PROVIDER_NOT_AVAILABLE';
   } else if (normalized.includes('enterprise edition')) {
     flashCode = 'ENTERPRISE_EDITION_REQUIRED';
@@ -216,7 +219,10 @@ const buildIpRangeSkipList = (ranges: string[]): BlockList => {
         blockList.addAddress(range, type);
       }
     } catch (e: any) {
-      logApp.warn('[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.', e);
+      logApp.warn(
+        '[HTTP] Error when building the IP range that should be ignored by the rate limit, please verify your configuration.',
+        e,
+      );
     }
   }
 

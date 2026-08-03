@@ -46,18 +46,22 @@ const LocationField = ({
 
   const searchLocations = async (e: ChangeEvent<HTMLInputElement>) => {
     const search = e && e.target.value ? e.target.value : '';
-    const { locations } = (await fetchQuery(
-      locationFieldSearchQuery,
-      { search, types },
-    ).toPromise()) as LocationFieldSearchQuery$data;
-    setOptions((locations?.edges ?? []).flatMap((edge) => {
-      if (!edge) return [];
-      return {
-        label: edge.node.name,
-        value: edge.node.id,
-        type: edge.node.entity_type,
-      };
-    }).sort((a, b) => a.type.localeCompare(b.type)));
+    const { locations } = (await fetchQuery(locationFieldSearchQuery, {
+      search,
+      types,
+    }).toPromise()) as LocationFieldSearchQuery$data;
+    setOptions(
+      (locations?.edges ?? [])
+        .flatMap((edge) => {
+          if (!edge) return [];
+          return {
+            label: edge.node.name,
+            value: edge.node.id,
+            type: edge.node.entity_type,
+          };
+        })
+        .sort((a, b) => a.type.localeCompare(b.type)),
+    );
   };
 
   return (
@@ -78,17 +82,14 @@ const LocationField = ({
       noOptionsText={t_i18n('No available options')}
       options={options}
       onInputChange={searchLocations}
-      endAdornment={(
+      endAdornment={
         <EntityTypeSelectAdornment
           value={types}
           onChange={setTypes}
           entityTypes={['Region', 'Country', 'Administrative-Area', 'City', 'Position']}
         />
-      )}
-      renderOption={(
-        props: HTMLAttributes<HTMLLIElement>,
-        option: FieldOption,
-      ) => (
+      }
+      renderOption={(props: HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
         <ListItem {...props}>
           <ItemIcon type={option.type} />
           <ListItemText primary={option.label} sx={{ marginLeft: 2 }} />

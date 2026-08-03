@@ -32,7 +32,12 @@ export const roundRate = (value: number): number => Math.round(value * 100) / 10
  * This is the **single source of truth** for this calculation and is called
  * by both the SSE middleware (heartbeat) and the stream domain resolver.
  */
-export const computeProcessingLagMetrics = (lastEventId: string, streamInfo: StreamInfo, deliveryRate: number, productionRate: number): DerivedMetrics => {
+export const computeProcessingLagMetrics = (
+  lastEventId: string,
+  streamInfo: StreamInfo,
+  deliveryRate: number,
+  productionRate: number,
+): DerivedMetrics => {
   const headTimestamp = parseEventIdTimestamp(streamInfo.lastEventId);
   const startTimestamp = parseEventIdTimestamp(streamInfo.firstEventId);
   const consumerTimestamp = parseEventIdTimestamp(lastEventId);

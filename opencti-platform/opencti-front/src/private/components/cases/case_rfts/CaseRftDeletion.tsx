@@ -12,18 +12,24 @@ const caseRftDeletionDeleteMutation = graphql`
   }
 `;
 
-const CaseRftDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+const CaseRftDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Case-Rft') },
   });
-  const [commit] = useApiMutation(
-    caseRftDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(caseRftDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
   const submitDelete = () => {

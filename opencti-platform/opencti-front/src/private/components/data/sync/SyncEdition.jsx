@@ -65,27 +65,30 @@ export const syncEditionUserHandlingPatch = graphql`
   }
 `;
 
-const syncValidation = (t) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-  uri: Yup.string().trim().required(t('This field is required')),
-  token: Yup.string(),
-  stream_id: Yup.string().trim().required(t('This field is required')),
-  current_state_date: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  listen_deletion: Yup.bool(),
-  no_dependencies: Yup.bool(),
-  ssl_verify: Yup.bool(),
-  synchronized: Yup.bool(),
-  user_id: Yup.mixed().nullable(),
-});
+const syncValidation = (t) =>
+  Yup.object().shape({
+    name: Yup.string().trim().required(t('This field is required')),
+    uri: Yup.string().trim().required(t('This field is required')),
+    token: Yup.string(),
+    stream_id: Yup.string().trim().required(t('This field is required')),
+    current_state_date: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    listen_deletion: Yup.bool(),
+    no_dependencies: Yup.bool(),
+    ssl_verify: Yup.bool(),
+    synchronized: Yup.bool(),
+    user_id: Yup.mixed().nullable(),
+  });
 
 const SyncEditionContainer = ({ synchronizer }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
-  const [openOptions, setOpenOptions] = useState(synchronizer.no_dependencies || synchronizer.synchronized);
+  const [openOptions, setOpenOptions] = useState(
+    synchronizer.no_dependencies || synchronizer.synchronized,
+  );
   const relatedUser = synchronizer.user
     ? { label: synchronizer.user.name, value: synchronizer.user.id }
     : '';
@@ -103,9 +106,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
     automatic_user: true,
   };
 
-  const isStreamAccessible = isNotEmptyField(
-    streams.find((s) => s.id === initialValues.stream_id),
-  );
+  const isStreamAccessible = isNotEmptyField(streams.find((s) => s.id === initialValues.stream_id));
   const handleVerify = (values) => {
     commitMutation({
       mutation: syncCheckMutation,
@@ -223,12 +224,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               style={{ marginTop: 20 }}
               disabled={true}
             />
-            <PasswordTextField
-              name="token"
-              label={t_i18n('token')}
-              disabled={true}
-              isSecret
-            />
+            <PasswordTextField name="token" label={t_i18n('token')} disabled={true} isSecret />
             <Field
               component={TextField}
               variant="standard"
@@ -236,9 +232,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               label={t_i18n('Remote OpenCTI stream ID')}
               fullWidth={true}
               style={{ marginTop: 20 }}
-              value={
-                streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE
-              }
+              value={streams.find((s) => s.id === initialValues.stream_id)?.label ?? EMPTY_VALUE}
               disabled={true}
             />
           </Alert>
@@ -249,17 +243,15 @@ const SyncEditionContainer = ({ synchronizer }) => {
             onChange={handleSubmitField}
             showConfidence
           />
-          {synchronizer.user?.name === 'SYSTEM'
-            && (
-              <IngestionEditionUserHandling
-                key={values.name}
-                feedName={values.name}
-                onAutoUserCreated={() => setFieldValue('user_id', `[S] ${values.name}`)}
-                dataId={synchronizer.id}
-                mutation={syncEditionUserHandlingPatch}
-              />
-            )
-          }
+          {synchronizer.user?.name === 'SYSTEM' && (
+            <IngestionEditionUserHandling
+              key={values.name}
+              feedName={values.name}
+              onAutoUserCreated={() => setFieldValue('user_id', `[S] ${values.name}`)}
+              dataId={synchronizer.id}
+              mutation={syncEditionUserHandlingPatch}
+            />
+          )}
           <Field
             component={DateTimePickerField}
             name="current_state_date"
@@ -309,7 +301,11 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 label={t_i18n('Avoid dependencies resolution')}
                 onChange={handleSubmitField}
               />
-              <div>{t_i18n('Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)')}</div>
+              <div>
+                {t_i18n(
+                  'Use this option if you want to prevent any built in relations resolutions (references like createdBy will still be auto resolved)',
+                )}
+              </div>
               <hr style={{ marginTop: 20, marginBottom: 20 }} />
               <Field
                 component={SwitchField}
@@ -319,8 +315,14 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 label={t_i18n('Use perfect synchronization')}
                 onChange={handleSubmitField}
               />
-              <div>{t_i18n('Use this option only in case of platform to platform replication')}</div>
-              <div>{t_i18n('Every data fetched from this OpenCTI stream will be written as the only source of truth')}</div>
+              <div>
+                {t_i18n('Use this option only in case of platform to platform replication')}
+              </div>
+              <div>
+                {t_i18n(
+                  'Every data fetched from this OpenCTI stream will be written as the only source of truth',
+                )}
+              </div>
             </AccordionDetails>
           </Accordion>
           <div className={classes.buttons}>

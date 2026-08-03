@@ -30,7 +30,9 @@ describe('StixCoreObjectFileExportForm utils', () => {
   });
 
   it('normalizes TLP:AMBER+STRICT replacing + with -', () => {
-    expect(normalizeMarkingForFileName([{ label: 'TLP:AMBER+STRICT', value: 'id-1' }])).toBe('TLP-AMBER-STRICT');
+    expect(normalizeMarkingForFileName([{ label: 'TLP:AMBER+STRICT', value: 'id-1' }])).toBe(
+      'TLP-AMBER-STRICT',
+    );
   });
 
   it('normalizes a PAP marking replacing : with -', () => {
@@ -38,7 +40,9 @@ describe('StixCoreObjectFileExportForm utils', () => {
   });
 
   it('collapses multiple consecutive separators into a single -', () => {
-    expect(normalizeMarkingForFileName([{ label: 'TLP::AMBER  STRICT', value: 'id-3' }])).toBe('TLP-AMBER-STRICT');
+    expect(normalizeMarkingForFileName([{ label: 'TLP::AMBER  STRICT', value: 'id-3' }])).toBe(
+      'TLP-AMBER-STRICT',
+    );
   });
 
   it('preserves marking already in correct TLP-XXXX format', () => {
@@ -94,10 +98,14 @@ describe('StixCoreObjectFileExportForm utils', () => {
   });
 
   it('normalizes source file name by stripping existing export timestamp and marking suffix', () => {
-    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z_TLP-RED.html')).toBe('petit_coincoin');
+    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z_TLP-RED.html')).toBe(
+      'petit_coincoin',
+    );
   });
 
   it('normalizes source file name by stripping existing export timestamp suffix without marking', () => {
-    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z.md')).toBe('petit_coincoin');
+    expect(normalizeExportSourceEntityName('petit_coincoin_20260526T1015Z.md')).toBe(
+      'petit_coincoin',
+    );
   });
 });

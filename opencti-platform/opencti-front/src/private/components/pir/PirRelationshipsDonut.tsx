@@ -117,9 +117,9 @@ const PirRelationshipsDonut = ({ pirId }: PirRelationshipsDonutProps) => {
         variables={variables}
         render={({ props }: { props: PirRelationshipsDonutDistributionQuery$data }) => {
           if (
-            props
-            && props.pirRelationshipsDistribution
-            && props.pirRelationshipsDistribution.length > 0
+            props &&
+            props.pirRelationshipsDistribution &&
+            props.pirRelationshipsDistribution.length > 0
           ) {
             return (
               <WidgetDonut
@@ -139,10 +139,7 @@ const PirRelationshipsDonut = ({ pirId }: PirRelationshipsDonutProps) => {
   };
 
   return (
-    <WidgetContainer
-      height={250}
-      variant="inLine"
-    >
+    <WidgetContainer height={250} variant="inLine">
       {renderContent()}
     </WidgetContainer>
   );

@@ -53,7 +53,8 @@ const FintelTemplateForm = ({
   };
 
   const updateField = async (field: FintelTemplateFormInputKeys, value: unknown) => {
-    validation.validateAt(field, { [field]: value })
+    validation
+      .validateAt(field, { [field]: value })
       .then(() => onSubmitField(field, value))
       .catch(() => false);
   };
@@ -83,10 +84,12 @@ const FintelTemplateForm = ({
               component={SwitchField}
               type="checkbox"
               name="published"
-              label={(
+              label={
                 <>
                   <span>{t_i18n('Template published')}</span>
-                  <Tooltip title={t_i18n('If false, the template won\'t be available to generate files')}>
+                  <Tooltip
+                    title={t_i18n("If false, the template won't be available to generate files")}
+                  >
                     <InformationOutline
                       fontSize="small"
                       color="primary"
@@ -94,7 +97,7 @@ const FintelTemplateForm = ({
                     />
                   </Tooltip>
                 </>
-              )}
+              }
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
@@ -137,10 +140,7 @@ const FintelTemplateForm = ({
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </FormButtonContainer>

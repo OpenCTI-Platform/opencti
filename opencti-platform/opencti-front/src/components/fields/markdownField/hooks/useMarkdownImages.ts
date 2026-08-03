@@ -1,6 +1,12 @@
 import { RefObject, useCallback, useEffect, useRef } from 'react';
-import { cleanupRemovedTempAttachments, extractEmbeddedStoragePathsFromMarkdown } from '../core/markdownImageFieldHelpers';
-import { extractTempImageTokens, MarkdownTempAttachmentRegistry } from '../core/markdownImagePreviewUtils';
+import {
+  cleanupRemovedTempAttachments,
+  extractEmbeddedStoragePathsFromMarkdown,
+} from '../core/markdownImageFieldHelpers';
+import {
+  extractTempImageTokens,
+  MarkdownTempAttachmentRegistry,
+} from '../core/markdownImagePreviewUtils';
 import type { MarkdownImagesController, MarkdownImagesTab } from '../core/markdownImagesController';
 import useMarkdownImageInteractions from './useMarkdownImageInteractions';
 import useMarkdownImagesUpload from './useMarkdownImagesUpload';
@@ -45,36 +51,49 @@ const useMarkdownImages = ({
 
   const pendingCleanupTimeoutRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const latestMarkdownRef = useRef(value ?? '');
-  const submittedEmbeddedPathsRef = useRef(new Set(extractEmbeddedStoragePathsFromMarkdown(value ?? '')));
+  const submittedEmbeddedPathsRef = useRef(
+    new Set(extractEmbeddedStoragePathsFromMarkdown(value ?? '')),
+  );
   const registryRef = useRef(new MarkdownTempAttachmentRegistry());
 
   const syncLatestMarkdown = useCallback((nextValue: string) => {
     latestMarkdownRef.current = nextValue;
   }, []);
 
-  const pushDraftAndSyncLatest = useCallback((nextValue: string, shouldValidate = false) => {
-    syncLatestMarkdown(nextValue);
-    pushDraftValue(nextValue, shouldValidate);
-  }, [pushDraftValue, syncLatestMarkdown]);
+  const pushDraftAndSyncLatest = useCallback(
+    (nextValue: string, shouldValidate = false) => {
+      syncLatestMarkdown(nextValue);
+      pushDraftValue(nextValue, shouldValidate);
+    },
+    [pushDraftValue, syncLatestMarkdown],
+  );
 
-  const syncFromExternalValue = useCallback((nextValue: string) => {
-    latestMarkdownRef.current = nextValue;
-    setDraftValue(nextValue);
-    submittedEmbeddedPathsRef.current = new Set(extractEmbeddedStoragePathsFromMarkdown(nextValue));
-  }, [setDraftValue]);
+  const syncFromExternalValue = useCallback(
+    (nextValue: string) => {
+      latestMarkdownRef.current = nextValue;
+      setDraftValue(nextValue);
+      submittedEmbeddedPathsRef.current = new Set(
+        extractEmbeddedStoragePathsFromMarkdown(nextValue),
+      );
+    },
+    [setDraftValue],
+  );
 
   const removeFinalizedToken = useCallback((token: string) => {
     pendingCleanupTimeoutRef.current.delete(token);
     registryRef.current.removeTempAttachment(token);
   }, []);
 
-  const applyFinalizedMarkdown = useCallback((originalMarkdown: string, finalizedMarkdown: string) => {
-    if (finalizedMarkdown !== originalMarkdown) {
-      latestMarkdownRef.current = finalizedMarkdown;
-      setDraftValue(finalizedMarkdown);
-      onValueChange(finalizedMarkdown, false);
-    }
-  }, [onValueChange, setDraftValue]);
+  const applyFinalizedMarkdown = useCallback(
+    (originalMarkdown: string, finalizedMarkdown: string) => {
+      if (finalizedMarkdown !== originalMarkdown) {
+        latestMarkdownRef.current = finalizedMarkdown;
+        setDraftValue(finalizedMarkdown);
+        onValueChange(finalizedMarkdown, false);
+      }
+    },
+    [onValueChange, setDraftValue],
+  );
 
   const collectPendingImageFiles = useCallback((markdown: string): File[] => {
     const files: File[] = [];
@@ -112,20 +131,28 @@ const useMarkdownImages = ({
     syncFromExternalValue(next);
   }, [isFieldFocusedRef, syncFromExternalValue, value]);
 
-  const finalizeMarkdown = useCallback(async (
-    markdown = latestMarkdownRef.current,
-    uploadEntityIdOverride?: string,
-  ): Promise<string> => {
-    const finalized = await finalizeTempImageUrls(markdown, registryRef.current, (token) => {
-      removeFinalizedToken(token);
-    }, {
-      uploadEntityIdOverride,
-    });
+  const finalizeMarkdown = useCallback(
+    async (
+      markdown = latestMarkdownRef.current,
+      uploadEntityIdOverride?: string,
+    ): Promise<string> => {
+      const finalized = await finalizeTempImageUrls(
+        markdown,
+        registryRef.current,
+        (token) => {
+          removeFinalizedToken(token);
+        },
+        {
+          uploadEntityIdOverride,
+        },
+      );
 
-    applyFinalizedMarkdown(markdown, finalized);
+      applyFinalizedMarkdown(markdown, finalized);
 
-    return finalized;
-  }, [applyFinalizedMarkdown, finalizeTempImageUrls, removeFinalizedToken]);
+      return finalized;
+    },
+    [applyFinalizedMarkdown, finalizeTempImageUrls, removeFinalizedToken],
+  );
 
   const getPendingImageFiles = useCallback((): File[] => {
     return collectPendingImageFiles(latestMarkdownRef.current);
@@ -137,25 +164,34 @@ const useMarkdownImages = ({
     }
 
     registerMarkdownImagesController({
-      persistTempImages: (uploadEntityIdOverride?: string) => finalizeMarkdown(undefined, uploadEntityIdOverride),
+      persistTempImages: (uploadEntityIdOverride?: string) =>
+        finalizeMarkdown(undefined, uploadEntityIdOverride),
       getPendingImageFiles,
     });
 
-    return () => registerMarkdownImagesController({
-      persistTempImages: () => Promise.resolve(latestMarkdownRef.current),
-      getPendingImageFiles: () => [],
-    });
+    return () =>
+      registerMarkdownImagesController({
+        persistTempImages: () => Promise.resolve(latestMarkdownRef.current),
+        getPendingImageFiles: () => [],
+      });
   }, [finalizeMarkdown, getPendingImageFiles, registerMarkdownImagesController]);
 
-  const cleanupRemovedAttachments = useCallback((markdown: string, force = false) => {
-    cleanupRemovedTempAttachments({
-      pendingCleanupTimeoutRef,
-      latestMarkdownRef,
-      isFieldFocusedRef,
-      registry: registryRef.current,
-      delayMs: tempCleanupDelayMs,
-    }, markdown, force);
-  }, [isFieldFocusedRef, tempCleanupDelayMs]);
+  const cleanupRemovedAttachments = useCallback(
+    (markdown: string, force = false) => {
+      cleanupRemovedTempAttachments(
+        {
+          pendingCleanupTimeoutRef,
+          latestMarkdownRef,
+          isFieldFocusedRef,
+          registry: registryRef.current,
+          delayMs: tempCleanupDelayMs,
+        },
+        markdown,
+        force,
+      );
+    },
+    [isFieldFocusedRef, tempCleanupDelayMs],
+  );
 
   useEffect(() => {
     return () => {

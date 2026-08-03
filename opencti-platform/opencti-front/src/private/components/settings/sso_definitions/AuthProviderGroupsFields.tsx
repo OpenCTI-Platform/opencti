@@ -49,11 +49,24 @@ const AuthProviderGroupsFields = () => {
       {/* Default groups */}
       <FieldArray name="groups_mapping.default_groups">
         {({ push, remove, form }) => {
-          const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.default_groups ?? [];
+          const entries =
+            (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping
+              .default_groups ?? [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Default groups')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Default groups')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -65,7 +78,10 @@ const AuthProviderGroupsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: string, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"
@@ -92,11 +108,24 @@ const AuthProviderGroupsFields = () => {
       {/* Groups expressions */}
       <FieldArray name="groups_mapping.groups_expr">
         {({ push, remove, form }) => {
-          const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_expr ?? [];
+          const entries =
+            (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_expr ??
+            [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups expressions')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Groups expressions')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -108,7 +137,10 @@ const AuthProviderGroupsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: string, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"
@@ -145,11 +177,24 @@ const AuthProviderGroupsFields = () => {
       {/* Groups mapping (provider -> platform) */}
       <FieldArray name="groups_mapping.groups_mapping">
         {({ push, remove, form }) => {
-          const entries = (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping.groups_mapping ?? [];
+          const entries =
+            (form.values as { groups_mapping: GroupsMappingValues }).groups_mapping
+              .groups_mapping ?? [];
           return (
             <Paper variant="outlined" sx={{ mt: 2, borderRadius: 1, overflow: 'hidden' }}>
-              <Box sx={{ px: 2, py: 1, backgroundColor: 'action.hover', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="h4" sx={{ m: 0 }}>{t_i18n('Groups mapping')}</Typography>
+              <Box
+                sx={{
+                  px: 2,
+                  py: 1,
+                  backgroundColor: 'action.hover',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Typography variant="h4" sx={{ m: 0 }}>
+                  {t_i18n('Groups mapping')}
+                </Typography>
                 <IconButton
                   color="primary"
                   aria-label={t_i18n('Add')}
@@ -161,7 +206,10 @@ const AuthProviderGroupsFields = () => {
               </Box>
               <Box sx={{ px: 2, pb: entries.length > 0 ? 1 : 0 }}>
                 {entries.map((_: MappingEntry, index: number) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                  <div
+                    key={index}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}
+                  >
                     <Field
                       component={TextField}
                       variant="standard"

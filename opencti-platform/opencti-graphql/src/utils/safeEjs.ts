@@ -29,7 +29,8 @@ export type SafeOptions = {
 export type SafeRenderOptions = Options & SafeOptions;
 
 export const safeReservedPrefix = '____safe____';
-export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
+export const safeName = (name: 'statement' | 'property' | 'Object') =>
+  `${safeReservedPrefix}${name}`;
 
 const forbiddenProperties = new Set([
   '__proto__',
@@ -72,43 +73,51 @@ const authorizeGlobals = new Map<string, string | true>([
   ['escape', true],
 ]);
 
-const forbiddenGlobals = [
-  'eval',
-  'globalThis',
-  'import',
-  'Function',
-  'Proxy',
-  'Reflect',
-];
+const forbiddenGlobals = ['eval', 'globalThis', 'import', 'Function', 'Proxy', 'Reflect'];
 
 const noop = () => {};
 
 const createSafeContext = (
   async: boolean,
-  { maxExecutedStatementCount = 0, maxExecutionDuration = 0, yieldMethod, escape }: SafeOptions & { escape?: (str: string) => string },
+  {
+    maxExecutedStatementCount = 0,
+    maxExecutionDuration = 0,
+    yieldMethod,
+    escape,
+  }: SafeOptions & { escape?: (str: string) => string },
 ) => {
   let executedStatementCount = 0;
-  const checkMaxExecutedStatementCount = maxExecutedStatementCount > 0 ? () => {
-    executedStatementCount += 1;
-    if (executedStatementCount > maxExecutedStatementCount) {
-      throw new VerifierProcessingQuotaExceededError(`Max executed statement count exceeded ${JSON.stringify({ maxExecutedStatementCount })}`);
-    }
-  } : noop;
+  const checkMaxExecutedStatementCount =
+    maxExecutedStatementCount > 0
+      ? () => {
+          executedStatementCount += 1;
+          if (executedStatementCount > maxExecutedStatementCount) {
+            throw new VerifierProcessingQuotaExceededError(
+              `Max executed statement count exceeded ${JSON.stringify({ maxExecutedStatementCount })}`,
+            );
+          }
+        }
+      : noop;
 
   const startTime = performance.now();
-  const checkMaxExecutionDuration = maxExecutionDuration > 0 ? () => {
-    if ((performance.now() - startTime) > maxExecutionDuration) {
-      throw new VerifierProcessingQuotaExceededError(`Max execution duration exceeded ${JSON.stringify({ maxExecutionDuration })}`);
-    }
-  } : noop;
+  const checkMaxExecutionDuration =
+    maxExecutionDuration > 0
+      ? () => {
+          if (performance.now() - startTime > maxExecutionDuration) {
+            throw new VerifierProcessingQuotaExceededError(
+              `Max execution duration exceeded ${JSON.stringify({ maxExecutionDuration })}`,
+            );
+          }
+        }
+      : noop;
 
   const context: Record<string, unknown> = {
     [safeName('statement')]: async
       ? async () => {
-        checkMaxExecutedStatementCount();
-        checkMaxExecutionDuration();
-        await yieldMethod?.();
-      }
+          checkMaxExecutedStatementCount();
+          checkMaxExecutionDuration();
+          await yieldMethod?.();
+        }
       : () => {
           checkMaxExecutedStatementCount();
           checkMaxExecutionDuration();
@@ -117,7 +126,9 @@ const createSafeContext = (
     [safeName('property')]: (propertyName: unknown) => {
       const name = String(propertyName);
       if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
-        throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
+        throw new VerifierIllegalAccessError(
+          `Forbidden property access ${JSON.stringify({ propertyName: name })}`,
+        );
       }
       return name;
     },
@@ -134,7 +145,9 @@ const createSafeContext = (
             Object.entries(src).forEach(([key, value]) => {
               const name = String(key); // key should already be a string, but enforce it anyway
               if (name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name)) {
-                throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName: name })}`);
+                throw new VerifierIllegalAccessError(
+                  `Forbidden property access ${JSON.stringify({ propertyName: name })}`,
+                );
               }
 
               target[name] = value;
@@ -345,12 +358,16 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
   };
 
   const processThis = () => {
-    throw new VerifierIllegalAccessError('Access to \'this\' is forbidden');
+    throw new VerifierIllegalAccessError("Access to 'this' is forbidden");
   };
 
   const isPropertyNameInBracket = () => {
     const parentType = cursor.node.parent?.type.name;
-    return parentType === 'MemberExpression' || parentType === 'Property' || parentType === 'PatternProperty';
+    return (
+      parentType === 'MemberExpression' ||
+      parentType === 'Property' ||
+      parentType === 'PatternProperty'
+    );
   };
 
   /**
@@ -381,15 +398,19 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
   };
 
   const processImport = () => {
-    throw new VerifierIllegalAccessError('Access to \'import\' is forbidden');
+    throw new VerifierIllegalAccessError("Access to 'import' is forbidden");
   };
 
   const processPropertyDefinitionOrName = () => {
     const rawPropertyName = nodeText();
-    const isQuoted = ['"', '\'', '`'].includes(rawPropertyName[0]);
-    const propertyName = isQuoted ? rawPropertyName.substring(1, rawPropertyName.length - 1) : rawPropertyName;
+    const isQuoted = ['"', "'", '`'].includes(rawPropertyName[0]);
+    const propertyName = isQuoted
+      ? rawPropertyName.substring(1, rawPropertyName.length - 1)
+      : rawPropertyName;
     if (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName)) {
-      throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName })}`);
+      throw new VerifierIllegalAccessError(
+        `Forbidden property access ${JSON.stringify({ propertyName })}`,
+      );
     }
   };
 
@@ -402,8 +423,14 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
 
   const processVariableDefinition = () => {
     const variableName = nodeText();
-    if (variableName.startsWith(safeReservedPrefix) || forbiddenGlobals.includes(variableName) || forbiddenProperties.has(variableName)) {
-      throw new VerifierIllegalAccessError(`Forbidden variable definition ${JSON.stringify({ variableName })}`);
+    if (
+      variableName.startsWith(safeReservedPrefix) ||
+      forbiddenGlobals.includes(variableName) ||
+      forbiddenProperties.has(variableName)
+    ) {
+      throw new VerifierIllegalAccessError(
+        `Forbidden variable definition ${JSON.stringify({ variableName })}`,
+      );
     }
     allowedVars.set(variableName, true); // TODO: should we handle the variable scope ?
   };
@@ -414,7 +441,9 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
     if (typeof allowedOrReplace === 'string') {
       editNode(allowedOrReplace);
     } else if (!allowedOrReplace) {
-      throw new VerifierIllegalAccessError(`Forbidden variable access ${JSON.stringify({ variableName })}`);
+      throw new VerifierIllegalAccessError(
+        `Forbidden variable access ${JSON.stringify({ variableName })}`,
+      );
     }
   };
 
@@ -484,11 +513,21 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
 };
 
 export const safeRender = (template: string, data: Data, options: SafeRenderOptions = {}) => {
-  const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
+  const {
+    delimiter = '%',
+    openDelimiter = '<',
+    closeDelimiter = '>',
+    async = false,
+    useNotificationTool = false,
+  } = options;
   if (useNotificationTool) {
     data.octi = new NotificationTool();
   }
-  const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
+  const code = extractEJSCode(
+    template,
+    `${openDelimiter}${delimiter}`,
+    `${delimiter}${closeDelimiter}`,
+  );
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
   const safeContext = createSafeContext(async, options);
   return ejs.render(safeTemplate, { ...(data ?? {}), ...safeContext }, options);

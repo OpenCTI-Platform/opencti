@@ -55,11 +55,13 @@ describe('ForcePasswordChange', () => {
     await user.type(screen.getByLabelText('Confirmation'), 'NewPassword1!');
     await user.click(screen.getByRole('button', { name: 'Change your password' }));
 
-    expect(commitFnMock).toHaveBeenCalledWith(expect.objectContaining({
-      variables: {
-        input: [{ key: 'password', value: ['NewPassword1!'] }],
-      },
-    }));
+    expect(commitFnMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          input: [{ key: 'password', value: ['NewPassword1!'] }],
+        },
+      }),
+    );
 
     const config = commitFnMock.mock.calls[0][0];
     config.onCompleted?.();

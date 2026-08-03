@@ -58,6 +58,4 @@ NarrativeEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-)(NarrativeEdition);
+export default compose(inject18n)(NarrativeEdition);

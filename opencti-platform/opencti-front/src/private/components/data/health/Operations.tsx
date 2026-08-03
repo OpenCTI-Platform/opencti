@@ -59,7 +59,7 @@ const Operations = () => {
     last_run_output: op.last_run_output,
   }));
 
-  type OperationRow = typeof operations[number];
+  type OperationRow = (typeof operations)[number];
 
   const getScheduleStatus = (op: OperationRow) => {
     if (op.is_running) return { label: t_i18n('Running'), status: true };
@@ -87,7 +87,14 @@ const Operations = () => {
       isSortable: false,
       render: (row: OperationRow) => (
         <Tooltip title={row.description}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>
+          <span
+            style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              display: 'block',
+            }}
+          >
             {row.description}
           </span>
         </Tooltip>
@@ -97,9 +104,7 @@ const Operations = () => {
       label: 'Entity types',
       percentWidth: 12,
       isSortable: false,
-      render: (row: OperationRow) => (
-        <>{row.eligible_entity_types.join(', ')}</>
-      ),
+      render: (row: OperationRow) => <>{row.eligible_entity_types.join(', ')}</>,
     },
     execution_type: {
       label: 'Type',
@@ -129,9 +134,7 @@ const Operations = () => {
       label: 'Last run',
       percentWidth: 11,
       isSortable: false,
-      render: (row: OperationRow) => (
-        <>{row.last_run_date ? fldt(row.last_run_date) : '-'}</>
-      ),
+      render: (row: OperationRow) => <>{row.last_run_date ? fldt(row.last_run_date) : '-'}</>,
     },
     last_execution_time: {
       label: 'Duration',
@@ -156,7 +159,9 @@ const Operations = () => {
           const total = output?.impact?.total ?? 0;
           const detail = output?.impact?.detail as Record<string, number> | undefined;
           const tooltipContent = detail
-            ? Object.entries(detail).map(([key, count]) => `${key}: ${count}`).join('\n')
+            ? Object.entries(detail)
+                .map(([key, count]) => `${key}: ${count}`)
+                .join('\n')
             : '';
           return (
             <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{tooltipContent}</span>}>

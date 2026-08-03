@@ -12,7 +12,10 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -32,14 +35,14 @@ export const disseminationListsQuery = graphql`
     $filters: FilterGroup
   ) {
     ...DisseminationListsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -52,7 +55,8 @@ export const disseminationListsFragment = graphql`
     orderBy: { type: "DisseminationListOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: desc }
     filters: { type: "FilterGroup" }
-  ) @refetchable(queryName: "DisseminationListsLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "DisseminationListsLinesRefetchQuery") {
     disseminationLists(
       search: $search
       first: $count
@@ -155,19 +159,31 @@ const DisseminationLists = () => {
   return (
     <div data-testid="dissemination-settings-page">
       <PageContainer withRightMenu>
-        <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Dissemination lists'), current: true }]} />
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Settings') },
+            { label: t_i18n('Security') },
+            { label: t_i18n('Dissemination lists'), current: true },
+          ]}
+        />
         {!isEnterpriseEdition ? (
           <EnterpriseEdition feature="Dissemination lists" />
         ) : (
           <>
             <Alert
               style={{ marginBottom: '16px' }}
-              content={t_i18n('Dissemination lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
+              content={t_i18n(
+                'Dissemination lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.',
+              )}
             />
             {queryRef && (
               <DataTable
                 dataColumns={dataColumns}
-                resolvePath={(data) => data.disseminationLists?.edges?.map(({ node }: { node: DisseminationListsLine_node$data }) => node)}
+                resolvePath={(data) =>
+                  data.disseminationLists?.edges?.map(
+                    ({ node }: { node: DisseminationListsLine_node$data }) => node,
+                  )
+                }
                 storageKey={LOCAL_STORAGE_KEY}
                 initialValues={initialValues}
                 contextFilters={contextFilters}
@@ -175,8 +191,12 @@ const DisseminationLists = () => {
                 disableLineSelection
                 disableNavigation
                 preloadedPaginationProps={preloadedPaginationProps}
-                actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
-                createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
+                actions={(row) => (
+                  <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />
+                )}
+                createButton={
+                  <DisseminationListCreation paginationOptions={queryPaginationOptions} />
+                }
               />
             )}
           </>

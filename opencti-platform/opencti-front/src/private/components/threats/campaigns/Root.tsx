@@ -24,7 +24,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
@@ -93,18 +96,18 @@ type RootCampaignProps = {
 };
 
 const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCampaignSubscription>>(() => ({
-    subscription,
-    variables: { id: campaignId },
-  }), [campaignId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCampaignSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: campaignId },
+    }),
+    [campaignId],
+  );
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootCampaignSubscription>(subConfig);
-  const {
-    campaign,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
+  const { campaign, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_CAMPAIGN(campaignId);
   const link = `${basePath}/knowledge`;
@@ -117,7 +120,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -138,31 +141,30 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   data={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Threats') },
-              { label: t_i18n('Campaigns'), link: PATH_CAMPAIGNS },
-              { label: campaign.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Threats') },
+                { label: t_i18n('Campaigns'), link: PATH_CAMPAIGNS },
+                { label: campaign.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={campaign}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={campaign} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <CampaignDeletion id={campaign.id} isOpen={isOpen} handleClose={onClose} />
@@ -177,20 +179,18 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               entity={campaign}
               basePath={basePath}
               pages={{
-                overview:
-                  <Campaign campaignData={campaign} />,
+                overview: <Campaign campaignData={campaign} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <CampaignKnowledge campaignData={campaign} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={campaign}
+                content: <StixCoreObjectContentRoot stixCoreObject={campaign} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={campaign}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />,
                 files: (
                   <FileManager
                     id={campaignId}
@@ -199,15 +199,19 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                     entity={campaign}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={campaignId} />,
               }}
-              extraActions={isOverview && (
-                <>
-                  <AIInsights id={campaign.id} />
-                  <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
-                </>
-              )}
+              extraActions={
+                isOverview && (
+                  <>
+                    <AIInsights id={campaign.id} />
+                    <StixCoreObjectSecurityCoverage
+                      id={campaign.id}
+                      coverage={campaign.securityCoverage}
+                    />
+                  </>
+                )
+              }
             />
           </div>
         </>

@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Typography } from '@mui/material';
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  Typography,
+} from '@mui/material';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesFormSelectorQuery } from '@components/common/files/import_files/__generated__/ImportFilesFormSelectorQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
@@ -10,11 +19,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import Loader from '../../../../../components/Loader';
 
 const importFilesFormSelectorQuery = graphql`
-  query ImportFilesFormSelectorQuery(
-    $search: String
-    $first: Int
-    $orderBy: FormsOrdering
-  ) {
+  query ImportFilesFormSelectorQuery($search: String, $first: Int, $orderBy: FormsOrdering) {
     forms(
       search: $search
       first: $first
@@ -49,7 +54,10 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
   onSearchChange,
 }) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery<ImportFilesFormSelectorQuery>(importFilesFormSelectorQuery, queryRef);
+  const data = usePreloadedQuery<ImportFilesFormSelectorQuery>(
+    importFilesFormSelectorQuery,
+    queryRef,
+  );
   const forms = data.forms?.edges || [];
 
   return (
@@ -64,11 +72,7 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
       </Box>
 
       <Box sx={{ mb: 2 }}>
-        <SearchInput
-          variant="small"
-          onSubmit={onSearchChange}
-          keyword={searchTerm}
-        />
+        <SearchInput variant="small" onSubmit={onSearchChange} keyword={searchTerm} />
       </Box>
 
       <Paper variant="outlined" sx={{ flex: 1, overflow: 'auto' }}>
@@ -96,10 +100,7 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
                   <ListItemIcon>
                     <ItemIcon type={mainEntityType} />
                   </ListItemIcon>
-                  <ListItemText
-                    primary={form.name}
-                    secondary={form.description || ''}
-                  />
+                  <ListItemText primary={form.name} secondary={form.description || ''} />
                 </ListItemButton>
               );
             })
@@ -113,14 +114,11 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
 const ImportFilesFormSelector = () => {
   const { selectedFormId, setSelectedFormId, setActiveStep } = useImportFilesContext();
   const [searchTerm, setSearchTerm] = useState('');
-  const queryRef = useQueryLoading<ImportFilesFormSelectorQuery>(
-    importFilesFormSelectorQuery,
-    {
-      search: searchTerm || undefined,
-      first: 100,
-      orderBy: 'name',
-    },
-  );
+  const queryRef = useQueryLoading<ImportFilesFormSelectorQuery>(importFilesFormSelectorQuery, {
+    search: searchTerm || undefined,
+    first: 100,
+    orderBy: 'name',
+  });
 
   if (!queryRef) {
     return (
@@ -136,11 +134,12 @@ const ImportFilesFormSelector = () => {
   };
 
   return (
-    <React.Suspense fallback={(
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
-        <Loader />
-      </Box>
-    )}
+    <React.Suspense
+      fallback={
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
+          <Loader />
+        </Box>
+      }
     >
       <ImportFilesFormSelectorContent
         queryRef={queryRef}

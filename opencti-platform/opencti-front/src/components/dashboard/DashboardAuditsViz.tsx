@@ -232,9 +232,7 @@ const DashboardAuditsViz = ({
         />
       );
     default:
-      return (
-        <WidgetNotImplemented popover={popover} />
-      );
+      return <WidgetNotImplemented popover={popover} />;
   }
 };
 

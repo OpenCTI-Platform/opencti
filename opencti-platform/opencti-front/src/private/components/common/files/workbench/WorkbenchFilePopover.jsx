@@ -34,9 +34,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const workbenchFilePopoverDeleteMutation = graphql`
@@ -80,9 +78,7 @@ class WorkbenchFilePopover extends Component {
       variables: { fileName: file.id },
       onCompleted: () => {
         if (this.props.file.metaData.entity) {
-          const entityLink = `${resolveLink(
-            this.props.file.metaData.entity.entity_type,
-          )}/${this.props.file.metaData.entity.id}`;
+          const entityLink = `${resolveLink(this.props.file.metaData.entity.entity_type)}/${this.props.file.metaData.entity.id}`;
           this.props.navigate(`${entityLink}/files`);
         } else {
           this.props.navigate('/dashboard/data/import');
@@ -115,18 +111,14 @@ class WorkbenchFilePopover extends Component {
           >
             {t('Download')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this workbench?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this workbench?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -135,10 +127,7 @@ class WorkbenchFilePopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -155,8 +144,4 @@ WorkbenchFilePopover.propTypes = {
   navigate: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(WorkbenchFilePopover);
+export default compose(inject18n, withRouter, withStyles(styles))(WorkbenchFilePopover);

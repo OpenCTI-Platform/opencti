@@ -21,10 +21,7 @@ const App = () => (
               <Route path="/public/*" Component={PublicRoot} />
               <Route path="/redirect/*" element={<RedirectByPath />} />
               {/* By default, redirect to dashboard */}
-              <Route
-                path="/*"
-                element={<Navigate to="/dashboard" replace={true} />}
-              />
+              <Route path="/*" element={<Navigate to="/dashboard" replace={true} />} />
             </Routes>
           </Suspense>
         </RedirectManager>

@@ -19,10 +19,12 @@ export interface PlaybookUpdateAction {
   value?: {
     label?: string;
     value?: string;
-    patch_value?: string | {
-      kill_chain_name: string;
-      phase_name: string;
-    };
+    patch_value?:
+      | string
+      | {
+          kill_chain_name: string;
+          phase_name: string;
+        };
   }[];
 }
 

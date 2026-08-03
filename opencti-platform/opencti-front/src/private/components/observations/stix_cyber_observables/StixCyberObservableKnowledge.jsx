@@ -12,7 +12,7 @@ const StixCyberObservableKnowledgeComponent = (props) => {
     <Routes>
       <Route
         index
-        element={(
+        element={
           <div data-testid="observable-knowledge">
             <div style={{ marginTop: 20 }}>
               <StixCyberObservableNestedEntities
@@ -21,29 +21,18 @@ const StixCyberObservableKnowledgeComponent = (props) => {
               />
             </div>
             <div style={{ marginTop: 40 }}>
-              <StixCyberObservableKnowledgeEntities
-                entityId={stixCyberObservable.id}
-              />
+              <StixCyberObservableKnowledgeEntities entityId={stixCyberObservable.id} />
             </div>
           </div>
-        )}
+        }
       />
       <Route
         path="/relations/:relationId"
-        element={(
-          <StixCoreRelationship
-            entityId={stixCyberObservable.id}
-          />
-        )}
+        element={<StixCoreRelationship entityId={stixCyberObservable.id} />}
       />
       <Route
         path="/sightings/:sightingId"
-        element={(
-          <StixSightingRelationship
-            entityId={stixCyberObservable.id}
-            paddingRight
-          />
-        )}
+        element={<StixSightingRelationship entityId={stixCyberObservable.id} paddingRight />}
       />
     </Routes>
   );

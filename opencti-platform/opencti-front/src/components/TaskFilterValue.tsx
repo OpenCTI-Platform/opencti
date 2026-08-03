@@ -8,7 +8,11 @@ import Box from '@mui/material/Box';
 import FilterValuesContent, { filterValuesContentQuery } from './FilterValuesContent';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import { useFormatter } from './i18n';
-import { convertOperatorToIcon, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
+import {
+  convertOperatorToIcon,
+  filterOperatorsWithIcon,
+  useFilterDefinition,
+} from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
@@ -42,32 +46,35 @@ const TaskFilterValue = ({
     filterValuesContentQuery,
     queryRef,
   );
-  const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
-  );
+  const filtersRepresentativesMap = new Map((filtersRepresentatives ?? []).map((n) => [n?.id, n]));
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
     <>
       {(filters.filters ?? []).map((currentFilter) => {
         const label = truncate(
-          t_i18n(
-            useFilterDefinition(currentFilter.key, entityTypes)?.label ?? currentFilter.key,
-          ),
+          t_i18n(useFilterDefinition(currentFilter.key, entityTypes)?.label ?? currentFilter.key),
           20,
         );
-        const isOperatorDisplayed = filterOperatorsWithIcon.includes(currentFilter.operator ?? 'eq');
+        const isOperatorDisplayed = filterOperatorsWithIcon.includes(
+          currentFilter.operator ?? 'eq',
+        );
         if (currentFilter.key === 'regardingOf') {
-          const sortedFilterValues = [...currentFilter.values].sort((a, b) => -a.key.localeCompare(b.key)); // display type first, then id
+          const sortedFilterValues = [...currentFilter.values].sort(
+            (a, b) => -a.key.localeCompare(b.key),
+          ); // display type first, then id
           return (
             <span key={currentFilter.key}>
               <Chip
                 classes={{ root: classes.filter }}
-                label={(
+                label={
                   <div>
                     <strong>{label}</strong>:{' '}
-                    <TaskFilterValue filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }} queryRef={queryRef} />
+                    <TaskFilterValue
+                      filters={{ mode: 'and', filters: sortedFilterValues, filterGroups: [] }}
+                      queryRef={queryRef}
+                    />
                   </div>
-                )}
+                }
               />
             </span>
           );
@@ -76,14 +83,11 @@ const TaskFilterValue = ({
           <span key={currentFilter.key}>
             <Chip
               classes={{ root: classes.filter }}
-              label={(
+              label={
                 <div>
                   <strong>{label}</strong>
                   {!isOperatorDisplayed && (
-                    <Box
-                      component="span"
-                      sx={{ padding: '0 4px', fontWeight: 'normal' }}
-                    >
+                    <Box component="span" sx={{ padding: '0 4px', fontWeight: 'normal' }}>
                       {t_i18n(currentFilter.operator)}
                     </Box>
                   )}
@@ -91,13 +95,11 @@ const TaskFilterValue = ({
                     ? convertOperatorToIcon(currentFilter.operator ?? 'eq')
                     : currentFilter.values.length > 0 && ': '}
                   {currentFilter.values.map((o) => {
-                    const localFilterMode = t_i18n(
-                      (currentFilter.mode ?? 'or').toUpperCase(),
-                    );
+                    const localFilterMode = t_i18n((currentFilter.mode ?? 'or').toUpperCase());
                     return (
                       <Tooltip
                         key={o}
-                        title={(
+                        title={
                           <FilterValuesContent
                             filterKey={currentFilter.key}
                             id={o}
@@ -105,7 +107,7 @@ const TaskFilterValue = ({
                             isFilterTooltip={true}
                             filterOperator={currentFilter.operator}
                           />
-                        )}
+                        }
                       >
                         <span key={o}>
                           <FilterValuesContent
@@ -120,22 +122,17 @@ const TaskFilterValue = ({
                         </span>
                       </Tooltip>
                     );
-                  })
-                  }
+                  })}
                 </div>
-              )}
+              }
             />
             {R.last(filters.filters)?.key !== currentFilter.key && (
-              <Chip
-                classes={{ root: classes.operator }}
-                label={globalFilterMode}
-              />
+              <Chip classes={{ root: classes.operator }} label={globalFilterMode} />
             )}
           </span>
         );
       })}
-      {filters.filterGroups
-        && filters.filterGroups.length > 0 && (
+      {filters.filterGroups && filters.filterGroups.length > 0 && (
         <ImbricatedFilterGroupDisplay
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}

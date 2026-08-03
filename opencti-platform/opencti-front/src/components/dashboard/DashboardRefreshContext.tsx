@@ -1,4 +1,11 @@
-import { createContext, PropsWithChildren, useCallback, useContext, useRef, useSyncExternalStore } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 
 type DashboardPendingStateStore = {
   getSnapshot: () => boolean;
@@ -12,10 +19,9 @@ type DashboardPendingStateStore = {
 // - pending state store: consumed by refresh control only
 const DashboardRefreshTokenContext = createContext<number | null>(null);
 
-const DashboardSetQueryPendingContext = createContext<(
-  queryId: string,
-  isPending: boolean,
-) => void>(() => {});
+const DashboardSetQueryPendingContext = createContext<
+  (queryId: string, isPending: boolean) => void
+>(() => {});
 
 const DashboardPendingStateContext = createContext<DashboardPendingStateStore>({
   getSnapshot: () => false,

@@ -14,9 +14,10 @@ export interface FieldOption {
 
 type FormikFieldConfig<P> = Omit<FieldConfig<P>, 'component' | 'as' | 'render' | 'children'>;
 type NoMetaProps<P> = Omit<P, 'field' | 'form' | 'meta'>;
-type FieldProps<ComponentProps> = FormikFieldConfig<ComponentProps> & NoMetaProps<ComponentProps> & {
-  component: ComponentType<ComponentProps>;
-};
+type FieldProps<ComponentProps> = FormikFieldConfig<ComponentProps> &
+  NoMetaProps<ComponentProps> & {
+    component: ComponentType<ComponentProps>;
+  };
 
 const Field = <C extends object>(props: FieldProps<C>) => {
   return <FormikField {...props} />;

@@ -45,21 +45,22 @@ export const convertFiltersFromOldFormat = (filters: string): FilterGroup => {
     if (filterKeysConvertor.get(key)) {
       key = filterKeysConvertor.get(key) as string;
     }
-    if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
-      const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
-      if (valIds.length === 1) { // if there is only 'null' in values
+    if (valIds.includes(null)) {
+      // values cannot contains 'null' anymore, new nil operator
+      const nilOperator = operator === 'not_eq' ? 'not_nil' : 'nil'; // replace the operator
+      if (valIds.length === 1) {
+        // if there is only 'null' in values
         newFiltersContent.push({ key, values: [], operator: nilOperator, mode }); // replace by a filter with nil and values = []
-      } else { // if there is other values
-        newFilterGroupsContent.push(
-          {
-            mode,
-            filters: [
-              { key, values: valIds.filter((id) => id !== null) as string[], operator, mode }, // remove null id
-              { key, values: [], operator: nilOperator, mode }, // create a filter for the former null id
-            ],
-            filterGroups: [],
-          },
-        );
+      } else {
+        // if there is other values
+        newFilterGroupsContent.push({
+          mode,
+          filters: [
+            { key, values: valIds.filter((id) => id !== null) as string[], operator, mode }, // remove null id
+            { key, values: [], operator: nilOperator, mode }, // create a filter for the former null id
+          ],
+          filterGroups: [],
+        });
       }
     } else {
       newFiltersContent.push({ key, values: valIds as string[], operator, mode });

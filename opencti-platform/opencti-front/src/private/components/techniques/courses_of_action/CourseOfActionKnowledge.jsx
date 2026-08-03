@@ -13,9 +13,7 @@ class CourseOfActionKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/relations/:relationId"
-            element={
-              <StixCoreRelationship entityId={courseOfAction.id} />
-            }
+            element={<StixCoreRelationship entityId={courseOfAction.id} />}
           />
         </Routes>
       </>
@@ -29,17 +27,14 @@ CourseOfActionKnowledgeComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const CourseOfActionKnowledge = createFragmentContainer(
-  CourseOfActionKnowledgeComponent,
-  {
-    courseOfAction: graphql`
-      fragment CourseOfActionKnowledge_courseOfAction on CourseOfAction {
-        id
-        name
-        x_opencti_aliases
-      }
-    `,
-  },
-);
+const CourseOfActionKnowledge = createFragmentContainer(CourseOfActionKnowledgeComponent, {
+  courseOfAction: graphql`
+    fragment CourseOfActionKnowledge_courseOfAction on CourseOfAction {
+      id
+      name
+      x_opencti_aliases
+    }
+  `,
+});
 
 export default withRouter(CourseOfActionKnowledge);

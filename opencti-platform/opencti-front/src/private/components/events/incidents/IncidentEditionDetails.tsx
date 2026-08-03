@@ -13,7 +13,11 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/IncidentEditionDetailsFieldPatchMutation.graphql';
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -29,11 +33,7 @@ const incidentMutationFieldPatch = graphql`
     $references: [String]
   ) {
     incidentEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...IncidentEditionDetails_incident
         ...Incident_incident
       }
@@ -77,9 +77,12 @@ interface IncidentEditionDetailsFormValues {
   first_seen?: string;
   last_seen?: string;
 }
-const IncidentEditionDetails: FunctionComponent<
-  IncidentEditionDetailsProps
-> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
+const IncidentEditionDetails: FunctionComponent<IncidentEditionDetailsProps> = ({
+  incidentRef,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -106,20 +109,20 @@ const IncidentEditionDetails: FunctionComponent<
 
   const INCIDENT_TYPE = 'Incident';
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .min(
-        Yup.ref('first_seen'),
-        "The last seen date can't be before first seen date",
-      )
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    objective: Yup.string().nullable(),
-    source: Yup.string().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      first_seen: Yup.date()
+        .nullable()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      last_seen: Yup.date()
+        .nullable()
+        .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+      objective: Yup.string().nullable(),
+      source: Yup.string().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const incidentEditionDetailsValidation = useDynamicSchemaCreationValidation(
     mandatoryAttributes,
     basicShape,
@@ -146,8 +149,7 @@ const IncidentEditionDetails: FunctionComponent<
       variables: {
         id: incident.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -186,20 +188,13 @@ const IncidentEditionDetails: FunctionComponent<
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={incident} />
           <Field
             component={DateTimePickerField}
             name="first_seen"
-            required={(mandatoryAttributes.includes('first_seen'))}
+            required={mandatoryAttributes.includes('first_seen')}
             disabled={isInferred}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
@@ -207,15 +202,13 @@ const IncidentEditionDetails: FunctionComponent<
               label: t_i18n('First seen'),
               variant: 'standard',
               fullWidth: true,
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
             }}
           />
           <Field
             component={DateTimePickerField}
             name="last_seen"
-            required={(mandatoryAttributes.includes('last_seen'))}
+            required={mandatoryAttributes.includes('last_seen')}
             label={t_i18n('Last seen')}
             disabled={isInferred}
             onFocus={handleChangeFocus}
@@ -225,30 +218,26 @@ const IncidentEditionDetails: FunctionComponent<
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              ),
+              helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
             }}
           />
           <Field
             component={TextField}
             variant="standard"
             name="source"
-            required={(mandatoryAttributes.includes('source'))}
+            required={mandatoryAttributes.includes('source')}
             label={t_i18n('Source')}
             fullWidth={true}
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="source" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="source" />}
           />
           <Field
             component={TextField}
             variant="standard"
             name="objective"
-            required={(mandatoryAttributes.includes('objective'))}
+            required={mandatoryAttributes.includes('objective')}
             label={t_i18n('Objective')}
             fullWidth={true}
             multiline={true}
@@ -256,9 +245,7 @@ const IncidentEditionDetails: FunctionComponent<
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="objective" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="objective" />}
           />
           {enableReferences && (
             <CommitMessage

@@ -54,56 +54,53 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
-
-      R.map((n) => (n.node
-        && n.node.killChainPhases
-        && n.node.killChainPhases.length > 0
-        ? n.node.killChainPhases[0]
-        : n.node
-          && n.node.to
-          && n.node.to.killChainPhases
-          && n.node.to.killChainPhases.length > 0
-          ? n.node.to.killChainPhases[0]
-          : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
+      R.map((n) =>
+        n.node && n.node.killChainPhases && n.node.killChainPhases.length > 0
+          ? n.node.killChainPhases[0]
+          : n.node && n.node.to && n.node.to.killChainPhases && n.node.to.killChainPhases.length > 0
+            ? n.node.to.killChainPhases[0]
+            : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
+      ),
       R.uniq,
       R.indexBy(R.prop('id')),
     )(data.stixRelationships.edges);
     const stixRelationships = R.pipe(
       R.map((n) => n.node),
-      R.map((n) => R.assoc(
-        'startTimeYear',
-        yearFormat(n.start_time) === '1970'
-          ? t('None')
-          : yearFormat(n.start_time),
-        n,
-      )),
-      R.map((n) => R.assoc(
-        'stopTimeYear',
-        yearFormat(n.stop_time) === '5138'
-          ? t('None')
-          : yearFormat(n.stop_time),
-        n,
-      )),
-      R.map((n) => R.assoc(
-        'years',
-        n.startTimeYear === n.stopTimeYear
-          ? n.startTimeYear
-          : `${n.startTimeYear} - ${n.stopTimeYear}`,
-        n,
-      )),
-      R.map((n) => R.assoc(
-        'killChainPhase',
+      R.map((n) =>
+        R.assoc(
+          'startTimeYear',
+          yearFormat(n.start_time) === '1970' ? t('None') : yearFormat(n.start_time),
+          n,
+        ),
+      ),
+      R.map((n) =>
+        R.assoc(
+          'stopTimeYear',
+          yearFormat(n.stop_time) === '5138' ? t('None') : yearFormat(n.stop_time),
+          n,
+        ),
+      ),
+      R.map((n) =>
+        R.assoc(
+          'years',
+          n.startTimeYear === n.stopTimeYear
+            ? n.startTimeYear
+            : `${n.startTimeYear} - ${n.stopTimeYear}`,
+          n,
+        ),
+      ),
+      R.map((n) =>
+        R.assoc(
+          'killChainPhase',
 
-        n && n.killChainPhases && n.killChainPhases.length > 0
-          ? n.killChainPhases[0]
-          : n
-            && n.to
-            && n.to.killChainPhases
-            && n.to.killChainPhases.length > 0
-            ? n.to.killChainPhases[0]
-            : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
-        n,
-      )),
+          n && n.killChainPhases && n.killChainPhases.length > 0
+            ? n.killChainPhases[0]
+            : n && n.to && n.to.killChainPhases && n.to.killChainPhases.length > 0
+              ? n.to.killChainPhases[0]
+              : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
+          n,
+        ),
+      ),
       R.sortWith([R.ascend(R.prop('years'))]),
       R.groupBy(R.path(['killChainPhase', 'id'])),
       R.mapObjIndexed((value, key) => R.assoc('stixDomainObjects', value, killChainPhases[key])),
@@ -119,137 +116,117 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                 <ListItem
                   divider={true}
                   disablePadding
-                  secondaryAction={(
+                  secondaryAction={
                     <IconButton
-                      aria-label={this.state.expandedLines[stixRelationship.id] ? t('Collapse') : t('Expand')}
-                      onClick={this.handleToggleLine.bind(
-                        this,
-                        stixRelationship.id,
-                      )}
+                      aria-label={
+                        this.state.expandedLines[stixRelationship.id] ? t('Collapse') : t('Expand')
+                      }
+                      onClick={this.handleToggleLine.bind(this, stixRelationship.id)}
                       aria-haspopup="true"
                     >
-                      {this.state.expandedLines[stixRelationship.id]
-                        === false ? (
-                            <ExpandMore />
-                          ) : (
-                            <ExpandLess />
-                          )}
+                      {this.state.expandedLines[stixRelationship.id] === false ? (
+                        <ExpandMore />
+                      ) : (
+                        <ExpandLess />
+                      )}
                     </IconButton>
-                  )}
+                  }
                 >
-                  <ListItemButton
-                    onClick={this.handleToggleLine.bind(
-                      this,
-                      stixRelationship.id,
-                    )}
-                  >
+                  <ListItemButton onClick={this.handleToggleLine.bind(this, stixRelationship.id)}>
                     <ListItemIcon>
                       <Launch color="primary" role="img" />
                     </ListItemIcon>
                     <ListItemText primary={stixRelationship.phase_name} />
                   </ListItemButton>
                 </ListItem>
-                <Collapse
-                  in={this.state.expandedLines[stixRelationship.id] !== false}
-                >
+                <Collapse in={this.state.expandedLines[stixRelationship.id] !== false}>
                   <List>
-                    {stixRelationship.stixDomainObjects.map(
-                      (stixDomainObject) => {
-                        const entityToDisplay = (stixDomainObject.to?.id === stixDomainObjectId) ? stixDomainObject.from : stixDomainObject.to;
-                        const restricted = entityToDisplay === null;
-                        const link = `${entityLink}/relations/${stixDomainObject.id}`;
-                        const buildDomainObjectPrimaryText = () => {
-                          if (!restricted) {
-                            if (entityToDisplay.entity_type === 'Attack-Pattern') {
-                              if (entityToDisplay.x_mitre_id) {
-                                return defaultRender(
-                                  <span>
-                                    <strong>
-                                      {entityToDisplay.x_mitre_id}
-                                    </strong>{'  '}
-                                    - {entityToDisplay.name}
-                                  </span>,
-                                );
-                              }
+                    {stixRelationship.stixDomainObjects.map((stixDomainObject) => {
+                      const entityToDisplay =
+                        stixDomainObject.to?.id === stixDomainObjectId
+                          ? stixDomainObject.from
+                          : stixDomainObject.to;
+                      const restricted = entityToDisplay === null;
+                      const link = `${entityLink}/relations/${stixDomainObject.id}`;
+                      const buildDomainObjectPrimaryText = () => {
+                        if (!restricted) {
+                          if (entityToDisplay.entity_type === 'Attack-Pattern') {
+                            if (entityToDisplay.x_mitre_id) {
                               return defaultRender(
                                 <span>
-                                  {entityToDisplay.name}
+                                  <strong>{entityToDisplay.x_mitre_id}</strong>
+                                  {'  '}- {entityToDisplay.name}
                                 </span>,
                               );
                             }
-                            return defaultRender(entityToDisplay.name);
+                            return defaultRender(<span>{entityToDisplay.name}</span>);
                           }
-                          return t('Restricted');
-                        };
-                        const domainObjectPrimaryText = buildDomainObjectPrimaryText();
+                          return defaultRender(entityToDisplay.name);
+                        }
+                        return t('Restricted');
+                      };
+                      const domainObjectPrimaryText = buildDomainObjectPrimaryText();
 
-                        return (
-                          <ListItem
-                            key={stixDomainObject.id}
-                            divider={true}
-                            dense={true}
-                            disablePadding
-                            secondaryAction={(
-                              <StixCoreRelationshipPopover
-                                stixCoreRelationshipId={stixDomainObject.id}
-                                paginationOptions={paginationOptions}
-                                onDelete={this.props.relay.refetch.bind(this)}
-                              />
-                            )}
+                      return (
+                        <ListItem
+                          key={stixDomainObject.id}
+                          divider={true}
+                          dense={true}
+                          disablePadding
+                          secondaryAction={
+                            <StixCoreRelationshipPopover
+                              stixCoreRelationshipId={stixDomainObject.id}
+                              paginationOptions={paginationOptions}
+                              onDelete={this.props.relay.refetch.bind(this)}
+                            />
+                          }
+                        >
+                          <ListItemButton
+                            classes={{ root: classes.nested }}
+                            component={Link}
+                            to={link}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                            }}
                           >
-                            <ListItemButton
-                              classes={{ root: classes.nested }}
-                              component={Link}
-                              to={link}
+                            <ListItemIcon className={classes.itemIcon}>
+                              <ItemIcon
+                                type={!restricted ? entityToDisplay.entity_type : 'restricted'}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              sx={{ marginRight: 8, width: '100%' }}
+                              primary={domainObjectPrimaryText}
+                              secondary={
+                                <MarkdownDisplay
+                                  content={stixDomainObject.description}
+                                  remarkGfmPlugin={true}
+                                  commonmark={true}
+                                />
+                              }
+                            />
+                            <Box
                               sx={{
+                                width: 150,
+                                marginRight: 6,
                                 display: 'flex',
-                                alignItems: 'center',
-                                gap: 3,
+                                justifyContent: 'center',
                               }}
                             >
-                              <ListItemIcon className={classes.itemIcon}>
-                                <ItemIcon
-                                  type={
-                                    !restricted
-                                      ? entityToDisplay.entity_type
-                                      : 'restricted'
-                                  }
-                                />
-                              </ListItemIcon>
-                              <ListItemText
-                                sx={{ marginRight: 8, width: '100%' }}
-                                primary={domainObjectPrimaryText}
-                                secondary={(
-                                  <MarkdownDisplay
-                                    content={stixDomainObject.description}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                  />
-                                )}
+                              <ItemMarkings
+                                markingDefinitions={stixDomainObject.objectMarking ?? []}
+                                limit={1}
                               />
-                              <Box
-                                sx={{
-                                  width: 150,
-                                  marginRight: 6,
-                                  display: 'flex',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <ItemMarkings
-                                  markingDefinitions={stixDomainObject.objectMarking ?? []}
-                                  limit={1}
-                                />
-                              </Box>
-                              <Box sx={{ marginRight: 8 }}>
-                                <ItemYears
-                                  years={stixDomainObject.years}
-                                />
-                              </Box>
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      },
-                    )}
+                            </Box>
+                            <Box sx={{ marginRight: 8 }}>
+                              <ItemYears years={stixDomainObject.years} />
+                            </Box>
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
                   </List>
                 </Collapse>
               </div>
@@ -389,86 +366,86 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                 }
               }
               from {
-                  ... on BasicObject {
-                      id
-                      entity_type
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
+                ... on AttackPattern {
+                  name
+                  x_mitre_id
+                  killChainPhases {
+                    id
+                    phase_name
+                    x_opencti_order
                   }
-                  ... on AttackPattern {
-                      name
-                      x_mitre_id
-                      killChainPhases {
-                          id
-                          phase_name
-                          x_opencti_order
-                      }
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on System {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on AdministrativeArea {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                  killChainPhases {
+                    id
+                    phase_name
+                    x_opencti_order
                   }
-                  ... on Campaign {
-                      name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                  killChainPhases {
+                    id
+                    phase_name
+                    x_opencti_order
                   }
-                  ... on CourseOfAction {
-                      name
-                  }
-                  ... on Individual {
-                      name
-                  }
-                  ... on Organization {
-                      name
-                  }
-                  ... on Sector {
-                      name
-                  }
-                  ... on System {
-                      name
-                  }
-                  ... on Indicator {
-                      name
-                  }
-                  ... on Infrastructure {
-                      name
-                  }
-                  ... on IntrusionSet {
-                      name
-                  }
-                  ... on Position {
-                      name
-                  }
-                  ... on City {
-                      name
-                  }
-                  ... on AdministrativeArea {
-                      name
-                  }
-                  ... on Country {
-                      name
-                  }
-                  ... on Region {
-                      name
-                  }
-                  ... on Malware {
-                      name
-                      killChainPhases {
-                          id
-                          phase_name
-                          x_opencti_order
-                      }
-                  }
-                  ... on ThreatActor {
-                      name
-                  }
-                  ... on Tool {
-                      name
-                      killChainPhases {
-                          id
-                          phase_name
-                          x_opencti_order
-                      }
-                  }
-                  ... on Vulnerability {
-                      name
-                  }
-                  ... on Incident {
-                      name
-                  }
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on Incident {
+                  name
+                }
               }
             }
           }
@@ -479,7 +456,4 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
   stixDomainObjectThreatKnowledgeStixRelationshipsQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectGlobalKillChain);
+export default R.compose(inject18n, withStyles(styles))(StixDomainObjectGlobalKillChain);

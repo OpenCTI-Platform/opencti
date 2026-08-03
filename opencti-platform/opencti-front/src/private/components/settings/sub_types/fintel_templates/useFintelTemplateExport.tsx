@@ -14,10 +14,9 @@ const fintelTemplateExportQuery = graphql`
 
 const useFintelTemplateExport = () => {
   return async (templateId: string) => {
-    const { fintelTemplate } = await fetchQuery(
-      fintelTemplateExportQuery,
-      { id: templateId },
-    ).toPromise() as useFintelTemplateExportQuery$data;
+    const { fintelTemplate } = (await fetchQuery(fintelTemplateExportQuery, {
+      id: templateId,
+    }).toPromise()) as useFintelTemplateExportQuery$data;
 
     if (fintelTemplate) {
       const blob = new Blob([fintelTemplate.toConfigurationExport], { type: 'text/json' });

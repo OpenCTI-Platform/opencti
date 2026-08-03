@@ -44,21 +44,15 @@ describe('StixDomainObjectTabsBox', () => {
     });
   });
 
-  it.each(TABS_TEST_DATA)('renders a %s link when %s prop is passed targeting %s', (tabName, prop, subroute) => {
-    testRender(
-      <StixDomainObjectTabsBox
-        entityType="Intrusion-Set"
-        tabs={[prop]}
-        basePath=""
-      />,
-    );
-    const tabElem = screen.getByRole('tab', { name: new RegExp(tabName, 'i') });
-    expect(tabElem).toBeInTheDocument();
-    expect(tabElem).toHaveAttribute(
-      'href',
-      expect.stringMatching(new RegExp(`${subroute}$`)),
-    );
-  });
+  it.each(TABS_TEST_DATA)(
+    'renders a %s link when %s prop is passed targeting %s',
+    (tabName, prop, subroute) => {
+      testRender(<StixDomainObjectTabsBox entityType="Intrusion-Set" tabs={[prop]} basePath="" />);
+      const tabElem = screen.getByRole('tab', { name: new RegExp(tabName, 'i') });
+      expect(tabElem).toBeInTheDocument();
+      expect(tabElem).toHaveAttribute('href', expect.stringMatching(new RegExp(`${subroute}$`)));
+    },
+  );
 
   it('renders components passed as extraActions', () => {
     testRender(
@@ -97,13 +91,7 @@ describe('StixDomainObjectTabsBox', () => {
       currentCustomViewMenuItem: undefined,
     });
 
-    testRender(
-      <StixDomainObjectTabsBox
-        entityType="Intrusion-Set"
-        tabs={[]}
-        basePath=""
-      />,
-    );
+    testRender(<StixDomainObjectTabsBox entityType="Intrusion-Set" tabs={[]} basePath="" />);
 
     const tabElem = screen.getByRole('tab', { name: /default custom view/i });
     expect(tabElem).toBeInTheDocument();
@@ -116,13 +104,15 @@ describe('StixDomainObjectTabsBox', () => {
   it('renders a single custom view tab link when in single display mode', () => {
     mockUseCustomViewTabs.mockReturnValue({
       defaultCustomView: undefined,
-      otherCustomViews: [{
-        id: '20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
-        name: 'Another custom view',
-        path: 'another-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }],
+      otherCustomViews: [
+        {
+          id: '20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+          name: 'Another custom view',
+          path: 'another-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+      ],
       displayMode: {
         default: false,
         others: 'single',
@@ -138,13 +128,7 @@ describe('StixDomainObjectTabsBox', () => {
       currentCustomViewMenuItem: undefined,
     });
 
-    testRender(
-      <StixDomainObjectTabsBox
-        entityType="Intrusion-Set"
-        tabs={[]}
-        basePath=""
-      />,
-    );
+    testRender(<StixDomainObjectTabsBox entityType="Intrusion-Set" tabs={[]} basePath="" />);
 
     const tabElem = screen.getByRole('tab', { name: /another custom view/i });
     expect(tabElem).toBeInTheDocument();
@@ -157,19 +141,22 @@ describe('StixDomainObjectTabsBox', () => {
   it('renders the custom view dropdown tab and menu items when in dropdown display mode', () => {
     mockUseCustomViewTabs.mockReturnValue({
       defaultCustomView: undefined,
-      otherCustomViews: [{
-        id: '20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
-        name: 'First custom view',
-        path: 'first-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }, {
-        id: 'e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
-        name: 'Second custom view',
-        path: 'second-custom-view-e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
-        targetEntityType: 'Intrusion-Set',
-        default: false,
-      }],
+      otherCustomViews: [
+        {
+          id: '20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+          name: 'First custom view',
+          path: 'first-custom-view-20ee7b9d-fb42-4edf-8a3a-c966f41a6cb9',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+        {
+          id: 'e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
+          name: 'Second custom view',
+          path: 'second-custom-view-e9a6f2f9-354a-4a7b-9749-84f852e3d6d7',
+          targetEntityType: 'Intrusion-Set',
+          default: false,
+        },
+      ],
       displayMode: {
         default: false,
         others: 'dropdown',
@@ -185,13 +172,7 @@ describe('StixDomainObjectTabsBox', () => {
       currentCustomViewMenuItem: undefined,
     });
 
-    testRender(
-      <StixDomainObjectTabsBox
-        entityType="Intrusion-Set"
-        tabs={[]}
-        basePath=""
-      />,
-    );
+    testRender(<StixDomainObjectTabsBox entityType="Intrusion-Set" tabs={[]} basePath="" />);
 
     const tabElem = screen.getByText(/^custom view$/i).closest('[role="tab"]');
     expect(tabElem).toBeInTheDocument();

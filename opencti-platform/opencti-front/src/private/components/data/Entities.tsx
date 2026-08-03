@@ -5,11 +5,18 @@ import {
 } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLinesPaginationQuery.graphql';
 import { EntitiesStixDomainObjectsLines_data$data } from '@components/data/entities/__generated__/EntitiesStixDomainObjectsLines_data.graphql';
 import { entitiesFragment } from '@components/data/entities/EntitiesStixDomainObjectLine';
-import { entitiesStixDomainObjectsLinesFragment, entitiesStixDomainObjectsLinesQuery } from './entities/EntitiesStixDomainObjectsLines';
+import {
+  entitiesStixDomainObjectsLinesFragment,
+  entitiesStixDomainObjectsLinesQuery,
+} from './entities/EntitiesStixDomainObjectsLines';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -40,9 +47,15 @@ const Entities = () => {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<EntitiesStixDomainObjectsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  } = usePaginationLocalStorage<EntitiesStixDomainObjectsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', viewStorage.filters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'Stix-Domain-Object',
+    viewStorage.filters,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
@@ -74,13 +87,17 @@ const Entities = () => {
 
   return (
     <div data-testid="data-entities-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           preloadedPaginationProps={preloadedPaginationProps}
-          resolvePath={(data: EntitiesStixDomainObjectsLines_data$data) => data.stixDomainObjects?.edges?.map((n) => n?.node)}
+          resolvePath={(data: EntitiesStixDomainObjectsLines_data$data) =>
+            data.stixDomainObjects?.edges?.map((n) => n?.node)
+          }
           dataColumns={dataColumns}
           lineFragment={entitiesFragment}
           contextFilters={contextFilters}

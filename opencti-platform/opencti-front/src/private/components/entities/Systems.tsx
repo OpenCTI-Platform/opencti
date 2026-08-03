@@ -1,6 +1,9 @@
 import React from 'react';
 import { SystemLineDummy } from '@components/entities/systems/SystemLine';
-import { SystemsLinesPaginationQuery, SystemsLinesPaginationQuery$variables } from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
+import {
+  SystemsLinesPaginationQuery,
+  SystemsLinesPaginationQuery$variables,
+} from '@components/entities/systems/__generated__/SystemsLinesPaginationQuery.graphql';
 import ListLines from '../../../components/list_lines/ListLines';
 import SystemsLines, { systemsLinesQuery } from './systems/SystemsLines';
 import SystemCreation from './systems/SystemCreation';
@@ -19,26 +22,17 @@ const Systems = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Systems | Entities'));
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SystemsLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<SystemsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'name',
       orderAsc: true,
       openExports: false,
       filters: emptyFilterGroup,
-    },
-  );
+    });
 
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm, filters, openExports, numberOfElements } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -84,27 +78,24 @@ const Systems = () => {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
-        createButton={(
+        createButton={
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <SystemCreation paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
         iconExtension
       >
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <SystemLineDummy
-                      key={idx}
-                      dataColumns={dataColumns}
-                    />
+                    <SystemLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <SystemsLines
               queryRef={queryRef}
@@ -121,7 +112,9 @@ const Systems = () => {
 
   return (
     <div data-testid="system-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Systems'), current: true }]}
+      />
       {renderLines()}
     </div>
   );

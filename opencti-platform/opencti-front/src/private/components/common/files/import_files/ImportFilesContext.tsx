@@ -1,4 +1,11 @@
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { FileWithConnectors } from '@components/common/files/import_files/ImportFilesUploader';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
@@ -186,11 +193,16 @@ type ImportFilesContextProps = InitialValues & {
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
 
-export const ImportFilesProvider = ({ children, initialValue }: {
+export const ImportFilesProvider = ({
+  children,
+  initialValue,
+}: {
   children: ReactNode;
   initialValue: InitialValues;
 }) => {
-  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, { capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'] });
+  const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT'], false, {
+    capabilitiesInDraft: ['KNOWLEDGE_KNASKIMPORT'],
+  });
   const draftContext = useDraftContext();
   const { isForcedImportToDraft } = useImportAccess();
 
@@ -208,10 +220,9 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   });
 
   const guessMimeType = useCallback(async (fileId: string): Promise<string | null> => {
-    const result = await fetchQuery(
-      importFilesContextGuessMimeTypeQuery,
-      { fileId },
-    ).toPromise() as ImportFilesContextGuessMimeTypeQuery$data;
+    const result = (await fetchQuery(importFilesContextGuessMimeTypeQuery, {
+      fileId,
+    }).toPromise()) as ImportFilesContextGuessMimeTypeQuery$data;
 
     return result?.guessMimeType || null;
   }, []);
@@ -220,33 +231,35 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     setImportMode(initialImportMode);
   }, [initialValue.activeStep, initialValue.importMode]);
 
-  return queryRef && (
-    <React.Suspense>
-      <ImportFilesContext.Provider
-        value={{
-          ...initialValue,
-          canSelectImportMode,
-          activeStep,
-          setActiveStep,
-          importMode,
-          setImportMode,
-          files,
-          setFiles,
-          uploadStatus,
-          setUploadStatus,
-          draftId,
-          setDraftId,
-          selectedFormId,
-          setSelectedFormId,
-          inDraftContext: !!draftContext?.id,
-          isForcedImportToDraft,
-          guessMimeType,
-          queryRef,
-        }}
-      >
-        {children}
-      </ImportFilesContext.Provider>
-    </React.Suspense>
+  return (
+    queryRef && (
+      <React.Suspense>
+        <ImportFilesContext.Provider
+          value={{
+            ...initialValue,
+            canSelectImportMode,
+            activeStep,
+            setActiveStep,
+            importMode,
+            setImportMode,
+            files,
+            setFiles,
+            uploadStatus,
+            setUploadStatus,
+            draftId,
+            setDraftId,
+            selectedFormId,
+            setSelectedFormId,
+            inDraftContext: !!draftContext?.id,
+            isForcedImportToDraft,
+            guessMimeType,
+            queryRef,
+          }}
+        >
+          {children}
+        </ImportFilesContext.Provider>
+      </React.Suspense>
+    )
   );
 };
 

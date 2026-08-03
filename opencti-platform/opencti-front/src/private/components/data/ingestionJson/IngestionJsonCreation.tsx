@@ -32,10 +32,21 @@ import SelectField from '../../../../components/fields/SelectField';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../../../../utils/hooks/useGranted';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
 import { convertMapper, convertUser } from '../../../../utils/edition';
-import { BASIC_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import {
+  BASIC_AUTH,
+  CERT_AUTH,
+  extractCA,
+  extractCert,
+  extractKey,
+  extractPassword,
+  extractUsername,
+} from '../../../../utils/ingestionAuthentificationUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -145,19 +156,34 @@ interface IngestionJsonCreationProps {
   };
 }
 
-const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
-  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
-}) => {
-  return option.representations.some(
-    (representation) => representation.attributes.some(
-      (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
-        (value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG),
-      ),
+const resolveHasUserChoiceJsonMapper = (
+  option: FieldOption & {
+    representations: {
+      attributes: { key: string; default_values: { name: string }[] | string[] }[];
+    }[];
+  },
+) => {
+  return option.representations.some((representation) =>
+    representation.attributes.some(
+      (attribute) =>
+        attribute.key === 'objectMarking' &&
+        attribute.default_values.some((value) =>
+          typeof value === 'string'
+            ? value === USER_CHOICE_MARKING_CONFIG
+            : value?.name === USER_CHOICE_MARKING_CONFIG,
+        ),
     ),
   );
 };
 
-const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ paginationOptions, isDuplicated, handleClose, ingestionJson, importedInput, drawerSettings }) => {
+const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({
+  paginationOptions,
+  isDuplicated,
+  handleClose,
+  ingestionJson,
+  importedInput,
+  drawerSettings,
+}) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
@@ -171,20 +197,30 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     setCreatorId(option?.value ?? '');
   };
   const updateObjectMarkingField = async (
-    setFieldValue: (field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>,
+    setFieldValue: (
+      field: string,
+      value: FieldOption[],
+      shouldValidate?: boolean,
+    ) => Promise<void | FormikErrors<IngestionJsonAddInput>>,
     values: IngestionJsonAddInput,
   ) => {
     await setFieldValue('markings', values.markings);
   };
   const onJsonMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[];
+      representations: {
+        attributes: { key: string; default_values: { name: string }[] | string[] }[];
+      }[];
     },
     {
       setFieldValue,
       values,
     }: {
-      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
+      setFieldValue: (
+        field: string,
+        value: FieldOption[],
+        shouldValidate?: boolean,
+      ) => Promise<void | FormikErrors<IngestionJsonAddInput>>;
       values: IngestionJsonAddInput;
     },
   ) => {
@@ -192,27 +228,30 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     setHasUserChoiceJsonMapper(hasUserChoiceJsonMapperRepresentations);
     await updateObjectMarkingField(setFieldValue, values);
   };
-  const ingestionJsonCreationValidation = () => Yup.object().shape({
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    uri: Yup.string().required(t_i18n('This field is required')),
-    authentication_type: Yup.string().required(t_i18n('This field is required')),
-    authentication_value: Yup.string().nullable(),
-    json_mapper_id: Yup.object().required(t_i18n('This field is required')),
-    username: Yup.string().nullable(),
-    password: Yup.string().nullable(),
-    cert: Yup.string().nullable(),
-    key: Yup.string().nullable(),
-    ca: Yup.string().nullable(),
-    user_id: Yup.object().nullable(),
-  });
+  const ingestionJsonCreationValidation = () =>
+    Yup.object().shape({
+      name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+      uri: Yup.string().required(t_i18n('This field is required')),
+      authentication_type: Yup.string().required(t_i18n('This field is required')),
+      authentication_value: Yup.string().nullable(),
+      json_mapper_id: Yup.object().required(t_i18n('This field is required')),
+      username: Yup.string().nullable(),
+      password: Yup.string().nullable(),
+      cert: Yup.string().nullable(),
+      key: Yup.string().nullable(),
+      ca: Yup.string().nullable(),
+      user_id: Yup.object().nullable(),
+    });
 
   const [commit] = useApiMutation(ingestionJsonCreationMutation);
   const onSubmit: FormikConfig<IngestionJsonAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
-    let authenticationValue = isDuplicated ? ingestionJsonData?.authentication_value : values.authentication_value;
+    let authenticationValue = isDuplicated
+      ? ingestionJsonData?.authentication_value
+      : values.authentication_value;
     if (values.authentication_type === 'basic') {
       authenticationValue = `${values.username}:${values.password}`;
     } else if (values.authentication_type === 'certificate') {
@@ -232,7 +271,10 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
       pagination_with_sub_page: values.pagination_with_sub_page,
       pagination_with_sub_page_query_verb: values.pagination_with_sub_page_query_verb,
       pagination_with_sub_page_attribute_path: values.pagination_with_sub_page_attribute_path,
-      json_mapper_id: typeof values.json_mapper_id === 'string' ? values.json_mapper_id : values.json_mapper_id?.value,
+      json_mapper_id:
+        typeof values.json_mapper_id === 'string'
+          ? values.json_mapper_id
+          : values.json_mapper_id?.value,
       authentication_type: values.authentication_type,
       authentication_value: authenticationValue,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
@@ -244,12 +286,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
         input,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_ingestionJsons',
-          paginationOptions,
-          'ingestionJsonAdd',
-        );
+        insertNode(store, 'Pagination_ingestionJsons', paginationOptions, 'ingestionJsonAdd');
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -264,91 +301,119 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
   // Prefill from an imported configuration: credentials, user and markings are
   // platform-specific and are chosen by the user before creation.
-  const importedInitialValues: IngestionJsonAddInput | null = importedInput ? {
-    name: importedInput.name ?? '',
-    description: importedInput.description ?? '',
-    scheduling_period: importedInput.scheduling_period ?? 'auto',
-    uri: importedInput.uri ?? '',
-    verb: importedInput.verb ?? 'GET',
-    body: importedInput.body ?? '',
-    headers: (importedInput.headers ?? []).map(({ name, value }) => ({ name, value })),
-    query_attributes: (importedInput.query_attributes ?? []).map((attribute) => ({
-      type: attribute.type ?? '',
-      from: attribute.from ?? '',
-      to: attribute.to ?? '',
-      data_operation: attribute.data_operation ?? '',
-      state_operation: attribute.state_operation ?? '',
-      default: attribute.default ?? '',
-      exposed: attribute.exposed ?? '',
-    })),
-    pagination_with_sub_page: importedInput.pagination_with_sub_page ?? false,
-    pagination_with_sub_page_query_verb: importedInput.pagination_with_sub_page_query_verb ?? 'GET',
-    pagination_with_sub_page_attribute_path: importedInput.pagination_with_sub_page_attribute_path ?? '',
-    json_mapper_id: { label: importedInput.jsonMapper.name, value: importedInput.jsonMapper.id },
-    authentication_type: importedInput.authentication_type ?? 'none',
-    authentication_value: '',
-    user_id: '',
-    username: '',
-    password: '',
-    cert: '',
-    key: '',
-    ca: '',
-    markings: [],
-    ssl_verify: importedInput.ssl_verify ?? true,
-  } : null;
-  const duplicatedOrDefaultValues: IngestionJsonAddInput = isDuplicated && ingestionJsonData ? {
-    name: `${ingestionJsonData.name} - copy`,
-    description: ingestionJsonData.description,
-    scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
-    uri: ingestionJsonData.uri,
-    verb: ingestionJsonData.verb ?? 'GET',
-    body: ingestionJsonData.body ?? '',
-    headers: (ingestionJsonData.headers ?? []) as IngestionJsonHeader[],
-    query_attributes: (ingestionJsonData.query_attributes ?? []) as IngestionJsonAttributes[],
-    pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page ?? false,
-    pagination_with_sub_page_query_verb: ingestionJsonData.pagination_with_sub_page_query_verb ?? '',
-    pagination_with_sub_page_attribute_path: ingestionJsonData.pagination_with_sub_page_attribute_path ?? '',
-    json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
-    authentication_type: ingestionJsonData.authentication_type,
-    authentication_value: ingestionJsonData.authentication_value,
-    ingestion_running: ingestionJsonData.ingestion_running,
-    user_id: convertUser(ingestionJsonData, 'user'),
-    username: ingestionJsonData.authentication_type === BASIC_AUTH ? extractUsername(ingestionJsonData.authentication_value) : undefined,
-    password: ingestionJsonData.authentication_type === BASIC_AUTH ? extractPassword(ingestionJsonData.authentication_value) : undefined,
-    cert: ingestionJsonData.authentication_type === CERT_AUTH ? extractCert(ingestionJsonData.authentication_value) : undefined,
-    key: ingestionJsonData.authentication_type === CERT_AUTH ? extractKey(ingestionJsonData.authentication_value) : undefined,
-    ca: ingestionJsonData.authentication_type === CERT_AUTH ? extractCA(ingestionJsonData.authentication_value) : undefined,
-    markings: me.allowed_marking?.filter(
-      (marking) => ingestionJsonData.markings?.includes(marking.id),
-    ).map((marking) => ({
-      label: marking.definition ?? '',
-      value: marking.id,
-    })) ?? [],
-    ssl_verify: true,
-  } : {
-    name: '',
-    description: '',
-    scheduling_period: 'auto',
-    uri: '',
-    body: '',
-    verb: 'GET',
-    pagination_with_sub_page: false,
-    pagination_with_sub_page_query_verb: 'GET',
-    pagination_with_sub_page_attribute_path: '',
-    headers: [],
-    query_attributes: [],
-    json_mapper_id: '',
-    authentication_type: 'none',
-    authentication_value: '',
-    user_id: '',
-    username: '',
-    password: '',
-    cert: '',
-    key: '',
-    ca: '',
-    markings: [],
-    ssl_verify: true,
-  };
+  const importedInitialValues: IngestionJsonAddInput | null = importedInput
+    ? {
+        name: importedInput.name ?? '',
+        description: importedInput.description ?? '',
+        scheduling_period: importedInput.scheduling_period ?? 'auto',
+        uri: importedInput.uri ?? '',
+        verb: importedInput.verb ?? 'GET',
+        body: importedInput.body ?? '',
+        headers: (importedInput.headers ?? []).map(({ name, value }) => ({ name, value })),
+        query_attributes: (importedInput.query_attributes ?? []).map((attribute) => ({
+          type: attribute.type ?? '',
+          from: attribute.from ?? '',
+          to: attribute.to ?? '',
+          data_operation: attribute.data_operation ?? '',
+          state_operation: attribute.state_operation ?? '',
+          default: attribute.default ?? '',
+          exposed: attribute.exposed ?? '',
+        })),
+        pagination_with_sub_page: importedInput.pagination_with_sub_page ?? false,
+        pagination_with_sub_page_query_verb:
+          importedInput.pagination_with_sub_page_query_verb ?? 'GET',
+        pagination_with_sub_page_attribute_path:
+          importedInput.pagination_with_sub_page_attribute_path ?? '',
+        json_mapper_id: {
+          label: importedInput.jsonMapper.name,
+          value: importedInput.jsonMapper.id,
+        },
+        authentication_type: importedInput.authentication_type ?? 'none',
+        authentication_value: '',
+        user_id: '',
+        username: '',
+        password: '',
+        cert: '',
+        key: '',
+        ca: '',
+        markings: [],
+        ssl_verify: importedInput.ssl_verify ?? true,
+      }
+    : null;
+  const duplicatedOrDefaultValues: IngestionJsonAddInput =
+    isDuplicated && ingestionJsonData
+      ? {
+          name: `${ingestionJsonData.name} - copy`,
+          description: ingestionJsonData.description,
+          scheduling_period: ingestionJsonData.scheduling_period ?? 'auto',
+          uri: ingestionJsonData.uri,
+          verb: ingestionJsonData.verb ?? 'GET',
+          body: ingestionJsonData.body ?? '',
+          headers: (ingestionJsonData.headers ?? []) as IngestionJsonHeader[],
+          query_attributes: (ingestionJsonData.query_attributes ?? []) as IngestionJsonAttributes[],
+          pagination_with_sub_page: ingestionJsonData.pagination_with_sub_page ?? false,
+          pagination_with_sub_page_query_verb:
+            ingestionJsonData.pagination_with_sub_page_query_verb ?? '',
+          pagination_with_sub_page_attribute_path:
+            ingestionJsonData.pagination_with_sub_page_attribute_path ?? '',
+          json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
+          authentication_type: ingestionJsonData.authentication_type,
+          authentication_value: ingestionJsonData.authentication_value,
+          ingestion_running: ingestionJsonData.ingestion_running,
+          user_id: convertUser(ingestionJsonData, 'user'),
+          username:
+            ingestionJsonData.authentication_type === BASIC_AUTH
+              ? extractUsername(ingestionJsonData.authentication_value)
+              : undefined,
+          password:
+            ingestionJsonData.authentication_type === BASIC_AUTH
+              ? extractPassword(ingestionJsonData.authentication_value)
+              : undefined,
+          cert:
+            ingestionJsonData.authentication_type === CERT_AUTH
+              ? extractCert(ingestionJsonData.authentication_value)
+              : undefined,
+          key:
+            ingestionJsonData.authentication_type === CERT_AUTH
+              ? extractKey(ingestionJsonData.authentication_value)
+              : undefined,
+          ca:
+            ingestionJsonData.authentication_type === CERT_AUTH
+              ? extractCA(ingestionJsonData.authentication_value)
+              : undefined,
+          markings:
+            me.allowed_marking
+              ?.filter((marking) => ingestionJsonData.markings?.includes(marking.id))
+              .map((marking) => ({
+                label: marking.definition ?? '',
+                value: marking.id,
+              })) ?? [],
+          ssl_verify: true,
+        }
+      : {
+          name: '',
+          description: '',
+          scheduling_period: 'auto',
+          uri: '',
+          body: '',
+          verb: 'GET',
+          pagination_with_sub_page: false,
+          pagination_with_sub_page_query_verb: 'GET',
+          pagination_with_sub_page_attribute_path: '',
+          headers: [],
+          query_attributes: [],
+          json_mapper_id: '',
+          authentication_type: 'none',
+          authentication_value: '',
+          user_id: '',
+          username: '',
+          password: '',
+          cert: '',
+          key: '',
+          ca: '',
+          markings: [],
+          ssl_verify: true,
+        };
   const initialValues: IngestionJsonAddInput = importedInitialValues ?? duplicatedOrDefaultValues;
 
   return (
@@ -424,9 +489,20 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             containerStyle={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
-          <Alert severity="info" variant="standard" style={{ position: 'relative', marginTop: 20, marginBottom: 20, padding: '0px 10px 10px 10px' }}>
+          <Alert
+            severity="info"
+            variant="standard"
+            style={{
+              position: 'relative',
+              marginTop: 20,
+              marginBottom: 20,
+              padding: '0px 10px 10px 10px',
+            }}
+          >
             <div>
-              {t_i18n('For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases')}
+              {t_i18n(
+                'For specific api (like Trino), sometimes it required to have sub pagination. To activate only for this specific use cases',
+              )}
             </div>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
@@ -473,40 +549,40 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             onChange={(_, option) => onCreatorSelection(option)}
             showConfidence
           />
-          {
-            queryRef && (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                <Box sx={{ width: '100%', marginTop: 5 }}>
-                  <Alert
-                    severity="info"
-                    variant="outlined"
-                    style={{ padding: '0px 10px 0px 10px' }}
-                  >
-                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
-                    <br />
-                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
-                  </Alert>
-                </Box>
-                <JsonMapperField
-                  name="json_mapper_id"
-                  onChange={(_, option) => onJsonMapperSelection(option, { setFieldValue, values })}
-                  isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) => option.value === value}
-                  queryRef={queryRef}
-                />
-              </React.Suspense>
-            )
-          }
-          {
-            hasUserChoiceJsonMapper && (
-              <ObjectMarkingField
-                name="markings"
-                label={t_i18n('Marking definition levels')}
-                style={fieldSpacingContainerStyle}
-                allowedMarkingOwnerId={isGranted ? creatorId : undefined}
-                setFieldValue={setFieldValue}
+          {queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <Box sx={{ width: '100%', marginTop: 5 }}>
+                <Alert severity="info" variant="outlined" style={{ padding: '0px 10px 0px 10px' }}>
+                  {t_i18n(
+                    'Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.',
+                  )}
+                  <br />
+                  <br />
+                  {t_i18n(
+                    'If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.',
+                  )}
+                  <br />
+                </Alert>
+              </Box>
+              <JsonMapperField
+                name="json_mapper_id"
+                onChange={(_, option) => onJsonMapperSelection(option, { setFieldValue, values })}
+                isOptionEqualToValue={(option: FieldOption, { value }: FieldOption) =>
+                  option.value === value
+                }
+                queryRef={queryRef}
               />
-            )
-          }
+            </React.Suspense>
+          )}
+          {hasUserChoiceJsonMapper && (
+            <ObjectMarkingField
+              name="markings"
+              label={t_i18n('Marking definition levels')}
+              style={fieldSpacingContainerStyle}
+              allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+              setFieldValue={setFieldValue}
+            />
+          )}
           <Field
             component={SelectField}
             variant="standard"
@@ -519,13 +595,9 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             }}
           >
             <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="basic">
-              {t_i18n('Basic user / password')}
-            </MenuItem>
+            <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
             <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
-              {t_i18n('Client certificate')}
-            </MenuItem>
+            <MenuItem value="certificate">{t_i18n('Client certificate')}</MenuItem>
           </Field>
           {values.authentication_type === 'basic' && (
             <>
@@ -537,17 +609,11 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <PasswordTextField
-                name="password"
-                label={t_i18n('Password')}
-              />
+              <PasswordTextField name="password" label={t_i18n('Password')} />
             </>
           )}
           {values.authentication_type === 'bearer' && (
-            <PasswordTextField
-              name="authentication_value"
-              label={t_i18n('Token')}
-            />
+            <PasswordTextField name="authentication_value" label={t_i18n('Token')} />
           )}
           {values.authentication_type === 'certificate' && (
             <>
@@ -559,10 +625,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <PasswordTextField
-                name="key"
-                label={t_i18n('Key (base64)')}
-              />
+              <PasswordTextField name="key" label={t_i18n('Key (base64)')} />
               <Field
                 component={TextField}
                 variant="standard"
@@ -581,21 +644,14 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             containerstyle={fieldSpacingContainerStyle}
           />
           <Box sx={{ width: '100%', marginTop: 5 }}>
-            <Alert
-              severity="info"
-              variant="outlined"
-              style={{ padding: '0px 10px 0px 10px' }}
-            >
-              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br />
+            <Alert severity="info" variant="outlined" style={{ padding: '0px 10px 0px 10px' }}>
+              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}
+              <br />
               {t_i18n('Only successful tests allow the ingestion creation.')}
             </Alert>
           </Box>
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
             <Button
@@ -636,13 +692,12 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
 };
 
 const CreateIngestionJsonControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial
-    entityType="IngestionJson"
-    {...props}
-  />
+  <CreateEntityControlledDial entityType="IngestionJson" {...props} />
 );
 
-export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCreationContainerProps> = ({
+export const IngestionJsonCreationContainer: FunctionComponent<
+  IngestionJsonCreationContainerProps
+> = ({
   queryRef,
   handleClose,
   open,
@@ -659,10 +714,15 @@ export const IngestionJsonCreationContainer: FunctionComponent<IngestionJsonCrea
     : null;
   return (
     <Drawer
-      title={drawerSettings?.title ?? (isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed'))}
+      title={
+        drawerSettings?.title ??
+        (isDuplicated ? t_i18n('Duplicate a JSON feed') : t_i18n('Create a JSON feed'))
+      }
       open={open}
       onClose={handleClose}
-      controlledDial={!isDuplicated && triggerButton ? CreateIngestionJsonControlledDial : undefined}
+      controlledDial={
+        !isDuplicated && triggerButton ? CreateIngestionJsonControlledDial : undefined
+      }
     >
       {({ onClose }) => (
         <IngestionJsonCreation

@@ -4,12 +4,12 @@ import { useEmailTemplateAddMutation } from '@components/settings/email_template
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const emailTemplateAddMutation = graphql`
-    mutation useEmailTemplateAddMutation($input: EmailTemplateAddInput!) {
-        emailTemplateAdd(input: $input) {
-            id
-            entity_type
-        }
+  mutation useEmailTemplateAddMutation($input: EmailTemplateAddInput!) {
+    emailTemplateAdd(input: $input) {
+      id
+      entity_type
     }
+  }
 `;
 
 const useEmailTemplateAdd = () => {

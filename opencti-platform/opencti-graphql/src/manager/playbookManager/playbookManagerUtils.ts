@@ -23,12 +23,7 @@ export const isDebugPlaybook = (id: string) => {
 };
 
 export const isValidEventType = (eventType: StreamDataEventType, configuration: EventConfig) => {
-  const {
-    update,
-    create,
-    create_rel,
-    delete: deletion,
-  } = configuration;
+  const { update, create, create_rel, delete: deletion } = configuration;
 
   let validEventType = false;
   if (eventType === StreamDataEventTypeEnum.CREATE && create === true) validEventType = true;

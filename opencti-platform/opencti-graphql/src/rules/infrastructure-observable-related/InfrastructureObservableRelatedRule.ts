@@ -1,7 +1,11 @@
 /* eslint-disable camelcase */
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
-import { RELATION_CONSISTS_OF, RELATION_RELATED_TO, RELATION_USES } from '../../schema/stixCoreRelationship';
+import {
+  RELATION_CONSISTS_OF,
+  RELATION_RELATED_TO,
+  RELATION_USES,
+} from '../../schema/stixCoreRelationship';
 import def from './InfrastructureObservableRelatedDefinition';
 import { createRuleContent } from '../rules-utils';
 import { computeAverage } from '../../database/utils';
@@ -39,7 +43,13 @@ const ruleInfrastructureObservableRelatedBuilder = () => {
       const listToCallback = async (relationships: Array<BasicStoreRelation>) => {
         const rels = relationships.filter((r) => r.internal_id !== createdId);
         for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
-          const { internal_id: foundRelationId, fromId, confidence, start_time, stop_time } = rels[relIndex];
+          const {
+            internal_id: foundRelationId,
+            fromId,
+            confidence,
+            start_time,
+            stop_time,
+          } = rels[relIndex];
           const { [RELATION_OBJECT_MARKING]: object_marking_refs } = rels[relIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
@@ -72,7 +82,13 @@ const ruleInfrastructureObservableRelatedBuilder = () => {
       const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
         const rels = relationships.filter((r) => r.internal_id !== createdId);
         for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
-          const { internal_id: foundRelationId, toId, confidence, start_time, stop_time } = rels[relIndex];
+          const {
+            internal_id: foundRelationId,
+            toId,
+            confidence,
+            start_time,
+            stop_time,
+          } = rels[relIndex];
           const { [RELATION_OBJECT_MARKING]: object_marking_refs } = rels[relIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);

@@ -13,7 +13,10 @@ import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../relay/environment';
 import OtpValidation from './OtpValidation';
-import { ResetPasswordVerifyOtpMutation, ResetPasswordVerifyOtpMutation$data } from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
+import {
+  ResetPasswordVerifyOtpMutation,
+  ResetPasswordVerifyOtpMutation$data,
+} from './__generated__/ResetPasswordVerifyOtpMutation.graphql';
 import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAskSendOtpMutation.graphql';
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 import { useLoginContext } from './loginContext';
@@ -24,41 +27,44 @@ interface InternalFormProps extends PropsWithChildren {
 }
 
 export const AskSendOtpMutation = graphql`
-mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!){
-  askSendOtp(input: $input)
-}
+  mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!) {
+    askSendOtp(input: $input)
+  }
 `;
 
 export const VerifyOtpMutation = graphql`
-mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
-  verifyOtp(input: $input) {
-    mfa_activated
+  mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!) {
+    verifyOtp(input: $input) {
+      mfa_activated
+    }
   }
-}
 `;
 
 export const ChangePasswordMutation = graphql`
-mutation ResetPasswordChangePasswordMutation($input: ChangePasswordInput!){
-  changePassword(input: $input)
-}
+  mutation ResetPasswordChangePasswordMutation($input: ChangePasswordInput!) {
+    changePassword(input: $input)
+  }
 `;
 
-const resetValidation = (t: (v: string) => string) => Yup.object().shape({
-  email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-});
+const resetValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    email: Yup.string()
+      .required(t('This field is required'))
+      .email(t('The value must be an email address')),
+  });
 
-const otpValidation = (t: (v: string) => string) => Yup.object().shape({
-  otp: Yup.string().required(t('This field is required')),
-});
+const otpValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    otp: Yup.string().required(t('This field is required')),
+  });
 
-const passwordValidation = (t: (v: string) => string) => Yup.object().shape({
-  password: Yup.string().required(t('This field is required')),
-  password_validation: Yup.string()
-    .oneOf([Yup.ref('password'), undefined], t('The values do not match'))
-    .required(t('This field is required')),
-});
+const passwordValidation = (t: (v: string) => string) =>
+  Yup.object().shape({
+    password: Yup.string().required(t('This field is required')),
+    password_validation: Yup.string()
+      .oneOf([Yup.ref('password'), undefined], t('The values do not match'))
+      .required(t('This field is required')),
+  });
 
 interface ResetFormValues {
   email: string;
@@ -96,12 +102,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
   const resendTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const {
-    setValue,
-    email,
-    resetPwdStep,
-    validateOtpInError,
-  } = useLoginContext();
+  const { setValue, email, resetPwdStep, validateOtpInError } = useLoginContext();
 
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
@@ -255,36 +256,23 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
 
   const Form = ({ children, action }: InternalFormProps) => {
     return (
-      <FormikForm style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        height: '100%',
-      }}
+      <FormikForm
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100%',
+        }}
       >
-        <Box flex={1}>
-          {children}
-        </Box>
-        <Stack
-          mt={3}
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
+        <Box flex={1}>{children}</Box>
+        <Stack mt={3} direction="row" alignItems="center" justifyContent="space-between">
           <div>
-            <Button
-              variant="tertiary"
-              onClick={backToLogin}
-              sx={{ ml: -2 }}
-            >
+            <Button variant="tertiary" onClick={backToLogin} sx={{ ml: -2 }}>
               {t_i18n('Back to login')}
             </Button>
             {validateOtpInError && (
-              <Button
-                variant="tertiary"
-                onClick={handleResendOtp}
-              >
+              <Button variant="tertiary" onClick={handleResendOtp}>
                 {t_i18n('Resend code')}
               </Button>
             )}
@@ -306,14 +294,12 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
         >
           {({ isSubmitting, isValid }) => {
             return (
-              <Form action={(
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !isValid}
-                >
-                  {t_i18n('Send reset code')}
-                </Button>
-              )}
+              <Form
+                action={
+                  <Button type="submit" disabled={isSubmitting || !isValid}>
+                    {t_i18n('Send reset code')}
+                  </Button>
+                }
               >
                 <Field
                   component={TextField}
@@ -336,14 +322,12 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
           initialValues={{ otp: '' }}
         >
           {({ isSubmitting, isValid }) => (
-            <Form action={(
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
-                {t_i18n('Continue')}
-              </Button>
-            )}
+            <Form
+              action={
+                <Button type="submit" disabled={isSubmitting || !isValid}>
+                  {t_i18n('Continue')}
+                </Button>
+              }
             >
               <Field
                 component={TextField}
@@ -357,22 +341,13 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
       )}
 
       {resetPwdStep === ResetPwdStep.MFA && (
-        <Stack
-          height="100%"
-          justifyContent="space-between"
-          alignItems="start"
-        >
+        <Stack height="100%" justifyContent="space-between" alignItems="start">
           <OtpValidation
             variant="resetPassword"
             transactionId={transactionId}
             onCompleted={onCompletedVerifyMfa}
           />
-          <Button
-            size="small"
-            variant="tertiary"
-            onClick={backToLogin}
-            sx={{ ml: -1.5 }}
-          >
+          <Button size="small" variant="tertiary" onClick={backToLogin} sx={{ ml: -1.5 }}>
             {t_i18n('Back to login')}
           </Button>
         </Stack>
@@ -387,21 +362,16 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
           initialValues={{ password: '', password_validation: '' }}
         >
           {({ isSubmitting, isValid, values }) => (
-            <Form action={(
-              <Button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-              >
-                {t_i18n('Change your password')}
-              </Button>
-            )}
+            <Form
+              action={
+                <Button type="submit" disabled={isSubmitting || !isValid}>
+                  {t_i18n('Change your password')}
+                </Button>
+              }
             >
               {hasPasswordPolicies && (
                 <Box sx={{ width: '100%', mt: 2 }}>
-                  <PasswordPoliciesAlert
-                    policies={policies}
-                    value={values.password}
-                  />
+                  <PasswordPoliciesAlert policies={policies} value={values.password} />
                 </Box>
               )}
               <Field

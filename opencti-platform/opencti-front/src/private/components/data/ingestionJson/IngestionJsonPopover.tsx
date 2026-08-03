@@ -4,7 +4,9 @@ import Dialog from '@common/dialog/Dialog';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
-import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } from '@components/data/ingestionJson/IngestionJsonEditionContainer';
+import IngestionJsonEditionContainer, {
+  ingestionJsonEditionContainerQuery,
+} from '@components/data/ingestionJson/IngestionJsonEditionContainer';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -35,11 +37,11 @@ const ingestionJsonPopoverDeletionMutation = graphql`
 `;
 
 const ingestionJsonPopoverResetStateMutation = graphql`
-    mutation IngestionJsonPopoverResetStateMutation($id: ID!) {
-        ingestionJsonResetState(id: $id) {
-            ...IngestionJsonLine_node
-        }
+  mutation IngestionJsonPopoverResetStateMutation($id: ID!) {
+    ingestionJsonResetState(id: $id) {
+      ...IngestionJsonLine_node
     }
+  }
 `;
 
 const ingestionJsonPopoverExportQuery = graphql`
@@ -75,7 +77,9 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
   const handleClose = () => setAnchorEl(null);
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<IngestionJsonEditionContainerQuery>(ingestionJsonEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionJsonEditionContainerQuery>(
+    ingestionJsonEditionContainerQuery,
+  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
@@ -167,7 +171,9 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
   // -- Export --
   const handleExport = async () => {
     handleClose();
-    const data = await fetchQuery(ingestionJsonPopoverExportQuery, { id: ingestionJsonId }).toPromise();
+    const data = await fetchQuery(ingestionJsonPopoverExportQuery, {
+      id: ingestionJsonId,
+    }).toPromise();
     const { ingestionJson } = data as IngestionJsonPopoverExportQuery$data;
     if (ingestionJson) {
       const blob = new Blob([ingestionJson.toConfigurationExport], { type: 'text/json' });
@@ -218,36 +224,14 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
         >
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          {!running && (
-            <MenuItem onClick={handleOpenStart}>
-              {t_i18n('Start')}
-            </MenuItem>
-          )}
-          {running && (
-            <MenuItem onClick={handleOpenStop}>
-              {t_i18n('Stop')}
-            </MenuItem>
-          )}
-          <MenuItem onClick={handleOpenUpdate}>
-            {t_i18n('Update')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenDuplicate}>
-            {t_i18n('Duplicate')}
-          </MenuItem>
-          <MenuItem onClick={handleExport}>
-            {t_i18n('Export')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenResetState}>
-            {t_i18n('Reset state')}
-          </MenuItem>
-          <MenuItem onClick={handleOpenDelete}>
-            {t_i18n('Delete')}
-          </MenuItem>
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+          {!running && <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>}
+          {running && <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>}
+          <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+          <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
+          <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
+          <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset state')}</MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </Menu>
         {queryRef && (
           <React.Suspense>
@@ -267,26 +251,13 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
             </>
           </React.Suspense>
         )}
-        <Dialog
-          open={displayDelete}
-          onClose={handleCloseDelete}
-          title={t_i18n('Are you sure?')}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to delete this JSON feed?')}
-          </DialogContentText>
+        <Dialog open={displayDelete} onClose={handleCloseDelete} title={t_i18n('Are you sure?')}>
+          <DialogContentText>{t_i18n('Do you want to delete this JSON feed?')}</DialogContentText>
           <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={handleCloseDelete}
-              disabled={deleting}
-            >
+            <Button variant="secondary" onClick={handleCloseDelete} disabled={deleting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitDelete}
-              disabled={deleting}
-            >
+            <Button onClick={submitDelete} disabled={deleting}>
               {t_i18n('Delete')}
             </Button>
           </DialogActions>
@@ -300,65 +271,32 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
             {t_i18n('Do you want to reset the state of this JSON feed?')}
           </DialogContentText>
           <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={handleCloseResetState}
-              disabled={resetting}
-            >
+            <Button variant="secondary" onClick={handleCloseResetState} disabled={resetting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitResetState}
-              disabled={resetting}
-            >
+            <Button onClick={submitResetState} disabled={resetting}>
               {t_i18n('Reset state')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog
-          open={displayStart}
-          onClose={handleCloseStart}
-          title={t_i18n('Are you sure?')}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to start this JSON feed?')}
-          </DialogContentText>
+        <Dialog open={displayStart} onClose={handleCloseStart} title={t_i18n('Are you sure?')}>
+          <DialogContentText>{t_i18n('Do you want to start this JSON feed?')}</DialogContentText>
           <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={handleCloseStart}
-              disabled={starting}
-            >
+            <Button variant="secondary" onClick={handleCloseStart} disabled={starting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitStart}
-              disabled={starting}
-            >
+            <Button onClick={submitStart} disabled={starting}>
               {t_i18n('Start')}
             </Button>
           </DialogActions>
         </Dialog>
-        <Dialog
-          open={displayStop}
-          onClose={handleCloseStop}
-          title={t_i18n('Are you sure?')}
-        >
-          <DialogContentText>
-            {t_i18n('Do you want to stop this JSON feed?')}
-          </DialogContentText>
+        <Dialog open={displayStop} onClose={handleCloseStop} title={t_i18n('Are you sure?')}>
+          <DialogContentText>{t_i18n('Do you want to stop this JSON feed?')}</DialogContentText>
           <DialogActions>
-            <Button
-              variant="secondary"
-              onClick={handleCloseStop}
-              disabled={stopping}
-            >
+            <Button variant="secondary" onClick={handleCloseStop} disabled={stopping}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitStop}
-              disabled={stopping}
-            >
+            <Button onClick={submitStop} disabled={stopping}>
               {t_i18n('Stop')}
             </Button>
           </DialogActions>

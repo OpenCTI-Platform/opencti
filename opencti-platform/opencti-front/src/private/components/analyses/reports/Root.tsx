@@ -20,7 +20,11 @@ import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCo
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
+} from '../../../../utils/hooks/useGranted';
 import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import ReportEdition from './ReportEdition';
@@ -61,11 +65,11 @@ const reportQuery = graphql`
         x_opencti_color
       }
       securityCoverage {
-          id
-          coverage_information {
-              coverage_name
-              coverage_score
-          }
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
       }
       ...Report_report
       ...ReportDetails_report
@@ -98,7 +102,8 @@ const RootReport = () => {
     [reportId],
   );
   const location = useLocation();
-  const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
+  const enableReferences =
+    useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   const basePath = PATH_REPORT(reportId);
@@ -113,26 +118,40 @@ const RootReport = () => {
               const { report } = props;
               const isOverview = isPathOverview(location.pathname, basePath);
               const paddingRight = getPaddingRight(location.pathname, basePath, false);
-              const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
-              const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
+              const isKnowledgeOrContent =
+                location.pathname.includes('knowledge') || location.pathname.includes('content');
+              const currentAccessRight = useGetCurrentUserAccessRight(
+                report.currentUserAccessRight,
+              );
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
-                  <Breadcrumbs elements={[
-                    { label: t_i18n('Analyses') },
-                    { label: t_i18n('Reports'), link: PATH_REPORTS },
-                    { label: report.name, current: true },
-                  ]}
+                  <Breadcrumbs
+                    elements={[
+                      { label: t_i18n('Analyses') },
+                      { label: t_i18n('Reports'), link: PATH_REPORTS },
+                      { label: report.name, current: true },
+                    ]}
                   />
                   <ContainerHeader
                     container={report}
-                    EditComponent={(
+                    EditComponent={
                       <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={currentAccessRight.canEdit}>
                         <ReportEdition reportId={report.id} />
                       </Security>
-                    )}
-                    DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
+                    }
+                    DeleteComponent={({
+                      isOpen,
+                      onClose,
+                    }: {
+                      isOpen: boolean;
+                      onClose: () => void;
+                    }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                        <ReportDeletion reportId={report.id} isOpen={isOpen} handleClose={onClose} />
+                        <ReportDeletion
+                          reportId={report.id}
+                          isOpen={isOpen}
+                          handleClose={onClose}
+                        />
                       </Security>
                     )}
                     enableQuickSubscription={true}
@@ -146,19 +165,12 @@ const RootReport = () => {
                     entity={report}
                     basePath={basePath}
                     pages={{
-                      overview:
-                        <Report reportFragment={report} />,
+                      overview: <Report reportFragment={report} />,
                       knowledge: (
-                        <ReportKnowledge
-                          report={report}
-                          enableReferences={enableReferences}
-                        />
+                        <ReportKnowledge report={report} enableReferences={enableReferences} />
                       ),
                       content: (
-                        <StixCoreObjectContentRoot
-                          stixCoreObject={report}
-                          isContainer={true}
-                        />
+                        <StixCoreObjectContentRoot stixCoreObject={report} isContainer={true} />
                       ),
                       entities: (
                         <ContainerStixDomainObjects
@@ -183,12 +195,22 @@ const RootReport = () => {
                         />
                       ),
                     }}
-                    extraActions={!isKnowledgeOrContent && (
-                      <>
-                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-                        <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
-                      </>
-                    )}
+                    extraActions={
+                      !isKnowledgeOrContent && (
+                        <>
+                          <AIInsights
+                            id={report.id}
+                            tabs={['containers']}
+                            defaultTab="containers"
+                            isContainer={true}
+                          />
+                          <StixCoreObjectSecurityCoverage
+                            id={report.id}
+                            coverage={report.securityCoverage}
+                          />
+                        </>
+                      )
+                    }
                   />
                 </div>
               );

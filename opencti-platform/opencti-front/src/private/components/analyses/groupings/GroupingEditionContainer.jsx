@@ -30,20 +30,17 @@ const GroupingEditionContainer = (props) => {
   );
 };
 
-const GroupingEditionFragment = createFragmentContainer(
-  GroupingEditionContainer,
-  {
-    grouping: graphql`
-      fragment GroupingEditionContainer_grouping on Grouping {
-        id
-        ...GroupingEditionOverview_grouping
-        editContext {
-          name
-          focusOn
-        }
+const GroupingEditionFragment = createFragmentContainer(GroupingEditionContainer, {
+  grouping: graphql`
+    fragment GroupingEditionContainer_grouping on Grouping {
+      id
+      ...GroupingEditionOverview_grouping
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default GroupingEditionFragment;

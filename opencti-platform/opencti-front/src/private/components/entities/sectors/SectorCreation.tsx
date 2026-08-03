@@ -15,9 +15,16 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { SectorCreationMutation, SectorCreationMutation$variables } from './__generated__/SectorCreationMutation.graphql';
+import {
+  SectorCreationMutation,
+  SectorCreationMutation$variables,
+} from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -109,35 +116,32 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECTOR_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const sectorValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<SectorCreationMutation>(
-    sectorMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<SectorCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'sectorAdd');
-      }
-    },
+  const [commit] = useApiMutation<SectorCreationMutation>(sectorMutation, undefined, {
+    successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<SectorCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'sectorAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -147,11 +151,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
 
   const onSubmit: FormikConfig<SectorAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    },
+    { setSubmitting, setErrors, resetForm },
   ) => {
     const allNames = splitMultilines(values.name);
     const variables: SectorCreationMutation$variables[] = allNames.map((name) => ({
@@ -182,19 +182,16 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    SECTOR_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      confidence: null,
-      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues(SECTOR_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    confidence: null,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+  });
 
   return (
     <Formik<SectorAddInput>
@@ -205,14 +202,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-        resetForm,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           <BulkTextModal
             open={bulkModalOpen}
@@ -245,7 +235,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Sector']}
             />
@@ -253,7 +243,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -262,32 +252,29 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="Sector"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Sector" containerStyle={fieldSpacingContainerStyle} />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -297,23 +284,17 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -331,13 +312,11 @@ const SectorCreation = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
 
   const CreateSectorControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial
-      entityType="Sector"
-      {...props}
-    />
+    <CreateEntityControlledDial entityType="Sector" {...props} />
   );
   return (
     <Drawer

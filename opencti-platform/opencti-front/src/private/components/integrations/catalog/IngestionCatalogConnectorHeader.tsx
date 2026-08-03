@@ -21,17 +21,18 @@ type IngestionCatalogConnectorHeaderProps = {
   onClickDeploy: () => void;
 };
 
-const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onClickDeploy }: IngestionCatalogConnectorHeaderProps) => {
+const IngestionCatalogConnectorHeader = ({
+  connector,
+  isEnterpriseEdition,
+  onClickDeploy,
+}: IngestionCatalogConnectorHeaderProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
   return (
-    <Stack
-      direction="row"
-      justifyContent="space-between"
-    >
+    <Stack direction="row" justifyContent="space-between">
       <Stack direction="row" gap={2}>
         <img
           src={connector.logo}
@@ -59,30 +60,27 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
             >
               {connector.title}
             </Typography>
-            {connector.verified
-              ? (
-                  <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <FiligranIcon icon={LogoFiligranIcon} size="small" />
-                        {t_i18n('Supported by Filigran')}
-                      </Stack>
-                    )}
-                    color={theme.palette.primary.main}
-                  />
-                )
-              : (
-                  <Tag
-                    label={(
-                      <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
-                        <GroupsOutlined fontSize="small" />
-                        {t_i18n('Supported by Community')}
-                      </Stack>
-                    )}
-                    color={theme.palette.action?.disabled}
-                  />
-                )
-            }
+            {connector.verified ? (
+              <Tag
+                label={
+                  <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                    <FiligranIcon icon={LogoFiligranIcon} size="small" />
+                    {t_i18n('Supported by Filigran')}
+                  </Stack>
+                }
+                color={theme.palette.primary.main}
+              />
+            ) : (
+              <Tag
+                label={
+                  <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                    <GroupsOutlined fontSize="small" />
+                    {t_i18n('Supported by Community')}
+                  </Stack>
+                }
+                color={theme.palette.action?.disabled}
+              />
+            )}
           </Stack>
 
           <Stack direction="row">
@@ -92,24 +90,22 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
               color={connectorMetadata.color}
             />
 
-            {
-              connector.use_cases.map((useCase: string) => (
-                <IngestionCatalogChip key={useCase} label={useCase} isInlist color="primary" />
-              ))
-            }
+            {connector.use_cases.map((useCase: string) => (
+              <IngestionCatalogChip key={useCase} label={useCase} isInlist color="primary" />
+            ))}
           </Stack>
         </Stack>
       </Stack>
 
       <div>
         <Security needs={[INGESTION_SETINGESTIONS]}>
-          {
-            isEnterpriseEdition ? (
-              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-            ) : (
-              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-            )
-          }
+          {isEnterpriseEdition ? (
+            <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>
+              {t_i18n('Deploy')}
+            </Button>
+          ) : (
+            <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+          )}
         </Security>
       </div>
     </Stack>

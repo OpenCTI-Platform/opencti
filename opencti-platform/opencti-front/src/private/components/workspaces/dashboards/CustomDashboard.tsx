@@ -4,7 +4,10 @@ import DashboardTimeFilters from '../../../../components/dashboard/DashboardTime
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  EXPLORE_EXUPDATE,
+  INVESTIGATION_INUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
@@ -37,10 +40,7 @@ const dashboardLayoutMutation = graphql`
 `;
 
 const dashboardImportWidgetMutation = graphql`
-  mutation CustomDashboardWidgetImportMutation(
-    $id: ID!
-    $input: ImportConfigurationInput!
-  ) {
+  mutation CustomDashboardWidgetImportMutation($id: ID!, $input: ImportConfigurationInput!) {
     workspaceWidgetConfigurationImport(id: $id, input: $input) {
       ...CustomDashboard_workspace
     }
@@ -68,11 +68,11 @@ const dashboardFragment = graphql`
 `;
 
 const dashboardExportQuery = graphql`
-    query CustomDashboardExportQuery($id: String!) {
-        workspace(id: $id) {
-            toConfigurationExport
-        }
+  query CustomDashboardExportQuery($id: String!) {
+    workspace(id: $id) {
+      toConfigurationExport
     }
+  }
 `;
 
 interface CustomDashboardProps {
@@ -85,15 +85,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
-  const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
-    || workspace.currentUserAccessRight === 'edit';
+  const userHasEditAccess =
+    workspace.currentUserAccessRight === 'admin' || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
-      const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
-        .toPromise() as CustomDashboardWidgetExportQuery$data;
+      const data = (await fetchQuery(dashboardExportWidgetQuery, {
+        id,
+        widgetId: widget.id,
+      }).toPromise()) as CustomDashboardWidgetExportQuery$data;
       const exportString = data.workspace?.toWidgetExport;
       if (!exportString) {
         MESSAGING$.notifyError(t_i18n('Failed to export widget'));
@@ -108,8 +110,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   const onExport = async (id: string) => {
     try {
-      const data = await fetchQuery<CustomDashboardExportQuery>(dashboardExportQuery, { id })
-        .toPromise();
+      const data = await fetchQuery<CustomDashboardExportQuery>(dashboardExportQuery, {
+        id,
+      }).toPromise();
       if (!data?.workspace) {
         return null;
       }
@@ -120,7 +123,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     }
   };
 
-  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
+  const onSave = (
+    id: string,
+    newManifestEncoded: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+  ) => {
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     commitMutation({
       mutation,
@@ -164,7 +172,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onExportWidget,
   });
   const { handleAddWidget, handleImportWidget, handleDateChange, config } = helpers;
-  const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
+  const handleExport = getDashboardExportHandler({
+    onExport,
+    configType: 'dashboard',
+    entity: workspace,
+  });
 
   const {
     localRefreshRateSeconds,
@@ -208,15 +220,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             variant="dashboard"
           />
         </Stack>
-      )
-      }
+      )}
       <div id="container">
         <DashboardRefreshProvider refreshToken={refreshToken}>
           {!noToolbar && (
-            <Security
-              needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-              hasAccess={userCanEdit}
-            >
+            <Security needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]} hasAccess={userCanEdit}>
               <Box
                 sx={{
                   display: 'flex',
@@ -225,10 +233,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                   marginBottom: 1.5,
                 }}
               >
-                <DashboardTimeFilters
-                  config={config}
-                  handleDateChange={handleDateChange}
-                />
+                <DashboardTimeFilters config={config} handleDateChange={handleDateChange} />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <DashboardRefreshControl
                     onRefresh={handleManualRefresh}
@@ -239,8 +244,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 </Box>
               </Box>
             </Security>
-          )
-          }
+          )}
           <DashboardContent
             helpers={helpers}
             isEditable={userCanEdit}

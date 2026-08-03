@@ -50,7 +50,9 @@ registerManager(XTM_ONE_REGISTRATION_MANAGER_DEFINITION);
 if (XTM_ONE_ENABLED) {
   setTimeout(() => {
     xtmOneRegistrationManager().catch((err: any) => {
-      logApp.warn('[XTM One] Boot registration failed, will retry on next tick', { error: err.message });
+      logApp.warn('[XTM One] Boot registration failed, will retry on next tick', {
+        error: err.message,
+      });
     });
   }, BOOT_DELAY);
 }

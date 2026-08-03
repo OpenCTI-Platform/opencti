@@ -16,8 +16,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import type { EditInput, EmailTemplateAddInput, QueryEmailTemplatesArgs } from '../../generated/graphql';
-import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE, type StoreEntityEmailTemplate } from './emailTemplate-types';
+import type {
+  EditInput,
+  EmailTemplateAddInput,
+  QueryEmailTemplatesArgs,
+} from '../../generated/graphql';
+import {
+  type BasicStoreEntityEmailTemplate,
+  ENTITY_TYPE_EMAIL_TEMPLATE,
+  type StoreEntityEmailTemplate,
+} from './emailTemplate-types';
 import { sendEmailToUser } from '../../domain/user';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { FunctionalError } from '../../config/errors';
@@ -29,12 +37,26 @@ import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
-  return storeLoadById<BasicStoreEntityEmailTemplate>(context, user, id, ENTITY_TYPE_EMAIL_TEMPLATE);
+  return storeLoadById<BasicStoreEntityEmailTemplate>(
+    context,
+    user,
+    id,
+    ENTITY_TYPE_EMAIL_TEMPLATE,
+  );
 };
 
-export const findEmailTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
+export const findEmailTemplatePaginated = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: QueryEmailTemplatesArgs,
+) => {
   await checkEnterpriseEdition(context);
-  return pageEntitiesConnection<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
+  return pageEntitiesConnection<BasicStoreEntityEmailTemplate>(
+    context,
+    user,
+    [ENTITY_TYPE_EMAIL_TEMPLATE],
+    args,
+  );
 };
 
 export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -42,7 +64,12 @@ export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: st
   return sendEmailToUser(context, user, { target_user_id: user.id, email_template_id: id });
 };
 
-export const addEmailTemplate = async (context: AuthContext, user: AuthUser, input: EmailTemplateAddInput, useTelemetry: boolean = true) => {
+export const addEmailTemplate = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: EmailTemplateAddInput,
+  useTelemetry: boolean = true,
+) => {
   const emailTemplateToCreate = {
     name: input.name,
     description: input.description,
@@ -53,15 +80,31 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
   if (useTelemetry) {
     await addEmailTemplateCreatedCount();
   }
-  return createInternalObject<StoreEntityEmailTemplate>(context, user, emailTemplateToCreate, ENTITY_TYPE_EMAIL_TEMPLATE);
+  return createInternalObject<StoreEntityEmailTemplate>(
+    context,
+    user,
+    emailTemplateToCreate,
+    ENTITY_TYPE_EMAIL_TEMPLATE,
+  );
 };
 
-export const fieldPatchEmailTemplate = async (context: AuthContext, user: AuthUser, emailTemplateId: string, input: EditInput[]) => {
+export const fieldPatchEmailTemplate = async (
+  context: AuthContext,
+  user: AuthUser,
+  emailTemplateId: string,
+  input: EditInput[],
+) => {
   const emailTemplate = await findById(context, user, emailTemplateId);
   if (!emailTemplate) {
     throw FunctionalError(`Email template ${emailTemplateId} cannot be found`);
   }
-  const { element } = await updateAttribute<StoreEntityEmailTemplate>(context, user, emailTemplateId, ENTITY_TYPE_EMAIL_TEMPLATE, input);
+  const { element } = await updateAttribute<StoreEntityEmailTemplate>(
+    context,
+    user,
+    emailTemplateId,
+    ENTITY_TYPE_EMAIL_TEMPLATE,
+    input,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -74,7 +117,11 @@ export const fieldPatchEmailTemplate = async (context: AuthContext, user: AuthUs
   return notify(BUS_TOPICS[ENTITY_TYPE_EMAIL_TEMPLATE].EDIT_TOPIC, element, user);
 };
 
-export const deleteEmailTemplate = async (context: AuthContext, user: AuthUser, emailTemplateId: string) => {
+export const deleteEmailTemplate = async (
+  context: AuthContext,
+  user: AuthUser,
+  emailTemplateId: string,
+) => {
   await checkEnterpriseEdition(context);
   return deleteInternalObject(context, user, emailTemplateId, ENTITY_TYPE_EMAIL_TEMPLATE);
 };

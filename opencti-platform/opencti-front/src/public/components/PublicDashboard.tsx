@@ -31,10 +31,7 @@ interface PublicDashboardComponentProps {
   uriKey: string;
 }
 
-const PublicDashboardComponent = ({
-  queryRef,
-  uriKey,
-}: PublicDashboardComponentProps) => {
+const PublicDashboardComponent = ({ queryRef, uriKey }: PublicDashboardComponentProps) => {
   const navigate = useNavigate();
   const { width, containerRef } = useContainerWidth();
   const { t_i18n } = useFormatter();
@@ -61,12 +58,10 @@ const PublicDashboardComponent = ({
     }
   }, [publicDashboardByUriKey, navigate]);
 
-  const {
-    entityWidget,
-    relationshipWidget,
-    rawWidget,
-    auditWidget,
-  } = usePublicDashboardWidgets(uriKey, config);
+  const { entityWidget, relationshipWidget, rawWidget, auditWidget } = usePublicDashboardWidgets(
+    uriKey,
+    config,
+  );
 
   const onChangeRelativeDate = () => {};
   const onChangeStartDate = () => {};
@@ -89,14 +84,14 @@ const PublicDashboardComponent = ({
           onChangeRelativeDate={onChangeRelativeDate}
           onChangeStartDate={onChangeStartDate}
           onChangeEndDate={onChangeEndDate}
-          actions={(
+          actions={
             <DashboardRefreshControl
               onRefresh={handleManualRefresh}
               interval={localRefreshRateSeconds}
               onIntervalChange={handleRefreshRateChange}
               isRefreshing={isAutoRefreshing}
             />
-          )}
+          }
         />
 
         <div ref={containerRef}>
@@ -109,9 +104,7 @@ const PublicDashboardComponent = ({
             resizeConfig={{ enabled: false }}
           >
             {widgetsWithLayout.map((widget) => (
-              <div
-                key={widget.id}
-              >
+              <div key={widget.id}>
                 <ErrorBoundary>
                   {widget.perspective === 'entities' && entityWidget(widget)}
                   {widget.perspective === 'relationships' && relationshipWidget(widget)}
@@ -123,7 +116,6 @@ const PublicDashboardComponent = ({
           </ReactGridLayout>
         </div>
       </DashboardRefreshProvider>
-
     </>
   );
 };
@@ -134,17 +126,13 @@ const PublicDashboard = () => {
 
   const normalizedUriKey = uriKey.toLowerCase();
 
-  const queryRef = useQueryLoading<PublicDashboardQuery>(
-    publicDashboardQuery,
-    { uri_key: normalizedUriKey },
-  );
+  const queryRef = useQueryLoading<PublicDashboardQuery>(publicDashboardQuery, {
+    uri_key: normalizedUriKey,
+  });
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <PublicDashboardComponent
-        queryRef={queryRef}
-        uriKey={normalizedUriKey}
-      />
+      <PublicDashboardComponent queryRef={queryRef} uriKey={normalizedUriKey} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.container} />

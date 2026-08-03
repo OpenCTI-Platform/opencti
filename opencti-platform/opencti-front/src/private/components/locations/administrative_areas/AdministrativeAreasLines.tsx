@@ -4,7 +4,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { AdministrativeAreaLine, AdministrativeAreaLineDummy } from './AdministrativeAreaLine';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { AdministrativeAreasLinesPaginationQuery, AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
+import {
+  AdministrativeAreasLinesPaginationQuery,
+  AdministrativeAreasLinesPaginationQuery$variables,
+} from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreasLines_data$key } from './__generated__/AdministrativeAreasLines_data.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
@@ -74,9 +77,12 @@ const administrativeAreasLinesFragment = graphql`
   }
 `;
 
-const AdministrativeAreasLines: FunctionComponent<
-  AdministrativeAreasLinesProps
-> = ({ setNumberOfElements, dataColumns, queryRef, paginationOptions }) => {
+const AdministrativeAreasLines: FunctionComponent<AdministrativeAreasLinesProps> = ({
+  setNumberOfElements,
+  dataColumns,
+  queryRef,
+  paginationOptions,
+}) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     AdministrativeAreasLinesPaginationQuery,
     AdministrativeAreasLines_data$key
@@ -94,9 +100,7 @@ const AdministrativeAreasLines: FunctionComponent<
       loadMore={loadMore}
       isLoading={isLoadingMore}
       dataList={data?.administrativeAreas?.edges ?? []}
-      globalCount={
-        data?.administrativeAreas?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.administrativeAreas?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={AdministrativeAreaLine}
       DummyLineComponent={AdministrativeAreaLineDummy}
       dataColumns={dataColumns}

@@ -23,7 +23,11 @@ import {
   PirKnowledgeEntitiesSourcesFlaggedListQuery$variables,
 } from './__generated__/PirKnowledgeEntitiesSourcesFlaggedListQuery.graphql';
 import { PirKnowledgeEntities_SourceFlaggedFragment$data } from './__generated__/PirKnowledgeEntities_SourceFlaggedFragment.graphql';
-import { formatFiltersInPirContext, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  formatFiltersInPirContext,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -38,9 +42,7 @@ import { useComputeLink } from '../../../../utils/hooks/useAppData';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
-  @argumentDefinitions(
-    pirId: { type: "ID!"}
-  ) {
+  @argumentDefinitions(pirId: { type: "ID!" }) {
     id
     entity_type
     created_at
@@ -82,7 +84,7 @@ const sourceFlaggedFragment = graphql`
 const sourcesFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourcesFlaggedFragment on Query
   @argumentDefinitions(
-    pirId: { type: "ID!"}
+    pirId: { type: "ID!" }
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -103,10 +105,7 @@ const sourcesFlaggedFragment = graphql`
       edges {
         node {
           id
-          ...PirKnowledgeEntities_SourceFlaggedFragment
-          @arguments(
-            pirId: $pirId
-          )
+          ...PirKnowledgeEntities_SourceFlaggedFragment @arguments(pirId: $pirId)
         }
       }
       pageInfo {
@@ -129,15 +128,15 @@ const sourcesFlaggedListQuery = graphql`
     $filters: FilterGroup
   ) {
     ...PirKnowledgeEntities_SourcesFlaggedFragment
-    @arguments(
-      pirId: $pirId
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        pirId: $pirId
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -148,25 +147,30 @@ interface PirKnowledgeEntitiesProps {
   additionalHeaderButtons: ReactNode[];
 }
 
-type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;
+type PirInformation = NonNullable<
+  PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']
+>;
 
-const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
+const PirKnowledgeEntities = ({
+  pirId,
+  localStorage,
+  initialValues,
+  additionalHeaderButtons,
+}: PirKnowledgeEntitiesProps) => {
   const { fd } = useFormatter();
   const computeLink = useComputeLink();
 
-  const {
-    viewStorage,
-    helpers,
-    localStorageKey,
-    paginationOptions,
-  } = localStorage;
+  const { viewStorage, helpers, localStorageKey, paginationOptions } = localStorage;
 
-  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, ['Stix-Domain-Object']);
+  const filters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(viewStorage.filters, [
+    'Stix-Domain-Object',
+  ]);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
     filters: [
-      { key: 'regardingOf',
+      {
+        key: 'regardingOf',
         operator: 'eq',
         mode: 'and',
         values: [
@@ -175,9 +179,8 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
         ],
       },
     ],
-    filterGroups: filters && isFilterGroupNotEmpty(filters)
-      ? [formatFiltersInPirContext(filters, pirId)]
-      : [],
+    filterGroups:
+      filters && isFilterGroupNotEmpty(filters) ? [formatFiltersInPirContext(filters, pirId)] : [],
   };
   const queryPaginationOptions = {
     ...paginationOptions,

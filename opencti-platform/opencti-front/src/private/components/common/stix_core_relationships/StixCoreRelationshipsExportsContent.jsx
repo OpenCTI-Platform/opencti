@@ -11,15 +11,15 @@ import Security from '../../../../utils/Security';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
 import FileLine from '../files/FileLine';
-import StixCoreRelationshipsExportCreation, { scopesConn } from './StixCoreRelationshipsExportCreation';
+import StixCoreRelationshipsExportCreation, {
+  scopesConn,
+} from './StixCoreRelationshipsExportCreation';
 import { Stack, Tooltip } from '@mui/material';
 import Button from '@common/button/Button';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -76,12 +76,7 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
   }
 
   render() {
-    const {
-      t,
-      data,
-      exportContext,
-      paginationOptions,
-    } = this.props;
+    const { t, data, exportContext, paginationOptions } = this.props;
     const stixCoreRelationshipsExportFiles = pathOr(
       [],
       ['stixCoreRelationshipsExportFiles', 'edges'],
@@ -89,21 +84,16 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
     );
 
     const connectorsExport = data?.connectorsForExport ?? [];
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
-    );
+    const exportScopes = uniq(flatten(map((c) => c.connector_scope, connectorsExport)));
     const exportConnsPerFormat = scopesConn(connectorsExport);
 
-    const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const isExportActive = (format) =>
+      exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
     const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
 
     return (
       <Stack gap={2}>
-        <Stack
-          direction="row"
-          justifyContent="flex-end"
-          gap={1}
-        >
+        <Stack direction="row" justifyContent="flex-end" gap={1}>
           <Tooltip
             title={
               isExportPossible
@@ -112,10 +102,7 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
             }
             aria-label="generate-export"
           >
-            <Button
-              onClick={this.handleOpen.bind(this)}
-              disabled={!isExportPossible}
-            >
+            <Button onClick={this.handleOpen.bind(this)} disabled={!isExportPossible}>
               {t('Generate an export')}
             </Button>
           </Tooltip>
@@ -123,15 +110,18 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
 
         <List>
           {stixCoreRelationshipsExportFiles.length > 0 ? (
-            stixCoreRelationshipsExportFiles.map((file) => file?.node && (
-              <FileLine
-                key={file.node.id}
-                file={file.node}
-                dense={true}
-                disableImport={true}
-                directDownload={true}
-              />
-            ))
+            stixCoreRelationshipsExportFiles.map(
+              (file) =>
+                file?.node && (
+                  <FileLine
+                    key={file.node.id}
+                    file={file.node}
+                    dense={true}
+                    disableImport={true}
+                    directDownload={true}
+                  />
+                ),
+            )
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
@@ -151,7 +141,9 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
             data={data}
             exportContext={exportContext}
             paginationOptions={paginationOptions}
-            onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
+            onExportAsk={() =>
+              this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })
+            }
             open={this.state.open}
             onClose={this.handleClose.bind(this)}
           />
@@ -217,7 +209,4 @@ StixCoreRelationshipsExportsContent.propTypes = {
   setOpen: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipsExportsContent);
+export default compose(inject18n, withStyles(styles))(StixCoreRelationshipsExportsContent);

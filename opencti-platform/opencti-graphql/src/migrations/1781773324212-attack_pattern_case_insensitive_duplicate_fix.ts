@@ -1,6 +1,7 @@
 import { logMigration } from '../config/conf';
 
-const message = '[MIGRATION] Skip Attack Pattern / Course of Action standard_id case-insensitive duplicate merge fix';
+const message =
+  '[MIGRATION] Skip Attack Pattern / Course of Action standard_id case-insensitive duplicate merge fix';
 
 export const up = async (next: (error?: Error) => void) => {
   const start = new Date().getTime();

@@ -52,9 +52,10 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
   const actionError = touched[`${namePrefix}_new_value`] && errors[`${namePrefix}_new_value`];
 
   const isExternal = secretInfo?.source === 'EXTERNAL';
-  const currentSecret = isExternal && secretInfo?.external_secret_name
-    ? availableSecrets.find((s) => s.secret_name === secretInfo.external_secret_name)
-    : availableSecrets.find((s) => s.secret_name === secretName);
+  const currentSecret =
+    isExternal && secretInfo?.external_secret_name
+      ? availableSecrets.find((s) => s.secret_name === secretInfo.external_secret_name)
+      : availableSecrets.find((s) => s.secret_name === secretName);
   const displayLabel = currentSecret
     ? `${currentSecret.secret_name} (${currentSecret.provider_name})`
     : (secretInfo?.external_secret_name ?? secretName) || null;
@@ -66,7 +67,11 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           {label}
         </InputLabel>
         <Tag
-          label={displayLabel ? `${t_i18n('External secret')}: ${displayLabel}` : t_i18n('Externally managed')}
+          label={
+            displayLabel
+              ? `${t_i18n('External secret')}: ${displayLabel}`
+              : t_i18n('Externally managed')
+          }
           color={theme.palette.primary.main}
         />
       </Box>
@@ -82,7 +87,10 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
           display: 'flex',
           alignItems: 'flex-start',
           gap: 2,
-          flexWrap: (action === 'store' && multiline) || action === 'use_external_secret' ? 'wrap' : 'nowrap',
+          flexWrap:
+            (action === 'store' && multiline) || action === 'use_external_secret'
+              ? 'wrap'
+              : 'nowrap',
         }}
       >
         <FormControl variant="standard" sx={{ minWidth: 200, flexShrink: 0 }}>
@@ -101,9 +109,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
             }}
             label={label}
           >
-            {showKeepOption && (
-              <MenuItem value="keep">{t_i18n('Keep existing secret')}</MenuItem>
-            )}
+            {showKeepOption && <MenuItem value="keep">{t_i18n('Keep existing secret')}</MenuItem>}
             <MenuItem value="store">{t_i18n('Set a new secret')}</MenuItem>
             <MenuItem value="use_external_secret">{t_i18n('Use external secret')}</MenuItem>
           </Select>
@@ -121,9 +127,7 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
               rows={multiline ? 4 : undefined}
               error={!!actionError}
             />
-            {actionError && (
-              <FormHelperText error>{String(actionError)}</FormHelperText>
-            )}
+            {actionError && <FormHelperText error>{String(actionError)}</FormHelperText>}
           </Box>
         )}
         {action === 'use_external_secret' && (
@@ -136,7 +140,9 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
               displayEmpty
             >
               {availableSecrets.length === 0 ? (
-                <MenuItem value="" disabled>{t_i18n('No external secrets configured')}</MenuItem>
+                <MenuItem value="" disabled>
+                  {t_i18n('No external secrets configured')}
+                </MenuItem>
               ) : (
                 availableSecrets.map((s) => (
                   <MenuItem key={s.secret_name} value={s.secret_name}>

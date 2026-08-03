@@ -62,11 +62,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
   const handleCloseUpdate = () => setDisplayUpdate(false);
   return (
     <>
-      <ListItemButton
-        classes={{ root: classes.item }}
-        divider={true}
-        onClick={handleOpenUpdate}
-      >
+      <ListItemButton classes={{ root: classes.item }} divider={true} onClick={handleOpenUpdate}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <img
             style={{ height: 33, width: 33, borderRadius: 4 }}
@@ -75,41 +71,28 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
                 {data.metaData?.description}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.order.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.order.width }}>
                 {data.metaData?.order}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.inCarousel.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.inCarousel.width }}>
                 <ItemBoolean
                   status={data.metaData?.inCarousel === true}
                   label={data.metaData?.inCarousel ? t_i18n('Yes') : t_i18n('No')}
                 />
               </div>
             </>
-          )}
+          }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NorthEastOutlined fontSize="small" />
         </ListItemIcon>
       </ListItemButton>
-      <Drawer
-        open={displayUpdate}
-        title={t_i18n('Update a picture')}
-        onClose={handleCloseUpdate}
-      >
+      <Drawer open={displayUpdate} title={t_i18n('Update a picture')} onClose={handleCloseUpdate}>
         <PictureManagementEdition
           entityId={entityId}
           handleClose={handleCloseUpdate}

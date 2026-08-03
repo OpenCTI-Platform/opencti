@@ -69,7 +69,7 @@ const groupFragment = graphql`
       id
       name
       authorizedMembers {
-        id  
+        id
         member_id
       }
     }
@@ -121,59 +121,50 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     R.descend(R.propOr(0, 'x_opencti_order')),
   ]);
   const allowedMarkings = markingsSort(group.allowed_marking ?? []);
-  const markingTypes = uniq(allowedMarkings.map((marking) => marking.definition_type)).filter((type) => !!type) as string[];
+  const markingTypes = uniq(allowedMarkings.map((marking) => marking.definition_type)).filter(
+    (type) => !!type,
+  ) as string[];
   const maxShareableMarkings = markingsSort(group.max_shareable_marking ?? []);
-  const maxShareableMarkingsByType = new Map(markingTypes.map((type) => {
-    const sortedMaxMarkingsOfType = maxShareableMarkings.filter((m) => m.definition_type === type)
-      .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
-    return [type, sortedMaxMarkingsOfType.length > 0 ? sortedMaxMarkingsOfType[0] : undefined];
-  }));
+  const maxShareableMarkingsByType = new Map(
+    markingTypes.map((type) => {
+      const sortedMaxMarkingsOfType = maxShareableMarkings
+        .filter((m) => m.definition_type === type)
+        .sort((a, b) => b.x_opencti_order - a.x_opencti_order);
+      return [type, sortedMaxMarkingsOfType.length > 0 ? sortedMaxMarkingsOfType[0] : undefined];
+    }),
+  );
   // Handle only GLOBAL entity type for now
   const globalDefaultMarkings = markingsSort(
-    (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
-      ?.values ?? [],
+    (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')?.values ?? [],
   );
-  const canAccessDashboard = (
-    group.default_dashboard?.authorizedMembers || []
-  ).some(({ member_id }) => {
-    return member_id === 'ALL' || member_id === group.id;
-  });
+  const canAccessDashboard = (group.default_dashboard?.authorizedMembers || []).some(
+    ({ member_id }) => {
+      return member_id === 'ALL' || member_id === group.id;
+    },
+  );
 
   return (
     <div className={classes.container} data-testid="group-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={6}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Description')}
-                </Label>
-                <ExpandableMarkdown
-                  source={group.description}
-                  limit={400}
-                />
+                <Label>{t_i18n('Description')}</Label>
+                <ExpandableMarkdown source={group.description} limit={400} />
               </Grid>
               <Grid item xs={12}>
                 <GroupHiddenTypesChipList groupData={group} />
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Auto new markings')}
-                </Label>
+                <Label>{t_i18n('Auto new markings')}</Label>
                 <ItemBoolean
                   status={group.auto_new_marking ?? false}
                   label={group.auto_new_marking ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Default membership')}
-                </Label>
+                <Label>{t_i18n('Default membership')}</Label>
                 <ItemBoolean
                   status={group.default_assignation ?? false}
                   label={group.default_assignation ? t_i18n('Yes') : t_i18n('No')}
@@ -186,9 +177,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Card title={t_i18n('Permissions')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Roles')}
-                </Label>
+                <Label>{t_i18n('Roles')}</Label>
                 <List sx={{ py: 0 }}>
                   {group.roles?.edges?.map(({ node: role }) => (
                     <ListItemButton
@@ -207,9 +196,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </List>
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Default dashboard')}
-                </Label>
+                <Label>{t_i18n('Default dashboard')}</Label>
                 <FieldOrEmpty source={group.default_dashboard}>
                   <ListItemButton
                     component={Link}
@@ -220,9 +207,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     <ListItemIcon>
                       <ItemIcon type="Dashboard" />
                     </ListItemIcon>
-                    <ListItemText
-                      primary={truncate(group.default_dashboard?.name, 40)}
-                    />
+                    <ListItemText primary={truncate(group.default_dashboard?.name, 40)} />
                     {!canAccessDashboard && (
                       <Tooltip
                         title={t_i18n(
@@ -236,26 +221,18 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Max Confidence Level')}
-                </Label>
-                <GroupConfidenceLevel
-                  confidenceLevel={group.group_confidence_level}
-                />
+                <Label>{t_i18n('Max Confidence Level')}</Label>
+                <GroupConfidenceLevel confidenceLevel={group.group_confidence_level} />
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('No creators accumulation')}
-                </Label>
+                <Label>{t_i18n('No creators accumulation')}</Label>
                 <ItemBoolean
                   status={group.no_creators ?? false}
                   label={group.no_creators ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
               <Grid item xs={6}>
-                <Label>
-                  {t_i18n('Restrict delete to created entities')}
-                </Label>
+                <Label>{t_i18n('Restrict delete to created entities')}</Label>
                 <ItemBoolean
                   status={group.restrict_delete ?? false}
                   label={group.restrict_delete ? t_i18n('Yes') : t_i18n('No')}
@@ -268,69 +245,49 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Card title={t_i18n('Markings')}>
             <Grid container={true} spacing={3}>
               <Grid item xs={4}>
-                <Label action={(
-                  <Tooltip
-                    title={t_i18n(
-                      'You can enable/disable default values for marking in the customization of each entity type.',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                    />
-                  </Tooltip>
-                )}
+                <Label
+                  action={
+                    <Tooltip
+                      title={t_i18n(
+                        'You can enable/disable default values for marking in the customization of each entity type.',
+                      )}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                  }
                 >
                   {t_i18n('Default markings')}
                 </Label>
                 <FieldOrEmpty source={globalDefaultMarkings}>
                   <List style={{ marginTop: -3 }}>
                     {globalDefaultMarkings.map((marking) => (
-                      <ListItem
-                        key={marking?.id}
-                        dense={true}
-                        divider={true}
-
-                      >
+                      <ListItem key={marking?.id} dense={true} divider={true}>
                         <ListItemIcon>
                           <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
                         </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(marking?.definition, 40)}
-                        />
+                        <ListItemText primary={truncate(marking?.definition, 40)} />
                       </ListItem>
                     ))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={4}>
-                <Label>
-                  {t_i18n('Allowed markings')}
-                </Label>
+                <Label>{t_i18n('Allowed markings')}</Label>
                 <FieldOrEmpty source={allowedMarkings}>
                   <List sx={{ py: 0 }}>
                     {allowedMarkings.map((marking) => (
-                      <ListItem
-                        key={marking?.id}
-                        dense={true}
-                        divider={true}
-
-                      >
+                      <ListItem key={marking?.id} dense={true} divider={true}>
                         <ListItemIcon>
                           <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
                         </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(marking?.definition, 40)}
-                        />
+                        <ListItemText primary={truncate(marking?.definition, 40)} />
                       </ListItem>
                     ))}
                   </List>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={4}>
-                <Label>
-                  {t_i18n('Maximum shareable markings')}
-                </Label>
+                <Label>{t_i18n('Maximum shareable markings')}</Label>
                 <FieldOrEmpty source={markingTypes}>
                   <List sx={{ py: 0 }}>
                     {markingTypes.map((type) => {
@@ -338,12 +295,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                       if (marking) {
                         const isMarkingAllowed = checkIsMarkingAllowed(marking, allowedMarkings);
                         return (
-                          <ListItem
-                            key={marking.id}
-                            dense={true}
-                            divider={true}
-
-                          >
+                          <ListItem key={marking.id} dense={true} divider={true}>
                             <Typography
                               variant="h3"
                               gutterBottom={true}
@@ -353,45 +305,31 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             >
                               {truncate(type, 40)}
                             </Typography>
-                            {isMarkingAllowed
-                              ? (
-                                  <>
-                                    <ListItemIcon>
-                                      <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                      primary={truncate(marking.definition, 40)}
-                                    />
-                                  </>
-                                )
-                              : (
-                                  <ListItemText
-                                    primary={t_i18n('No restrictions')}
-                                  />
-                                )
-                            }
-                            {!isMarkingAllowed
-                              && (
-                                <Tooltip
-                                  title={t_i18n(
-                                    'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
-                                  )}
-                                >
-                                  <WarningOutlined color="warning" />
-                                </Tooltip>
-                              )
-                            }
+                            {isMarkingAllowed ? (
+                              <>
+                                <ListItemIcon>
+                                  <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
+                                </ListItemIcon>
+                                <ListItemText primary={truncate(marking.definition, 40)} />
+                              </>
+                            ) : (
+                              <ListItemText primary={t_i18n('No restrictions')} />
+                            )}
+                            {!isMarkingAllowed && (
+                              <Tooltip
+                                title={t_i18n(
+                                  'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
+                                )}
+                              >
+                                <WarningOutlined color="warning" />
+                              </Tooltip>
+                            )}
                           </ListItem>
                         );
                       }
                       if (group.not_shareable_marking_types.includes(type)) {
                         return (
-                          <ListItem
-                            key={type}
-                            dense={true}
-                            divider={true}
-
-                          >
+                          <ListItem key={type} dense={true} divider={true}>
                             <Typography
                               variant="h3"
                               gutterBottom={true}
@@ -401,19 +339,12 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             >
                               {truncate(type, 40)}
                             </Typography>
-                            <ListItemText
-                              primary={t_i18n('Not shareable')}
-                            />
+                            <ListItemText primary={t_i18n('Not shareable')} />
                           </ListItem>
                         );
                       }
                       return (
-                        <ListItem
-                          key={type}
-                          dense={true}
-                          divider={true}
-
-                        >
+                        <ListItem key={type} dense={true} divider={true}>
                           <Typography
                             variant="h3"
                             gutterBottom={true}
@@ -423,9 +354,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           >
                             {truncate(type, 40)}
                           </Typography>
-                          <ListItemText
-                            primary={t_i18n('No restrictions')}
-                          />
+                          <ListItemText primary={t_i18n('No restrictions')} />
                         </ListItem>
                       );
                     })}

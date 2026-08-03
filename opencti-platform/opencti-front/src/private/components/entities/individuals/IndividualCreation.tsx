@@ -14,10 +14,17 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { IndividualCreationMutation, IndividualCreationMutation$variables } from './__generated__/IndividualCreationMutation.graphql';
+import {
+  IndividualCreationMutation,
+  IndividualCreationMutation$variables,
+} from './__generated__/IndividualCreationMutation.graphql';
 import { IndividualsLinesPaginationQuery$variables } from './__generated__/IndividualsLinesPaginationQuery.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -90,38 +97,33 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(1),
-    description: Yup.string()
-      .nullable(),
-    confidence: Yup.number().nullable(),
-    x_opencti_reliability: Yup.string()
-      .nullable(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().min(1),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      x_opencti_reliability: Yup.string().nullable(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const individualValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
 
-  const [commit] = useApiMutation<IndividualCreationMutation>(
-    individualMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<IndividualCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'individualAdd');
-      }
-    },
+  const [commit] = useApiMutation<IndividualCreationMutation>(individualMutation, undefined, {
+    successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<IndividualCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'individualAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -129,11 +131,10 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     }
   }, [bulkCount]);
 
-  const onSubmit: FormikConfig<IndividualAddInput>['onSubmit'] = (values, {
-    setSubmitting,
-    setErrors,
-    resetForm,
-  }) => {
+  const onSubmit: FormikConfig<IndividualAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const allNames = splitMultilines(values.name);
     const variables: IndividualCreationMutation$variables[] = allNames.map((name) => ({
       input: {
@@ -164,20 +165,17 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
-    INDIVIDUAL_TYPE,
-    {
-      name: inputValue ?? '',
-      description: '',
-      x_opencti_reliability: undefined,
-      confidence: null,
-      createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      file: null,
-    },
-  );
+  const initialValues = useDefaultValues(INDIVIDUAL_TYPE, {
+    name: inputValue ?? '',
+    description: '',
+    x_opencti_reliability: undefined,
+    confidence: null,
+    createdBy: defaultCreatedBy ?? undefined, // undefined for Require Fields Flagging, if Configured Mandatory Field
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: null,
+  });
 
   return (
     <Formik<IndividualAddInput>
@@ -188,14 +186,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-        resetForm,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values, resetForm }) => (
         <>
           <BulkTextModal
             open={bulkModalOpen}
@@ -228,7 +219,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               variant="standard"
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['User']}
             />
@@ -236,7 +227,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -245,41 +236,38 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
-            <ConfidenceField
-              entityType="Individual"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Individual" containerStyle={fieldSpacingContainerStyle} />
             <OpenVocabField
               label={t_i18n('Reliability')}
               type="reliability_ov"
               name="x_opencti_reliability"
-              required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+              required={mandatoryAttributes.includes('x_opencti_reliability')}
               containerStyle={fieldSpacingContainerStyle}
               multiple={false}
               onChange={setFieldValue}
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
@@ -289,23 +277,17 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -316,17 +298,15 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   );
 };
 
-const IndividualCreation = ({ paginationOptions }: {
+const IndividualCreation = ({
+  paginationOptions,
+}: {
   paginationOptions: IndividualsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_individuals',
-    paginationOptions,
-    'individualAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_individuals', paginationOptions, 'individualAdd');
   const CreateIndividualControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Individual" {...props} />
   );

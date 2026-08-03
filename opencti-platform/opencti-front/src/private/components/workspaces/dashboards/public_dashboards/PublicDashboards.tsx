@@ -3,7 +3,10 @@ import { graphql } from 'react-relay';
 import PublicDashboardLineActions from './PublicDashboardLineActions';
 import PublicDashboardCreation from './PublicDashboardCreation';
 import { useFormatter } from '../../../../../components/i18n';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../../utils/filters/filtersUtils';
 import DataTable from '../../../../../components/dataGrid/DataTable';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -13,7 +16,10 @@ import { DataTableProps } from '../../../../../components/dataGrid/dataTableType
 import { defaultRender } from '../../../../../components/dataGrid/dataTableUtils';
 import Security from '../../../../../utils/Security';
 import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted';
-import { PublicDashboardsListQuery, PublicDashboardsListQuery$variables } from './__generated__/PublicDashboardsListQuery.graphql';
+import {
+  PublicDashboardsListQuery,
+  PublicDashboardsListQuery$variables,
+} from './__generated__/PublicDashboardsListQuery.graphql';
 import { PublicDashboardsFragment$data } from './__generated__/PublicDashboardsFragment.graphql';
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 
@@ -83,17 +89,17 @@ const publicDashboardsListQuery = graphql`
     $cursor: ID
     $orderBy: PublicDashboardsOrdering
     $orderMode: OrderingMode
-    $filters: FilterGroup)
-  {
+    $filters: FilterGroup
+  ) {
     ...PublicDashboardsFragment
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -113,10 +119,11 @@ const PublicDashboards = () => {
     filters: emptyFilterGroup,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PublicDashboardsListQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    initialValues,
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<PublicDashboardsListQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
 
   const contextFilters = useBuildEntityTypeBasedFilterContext(
     'PublicDashboard',
@@ -158,10 +165,7 @@ const PublicDashboards = () => {
       label: 'Enabled',
       isSortable: true,
       render: ({ enabled }) => (
-        <ItemBoolean
-          status={enabled}
-          label={enabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-        />
+        <ItemBoolean status={enabled} label={enabled ? t_i18n('Enabled') : t_i18n('Disabled')} />
       ),
     },
     user_id: {
@@ -183,7 +187,6 @@ const PublicDashboards = () => {
           { label: t_i18n('Dashboards') },
           { label: t_i18n('Public dashboards'), current: true },
         ]}
-
       />
       {queryRef && (
         <DataTable
@@ -211,11 +214,11 @@ const PublicDashboards = () => {
               paginationOptions={queryPaginationOptions}
             />
           )}
-          createButton={(
+          createButton={
             <Security needs={[EXPLORE_EXUPDATE_PUBLISH]}>
               <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
           taskScope="PUBLIC_DASHBOARD"
         />
       )}

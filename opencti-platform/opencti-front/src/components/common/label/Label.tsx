@@ -9,12 +9,7 @@ interface LabelProps extends PropsWithChildren, PropsWithSx {
   variant?: 'default' | 'primary';
 }
 
-const Label = ({
-  children,
-  action,
-  sx,
-  variant = 'default',
-}: LabelProps) => {
+const Label = ({ children, action, sx, variant = 'default' }: LabelProps) => {
   const theme = useTheme<Theme>();
 
   const containerSx: SxProps = {
@@ -23,9 +18,10 @@ const Label = ({
     ...sx,
   };
 
-  const titleStyle = variant === 'default'
-    ? { color: theme.palette.text.light, textTransform: 'capitalize' }
-    : { color: theme.palette.text.primary, textTransform: 'none' };
+  const titleStyle =
+    variant === 'default'
+      ? { color: theme.palette.text.light, textTransform: 'capitalize' }
+      : { color: theme.palette.text.primary, textTransform: 'none' };
 
   const titleSx: SxProps = {
     marginBottom: 0,
@@ -37,12 +33,7 @@ const Label = ({
   };
 
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      sx={containerSx}
-      gap={0.5}
-    >
+    <Stack direction="row" alignItems="center" sx={containerSx} gap={0.5}>
       <Typography variant="h6" sx={titleSx}>
         {children}
       </Typography>

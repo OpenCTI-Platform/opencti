@@ -20,7 +20,9 @@ export interface NodeAdversaryUtilsReturns {
   lastAttributions: React.ReactNode;
 }
 
-export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps): NodeAdversaryUtilsReturns => {
+export const nodeAdversaryUtils = ({
+  data,
+}: NodeAdversaryUtilsProps): NodeAdversaryUtilsReturns => {
   const { stixDomainObject, entityLink } = data;
 
   if (!stixDomainObject) {
@@ -33,23 +35,30 @@ export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps): NodeAdver
     };
   }
 
-  const isArsenal = [DiamondEntityEnum.malware, DiamondEntityEnum.tool, DiamondEntityEnum.channel].includes(stixDomainObject.entity_type as DiamondEntityEnum);
-  const isThreat = [DiamondEntityEnum.threatActorGroup, DiamondEntityEnum.threatActorIndividual, DiamondEntityEnum.intrusionSet]
-    .includes(stixDomainObject.entity_type as DiamondEntityEnum);
+  const isArsenal = [
+    DiamondEntityEnum.malware,
+    DiamondEntityEnum.tool,
+    DiamondEntityEnum.channel,
+  ].includes(stixDomainObject.entity_type as DiamondEntityEnum);
+  const isThreat = [
+    DiamondEntityEnum.threatActorGroup,
+    DiamondEntityEnum.threatActorIndividual,
+    DiamondEntityEnum.intrusionSet,
+  ].includes(stixDomainObject.entity_type as DiamondEntityEnum);
 
   const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
 
-  const attributedTo = R.uniq((stixDomainObject.attributedTo?.edges ?? [])
-    .map((n) => n?.node?.to?.name))
-    .join(', ');
+  const attributedTo = R.uniq(
+    (stixDomainObject.attributedTo?.edges ?? []).map((n) => n?.node?.to?.name),
+  ).join(', ');
 
-  const attributedFrom = R.uniq((stixDomainObject.attributedFrom?.edges ?? [])
-    .map((n) => n?.node?.from?.name))
-    .join(', ');
+  const attributedFrom = R.uniq(
+    (stixDomainObject.attributedFrom?.edges ?? []).map((n) => n?.node?.from?.name),
+  ).join(', ');
 
-  const usedBy = R.uniq((stixDomainObject.usedBy?.edges ?? [])
-    .map((n) => n?.node?.from?.name))
-    .join(', ');
+  const usedBy = R.uniq(
+    (stixDomainObject.usedBy?.edges ?? []).map((n) => n?.node?.from?.name),
+  ).join(', ');
 
   let lastAttributions;
   if (isArsenal === true) {
@@ -60,7 +69,10 @@ export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps): NodeAdver
     lastAttributions = emptyFilled(attributedTo);
   }
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type as DiamondEntityEnum, DiamondNodeEnum.adversary);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(
+    stixDomainObject.entity_type as DiamondEntityEnum,
+    DiamondNodeEnum.adversary,
+  );
 
   return {
     entityLink,

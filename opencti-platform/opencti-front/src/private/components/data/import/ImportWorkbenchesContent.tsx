@@ -1,6 +1,9 @@
 import { graphql } from 'react-relay';
 import React from 'react';
-import { ImportWorkbenchesContentQuery, ImportWorkbenchesContentQuery$variables } from '@components/data/import/__generated__/ImportWorkbenchesContentQuery.graphql';
+import {
+  ImportWorkbenchesContentQuery,
+  ImportWorkbenchesContentQuery$variables,
+} from '@components/data/import/__generated__/ImportWorkbenchesContentQuery.graphql';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import ImportMenu from '@components/data/ImportMenu';
@@ -9,7 +12,11 @@ import ImportActionsPopover from '@components/common/files/ImportActionsPopover'
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -63,57 +70,56 @@ export const workbenchLineFragment = graphql`
 `;
 
 const importWorkbenchLinesFragment = graphql`
-    fragment ImportWorkbenchesContentLines_data on Query
-    @argumentDefinitions(
-        count: { type: "Int", defaultValue: 500 }
-        cursor: { type: "ID" }
-        orderBy: { type: "FileOrdering" }
-        orderMode: { type: "OrderingMode" }
-        search: { type: "String" }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
-        pendingFiles(
-            first: $count,
-            after: $cursor,
-            orderBy: $orderBy,
-            orderMode: $orderMode,
-            search: $search,
-            filters: $filters,
-        )
-        @connection(key: "Pagination_global_pendingFiles") {
-            edges {
-                node {
-                    id
-                    ...ImportWorkbenchesContentFileLine_file
-                }
-            }
-            pageInfo {
-                globalCount
-            }
+  fragment ImportWorkbenchesContentLines_data on Query
+  @argumentDefinitions(
+    count: { type: "Int", defaultValue: 500 }
+    cursor: { type: "ID" }
+    orderBy: { type: "FileOrdering" }
+    orderMode: { type: "OrderingMode" }
+    search: { type: "String" }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "ImportWorkbenchesRefetchQuery") {
+    pendingFiles(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      search: $search
+      filters: $filters
+    ) @connection(key: "Pagination_global_pendingFiles") {
+      edges {
+        node {
+          id
+          ...ImportWorkbenchesContentFileLine_file
         }
+      }
+      pageInfo {
+        globalCount
+      }
     }
+  }
 `;
 
 export const importWorkbenchesContentQuery = graphql`
-    query ImportWorkbenchesContentQuery(
-        $count: Int,
-        $cursor: ID,
-        $orderBy: FileOrdering,
-        $orderMode: OrderingMode,
-        $search: String,
-        $filters: FilterGroup,
-    ) {
-        ...ImportWorkbenchesContentLines_data
-        @arguments(
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            search: $search
-            filters: $filters
-        )
-    }
+  query ImportWorkbenchesContentQuery(
+    $count: Int
+    $cursor: ID
+    $orderBy: FileOrdering
+    $orderMode: OrderingMode
+    $search: String
+    $filters: FilterGroup
+  ) {
+    ...ImportWorkbenchesContentLines_data
+      @arguments(
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        search: $search
+        filters: $filters
+      )
+  }
 `;
 
 export const LOCAL_STORAGE_KEY = 'importWorkbenches';
@@ -129,11 +135,11 @@ const ImportWorkbenchesContent = () => {
     sortBy: 'lastModified',
     orderAsc: false,
   };
-  const {
-    viewStorage,
-    helpers,
-    paginationOptions,
-  } = usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<ImportWorkbenchesContentQuery$variables>(
+      LOCAL_STORAGE_KEY,
+      initialValues,
+    );
   const { filters } = viewStorage;
   const finalFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['InternalFile']);
   const queryPaginationOptions = {
@@ -141,7 +147,10 @@ const ImportWorkbenchesContent = () => {
     filters: finalFilters,
   } as unknown as ImportWorkbenchesContentQuery$variables;
 
-  const queryRef = useQueryLoading<ImportWorkbenchesContentQuery>(importWorkbenchesContentQuery, queryPaginationOptions);
+  const queryRef = useQueryLoading<ImportWorkbenchesContentQuery>(
+    importWorkbenchesContentQuery,
+    queryPaginationOptions,
+  );
 
   const contextFilters = {
     mode: 'and',
@@ -179,18 +188,16 @@ const ImportWorkbenchesContent = () => {
     createdBy: {
       label: 'Creator',
       percentWidth: 10,
-      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? EMPTY_VALUE,
+      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) =>
+        metaData?.creator?.name ?? EMPTY_VALUE,
     },
     objectLabel: {
       percentWidth: 10,
       render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => {
-        const labels = metaData?.labels?.filter((l) => !!l)?.map((l) => ({ value: l, id: l as string, color: undefined }));
-        return (
-          <StixCoreObjectLabels
-            variant="inList"
-            labels={labels}
-          />
-        );
+        const labels = metaData?.labels
+          ?.filter((l) => !!l)
+          ?.map((l) => ({ value: l, id: l as string, color: undefined }));
+        return <StixCoreObjectLabels variant="inList" labels={labels} />;
       },
     },
     objectMarking: {
@@ -201,9 +208,14 @@ const ImportWorkbenchesContent = () => {
       label: 'Modification date',
       isSortable: true,
       percentWidth: 20,
-      render: ({ lastModified }: ImportWorkbenchesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string;
-      }) => fd(lastModified),
+      render: (
+        { lastModified }: ImportWorkbenchesContentFileLine_file$data,
+        {
+          fd,
+        }: {
+          fd: (date: Date) => string;
+        },
+      ) => fd(lastModified),
     },
   };
 
@@ -216,7 +228,9 @@ const ImportWorkbenchesContent = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: ImportWorkbenchesContentLines_data$data) => data.pendingFiles?.edges?.map(({ node }) => node)}
+          resolvePath={(data: ImportWorkbenchesContentLines_data$data) =>
+            data.pendingFiles?.edges?.map(({ node }) => node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -225,9 +239,9 @@ const ImportWorkbenchesContent = () => {
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           taskScope="IMPORT"
-          getComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
+          getComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) =>
             `/dashboard/data/import/workbench/${toB64(id)}`
-          )}
+          }
           createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions} />}
           actions={(file: ImportWorkbenchesContentFileLine_file$data) => (
             <ImportActionsPopover

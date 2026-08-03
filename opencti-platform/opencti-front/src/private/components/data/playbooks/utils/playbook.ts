@@ -1,5 +1,11 @@
 import { Dispatch, SetStateAction } from 'react';
-import { PlaybookComponents, PlaybookDefinitionEdge, PlaybookDefinitionNode, PlaybookEdge, PlaybookNode } from '../types/playbook-types';
+import {
+  PlaybookComponents,
+  PlaybookDefinitionEdge,
+  PlaybookDefinitionNode,
+  PlaybookEdge,
+  PlaybookNode,
+} from '../types/playbook-types';
 
 export const computeNodes = (
   playbookNodes: PlaybookDefinitionNode[],
@@ -8,9 +14,10 @@ export const computeNodes = (
   setSelectedNode: Dispatch<SetStateAction<string | null>>,
 ): PlaybookNode[] => {
   return playbookNodes.map((node) => {
-    const component = playbookComponents.find((playbookComponent) => {
-      return playbookComponent?.id === node?.component_id;
-    }) || undefined;
+    const component =
+      playbookComponents.find((playbookComponent) => {
+        return playbookComponent?.id === node?.component_id;
+      }) || undefined;
 
     return {
       id: node.id,
@@ -94,13 +101,17 @@ export const addPlaceholders = (
   // Search for nodes with outputs and without connected nodes
   const nodesOutputs = nodes
     .filter((node) => node.data.component?.ports)
-    .map((node) => node.data.component!.ports
-      .filter((port) => port.type === 'out')
-      .map((port) => ({ ...node, port_id: port.id })))
+    .map((node) =>
+      node.data
+        .component!.ports.filter((port) => port.type === 'out')
+        .map((port) => ({ ...node, port_id: port.id })),
+    )
     .flat();
   const notConnectedNodesOutputs = nodesOutputs.filter(
-    (nodeOutput) => edges.filter((edge) => edge.source === nodeOutput.id && edge.sourceHandle === nodeOutput.port_id)
-      .length === 0,
+    (nodeOutput) =>
+      edges.filter(
+        (edge) => edge.source === nodeOutput.id && edge.sourceHandle === nodeOutput.port_id,
+      ).length === 0,
   );
   const placeholders = notConnectedNodesOutputs.map((notConnectedNodeOutput) => {
     const childPlaceholderId = `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-PLACEHOLDER`;

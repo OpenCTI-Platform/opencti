@@ -24,52 +24,39 @@ const threatActorGroupKnowledgeFragment = graphql`
   }
 `;
 
-const ThreatActorGroupKnowledgeComponent = ({
-  threatActorGroupData,
-  relatedRelationshipTypes,
-}) => {
-  const threatActorGroup = useFragment(
-    threatActorGroupKnowledgeFragment,
-    threatActorGroupData,
-  );
+const ThreatActorGroupKnowledgeComponent = ({ threatActorGroupData, relatedRelationshipTypes }) => {
+  const threatActorGroup = useFragment(threatActorGroupKnowledgeFragment, threatActorGroupData);
   const location = useLocation();
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`;
   const { schema } = useAuth();
-  const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorGroup.entity_type, schema);
+  const allRelationshipsTypes = getRelationshipTypesForEntityType(
+    threatActorGroup.entity_type,
+    schema,
+  );
   return (
     <div data-testid="threat-actor-group-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={threatActorGroup.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixCoreRelationship entityId={threatActorGroup.id} paddingRight={true} />}
         />
         <Route
           path="/sightings/:sightingId"
-          element={(
-            <StixSightingRelationship
-              entityId={threatActorGroup.id}
-              paddingRight={true}
-            />
-          )}
+          element={<StixSightingRelationship entityId={threatActorGroup.id} paddingRight={true} />}
         />
         <Route
           path="/overview"
-          element={(
+          element={
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={threatActorGroup.id}
               stixDomainObjectName={threatActorGroup.name}
               stixDomainObjectType="Threat-Actor-Group"
             />
-          )}
+          }
         />
         <Route
           path="/all"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -79,11 +66,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/related"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -93,22 +80,22 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/victimology"
-          element={(
+          element={
             <StixDomainObjectVictimology
               stixDomainObjectId={threatActorGroup.id}
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/threat_actors"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -119,11 +106,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/intrusion_sets"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -134,11 +121,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               isRelationReversed={true}
             />
-          )}
+          }
         />
         <Route
           path="/campaigns"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -149,22 +136,22 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/attack_patterns"
-          element={(
+          element={
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={threatActorGroup.id}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
               entityType={threatActorGroup.entity_type}
             />
-          )}
+          }
         />
         <Route
           path="/malwares"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -175,11 +162,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/channels"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -190,11 +177,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStopTime={threatActorGroup.last_seen}
               allDirections
             />
-          )}
+          }
         />
         <Route
           path="/narratives"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -204,11 +191,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/tools"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -218,11 +205,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/vulnerabilities"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -232,11 +219,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/incidents"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -247,22 +234,22 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/indicators"
-          element={(
+          element={
             <EntityStixCoreRelationshipsIndicators
               entityId={threatActorGroup.id}
               entityLink={link}
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/observables"
-          element={(
+          element={
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={threatActorGroup.id}
               entityLink={link}
@@ -271,11 +258,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               isRelationReversed={true}
               relationshipTypes={['related-to']}
             />
-          )}
+          }
         />
         <Route
           path="/infrastructures"
-          element={(
+          element={
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={threatActorGroup.id}
@@ -286,11 +273,11 @@ const ThreatActorGroupKnowledgeComponent = ({
               defaultStartTime={threatActorGroup.first_seen}
               defaultStopTime={threatActorGroup.last_seen}
             />
-          )}
+          }
         />
         <Route
           path="/sightings"
-          element={(
+          element={
             <EntityStixSightingRelationships
               entityId={threatActorGroup.id}
               entityLink={link}
@@ -308,7 +295,7 @@ const ThreatActorGroupKnowledgeComponent = ({
                 'System',
               ]}
             />
-          )}
+          }
         />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>

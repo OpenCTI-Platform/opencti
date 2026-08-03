@@ -27,7 +27,11 @@ import { commitMutation } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
@@ -61,23 +65,17 @@ const styles = (theme) => ({
     height: 25,
     color: theme.palette.primary.main,
     backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
       backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .2)' : 'rgba(0, 0, 0, .2)',
     },
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
@@ -151,10 +149,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
       },
       updater: (store) => {
         const entity = store.get(this.props.stixCoreRelationshipId);
-        const conn = ConnectionHandler.getConnection(
-          entity,
-          'Pagination_externalReferences',
-        );
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
       },
       onCompleted: () => {
@@ -173,11 +168,8 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
       <div style={{ height: '100%' }}>
         <Card
           title={t('External references')}
-          action={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
-              placeholder={<div style={{ height: 29 }} />}
-            >
+          action={
+            <Security needs={[KNOWLEDGE_KNUPDATE]} placeholder={<div style={{ height: 29 }} />}>
               <AddExternalReferences
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationshipId}
                 stixCoreObjectOrStixCoreRelationshipReferences={
@@ -185,133 +177,68 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                 }
               />
             </Security>
-          )}
+          }
         >
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
-                (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge.node;
-                  const isFileAttached = isNotEmptyField(
-                    externalReference.fileId,
-                  );
-                  const externalReferenceId = externalReference.external_id
-                    ? `(${externalReference.external_id})`
-                    : '';
-                  let externalReferenceSecondary;
-                  if (
-                    externalReference.url
-                    && externalReference.url.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.url;
-                  } else if (
-                    externalReference.description
-                    && externalReference.description.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.description;
-                  } else {
-                    externalReferenceSecondary = t('No description');
-                  }
-                  if (externalReference.url) {
-                    return (
-                      <React.Fragment key={externalReference.id}>
-                        <ListItem
-                          dense={true}
-                          divider={true}
-                          disablePadding
-                          secondaryAction={(
-                            <Stack direction="row" gap={1}>
-                              <Tooltip title={t('Browse the link')}>
-                                <IconButton
-                                  onClick={this.handleOpenExternalLink.bind(
-                                    this,
-                                    externalReference.url,
-                                  )}
-                                  size="small"
-                                  variant="tertiary"
-                                >
-                                  <OpenInBrowserOutlined />
-                                </IconButton>
-                              </Tooltip>
-                              {!isFileAttached && (
-                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                                  <FileUploader
-                                    entityId={externalReference.id}
-                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                    }
-                                  />
-                                </Security>
-                              )}
-                              {!isFileAttached && (
-                                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                                  <ExternalReferenceEnrichment
-                                    externalReferenceId={externalReference.id}
-                                  />
-                                </Security>
-                              )}
-                              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                                <ExternalReferencePopover
-                                  id={externalReference.id}
-                                  isExternalReferenceAttachment={isFileAttached}
-                                  objectId={stixCoreRelationshipId}
-                                  handleRemove={this.handleOpenDialog.bind(
-                                    this,
-                                    externalReferenceEdge,
-                                  )}
-                                  variant="inLine"
-                                />
-                              </Security>
-                            </Stack>
-                          )}
-                        >
-                          <ListItemButton
-                            component={Link}
-                            to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                          >
-                            <ListItemIcon>
-                              <ItemIcon type="External-Reference" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={`${externalReference.source_name} ${externalReferenceId}`}
-                              secondary={truncate(externalReferenceSecondary, 90)}
-                            />
-                          </ListItemButton>
-                        </ListItem>
-                        {externalReference.importFiles.edges.length > 0 && (
-                          <List>
-                            {externalReference.importFiles.edges.map((file) => file?.node && (
-                              <FileLine
-                                key={file.node.id}
-                                dense={true}
-                                disableImport={true}
-                                file={file.node}
-                                nested={true}
-                              />
-                            ))}
-                          </List>
-                        )}
-                      </React.Fragment>
-                    );
-                  }
+              {R.take(expanded ? 200 : 7, externalReferencesEdges).map((externalReferenceEdge) => {
+                const externalReference = externalReferenceEdge.node;
+                const isFileAttached = isNotEmptyField(externalReference.fileId);
+                const externalReferenceId = externalReference.external_id
+                  ? `(${externalReference.external_id})`
+                  : '';
+                let externalReferenceSecondary;
+                if (externalReference.url && externalReference.url.length > 0) {
+                  externalReferenceSecondary = externalReference.url;
+                } else if (
+                  externalReference.description &&
+                  externalReference.description.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.description;
+                } else {
+                  externalReferenceSecondary = t('No description');
+                }
+                if (externalReference.url) {
                   return (
                     <React.Fragment key={externalReference.id}>
                       <ListItem
                         dense={true}
                         divider={true}
                         disablePadding
-                        secondaryAction={(
-                          <>
-                            <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                              <FileUploader
-                                entityId={externalReference.id}
-                                onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                                }
-                                // color="inherit"
-                              />
-                            </Security>
+                        secondaryAction={
+                          <Stack direction="row" gap={1}>
+                            <Tooltip title={t('Browse the link')}>
+                              <IconButton
+                                onClick={this.handleOpenExternalLink.bind(
+                                  this,
+                                  externalReference.url,
+                                )}
+                                size="small"
+                                variant="tertiary"
+                              >
+                                <OpenInBrowserOutlined />
+                              </IconButton>
+                            </Tooltip>
+                            {!isFileAttached && (
+                              <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                <FileUploader
+                                  entityId={externalReference.id}
+                                  onUploadSuccess={() => this.props.relay.refetchConnection(200)}
+                                />
+                              </Security>
+                            )}
+                            {!isFileAttached && (
+                              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                                <ExternalReferenceEnrichment
+                                  externalReferenceId={externalReference.id}
+                                />
+                              </Security>
+                            )}
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                               <ExternalReferencePopover
                                 id={externalReference.id}
+                                isExternalReferenceAttachment={isFileAttached}
+                                objectId={stixCoreRelationshipId}
                                 handleRemove={this.handleOpenDialog.bind(
                                   this,
                                   externalReferenceEdge,
@@ -319,8 +246,8 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                                 variant="inLine"
                               />
                             </Security>
-                          </>
-                        )}
+                          </Stack>
+                        }
                       >
                         <ListItemButton
                           component={Link}
@@ -331,30 +258,86 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                           </ListItemIcon>
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(
-                              externalReference.description,
-                              120,
-                            )}
+                            secondary={truncate(externalReferenceSecondary, 90)}
                           />
                         </ListItemButton>
                       </ListItem>
                       {externalReference.importFiles.edges.length > 0 && (
                         <List>
-                          {externalReference.importFiles.edges.map((file) => file?.node && (
-                            <FileLine
-                              key={file.node.id}
-                              dense={true}
-                              disableImport={true}
-                              file={file.node}
-                              nested={true}
-                            />
-                          ))}
+                          {externalReference.importFiles.edges.map(
+                            (file) =>
+                              file?.node && (
+                                <FileLine
+                                  key={file.node.id}
+                                  dense={true}
+                                  disableImport={true}
+                                  file={file.node}
+                                  nested={true}
+                                />
+                              ),
+                          )}
                         </List>
                       )}
                     </React.Fragment>
                   );
-                },
-              )}
+                }
+                return (
+                  <React.Fragment key={externalReference.id}>
+                    <ListItem
+                      dense={true}
+                      divider={true}
+                      disablePadding
+                      secondaryAction={
+                        <>
+                          <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                            <FileUploader
+                              entityId={externalReference.id}
+                              onUploadSuccess={() => this.props.relay.refetchConnection(200)}
+                              // color="inherit"
+                            />
+                          </Security>
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <ExternalReferencePopover
+                              id={externalReference.id}
+                              handleRemove={this.handleOpenDialog.bind(this, externalReferenceEdge)}
+                              variant="inLine"
+                            />
+                          </Security>
+                        </>
+                      }
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(externalReference.description, 120)}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                    {externalReference.importFiles.edges.length > 0 && (
+                      <List>
+                        {externalReference.importFiles.edges.map(
+                          (file) =>
+                            file?.node && (
+                              <FileLine
+                                key={file.node.id}
+                                dense={true}
+                                disableImport={true}
+                                file={file.node}
+                                nested={true}
+                              />
+                            ),
+                        )}
+                      </List>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -376,11 +359,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               onClick={this.handleToggleExpand.bind(this)}
               classes={{ root: classes.buttonExpand }}
             >
-              {expanded ? (
-                <ExpandLessOutlined />
-              ) : (
-                <ExpandMoreOutlined />
-              )}
+              {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
             </IconButton>
           )}
         </Card>
@@ -400,10 +379,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.handleRemoval.bind(this)}
-              disabled={this.state.removing}
-            >
+            <Button onClick={this.handleRemoval.bind(this)} disabled={this.state.removing}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -418,10 +394,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
             <Button variant="secondary" onClick={this.handleCloseExternalLink.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button
-              button={true}
-              onClick={this.handleBrowseExternalLink.bind(this)}
-            >
+            <Button button={true} onClick={this.handleBrowseExternalLink.bind(this)}>
               {t('Browse the link')}
             </Button>
           </DialogActions>
@@ -441,12 +414,8 @@ StixCoreRelationshipExternalReferencesLinesContainer.propTypes = {
 };
 
 export const stixCoreRelationshipExternalReferencesLinesQuery = graphql`
-  query StixCoreRelationshipExternalReferencesLinesQuery(
-    $count: Int!
-    $id: String!
-  ) {
-    ...StixCoreRelationshipExternalReferencesLines_data
-      @arguments(count: $count, id: $id)
+  query StixCoreRelationshipExternalReferencesLinesQuery($count: Int!, $id: String!) {
+    ...StixCoreRelationshipExternalReferencesLines_data @arguments(count: $count, id: $id)
   }
 `;
 
@@ -455,14 +424,10 @@ const StixCoreRelationshipExternalReferencesLines = createPaginationContainer(
   {
     data: graphql`
       fragment StixCoreRelationshipExternalReferencesLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        id: { type: "String!" }
-      ) {
+      @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, id: { type: "String!" }) {
         stixCoreRelationship(id: $id) {
           id
-          externalReferences(first: $count)
-            @connection(key: "Pagination_externalReferences") {
+          externalReferences(first: $count) @connection(key: "Pagination_externalReferences") {
             edges {
               node {
                 id

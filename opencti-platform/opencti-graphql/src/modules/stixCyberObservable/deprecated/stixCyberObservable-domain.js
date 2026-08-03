@@ -1,5 +1,10 @@
 import { storeLoadByIdWithRefs } from '../../../database/middleware';
-import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
+import {
+  INPUT_CREATED_BY,
+  INPUT_GRANTED_REFS,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+} from '../../../schema/general';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { createIndicatorFromObservable } from '../../../domain/stixCyberObservable';
 
@@ -14,7 +19,12 @@ export const promoteObservableToIndicator = async (context, user, observableId) 
   const objectMarking = (observable[INPUT_MARKINGS] ?? []).map((n) => n.internal_id);
   const objectOrganization = (observable[INPUT_GRANTED_REFS] ?? []).map((n) => n.internal_id);
   const createdBy = observable[INPUT_CREATED_BY]?.internal_id;
-  await createIndicatorFromObservable(context, user, { objectLabel, objectMarking, objectOrganization, createdBy }, observable);
+  await createIndicatorFromObservable(
+    context,
+    user,
+    { objectLabel, objectMarking, objectOrganization, createdBy },
+    observable,
+  );
   return observable;
 };
 // endregion

@@ -10,20 +10,10 @@ interface GraphToolbarItemProps {
   disabled?: boolean;
 }
 
-const GraphToolbarItem = ({
-  title,
-  color,
-  Icon,
-  onClick,
-  disabled,
-}: GraphToolbarItemProps) => {
+const GraphToolbarItem = ({ title, color, Icon, onClick, disabled }: GraphToolbarItemProps) => {
   return (
     <Tooltip title={title}>
-      <IconButton
-        color={color}
-        onClick={onClick}
-        disabled={disabled}
-      >
+      <IconButton color={color} onClick={onClick} disabled={disabled}>
         {Icon}
       </IconButton>
     </Tooltip>

@@ -5,9 +5,14 @@ import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-ut
 import { logApp } from '../config/conf';
 
 export const up = async (next) => {
-  logApp.info('[MIGRATION] Vocabulary add RequestForInformationTypesOv & RequestForTakedownTypesOv');
+  logApp.info(
+    '[MIGRATION] Vocabulary add RequestForInformationTypesOv & RequestForTakedownTypesOv',
+  );
   const context = executionContext('migration');
-  const categories = [VocabularyCategory.RequestForInformationTypesOv, VocabularyCategory.RequestForTakedownTypesOv];
+  const categories = [
+    VocabularyCategory.RequestForInformationTypesOv,
+    VocabularyCategory.RequestForTakedownTypesOv,
+  ];
   for (let indexCategory = 0; indexCategory < categories.length; indexCategory += 1) {
     const category = categories[indexCategory];
     const vocabularies = openVocabularies[category] ?? [];
@@ -18,7 +23,8 @@ export const up = async (next) => {
         description: description ?? '',
         aliases: aliases ?? [],
         category,
-        builtIn: builtInOv.includes(category) };
+        builtIn: builtInOv.includes(category),
+      };
       await addVocabulary(context, SYSTEM_USER, data);
     }
   }

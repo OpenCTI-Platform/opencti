@@ -31,10 +31,7 @@ const GraphToolbarEditObject = ({
 
   const {
     rawObjects,
-    graphState: {
-      selectedNodes,
-      selectedLinks,
-    },
+    graphState: { selectedNodes, selectedLinks },
   } = useGraphContext();
 
   const [category, setCategory] = useState<EditionCategory>();
@@ -42,15 +39,20 @@ const GraphToolbarEditObject = ({
   let objectToEdit: GraphNode | GraphLink | undefined;
   if (selectedNodes.length === 1 && !selectedNodes[0].isNestedInferred) {
     [objectToEdit] = selectedNodes;
-  } else if (selectedLinks.length === 1 && (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)) {
+  } else if (
+    selectedLinks.length === 1 &&
+    (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)
+  ) {
     [objectToEdit] = selectedLinks;
   }
 
   const openEditionForm = () => {
     if (!objectToEdit) return;
     const { parent_types, entity_type } = objectToEdit;
-    if (!parent_types.includes('basic-relationship')
-      && !parent_types.includes('Stix-Cyber-Observable')) {
+    if (
+      !parent_types.includes('basic-relationship') &&
+      !parent_types.includes('Stix-Cyber-Observable')
+    ) {
       setCategory('domainObject');
     } else if (parent_types.includes('Stix-Cyber-Observable')) {
       setCategory('observable');
@@ -66,13 +68,18 @@ const GraphToolbarEditObject = ({
   const closeEditionForm = async () => {
     if (objectToEdit) {
       if (category === 'domainObject' || category === 'observable') {
-        const data = await fetchQuery(stixCoreObjectRefetchQuery, { id: objectToEdit.id })
-          .toPromise() as { stixCoreObject: ObjectToParse };
+        const data = (await fetchQuery(stixCoreObjectRefetchQuery, {
+          id: objectToEdit.id,
+        }).toPromise()) as { stixCoreObject: ObjectToParse };
         const existingNode = rawObjects.find((rawObject) => rawObject.id === objectToEdit.id);
-        updateNode({ ...data.stixCoreObject, linkedContainers: existingNode?.linkedContainers ?? [] });
+        updateNode({
+          ...data.stixCoreObject,
+          linkedContainers: existingNode?.linkedContainers ?? [],
+        });
       } else {
-        const data = await fetchQuery(relationshipRefetchQuery, { id: objectToEdit.id })
-          .toPromise() as { stixRelationship: ObjectToParse };
+        const data = (await fetchQuery(relationshipRefetchQuery, {
+          id: objectToEdit.id,
+        }).toPromise()) as { stixRelationship: ObjectToParse };
         addLink(data.stixRelationship);
       }
     }

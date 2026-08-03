@@ -1,12 +1,22 @@
 import * as R from 'ramda';
-import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {
+  ATTR_DB_NAMESPACE,
+  ATTR_DB_OPERATION_NAME,
+  SEMATTRS_DB_NAME,
+  SEMATTRS_DB_OPERATION,
+} from '@opentelemetry/semantic-conventions';
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { BasicStoreEntityEntitySetting, Scale } from './entitySetting-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { validateAndFormatSchemaAttribute } from '../../schema/schema-validator';
-import { availableSettings, getAttributesConfiguration, getAvailableSettings, getDefaultValues } from './entitySetting-utils';
+import {
+  availableSettings,
+  getAttributesConfiguration,
+  getAvailableSettings,
+  getDefaultValues,
+} from './entitySetting-utils';
 import { telemetry } from '../../config/tracing';
 import { INPUT_MARKINGS } from '../../schema/general';
 import type { EditInput } from '../../generated/graphql';
@@ -62,25 +72,36 @@ const scaleValidation = (scale: Scale) => {
   }
 };
 
-const attributesConfigurationValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
+const attributesConfigurationValidation = async (
+  targetType: string,
+  input: BasicStoreEntityEntitySetting,
+) => {
   const attributesConfiguration = getAttributesConfiguration(input);
   if (attributesConfiguration) {
     for (let index = 0; index < attributesConfiguration.length; index += 1) {
       const attr = attributesConfiguration[index];
       const attributeDefinition = schemaAttributesDefinition.getAttribute(targetType, attr.name);
-      const relationRefDefinition = schemaRelationsRefDefinition.getRelationRef(targetType, attr.name);
+      const relationRefDefinition = schemaRelationsRefDefinition.getRelationRef(
+        targetType,
+        attr.name,
+      );
       // Mandatory
       if (attr.mandatory) {
-        const mandatoryType = attributeDefinition?.mandatoryType || relationRefDefinition?.mandatoryType;
+        const mandatoryType =
+          attributeDefinition?.mandatoryType || relationRefDefinition?.mandatoryType;
         if (mandatoryType !== 'customizable') {
-          throw ValidationError('This attribute is not customizable for this entity', attr.name, { entityType: targetType });
+          throw ValidationError('This attribute is not customizable for this entity', attr.name, {
+            entityType: targetType,
+          });
         }
       }
       // Scale
       if (attr.scale) {
         // Relation ref can't be scalable
         if (attributeDefinition?.type === 'numeric' && !attributeDefinition?.scalable) {
-          throw ValidationError('This attribute is not scalable for this entity', attr.name, { entityType: targetType });
+          throw ValidationError('This attribute is not scalable for this entity', attr.name, {
+            entityType: targetType,
+          });
         }
         scaleValidation(attr.scale);
       }
@@ -90,13 +111,24 @@ const attributesConfigurationValidation = async (targetType: string, input: Basi
           const defaultValues = getDefaultValues(attr, attributeDefinition.multiple);
           if (defaultValues) {
             const checkValues = Array.isArray(defaultValues) ? defaultValues : [defaultValues];
-            const checkInput: EditInput = { operation: EditOperation.Replace, key: attributeDefinition.name, value: checkValues };
+            const checkInput: EditInput = {
+              operation: EditOperation.Replace,
+              key: attributeDefinition.name,
+              value: checkValues,
+            };
             validateAndFormatSchemaAttribute(attr.name, attributeDefinition, checkInput);
           }
         } else if (relationRefDefinition) {
           if (relationRefDefinition.name === INPUT_MARKINGS) {
-            if (getDefaultValues(attr, false) !== 'false' && getDefaultValues(attr, false) !== 'true') {
-              throw ValidationError('This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.', attr.name, { entityType: targetType });
+            if (
+              getDefaultValues(attr, false) !== 'false' &&
+              getDefaultValues(attr, false) !== 'true'
+            ) {
+              throw ValidationError(
+                'This field is not supported to declare a default value. You can only activate/deactivate the possibility to have a default value.',
+                attr.name,
+                { entityType: targetType },
+              );
             } else {
               return;
             }
@@ -107,43 +139,70 @@ const attributesConfigurationValidation = async (targetType: string, input: Basi
   }
 };
 
-export const validateEntitySettingCreation = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>) => {
+export const validateEntitySettingCreation = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, unknown>,
+) => {
   const validateEntitySettingUpdateFn = async () => {
     const entitySetting = input as unknown as BasicStoreEntityEntitySetting;
 
-    await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
+    await optionsValidation(
+      entitySetting.target_type,
+      input as unknown as BasicStoreEntityEntitySetting,
+    );
     await attributesConfigurationValidation(entitySetting.target_type, entitySetting);
 
     return true;
   };
 
-  return telemetry(context, user, 'ENTITY SETTING CREATION VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'entity-setting',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'entity-setting',
-    [ATTR_DB_OPERATION_NAME]: 'validation_update',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'validation_update',
-  }, validateEntitySettingUpdateFn);
+  return telemetry(
+    context,
+    user,
+    'ENTITY SETTING CREATION VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'entity-setting',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'entity-setting',
+      [ATTR_DB_OPERATION_NAME]: 'validation_update',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'validation_update',
+    },
+    validateEntitySettingUpdateFn,
+  );
 };
 
-export const validateEntitySettingUpdate = async (context: AuthContext, user: AuthUser, input: Record<string, unknown>, initial: Record<string, unknown> | undefined) => {
+export const validateEntitySettingUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, unknown>,
+  initial: Record<string, unknown> | undefined,
+) => {
   const validateEntitySettingUpdateFn = async () => {
     const entitySetting = input as unknown as BasicStoreEntityEntitySetting;
     const entitySettingInitial = initial as unknown as BasicStoreEntityEntitySetting;
 
-    await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
+    await optionsValidation(
+      entitySettingInitial.target_type,
+      input as unknown as BasicStoreEntityEntitySetting,
+    );
     await attributesConfigurationValidation(entitySettingInitial.target_type, entitySetting);
 
     return true;
   };
 
-  return telemetry(context, user, 'ENTITY SETTING UPDATE VALIDATION', {
-    [ATTR_DB_NAMESPACE]: 'entity-setting',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_NAME]: 'entity-setting',
-    [ATTR_DB_OPERATION_NAME]: 'validation_update',
-    // Deprecated attribute to be removed when transition done
-    [SEMATTRS_DB_OPERATION]: 'validation_update',
-  }, validateEntitySettingUpdateFn);
+  return telemetry(
+    context,
+    user,
+    'ENTITY SETTING UPDATE VALIDATION',
+    {
+      [ATTR_DB_NAMESPACE]: 'entity-setting',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_NAME]: 'entity-setting',
+      [ATTR_DB_OPERATION_NAME]: 'validation_update',
+      // Deprecated attribute to be removed when transition done
+      [SEMATTRS_DB_OPERATION]: 'validation_update',
+    },
+    validateEntitySettingUpdateFn,
+  );
 };

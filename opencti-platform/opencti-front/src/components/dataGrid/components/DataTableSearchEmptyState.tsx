@@ -31,26 +31,24 @@ const DataTableSearchEmptyState = ({ rawSearchTerm }: DataTableSearchEmptyStateP
       <Typography variant="h6" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
         {rawSearchTerm ? `${t_i18n('No results for')} "${rawSearchTerm}"` : t_i18n('No results')}
       </Typography>
-      {rawSearchTerm
-        && (
-          <Typography variant="body1">
-            {t_i18n('Learn more about search options in {link}', {
-              values: {
-                link: (
-                  <Link
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    to="https://docs.opencti.io/latest/usage/search/#search-syntax"
-                  >
-                    {t_i18n('our documentation')}
-                    <OpenInNew sx={{ fontSize: 14, pl: '2px', verticalAlign: 'middle', pb: '2px' }} />
-                  </Link>
-                ),
-              },
-            })}
-          </Typography>
-        )
-      }
+      {rawSearchTerm && (
+        <Typography variant="body1">
+          {t_i18n('Learn more about search options in {link}', {
+            values: {
+              link: (
+                <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  to="https://docs.opencti.io/latest/usage/search/#search-syntax"
+                >
+                  {t_i18n('our documentation')}
+                  <OpenInNew sx={{ fontSize: 14, pl: '2px', verticalAlign: 'middle', pb: '2px' }} />
+                </Link>
+              ),
+            },
+          })}
+        </Typography>
+      )}
     </Box>
   );
 };

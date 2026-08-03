@@ -27,7 +27,9 @@ interface EntityContainerRefsTabComponentProps {
   queryRef: PreloadedQuery<EntityContainerRefsTabQuery>;
 }
 
-const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabComponentProps> = ({ queryRef }) => {
+const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabComponentProps> = ({
+  queryRef,
+}) => {
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedQuery<EntityContainerRefsTabQuery>(
@@ -46,7 +48,15 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: 'background.paper', borderRadius: '4px', p: '16px' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'background.paper',
+        borderRadius: '4px',
+        p: '16px',
+      }}
+    >
       <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mb: 2 }}>
         <Typography sx={{ width: 120, fontSize: 12, fontWeight: 600, color: 'text.secondary' }}>
           {t_i18n('Action')}
@@ -62,7 +72,9 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
         {refs.map((ref) => {
           const isAdd = ref.draft_operation === 'add';
           const containerBaseLink = resolveLink(ref.container_type);
-          const containerLink = containerBaseLink ? `${containerBaseLink}/${ref.container_id}` : undefined;
+          const containerLink = containerBaseLink
+            ? `${containerBaseLink}/${ref.container_id}`
+            : undefined;
           return (
             <Box
               key={ref.container_id}
@@ -81,7 +93,14 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
                   {t_i18n(`entity_${ref.container_type}`)}
                 </Typography>
               </Box>
-              <Box sx={{ flex: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box
+                sx={{
+                  flex: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <Typography sx={{ fontSize: 14, color: 'text.primary', wordBreak: 'break-word' }}>
                   {ref.container_name || ref.container_id}
                 </Typography>
@@ -93,7 +112,14 @@ const EntityContainerRefsTabComponent: FunctionComponent<EntityContainerRefsTabC
                     target="_blank"
                     rel="noopener noreferrer"
                     size="small"
-                    sx={{ width: 26, height: 26, borderRadius: '4px', color: 'primary.main', backgroundColor: 'action.hover', flexShrink: 0 }}
+                    sx={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: '4px',
+                      color: 'primary.main',
+                      backgroundColor: 'action.hover',
+                      flexShrink: 0,
+                    }}
                   >
                     <LaunchIcon sx={{ fontSize: 18 }} />
                   </IconButton>
@@ -112,7 +138,10 @@ interface EntityContainerRefsTabProps {
   entityId: string;
 }
 
-const EntityContainerRefsTab: FunctionComponent<EntityContainerRefsTabProps> = ({ draftId, entityId }) => {
+const EntityContainerRefsTab: FunctionComponent<EntityContainerRefsTabProps> = ({
+  draftId,
+  entityId,
+}) => {
   const queryRef = useQueryLoading<EntityContainerRefsTabQuery>(
     draftReviewDiffPanelEntityContainerRefsQuery,
     { draftId, entityId },

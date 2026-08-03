@@ -97,10 +97,7 @@ export const externalReferenceMutationRelationDelete = graphql`
 
 const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
   const entity = store.get(stixCoreObjectId);
-  const conn = ConnectionHandler.getConnection(
-    entity,
-    'Pagination_externalReferences',
-  );
+  const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
@@ -133,10 +130,7 @@ class AddExternalReferencesLinesContainer extends Component {
         },
         updater: (store) => {
           const entity = store.get(stixCoreObjectOrStixCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_externalReferences',
-          );
+          const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
@@ -187,8 +181,7 @@ class AddExternalReferencesLinesContainer extends Component {
         <ListItemText
           primary={`${externalReference.source_name} ${externalReferenceId}`}
           secondary={truncate(
-            externalReference.description !== null
-            && externalReference.description.length > 0
+            externalReference.description !== null && externalReference.description.length > 0
               ? externalReference.description
               : externalReference.url,
             120,
@@ -211,11 +204,7 @@ class AddExternalReferencesLinesContainer extends Component {
                   key={externalReference.id}
                   classes={{ root: classes.menuItem }}
                   divider={true}
-                  onClick={this.toggleExternalReference.bind(
-                    this,
-                    externalReference,
-                    false,
-                  )}
+                  onClick={this.toggleExternalReference.bind(this, externalReference, false)}
                 >
                   <ListItemIcon>
                     {alreadyAdded ? (
@@ -233,11 +222,7 @@ class AddExternalReferencesLinesContainer extends Component {
                 key={externalReference.id}
                 classes={{ root: classes.menuItem }}
                 divider={true}
-                onClick={this.toggleExternalReference.bind(
-                  this,
-                  externalReference,
-                  false,
-                )}
+                onClick={this.toggleExternalReference.bind(this, externalReference, false)}
               >
                 <ListItemIcon>
                   {alreadyAdded ? (
@@ -287,7 +272,13 @@ export const addExternalReferencesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...AddExternalReferencesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor, orderBy: $orderBy, orderMode: $orderMode)
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -303,8 +294,13 @@ const AddExternalReferencesLines = createPaginationContainer(
         orderBy: { type: "ExternalReferencesOrdering" }
         orderMode: { type: "OrderingMode" }
       ) {
-        externalReferences(search: $search, first: $count, after: $cursor, orderBy: $orderBy, orderMode: $orderMode)
-          @connection(key: "Pagination_externalReferences") {
+        externalReferences(
+          search: $search
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_externalReferences") {
           edges {
             node {
               id
@@ -359,7 +355,4 @@ const AddExternalReferencesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddExternalReferencesLines);
+export default compose(inject18n, withStyles(styles))(AddExternalReferencesLines);

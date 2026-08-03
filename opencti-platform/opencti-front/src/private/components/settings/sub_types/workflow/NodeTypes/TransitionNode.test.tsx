@@ -32,7 +32,10 @@ vi.mock('@mui/styles', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const makeProps = (dataOverrides: Record<string, unknown> = {}, id = 'transition-1'): NodeProps => ({
+const makeProps = (
+  dataOverrides: Record<string, unknown> = {},
+  id = 'transition-1',
+): NodeProps => ({
   id,
   data: {
     event: 'approve',
@@ -61,7 +64,9 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 describe('TransitionNode – comment label', () => {
   it('shows nothing when comment is "disable"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.disabled })} />);
+    testRender(
+      <TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.disabled })} />,
+    );
     expect(screen.queryByText(/comment/i)).toBeNull();
   });
 
@@ -71,12 +76,16 @@ describe('TransitionNode – comment label', () => {
   });
 
   it('shows "comment allowed" when comment is "allowed"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.allowed })} />);
+    testRender(
+      <TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.allowed })} />,
+    );
     expect(screen.getByText(/comment allowed/i)).toBeDefined();
   });
 
   it('shows "comment required" when comment is "required"', () => {
-    testRender(<TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.required })} />);
+    testRender(
+      <TransitionNode {...makeProps({ event: 'approve', comment: CommentMode.required })} />,
+    );
     expect(screen.getByText(/comment required/i)).toBeDefined();
   });
 });

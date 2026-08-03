@@ -26,32 +26,25 @@ interface ImportFilesOptionsProps {
   draftContext?: DraftContext | null;
 }
 
-const ImportFilesOptions = ({
-  optionsFormikContext,
-  draftContext,
-}: ImportFilesOptionsProps) => {
+const ImportFilesOptions = ({ optionsFormikContext, draftContext }: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
   const showAllMembersLine = !settings.platform_organization?.id;
-  const {
-    importMode,
-    entityId,
-    files,
-    isForcedImportToDraft,
-  } = useImportFilesContext();
+  const { importMode, entityId, files, isForcedImportToDraft } = useImportFilesContext();
   const isWorkbenchEnabled = files.length === 1;
 
   return (
     <FormikProvider value={optionsFormikContext}>
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifySelf: 'center',
-        gap: 2,
-        width: '50%',
-        marginInline: 'auto',
-      }}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifySelf: 'center',
+          gap: 2,
+          width: '50%',
+          marginInline: 'auto',
+        }}
       >
         <ObjectMarkingField
           name="fileMarkings"
@@ -77,11 +70,13 @@ const ImportFilesOptions = ({
                 name="validationMode"
                 containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
                 disabled={isForcedImportToDraft}
-                label={(
+                label={
                   <>
                     {t_i18n('Validation mode')}
                     <Tooltip
-                      title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
+                      title={t_i18n(
+                        'Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.',
+                      )}
                     >
                       <InformationOutline
                         style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
@@ -90,19 +85,12 @@ const ImportFilesOptions = ({
                       />
                     </Tooltip>
                   </>
-                )}
+                }
               >
-                <MenuItem
-                  key="draft"
-                  value="draft"
-                >
+                <MenuItem key="draft" value="draft">
                   {t_i18n('Draft')}
                 </MenuItem>
-                <MenuItem
-                  key="workbench"
-                  value="workbench"
-                  disabled={!isWorkbenchEnabled}
-                >
+                <MenuItem key="workbench" value="workbench" disabled={!isWorkbenchEnabled}>
                   {t_i18n('Workbench')}
                 </MenuItem>
               </Field>

@@ -29,13 +29,13 @@ export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixDomainObjectNestedEntitiesLines_data
-    @arguments(
-      fromOrToId: $fromOrToId
-      search: $search
-      count: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromOrToId: $fromOrToId
+        search: $search
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -331,7 +331,10 @@ const StixDomainObjectNestedEntitiesLines = ({
 }: StixDomainObjectNestedEntitiesLinesProps) => {
   const theme = useTheme();
   const { fsd } = useFormatter();
-  const queryData = usePreloadedQuery<StixDomainObjectNestedEntitiesLinesQuery>(stixDomainObjectNestedEntitiesLinesQuery, queryRef);
+  const queryData = usePreloadedQuery<StixDomainObjectNestedEntitiesLinesQuery>(
+    stixDomainObjectNestedEntitiesLinesQuery,
+    queryRef,
+  );
   const data = useFragment<StixDomainObjectNestedEntitiesLines_data$key>(
     StixDomainObjectNestedEntitiesLinesFragment,
     queryData,
@@ -351,8 +354,8 @@ const StixDomainObjectNestedEntitiesLines = ({
   };
   return (
     <div>
-      {stixNestedObjectsNodes
-        && stixNestedObjectsNodes.map((edge) => {
+      {stixNestedObjectsNodes &&
+        stixNestedObjectsNodes.map((edge) => {
           const { node } = edge;
           const stixCoreObject = (node.from?.id === stixDomainObjectId ? node.to : node.from)!;
           const link = `${resolveLink(stixCoreObject.entity_type)}/${stixCoreObject.id}`;
@@ -361,12 +364,12 @@ const StixDomainObjectNestedEntitiesLines = ({
               key={stixCoreObject.id}
               divider={true}
               disablePadding
-              secondaryAction={(
+              secondaryAction={
                 <StixNestedRefRelationshipPopover
                   stixNestedRefRelationshipId={node.id}
                   paginationOptions={paginationOptions}
                 />
-              )}
+              }
             >
               <ListItemButton
                 style={{
@@ -384,36 +387,33 @@ const StixDomainObjectNestedEntitiesLines = ({
                   <ItemIcon type={stixCoreObject.entity_type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={(
+                  primary={
                     <Stack direction="row">
-                      <div
-                        style={{ ...bodyItemStyle, width: '20%', height: '100%' }}
-                      >
-                        <ItemEntityType
-                          entityType={node.relationship_type}
-                        />
+                      <div style={{ ...bodyItemStyle, width: '20%', height: '100%' }}>
+                        <ItemEntityType entityType={node.relationship_type} />
                       </div>
-                      <div
-                        style={{ ...bodyItemStyle, width: '20%', height: '100%' }}
-                      >
+                      <div style={{ ...bodyItemStyle, width: '20%', height: '100%' }}>
                         <ItemEntityType
                           entityType={stixCoreObject.entity_type ?? EMPTY_VALUE}
                           showIcon
                         />
                       </div>
                       <div
-                        style={{ ...bodyItemStyle, width: '40%', paddingTop: '2px', marginLeft: '16px' }}
+                        style={{
+                          ...bodyItemStyle,
+                          width: '40%',
+                          paddingTop: '2px',
+                          marginLeft: '16px',
+                        }}
                       >
                         {getMainRepresentative(stixCoreObject)}
-                        {stixCoreObject.draftVersion && (<DraftChip />)}
+                        {stixCoreObject.draftVersion && <DraftChip />}
                       </div>
-                      <div
-                        style={{ ...bodyItemStyle, paddingTop: '2px' }}
-                      >
+                      <div style={{ ...bodyItemStyle, paddingTop: '2px' }}>
                         {fsd(node.start_time)}
                       </div>
                     </Stack>
-                  )}
+                  }
                 />
               </ListItemButton>
             </ListItem>

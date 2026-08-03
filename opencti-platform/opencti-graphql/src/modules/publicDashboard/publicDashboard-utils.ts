@@ -1,7 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
+import {
+  ENTITY_TYPE_PUBLIC_DASHBOARD,
+  type PublicDashboardCached,
+  type PublicDashboardCachedWidget,
+} from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
@@ -17,7 +21,10 @@ import { findById as findWorkspace } from '../workspace/workspace-domain';
  * Falls back to a UUID v4 if the resulting slug is empty (e.g. fully non-Latin input).
  */
 export const sanitizePublicDashboardUriKey = (input: string): string => {
-  const slug = input.replace(/[^a-zA-Z0-9\s-]+/g, '').replace(/\s+/g, '-').toLowerCase();
+  const slug = input
+    .replace(/[^a-zA-Z0-9\s-]+/g, '')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
   return slug || uuidv4();
 };
 
@@ -49,9 +56,9 @@ export const findWidgetsMaxMarkings = async (
     // To be acceptable, a type should be present in all of the three arrays.
     .filter((marking) => {
       return (
-        dataSharingMaxMarkings.some((m) => m.definition_type === marking.definition_type)
-        && dashboardMaxMarkings.some((m) => m.definition_type === marking.definition_type)
-        && userMaxMarkings.some((m) => m.definition_type === marking.definition_type)
+        dataSharingMaxMarkings.some((m) => m.definition_type === marking.definition_type) &&
+        dashboardMaxMarkings.some((m) => m.definition_type === marking.definition_type) &&
+        userMaxMarkings.some((m) => m.definition_type === marking.definition_type)
       );
     })
     .forEach((marking) => {
@@ -83,7 +90,11 @@ export const getWidgetArguments = async (
   widgetId: string,
 ): Promise<WidgetArguments> => {
   // Get publicDashboard from cache
-  const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+  const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
+  );
   const publicDashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!publicDashboard) {
     throw UnsupportedError('Dashboard not found', { uriKey });
@@ -95,7 +106,11 @@ export const getWidgetArguments = async (
   const { user_id, private_manifest }: PublicDashboardCached = publicDashboard;
 
   // Get user that creates the public dashboard from cache
-  const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
   const platformUser = platformUsersMap.get(user_id);
   if (!platformUser) {
     throw UnsupportedError('User not found', { user_id });
@@ -105,11 +120,11 @@ export const getWidgetArguments = async (
   const allowedMaxMarkings = await findWidgetsMaxMarkings(context, publicDashboard, platformUser);
 
   // To replace User capabilities by KNOWLEDGE capability
-  const accessKnowledgeCapability: UserCapability = await elLoadById(
+  const accessKnowledgeCapability: UserCapability = (await elLoadById(
     context,
     SYSTEM_USER,
     'capability--cbc68f4b-1d0c-51f6-a1b9-10344503b493',
-  ) as unknown as UserCapability;
+  )) as unknown as UserCapability;
 
   // Construct a fake user to be able to call private API
   const user = {
@@ -132,8 +147,16 @@ export const getWidgetArguments = async (
   };
 };
 
-export const checkUserIsAdminOnDashboard = async (context: AuthContext, user: AuthUser, id: string) => {
-  const publicDashboards = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
+export const checkUserIsAdminOnDashboard = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+) => {
+  const publicDashboards = await getEntitiesMapFromCache<PublicDashboardCached>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_PUBLIC_DASHBOARD,
+  );
   const publicDashboard = publicDashboards.get(id);
   if (publicDashboard === undefined) {
     throw FunctionalError('No public dashboard found', { id });

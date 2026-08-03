@@ -19,13 +19,15 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
   const { uploadStatus } = useImportFilesContext();
 
   return (
-    <div style={{ display: 'flex', height: '100%', justifyContent: 'center', flexDirection: 'column' }}>
+    <div
+      style={{ display: 'flex', height: '100%', justifyContent: 'center', flexDirection: 'column' }}
+    >
       <Box sx={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <LinearProgress
           variant="buffer"
           sx={{ flex: 1 }}
           value={(currentCount / totalCount) * 100}
-          valueBuffer={((currentCount / totalCount) * 100) + 10}
+          valueBuffer={(currentCount / totalCount) * 100 + 10}
         />
         <Typography style={{ flexShrink: 0 }}>{`${currentCount}/${totalCount}`}</Typography>
       </Box>
@@ -34,17 +36,15 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
           <ListItem
             key={file.name}
             divider
-            secondaryAction={(
+            secondaryAction={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {
-                  file.status === 'error' ? (
-                    <CancelOutlined fontSize="small" color="error" />
-                  ) : (
-                    <CheckCircleOutlined fontSize="small" color={file.status ?? 'inherit'} />
-                  )
-                }
+                {file.status === 'error' ? (
+                  <CancelOutlined fontSize="small" color="error" />
+                ) : (
+                  <CheckCircleOutlined fontSize="small" color={file.status ?? 'inherit'} />
+                )}
               </Box>
-            )}
+            }
           >
             <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
             {file.name}

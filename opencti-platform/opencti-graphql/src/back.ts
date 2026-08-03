@@ -26,20 +26,19 @@ if (ENABLED_TRACING) {
   const zipKinUri = nconf.get('app:telemetry:tracing:exporter_zipkin');
   const isZipKinExporterSetUp = isNotEmptyField(zipKinUri);
   if (isOtlpExporterSetUp || isZipKinExporterSetUp) {
-    const otlpProcessors = isOtlpExporterSetUp ? [
-      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpUri, headers: {} })),
-    ] : [];
-    const zipkinProcessors = isZipKinExporterSetUp ? [
-      new BatchSpanProcessor(new ZipkinExporter({ url: zipKinUri, headers: {} })),
-    ] : [];
+    const otlpProcessors = isOtlpExporterSetUp
+      ? [new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpUri, headers: {} }))]
+      : [];
+    const zipkinProcessors = isZipKinExporterSetUp
+      ? [new BatchSpanProcessor(new ZipkinExporter({ url: zipKinUri, headers: {} }))]
+      : [];
     const provider = new NodeTracerProvider({
-      resource: defaultResource().merge(resourceFromAttributes({
-        [ATTR_SERVICE_NAME]: 'opencti-platform',
-      })),
-      spanProcessors: [
-        ...otlpProcessors,
-        ...zipkinProcessors,
-      ],
+      resource: defaultResource().merge(
+        resourceFromAttributes({
+          [ATTR_SERVICE_NAME]: 'opencti-platform',
+        }),
+      ),
+      spanProcessors: [...otlpProcessors, ...zipkinProcessors],
     });
     provider.register();
   }

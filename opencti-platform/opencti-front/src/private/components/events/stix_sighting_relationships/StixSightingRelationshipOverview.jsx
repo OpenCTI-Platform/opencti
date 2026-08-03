@@ -190,60 +190,40 @@ class StixSightingRelationshipContainer extends Component {
       onCompleted: () => {
         this.handleCloseEdition();
         this.props.navigate(
-          location.pathname.replace(
-            `/sightings/${stixSightingRelationship.id}`,
-            '',
-          ),
+          location.pathname.replace(`/sightings/${stixSightingRelationship.id}`, ''),
         );
       },
     });
   }
 
   render() {
-    const {
-      t,
-      n,
-      fldt,
-      nsdt,
-      classes,
-      stixSightingRelationship,
-    } = this.props;
+    const { t, n, fldt, nsdt, classes, stixSightingRelationship } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const fromRestricted = from === null;
 
     const linkFrom = from
       ? from.relationship_type
-        ? `${resolveLink(from.from.entity_type)}/${
-          from.from.id
-        }/knowledge/relations`
+        ? `${resolveLink(from.from.entity_type)}/${from.from.id}/knowledge/relations`
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
 
     const linkTo = to
       ? to.relationship_type
-        ? `${resolveLink(to.from.entity_type)}/${
-          to.from.id
-        }/knowledge/relations`
+        ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
         : resolveLink(to.entity_type)
       : '';
     return (
       <div className={classes.container}>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
+        <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
           <Grid item xs={6}>
             <Card title={t('Relationship')}>
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(
-                      !fromRestricted ? from.entity_type : 'Restricted',
-                    )}`,
+                    border: `2px solid ${itemColor(!fromRestricted ? from.entity_type : 'Restricted')}`,
                     top: 20,
                     left: 20,
                   }}
@@ -251,22 +231,18 @@ class StixSightingRelationshipContainer extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !fromRestricted ? from.entity_type : 'Restricted',
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(!fromRestricted ? from.entity_type : 'Restricted')}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
                         type={!fromRestricted ? from.entity_type : 'Restricted'}
-                        color={itemColor(
-                          !fromRestricted ? from.entity_type : 'Restricted',
-                        )}
+                        color={itemColor(!fromRestricted ? from.entity_type : 'Restricted')}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      { }
+                      {}
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
@@ -278,11 +254,11 @@ class StixSightingRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!fromRestricted
                         ? truncate(
-                            from.name
-                            || from.observable_value
-                            || from.attribute_abstract
-                            || from.content
-                            || t(`relationship_${from.entity_type}`),
+                            from.name ||
+                              from.observable_value ||
+                              from.attribute_abstract ||
+                              from.content ||
+                              t(`relationship_${from.entity_type}`),
                             50,
                           )
                         : t('Restricted')}
@@ -304,9 +280,7 @@ class StixSightingRelationshipContainer extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(
-                      !toRestricted ? to.entity_type : 'Restricted',
-                    )}`,
+                    border: `2px solid ${itemColor(!toRestricted ? to.entity_type : 'Restricted')}`,
                     top: 20,
                     right: 20,
                   }}
@@ -314,22 +288,18 @@ class StixSightingRelationshipContainer extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(
-                        !toRestricted ? to.entity_type : 'Restricted',
-                      )}`,
+                      borderBottom: `1px solid ${itemColor(!toRestricted ? to.entity_type : 'Restricted')}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
                         type={!toRestricted ? to.entity_type : 'Unknown'}
-                        color={itemColor(
-                          !toRestricted ? to.entity_type : 'Restricted',
-                        )}
+                        color={itemColor(!toRestricted ? to.entity_type : 'Restricted')}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      { }
+                      {}
                       {!toRestricted
                         ? to.relationship_type
                           ? t('Relationship')
@@ -341,11 +311,11 @@ class StixSightingRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!toRestricted
                         ? truncate(
-                            to.name
-                            || to.observable_value
-                            || to.attribute_abstract
-                            || to.content
-                            || t(`relationship_${to.entity_type}`),
+                            to.name ||
+                              to.observable_value ||
+                              to.attribute_abstract ||
+                              to.content ||
+                              t(`relationship_${to.entity_type}`),
                             50,
                           )
                         : t('Restricted')}
@@ -356,13 +326,12 @@ class StixSightingRelationshipContainer extends Component {
               <Divider sx={{ my: 2 }} />
               <Stack gap={2}>
                 <div>
-                  <Label>
-                    {t('Description')}
-                  </Label>
+                  <Label>{t('Description')}</Label>
                   <ExpandableMarkdown
-                    source={stixSightingRelationship.x_opencti_inferences !== null
-                      ? t('Inferred knowledge')
-                      : stixSightingRelationship.description
+                    source={
+                      stixSightingRelationship.x_opencti_inferences !== null
+                        ? t('Inferred knowledge')
+                        : stixSightingRelationship.description
                     }
                     limit={400}
                   />
@@ -370,35 +339,19 @@ class StixSightingRelationshipContainer extends Component {
 
                 <Grid container={true} spacing={2}>
                   <Grid item xs={6}>
-                    <Label>
-                      {t('Marking')}
-                    </Label>
+                    <Label>{t('Marking')}</Label>
                     <ItemMarkings
                       markingDefinitions={stixSightingRelationship.objectMarking ?? []}
                     />
-                    <Label
-                      sx={{ marginTop: 2 }}
-                    >
-                      {t('First seen')}
-                    </Label>
+                    <Label sx={{ marginTop: 2 }}>{t('First seen')}</Label>
                     {nsdt(stixSightingRelationship.first_seen)}
-                    <Label
-                      sx={{ marginTop: 2 }}
-                    >
-                      {t('Last seen')}
-                    </Label>
+                    <Label sx={{ marginTop: 2 }}>{t('Last seen')}</Label>
                     {nsdt(stixSightingRelationship.last_seen)}
                   </Grid>
                   <Grid item xs={6}>
                     <div>
-                      <StixSightingRelationshipSharing
-                        elementId={stixSightingRelationship.id}
-                      />
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('x_opencti_negative')}
-                      </Label>
+                      <StixSightingRelationshipSharing elementId={stixSightingRelationship.id} />
+                      <Label sx={{ marginTop: 2 }}>{t('x_opencti_negative')}</Label>
                       <Chip
                         classes={{
                           root: stixSightingRelationship.x_opencti_negative
@@ -411,13 +364,8 @@ class StixSightingRelationshipContainer extends Component {
                             : t('True positive')
                         }
                       />
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('Count')}
-                      </Label>
+                      <Label sx={{ marginTop: 2 }}>{t('Count')}</Label>
                       {n(stixSightingRelationship.attribute_count)}
-
                     </div>
                   </Grid>
                 </Grid>
@@ -428,46 +376,26 @@ class StixSightingRelationshipContainer extends Component {
             <Card title={t('Details')}>
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
-                  <Label>
-                    {t('Confidence level')}
-                  </Label>
+                  <Label>{t('Confidence level')}</Label>
                   <ItemConfidence
                     confidence={stixSightingRelationship.confidence}
                     entityType={stixSightingRelationship.entity_type}
                   />
                   {stixSightingRelationship.x_opencti_inferences === null && (
                     <div>
-                      <Label
-                        sx={{ marginTop: 2 }}
-                      >
-                        {t('Author')}
-                      </Label>
+                      <Label sx={{ marginTop: 2 }}>{t('Author')}</Label>
                       <ItemAuthor
-                        createdBy={R.propOr(
-                          null,
-                          'createdBy',
-                          stixSightingRelationship,
-                        )}
+                        createdBy={R.propOr(null, 'createdBy', stixSightingRelationship)}
                       />
                     </div>
                   )}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Original creation date')}
-                  </Label>
+                  <Label sx={{ marginTop: 2 }}>{t('Original creation date')}</Label>
                   {nsdt(stixSightingRelationship.created)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Modification date')}
-                  </Label>
+                  <Label sx={{ marginTop: 2 }}>{t('Modification date')}</Label>
                   {nsdt(stixSightingRelationship.updated_at)}
                 </Grid>
                 <Grid item xs={6}>
-                  <Label>
-                    {t('Processing status')}
-                  </Label>
+                  <Label>{t('Processing status')}</Label>
                   <ItemStatus
                     status={stixSightingRelationship.status}
                     disabled={!stixSightingRelationship.workflowEnabled}
@@ -477,47 +405,31 @@ class StixSightingRelationshipContainer extends Component {
                     id={stixSightingRelationship.id}
                     sx={{ marginTop: 2 }}
                   />
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Platform creation date')}
-                  </Label>
+                  <Label sx={{ marginTop: 2 }}>{t('Platform creation date')}</Label>
                   {fldt(stixSightingRelationship.created_at)}
-                  <Label
-                    sx={{ marginTop: 2 }}
-                  >
-                    {t('Creators')}
-                  </Label>
-                  <ItemCreators
-                    creators={stixSightingRelationship.creators ?? []}
-                  />
+                  <Label sx={{ marginTop: 2 }}>{t('Creators')}</Label>
+                  <ItemCreators creators={stixSightingRelationship.creators ?? []} />
                 </Grid>
               </Grid>
             </Card>
           </Grid>
           {stixSightingRelationship.x_opencti_inferences !== null ? (
             <Grid item xs={12}>
-              <CardTitle>
-                {t('Inference explanation')}
-              </CardTitle>
-              {stixSightingRelationship.x_opencti_inferences.map(
-                (inference) => (
-                  <div key={inference.rule.id}>
-                    <StixCoreRelationshipInference
-                      inference={inference}
-                      stixRelationship={stixSightingRelationship}
-                    />
-                  </div>
-                ),
-              )}
+              <CardTitle>{t('Inference explanation')}</CardTitle>
+              {stixSightingRelationship.x_opencti_inferences.map((inference) => (
+                <div key={inference.rule.id}>
+                  <StixCoreRelationshipInference
+                    inference={inference}
+                    stixRelationship={stixSightingRelationship}
+                  />
+                </div>
+              ))}
             </Grid>
           ) : (
             <>
               <Grid item xs={12}>
                 <StixCoreObjectOrStixRelationshipLastContainers
-                  stixCoreObjectOrStixRelationshipId={
-                    stixSightingRelationship.id
-                  }
+                  stixCoreObjectOrStixRelationshipId={stixSightingRelationship.id}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -545,9 +457,7 @@ class StixSightingRelationshipContainer extends Component {
           onClose={this.handleCloseDelete.bind(this)}
           title={t('Are you sure?')}
         >
-          <DialogContentText>
-            {t('Do you want to delete this sighting?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this sighting?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -556,10 +466,7 @@ class StixSightingRelationshipContainer extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>

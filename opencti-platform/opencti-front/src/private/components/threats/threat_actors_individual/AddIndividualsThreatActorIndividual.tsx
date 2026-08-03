@@ -4,7 +4,9 @@ import React, { FunctionComponent, useState } from 'react';
 import SearchInput from 'src/components/SearchInput';
 import { useFormatter } from 'src/components/i18n';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import AddIndividualsThreatActorIndividualLines, { addIndividualsThreatActorIndividualLinesQuery } from './AddIndividualsThreatActorIndividualLines';
+import AddIndividualsThreatActorIndividualLines, {
+  addIndividualsThreatActorIndividualLinesQuery,
+} from './AddIndividualsThreatActorIndividualLines';
 import {
   AddIndividualsThreatActorIndividualLinesQuery,
   AddIndividualsThreatActorIndividualLinesQuery$variables,
@@ -24,12 +26,7 @@ interface AddIndividualsThreatActorIndividualComponentProps {
 
 const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
   AddIndividualsThreatActorIndividualComponentProps
-> = ({
-  threatActorIndividual,
-  queryRef,
-  onSearch,
-  paginationOptions,
-}) => {
+> = ({ threatActorIndividual, queryRef, onSearch, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
 
@@ -43,11 +40,7 @@ const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
 
   return (
     <div>
-      <IconButton
-        aria-label={t_i18n('Add')}
-        size="small"
-        onClick={handleOpen}
-      >
+      <IconButton aria-label={t_i18n('Add')} size="small" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -55,19 +48,8 @@ const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
         onClose={handleClose}
         title={t_i18n('Add individual')}
         subHeader={{
-          right: [(
-            <IndividualCreation
-              paginationOptions={paginationOptions}
-              key="rightButton"
-            />
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={onSearch}
-              key="leftInput"
-            />
-          )],
+          right: [<IndividualCreation paginationOptions={paginationOptions} key="rightButton" />],
+          left: [<SearchInput variant="inDrawer" onSubmit={onSearch} key="leftInput" />],
         }}
       >
         <AddIndividualsThreatActorIndividualLines
@@ -83,7 +65,9 @@ interface AddIndividualsThreatActorIndividualProps {
   threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data;
 }
 
-const AddIndividualsThreatActorIndividual: FunctionComponent<AddIndividualsThreatActorIndividualProps> = (props) => {
+const AddIndividualsThreatActorIndividual: FunctionComponent<
+  AddIndividualsThreatActorIndividualProps
+> = (props) => {
   const [paginationOptions, setPaginationOptions] = useState({ count: 50, search: '' });
   const queryRef = useQueryLoading<AddIndividualsThreatActorIndividualLinesQuery>(
     addIndividualsThreatActorIndividualLinesQuery,

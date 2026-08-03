@@ -7,11 +7,7 @@ export interface UseEntityToggle<T> {
   deSelectedElements: Record<string, T>;
   selectAll: boolean;
   numberOfSelectedElements: number;
-  onToggleEntity: (
-    entity: T | T[],
-    _?: React.SyntheticEvent,
-    forceRemove?: T[],
-  ) => void;
+  onToggleEntity: (entity: T | T[], _?: React.SyntheticEvent, forceRemove?: T[]) => void;
   handleClearSelectedElements: () => void;
   handleToggleSelectAll: () => void;
   setSelectedElements: (selectedElements: Record<string, T>) => void;
@@ -27,9 +23,7 @@ type UseEntityToggleType = {
   };
 };
 
-const useEntityToggle = <T extends UseEntityToggleType>(
-  key: string,
-): UseEntityToggle<T> => {
+const useEntityToggle = <T extends UseEntityToggleType>(key: string): UseEntityToggle<T> => {
   const { numberOfElements } = JSON.parse(window.localStorage.getItem(key) ?? '{}');
 
   const [selectAll, setSelectAll] = useState(false);
@@ -37,28 +31,27 @@ const useEntityToggle = <T extends UseEntityToggleType>(
   const [deSelectedElements, setDeSelectedElements] = useState<Record<string, T>>({});
 
   const busKey = `${key}_entityToggle`;
-  const callback = useCallback((values: {
-    selectAll?: boolean;
-    selectedElements?: Record<string, T>;
-    deSelectedElements?: Record<string, T>;
-  }) => {
-    if (values.selectAll != null) {
-      setSelectAll(values.selectAll);
-    }
-    if (values.selectedElements != null) {
-      setSelectedElements(values.selectedElements);
-    }
-    if (values.deSelectedElements != null) {
-      setDeSelectedElements(values.deSelectedElements);
-    }
-  }, []);
+  const callback = useCallback(
+    (values: {
+      selectAll?: boolean;
+      selectedElements?: Record<string, T>;
+      deSelectedElements?: Record<string, T>;
+    }) => {
+      if (values.selectAll != null) {
+        setSelectAll(values.selectAll);
+      }
+      if (values.selectedElements != null) {
+        setSelectedElements(values.selectedElements);
+      }
+      if (values.deSelectedElements != null) {
+        setDeSelectedElements(values.deSelectedElements);
+      }
+    },
+    [],
+  );
   const dispatch = useBus(busKey, callback);
 
-  const onToggleEntity = (
-    entity: T | T[],
-    event?: React.SyntheticEvent,
-    forceRemove: T[] = [],
-  ) => {
+  const onToggleEntity = (entity: T | T[], event?: React.SyntheticEvent, forceRemove: T[] = []) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
@@ -83,7 +76,11 @@ const useEntityToggle = <T extends UseEntityToggleType>(
       setSelectAll(false);
       setSelectedElements(newSelectedElements);
       setDeSelectedElements({});
-      dispatch(busKey, { selectAll: false, selectedElements: newSelectedElements, deSelectedElements: {} });
+      dispatch(busKey, {
+        selectAll: false,
+        selectedElements: newSelectedElements,
+        deSelectedElements: {},
+      });
     } else if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       setSelectAll(false);
@@ -127,8 +124,8 @@ const useEntityToggle = <T extends UseEntityToggleType>(
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.original ?? 0)
-      - Object.keys(deSelectedElements).length;
+    numberOfSelectedElements =
+      (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements).length;
   }
 
   return {

@@ -40,22 +40,28 @@ const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {
     // Accept either the legacy shape { filters, notResolvedValues }
     // or directly a filter group object.
     if (parsed && typeof parsed === 'object') {
-      const parsedError = typeof parsed.error === 'string' && parsed.error.length > 0
-        ? parsed.error
-        : undefined;
+      const parsedError =
+        typeof parsed.error === 'string' && parsed.error.length > 0 ? parsed.error : undefined;
       const notResolvedValues = Array.isArray(parsed.notResolvedValues)
-        ? parsed.notResolvedValues.filter((value: unknown): value is string => typeof value === 'string')
+        ? parsed.notResolvedValues.filter(
+            (value: unknown): value is string => typeof value === 'string',
+          )
         : [];
 
       if ('filters' in parsed) {
-        if (!parsedError && typeof parsed.filters !== 'string' && !isFilterGroupFormatCorrect(parsed.filters)) {
+        if (
+          !parsedError &&
+          typeof parsed.filters !== 'string' &&
+          !isFilterGroupFormatCorrect(parsed.filters)
+        ) {
           return null;
         }
-        const filters = typeof parsed.filters === 'string'
-          ? parsed.filters
-          : isFilterGroupFormatCorrect(parsed.filters)
-            ? JSON.stringify(parsed.filters)
-            : undefined;
+        const filters =
+          typeof parsed.filters === 'string'
+            ? parsed.filters
+            : isFilterGroupFormatCorrect(parsed.filters)
+              ? JSON.stringify(parsed.filters)
+              : undefined;
         return { filters, notResolvedValues, error: parsedError };
       }
 
@@ -96,7 +102,11 @@ const buildNlqPrompt = (searchKeyword: string): string => searchKeyword;
 // ── Hook ────────────────────────────────────────────────────────────────
 
 export interface NLQCallbacks {
-  onFiltersResolved: (keyword: string, filters?: string, notResolvedValues?: readonly string[]) => void;
+  onFiltersResolved: (
+    keyword: string,
+    filters?: string,
+    notResolvedValues?: readonly string[],
+  ) => void;
   onError: (message: string) => void;
 }
 
@@ -164,7 +174,11 @@ export const useAINLQ = (callbacks: NLQCallbacks) => {
     }
 
     setIsLoading(false);
-    callbacks.onFiltersResolved(searchKeyword, safeSerializedFilters, parsedResponse.notResolvedValues);
+    callbacks.onFiltersResolved(
+      searchKeyword,
+      safeSerializedFilters,
+      parsedResponse.notResolvedValues,
+    );
   };
 
   const search = (searchKeyword: string, agentSlug?: string) => {

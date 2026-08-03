@@ -35,7 +35,9 @@ const TriggerPopover = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(TriggerPopoverDeletionMutation);
-  const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerKnowledgeQuery>(triggerKnowledgeEditionQuery);
+  const [queryRef, loadQuery] = useQueryLoader<TriggerEditionContainerKnowledgeQuery>(
+    triggerKnowledgeEditionQuery,
+  );
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     loadQuery({ id }, { fetchPolicy: 'store-and-network' });
     setAnchorEl(event.currentTarget);
@@ -65,7 +67,15 @@ const TriggerPopover = ({
   const handleCloseEdit = () => setDisplayEdit(false);
   return (
     <>
-      <Tooltip title={disabled ? t_i18n('This trigger/digest has been shared with you and you are not able to modify or delete it') : ''}>
+      <Tooltip
+        title={
+          disabled
+            ? t_i18n(
+                'This trigger/digest has been shared with you and you are not able to modify or delete it',
+              )
+            : ''
+        }
+      >
         <IconButton
           onClick={handleOpen}
           aria-haspopup="true"
@@ -85,11 +95,7 @@ const TriggerPopover = ({
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this trigger?')}
       />
-      <Drawer
-        title={t_i18n('Update a trigger')}
-        open={displayEdit}
-        onClose={handleCloseEdit}
-      >
+      <Drawer title={t_i18n('Update a trigger')} open={displayEdit} onClose={handleCloseEdit}>
         {queryRef && (
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <TriggerEditionContainer

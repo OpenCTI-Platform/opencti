@@ -72,7 +72,7 @@ describe('Component: MarkdownFieldBase', () => {
       }),
     });
 
-    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const textArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
 
     fireEvent.change(textArea, { target: { value: 'typed latest value' } });
     fireEvent.blur(textArea, { relatedTarget: document.body });
@@ -94,7 +94,7 @@ describe('Component: MarkdownFieldBase', () => {
       onSubmit: onSubmitTrue,
     });
 
-    const trueTextArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const trueTextArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     fireEvent.blur(trueTextArea, { relatedTarget: document.body });
 
     await waitFor(() => {
@@ -116,7 +116,7 @@ describe('Component: MarkdownFieldBase', () => {
       onSubmit: onSubmitFalse,
     });
 
-    const falseTextArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    const falseTextArea = (await screen.findByRole('textbox')) as HTMLTextAreaElement;
     fireEvent.blur(falseTextArea, { relatedTarget: document.body });
 
     expect(falseState.finalizeMarkdown).not.toHaveBeenCalled();

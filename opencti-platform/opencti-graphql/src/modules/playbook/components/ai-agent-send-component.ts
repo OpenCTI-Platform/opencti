@@ -17,7 +17,15 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 import { logApp } from '../../../config/conf';
-import { buildAgentMessageContent, buildAgentSlugOneOf, callXtmAgent, isAgentBoundToIntent, isXtmOneConfigured, resolveAgentJwtUser, resolveRunAsUserId } from './ai-agent-shared';
+import {
+  buildAgentMessageContent,
+  buildAgentSlugOneOf,
+  callXtmAgent,
+  isAgentBoundToIntent,
+  isXtmOneConfigured,
+  resolveAgentJwtUser,
+  resolveRunAsUserId,
+} from './ai-agent-shared';
 
 interface AiAgentSendConfiguration {
   agent_slug: string;
@@ -95,7 +103,9 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
   executor: async ({ playbookNode, bundle, playbookId }) => {
     const { agent_slug, prompt, run_as } = playbookNode.configuration;
     if (!agent_slug) {
-      logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', { playbookId });
+      logApp.warn('[PLAYBOOK AI AGENT SEND] No agent configured, dropping playbook step', {
+        playbookId,
+      });
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     // Without an XTM One configuration the step can never run: skip it
@@ -117,10 +127,13 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
       // No resolvable JWT identity: neither the binding check nor the
       // agent call could run — skip both with an accurate log instead
       // of a misleading "agent not bound" warning.
-      logApp.warn('[PLAYBOOK AI AGENT SEND] No resolvable JWT identity for the agent call, dropping playbook step', {
-        playbookId,
-        agentSlug: agent_slug,
-      });
+      logApp.warn(
+        '[PLAYBOOK AI AGENT SEND] No resolvable JWT identity for the agent call, dropping playbook step',
+        {
+          playbookId,
+          agentSlug: agent_slug,
+        },
+      );
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     // Defense in depth: re-check that the configured slug is currently
@@ -132,11 +145,14 @@ export const PLAYBOOK_AI_AGENT_SEND_COMPONENT: PlaybookComponent<AiAgentSendConf
     // identity as the agent call so the per-user XTM One catalog
     // visibility matches what the call will actually see.
     if (!(await isAgentBoundToIntent(PLAYBOOK_AI_AGENT_SEND_INTENT, agent_slug, jwtUser))) {
-      logApp.warn('[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step', {
-        playbookId,
-        agentSlug: agent_slug,
-        intent: PLAYBOOK_AI_AGENT_SEND_INTENT,
-      });
+      logApp.warn(
+        '[PLAYBOOK AI AGENT SEND] Configured agent is not bound to the consumer intent, dropping playbook step',
+        {
+          playbookId,
+          agentSlug: agent_slug,
+          intent: PLAYBOOK_AI_AGENT_SEND_INTENT,
+        },
+      );
       return { output_port: undefined, bundle, forceBundleTracking: true };
     }
     const content = buildAgentMessageContent(bundle, prompt);

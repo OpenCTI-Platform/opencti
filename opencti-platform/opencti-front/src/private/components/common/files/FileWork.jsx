@@ -10,7 +10,12 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutlined } from '@mui/icons-material';
+import {
+  ArchitectureOutlined,
+  CheckCircleOutlined,
+  DeleteOutlined,
+  WarningOutlined,
+} from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Slide from '@mui/material/Slide';
@@ -22,9 +27,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { useTheme } from '@mui/styles';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -97,12 +100,9 @@ const FileWorkComponent = (props) => {
   };
   return (
     <List component="div" disablePadding={true}>
-      {works
-        && works.map((work) => {
-          const messages = R.sortBy(R.prop('timestamp'), [
-            ...work.messages,
-            ...work.errors,
-          ]);
+      {works &&
+        works.map((work) => {
+          const messages = R.sortBy(R.prop('timestamp'), [...work.messages, ...work.errors]);
           const messageToDisplay = (
             <>
               {messages.length > 0
@@ -128,23 +128,13 @@ const FileWorkComponent = (props) => {
               statusText = ` (${tracking.import_processed_number || 0}/${tracking.import_expected_number})`;
             }
             if (numberOfError > 0) {
-              statusText += ` - [ ${numberOfError} error${
-                numberOfError > 1 ? 's' : ''
-              } ]`;
+              statusText += ` - [ ${numberOfError} error${numberOfError > 1 ? 's' : ''} ]`;
             }
-            return `${propOr(
-              t('Deleted'),
-              'name',
-              work.connector,
-            )}${statusText}`;
+            return `${propOr(t('Deleted'), 'name', work.connector)}${statusText}`;
           };
-          const isCurrentContextWork = (!draftContext || work.draft_context === draftContext.id);
+          const isCurrentContextWork = !draftContext || work.draft_context === draftContext.id;
           return (
-            <Tooltip
-              title={messageToDisplay}
-              key={uuid()}
-              classes={{ tooltip: classes.tooltip }}
-            >
+            <Tooltip title={messageToDisplay} key={uuid()} classes={{ tooltip: classes.tooltip }}>
               <ListItem
                 dense={true}
                 divider={true}
@@ -160,27 +150,17 @@ const FileWorkComponent = (props) => {
                     />
                   )}
                   {work.status === 'complete' && numberOfError > 0 && (
-                    <WarningOutlined
-                      style={{ fontSize: 15, color: theme.palette.error.main }}
-                    />
+                    <WarningOutlined style={{ fontSize: 15, color: theme.palette.error.main }} />
                   )}
-                  {(work.status === 'progress'
-                    || work.status === 'wait'
-                    || work.status === 'deleting') && (
-                    <CircularProgress
-                      size={20}
-                      thickness={2}
-                      style={{ marginRight: 10 }}
-                    />
+                  {(work.status === 'progress' ||
+                    work.status === 'wait' ||
+                    work.status === 'deleting') && (
+                    <CircularProgress size={20} thickness={2} style={{ marginRight: 10 }} />
                   )}
                 </ListItemIcon>
                 <ListItemText
-                  primary={
-                    <span className={classes.itemText}>{computeLabel()}</span>
-                  }
-                  secondary={
-                    <span className={classes.itemText}>{secondaryLabel}</span>
-                  }
+                  primary={<span className={classes.itemText}>{computeLabel()}</span>}
+                  secondary={<span className={classes.itemText}>{secondaryLabel}</span>}
                 />
                 {!!work.draft_context && !draftContext && (
                   <Tooltip title={t('Navigate to draft')}>
@@ -199,7 +179,10 @@ const FileWorkComponent = (props) => {
                     disabled={work.status === 'deleting'}
                     size="small"
                   >
-                    <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
+                    <DeleteOutlined
+                      fontSize="small"
+                      color={isCurrentContextWork ? 'primary' : 'disabled'}
+                    />
                   </IconButton>
                 </Tooltip>
               </ListItem>

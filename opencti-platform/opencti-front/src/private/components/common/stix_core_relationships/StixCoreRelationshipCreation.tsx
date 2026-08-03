@@ -110,10 +110,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const stixCoreRelationshipCreationQuery = graphql`
-  query StixCoreRelationshipCreationQuery(
-    $fromId: [String]!
-    $toId: [String]!
-  ) {
+  query StixCoreRelationshipCreationQuery($fromId: [String]!, $toId: [String]!) {
     stixCoreRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
@@ -181,9 +178,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
 `;
 
 export const stixCoreRelationshipCreationMutation = graphql`
-  mutation StixCoreRelationshipCreationMutation(
-    $input: StixCoreRelationshipAddInput!
-  ) {
+  mutation StixCoreRelationshipCreationMutation($input: StixCoreRelationshipAddInput!) {
     stixCoreRelationshipAdd(input: $input) {
       id
       entity_type
@@ -300,12 +295,16 @@ const StixCoreRelationshipCreation = ({
   const theme = useTheme<Theme>();
 
   const [step, setStep] = useState(0);
-  const [existingRelations, setExistingRelations] = useState<NonNullable<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']>['edges']>([]);
+  const [existingRelations, setExistingRelations] = useState<
+    NonNullable<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']>['edges']
+  >([]);
   const [displayProgress, setDisplayProgress] = useState(false);
   const [progress, setProgress] = useState(0);
   const prevProps = useRef({ open, fromObjects, toObjects });
 
-  const [commitAddRelation] = useApiMutation<StixCoreRelationshipCreationMutation>(stixCoreRelationshipCreationMutation);
+  const [commitAddRelation] = useApiMutation<StixCoreRelationshipCreationMutation>(
+    stixCoreRelationshipCreationMutation,
+  );
 
   useEffect(() => {
     const prev = prevProps.current;
@@ -313,16 +312,14 @@ const StixCoreRelationshipCreation = ({
     const fromChanged = prev.fromObjects?.[0] !== fromObjects?.[0];
     const toChanged = prev.toObjects?.[0] !== toObjects?.[0];
 
-    const shouldFetch = open === true
-      && fromObjects !== null
-      && toObjects !== null
-      && (openChanged || fromChanged || toChanged);
+    const shouldFetch =
+      open === true &&
+      fromObjects !== null &&
+      toObjects !== null &&
+      (openChanged || fromChanged || toChanged);
 
     if (shouldFetch) {
-      if (
-        fromObjects.length === 1
-        && toObjects.length === 1
-      ) {
+      if (fromObjects.length === 1 && toObjects.length === 1) {
         fetchQuery(stixCoreRelationshipCreationQuery, {
           fromId: fromObjects[0].id,
           toId: toObjects[0].id,
@@ -331,10 +328,8 @@ const StixCoreRelationshipCreation = ({
           .then((data) => {
             const { stixCoreRelationships } = data as StixCoreRelationshipCreationQuery$data;
             if (stixCoreRelationships) {
-              const newStep = stixCoreRelationships.edges
-                && stixCoreRelationships.edges.length > 0
-                ? 1
-                : 2;
+              const newStep =
+                stixCoreRelationships.edges && stixCoreRelationships.edges.length > 0 ? 1 : 2;
               setStep(newStep);
               setExistingRelations(stixCoreRelationships.edges ?? []);
             }
@@ -347,19 +342,20 @@ const StixCoreRelationshipCreation = ({
     prevProps.current = { open, fromObjects, toObjects };
   }, [open, fromObjects, toObjects]);
 
-  const handleCommitAddRelation = (values: StixCoreRelationshipCreationAddInput) => new Promise((resolve, reject) => {
-    commitAddRelation({
-      variables: {
-        input: values,
-      },
-      onError: (error) => {
-        reject(error);
-      },
-      onCompleted: (response) => {
-        resolve(response.stixCoreRelationshipAdd);
-      },
+  const handleCommitAddRelation = (values: StixCoreRelationshipCreationAddInput) =>
+    new Promise((resolve, reject) => {
+      commitAddRelation({
+        variables: {
+          input: values,
+        },
+        onError: (error) => {
+          reject(error);
+        },
+        onCompleted: (response) => {
+          resolve(response.stixCoreRelationshipAdd);
+        },
+      });
     });
-  });
 
   const handleClose = () => {
     setExistingRelations([]);
@@ -371,7 +367,10 @@ const StixCoreRelationshipCreation = ({
     setDisplayProgress(false);
   };
 
-  const onSubmit: FormikConfig<StixCoreRelationshipCreationFormInput>['onSubmit'] = async (values, { resetForm }) => {
+  const onSubmit: FormikConfig<StixCoreRelationshipCreationFormInput>['onSubmit'] = async (
+    values,
+    { resetForm },
+  ) => {
     setDisplayProgress(true);
     handleClose();
     resetForm();
@@ -422,11 +421,13 @@ const StixCoreRelationshipCreation = ({
     return (
       <UserContext.Consumer>
         {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
-            fromObjects[0].entity_type,
-            toObjects[0].entity_type,
-            schema?.schemaRelationsTypesMapping ?? new Map(),
-          ));
+          const relationshipTypes = R.uniq(
+            resolveRelationsTypes(
+              fromObjects[0].entity_type,
+              toObjects[0].entity_type,
+              schema?.schemaRelationsTypesMapping ?? new Map(),
+            ),
+          );
           return (
             <>
               <div className={classes.header}>
@@ -464,11 +465,7 @@ const StixCoreRelationshipCreation = ({
     return (
       <div>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-          >
+          <IconButton aria-label="Close" className={classes.closeButton} onClick={handleClose}>
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t_i18n('Select a relationship')}</Typography>
@@ -491,9 +488,7 @@ const StixCoreRelationshipCreation = ({
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(fromObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -522,11 +517,7 @@ const StixCoreRelationshipCreation = ({
               <div className={classes.middle}>
                 <ArrowRightAlt fontSize="small" />
                 <br />
-                <Tooltip
-                  title={relation.node.description}
-                  aria-label="Description"
-                  placement="top"
-                >
+                <Tooltip title={relation.node.description} aria-label="Description" placement="top">
                   <div
                     style={{
                       padding: '5px 8px 5px 8px',
@@ -555,9 +546,7 @@ const StixCoreRelationshipCreation = ({
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(
-                      toObjects[0].entity_type,
-                    )}`,
+                    borderBottom: `1px solid ${itemColor(toObjects[0].entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
@@ -574,18 +563,13 @@ const StixCoreRelationshipCreation = ({
                   </div>
                 </div>
                 <div className={classes.content}>
-                  <span className={classes.name}>
-                    {truncate(toObjects[0].name, 20)}
-                  </span>
+                  <span className={classes.name}>{truncate(toObjects[0].name, 20)}</span>
                 </div>
               </div>
               <div className="clearfix" />
             </div>
           ))}
-          <div
-            className={classes.relationCreation}
-            onClick={handleChangeStep}
-          >
+          <div className={classes.relationCreation} onClick={handleChangeStep}>
             <div
               className={classes.item}
               style={{
@@ -601,22 +585,17 @@ const StixCoreRelationshipCreation = ({
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={fromObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={fromObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t_i18n(`entity_${fromObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t_i18n(`entity_${fromObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
-                  {fromObjects.length > 1
-                    ? <em>{t_i18n('Multiple entities selected')}</em>
-                    : <span>{truncate(fromObjects[0].name)}</span>
-                  }
+                  {fromObjects.length > 1 ? (
+                    <em>{t_i18n('Multiple entities selected')}</em>
+                  ) : (
+                    <span>{truncate(fromObjects[0].name)}</span>
+                  )}
                 </span>
               </div>
             </div>
@@ -650,15 +629,9 @@ const StixCoreRelationshipCreation = ({
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon
-                    type={toObjects[0].entity_type}
-                    color="#263238"
-                    size="small"
-                  />
+                  <ItemIcon type={toObjects[0].entity_type} color="#263238" size="small" />
                 </div>
-                <div className={classes.type}>
-                  {t_i18n(`entity_${toObjects[0].entity_type}`)}
-                </div>
+                <div className={classes.type}>{t_i18n(`entity_${toObjects[0].entity_type}`)}</div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>
@@ -703,10 +676,7 @@ const StixCoreRelationshipCreation = ({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        {step === 0
-          || step === undefined
-          || fromObjects === null
-          || toObjects === null
+        {step === 0 || step === undefined || fromObjects === null || toObjects === null
           ? renderLoader()
           : ''}
         {step === 1 ? renderSelectRelation() : ''}

@@ -64,8 +64,8 @@ class ListCardsContent extends Component {
       this.updateScrollElement();
     }
     if (
-      !R.equals(prevProps.dataList, this.props.dataList)
-      || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)
+      !R.equals(prevProps.dataList, this.props.dataList) ||
+      !R.equals(prevProps.bookmarkList, this.props.bookmarkList)
     ) {
       this.gridRef.forceUpdate();
     }
@@ -81,31 +81,18 @@ class ListCardsContent extends Component {
   }
 
   _loadMoreRows() {
-    const {
-      loadMore,
-      hasMore,
-      isLoading,
-      dataList,
-      globalCount,
-      nbOfCardsToLoad,
-    } = this.props;
+    const { loadMore, hasMore, isLoading, dataList, globalCount, nbOfCardsToLoad } = this.props;
     if (!hasMore() || isLoading()) {
       return;
     }
     const difference = globalCount - dataList.length;
     this.setState({
-      loadingCardCount:
-        difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
+      loadingCardCount: difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
     });
     loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
   }
 
-  _onSectionRendered({
-    columnStartIndex,
-    columnStopIndex,
-    rowStartIndex,
-    rowStopIndex,
-  }) {
+  _onSectionRendered({ columnStartIndex, columnStopIndex, rowStartIndex, rowStopIndex }) {
     const startIndex = rowStartIndex * numberOfCardsPerLine + columnStartIndex;
     const stopIndex = rowStopIndex * numberOfCardsPerLine + columnStopIndex;
     this._onRowsRendered({
@@ -176,14 +163,8 @@ class ListCardsContent extends Component {
   }
 
   render() {
-    const {
-      dataList,
-      globalCount,
-      initialLoading,
-      isLoading,
-      nbOfCardsToLoad,
-      rowHeight,
-    } = this.props;
+    const { dataList, globalCount, initialLoading, isLoading, nbOfCardsToLoad, rowHeight } =
+      this.props;
     const nbLineForCards = Math.ceil(dataList.length / numberOfCardsPerLine);
     const nbOfLinesToLoad = Math.ceil(nbOfCardsToLoad / numberOfCardsPerLine);
     const nbLinesWithLoading = isLoading()
@@ -210,10 +191,7 @@ class ListCardsContent extends Component {
                   return (
                     <AutoSizer disableHeight>
                       {({ width }) => (
-                        <ColumnSizer
-                          columnCount={numberOfCardsPerLine}
-                          width={width}
-                        >
+                        <ColumnSizer columnCount={numberOfCardsPerLine} width={width}>
                           {({ adjustedWidth, getColumnWidth }) => {
                             const columnWidth = getColumnWidth();
                             return (

@@ -23,7 +23,8 @@ const ingestionCsvResolvers: Resolvers = {
   Query: {
     ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findCsvIngestionPaginated(context, context.user, args),
-    csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
+    csvFeedAddInputFromImport: (_, { file }, context) =>
+      csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
   },
@@ -33,9 +34,12 @@ const ingestionCsvResolvers: Resolvers = {
       return removeAuthenticationCredentials(ingestionCsv.authentication_type, decrypted);
     },
     user: (ingestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),
-    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
-    toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
-    duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
+    csvMapper: (ingestionCsv, _, context) =>
+      csvFeedGetCsvMapper(context, context.user, ingestionCsv),
+    toConfigurationExport: (ingestionCsv, _, context) =>
+      csvFeedMapperExport(context, context.user, ingestionCsv),
+    duplicateCsvMapper: (ingestionCsv, _, context) =>
+      csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {

@@ -10,12 +10,17 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
+import ContainerAddStixCoreObjectsLines, {
+  containerAddStixCoreObjectsLinesQuery,
+} from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -84,35 +89,38 @@ const ContainerAddStixCoreObjects = (props) => {
   } = useAuth();
 
   const isTypeDomainObject = (types) => {
-    return !types
-      || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
-      || types.includes('Stix-Domain-Object');
+    return (
+      !types ||
+      types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0) ||
+      types.includes('Stix-Domain-Object')
+    );
   };
   const isTypeObservable = (types) => {
-    return !types
-      || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
-      || types.includes('Stix-Cyber-Observable');
+    return (
+      !types ||
+      types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0) ||
+      types.includes('Stix-Cyber-Observable')
+    );
   };
 
   const resolveAvailableTypes = () => {
     if (
-      targetStixCoreObjectTypes
-      && isTypeDomainObject(targetStixCoreObjectTypes)
-      && !isTypeObservable(targetStixCoreObjectTypes)
+      targetStixCoreObjectTypes &&
+      isTypeDomainObject(targetStixCoreObjectTypes) &&
+      !isTypeObservable(targetStixCoreObjectTypes)
     ) {
       return 'Stix-Domain-Object';
     }
     if (
-      targetStixCoreObjectTypes
-      && isTypeObservable(targetStixCoreObjectTypes)
-      && !isTypeDomainObject(targetStixCoreObjectTypes)
+      targetStixCoreObjectTypes &&
+      isTypeObservable(targetStixCoreObjectTypes) &&
+      !isTypeDomainObject(targetStixCoreObjectTypes)
     ) {
       return 'Stix-Cyber-Observable';
     }
     if (
-      !targetStixCoreObjectTypes
-      || (isTypeObservable(targetStixCoreObjectTypes)
-        && isTypeDomainObject(targetStixCoreObjectTypes))
+      !targetStixCoreObjectTypes ||
+      (isTypeObservable(targetStixCoreObjectTypes) && isTypeDomainObject(targetStixCoreObjectTypes))
     ) {
       return 'Stix-Core-Object';
     }
@@ -120,7 +128,11 @@ const ContainerAddStixCoreObjects = (props) => {
   };
 
   const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
-  const { viewStorage, helpers, paginationOptions: addObjectsPaginationOptions } = usePaginationLocalStorage(
+  const {
+    viewStorage,
+    helpers,
+    paginationOptions: addObjectsPaginationOptions,
+  } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -132,13 +144,7 @@ const ContainerAddStixCoreObjects = (props) => {
     true,
   );
 
-  const {
-    sortBy,
-    orderAsc,
-    searchTerm,
-    filters,
-    numberOfElements,
-  } = viewStorage;
+  const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
   const contextFilters = useBuildEntityTypeBasedFilterContext(targetStixCoreObjectTypes, filters);
 
   const [mappingSearch, setMappingSearch] = useState(null);
@@ -267,23 +273,22 @@ const ContainerAddStixCoreObjects = (props) => {
   };
   const renderEntityCreation = (searchPaginationOptions) => {
     if (
-      targetStixCoreObjectTypes
-      && isTypeDomainObject(targetStixCoreObjectTypes)
-      && !isTypeObservable(targetStixCoreObjectTypes)
+      targetStixCoreObjectTypes &&
+      isTypeDomainObject(targetStixCoreObjectTypes) &&
+      !isTypeObservable(targetStixCoreObjectTypes)
     ) {
       return renderDomainObjectCreation(searchPaginationOptions);
     }
     if (
-      targetStixCoreObjectTypes
-      && isTypeObservable(targetStixCoreObjectTypes)
-      && !isTypeDomainObject(targetStixCoreObjectTypes)
+      targetStixCoreObjectTypes &&
+      isTypeObservable(targetStixCoreObjectTypes) &&
+      !isTypeDomainObject(targetStixCoreObjectTypes)
     ) {
       return renderObservableCreation(searchPaginationOptions);
     }
     if (
-      !targetStixCoreObjectTypes
-      || (isTypeObservable(targetStixCoreObjectTypes)
-        && isTypeDomainObject(targetStixCoreObjectTypes))
+      !targetStixCoreObjectTypes ||
+      (isTypeObservable(targetStixCoreObjectTypes) && isTypeDomainObject(targetStixCoreObjectTypes))
     ) {
       return renderStixCoreObjectCreation(searchPaginationOptions);
     }
@@ -382,11 +387,7 @@ const ContainerAddStixCoreObjects = (props) => {
     if (knowledgeGraph) {
       return (
         <Tooltip title={t_i18n('Add an entity to this container')}>
-          <IconButton
-            onClick={() => setOpen(true)}
-            variant="tertiary"
-            size="small"
-          >
+          <IconButton onClick={() => setOpen(true)} variant="tertiary" size="small">
             <Add />
           </IconButton>
         </Tooltip>
@@ -394,12 +395,7 @@ const ContainerAddStixCoreObjects = (props) => {
     }
     if (simple) {
       return (
-        <IconButton
-          aria-label="Add"
-          onClick={() => setOpen(true)}
-          variant="tertiary"
-          size="small"
-        >
+        <IconButton aria-label="Add" onClick={() => setOpen(true)} variant="tertiary" size="small">
           <Add fontSize="small" />
         </IconButton>
       );
@@ -429,9 +425,7 @@ const ContainerAddStixCoreObjects = (props) => {
         }}
         title={t_i18n('Add entities')}
       >
-        <>
-          {renderSearchResults(searchPaginationOptions)}
-        </>
+        <>{renderSearchResults(searchPaginationOptions)}</>
       </Drawer>
     </>
   );

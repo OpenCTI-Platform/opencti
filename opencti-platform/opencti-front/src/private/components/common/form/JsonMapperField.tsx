@@ -25,7 +25,11 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type JsonMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
+export type JsonMapperFieldOption = FieldOption & {
+  representations: {
+    attributes: { key: string; default_values: { name: string }[] | string[] }[];
+  }[];
+};
 interface JsonMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: FieldOption, value: FieldOption) => boolean;
@@ -79,10 +83,7 @@ const JsonMapperField: FunctionComponent<JsonMapperFieldComponentProps> = ({
         isOptionEqualToValue={isOptionEqualToValue}
         onChange={onChange}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
-          option: FieldOption,
-        ) => (
+        renderOption={(props: React.HTMLAttributes<HTMLLIElement>, option: FieldOption) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <ItemIcon type="jsonmapper" />

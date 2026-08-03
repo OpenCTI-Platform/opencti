@@ -1,4 +1,11 @@
-import { Disposable, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationParameters, PayloadError } from 'relay-runtime';
+import {
+  Disposable,
+  GraphQLTaggedNode,
+  IEnvironment,
+  MutationConfig,
+  MutationParameters,
+  PayloadError,
+} from 'relay-runtime';
 import { useMutation, UseMutationConfig } from 'react-relay';
 import { ReactNode, useCallback } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
@@ -26,42 +33,48 @@ const useApiMutation = <T extends MutationParameters>(
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
   const { isDeferredMode, captureInput } = useDeferredCreation();
   const [commit, inFlight] = useMutation(query, fn);
-  const commitWithError = useCallback((args: UseMutationConfig<T>) => {
-    if (isDeferredMode) {
-      // Intercept the mutation: capture the raw input data and fake a successful
-      // completion so the creation form closes gracefully without any server call.
-      //
-      // SDO mutations wrap the input: { input: { name, description, … } }
-      // SCO mutations use flat top-level variables: { type: 'IPv4-Addr', IPv4Addr: { value: '…' }, … }
-      const variables = args.variables as Record<string, unknown>;
-      const inputData = (variables?.input as Record<string, unknown> | undefined) ?? variables;
-      if (inputData) {
-        captureInput(inputData);
+  const commitWithError = useCallback(
+    (args: UseMutationConfig<T>) => {
+      if (isDeferredMode) {
+        // Intercept the mutation: capture the raw input data and fake a successful
+        // completion so the creation form closes gracefully without any server call.
+        //
+        // SDO mutations wrap the input: { input: { name, description, … } }
+        // SCO mutations use flat top-level variables: { type: 'IPv4-Addr', IPv4Addr: { value: '…' }, … }
+        const variables = args.variables as Record<string, unknown>;
+        const inputData = (variables?.input as Record<string, unknown> | undefined) ?? variables;
+        if (inputData) {
+          captureInput(inputData);
+        }
+        // Suppress the success notification – the entity hasn't been created yet.
+        args.onCompleted?.({} as T['response'], null);
+        return;
       }
-      // Suppress the success notification – the entity hasn't been created yet.
-      args.onCompleted?.({} as T['response'], null);
-      return;
-    }
-    commit({
-      ...args,
-      onError: (error: Error) => {
-        if (args.onError) {
-          args.onError(error);
-          if (options?.errorMessageMap) {
-            MESSAGING$.notifyCustomRelayError(error as unknown as RelayError, options.errorMessageMap);
-          } else if (options?.errorMessage) {
-            MESSAGING$.notifyError(options?.errorMessage);
-          } else {
-            MESSAGING$.notifyRelayError(error as unknown as RelayError);
-          }
-        } else relayErrorHandling(error);
-      },
-      onCompleted: (response: T['response'], errors: PayloadError[] | null) => {
-        if (args.onCompleted) args.onCompleted(response, errors);
-        if (options?.successMessage) MESSAGING$.notifySuccess(options.successMessage);
-      },
-    });
-  }, [commit, isDeferredMode, captureInput]);
+      commit({
+        ...args,
+        onError: (error: Error) => {
+          if (args.onError) {
+            args.onError(error);
+            if (options?.errorMessageMap) {
+              MESSAGING$.notifyCustomRelayError(
+                error as unknown as RelayError,
+                options.errorMessageMap,
+              );
+            } else if (options?.errorMessage) {
+              MESSAGING$.notifyError(options?.errorMessage);
+            } else {
+              MESSAGING$.notifyRelayError(error as unknown as RelayError);
+            }
+          } else relayErrorHandling(error);
+        },
+        onCompleted: (response: T['response'], errors: PayloadError[] | null) => {
+          if (args.onCompleted) args.onCompleted(response, errors);
+          if (options?.successMessage) MESSAGING$.notifySuccess(options.successMessage);
+        },
+      });
+    },
+    [commit, isDeferredMode, captureInput],
+  );
   return [commitWithError, inFlight];
 };
 

@@ -1,5 +1,7 @@
 import { FormFieldDefinition } from '@components/data/forms/Form';
-import FormFieldRenderer, { FormFieldRendererProps } from '@components/data/forms/view/FormFieldRenderer';
+import FormFieldRenderer, {
+  FormFieldRendererProps,
+} from '@components/data/forms/view/FormFieldRenderer';
 import Grid from '@mui/material/Grid';
 import React from 'react';
 
@@ -45,7 +47,11 @@ const FormFields = ({
     );
   });
   if (hasWidthDefined) {
-    return <Grid container spacing={2}>{renderers}</Grid>;
+    return (
+      <Grid container spacing={2}>
+        {renderers}
+      </Grid>
+    );
   }
   return <>{renderers}</>;
 };

@@ -90,13 +90,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     Record<string, FilterOptionValue[]>,
     (
       filterKey: string,
-      cacheEntities: Record<
-        string,
-        { label: string; value: string; type: string }[]
-      >,
-      setCacheEntities: Dispatch<
-        Record<string, { label: string; value: string; type: string }[]>
-      >,
+      cacheEntities: Record<string, { label: string; value: string; type: string }[]>,
+      setCacheEntities: Dispatch<Record<string, { label: string; value: string; type: string }[]>>,
       event: SyntheticEvent,
     ) => Record<string, FilterOptionValue[]>,
   ]; // change when useSearchEntities will be in TS
@@ -110,10 +105,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: FilterOptionValue | null) => {
     if (value) {
-      if (
-        (event as unknown as MouseEvent).altKey
-        && event.type === 'click'
-      ) {
+      if ((event as unknown as MouseEvent).altKey && event.type === 'click') {
         defaultHandleAddFilter(
           filterKey,
           value.value,
@@ -142,10 +134,14 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
   if (isStixObjectTypes) {
     if (searchScope[filterKey] && searchScope[filterKey].length > 0) {
       options = (entities[filterKey] || [])
-        .filter((n) => searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)))
+        .filter((n) =>
+          searchScope[filterKey].some((s) => (n.parentTypes ?? []).concat(n.type).includes(s)),
+        )
         .sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
     } else {
-      options = (entities[filterKey] || []).sort((a, b) => (b.type ? -b.type.localeCompare(a.type) : 0));
+      options = (entities[filterKey] || []).sort((a, b) =>
+        b.type ? -b.type.localeCompare(a.type) : 0,
+      );
     }
   } else if (entities[filterKey]) {
     options = entities[filterKey];
@@ -178,8 +174,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
           variant="outlined"
           size="small"
           fullWidth={true}
-          onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)
-          }
+          onFocus={(event) => searchEntities(filterKey, cacheEntities, setCacheEntities, event)}
           slotProps={{
             input: {
               ...params.InputProps,
@@ -192,20 +187,23 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
       )}
       renderOption={(propsOption, option) => (
         <li {...propsOption}>
-          <div style={{
-            paddingTop: 4,
-            display: 'inline-block',
-            color: theme.palette.primary.main,
-          }}
+          <div
+            style={{
+              paddingTop: 4,
+              display: 'inline-block',
+              color: theme.palette.primary.main,
+            }}
           >
             <ItemIcon type={option.type} color={option.color} />
           </div>
-          <div style={{
-            display: 'inline-block',
-            flexGrow: 1,
-            marginLeft: 10,
-          }}
-          >{option.label}
+          <div
+            style={{
+              display: 'inline-block',
+              flexGrow: 1,
+              marginLeft: 10,
+            }}
+          >
+            {option.label}
           </div>
         </li>
       )}

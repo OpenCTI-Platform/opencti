@@ -117,10 +117,7 @@ const StixRelationshipsRadarComponent = ({
   onMounted,
 }: StixRelationshipsRadarComponentProps) => {
   const { t_i18n } = useFormatter();
-  const data = usePreloadedQuery(
-    stixRelationshipsRadarsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsRadarsDistributionQuery, queryRef);
 
   if (!data?.stixRelationshipsDistribution?.length) {
     return <WidgetNoData />;
@@ -144,7 +141,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsRadarDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -185,7 +183,13 @@ const StixRelationshipsRadar = ({
 }: StixRelationshipsRadarProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

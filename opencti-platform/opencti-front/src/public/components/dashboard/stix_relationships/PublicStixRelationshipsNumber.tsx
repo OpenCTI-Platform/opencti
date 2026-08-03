@@ -14,13 +14,13 @@ const publicStixRelationshipsNumberQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsNumber(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       total
       count
@@ -81,10 +81,7 @@ const PublicStixCoreRelationshipsNumber = ({
   );
 
   return (
-    <WidgetContainer
-      padding="medium"
-      title={t_i18n('Relationships number')}
-    >
+    <WidgetContainer padding="medium" title={t_i18n('Relationships number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreRelationshipsNumberComponent

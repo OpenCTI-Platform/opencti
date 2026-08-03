@@ -11,11 +11,13 @@ const ENCODED_SCHEME_PATTERN = /^[a-zA-Z0-9+\-.]*%[0-9a-fA-F]{2}/;
  */
 export const isRelativeUrl = (value: string): boolean => {
   const trimmed = value.trim();
-  return trimmed.length > 0
-    && !trimmed.startsWith('//')
-    && !trimmed.startsWith('\\')
-    && !ABSOLUTE_URL_SCHEME_PATTERN.test(trimmed)
-    && !ENCODED_SCHEME_PATTERN.test(trimmed);
+  return (
+    trimmed.length > 0 &&
+    !trimmed.startsWith('//') &&
+    !trimmed.startsWith('\\') &&
+    !ABSOLUTE_URL_SCHEME_PATTERN.test(trimmed) &&
+    !ENCODED_SCHEME_PATTERN.test(trimmed)
+  );
 };
 
 /**

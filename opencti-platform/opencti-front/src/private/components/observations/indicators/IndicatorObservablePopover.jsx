@@ -33,9 +33,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const indicatorObservablePopoverDeletionMutation = graphql`
@@ -44,11 +42,7 @@ const indicatorObservablePopoverDeletionMutation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -98,7 +92,10 @@ class IndicatorObservablePopover extends Component {
         toId: this.props.observableId,
         relationship_type: 'based-on',
       },
-      updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 100 }),
+      updater: (store) =>
+        deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, {
+          first: 100,
+        }),
       onCompleted: () => {
         this.handleCloseDelete(event);
         if (this.props.onDelete) {
@@ -126,9 +123,7 @@ class IndicatorObservablePopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Remove')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Remove')}</MenuItem>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -146,10 +141,7 @@ class IndicatorObservablePopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -170,7 +162,4 @@ IndicatorObservablePopover.propTypes = {
   onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorObservablePopover);
+export default compose(inject18n, withStyles(styles))(IndicatorObservablePopover);

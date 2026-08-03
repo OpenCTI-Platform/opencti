@@ -8,7 +8,10 @@ import OpinionEdition from './OpinionEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import { CollaborativeSecurity } from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
@@ -27,23 +30,11 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
       <CollaborativeSecurity
         data={opinion}
         needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-        placeholder={(
-          <ContainerHeader
-            container={opinion}
-            disableAuthorizedMembers={true}
-          />
-        )}
+        placeholder={<ContainerHeader container={opinion} disableAuthorizedMembers={true} />}
       >
-        <ContainerHeader
-          container={opinion}
-          disableAuthorizedMembers={true}
-        />
+        <ContainerHeader container={opinion} disableAuthorizedMembers={true} />
       </CollaborativeSecurity>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={6}>
           <OpinionDetails opinion={opinion} />
         </Grid>

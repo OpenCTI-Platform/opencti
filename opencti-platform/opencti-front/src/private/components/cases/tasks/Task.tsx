@@ -78,64 +78,54 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
 
   return (
     <>
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <TaskDetails
-                      tasksData={task}
-                    />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview
-                      stixDomainObject={task}
-                      displayAssignees
-                      displayParticipants
-                    />
-                  </Grid>
-                );
-              case 'relatedEntities':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ContainerStixObjectsOrStixRelationships
-                      isSupportParticipation={false}
-                      container={task}
-                      enableReferences={enableReferences}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={task.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={task.id}
-                      defaultMarkings={task.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <TaskDetails tasksData={task} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview
+                    stixDomainObject={task}
+                    displayAssignees
+                    displayParticipants
+                  />
+                </Grid>
+              );
+            case 'relatedEntities':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ContainerStixObjectsOrStixRelationships
+                    isSupportParticipation={false}
+                    container={task}
+                    enableReferences={enableReferences}
+                  />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={task.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={task.id}
+                    defaultMarkings={task.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </>
   );

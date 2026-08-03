@@ -27,7 +27,11 @@ interface TriggerEditionContainerProps {
   paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
-const TriggerEditionContainer: FunctionComponent<TriggerEditionContainerProps> = ({ handleClose, queryRef, paginationOptions }) => {
+const TriggerEditionContainer: FunctionComponent<TriggerEditionContainerProps> = ({
+  handleClose,
+  queryRef,
+  paginationOptions,
+}) => {
   const queryData = usePreloadedQuery(triggerKnowledgeEditionQuery, queryRef);
   if (queryData.triggerKnowledge) {
     return (

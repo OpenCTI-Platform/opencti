@@ -1,5 +1,8 @@
 import ContainerHeader from '@components/common/containers/ContainerHeader';
-import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
+import {
+  knowledgeGraphStixCoreObjectQuery,
+  knowledgeGraphStixRelationshipQuery,
+} from '@components/common/containers/KnowledgeGraphQuery';
 import { ContainerHeader_container$key } from '@components/common/containers/__generated__/ContainerHeader_container.graphql';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
@@ -68,12 +71,7 @@ const graphContainerKnowledgePositionsFragment = graphql`
 
 export const graphContainerKnowledgeObjectsQuery = graphql`
   query GraphContainerKnowledgeObjectsQuery($id: String!, $count: Int!, $cursor: ID) {
-    ...GraphContainerKnowledgeObjects_fragment
-    @arguments(
-      id: $id
-      count: $count
-      cursor: $cursor
-    )
+    ...GraphContainerKnowledgeObjects_fragment @arguments(id: $id, count: $count, cursor: $cursor)
   }
 `;
 
@@ -87,7 +85,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
   ) {
     container(id: $id) {
       objects(first: $count, after: $cursor)
-      @connection(key: "Pagination_graphContainerKnowledge_objects") {
+        @connection(key: "Pagination_graphContainerKnowledge_objects") {
         pageInfo {
           endCursor
           hasNextPage
@@ -467,20 +465,12 @@ const GraphContainerKnowledgeComponent = ({
   onAddRelation,
   onDeleteRelation,
   onPositionsChanged,
-  containerHeaderProps: {
-    link,
-    mode,
-    modes,
-  },
+  containerHeaderProps: { link, mode, modes },
 }: GraphContainerKnowledgeComponentProps) => {
   const ref = useRef(null);
   const bannerHeight = useSettingsMessagesBannerHeight();
 
-  const {
-    addLink,
-    setLoadingCurrent,
-    setLoadingTotal,
-  } = useGraphInteractions();
+  const { addLink, setLoadingCurrent, setLoadingTotal } = useGraphInteractions();
 
   const container = useFragment(graphContainerKnowledgeDataFragment, dataContainer);
 
@@ -495,7 +485,14 @@ const GraphContainerKnowledgeComponent = ({
   const titleHeight = 44;
   const tabsHeight = 48;
   const toolbarHeight = 54;
-  const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight + toolbarHeight;
+  const totalHeight =
+    bannerHeight +
+    headerHeight +
+    paddingHeight +
+    breadcrumbHeight +
+    titleHeight +
+    tabsHeight +
+    toolbarHeight;
   const graphContainerStyle: CSSProperties = {
     height: `calc(100vh - ${totalHeight}px)`,
     position: 'relative',
@@ -532,8 +529,10 @@ const GraphContainerKnowledgeComponent = ({
 
 const REFETCH_DEBOUNCE_MS = 50;
 
-interface GraphContainerKnowledgeProps
-  extends Omit<GraphContainerKnowledgeComponentProps, 'data' | 'currentData' | 'totalData'> {
+interface GraphContainerKnowledgeProps extends Omit<
+  GraphContainerKnowledgeComponentProps,
+  'data' | 'currentData' | 'totalData'
+> {
   containerId: string;
   containerType: string;
   dataPositions: GraphContainerKnowledgePositions_fragment$key;
@@ -567,12 +566,9 @@ const GraphContainerKnowledge = ({
   });
 
   // Use a debounce to avoid spamming too quickly the backend.
-  const debounceFetchMore = useDebounceCallback(
-    () => {
-      loadMore(pageSize);
-    },
-    REFETCH_DEBOUNCE_MS,
-  );
+  const debounceFetchMore = useDebounceCallback(() => {
+    loadMore(pageSize);
+  }, REFETCH_DEBOUNCE_MS);
   // When finishing fetching a page, get the next if any.
   useEffect(() => {
     if (!isLoadingMore() && hasMore()) {
@@ -590,14 +586,13 @@ const GraphContainerKnowledge = ({
   );
 
   const objects = useMemo(() => (container ? getObjectsToParse(container) : []), [container]);
-  const positions = useMemo(() => deserializeObjectB64(x_opencti_graph_data), [x_opencti_graph_data]);
+  const positions = useMemo(
+    () => deserializeObjectB64(x_opencti_graph_data),
+    [x_opencti_graph_data],
+  );
 
   return (
-    <GraphProvider
-      localStorageKey={localStorageKey}
-      objects={objects}
-      positions={positions}
-    >
+    <GraphProvider localStorageKey={localStorageKey} objects={objects} positions={positions}>
       <GraphContainerKnowledgeComponent
         currentData={dataLoaded}
         totalData={container?.objects?.pageInfo.globalCount ?? 1}

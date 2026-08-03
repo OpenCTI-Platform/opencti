@@ -16,13 +16,13 @@ const publicStixCoreObjectsMultiHeatMapQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsMultiTimeSeries(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       data {
         date
@@ -58,13 +58,15 @@ const PublicStixCoreObjectsMultiHeatMapComponent = ({
 
     return (
       <WidgetMultiHeatMap
-        data={publicStixCoreObjectsMultiTimeSeries.map((serie, i) => ({
-          name: dataSelection[i].label ?? t_i18n('Number of entities'),
-          data: (serie?.data ?? []).map((entry) => ({
-            x: new Date(entry?.date),
-            y: entry?.value,
-          })),
-        })).sort((a, b) => b.name.localeCompare(a.name))}
+        data={publicStixCoreObjectsMultiTimeSeries
+          .map((serie, i) => ({
+            name: dataSelection[i].label ?? t_i18n('Number of entities'),
+            data: (serie?.data ?? []).map((entry) => ({
+              x: new Date(entry?.date),
+              y: entry?.value,
+            })),
+          }))
+          .sort((a, b) => b.name.localeCompare(a.name))}
         minValue={minValue}
         maxValue={maxValue}
         isStacked={!!parameters?.stacked}
@@ -94,9 +96,7 @@ const PublicStixCoreObjectsMultiHeatMap = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsMultiHeatMapComponent

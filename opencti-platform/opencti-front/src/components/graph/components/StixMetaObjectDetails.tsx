@@ -64,9 +64,9 @@ interface StixMetaObjectDetailsComponentProps {
   queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>;
 }
 
-const StixMetaObjectDetailsComponent: FunctionComponent<
-  StixMetaObjectDetailsComponentProps
-> = ({ queryRef }) => {
+const StixMetaObjectDetailsComponent: FunctionComponent<StixMetaObjectDetailsComponentProps> = ({
+  queryRef,
+}) => {
   const { t_i18n, fldt } = useFormatter();
   const entity = usePreloadedQuery<StixMetaObjectDetailsQuery>(
     stixMetaObjectDetailsQuery,
@@ -79,15 +79,10 @@ const StixMetaObjectDetailsComponent: FunctionComponent<
   return (
     <Stack gap={2}>
       <div>
-        <Label>
-          {t_i18n('Value')}
-        </Label>
+        <Label>{t_i18n('Value')}</Label>
         {stixMetaObject.entity_type === 'Marking-Definition' ? (
           <Tooltip title={getMainRepresentative(stixMetaObject)}>
-            <ItemMarkings
-              markingDefinitions={[stixMetaObject]}
-              limit={2}
-            />
+            <ItemMarkings markingDefinitions={[stixMetaObject]} limit={2} />
           </Tooltip>
         ) : (
           <Tooltip title={getMainRepresentative(stixMetaObject)}>
@@ -96,21 +91,15 @@ const StixMetaObjectDetailsComponent: FunctionComponent<
         )}
       </div>
       <div>
-        <Label>
-          {t_i18n('Type')}
-        </Label>
+        <Label>{t_i18n('Type')}</Label>
         <ItemEntityType entityType={stixMetaObject.entity_type} />
       </div>
       <div>
-        <Label>
-          {t_i18n('Platform creation date')}
-        </Label>
+        <Label>{t_i18n('Platform creation date')}</Label>
         {fldt(stixMetaObject.created_at)}
       </div>
       <div>
-        <Label>
-          {t_i18n('Creators')}
-        </Label>
+        <Label>{t_i18n('Creators')}</Label>
         <ItemCreators creators={stixMetaObject.creators ?? []} />
       </div>
     </Stack>
@@ -122,15 +111,12 @@ interface StixMetaObjectDetailsProps {
   queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>;
 }
 
-const StixMetaObjectDetails: FunctionComponent<
-  Omit<StixMetaObjectDetailsProps, 'queryRef'>
-> = ({ entity }) => {
-  const queryRef = useQueryLoading<StixMetaObjectDetailsQuery>(
-    stixMetaObjectDetailsQuery,
-    {
-      id: entity.id,
-    },
-  );
+const StixMetaObjectDetails: FunctionComponent<Omit<StixMetaObjectDetailsProps, 'queryRef'>> = ({
+  entity,
+}) => {
+  const queryRef = useQueryLoading<StixMetaObjectDetailsQuery>(stixMetaObjectDetailsQuery, {
+    id: entity.id,
+  });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <StixMetaObjectDetailsComponent queryRef={queryRef} />

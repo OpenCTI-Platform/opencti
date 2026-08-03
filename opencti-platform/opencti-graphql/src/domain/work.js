@@ -3,7 +3,15 @@ import * as R from 'ramda';
 import { logApp } from '../config/conf';
 import { AlreadyDeletedError, DatabaseError } from '../config/errors';
 import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/importCsv/importCsv';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
+import {
+  elDeleteInstances,
+  elIndex,
+  elLoadById,
+  elPaginate,
+  elRawDeleteByQuery,
+  elUpdate,
+  ES_MINIMUM_FIXED_PAGINATION,
+} from '../database/engine';
 import { internalLoadById } from '../database/middleware-loader';
 import {
   redisAcquireWorkCompletionFlag,
@@ -17,11 +25,18 @@ import {
 } from '../database/redis';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { publishUserAction } from '../listener/UserActionListener';
-import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
+import {
+  DRAFT_VALIDATION_CONNECTOR,
+  DRAFT_VALIDATION_CONNECTOR_ID,
+} from '../modules/draftWorkspace/draftWorkspace-connector';
 import { reportWorkflowAsyncActionResult } from '../modules/workflow/domain/workflow-async-completion';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { generateWorkId } from '../schema/identifier';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_BACKGROUND_TASK,
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_WORK,
+} from '../schema/internalObject';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -36,7 +51,7 @@ export const workToExportFile = (work) => {
     size: 0,
     lastModified: moment(work.updated_at).toDate(),
     lastModifiedSinceMin,
-    uploadStatus: (isWorkActive || work.status === 'complete') ? work.status : 'timeout',
+    uploadStatus: isWorkActive || work.status === 'complete' ? work.status : 'timeout',
     metaData: {
       messages: work.messages,
       errors: work.errors,
@@ -45,7 +60,10 @@ export const workToExportFile = (work) => {
 };
 
 export const loadWorkById = async (context, user, workId) => {
-  const action = await elLoadById(context, user, workId, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
+  const action = await elLoadById(context, user, workId, {
+    type: ENTITY_TYPE_WORK,
+    indices: READ_INDEX_HISTORY,
+  });
   return action ? R.assoc('id', workId, action) : action;
 };
 
@@ -121,8 +139,13 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
 };
 
 export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
-  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
-  const filterSuccessCompleted = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
+  const works = await worksForSource(context, user, sourceId, {
+    type: CONNECTOR_INTERNAL_EXPORT_FILE,
+    first: 10,
+  });
+  const filterSuccessCompleted = works.filter(
+    (w) => w.status !== 'complete' || w.errors.length > 0,
+  );
   return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
 
@@ -153,7 +176,9 @@ export const pingWork = async (context, user, workId) => {
   const currentWork = await loadWorkById(context, user, workId);
   const params = { updated_at: now() };
   const source = 'ctx._source["updated_at"] = params.updated_at;';
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, {
+    script: { source, lang: 'painless', params },
+  });
   return workId;
 };
 
@@ -180,7 +205,11 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `cleans \`all works\` for connector \`${connector.name}\``,
-    context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input: { id: connectorId } },
+    context_data: {
+      id: connectorId,
+      entity_type: ENTITY_TYPE_CONNECTOR,
+      input: { id: connectorId },
+    },
   });
   return true;
 };
@@ -214,12 +243,7 @@ export const deleteWorkForSource = async (sourceId) => {
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
-  const {
-    receivedTime = null,
-    background_task_id,
-    fileMarkings = [],
-    draftContext,
-  } = args;
+  const { receivedTime = null, background_task_id, fileMarkings = [], draftContext } = args;
   const isMultiPartWork = args.isMultiPartWork === true;
   // Create the work and an initial job
   const { id: workId, timestamp } = generateWorkId(connector.internal_id);
@@ -273,10 +297,14 @@ const updateWorkTaskToComplete = async (context, user, work) => {
   }
   // We update the associated task to mark the work as completed there
   const associatedTaskId = work.background_task_id;
-  const associatedTask = await internalLoadById(context, user, associatedTaskId, { type: ENTITY_TYPE_BACKGROUND_TASK });
+  const associatedTask = await internalLoadById(context, user, associatedTaskId, {
+    type: ENTITY_TYPE_BACKGROUND_TASK,
+  });
   if (associatedTask) {
     const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
-    await elUpdate(context, associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
+    await elUpdate(context, associatedTask._index, associatedTaskId, {
+      script: { source: sourceScriptUpdateWork, lang: 'painless' },
+    });
     // If this task was spawned by a workflow async action, report the result back to the workflow
     if (associatedTask.workflow_action_id && associatedTask.workflow_instance_id) {
       const workflowStatus = work.errors?.length > 0 ? 'failed' : 'success';
@@ -290,11 +318,17 @@ const updateWorkTaskToComplete = async (context, user, work) => {
         workflowError,
       ).catch((err) => {
         // Non-fatal: log and continue — the admin can use clearWorkflowPendingState to recover
-        logApp.error('[work] Failed to report workflow async action result', { error: err?.message, associatedTaskId });
+        logApp.error('[work] Failed to report workflow async action result', {
+          error: err?.message,
+          associatedTaskId,
+        });
       });
     }
   } else {
-    logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
+    logApp.warn(
+      'The task associated to work cannot be found in database, task work status cannot be updated.',
+      { associatedTaskId },
+    );
   }
 };
 
@@ -315,7 +349,11 @@ const INGESTION_WORK_EVENT_TYPES = [
   'INTERNAL_INGESTION', // draft validation
 ];
 const countIngestionObjectsProcessed = (work, objectsCount) => {
-  if (!work || work.status === 'complete' || !INGESTION_WORK_EVENT_TYPES.includes(work.event_type)) {
+  if (
+    !work ||
+    work.status === 'complete' ||
+    !INGESTION_WORK_EVENT_TYPES.includes(work.event_type)
+  ) {
     return;
   }
   redisAcquireWorkCompletionFlag(work.id)
@@ -324,13 +362,16 @@ const countIngestionObjectsProcessed = (work, objectsCount) => {
         addIngestionObjectsProcessedCount(objectsCount);
       }
     })
-    .catch((reason) => logApp.warn('Error acquiring work completion flag for telemetry', { reason }));
+    .catch((reason) =>
+      logApp.warn('Error acquiring work completion flag for telemetry', { reason }),
+    );
 };
 
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
-  const { expected, total, isProcessed, isMultiPartWork } = await redisGetWorkCompletionState(workId);
+  const { expected, total, isProcessed, isMultiPartWork } =
+    await redisGetWorkCompletionState(workId);
   const isComplete = (!isMultiPartWork || isProcessed) && isWorkFinished(expected, total);
 
   // Important: isWorkAlive is intentionally checked *after* redisUpdateWorkFigures, not before.
@@ -357,7 +398,8 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
     if (errorData) {
       const { error, source } = errorData;
-      sourceScript += 'if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); }';
+      sourceScript +=
+        'if (ctx._source.errors.length < 100) { ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); }';
       params.source = source;
       params.error = error;
     }
@@ -369,14 +411,18 @@ export const reportExpectation = async (context, user, workId, errorData) => {
         // import-side pipelines only, first completion only).
         countIngestionObjectsProcessed(currentWork, total);
       }
-      await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+      await elUpdate(context, currentWork._index, workId, {
+        script: { source: sourceScript, lang: 'painless', params },
+      });
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
       }
       logApp.info('Work completed via expectation reporting', { workId, hasError: !!errorData });
     } else {
-      logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
+      logApp.warn('The work cannot be found in database, report expectation cannot be updated.', {
+        workId,
+      });
     }
   }
   return workId;
@@ -403,20 +449,30 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
   const workAlive = await isWorkAlive(context, user, workId);
   if (!workAlive) {
     await redisDeleteWorks([workId]);
-    logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
+    logApp.warn('The work cannot be found in database, expectation cannot be updated.', {
+      workId,
+      expectations,
+    });
     return workId;
   }
 
   const currentWork = await loadWorkById(context, user, workId);
-  if (!currentWork) { // work is no longer exists
-    logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
+  if (!currentWork) {
+    // work is no longer exists
+    logApp.warn('The work cannot be found in database, expectation cannot be updated.', {
+      workId,
+      expectations,
+    });
     return workId;
   }
 
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
-  source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  source +=
+    'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
+  await elUpdate(context, currentWork._index, workId, {
+    script: { source, lang: 'painless', params },
+  });
   return workId;
 };
 
@@ -430,38 +486,53 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
  */
 export const addDraftContext = async (context, user, workId, draftContext) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (!currentWork) { // work is no longer exists
-    logApp.warn('The work cannot be found in database, draft context cannot be updated.', { workId, draftContext });
+  if (!currentWork) {
+    // work is no longer exists
+    logApp.warn('The work cannot be found in database, draft context cannot be updated.', {
+      workId,
+      draftContext,
+    });
     return workId;
   }
   const params = { updated_at: now(), draft_context: draftContext };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["draft_context"] =  params.draft_context;';
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, {
+    script: { source, lang: 'painless', params },
+  });
   return workId;
 };
 
 export const updateReceivedTime = async (context, user, workId, message) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (!currentWork) { // work is no longer exists
-    logApp.warn('The work cannot be found in database, received time cannot be updated.', { workId });
+  if (!currentWork) {
+    // work is no longer exists
+    logApp.warn('The work cannot be found in database, received time cannot be updated.', {
+      workId,
+    });
     return workId;
   }
   const params = { received_time: now(), message };
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
   if (isNotEmptyField(message)) {
-    source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
+    source +=
+      'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
   // Update elastic
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, {
+    script: { source, lang: 'painless', params },
+  });
   return workId;
 };
 
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (!currentWork) { // work is no longer exists
-    logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
+  if (!currentWork) {
+    // work is no longer exists
+    logApp.warn('The work cannot be found in database, processed time cannot be updated.', {
+      workId,
+    });
     return workId;
   }
   const { expected, total, isMultiPartWork } = await redisGetWorkCompletionState(workId);
@@ -484,12 +555,16 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   }
   if (isNotEmptyField(message)) {
     if (inError) {
-      source += 'ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); ';
+      source +=
+        'ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); ';
     } else {
-      source += 'ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); ';
+      source +=
+        'ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); ';
     }
   }
   // Update elastic
-  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, {
+    script: { source, lang: 'painless', params },
+  });
   return workId;
 };

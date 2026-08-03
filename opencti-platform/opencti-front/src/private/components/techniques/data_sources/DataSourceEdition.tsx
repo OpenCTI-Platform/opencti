@@ -19,17 +19,14 @@ const DataSourceEdition = ({ dataSourceId }: { dataSourceId: string }) => {
     });
   };
 
-  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(
-    dataSourceEditionQuery,
-    { id: dataSourceId },
-  );
+  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(dataSourceEditionQuery, {
+    id: dataSourceId,
+  });
 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inline} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
           <DataSourceEditionContainer
             queryRef={queryRef}
             handleClose={handleClose}

@@ -103,18 +103,23 @@ class RootArtifact extends Component {
                 const paddingRight = getPaddingRight(location.pathname, basePath, false);
                 return (
                   <div style={{ paddingRight }}>
-                    <Breadcrumbs elements={[
-                      { label: t('Observations') },
-                      { label: t('Artifacts'), link: PATH_ARTIFACTS },
-                      { label: stixCyberObservable.observable_value, current: true },
-                    ]}
+                    <Breadcrumbs
+                      elements={[
+                        { label: t('Observations') },
+                        { label: t('Artifacts'), link: PATH_ARTIFACTS },
+                        { label: stixCyberObservable.observable_value, current: true },
+                      ]}
                     />
                     <StixCyberObservableHeader
                       stixCyberObservable={stixCyberObservable}
                       enableEnrollPlaybook={true}
                       DeleteComponent={({ isOpen, onClose }) => (
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                          <StixCyberObservableDeletion id={stixCyberObservable.id} isOpen={isOpen} handleClose={onClose} />
+                          <StixCyberObservableDeletion
+                            id={stixCyberObservable.id}
+                            isOpen={isOpen}
+                            handleClose={onClose}
+                          />
                         </Security>
                       )}
                     />
@@ -123,9 +128,7 @@ class RootArtifact extends Component {
                       basePath={basePath}
                       pages={{
                         overview: (
-                          <StixCyberObservable
-                            stixCyberObservableData={stixCyberObservable}
-                          />
+                          <StixCyberObservable stixCyberObservableData={stixCyberObservable} />
                         ),
                         knowledge: (
                           <ArtifactKnowledge
@@ -133,11 +136,7 @@ class RootArtifact extends Component {
                             connectorsForImport={props.connectorsForImport}
                           />
                         ),
-                        content: (
-                          <StixCoreObjectContentRoot
-                            stixCoreObject={stixCyberObservable}
-                          />
-                        ),
+                        content: <StixCoreObjectContentRoot stixCoreObject={stixCyberObservable} />,
                         sightings: (
                           <EntityStixSightingRelationships
                             entityId={observableId}
@@ -166,11 +165,7 @@ class RootArtifact extends Component {
                             directDownload={true}
                           />
                         ),
-                        history: (
-                          <StixCoreObjectHistory
-                            stixCoreObjectId={observableId}
-                          />
-                        ),
+                        history: <StixCoreObjectHistory stixCoreObjectId={observableId} />,
                       }}
                     />
                   </div>

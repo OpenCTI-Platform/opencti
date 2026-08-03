@@ -21,7 +21,10 @@ import { RichTextEditor } from '@filigran/rich-text-editor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
-import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
+import {
+  ResponseDialogAskAISubscription,
+  ResponseDialogAskAISubscription$data,
+} from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';
 // Circular dependency is intentional: TextFieldAskAI opens ResponseDialog,
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
@@ -55,11 +58,11 @@ interface ResponseDialogProps {
 }
 
 const subscription = graphql`
-    subscription ResponseDialogAskAISubscription($id: ID!) {
-        aiBus(id: $id) {
-          content
-        }
+  subscription ResponseDialogAskAISubscription($id: ID!) {
+    aiBus(id: $id) {
+      content
     }
+  }
 `;
 
 const buildPrompt = (
@@ -103,7 +106,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
-  const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+  const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>(
+    'write',
+  );
   const { fullyActive } = useAI();
   const isLegacyMode = !agentMode;
 
@@ -112,7 +117,13 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
   const [loadingAgents, setLoadingAgents] = useState(false);
   // Agent streaming hook
-  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream();
+  const {
+    content: streamContent,
+    loading: agentLoading,
+    error: agentError,
+    execute: executeStream,
+    abort: abortStream,
+  } = useAgentStream();
 
   // Sync streamed content to parent's setContent
   useEffect(() => {
@@ -186,7 +197,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   // GraphQL subscription (used in both modes, fires when aiBus emits)
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined) => {
-    const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
+    const newContent = response
+      ? (response as ResponseDialogAskAISubscription$data).aiBus?.content
+      : null;
     if (format === 'text' || format === 'json') {
       if (isNotEmptyField(textFieldRef?.current?.scrollTop)) {
         textFieldRef.current.scrollTop = textFieldRef.current.scrollHeight;
@@ -201,8 +214,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
     return setContent(newContent ?? '');
   };
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<ResponseDialogAskAISubscription>>(
     () => ({
       subscription,
       variables: { id },
@@ -221,7 +233,15 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   // ── Title ─────────────────────────────────────────────────────────────
 
   const dialogTitle = agentMode ? (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        gap: 2,
+      }}
+    >
       <span>{t_i18n('Ask AI')}</span>
       <Autocomplete<AgentOption>
         sx={{ width: 220 }}
@@ -254,7 +274,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         clearIcon={null}
       />
     </Box>
-  ) : t_i18n('Ask AI');
+  ) : (
+    t_i18n('Ask AI')
+  );
 
   const renderRefreshButton = () => {
     if (!agentMode) return null;
@@ -283,19 +305,23 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           multiline={true}
           onChange={(event) => setContent(event.target.value)}
           fullWidth={true}
-          slotProps={isLegacyMode && fullyActive ? {
-            input: {
-              endAdornment: (
-                <TextFieldAskAI
-                  currentValue={content ?? ''}
-                  setFieldValue={(val) => setContent(val)}
-                  format="text"
-                  variant="text"
-                  disabled={isDisabled}
-                />
-              ),
-            },
-          } : undefined}
+          slotProps={
+            isLegacyMode && fullyActive
+              ? {
+                  input: {
+                    endAdornment: (
+                      <TextFieldAskAI
+                        currentValue={content ?? ''}
+                        setFieldValue={(val) => setContent(val)}
+                        format="text"
+                        variant="text"
+                        disabled={isDisabled}
+                      />
+                    ),
+                  },
+                }
+              : undefined
+          }
         />
       )}
       {format === 'html' && (
@@ -322,13 +348,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           onChange={setContent}
           selectedTab={markdownSelectedTab}
           onTabChange={setMarkdownSelectedTab}
-          generateMarkdownPreview={(markdown) => Promise.resolve(
-            <MarkdownDisplay
-              content={markdown}
-              remarkGfmPlugin={true}
-              commonmark={true}
-            />,
-          )}
+          generateMarkdownPreview={(markdown) =>
+            Promise.resolve(
+              <MarkdownDisplay content={markdown} remarkGfmPlugin={true} commonmark={true} />,
+            )
+          }
           l18n={{
             write: t_i18n('Write'),
             preview: t_i18n('Preview'),
@@ -387,28 +411,55 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
               {renderRefreshButton()}
 
               {((agentLoading && !content) || loadingAgents) && (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
                   <CircularProgress size={40} />
                 </Box>
               )}
 
               {noAgents && !agentLoading && (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
                   <Alert severity="info" variant="outlined">
-                    {t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
+                    {t_i18n(
+                      'No agent available for this action. Ask your administrator to configure XTM One.',
+                    )}
                   </Alert>
                 </Box>
               )}
 
               {agentError && !agentLoading && (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
                   <Alert severity="error" variant="outlined">
                     {agentError}
                   </Alert>
                 </Box>
               )}
 
-              {(!agentLoading || content) && !loadingAgents && !noAgents && !agentError && renderContentEditors()}
+              {(!agentLoading || content) &&
+                !loadingAgents &&
+                !noAgents &&
+                !agentError &&
+                renderContentEditors()}
             </>
           )}
 
@@ -419,8 +470,14 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
         {/* Legacy mode: beta warning */}
         {isLegacyMode && (
-          <Alert severity="warning" variant="outlined" style={format === 'html' ? { marginTop: 30 } : {}}>
-            {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={format === 'html' ? { marginTop: 30 } : {}}
+          >
+            {t_i18n(
+              'Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.',
+            )}
           </Alert>
         )}
 

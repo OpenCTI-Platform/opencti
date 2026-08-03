@@ -61,7 +61,11 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   version: string;
   collection: string;
   confidence_to_score: boolean;
-  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_type:
+    | IngestionAuthType.None
+    | IngestionAuthType.Basic
+    | IngestionAuthType.Bearer
+    | IngestionAuthType.Certificate;
   authentication_value: string;
   user_id: string | undefined;
   added_after_start: string | undefined;
@@ -81,7 +85,11 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   version: string;
   collection: string;
   confidence_to_score: boolean;
-  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_type:
+    | IngestionAuthType.None
+    | IngestionAuthType.Basic
+    | IngestionAuthType.Bearer
+    | IngestionAuthType.Certificate;
   authentication_value: string;
   user_id: string | undefined;
   added_after_start: Date | undefined;
@@ -116,7 +124,11 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
   csv_mapper_type?: IngestionCsvMapperType.Id | IngestionCsvMapperType.Inline;
   csv_mapper?: string;
   csv_mapper_id?: string;
-  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_type:
+    | IngestionAuthType.None
+    | IngestionAuthType.Basic
+    | IngestionAuthType.Bearer
+    | IngestionAuthType.Certificate;
   authentication_value?: string | null;
   user_id: string | undefined;
   ingestion_running: boolean;
@@ -161,7 +173,11 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   body: string;
   json_mapper_id: string;
   confidence_to_score: boolean;
-  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_type:
+    | IngestionAuthType.None
+    | IngestionAuthType.Basic
+    | IngestionAuthType.Bearer
+    | IngestionAuthType.Certificate;
   authentication_value: string | undefined | null;
   user_id: string | undefined;
   ingestion_json_state: Record<string, object>;
@@ -185,7 +201,11 @@ export interface StoreEntityIngestionJson extends StoreEntity {
   body: string;
   json_mapper_id: string;
   confidence_to_score: boolean;
-  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_type:
+    | IngestionAuthType.None
+    | IngestionAuthType.Basic
+    | IngestionAuthType.Bearer
+    | IngestionAuthType.Certificate;
   authentication_value: string | undefined | null;
   user_id: string | undefined;
   ingestion_json_state: Record<string, object>;

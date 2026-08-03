@@ -16,9 +16,7 @@ import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
-import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
@@ -53,8 +51,7 @@ export interface RepresentationFormEntityOption extends FieldOption {
   id: string;
 }
 
-interface JsonMapperRepresentationFormProps
-  extends FieldProps<JsonMapperRepresentationFormData> {
+interface JsonMapperRepresentationFormProps extends FieldProps<JsonMapperRepresentationFormData> {
   index: number;
   availableTypes: { value: string; type: string; id: string; label: string }[];
   handleRepresentationErrors: (key: string, value: boolean) => void;
@@ -96,7 +93,8 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
   // -- EVENTS --
 
   const handleChangeEntityType = async (option: FieldOption | null) => {
-    const entitySchemaAttributes = attributes.find((schema) => schema.name === option?.id)?.attributes ?? [];
+    const entitySchemaAttributes =
+      attributes.find((schema) => schema.name === option?.id)?.attributes ?? [];
     const attrs: { [key: string]: JsonMapperRepresentationAttributeFormData } = {};
     for (let i = 0; i < entitySchemaAttributes.length; i += 1) {
       const entitySchemaAttribute = entitySchemaAttributes[i];
@@ -148,8 +146,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
     const selectChangeEvent = event as SelectChangeEvent;
     const val = selectChangeEvent?.target.value ?? '';
     return availableTypes.filter(
-      (type) => type.value.includes(val)
-        || t_i18n(`${prefixLabel}${type.label}`).includes(val),
+      (type) => type.value.includes(val) || t_i18n(`${prefixLabel}${type.label}`).includes(val),
     );
   };
   return (
@@ -164,9 +161,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
       >
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div className={classes.container}>
-            <Typography>
-              {representationLabel(index, value, t_i18n)}
-            </Typography>
+            <Typography>{representationLabel(index, value, t_i18n)}</Typography>
             <Tooltip title={t_i18n('Delete')}>
               <IconButton color="error" onClick={handleOpenDelete}>
                 <DeleteOutlined fontSize="small" />
@@ -200,9 +195,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
                   <div className={classes.icon}>
                     <ItemIcon type={option.label} />
                   </div>
-                  <div className={classes.text}>
-                    {t_i18n(`${prefixLabel}${option.label}`)}
-                  </div>
+                  <div className={classes.text}>{t_i18n(`${prefixLabel}${option.label}`)}</div>
                 </li>
               )}
             />
@@ -215,10 +208,7 @@ const JsonMapperRepresentationForm: FunctionComponent<JsonMapperRepresentationFo
               />
             </div>
             <div style={{ textAlign: 'right', marginTop: '20px' }}>
-              <Button
-                color="error"
-                onClick={handleOpenDelete}
-              >
+              <Button color="error" onClick={handleOpenDelete}>
                 {t_i18n('Delete')}
               </Button>
             </div>

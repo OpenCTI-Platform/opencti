@@ -22,10 +22,7 @@ interface PlaybookFlowFieldNumberProps {
   label: string;
 }
 
-const PlaybookFlowFieldNumber = ({
-  name,
-  label,
-}: PlaybookFlowFieldNumberProps) => {
+const PlaybookFlowFieldNumber = ({ name, label }: PlaybookFlowFieldNumberProps) => {
   return (
     <Field
       fullWidth

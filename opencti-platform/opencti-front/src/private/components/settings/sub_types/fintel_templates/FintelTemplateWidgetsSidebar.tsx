@@ -14,7 +14,11 @@ import type { Theme } from '../../../../../components/Theme';
 import { MESSAGING$ } from '../../../../../relay/environment';
 import WidgetConfig from '../../../widgets/WidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from '../../../../../utils/filters/filtersUtils';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { toCamelCase } from '../../../../../utils/String';
@@ -68,7 +72,9 @@ interface FintelTemplateWidetsSidebarProps {
   data: FintelTemplateWidgetsSidebar_template$key;
 }
 
-const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSidebarProps> = ({ data }) => {
+const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSidebarProps> = ({
+  data,
+}) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { editorValue } = useFintelTemplateContext();
@@ -84,25 +90,36 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
   const [isWidgetFormOpen, setIsWidgetFormOpen] = useState(false);
   const [selectedWidget, setSelectedWidget] = useState<FintelTemplateWidget>();
 
-  const isSelectedWidgetUsed = selectedWidget && !!editorValue?.includes(`$${selectedWidget.variable_name}`);
+  const isSelectedWidgetUsed =
+    selectedWidget && !!editorValue?.includes(`$${selectedWidget.variable_name}`);
 
   const selectedWidgetIndex = useMemo(() => {
-    return fintel_template_widgets.findIndex((w) => w.variable_name === selectedWidget?.variable_name);
+    return fintel_template_widgets.findIndex(
+      (w) => w.variable_name === selectedWidget?.variable_name,
+    );
   }, [fintel_template_widgets, selectedWidget]);
 
-  const formattedFintelTemplateWidgets: FintelTemplateWidget[] = fintel_template_widgets
-    .map((template) => ({
-      ...template,
-      widget: {
-        ...template.widget,
-        dataSelection: template.widget.dataSelection.map((selection) => ({
-          ...selection,
-          filters: selection.filters ? deserializeFilterGroupForFrontend(selection.filters) : emptyFilterGroup,
-          dynamicFrom: selection.dynamicFrom ? deserializeFilterGroupForFrontend(selection.dynamicFrom) : emptyFilterGroup,
-          dynamicTo: selection.dynamicTo ? deserializeFilterGroupForFrontend(selection.dynamicTo) : emptyFilterGroup,
-        })),
-      },
-    }) as FintelTemplateWidget);
+  const formattedFintelTemplateWidgets: FintelTemplateWidget[] = fintel_template_widgets.map(
+    (template) =>
+      ({
+        ...template,
+        widget: {
+          ...template.widget,
+          dataSelection: template.widget.dataSelection.map((selection) => ({
+            ...selection,
+            filters: selection.filters
+              ? deserializeFilterGroupForFrontend(selection.filters)
+              : emptyFilterGroup,
+            dynamicFrom: selection.dynamicFrom
+              ? deserializeFilterGroupForFrontend(selection.dynamicFrom)
+              : emptyFilterGroup,
+            dynamicTo: selection.dynamicTo
+              ? deserializeFilterGroupForFrontend(selection.dynamicTo)
+              : emptyFilterGroup,
+          })),
+        },
+      }) as FintelTemplateWidget,
+  );
 
   const onOpenUpdate = (widget: FintelTemplateWidget) => {
     setSelectedWidget(widget);
@@ -131,12 +148,14 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     commitEditMutation({
       variables: {
         id,
-        input: [{
-          key: 'fintel_template_widgets',
-          object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
-          value: [null],
-          operation: 'remove',
-        }],
+        input: [
+          {
+            key: 'fintel_template_widgets',
+            object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
+            value: [null],
+            operation: 'remove',
+          },
+        ],
       },
       onError: closeDeleteConfirm,
       onCompleted: closeDeleteConfirm,
@@ -145,7 +164,9 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
 
   const checkWidgetIsValid = (widget: Widget, variableName?: string) => {
     if (widget.type === 'attribute') {
-      const selectionsCheck = widget.dataSelection.map((selection) => selection.columns?.every((c) => c.variableName));
+      const selectionsCheck = widget.dataSelection.map((selection) =>
+        selection.columns?.every((c) => c.variableName),
+      );
       return !!selectionsCheck.every((c) => c);
     }
     // variableName is added for attribute widget
@@ -169,9 +190,10 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
     if (isWidgetValid) {
       // build fintel template widget with variable name and stringified filters
       const fintelTemplateWidget = {
-        variable_name: widget.type === 'attribute' && widget.parameters?.title
-          ? toCamelCase(widget.parameters.title) // set a variable name from the title for attribute widgets
-          : variableName,
+        variable_name:
+          widget.type === 'attribute' && widget.parameters?.title
+            ? toCamelCase(widget.parameters.title) // set a variable name from the title for attribute widgets
+            : variableName,
         widget: {
           ...widget,
           dataSelection: widget.dataSelection.map((selection) => ({
@@ -182,19 +204,23 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           })),
         },
       };
-      if (!selectedWidget) { // case widget creation
+      if (!selectedWidget) {
+        // case widget creation
         commitEditMutation({
           variables: {
             id,
             // add the widget in the fintel template widgets list
-            input: [{
-              key: 'fintel_template_widgets',
-              value: [fintelTemplateWidget],
-              operation: 'add',
-            }],
+            input: [
+              {
+                key: 'fintel_template_widgets',
+                value: [fintelTemplateWidget],
+                operation: 'add',
+              },
+            ],
           },
         });
-      } else { // case widget update
+      } else {
+        // case widget update
         if (selectedWidgetIndex < 0) {
           throw Error('Selected widget index should be positive.');
         }
@@ -202,11 +228,13 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
           variables: {
             id,
             // update the widget in the fintel template widgets list
-            input: [{
-              key: 'fintel_template_widgets',
-              object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
-              value: [fintelTemplateWidget],
-            }],
+            input: [
+              {
+                key: 'fintel_template_widgets',
+                object_path: `fintel_template_widgets/${selectedWidgetIndex}`,
+                value: [fintelTemplateWidget],
+              },
+            ],
           },
         });
       }
@@ -221,12 +249,15 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
       zIndex: theme.zIndex.appBar - 1,
     },
   };
-  const context = useMemo(() => ({
-    kind: 'fintelTemplate' as const,
-    fintelWidgets: fintel_template_widgets as FintelTemplateWidget[],
-    fintelEntityType: subTypeId ?? '',
-    fintelEditorValue: editorValue ?? '',
-  }), [fintel_template_widgets, subTypeId, editorValue]);
+  const context = useMemo(
+    () => ({
+      kind: 'fintelTemplate' as const,
+      fintelWidgets: fintel_template_widgets as FintelTemplateWidget[],
+      fintelEntityType: subTypeId ?? '',
+      fintelEditorValue: editorValue ?? '',
+    }),
+    [fintel_template_widgets, subTypeId, editorValue],
+  );
 
   return (
     <>
@@ -257,9 +288,11 @@ const FintelTemplateWidgetsSidebar: FunctionComponent<FintelTemplateWidetsSideba
         deletion={deletion}
         submitDelete={submitDeleteWidget}
         message={t_i18n('Do you want to delete this widget?')}
-        warning={isSelectedWidgetUsed
-          ? { message: t_i18n('You are about to delete a widget used in the template') }
-          : undefined}
+        warning={
+          isSelectedWidgetUsed
+            ? { message: t_i18n('You are about to delete a widget used in the template') }
+            : undefined
+        }
       />
     </>
   );

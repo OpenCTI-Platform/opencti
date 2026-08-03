@@ -30,9 +30,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -54,9 +52,7 @@ const styles = (theme) => ({
     fontFamily: 'Consolas, monaco, monospace',
     fontSize: 11,
     backgroundColor:
-      theme.palette.mode === 'light'
-        ? 'rgba(0, 0, 0, 0.02)'
-        : 'rgba(255, 255, 255, 0.02)',
+      theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.02)',
     lineHeight: '18px',
   },
 });
@@ -69,11 +65,7 @@ const stixCyberObservableMutation = graphql`
     $references: [String]
   ) {
     stixCyberObservableEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         x_opencti_stix_ids
       }
     }
@@ -115,35 +107,18 @@ class StixCyberObservableOverview extends Component {
   render() {
     const { t, fldt, classes, stixCyberObservable } = this.props;
     const otherStixIds = stixCyberObservable.x_opencti_stix_ids || [];
-    const stixIds = R.filter(
-      (n) => n !== stixCyberObservable.standard_id,
-      otherStixIds,
-    );
+    const stixIds = R.filter((n) => n !== stixCyberObservable.standard_id, otherStixIds);
     return (
       <>
         <Card title={t('Basic information')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={6}>
-              <Label>
-                {t('Marking')}
-              </Label>
-              <ItemMarkings
-                markingDefinitions={stixCyberObservable.objectMarking ?? []}
-              />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Score')}
-              </Label>
+              <Label>{t('Marking')}</Label>
+              <ItemMarkings markingDefinitions={stixCyberObservable.objectMarking ?? []} />
+              <Label sx={{ marginTop: 2 }}>{t('Score')}</Label>
               <ItemScore score={stixCyberObservable.x_opencti_score} />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Author')}
-              </Label>
-              <ItemAuthor
-                createdBy={stixCyberObservable.createdBy}
-              />
+              <Label sx={{ marginTop: 2 }}>{t('Author')}</Label>
+              <ItemAuthor createdBy={stixCyberObservable.createdBy} />
               <StixCoreObjectLabelsView
                 labels={stixCyberObservable.objectLabel}
                 id={stixCyberObservable.id}
@@ -152,57 +127,41 @@ class StixCyberObservableOverview extends Component {
               />
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Observable type')}
-              </Label>
-              <Tag
-                color="#203af6"
-                label={t(`entity_${stixCyberObservable.entity_type}`)}
-              />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Creators')}
-              </Label>
+              <Label>{t('Observable type')}</Label>
+              <Tag color="#203af6" label={t(`entity_${stixCyberObservable.entity_type}`)} />
+              <Label sx={{ marginTop: 2 }}>{t('Creators')}</Label>
               <ItemCreators creators={stixCyberObservable.creators ?? []} />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Platform creation date')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Platform creation date')}</Label>
               {fldt(stixCyberObservable.created_at)}
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Modification date')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Modification date')}</Label>
               {fldt(stixCyberObservable.updated_at)}
               <div style={{ marginTop: 20 }}>
-                <Label action={(
-                  <>
-                    <Tooltip
-                      title={t(
-                        'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                      )}
-                    >
-                      <InformationOutline fontSize="small" color="primary" />
-                    </Tooltip>
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <IconButton
-                        aria-label="Close"
-                        disableRipple={true}
-                        size="small"
-                        disabled={stixIds.length === 0}
-                        onClick={this.handleToggleOpenStixIds.bind(this)}
+                <Label
+                  action={
+                    <>
+                      <Tooltip
+                        title={t(
+                          'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                        )}
                       >
-                        <BrushOutlined
-                          fontSize="small"
-                          color={stixIds.length === 0 ? 'inherit' : 'secondary'}
-                        />
-                      </IconButton>
-                    </Security>
-                  </>
-                )}
+                        <InformationOutline fontSize="small" color="primary" />
+                      </Tooltip>
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <IconButton
+                          aria-label="Close"
+                          disableRipple={true}
+                          size="small"
+                          disabled={stixIds.length === 0}
+                          onClick={this.handleToggleOpenStixIds.bind(this)}
+                        >
+                          <BrushOutlined
+                            fontSize="small"
+                            color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                          />
+                        </IconButton>
+                      </Security>
+                    </>
+                  }
                 >
                   {t('Standard STIX ID')}
                 </Label>
@@ -220,32 +179,29 @@ class StixCyberObservableOverview extends Component {
         >
           <List>
             {stixIds.map(
-              (stixId) => stixId.length > 0 && (
-                <ListItem
-                  key={stixId}
-                  disableGutters={true}
-                  dense={true}
-                  secondaryAction={(
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={this.deleteStixId.bind(this, stixId)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemText primary={stixId} />
-                </ListItem>
-              ),
+              (stixId) =>
+                stixId.length > 0 && (
+                  <ListItem
+                    key={stixId}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={this.deleteStixId.bind(this, stixId)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText primary={stixId} />
+                  </ListItem>
+                ),
             )}
           </List>
           <DialogActions>
-            <Button
-              onClick={this.handleToggleOpenStixIds.bind(this)}
-            >
-              {t('Close')}
-            </Button>
+            <Button onClick={this.handleToggleOpenStixIds.bind(this)}>{t('Close')}</Button>
           </DialogActions>
         </Dialog>
       </>
@@ -260,7 +216,4 @@ StixCyberObservableOverview.propTypes = {
   fldt: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableOverview);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableOverview);

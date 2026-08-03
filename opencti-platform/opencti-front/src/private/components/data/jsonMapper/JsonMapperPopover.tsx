@@ -8,7 +8,9 @@ import { PopoverProps } from '@mui/material/Popover';
 import fileDownload from 'js-file-download';
 import { jsonMappers_MappersQuery$variables } from '@components/data/jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { JsonMapperPopoverExportQuery$data } from '@components/data/jsonMapper/__generated__/JsonMapperPopoverExportQuery.graphql';
-import JsonMapperEditionContainer, { jsonMapperEditionContainerQuery } from '@components/data/jsonMapper/JsonMapperEditionContainer';
+import JsonMapperEditionContainer, {
+  jsonMapperEditionContainerQuery,
+} from '@components/data/jsonMapper/JsonMapperEditionContainer';
 import { JsonMapperEditionContainerQuery } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerQuery.graphql';
 import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -50,7 +52,9 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
   const handleClose = () => setAnchorEl(null);
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<JsonMapperEditionContainerQuery>(jsonMapperEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<JsonMapperEditionContainerQuery>(
+    jsonMapperEditionContainerQuery,
+  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
 
   const handleOpenUpdate = () => {
@@ -78,12 +82,7 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
         id: jsonMapperId,
       },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_jsonMappers',
-          paginationOptions,
-          jsonMapperId,
-        );
+        deleteNode(store, 'Pagination_jsonMappers', paginationOptions, jsonMapperId);
       },
       onCompleted: () => {
         deletion.setDeleting(false);
@@ -93,10 +92,9 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
   };
 
   const exportJsonMapper = async () => {
-    const { jsonMapper } = await fetchQuery(
-      jsonMapperExportQuery,
-      { id: jsonMapperId },
-    ).toPromise() as JsonMapperPopoverExportQuery$data;
+    const { jsonMapper } = (await fetchQuery(jsonMapperExportQuery, {
+      id: jsonMapperId,
+    }).toPromise()) as JsonMapperPopoverExportQuery$data;
 
     if (jsonMapper) {
       const blob = new Blob([jsonMapper.toConfigurationExport], { type: 'text/json' });
@@ -114,7 +112,12 @@ const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({
 
   return (
     <>
-      <IconButton aria-label={t_i18n('Open menu')} onClick={handleOpen} aria-haspopup="true" color="primary">
+      <IconButton
+        aria-label={t_i18n('Open menu')}
+        onClick={handleOpen}
+        aria-haspopup="true"
+        color="primary"
+      >
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>

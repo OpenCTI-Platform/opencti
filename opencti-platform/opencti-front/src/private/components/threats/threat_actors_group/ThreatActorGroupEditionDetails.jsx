@@ -4,7 +4,11 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import { useTheme } from '@mui/styles';
-import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
+import {
+  ThreatActorGroupEditionOverviewFocus,
+  ThreatActorGroupMutationRelationAdd,
+  ThreatActorGroupMutationRelationDelete,
+} from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -27,11 +31,7 @@ const ThreatActorGroupMutationFieldPatch = graphql`
     $references: [String]
   ) {
     threatActorGroupEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...ThreatActorGroupEditionDetails_ThreatActorGroup
         ...ThreatActorGroup_ThreatActorGroup
       }
@@ -40,10 +40,7 @@ const ThreatActorGroupMutationFieldPatch = graphql`
 `;
 
 const ThreatActorGroupEditionDetailsFocus = graphql`
-  mutation ThreatActorGroupEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorGroupEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     threatActorGroupEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -76,10 +73,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
     goals: Yup.string().nullable(),
     references: Yup.array(),
   };
-  const threatActorGroupValidator = useSchemaEditionValidation(
-    'Threat-Actor-Group',
-    basicShape,
-  );
+  const threatActorGroupValidator = useSchemaEditionValidation('Threat-Actor-Group', basicShape);
 
   const queries = {
     fieldPatch: ThreatActorGroupMutationFieldPatch,
@@ -93,33 +87,25 @@ const ThreatActorGroupEditionDetailsComponent = ({
     queries,
     threatActorGroupValidator,
   );
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: ThreatActorGroupEditionDetailsFocus,
-    variables: {
-      id: threatActorGroup.id,
-      input: {
-        focusOn: name,
+  const handleChangeFocus = (name) =>
+    commitMutation({
+      mutation: ThreatActorGroupEditionDetailsFocus,
+      variables: {
+        id: threatActorGroup.id,
+        input: {
+          focusOn: name,
+        },
       },
-    },
-  });
+    });
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
-      R.assoc(
-        'goals',
-        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
-      ),
+      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
+      R.assoc('goals', values.goals && values.goals.length ? R.split('\n', values.goals) : []),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -130,8 +116,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
       variables: {
         id: threatActorGroup.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -165,14 +150,9 @@ const ThreatActorGroupEditionDetailsComponent = ({
     R.assoc('last_seen', buildDate(threatActorGroup.last_seen)),
     R.assoc(
       'secondary_motivations',
-      threatActorGroup.secondary_motivations
-        ? threatActorGroup.secondary_motivations
-        : [],
+      threatActorGroup.secondary_motivations ? threatActorGroup.secondary_motivations : [],
     ),
-    R.assoc(
-      'goals',
-      R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : []),
-    ),
+    R.assoc('goals', R.join('\n', threatActorGroup.goals ? threatActorGroup.goals : [])),
     R.assoc('roles', threatActorGroup.roles ? threatActorGroup.roles : []),
     R.pick([
       'first_seen',
@@ -193,14 +173,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
         validationSchema={threatActorGroupValidator}
         onSubmit={onSubmit}
       >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
+        {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
           <div>
             <Form style={{ marginTop: theme.spacing(2) }}>
               <AlertConfidenceForEntity entity={threatActorGroup} />
@@ -213,12 +186,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                   label: t_i18n('First seen'),
                   variant: 'standard',
                   fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="first_seen"
-                    />
-                  ),
+                  helperText: <SubscriptionFocus context={context} fieldName="first_seen" />,
                 }}
               />
               <Field
@@ -231,12 +199,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="last_seen"
-                    />
-                  ),
+                  helperText: <SubscriptionFocus context={context} fieldName="last_seen" />,
                 }}
               />
               <OpenVocabField
@@ -309,9 +272,7 @@ const ThreatActorGroupEditionDetailsComponent = ({
                 style={{ marginTop: 20 }}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="goals" />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="goals" />}
               />
               {enableReferences && (
                 <CommitMessage
@@ -331,23 +292,20 @@ const ThreatActorGroupEditionDetailsComponent = ({
   );
 };
 
-export default createFragmentContainer(
-  ThreatActorGroupEditionDetailsComponent,
-  {
-    threatActorGroup: graphql`
-      fragment ThreatActorGroupEditionDetails_ThreatActorGroup on ThreatActorGroup {
-        id
-        first_seen
-        last_seen
-        sophistication
-        resource_level
-        primary_motivation
-        secondary_motivations
-        goals
-        roles
-        confidence
-        entity_type
-      }
-    `,
-  },
-);
+export default createFragmentContainer(ThreatActorGroupEditionDetailsComponent, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupEditionDetails_ThreatActorGroup on ThreatActorGroup {
+      id
+      first_seen
+      last_seen
+      sophistication
+      resource_level
+      primary_motivation
+      secondary_motivations
+      goals
+      roles
+      confidence
+      entity_type
+    }
+  `,
+});

@@ -37,7 +37,11 @@ export const xtmHubClient = {
       return { isReachable: false };
     }
   },
-  refreshRegistrationStatus: async ({ platformId, token, platformVersion }: {
+  refreshRegistrationStatus: async ({
+    platformId,
+    token,
+    platformVersion,
+  }: {
     platformId: string;
     token: string;
     platformVersion: string;
@@ -71,9 +75,16 @@ export const xtmHubClient = {
       return 'inactive';
     }
   },
-  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string },
+  autoRegister: async (
+    platform: {
+      platformId: string;
+      platformToken: string;
+      platformUrl: string;
+      platformTitle: string;
+    },
     enterpriseLicense: string,
-    existing_users_count: number): Promise<Success> => {
+    existing_users_count: number,
+  ): Promise<Success> => {
     const query = `
        mutation AutoRegisterPlatform($input: AutoRegisterPlatformInput!) {
         autoRegisterPlatform(input: $input) {
@@ -117,7 +128,10 @@ export const xtmHubClient = {
       return { success: false };
     }
   },
-  consumeProvisionedNewsFeedItems: async (platformId: string, platformToken: string): Promise<ConsumeProvisionedNewsFeedItemsResponse> => {
+  consumeProvisionedNewsFeedItems: async (
+    platformId: string,
+    platformToken: string,
+  ): Promise<ConsumeProvisionedNewsFeedItemsResponse> => {
     const mutation = `
       mutation ConsumeProvisionedNewsFeedItems {
         consumeProvisionedNewsFeedItems {
@@ -148,7 +162,10 @@ export const xtmHubClient = {
       },
     });
 
-    const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = { news_feed_items: [], available_news_feed_types: [] };
+    const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = {
+      news_feed_items: [],
+      available_news_feed_types: [],
+    };
 
     try {
       const response = await httpClient.post('/graphql-api', { query: mutation });
@@ -163,7 +180,10 @@ export const xtmHubClient = {
       return emptyResponse;
     }
   },
-  contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {
+  contactUs: async (
+    platform: { platformId: string; platformToken: string },
+    message: string,
+  ): Promise<Success> => {
     const query = `
       mutation ContactUs($message: String) {
         contactUs(message: $message) {

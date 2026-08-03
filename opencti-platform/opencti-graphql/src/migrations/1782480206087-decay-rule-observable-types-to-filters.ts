@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { logApp, logMigration } from '../config/conf';
-import { elBulk, elList, BULK_TIMEOUT, MAX_BULK_OPERATIONS, ES_MAX_CONCURRENCY } from '../database/engine';
+import {
+  elBulk,
+  elList,
+  BULK_TIMEOUT,
+  MAX_BULK_OPERATIONS,
+  ES_MAX_CONCURRENCY,
+} from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { pushAll } from '../utils/arrayUtil';
@@ -38,7 +44,8 @@ export const up = async (next: (error?: Error) => void) => {
           { update: { _index: rule._index, _id: rule._id } },
           {
             script: {
-              source: "ctx._source.decay_filters = params.decay_filters; ctx._source.remove('decay_observable_types');",
+              source:
+                "ctx._source.decay_filters = params.decay_filters; ctx._source.remove('decay_observable_types');",
               params: { decay_filters: generatedFilters },
             },
           },
@@ -58,7 +65,9 @@ export const up = async (next: (error?: Error) => void) => {
     if (bulk.length > 0) {
       await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
       currentProcessing += bulk.length / 2;
-      logApp.info(`[OPENCTI] Migrating decay rule filters: ${currentProcessing} / ${bulkOperations.length / 2}`);
+      logApp.info(
+        `[OPENCTI] Migrating decay rule filters: ${currentProcessing} / ${bulkOperations.length / 2}`,
+      );
     }
   };
 

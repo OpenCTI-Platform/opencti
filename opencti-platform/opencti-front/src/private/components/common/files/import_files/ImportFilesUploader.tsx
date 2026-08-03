@@ -24,12 +24,15 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
 
   const updateFiles = (newFiles: File[]) => {
     const extendedFiles: FileWithConnectors[] = newFiles.map((file) => {
-      const connectors = connectorsForImport?.reduce<FileWithConnectors['connectors']>((acc, connector) => {
-        if (connector?.active && connector?.connector_scope?.includes(file.type)) {
-          acc?.push({ id: connector.id, name: connector.name });
-        }
-        return acc;
-      }, []);
+      const connectors = connectorsForImport?.reduce<FileWithConnectors['connectors']>(
+        (acc, connector) => {
+          if (connector?.active && connector?.connector_scope?.includes(file.type)) {
+            acc?.push({ id: connector.id, name: connector.name });
+          }
+          return acc;
+        },
+        [],
+      );
 
       return connectors && connectors.length > 0 ? { file, connectors } : { file };
     });
@@ -40,7 +43,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
   return (
     <Grid container>
       <Grid item xs={12}>
-        { !isTextView ? (
+        {!isTextView ? (
           <ImportFilesDropzone
             fullSize={files.length === 0}
             onChange={updateFiles}

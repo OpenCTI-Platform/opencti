@@ -13,7 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import type { BasicStoreEntity, BasicStoreRelation, StoreEntity, StoreRelation } from '../../types/store';
+import type {
+  BasicStoreEntity,
+  BasicStoreRelation,
+  StoreEntity,
+  StoreRelation,
+} from '../../types/store';
 import type { StixInternal } from '../../types/stix-2-1-common';
 import { type FilterGroup, PirType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
@@ -87,8 +92,7 @@ export interface BasicStoreRelationPir extends BasicStoreRelation {
   authorized_authorities: string[];
 }
 
-export interface StoreRelationPir extends StoreRelation, BasicStoreRelationPir {
-}
+export interface StoreRelationPir extends StoreRelation, BasicStoreRelationPir {}
 
 export interface PirInformation {
   pir_id: string;

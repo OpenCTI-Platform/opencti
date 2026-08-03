@@ -67,40 +67,44 @@ const ExperienceCard = ({
         background: `linear-gradient(135deg, ${alpha(accent, 0.08)}, transparent 60%)`,
       }}
     >
-      <Box sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 2,
-      }}
-      >
-        <Box sx={{
-          width: 52,
-          height: 52,
-          borderRadius: 1,
+      <Box
+        sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          color: accent,
-          backgroundColor: alpha(accent, 0.12),
-          border: `1px solid ${alpha(accent, 0.3)}`,
+          gap: 2,
         }}
+      >
+        <Box
+          sx={{
+            width: 52,
+            height: 52,
+            borderRadius: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            color: accent,
+            backgroundColor: alpha(accent, 0.12),
+            border: `1px solid ${alpha(accent, 0.3)}`,
+          }}
         >
           {icon}
         </Box>
-        <Box sx={{
-          minWidth: 0,
-          flex: 1,
-        }}
-        >
-          <Typography sx={{
-            fontFamily: '"Geologica", sans-serif',
-            fontWeight: 600,
-            fontSize: 11,
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: accent,
+        <Box
+          sx={{
+            minWidth: 0,
+            flex: 1,
           }}
+        >
+          <Typography
+            sx={{
+              fontFamily: '"Geologica", sans-serif',
+              fontWeight: 600,
+              fontSize: 11,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: accent,
+            }}
           >
             {overline}
           </Typography>
@@ -119,36 +123,39 @@ const ExperienceCard = ({
           </Typography>
         </Box>
         {statusChip && (
-          <Box sx={{
-            flexShrink: 0,
-            alignSelf: 'flex-start',
-          }}
+          <Box
+            sx={{
+              flexShrink: 0,
+              alignSelf: 'flex-start',
+            }}
           >
             {statusChip}
           </Box>
         )}
       </Box>
 
-      <Box sx={{
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-      }}
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
       >
         {children}
       </Box>
 
       {footer && (
-        <Box sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          gap: 1,
-          flexWrap: 'wrap',
-          paddingTop: 2,
-          borderTop: hairline,
-        }}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: 1,
+            flexWrap: 'wrap',
+            paddingTop: 2,
+            borderTop: hairline,
+          }}
         >
           {footer}
         </Box>

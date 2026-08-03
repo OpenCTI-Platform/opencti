@@ -8,7 +8,12 @@ interface FetchDocumentParams {
 }
 
 const XtmHubClient = {
-  fetchDocument: async ({ settings, serviceInstanceId, fileId, userPlatformToken }: FetchDocumentParams): Promise<File> => {
+  fetchDocument: async ({
+    settings,
+    serviceInstanceId,
+    fileId,
+    userPlatformToken,
+  }: FetchDocumentParams): Promise<File> => {
     const response = await fetch(
       `${settings.platform_xtmhub_url}/document/get/${serviceInstanceId}/${fileId}`,
       {

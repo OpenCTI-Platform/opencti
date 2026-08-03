@@ -1,10 +1,16 @@
 import React from 'react';
 import { graphql } from 'react-relay';
-import { TasksLinesPaginationQuery, TasksLinesPaginationQuery$variables } from './__generated__/TasksLinesPaginationQuery.graphql';
+import {
+  TasksLinesPaginationQuery,
+  TasksLinesPaginationQuery$variables,
+} from './__generated__/TasksLinesPaginationQuery.graphql';
 import { TasksLines_data$data } from './__generated__/TasksLines_data.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import {
+  useBuildEntityTypeBasedFilterContext,
+  emptyFilterGroup,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -61,14 +67,14 @@ const tasksLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...TasksLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -120,14 +126,16 @@ const Tasks = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<TasksLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<TasksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_TASKS,
     initialValues,
   );
 
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Task', filters);
   const queryPaginationOptions = {
@@ -164,7 +172,9 @@ const Tasks = () => {
 
   return (
     <span data-testid="task-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

@@ -71,7 +71,11 @@ export const extractWsSessionContext = async (context) => {
       group_ids: wsSession.user?.groups?.map((g) => g.internal_id) ?? [],
       organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
     };
-    const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
+    const platformUsers = await getEntitiesMapFromCache(
+      sessionContext,
+      SYSTEM_USER,
+      ENTITY_TYPE_USER,
+    );
     const logged = platformUsers.get(wsSession?.user.id);
     sessionContext.user = { ...wsSession?.user, ...logged, origin };
     sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
@@ -106,7 +110,10 @@ const createHttpServer = async () => {
       httpServer = https.createServer(options, app);
       logApp.info('[INIT] HTTPS server initialization done.');
     } catch (e) {
-      logApp.error('[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations', { cause: e });
+      logApp.error(
+        '[INIT] HTTPS server cannot start, please verify app.https_cert and other configurations',
+        { cause: e },
+      );
     }
   } else {
     httpServer = http.createServer(app);
@@ -121,10 +128,13 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer({
-    schema,
-    context: extractWsSessionContext,
-  }, wsServer);
+  const serverCleanup = useServer(
+    {
+      schema,
+      context: extractWsSessionContext,
+    },
+    wsServer,
+  );
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
@@ -173,7 +183,11 @@ const createHttpServer = async () => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
         // When context is related to a work, we need to check work status
         if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
+          const workStillAlive = await isWorkAlive(
+            executeContext,
+            executeContext.user,
+            executeContext.workId,
+          );
           if (!workStillAlive) {
             throw WorkNotALiveError();
           }
@@ -191,15 +205,17 @@ const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
       const serverPromise = createHttpServer();
-      serverPromise.then(({ httpServer, sseMiddleware }) => {
-        httpServer.on('close', () => {
-          sseMiddleware.shutdown();
+      serverPromise
+        .then(({ httpServer, sseMiddleware }) => {
+          httpServer.on('close', () => {
+            sseMiddleware.shutdown();
+          });
+          const server = httpServer.listen(PORT);
+          resolve({ server });
+        })
+        .catch((reason) => {
+          logApp.error('Http listen server error', { cause: reason });
         });
-        const server = httpServer.listen(PORT);
-        resolve({ server });
-      }).catch((reason) => {
-        logApp.error('Http listen server error', { cause: reason });
-      });
     } catch (e) {
       logApp.error('Http listen server fail', { cause: e });
       reject(e);

@@ -68,78 +68,71 @@ interface DataComponentProps {
 }
 
 const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
-  const dataComponent = useFragment<DataComponent_dataComponent$key>(DataComponentFragment, dataComponentData);
+  const dataComponent = useFragment<DataComponent_dataComponent$key>(
+    DataComponentFragment,
+    dataComponentData,
+  );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(dataComponent.entity_type);
 
   return (
     <div data-testid="data-component-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <DataComponentDetails dataComponent={dataComponent} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview stixDomainObject={dataComponent} />
-                  </Grid>
-                );
-              case 'latestCreatedRelationships':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                      stixObjectOrStixRelationshipId={dataComponent.id}
-                      stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_components/${dataComponent.id}/knowledge`}
-                    />
-                  </Grid>
-                );
-              case 'latestContainers':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixRelationshipLastContainers
-                      stixCoreObjectOrStixRelationshipId={dataComponent.id}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={dataComponent.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={dataComponent.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
-                      defaultMarkings={dataComponent.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <DataComponentDetails dataComponent={dataComponent} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview stixDomainObject={dataComponent} />
+                </Grid>
+              );
+            case 'latestCreatedRelationships':
+              return (
+                <Grid key={key} item xs={width}>
+                  <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                    stixObjectOrStixRelationshipId={dataComponent.id}
+                    stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_components/${dataComponent.id}/knowledge`}
+                  />
+                </Grid>
+              );
+            case 'latestContainers':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixRelationshipLastContainers
+                    stixCoreObjectOrStixRelationshipId={dataComponent.id}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={dataComponent.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={dataComponent.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
+                    defaultMarkings={dataComponent.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </div>
   );

@@ -22,15 +22,24 @@ import useTopBanner from '../../../utils/hooks/useTopBanner';
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
   const { isChatbotAiEnabled } = useHelper();
-  const { settings: { filigran_chatbot_ai_cgu_status }, bannerSettings: { bannerHeightNumber } } = useAuth();
+  const {
+    settings: { filigran_chatbot_ai_cgu_status },
+    bannerSettings: { bannerHeightNumber },
+  } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { height: topBannerHeight } = useTopBanner();
   const {
-    isOpen, mode, openChat, closeChat, setMode,
-    setSidebarWidth, setIsResizing, xtmOneConfigured,
+    isOpen,
+    mode,
+    openChat,
+    closeChat,
+    setMode,
+    setSidebarWidth,
+    setIsResizing,
+    xtmOneConfigured,
   } = useChatbot();
 
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
@@ -89,7 +98,13 @@ const AskArianeButton = () => {
   return (
     <>
       <EETooltip
-        title={isCGUStatusPending && !hasRightToValidateCGU ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.') : 'Open chatbot'}
+        title={
+          isCGUStatusPending && !hasRightToValidateCGU
+            ? t_i18n(
+                "Ask Ariane isn't activated yet. Please reach out to your administrator to enable this feature.",
+              )
+            : 'Open chatbot'
+        }
       >
         <Button
           variant="tertiary"
@@ -116,7 +131,10 @@ const AskArianeButton = () => {
       )}
 
       {openValidateTermsOfUse && (
-        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />
+        <ValidateTermsOfUseDialog
+          open={openValidateTermsOfUse}
+          onClose={() => setOpenValidateTermsOfUse(false)}
+        />
       )}
     </>
   );

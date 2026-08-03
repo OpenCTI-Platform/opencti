@@ -35,9 +35,7 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const stixNestedRefRelationshipPopoverDeletionMutation = graphql`
@@ -99,9 +97,7 @@ class StixNestedRefRelationshipPopover extends Component {
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField(
-          'stixRefRelationshipEdit',
-        );
+        const payload = store.getRootField('stixRefRelationshipEdit');
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
@@ -135,12 +131,8 @@ class StixNestedRefRelationshipPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={this.handleOpenUpdate.bind(this)}>{t('Update')}</MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>{t('Delete')}</MenuItem>
         </Menu>
         <StixNestedRefRelationshipEdition
           variant="noGraph"
@@ -154,9 +146,7 @@ class StixNestedRefRelationshipPopover extends Component {
           title={t('Are you sure?')}
           size="small"
         >
-          <DialogContentText>
-            {t('Do you want to delete this relation?')}
-          </DialogContentText>
+          <DialogContentText>{t('Do you want to delete this relation?')}</DialogContentText>
           <DialogActions>
             <Button
               variant="secondary"
@@ -165,10 +155,7 @@ class StixNestedRefRelationshipPopover extends Component {
             >
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
+            <Button onClick={this.submitDelete.bind(this)} disabled={this.state.deleting}>
               {t('Confirm')}
             </Button>
           </DialogActions>
@@ -186,7 +173,4 @@ StixNestedRefRelationshipPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixNestedRefRelationshipPopover);
+export default compose(inject18n, withStyles(styles))(StixNestedRefRelationshipPopover);

@@ -4,7 +4,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
-import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
+import {
+  CaseTemplateLinesPaginationQuery,
+  CaseTemplateLinesPaginationQuery$variables,
+} from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 import { CaseTemplateLines_data$key } from './__generated__/CaseTemplateLines_data.graphql';
 import CaseTemplateLine from './CaseTemplateLine';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
@@ -27,13 +30,13 @@ export const caseTemplatesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...CaseTemplateLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -92,9 +95,7 @@ const CaseTemplateLines: FunctionComponent<CaseTemplatesLinesProps> = ({
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.caseTemplates?.edges ?? []}
-      globalCount={
-        data?.caseTemplates?.pageInfo?.globalCount ?? nbOfRowsToLoad
-      }
+      globalCount={data?.caseTemplates?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={CaseTemplateLine}
       DummyLineComponent={CaseTemplateLineDummy}
       dataColumns={dataColumns}

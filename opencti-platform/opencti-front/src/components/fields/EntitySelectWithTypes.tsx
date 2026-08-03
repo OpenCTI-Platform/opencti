@@ -34,8 +34,9 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
     searchScope,
   });
 
-  const options = getOptionsFromEntities(entities, searchScope, 'id')
-    .filter((option) => option.value === null || !entitiesToExclude.includes(option.value));
+  const options = getOptionsFromEntities(entities, searchScope, 'id').filter(
+    (option) => option.value === null || !entitiesToExclude.includes(option.value),
+  );
 
   return (
     <Autocomplete
@@ -54,9 +55,7 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
             input: {
               ...paramsInput.InputProps,
               sx: { gap: 1 },
-              startAdornment: value
-                ? <ItemIcon type={value.type} color={value.color} />
-                : null,
+              startAdornment: value ? <ItemIcon type={value.type} color={value.color} /> : null,
               endAdornment: (
                 <SearchScopeElement
                   name="id"
@@ -71,12 +70,7 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
           label={label}
           size="small"
           fullWidth
-          onFocus={(event) => searchEntities(
-            'id',
-            cacheEntities,
-            setCacheEntities,
-            event,
-          )}
+          onFocus={(event) => searchEntities('id', cacheEntities, setCacheEntities, event)}
         />
       )}
       renderOption={(props, option) => (
@@ -97,9 +91,7 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
             }}
           >
             <ItemIcon type={option.type} color={option.color} />
-            <span style={{ margin: 6, padding: '0 4px 0 4px' }}>
-              {option.label}
-            </span>
+            <span style={{ margin: 6, padding: '0 4px 0 4px' }}>{option.label}</span>
           </li>
         </Tooltip>
       )}

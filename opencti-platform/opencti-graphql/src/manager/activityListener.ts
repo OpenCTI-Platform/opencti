@@ -14,7 +14,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { LRUCache } from 'lru-cache';
-import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
+import {
+  type ActionHandler,
+  type ActionListener,
+  registerUserActionListener,
+  type UserAction,
+  type UserReadAction,
+} from '../listener/UserActionListener';
 import conf, { auditLogTypes, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { storeActivityEvent } from '../database/stream/stream-handler';
@@ -32,7 +38,24 @@ import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
-export const EVENT_SCOPE_VALUES = ['create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot'];
+export const EVENT_SCOPE_VALUES = [
+  'create',
+  'update',
+  'delete',
+  'merge',
+  'read',
+  'search',
+  'enrich',
+  'download',
+  'import',
+  'export',
+  'send',
+  'login',
+  'logout',
+  'unauthorized',
+  'disseminate',
+  'forgot',
+];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
@@ -52,7 +75,11 @@ const initActivityManager = () => {
           const preparedElements = [];
           for (let index = 0; index < currentObj[key].length; index += 1) {
             const currentObjElementElement = currentObj[key][index];
-            if (currentObjElementElement.key && currentObjElementElement.value && LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)) {
+            if (
+              currentObjElementElement.key &&
+              currentObjElementElement.value &&
+              LOGS_SENSITIVE_FIELDS.includes(currentObjElementElement.key)
+            ) {
               preparedElements.push({ [currentObjElementElement.key]: REDACTED_INFORMATION });
             } else {
               preparedElements.push(currentObjElementElement);
@@ -122,16 +149,23 @@ const initActivityManager = () => {
     id: 'ACTIVITY_MANAGER',
     next: async (action: UserAction) => {
       const context = executionContext('activity_listener');
-      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      const settings = await getEntityFromCache<BasicStoreSettings>(
+        context,
+        SYSTEM_USER,
+        ENTITY_TYPE_SETTINGS,
+      );
       // 01. Check activity authorization
-      if (!['query', 'internal'].includes(action.user.origin?.socket ?? '')) { // Subscription is not part of the listening
+      if (!['query', 'internal'].includes(action.user.origin?.socket ?? '')) {
+        // Subscription is not part of the listening
         return;
       }
-      if (!isEnterpriseEditionFromSettings(settings)) { // If enterprise edition is not activated
+      if (!isEnterpriseEditionFromSettings(settings)) {
+        // If enterprise edition is not activated
         return;
       }
       const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
-      if (action.event_access === 'extended' && !isUserListening) { // If extended actions, is action is not for listened user
+      if (action.event_access === 'extended' && !isUserListening) {
+        // If extended actions, is action is not for listened user
         return;
       }
       // 02. Handle activities
@@ -140,7 +174,8 @@ const initActivityManager = () => {
           const { session_kill, context_data } = action;
           const { provider, username } = context_data;
           const isFailLogin = action.status === 'error';
-          const message = isFailLogin ? `detects \`login failure\` for \`${username}\``
+          const message = isFailLogin
+            ? `detects \`login failure\` for \`${username}\``
             : `login from provider \`${provider}\` ${(session_kill ?? 0) > 0 ? `(killing ${session_kill} sessions)` : ''}`;
           await activityLogger(action, message);
         }
@@ -158,8 +193,10 @@ const initActivityManager = () => {
         }
         if (action.event_scope === 'read') {
           const { entity_type } = action.context_data;
-          const isKnowledgeListening = isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type);
-          const isInternalListening = isInternalObject(entity_type) && INTERNAL_READ_ENTITIES.includes(entity_type);
+          const isKnowledgeListening =
+            isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type);
+          const isInternalListening =
+            isInternalObject(entity_type) && INTERNAL_READ_ENTITIES.includes(entity_type);
           if (isKnowledgeListening || isInternalListening) {
             await readActivity(action);
           }
@@ -189,7 +226,8 @@ const initActivityManager = () => {
           }
           await activityLogger(action, message);
         }
-        if (action.event_scope === 'delete') { // General upload
+        if (action.event_scope === 'delete') {
+          // General upload
           const { file_name, entity_name, entity_type, path } = action.context_data;
           let message = `removes \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
           if (path.includes('import/pending')) {

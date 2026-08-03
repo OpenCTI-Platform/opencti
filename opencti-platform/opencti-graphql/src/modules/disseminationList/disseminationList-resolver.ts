@@ -26,7 +26,8 @@ import {
 const disseminationListResolvers: Resolvers = {
   Query: {
     disseminationList: (_, { id }, context) => findById(context, context.user, id),
-    disseminationLists: (_, args, context) => findDisseminationListPaginated(context, context.user, args),
+    disseminationLists: (_, args, context) =>
+      findDisseminationListPaginated(context, context.user, args),
   },
   DisseminationList: {},
   Mutation: {

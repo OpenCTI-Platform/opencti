@@ -1,7 +1,10 @@
 import React, { Suspense, useCallback } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useQueryLoadingWithLoadQuery } from 'src/utils/hooks/useQueryLoading';
-import { SavedFiltersQuery, SavedFiltersQuery$variables } from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
+import {
+  SavedFiltersQuery,
+  SavedFiltersQuery$variables,
+} from 'src/components/saved_filters/__generated__/SavedFiltersQuery.graphql';
 import { useDataTableContext } from 'src/components/dataGrid/components/DataTableContext';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSelection, { type SavedFiltersSelectionData } from './SavedFilterSelection';
@@ -38,7 +41,12 @@ type SavedFiltersComponentProps = {
   onRefetch: () => void;
 };
 
-const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter, onRefetch }: SavedFiltersComponentProps) => {
+const SavedFiltersComponent = ({
+  queryRef,
+  currentSavedFilter,
+  setCurrentSavedFilter,
+  onRefetch,
+}: SavedFiltersComponentProps) => {
   const { savedFilters } = usePreloadedQuery(savedFiltersQuery, queryRef);
 
   return (
@@ -59,38 +67,40 @@ type SavedFiltersProps = {
 
 const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFiltersProps) => {
   const {
-    useDataTablePaginationLocalStorage: {
-      localStorageKey,
-    },
+    useDataTablePaginationLocalStorage: { localStorageKey },
   } = useDataTableContext();
 
   const filters = getSavedFilterScopeFilter(localStorageKey);
   const queryOptions = { filters } as unknown as SavedFiltersQuery$variables;
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SavedFiltersQuery>(savedFiltersQuery, queryOptions);
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SavedFiltersQuery>(
+    savedFiltersQuery,
+    queryOptions,
+  );
 
   const handleRefetch = useCallback(() => {
     loadQuery(queryOptions, { fetchPolicy: 'network-only' });
   }, [loadQuery, localStorageKey]);
 
-  const isRestrictedStorageKey = localStorageKey.includes('_stixCoreRelationshipCreationFromEntity');
+  const isRestrictedStorageKey = localStorageKey.includes(
+    '_stixCoreRelationshipCreationFromEntity',
+  );
   if (isRestrictedStorageKey) return null;
 
   return (
     <>
-      {queryRef
-        ? (
-            <Suspense fallback={<SavedFiltersAutocomplete isDisabled />}>
-              <SavedFiltersComponent
-                queryRef={queryRef}
-                currentSavedFilter={currentSavedFilter}
-                setCurrentSavedFilter={setCurrentSavedFilter}
-                onRefetch={handleRefetch}
-              />
-            </Suspense>
-          )
-        : <SavedFiltersAutocomplete isDisabled />
-      }
+      {queryRef ? (
+        <Suspense fallback={<SavedFiltersAutocomplete isDisabled />}>
+          <SavedFiltersComponent
+            queryRef={queryRef}
+            currentSavedFilter={currentSavedFilter}
+            setCurrentSavedFilter={setCurrentSavedFilter}
+            onRefetch={handleRefetch}
+          />
+        </Suspense>
+      ) : (
+        <SavedFiltersAutocomplete isDisabled />
+      )}
     </>
   );
 };

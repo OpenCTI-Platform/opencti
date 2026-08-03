@@ -10,7 +10,11 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../components/i18n';
 import { computeValidationProgress } from '../../../utils/draft/draftUtils';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import {
+  addFilter,
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+} from '../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
@@ -18,7 +22,10 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
-import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
+import {
+  DraftsLinesPaginationQuery,
+  DraftsLinesPaginationQuery$variables,
+} from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -26,120 +33,120 @@ import useRuntimeSortGuard from '../../../utils/hooks/useRuntimeSortGuard';
 import ItemStatus from 'src/components/ItemStatus';
 
 const DraftLineFragment = graphql`
-    fragment Drafts_node on DraftWorkspace {
-        id
-        entity_type
-        name
-      description
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-        creators {
-          id
-          name
-        }
-        created_at
-      objectAssignee {
+  fragment Drafts_node on DraftWorkspace {
+    id
+    entity_type
+    name
+    description
+    createdBy {
+      ... on Identity {
         id
         name
         entity_type
       }
-      objectParticipant {
+    }
+    creators {
+      id
+      name
+    }
+    created_at
+    objectAssignee {
+      id
+      name
+      entity_type
+    }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
+    draft_status
+    workflowInstance {
+      id
+      currentStatus {
+        id
+        template {
+          name
+          color
+        }
+      }
+    }
+    validationWork {
+      received_time
+      processed_time
+      completed_time
+      tracking {
+        import_expected_number
+        import_processed_number
+      }
+    }
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
         id
         name
-        entity_type
       }
-        draft_status
-        workflowInstance {
-          id
-          currentStatus {
-            id
-            template {
-              name
-              color
-            }
-          }
-        }
-        validationWork {
-            received_time
-            processed_time
-            completed_time
-            tracking {
-                import_expected_number
-                import_processed_number
-            }
-        }
-        currentUserAccessRight
-        authorizedMembers {
-          id
-          name
-          entity_type
-          access_right
-          member_id
-          groups_restriction {
-            id
-            name
-          }
-        }
-      }
+    }
+  }
 `;
 export const draftsLinesQuery = graphql`
-    query DraftsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: DraftWorkspacesOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
-    ) {
-        ...DraftsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query DraftsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: DraftWorkspacesOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    ...DraftsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 export const draftsLinesFragment = graphql`
-    fragment DraftsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "DraftWorkspacesOrdering", defaultValue: created_at }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "FilterGroup" }
-    )
-    @refetchable(queryName: "DraftsLinesRefetchQuery") {
-        draftWorkspaces(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_draftWorkspaces") {
-            edges {
-                node {
-                    id
-                    ...Drafts_node
-                }
-            }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+  fragment DraftsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "DraftWorkspacesOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "DraftsLinesRefetchQuery") {
+    draftWorkspaces(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_draftWorkspaces") {
+      edges {
+        node {
+          id
+          ...Drafts_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
@@ -151,9 +158,18 @@ interface DraftsProps {
   emptyStateMessage?: string;
 }
 
-const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
-  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE], false, { capabilitiesInDraft: [KNOWLEDGE_KNUPDATE] });
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+const Drafts: FunctionComponent<DraftsProps> = ({
+  entityId,
+  openCreate,
+  setOpenCreate,
+  emptyStateMessage,
+}) => {
+  const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNUPDATE],
+  });
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -175,17 +191,31 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<DraftsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
-  const {
-    filters,
-  } = viewStorage;
+  } = usePaginationLocalStorage<DraftsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    initialValues,
+  );
+  const { filters } = viewStorage;
 
   // Compute safeSortBy synchronously to prevent the initial Relay query from using an
   // unsupported orderBy (runtime-only field on OpenSearch) before the effect repairs state.
-  const safeSortBy = useRuntimeSortGuard(isRuntimeSort, viewStorage.sortBy, storageHelpers.handleSort);
+  const safeSortBy = useRuntimeSortGuard(
+    isRuntimeSort,
+    viewStorage.sortBy,
+    storageHelpers.handleSort,
+  );
 
-  const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
+  const filtersForDataTable = addFilter(
+    filters,
+    'entity_id',
+    [entityId || ''],
+    entityId ? 'eq' : 'nil',
+    'and',
+  );
+  const contextFilters = useBuildEntityTypeBasedFilterContext(
+    'DraftWorkspace',
+    filtersForDataTable,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     orderBy: safeSortBy,
@@ -234,13 +264,12 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: (node) => (
+      render: (node) =>
         node.workflowInstance?.currentStatus ? (
           <ItemStatus status={node.workflowInstance.currentStatus} />
         ) : (
           <DraftStatusChip draftStatus={node.draft_status} />
-        )
-      ),
+        ),
     },
     draft_validation_progress: {
       id: 'draft_validation_progress',
@@ -258,14 +287,16 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-          {!hasOnlyAccessToImportDraftTab && (<ImportMenu />)}
+          {!hasOnlyAccessToImportDraftTab && <ImportMenu />}
         </>
       )}
       {queryRef && (
         <>
           <DataTable
             dataColumns={dataColumns}
-            resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+            resolvePath={(data: DraftsLines_data$data) =>
+              (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)
+            }
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             entityTypes={['DraftWorkspace']}
@@ -277,7 +308,10 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
             hideHeaders={!!entityId}
             disableLineSelection={!!entityId}
             emptyStateMessage={emptyStateMessage}
-            createButton={!draftContext && isKnowledgeUpdater && <DraftCreation paginationOptions={queryPaginationOptions} />}
+            createButton={
+              !draftContext &&
+              isKnowledgeUpdater && <DraftCreation paginationOptions={queryPaginationOptions} />
+            }
             actions={(row) => (
               <DraftPopover
                 draftId={row.id}

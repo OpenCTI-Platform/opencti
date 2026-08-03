@@ -13,19 +13,22 @@ const GlobalWorkflowSettingsCard = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
 
-  const hasRequestAccessConfig = isEnterpriseEdition
-    && subType.settings.availableSettings.includes('request_access_workflow')
-    && !!requestAccessConfiguration;
+  const hasRequestAccessConfig =
+    isEnterpriseEdition &&
+    subType.settings.availableSettings.includes('request_access_workflow') &&
+    !!requestAccessConfiguration;
 
   return (
     <Card title={t_i18n('Workflow')}>
       <div style={{ display: 'flex' }}>
         <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
-          {subType.settings?.availableSettings.includes('workflow_configuration')
-            && (
-              <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
-            )
-          }
+          {subType.settings?.availableSettings.includes('workflow_configuration') && (
+            <GlobalWorkflowSettings
+              data={subType}
+              subTypeId={subType.id}
+              workflowEnabled={subType.workflowEnabled ?? false}
+            />
+          )}
         </Grid>
         {hasRequestAccessConfig && requestAccessConfiguration && (
           <>
@@ -41,7 +44,11 @@ const GlobalWorkflowSettingsCard = () => {
               />
             </Grid>
             <Grid item xs={6}>
-              <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={requestAccessConfiguration} />
+              <RequestAccessSettings
+                data={subType}
+                subTypeId={subType.id}
+                dataConfiguration={requestAccessConfiguration}
+              />
             </Grid>
           </>
         )}

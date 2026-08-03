@@ -72,10 +72,7 @@ const AuditLineFragment = graphql`
   }
 `;
 
-export const AuditLine: FunctionComponent<AuditLineProps> = ({
-  dataColumns,
-  node,
-}) => {
+export const AuditLine: FunctionComponent<AuditLineProps> = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fndt } = useFormatter();
   const theme = useTheme<Theme>();
@@ -99,42 +96,24 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
         onClick={() => setSelectedLog(data.id)}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon
-            color={color}
-            type={data.context_data?.entity_type ?? data.event_scope}
-          />
+          <ItemIcon color={color} type={data.context_data?.entity_type ?? data.event_scope} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.timestamp.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
                 {fndt(data.timestamp)}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.user.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.user.width }}>
                 {data.user?.name ?? EMPTY_VALUE}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.event_type.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.event_type.width }}>
                 {data.event_type}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.event_scope.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.event_scope.width }}>
                 {data.event_scope ?? EMPTY_VALUE}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.message.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
                 <span style={{ color }}>
                   <MarkdownDisplay
                     content={`\`${data.user?.name}\` ${message}`}
@@ -144,18 +123,14 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 </span>
               </div>
             </div>
-          )}
+          }
         />
       </ListItemButton>
     </>
   );
 };
 
-export const AuditLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const AuditLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
@@ -163,65 +138,25 @@ export const AuditLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.timestamp.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.user.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.user.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.event_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.event_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.event_scope.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.event_scope.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.message.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

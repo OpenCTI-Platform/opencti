@@ -85,9 +85,7 @@ const DashboardWidgetPopover = ({
         className="noDrag"
         title={t_i18n('Are you sure?')}
       >
-        <DialogContentText>
-          {t_i18n('Do you want to duplicate this widget?')}
-        </DialogContentText>
+        <DialogContentText>{t_i18n('Do you want to duplicate this widget?')}</DialogContentText>
         <DialogActions>
           <Button variant="secondary" onClick={() => setDisplayDuplicate(false)}>
             {t_i18n('Cancel')}

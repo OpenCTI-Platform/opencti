@@ -33,7 +33,11 @@ interface FintelTemplateHeaderProps {
   currentDefaultName?: string;
 }
 
-const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: FintelTemplateHeaderProps) => {
+const FintelTemplateHeader = ({
+  entitySettingId,
+  data,
+  currentDefaultName,
+}: FintelTemplateHeaderProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
@@ -85,22 +89,24 @@ const FintelTemplateHeader = ({ entitySettingId, data, currentDefaultName }: Fin
             label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
           />
         </div>
-        {template.default
-          && (
-            <div
-              style={{
-                float: 'left',
-                margin: '0 0 0 5px',
-              }}
-            >
-              <Tag
-                color={theme.palette.success.main}
-                label={t_i18n('Default')}
-              />
-            </div>
-          )
-        }
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
+        {template.default && (
+          <div
+            style={{
+              float: 'left',
+              margin: '0 0 0 5px',
+            }}
+          >
+            <Tag color={theme.palette.success.main} label={t_i18n('Default')} />
+          </div>
+        )}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: 'auto',
+            gap: theme.spacing(1),
+          }}
+        >
           <FintelTemplatePopover
             entitySettingId={entitySettingId}
             templateId={template.id}

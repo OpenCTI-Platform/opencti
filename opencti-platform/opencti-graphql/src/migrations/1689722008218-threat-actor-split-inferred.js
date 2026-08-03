@@ -1,6 +1,10 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elCount, elList, elRawUpdateByQuery } from '../database/engine';
-import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import {
+  READ_ENTITIES_INDICES,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+} from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { logApp } from '../config/conf';
@@ -11,7 +15,9 @@ export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
   // Iterator over all threat actors
-  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, { types: [ENTITY_TYPE_THREAT_ACTOR] });
+  const threatCount = await elCount(context, SYSTEM_USER, READ_ENTITIES_INDICES, {
+    types: [ENTITY_TYPE_THREAT_ACTOR],
+  });
   logApp.info(`${message} > Migrating threat actors 0/${threatCount}`);
   let processNumber = 0;
   const callback = async (threatActors) => {
@@ -23,11 +29,12 @@ export const up = async (next) => {
       const updateRelationsQuery = {
         script: {
           params: { toType, toId: threatActor.internal_id },
-          source: 'for(def connection : ctx._source.connections) {'
-            + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-            + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-            + '}',
+          source:
+            'for(def connection : ctx._source.connections) {' +
+            ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }' +
+            ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }' +
+            ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }' +
+            '}',
         },
         query: {
           nested: {
@@ -35,8 +42,12 @@ export const up = async (next) => {
             query: {
               bool: {
                 should: [
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
-                  { term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } } },
+                  {
+                    term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } },
+                  },
+                  {
+                    term: { 'connections.internal_id.keyword': { value: threatActor.internal_id } },
+                  },
                 ],
                 minimum_should_match: 1,
               },
@@ -56,7 +67,10 @@ export const up = async (next) => {
     }
     logApp.info(`${message} > Migrating threat actors ${processNumber}/${threatCount}`);
   };
-  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], { types: [ENTITY_TYPE_THREAT_ACTOR], callback });
+  await elList(context, SYSTEM_USER, [READ_INDEX_STIX_DOMAIN_OBJECTS], {
+    types: [ENTITY_TYPE_THREAT_ACTOR],
+    callback,
+  });
   // Done with the migration
   logApp.info(`${message} > done`);
   next();

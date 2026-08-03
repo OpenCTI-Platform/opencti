@@ -1,4 +1,8 @@
-import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById } from './threatActorIndividual-domain';
+import {
+  addThreatActorIndividual,
+  findThreatActorIndividualPaginated,
+  findById,
+} from './threatActorIndividual-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -16,17 +20,22 @@ import { INPUT_BORN_IN, INPUT_ETHNICITY } from '../../schema/general';
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
     threatActorIndividual: (_, { id }, context) => findById(context, context.user, id),
-    threatActorsIndividuals: (_, args, context) => findThreatActorIndividualPaginated(context, context.user, args),
+    threatActorsIndividuals: (_, args, context) =>
+      findThreatActorIndividualPaginated(context, context.user, args),
   },
   ThreatActorIndividual: {
-    bornIn: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_BORN_IN),
-    ethnicity: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_ETHNICITY),
-    height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
-      .map((height, index) => ({ ...height, index }))
-      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
-    weight: (threatActorIndividual, _, __) => (threatActorIndividual.weight ?? [])
-      .map((weight, index) => ({ ...weight, index }))
-      .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+    bornIn: (threatActorIndividual, _, context) =>
+      loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_BORN_IN),
+    ethnicity: (threatActorIndividual, _, context) =>
+      loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_ETHNICITY),
+    height: (threatActorIndividual, _, __) =>
+      (threatActorIndividual.height ?? [])
+        .map((height, index) => ({ ...height, index }))
+        .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+    weight: (threatActorIndividual, _, __) =>
+      (threatActorIndividual.weight ?? [])
+        .map((weight, index) => ({ ...weight, index }))
+        .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
   },
   Mutation: {
     threatActorIndividualAdd: (_, { input }, context) => {
@@ -47,7 +56,11 @@ const threatActorIndividualResolvers: Resolvers = {
     threatActorIndividualRelationAdd: (_, { id, input }, context) => {
       return stixDomainObjectAddRelation(context, context.user, id, input);
     },
-    threatActorIndividualRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+    threatActorIndividualRelationDelete: (
+      _,
+      { id, toId, relationship_type: relationshipType },
+      context,
+    ) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
     },
   },

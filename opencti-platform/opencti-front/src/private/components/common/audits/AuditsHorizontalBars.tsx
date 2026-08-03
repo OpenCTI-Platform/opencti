@@ -24,11 +24,17 @@ import Chart from '../charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import useDistributionGraphData, { DistributionQueryData } from '../../../../utils/hooks/useDistributionGraphData';
+import useDistributionGraphData, {
+  DistributionQueryData,
+} from '../../../../utils/hooks/useDistributionGraphData';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
@@ -124,15 +130,17 @@ const AuditsHorizontalBarsComponent: FunctionComponent<AuditsHorizontalBarsCompo
     );
     return (
       <Chart
-        options={horizontalBarsChartOptions(
-          theme,
-          true,
-          simpleNumberFormat,
-          undefined,
-          distributed,
-          navigate,
-          redirectionUtils,
-        ) as ApexOptions}
+        options={
+          horizontalBarsChartOptions(
+            theme,
+            true,
+            simpleNumberFormat,
+            undefined,
+            distributed,
+            navigate,
+            redirectionUtils,
+          ) as ApexOptions
+        }
         series={series}
         type="bar"
         width="100%"
@@ -172,24 +180,35 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const buildQueryVariables = useCallback((resolvedDataSelection: WidgetDataSelection[]): AuditsHorizontalBarsDistributionQuery['variables'] => {
-    const selection = resolvedDataSelection[0];
-    return {
-      types: ['History', 'Activity'],
-      field: selection.attribute as string,
-      operation: 'count' as const,
-      startDate: startDate ?? undefined,
-      endDate: endDate ?? undefined,
-      dateAttribute:
-        selection.date_attribute && selection.date_attribute.length > 0
-          ? selection.date_attribute
-          : 'timestamp',
-      filters: normalizeFilterGroupForBackend(selection.filters),
-      limit: selection.number ?? 10,
-    };
-  }, [startDate, endDate]);
+  const buildQueryVariables = useCallback(
+    (
+      resolvedDataSelection: WidgetDataSelection[],
+    ): AuditsHorizontalBarsDistributionQuery['variables'] => {
+      const selection = resolvedDataSelection[0];
+      return {
+        types: ['History', 'Activity'],
+        field: selection.attribute as string,
+        operation: 'count' as const,
+        startDate: startDate ?? undefined,
+        endDate: endDate ?? undefined,
+        dateAttribute:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        filters: normalizeFilterGroupForBackend(selection.filters),
+        limit: selection.number ?? 10,
+      };
+    },
+    [startDate, endDate],
+  );
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,

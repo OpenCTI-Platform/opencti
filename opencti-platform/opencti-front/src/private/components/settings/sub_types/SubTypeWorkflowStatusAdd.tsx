@@ -25,10 +25,7 @@ const useStyles = makeStyles({
 });
 
 const subTypeWorkflowStatusAddCreationMutation = graphql`
-  mutation SubTypeWorkflowStatusAddCreationMutation(
-    $id: ID!
-    $input: StatusAddInput!
-  ) {
+  mutation SubTypeWorkflowStatusAddCreationMutation($id: ID!, $input: StatusAddInput!) {
     subTypeEdit(id: $id) {
       statusAdd(input: $input) {
         ...SubTypeWorkflowDrawer_subType
@@ -43,9 +40,11 @@ interface SubTypeWorkflowStatusAddProps {
   scope: string;
 }
 
-const SubTypeWorkflowStatusAdd: FunctionComponent<
-  SubTypeWorkflowStatusAddProps
-> = ({ display, subTypeId, scope }) => {
+const SubTypeWorkflowStatusAdd: FunctionComponent<SubTypeWorkflowStatusAddProps> = ({
+  display,
+  subTypeId,
+  scope,
+}) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -54,10 +53,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
   const onReset = () => handleClose();
   const initialValues: StatusForm = { template: null, order: '' };
   const [commit] = useApiMutation(subTypeWorkflowStatusAddCreationMutation);
-  const onSubmit: FormikConfig<StatusForm>['onSubmit'] = (
-    values,
-    { setSubmitting, resetForm },
-  ) => {
+  const onSubmit: FormikConfig<StatusForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues = {
       order: parseInt(values.order, 10),
       template_id: values.template?.value,
@@ -77,12 +73,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
   };
   return (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab
-        onClick={handleOpen}
-        color="primary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
+      <Fab onClick={handleOpen} color="primary" aria-label="Add" className={classes.createButton}>
         <Add />
       </Fab>
       <Formik
@@ -93,16 +84,8 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
-            <Dialog
-              open={open}
-              onClose={handleClose}
-              title={t_i18n('Create a status')}
-            >
-              <StatusTemplateField
-                name="template"
-                setFieldValue={setFieldValue}
-                helpertext=""
-              />
+            <Dialog open={open} onClose={handleClose} title={t_i18n('Create a status')}>
+              <StatusTemplateField name="template" setFieldValue={setFieldValue} helpertext="" />
               <Field
                 component={TextField}
                 variant="standard"
@@ -116,10 +99,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
                 <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                   {t_i18n('Cancel')}
                 </Button>
-                <Button
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
+                <Button onClick={submitForm} disabled={isSubmitting}>
                   {t_i18n('Create')}
                 </Button>
               </DialogActions>

@@ -10,12 +10,7 @@ interface ItemConfidenceProps {
 const ItemConfidence: FunctionComponent<ItemConfidenceProps> = ({ confidence, entityType }) => {
   const { level: confidenceLevel } = useLevel(entityType, 'confidence', confidence);
 
-  return (
-    <Tag
-      label={confidenceLevel.label}
-      color={confidenceLevel.color}
-    />
-  );
+  return <Tag label={confidenceLevel.label} color={confidenceLevel.color} />;
 };
 
 export default ItemConfidence;

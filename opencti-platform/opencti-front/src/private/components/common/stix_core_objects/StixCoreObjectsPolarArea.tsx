@@ -6,7 +6,11 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
@@ -111,13 +115,7 @@ const StixCoreObjectsPolarAreaComponent = ({
   if (data.length === 0) {
     return <WidgetNoData />;
   }
-  return (
-    <WidgetPolarArea
-      data={data}
-      groupBy={groupBy}
-      onMounted={onMounted}
-    />
-  );
+  return <WidgetPolarArea data={data} groupBy={groupBy} onMounted={onMounted} />;
 };
 
 const DATA_SELECTION_TYPES = ['Stix-Core-Object'];
@@ -127,7 +125,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsPolarAreaDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -164,7 +165,13 @@ const StixCoreObjectsPolarArea = ({
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

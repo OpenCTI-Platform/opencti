@@ -1,9 +1,6 @@
 import { adaptFieldValue } from './String';
 
-const formikFieldToEditInput = <T extends Record<string, unknown>>(
-  current: T,
-  previous: T,
-) => {
+const formikFieldToEditInput = <T extends Record<string, unknown>>(current: T, previous: T) => {
   const object = { ...current };
   Object.entries(previous).forEach(([key, value]) => {
     if (object[key] === value) {

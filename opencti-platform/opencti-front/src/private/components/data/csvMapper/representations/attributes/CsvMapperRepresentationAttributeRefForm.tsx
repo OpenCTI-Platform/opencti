@@ -4,7 +4,10 @@ import MuiTextField from '@mui/material/TextField';
 import MUIAutocomplete from '@mui/material/Autocomplete';
 import { representationLabel } from '@components/data/csvMapper/representations/RepresentationUtils';
 import * as R from 'ramda';
-import { getBasedOnRepresentations, getInfoForRef } from '@components/data/csvMapper/representations/attributes/AttributeUtils';
+import {
+  getBasedOnRepresentations,
+  getInfoForRef,
+} from '@components/data/csvMapper/representations/attributes/AttributeUtils';
 import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import { CsvMapperFormData } from '@components/data/csvMapper/CsvMapper';
@@ -15,7 +18,10 @@ import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/repr
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
+import {
+  resolveTypesForRelationship,
+  resolveTypesForRelationshipRef,
+} from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
 import { useTheme } from '@mui/styles';
@@ -23,8 +29,10 @@ import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
-interface CsvMapperRepresentationAttributeRefFormProps
-  extends FieldProps<RepresentationAttributeForm, CsvMapperFormData> {
+interface CsvMapperRepresentationAttributeRefFormProps extends FieldProps<
+  RepresentationAttributeForm,
+  CsvMapperFormData
+> {
   representation: CsvMapperRepresentationFormData;
   schemaAttribute: SchemaAttribute;
   label: string;
@@ -96,7 +104,11 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
   let options: CsvMapperRepresentationFormData[] = [];
 
   // We don't need to resolve those different types, as they can link any entity between them.
-  if (representation.target_type === 'related-to' || representation.target_type === 'revoked-by' || representation.target_type === 'stix-sighting-relationship') {
+  if (
+    representation.target_type === 'related-to' ||
+    representation.target_type === 'revoked-by' ||
+    representation.target_type === 'stix-sighting-relationship'
+  ) {
     options = filterOptions(entity_representations);
   } else if (representation.target_type) {
     const relationshipTypes = resolveTypesForRelationship(
@@ -111,21 +123,23 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
       representation.target_type,
       schemaAttribute.name,
     );
-    const everyRepresentationTypes = [
-      ...relationshipTypes,
-      ...relationshipRefTypes,
-    ];
+    const everyRepresentationTypes = [...relationshipTypes, ...relationshipRefTypes];
     if (isStixCoreObjects(everyRepresentationTypes)) {
-      schema.sdos.map((sdo) => sdo.label).forEach((sdoType) => everyRepresentationTypes.push(sdoType));
-      schema.scos.map((sco) => sco.label).forEach((scoType) => everyRepresentationTypes.push(scoType));
+      schema.sdos
+        .map((sdo) => sdo.label)
+        .forEach((sdoType) => everyRepresentationTypes.push(sdoType));
+      schema.scos
+        .map((sco) => sco.label)
+        .forEach((scoType) => everyRepresentationTypes.push(scoType));
     }
     if (isStixCoreRelationships(everyRepresentationTypes)) {
-      schema.scrs.map((sco) => sco.label).forEach((srcType) => everyRepresentationTypes.push(srcType));
+      schema.scrs
+        .map((sco) => sco.label)
+        .forEach((srcType) => everyRepresentationTypes.push(srcType));
     }
     const allElements = [...entity_representations, ...relationship_representations];
     options = filterOptions(
-      allElements
-        .filter((r) => r.target_type && everyRepresentationTypes.includes(r.target_type)),
+      allElements.filter((r) => r.target_type && everyRepresentationTypes.includes(r.target_type)),
     );
   }
 
@@ -196,7 +210,10 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
             autoHighlight
             multiple
             getOptionLabel={(option) => {
-              const optionIndex = entity_representations.indexOf(option) >= 0 ? entity_representations.indexOf(option) : relationship_representations.indexOf(option);
+              const optionIndex =
+                entity_representations.indexOf(option) >= 0
+                  ? entity_representations.indexOf(option)
+                  : relationship_representations.indexOf(option);
               return representationLabel(optionIndex, option, t_i18n);
             }}
             options={options}
@@ -221,7 +238,9 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
             openOnFocus
             autoSelect={false}
             autoHighlight
-            getOptionLabel={(option) => representationLabel(entity_representations.indexOf(option), option, t_i18n)}
+            getOptionLabel={(option) =>
+              representationLabel(entity_representations.indexOf(option), option, t_i18n)
+            }
             options={options}
             value={R.head(getBasedOnRepresentations(value, options)) || null}
             onChange={(_, val) => onValueChange(val)}

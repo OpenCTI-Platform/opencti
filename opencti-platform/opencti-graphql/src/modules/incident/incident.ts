@@ -17,7 +17,4 @@ const incidentDefaultOverviewLayout: OverviewLayoutCustomization[] = [
 ];
 
 // Register only the default layout
-registerEntityOverviewLayoutCustomization(
-  ENTITY_TYPE_INCIDENT,
-  incidentDefaultOverviewLayout,
-);
+registerEntityOverviewLayoutCustomization(ENTITY_TYPE_INCIDENT, incidentDefaultOverviewLayout);

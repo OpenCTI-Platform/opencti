@@ -77,18 +77,15 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
 
   return (
     <span>
-      {(groupsName.length > 0 || orgsName.length > 0)
-        && (
-          <span className={classes.indication}>
-              &emsp;
-            {`(${t_i18n('Hidden in ')}`}
-            {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
-            {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}
-            {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`}
-            )
-          </span>
-        )
-      }
+      {(groupsName.length > 0 || orgsName.length > 0) && (
+        <span className={classes.indication}>
+          &emsp;
+          {`(${t_i18n('Hidden in ')}`}
+          {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
+          {groupsName.length > 0 && orgsName.length > 0 && `${t_i18n(' & ')}`}
+          {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`})
+        </span>
+      )}
     </span>
   );
 };
@@ -105,16 +102,13 @@ const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <HiddenTypesIndicatorComponent
             queryRef={queryRef}
             platformHiddenTargetType={platformHiddenTargetType}
           />
         </React.Suspense>
-      )
-      }
+      )}
     </>
   );
 };

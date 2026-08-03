@@ -29,10 +29,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const settingsMessageEditionPatch = graphql`
-  mutation SettingsMessageFormPatchMutation(
-    $id: ID!
-    $input: SettingsMessageInput!
-  ) {
+  mutation SettingsMessageFormPatchMutation($id: ID!, $input: SettingsMessageInput!) {
     settingsEdit(id: $id) {
       editMessage(input: $input) {
         messages_administration {
@@ -43,18 +40,19 @@ const settingsMessageEditionPatch = graphql`
   }
 `;
 
-const messageValidation = () => Yup.object().shape({
-  message: Yup.string().required(),
-  activated: Yup.boolean().required(),
-  dismissible: Yup.boolean().required(),
-  color: Yup.string().nullable(),
-  recipients: Yup.array().nullable(),
-});
+const messageValidation = () =>
+  Yup.object().shape({
+    message: Yup.string().required(),
+    activated: Yup.boolean().required(),
+    dismissible: Yup.boolean().required(),
+    color: Yup.string().nullable(),
+    recipients: Yup.array().nullable(),
+  });
 
 type SettingsMessageInput = Partial<
   Pick<
     SettingsMessagesLine_settingsMessage$data,
-'id' | 'activated' | 'message' | 'dismissible'
+    'id' | 'activated' | 'message' | 'dismissible'
   > & { recipients: FieldOption[] }
 >;
 
@@ -74,10 +72,7 @@ const SettingsMessageForm = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const [commit] = useApiMutation(settingsMessageEditionPatch);
-  const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<SettingsMessageInput>['onSubmit'] = (values, { setSubmitting }) => {
     commit({
       variables: {
         id: settingsId,

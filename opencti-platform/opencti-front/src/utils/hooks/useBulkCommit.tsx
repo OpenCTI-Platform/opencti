@@ -122,9 +122,7 @@ function useBulkCommit<M extends MutationParameters>({
             {inError.map(([variables, error], index) => {
               return (
                 <Tooltip key={index} title={error.message}>
-                  <ListItem divider>
-                    {variablesToString(variables)}
-                  </ListItem>
+                  <ListItem divider>{variablesToString(variables)}</ListItem>
                 </Tooltip>
               );
             })}

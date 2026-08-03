@@ -4,10 +4,17 @@ import { patchAttribute } from '../database/middleware';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { notify } from '../database/redis';
 import { completeConnector, connector } from '../database/repository';
-import type { Connector, ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
+import type {
+  Connector,
+  ConnectorContractConfiguration,
+  ContractConfigInput,
+} from '../generated/graphql';
 import { publishUserAction } from '../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, findContractByContainerImage } from '../modules/catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  findContractByContainerImage,
+} from '../modules/catalog/catalog-domain';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from '../types/connector';
@@ -111,9 +118,7 @@ const categorizeKeys = (
 
 const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>): IgnoredKey[] => {
   const ignored: IgnoredKey[] = [];
-  const schemaKeysUpper = new Set(
-    Object.keys(schemaProperties).map((k) => k.toUpperCase()),
-  );
+  const schemaKeysUpper = new Set(Object.keys(schemaProperties).map((k) => k.toUpperCase()));
 
   configMap.forEach((value: string, key: string) => {
     if (!schemaKeysUpper.has(key)) {
@@ -128,7 +133,13 @@ const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>):
   return ignored;
 };
 
-export const assessConnectorMigration = async (context: AuthContext, user: AuthUser, connectorId: string, containerImage: string, configuration: ConfigInput[]) => {
+export const assessConnectorMigration = async (
+  context: AuthContext,
+  user: AuthUser,
+  connectorId: string,
+  containerImage: string,
+  configuration: ConfigInput[],
+) => {
   const existingConnector = await connector(context, user, connectorId);
 
   if (!existingConnector) {
@@ -170,11 +181,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   const schemaProperties = contract.config_schema.properties;
   const requiredKeys = contract.config_schema.required || [];
 
-  const { mapped, missing } = categorizeKeys(
-    schemaProperties,
-    requiredKeys,
-    configMap,
-  );
+  const { mapped, missing } = categorizeKeys(schemaProperties, requiredKeys, configMap);
 
   const ignored = findIgnoredKeys(schemaProperties, configMap);
 
@@ -200,9 +207,10 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     mapped,
     ignored,
     missing,
-    message: configuration === null
-      ? 'No configuration provided. You must provide configuration manually with exact schema keys.'
-      : null,
+    message:
+      configuration === null
+        ? 'No configuration provided. You must provide configuration manually with exact schema keys.'
+        : null,
   };
 };
 
@@ -263,9 +271,7 @@ export const migrateConnectorToManaged = async (
   const configMap = new Map([...autoMappedConfig, ...userConfig]);
 
   const schemaProperties = contract.config_schema.properties;
-  const schemaKeysUpper = new Set(
-    Object.keys(schemaProperties).map((k) => k.toUpperCase()),
-  );
+  const schemaKeysUpper = new Set(Object.keys(schemaProperties).map((k) => k.toUpperCase()));
 
   const invalidKeys: string[] = [];
   userConfig.forEach((value: string, key: string) => {
@@ -281,10 +287,12 @@ export const migrateConnectorToManaged = async (
     });
   }
 
-  const configurationArray: ContractConfigInput[] = Array.from(configMap.entries()).map(([key, value]) => ({
-    key,
-    value,
-  }));
+  const configurationArray: ContractConfigInput[] = Array.from(configMap.entries()).map(
+    ([key, value]) => ({
+      key,
+      value,
+    }),
+  );
 
   let configurations: ConnectorContractConfiguration[];
   try {
@@ -307,19 +315,16 @@ export const migrateConnectorToManaged = async (
     (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key),
   );
 
-  const existingUser = await resolveUserByIdFromCache(context, existingConnector.connector_user_id) as AuthUser;
+  const existingUser = (await resolveUserByIdFromCache(
+    context,
+    existingConnector.connector_user_id,
+  )) as AuthUser;
 
   // If existing user is not a service account, transform it to service account
-  if (
-    !isServiceAccountUser(existingUser)
-    && convertUserToServiceAccount
-  ) {
-    await userEditField(
-      context,
-      user,
-      existingUser.id,
-      [{ key: 'user_service_account', value: [true] }],
-    );
+  if (!isServiceAccountUser(existingUser) && convertUserToServiceAccount) {
+    await userEditField(context, user, existingUser.id, [
+      { key: 'user_service_account', value: [true] },
+    ]);
   }
 
   const managedConnectorData: any = {

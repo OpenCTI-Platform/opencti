@@ -18,33 +18,30 @@ class SectorsLinesComponent extends Component {
     const { data, keyword, classes } = this.props;
     const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
     const filterSubsector = (n) => n.isSubSector === false;
-    const filterByKeyword = (n) => keyword === ''
-      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-      !== -1
-      || (n.subsectors_text ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-      !== -1;
+    const filterByKeyword = (n) =>
+      keyword === '' ||
+      n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+      (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1 ||
+      (n.subsectors_text ?? '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     const sectors = pipe(
       pathOr([], ['sectors', 'edges']),
       map((n) => n.node),
-      map((n) => assoc(
-        'subsectors_text',
-        pipe(
-          map((o) => `${o.node.name} ${o.node.description}`),
-          join(' | '),
-        )(pathOr([], ['subSectors', 'edges'], n)),
-        n,
-      )),
+      map((n) =>
+        assoc(
+          'subsectors_text',
+          pipe(
+            map((o) => `${o.node.name} ${o.node.description}`),
+            join(' | '),
+          )(pathOr([], ['subSectors', 'edges'], n)),
+          n,
+        ),
+      ),
       filter(filterSubsector),
       filter(filterByKeyword),
       sortByNameCaseInsensitive,
     )(data);
     return (
-      <List
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        className={classes.root}
-      >
+      <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
         {data
           ? map((sector) => {
               const subSectors = pipe(
@@ -53,13 +50,7 @@ class SectorsLinesComponent extends Component {
                 filter(filterByKeyword),
                 sortByNameCaseInsensitive,
               )(sector);
-              return (
-                <SectorLine
-                  key={sector.id}
-                  node={sector}
-                  subSectors={subSectors}
-                />
-              );
+              return <SectorLine key={sector.id} node={sector} subSectors={subSectors} />;
             }, sectors)
           : Array.from(Array(20), (e, i) => <SectorLineDummy key={i} />)}
       </List>
@@ -84,12 +75,8 @@ const SectorsLinesFragment = createPaginationContainer(
   {
     data: graphql`
       fragment SectorsLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-      ) {
-        sectors(first: $count, after: $cursor)
-          @connection(key: "Pagination_sectors") {
+      @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, cursor: { type: "ID" }) {
+        sectors(first: $count, after: $cursor) @connection(key: "Pagination_sectors") {
           edges {
             node {
               id

@@ -23,9 +23,7 @@ const ExternalReferenceDetailsComponent = ({
 }: ExternalReferenceDetailsComponentProps) => {
   const { t_i18n } = useFormatter();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
-  const [externalLink, setExternalLink] = useState<string | URL | undefined>(
-    undefined,
-  );
+  const [externalLink, setExternalLink] = useState<string | URL | undefined>(undefined);
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
@@ -53,32 +51,31 @@ const ExternalReferenceDetailsComponent = ({
         }}
       >
         <div>
-          <Label>
-            {t_i18n('External ID')}
-          </Label>
+          <Label>{t_i18n('External ID')}</Label>
           <span>{externalReference.external_id ?? EMPTY_VALUE}</span>
         </div>
 
         <div>
-          <Label action={(
-            <Tooltip title={t_i18n('Browse the link')}>
-              <IconButton
-                onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
-                color="primary"
-                disabled={!externalReference.url}
-              >
-                <OpenInBrowserOutlined />
-              </IconButton>
-            </Tooltip>
-          )}
+          <Label
+            action={
+              <Tooltip title={t_i18n('Browse the link')}>
+                <IconButton
+                  onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
+                  color="primary"
+                  disabled={!externalReference.url}
+                >
+                  <OpenInBrowserOutlined />
+                </IconButton>
+              </Tooltip>
+            }
           >
             {t_i18n('URL')}
           </Label>
-          {
-            externalReference.url
-              ? <pre style={{ minHeight: 35 }}>{externalReference.url}</pre>
-              : <span>{EMPTY_VALUE}</span>
-          }
+          {externalReference.url ? (
+            <pre style={{ minHeight: 35 }}>{externalReference.url}</pre>
+          ) : (
+            <span>{EMPTY_VALUE}</span>
+          )}
         </div>
 
         <div>
@@ -93,35 +90,30 @@ const ExternalReferenceDetailsComponent = ({
         title={t_i18n('Are you sure?')}
         size="small"
       >
-        <DialogContentText>
-          {t_i18n('Do you want to browse this external link?')}
-        </DialogContentText>
+        <DialogContentText>{t_i18n('Do you want to browse this external link?')}</DialogContentText>
         <DialogActions>
-          <Button variant="secondary" onClick={handleCloseExternalLink}>{t_i18n('Cancel')}</Button>
-          <Button onClick={handleBrowseExternalLink}>
-            {t_i18n('Confirm')}
+          <Button variant="secondary" onClick={handleCloseExternalLink}>
+            {t_i18n('Cancel')}
           </Button>
+          <Button onClick={handleBrowseExternalLink}>{t_i18n('Confirm')}</Button>
         </DialogActions>
       </Dialog>
     </div>
   );
 };
 
-const ExternalReferenceDetails = createFragmentContainer(
-  ExternalReferenceDetailsComponent,
-  {
-    externalReference: graphql`
-      fragment ExternalReferenceDetails_externalReference on ExternalReference {
+const ExternalReferenceDetails = createFragmentContainer(ExternalReferenceDetailsComponent, {
+  externalReference: graphql`
+    fragment ExternalReferenceDetails_externalReference on ExternalReference {
+      id
+      external_id
+      url
+      creators {
         id
-        external_id
-        url
-        creators {
-          id
-          name
-        }
+        name
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default ExternalReferenceDetails;

@@ -62,7 +62,8 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     settings: (settings ?? {}) as UserContextType['settings'],
     bannerSettings: (bannerSettings ?? {}) as UserContextType['bannerSettings'],
     entitySettings: (entitySettings ?? {}) as UserContextType['entitySettings'],
-    platformModuleHelpers: (platformModuleHelpers ?? {}) as UserContextType['platformModuleHelpers'],
+    platformModuleHelpers: (platformModuleHelpers ??
+      {}) as UserContextType['platformModuleHelpers'],
     schema: (schema ?? {}) as UserContextType['schema'],
     isXTMHubAccessible: true,
     about: {

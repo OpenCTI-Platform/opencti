@@ -71,7 +71,9 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
 
   let chartCurvePoints: DecayHistory[] = [];
   if (decayRule.decaySettingsChartData?.live_score_serie) {
-    chartCurvePoints = decayRule.decaySettingsChartData.live_score_serie.map((historyPoint) => historyPoint);
+    chartCurvePoints = decayRule.decaySettingsChartData.live_score_serie.map(
+      (historyPoint) => historyPoint,
+    );
   }
 
   let chartDecayReactionPoints: number[] = [];
@@ -82,23 +84,23 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   const decayFilters = decayRule?.decay_filters ? JSON.parse(decayRule.decay_filters) : null;
 
   return (
-    <div style={{
-      margin: 0,
-      padding: '0 200px 50px 0',
-    }}
+    <div
+      style={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
     >
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Customization') },
-        { label: t_i18n('Decay rules'), link: '/dashboard/settings/customization/decay' },
-        { label: decayRule.name, current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Decay rules'), link: '/dashboard/settings/customization/decay' },
+          { label: decayRule.name, current: true },
+        ]}
       />
       <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
         <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
-          <TitleMainEntity>
-            {decayRule.name}
-          </TitleMainEntity>
+          <TitleMainEntity>{decayRule.name}</TitleMainEntity>
           <ItemBoolean
             status={decayRule.active ?? false}
             label={decayRule.active ? t_i18n('Active') : t_i18n('Inactive')}
@@ -111,25 +113,25 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           </div>
         )}
       </div>
-      <Grid
-        container={true}
-        spacing={3}
-      >
+      <Grid container={true} spacing={3}>
         <Grid item xs={6}>
           <Card title={t_i18n('Configuration')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Description')}
-                </Label>
+                <Label>{t_i18n('Description')}</Label>
                 <ExpandableMarkdown source={decayRule.description} limit={300} />
               </Grid>
               <Grid item xs={12}>
-                <Label action={(
-                  <Tooltip title={t_i18n('Matches all indicator main observable types if none is listed.')}>
-                    <InformationOutline fontSize="small" color="primary" />
-                  </Tooltip>
-                )}
+                <Label
+                  action={
+                    <Tooltip
+                      title={t_i18n(
+                        'Matches all indicator main observable types if none is listed.',
+                      )}
+                    >
+                      <InformationOutline fontSize="small" color="primary" />
+                    </Tooltip>
+                  }
                 >
                   {t_i18n('Decay indicator filter')}
                 </Label>
@@ -148,29 +150,21 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Lifetime (in days)')}
-                </Label>
+                <Label>{t_i18n('Lifetime (in days)')}</Label>
                 {decayRule.decay_lifetime}
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Decay factor')}
-                </Label>
+                <Label>{t_i18n('Decay factor')}</Label>
                 {decayRule.decay_pound}
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Reaction points')}
-                </Label>
+                <Label>{t_i18n('Reaction points')}</Label>
                 <FieldOrEmpty source={decayRule.decay_points}>
                   <span>{decayRule.decay_points?.join(', ')}</span>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Revoke score')}
-                </Label>
+                <Label>{t_i18n('Revoke score')}</Label>
                 {decayRule.decay_revoke_score}
               </Grid>
             </Grid>
@@ -179,7 +173,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         <Grid item xs={6} container={true} gap={2}>
           <Grid item xs={12}>
             <Card title={t_i18n('Impact')}>
-              {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
+              {decayRule.appliedIndicatorsCount}{' '}
+              {t_i18n('indicators currently impacted by this rule')}
             </Card>
           </Grid>
           <Grid item xs={12}>
@@ -201,10 +196,7 @@ const DecayRule = () => {
   const { decayRuleId } = useParams();
   if (!decayRuleId) return null;
 
-  const queryRef = useQueryLoading<DecayRuleQuery>(
-    decayRuleQuery,
-    { id: decayRuleId },
-  );
+  const queryRef = useQueryLoading<DecayRuleQuery>(decayRuleQuery, { id: decayRuleId });
 
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>

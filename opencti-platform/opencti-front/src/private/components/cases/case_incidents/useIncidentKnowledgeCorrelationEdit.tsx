@@ -10,11 +10,7 @@ const incidentKnowledgeCorrelationEdit = graphql`
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         id
       }
     }

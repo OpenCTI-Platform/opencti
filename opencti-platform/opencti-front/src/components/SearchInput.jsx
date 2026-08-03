@@ -1,7 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { ManageSearchOutlined, Search, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
+import {
+  ManageSearchOutlined,
+  Search,
+  TuneOutlined,
+  KeyboardArrowDownOutlined,
+} from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { useNavigate } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
@@ -81,10 +86,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function GradientBorderTextField({
-  isActive,
-  ...props
-}) {
+export function GradientBorderTextField({ isActive, ...props }) {
   const theme = useTheme();
 
   return (
@@ -133,8 +135,7 @@ export function GradientBorderTextField({
                 ${theme.palette.ai?.light},
                 ${theme.palette.ai?.dark}
               )`,
-              WebkitMask:
-                'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+              WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               maskComposite: 'exclude',
               pointerEvents: 'none',
               opacity: 0.8,
@@ -200,7 +201,9 @@ const SearchInput = (props) => {
   const isAIEnabled = variant === 'topBar' && isEnterpriseEdition && enabled && configured;
   const isNLQActivated = isAIEnabled && isNlqMode(mode);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
-  const { settings: { id: settingsId } } = useAuth();
+  const {
+    settings: { id: settingsId },
+  } = useAuth();
 
   // Derive selected agent from mode
   const selectedAgentSlug = nlqSlugFromMode(mode);
@@ -250,10 +253,13 @@ const SearchInput = (props) => {
     }
   }, [isAIEnabled, fullyActive, useXtmOne]);
 
-  const handleOpenNlqMenu = useCallback((event) => {
-    setNlqMenuAnchor(event.currentTarget);
-    fetchNlqAgentsIfNeeded();
-  }, [fetchNlqAgentsIfNeeded]);
+  const handleOpenNlqMenu = useCallback(
+    (event) => {
+      setNlqMenuAnchor(event.currentTarget);
+      fetchNlqAgentsIfNeeded();
+    },
+    [fetchNlqAgentsIfNeeded],
+  );
 
   const handleCloseNlqMenu = () => {
     setNlqMenuAnchor(null);
@@ -269,35 +275,38 @@ const SearchInput = (props) => {
   };
 
   // Click on the NLQ toggle: activate NLQ and execute search if there's a value
-  const handleNlqToggleClick = useCallback((event) => {
-    if (!isAIEnabled) return;
-    const isCGUStatusPending = useXtmOne && !fullyActive;
-    if (isCGUStatusPending) {
-      setDisplayCGUDialog(true);
-      return;
-    }
-    if (isNlqMode(mode)) {
-      // Already in NLQ mode — do nothing (user switches away via Search/Bulk toggles)
-      return;
-    }
-    let agentSlug;
-    if (useXtmOne && defaultNlqSlug) {
-      // XTM One mode — activate with the default agent
-      setMode(`nlq:${defaultNlqSlug}`);
-      agentSlug = defaultNlqSlug;
-    } else if (useXtmOne) {
-      // XTM One but agents not loaded yet — open the menu as fallback
-      handleOpenNlqMenu(event);
-      return;
-    } else {
-      // Legacy mode — activate NLQ without an agent
-      setMode('nlq:');
-    }
-    // Execute NLQ search immediately if there's a value
-    if (searchValue && typeof onSubmit === 'function') {
-      onSubmit(searchValue, true, agentSlug || undefined);
-    }
-  }, [isAIEnabled, mode, useXtmOne, defaultNlqSlug, handleOpenNlqMenu, searchValue, onSubmit]);
+  const handleNlqToggleClick = useCallback(
+    (event) => {
+      if (!isAIEnabled) return;
+      const isCGUStatusPending = useXtmOne && !fullyActive;
+      if (isCGUStatusPending) {
+        setDisplayCGUDialog(true);
+        return;
+      }
+      if (isNlqMode(mode)) {
+        // Already in NLQ mode — do nothing (user switches away via Search/Bulk toggles)
+        return;
+      }
+      let agentSlug;
+      if (useXtmOne && defaultNlqSlug) {
+        // XTM One mode — activate with the default agent
+        setMode(`nlq:${defaultNlqSlug}`);
+        agentSlug = defaultNlqSlug;
+      } else if (useXtmOne) {
+        // XTM One but agents not loaded yet — open the menu as fallback
+        handleOpenNlqMenu(event);
+        return;
+      } else {
+        // Legacy mode — activate NLQ without an agent
+        setMode('nlq:');
+      }
+      // Execute NLQ search immediately if there's a value
+      if (searchValue && typeof onSubmit === 'function') {
+        onSubmit(searchValue, true, agentSlug || undefined);
+      }
+    },
+    [isAIEnabled, mode, useXtmOne, defaultNlqSlug, handleOpenNlqMenu, searchValue, onSubmit],
+  );
 
   // ── Mode change handler ────────────────────────────────────────────────
   const handleModeChange = (_event, newMode) => {
@@ -369,9 +378,7 @@ const SearchInput = (props) => {
           isActive={false}
           slotProps={{
             input: {
-              startAdornment: (
-                <Search fontSize="small" sx={{ mr: 0.5 }} />
-              ),
+              startAdornment: <Search fontSize="small" sx={{ mr: 0.5 }} />,
               classes: {
                 root: classRoot,
                 input: classInput,
@@ -476,11 +483,12 @@ const SearchInput = (props) => {
                   }}
                 />
               ),
-              endAdornment: isNLQActivated && isNLQLoading ? (
-                <InputAdornment position="end">
-                  <Loader variant="inline" />
-                </InputAdornment>
-              ) : null,
+              endAdornment:
+                isNLQActivated && isNLQLoading ? (
+                  <InputAdornment position="end">
+                    <Loader variant="inline" />
+                  </InputAdornment>
+                ) : null,
               classes: {
                 root: classRoot,
                 input: classInput,
@@ -526,13 +534,19 @@ const SearchInput = (props) => {
           {/* NLQ split button — icon toggles NLQ, caret opens agent selector */}
           {isAIEnabled && (
             <Tooltip
-              title={(isCGUStatusPending && !isAdmin)
-                ? t_i18n('Ask Ariane isn\'t activated yet. Please reach out to your administrator to enable this feature.')
-                : nlqNoAgentAvailable
-                  ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
-                  : isNLQActivated && selectedAgent
-                    ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                    : t_i18n('Ask AI')}
+              title={
+                isCGUStatusPending && !isAdmin
+                  ? t_i18n(
+                      "Ask Ariane isn't activated yet. Please reach out to your administrator to enable this feature.",
+                    )
+                  : nlqNoAgentAvailable
+                    ? t_i18n(
+                        'No agent available for this action. Ask your administrator to configure XTM One.',
+                      )
+                    : isNLQActivated && selectedAgent
+                      ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                      : t_i18n('Ask AI')
+              }
             >
               <span>
                 <ToggleButton
@@ -543,11 +557,7 @@ const SearchInput = (props) => {
                   disabled={nlqNoAgentAvailable || (isCGUStatusPending && !isAdmin)}
                 >
                   <Stack direction="row" alignItems="center" spacing={0}>
-                    <FiligranIcon
-                      icon={LogoXtmOneIcon}
-                      size="small"
-                      color="ai"
-                    />
+                    <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
                     {/* Caret click zone — larger hit area with visual separator */}
                     {useXtmOne && nlqAgents.length > 0 && (
                       <Box
@@ -601,39 +611,38 @@ const SearchInput = (props) => {
             <MenuItem disabled>
               <ListItemText
                 primary={t_i18n('No agent available')}
-                secondary={t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
+                secondary={t_i18n(
+                  'No agent available for this action. Ask your administrator to configure XTM One.',
+                )}
                 slotProps={{ secondary: { sx: { whiteSpace: 'normal' } } }}
               />
             </MenuItem>
           )}
-          {!nlqAgentsLoading && nlqAgents.map((agent) => (
-            <MenuItem
-              key={agent.id}
-              onClick={() => handleSelectAgent(agent)}
-              selected={selectedAgentSlug === agent.slug}
-            >
-              <ListItemIcon>
-                <FiligranIcon
-                  icon={LogoXtmOneIcon}
-                  size="small"
-                  color="ai"
-                />
-              </ListItemIcon>
-              <ListItemText
-                primary={agent.name}
-                secondary={agent.description}
-                slotProps={{
-                  secondary: {
-                    sx: {
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
+          {!nlqAgentsLoading &&
+            nlqAgents.map((agent) => (
+              <MenuItem
+                key={agent.id}
+                onClick={() => handleSelectAgent(agent)}
+                selected={selectedAgentSlug === agent.slug}
+              >
+                <ListItemIcon>
+                  <FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />
+                </ListItemIcon>
+                <ListItemText
+                  primary={agent.name}
+                  secondary={agent.description}
+                  slotProps={{
+                    secondary: {
+                      sx: {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      },
                     },
-                  },
-                }}
-              />
-            </MenuItem>
-          ))}
+                  }}
+                />
+              </MenuItem>
+            ))}
         </Menu>
       </Stack>
 
@@ -648,13 +657,18 @@ const SearchInput = (props) => {
           openDrawer={displayEEDialog}
           handleCloseDrawer={() => setDisplayEEDialog(false)}
           initialValue={{
-            description: t_i18n('To use this AI feature in the enterprise edition, please add a token.'),
+            description: t_i18n(
+              'To use this AI feature in the enterprise edition, please add a token.',
+            ),
           }}
         />
       )}
 
       {displayCGUDialog && (
-        <ValidateTermsOfUseDialog open={displayCGUDialog} onClose={() => setDisplayCGUDialog(false)} />
+        <ValidateTermsOfUseDialog
+          open={displayCGUDialog}
+          onClose={() => setDisplayCGUDialog(false)}
+        />
       )}
     </>
   );

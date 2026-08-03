@@ -24,19 +24,16 @@ interface DraftReviewEntityFieldsComponentProps {
   renderChangeValues: RenderChangeValuesFn;
 }
 
-const DraftReviewEntityFieldsComponent: FunctionComponent<DraftReviewEntityFieldsComponentProps> = ({
-  queryRef,
-  draftId,
-  mode,
-  labelMap,
-  renderChangeValues,
-}) => {
+const DraftReviewEntityFieldsComponent: FunctionComponent<
+  DraftReviewEntityFieldsComponentProps
+> = ({ queryRef, draftId, mode, labelMap, renderChangeValues }) => {
   const fieldsData = usePreloadedQuery<DraftReviewEntityFieldsQuery>(
     draftReviewEntityFieldsQuery,
     queryRef,
   );
 
-  const rawFields: ReadonlyArray<{ field: string; values: ReadonlyArray<string> }> = fieldsData.draftWorkspaceEntityFields ?? [];
+  const rawFields: ReadonlyArray<{ field: string; values: ReadonlyArray<string> }> =
+    fieldsData.draftWorkspaceEntityFields ?? [];
   const changes: Change[] = rawFields
     .filter(({ field }) => !EXCLUDED_PATCH_FIELDS.has(field))
     .map(({ field, values }) => ({
@@ -74,10 +71,10 @@ const DraftReviewEntityFields: FunctionComponent<DraftReviewEntityFieldsProps> =
   labelMap,
   renderChangeValues,
 }) => {
-  const queryRef = useQueryLoading<DraftReviewEntityFieldsQuery>(
-    draftReviewEntityFieldsQuery,
-    { draftId, entityId },
-  );
+  const queryRef = useQueryLoading<DraftReviewEntityFieldsQuery>(draftReviewEntityFieldsQuery, {
+    draftId,
+    entityId,
+  });
   return (
     <Suspense fallback={<Loader />}>
       {queryRef && (

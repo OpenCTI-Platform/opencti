@@ -15,13 +15,13 @@ const publicStixCoreObjectsRadarQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixCoreObjectsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -83,10 +83,7 @@ const PublicStixCoreObjectsRadarComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixCoreObjectsDistribution
-    && publicStixCoreObjectsDistribution.length > 0
-  ) {
+  if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
     return (
       <WidgetRadar
         data={[...publicStixCoreObjectsDistribution]}
@@ -118,15 +115,10 @@ const PublicStixCoreObjectsRadar = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsRadarComponent
-            queryRef={queryRef}
-            dataSelection={dataSelection}
-          />
+          <PublicStixCoreObjectsRadarComponent queryRef={queryRef} dataSelection={dataSelection} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

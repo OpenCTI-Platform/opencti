@@ -1,5 +1,15 @@
 import React, { useRef, useState } from 'react';
-import { ButtonGroup, ClickAwayListener, DialogActions, Grow, MenuItem, MenuList, Paper, Popper, Tooltip } from '@mui/material';
+import {
+  ButtonGroup,
+  ClickAwayListener,
+  DialogActions,
+  Grow,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
+  Tooltip,
+} from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import CircleIcon from '@mui/icons-material/Circle';
@@ -109,7 +119,9 @@ const PublishButton = ({
             disabled={mainButtonDisabled}
             sx={{ width: BUTTON_WIDTH, borderRadius: '4px 0 0 4px' }}
           >
-            {!hasUnpublishedChanges && validationErrors.length === 0 ? t_i18n('Published') : t_i18n('Publish')}
+            {!hasUnpublishedChanges && validationErrors.length === 0
+              ? t_i18n('Published')
+              : t_i18n('Publish')}
           </Button>
           <Button
             variant="secondary"
@@ -140,12 +152,13 @@ const PublishButton = ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="workflow-action-menu" autoFocusItem>
-                  <MenuItem onClick={handleRestoreClick} disabled={!hasUnpublishedChanges || !hasPublishedVersion}>
+                  <MenuItem
+                    onClick={handleRestoreClick}
+                    disabled={!hasUnpublishedChanges || !hasPublishedVersion}
+                  >
                     {t_i18n('Restore published version')}
                   </MenuItem>
-                  <MenuItem onClick={handleResetClick}>
-                    {t_i18n('Reset workflow')}
-                  </MenuItem>
+                  <MenuItem onClick={handleResetClick}>{t_i18n('Reset workflow')}</MenuItem>
                 </MenuList>
               </ClickAwayListener>
             </Paper>
@@ -158,7 +171,9 @@ const PublishButton = ({
         title={t_i18n('Reset workflow')}
         size="small"
       >
-        {t_i18n('This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?')}
+        {t_i18n(
+          'This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?',
+        )}
         <DialogActions>
           <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
             {t_i18n('Cancel')}

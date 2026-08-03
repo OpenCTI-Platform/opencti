@@ -14,7 +14,11 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
@@ -32,10 +36,7 @@ interface TaxiiCollectionCreationForm {
 }
 
 const taxiiCollectionMutationFieldPatch = graphql`
-  mutation TaxiiCollectionEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation TaxiiCollectionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     taxiiCollectionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...TaxiiCollectionEdition_taxiiCollection
@@ -44,17 +45,20 @@ const taxiiCollectionMutationFieldPatch = graphql`
   }
 `;
 
-const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().shape({
-  name: Yup.string().required(requiredSentence),
-  description: Yup.string().nullable(),
-  restricted_members: Yup.array().nullable(),
-  taxii_public: Yup.bool().nullable(),
-  taxii_public_user_id: Yup.mixed().nullable(),
-  include_inferences: Yup.bool().nullable(),
-  score_to_confidence: Yup.bool().nullable(),
-});
+const taxiiCollectionValidation = (requiredSentence: string) =>
+  Yup.object().shape({
+    name: Yup.string().required(requiredSentence),
+    description: Yup.string().nullable(),
+    restricted_members: Yup.array().nullable(),
+    taxii_public: Yup.bool().nullable(),
+    taxii_public_user_id: Yup.mixed().nullable(),
+    include_inferences: Yup.bool().nullable(),
+    score_to_confidence: Yup.bool().nullable(),
+  });
 
-const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
+const TaxiiCollectionEditionContainer: FunctionComponent<{
+  taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data;
+}> = ({ taxiiCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
@@ -67,7 +71,9 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     score_to_confidence: taxiiCollection.score_to_confidence,
     taxii_public_user_id: convertUser(taxiiCollection, 'taxii_public_user'),
   };
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
+  const [filters, helpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined,
+  );
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
     taxiiCollectionValidation(t_i18n('This field is required'))
       .validateAt(name, { [name]: value })
@@ -89,24 +95,25 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       .catch(() => false);
   };
 
-  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) => taxiiCollectionValidation(t_i18n('This field is required'))
-    .validateAt(name, { [name]: value })
-    .then(() => {
-      commitMutation({
-        mutation: taxiiCollectionMutationFieldPatch,
-        variables: {
-          id: taxiiCollection.id,
-          input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
-        },
-        setSubmitting: undefined,
-        onCompleted: undefined,
-        onError: undefined,
-        optimisticResponse: undefined,
-        optimisticUpdater: undefined,
-        updater: undefined,
-      });
-    })
-    .catch(() => false);
+  const handleSubmitFieldOptions = (name: string, value: FieldOption[]) =>
+    taxiiCollectionValidation(t_i18n('This field is required'))
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        commitMutation({
+          mutation: taxiiCollectionMutationFieldPatch,
+          variables: {
+            id: taxiiCollection.id,
+            input: { key: name, value: value?.map(({ value: v }) => v) ?? '' },
+          },
+          setSubmitting: undefined,
+          onCompleted: undefined,
+          onError: undefined,
+          optimisticResponse: undefined,
+          optimisticUpdater: undefined,
+          updater: undefined,
+        });
+      })
+      .catch(() => false);
 
   useEffect(() => {
     const jsonFilters = serializeFilterGroupForBackend(filters);
@@ -127,7 +134,10 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   }, [filters]);
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = () => {};
 
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes([
+    'Stix-Core-Object',
+    'stix-core-relationship',
+  ]);
   return (
     <Formik<TaxiiCollectionCreationForm>
       onSubmit={onSubmit}
@@ -172,7 +182,9 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch checked={!!values.taxii_public} disabled={!isGrantedToSetAccesses} />}
+              control={
+                <Switch checked={!!values.taxii_public} disabled={!isGrantedToSetAccesses} />
+              }
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => {
                 setFieldValue('taxii_public', checked);
@@ -236,17 +248,20 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             <FormControlLabel
               control={<Switch defaultChecked={!!initialValues.score_to_confidence} />}
               style={{ marginLeft: 1 }}
-              onChange={(_, checked) => handleSubmitField('score_to_confidence', checked.toString())}
+              onChange={(_, checked) =>
+                handleSubmitField('score_to_confidence', checked.toString())
+              }
               label={t_i18n('Copy OpenCTI scores to confidence level for indicators')}
             />
           </Box>
-          <Box sx={{
-            paddingTop: 4,
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-            marginBottom: theme.spacing(1),
-          }}
+          <Box
+            sx={{
+              paddingTop: 4,
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
+            }}
           >
             <Filters
               availableFilterKeys={availableFilterKeys}
@@ -266,31 +281,28 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
   );
 };
 
-const TaxiiCollectionEditionFragment = createFragmentContainer(
-  TaxiiCollectionEditionContainer,
-  {
-    taxiiCollection: graphql`
-      fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
+const TaxiiCollectionEditionFragment = createFragmentContainer(TaxiiCollectionEditionContainer, {
+  taxiiCollection: graphql`
+    fragment TaxiiCollectionEdition_taxiiCollection on TaxiiCollection {
+      id
+      name
+      description
+      filters
+      taxii_public
+      taxii_public_user {
         id
+        entity_type
         name
-        description
-        filters
-        taxii_public
-        taxii_public_user {
-          id
-          entity_type
-          name
-        }
-        include_inferences
-        score_to_confidence
-        authorized_members {
-          id
-          member_id
-          name
-        }
       }
-    `,
-  },
-);
+      include_inferences
+      score_to_confidence
+      authorized_members {
+        id
+        member_id
+        name
+      }
+    }
+  `,
+});
 
 export default TaxiiCollectionEditionFragment;

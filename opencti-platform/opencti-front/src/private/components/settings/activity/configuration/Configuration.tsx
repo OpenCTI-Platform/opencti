@@ -93,9 +93,7 @@ interface ConfigurationComponentProps {
   queryRef: PreloadedQuery<ConfigurationQuery>;
 }
 
-const ConfigurationComponent: FunctionComponent<
-  ConfigurationComponentProps
-> = ({ queryRef }) => {
+const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -103,10 +101,7 @@ const ConfigurationComponent: FunctionComponent<
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Configuration | Activity | Settings'));
   const [commit] = useApiMutation(configurationFieldPatch);
-  const { settings } = usePreloadedQuery<ConfigurationQuery>(
-    configurationQuery,
-    queryRef,
-  );
+  const { settings } = usePreloadedQuery<ConfigurationQuery>(configurationQuery, queryRef);
   const currentListeners = (settings.activity_listeners ?? []).map((a) => a.id);
   const onChangeData = (resetForm: () => void) => {
     return (name: string, data: FieldOption | null) => {
@@ -130,15 +125,20 @@ const ConfigurationComponent: FunctionComponent<
     <div data-testid="configuration-page">
       <Security
         needs={[SETTINGS_SECURITYACTIVITY]}
-        placeholder={(
-          <span>{t_i18n(
-            'You do not have any access to the audit activity of this OpenCTI instance.',
-          )}
+        placeholder={
+          <span>
+            {t_i18n('You do not have any access to the audit activity of this OpenCTI instance.')}
           </span>
-        )}
+        }
       >
         <div className={classes.container}>
-          <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Settings') },
+              { label: t_i18n('Activity') },
+              { label: t_i18n('Configuration'), current: true },
+            ]}
+          />
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>
               <Card title={t_i18n('Extended activity logging')}>
@@ -163,12 +163,7 @@ const ConfigurationComponent: FunctionComponent<
                       return (
                         <Form style={{ margin: `${theme.spacing(1)} 0` }}>
                           <Grid container={true} spacing={0}>
-                            <Grid
-                              key="users"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="users" item xs={4} style={{ padding: 4 }}>
                               <CreatorField
                                 name="users"
                                 label={t_i18n('Add a user')}
@@ -176,12 +171,7 @@ const ConfigurationComponent: FunctionComponent<
                                 containerStyle={{ width: '100%' }}
                               />
                             </Grid>
-                            <Grid
-                              key="groups"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="groups" item xs={4} style={{ padding: 4 }}>
                               <GroupField
                                 name="groups"
                                 label={t_i18n('Add a group')}
@@ -189,12 +179,7 @@ const ConfigurationComponent: FunctionComponent<
                                 onChange={onChangeData(resetForm)}
                               />
                             </Grid>
-                            <Grid
-                              key="organizations"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="organizations" item xs={4} style={{ padding: 4 }}>
                               <ObjectOrganizationField
                                 alert={false}
                                 name="organizations"
@@ -220,13 +205,11 @@ const ConfigurationComponent: FunctionComponent<
                       <React.Fragment key={listener.id}>
                         <ListItem
                           divider={true}
-                          secondaryAction={(
+                          secondaryAction={
                             <IconButton
                               aria-label="Kill"
                               onClick={() => {
-                                const value = currentListeners.filter(
-                                  (c) => c !== listener.id,
-                                );
+                                const value = currentListeners.filter((c) => c !== listener.id);
                                 commit({
                                   variables: {
                                     id: settings?.id,
@@ -237,20 +220,18 @@ const ConfigurationComponent: FunctionComponent<
                             >
                               <Delete />
                             </IconButton>
-                          )}
+                          }
                         >
-                          <ListItemButton
-                            classes={{ root: classes.item }}
-                          >
+                          <ListItemButton classes={{ root: classes.item }}>
                             <ListItemIcon classes={{ root: classes.itemIcon }}>
                               <ItemIcon type={listener.entity_type} />
                             </ListItemIcon>
                             <ListItemText
-                              primary={(
+                              primary={
                                 <div>
                                   <div className={classes.name}>{listener.name}</div>
                                 </div>
-                              )}
+                              }
                             />
                           </ListItemButton>
                         </ListItem>

@@ -15,17 +15,12 @@ const managerConfigurationQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<useManagerConfigurationQuery>(
-  environment,
-  managerConfigurationQuery,
-  { managerId: FILE_INDEX_MANAGER },
-);
+const queryRef = loadQuery<useManagerConfigurationQuery>(environment, managerConfigurationQuery, {
+  managerId: FILE_INDEX_MANAGER,
+});
 
 const useManagerConfiguration = () => {
-  const data = usePreloadedQuery<useManagerConfigurationQuery>(
-    managerConfigurationQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery<useManagerConfigurationQuery>(managerConfigurationQuery, queryRef);
 
   return data.managerConfigurationByManagerId;
 };

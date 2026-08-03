@@ -25,13 +25,15 @@ const ImportFilesDropzone = ({
   const { guessMimeType } = useImportFilesContext();
 
   const processNewFiles = async (files: FileList) => {
-    const newFiles = await Promise.all(Array.from(files).map(async (file) => {
-      const guessedType = await guessMimeType(file.name);
-      return new File([file], file.name, {
-        type: guessedType || file.type,
-        lastModified: file.lastModified,
-      });
-    }));
+    const newFiles = await Promise.all(
+      Array.from(files).map(async (file) => {
+        const guessedType = await guessMimeType(file.name);
+        return new File([file], file.name, {
+          type: guessedType || file.type,
+          lastModified: file.lastModified,
+        });
+      }),
+    );
     onChange(newFiles);
   };
 
@@ -63,7 +65,9 @@ const ImportFilesDropzone = ({
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: isDragging ? alpha(theme.palette.primary.light as string, 0.1) : theme.palette.background.paper,
+        background: isDragging
+          ? alpha(theme.palette.primary.light as string, 0.1)
+          : theme.palette.background.paper,
         borderRadius: 4,
         borderColor: isDragging ? theme.palette.primary.main : theme.palette.common.lightGrey,
         borderWidth: isDragging ? '2px' : '1px',
@@ -86,7 +90,12 @@ const ImportFilesDropzone = ({
           <input type="file" hidden multiple onChange={handleFileChange} />
         </Button>
         {openFreeText && (
-          <Button variant="secondary" component="label" size="small" onClick={() => openFreeText?.(true)}>
+          <Button
+            variant="secondary"
+            component="label"
+            size="small"
+            onClick={() => openFreeText?.(true)}
+          >
             {t_i18n('Copy/paste mode')}
           </Button>
         )}

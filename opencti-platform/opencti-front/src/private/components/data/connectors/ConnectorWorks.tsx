@@ -21,7 +21,9 @@ export const connectorWorksWorkDeletionMutation = graphql`
   }
 `;
 
-export type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
+export type WorkMessages = NonNullable<
+  NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]
+>['node']['errors'];
 
 interface ConnectorWorksComponentProps {
   data: ConnectorWorks_data$data;
@@ -53,9 +55,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       <CardTitle>{title}</CardTitle>
       {works.length === 0 && (
         <Card>
-          <Typography align="center">
-            {t_i18n('No work')}
-          </Typography>
+          <Typography align="center">{t_i18n('No work')}</Typography>
         </Card>
       )}
       {works.map((workEdge) => {
@@ -89,12 +89,7 @@ export const connectorWorksQuery = graphql`
     $filters: FilterGroup
   ) {
     ...ConnectorWorks_data
-      @arguments(
-        count: $count
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+      @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
   }
 `;
 
@@ -109,12 +104,7 @@ const ConnectorWorks = createRefetchContainer(
         orderMode: { type: "OrderingMode", defaultValue: desc }
         filters: { type: "FilterGroup" }
       ) {
-        works(
-          first: $count
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        ) {
+        works(first: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters) {
           edges {
             node {
               id

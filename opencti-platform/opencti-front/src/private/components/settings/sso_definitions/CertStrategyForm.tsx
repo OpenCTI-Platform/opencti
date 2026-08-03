@@ -185,7 +185,10 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
       default_groups: [...(gm?.default_groups ?? [])],
       groups_expr: [...(gm?.groups_expr ?? ['subject.OU'])],
       group_splitter: gm?.group_splitter ?? '',
-      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      groups_mapping: (gm?.groups_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_groups: gm?.auto_create_groups ?? false,
       prevent_default_groups: gm?.prevent_default_groups ?? false,
       extend_platform_groups: gm?.extend_platform_groups ?? false,
@@ -194,7 +197,10 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
       default_organizations: [...(om?.default_organizations ?? [])],
       organizations_expr: [...(om?.organizations_expr ?? ['subject.O'])],
       organizations_splitter: om?.organizations_splitter ?? '',
-      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({ provider: m.provider, platform: m.platform })),
+      organizations_mapping: (om?.organizations_mapping ?? []).map((m) => ({
+        provider: m.provider,
+        platform: m.platform,
+      })),
       auto_create_organizations: om?.auto_create_organizations ?? false,
     },
   };
@@ -229,8 +235,12 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
             extend_platform_groups: values.groups_mapping.extend_platform_groups,
           },
           organizations_mapping: {
-            default_organizations: values.organizations_mapping.default_organizations.filter((s) => s.trim() !== ''),
-            organizations_expr: values.organizations_mapping.organizations_expr.filter((s) => s.trim() !== ''),
+            default_organizations: values.organizations_mapping.default_organizations.filter(
+              (s) => s.trim() !== '',
+            ),
+            organizations_expr: values.organizations_mapping.organizations_expr.filter(
+              (s) => s.trim() !== '',
+            ),
             organizations_splitter: values.organizations_mapping.organizations_splitter || null,
             organizations_mapping: values.organizations_mapping.organizations_mapping
               .filter((m) => m.provider.trim() !== '' || m.platform.trim() !== '')
@@ -270,7 +280,15 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
           {/* Tab 0: Configuration */}
           {currentTab === 0 && (
             <>
-              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginTop: 2.5, gap: 0 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  marginTop: 2.5,
+                  gap: 0,
+                }}
+              >
                 <Field
                   component={SwitchField}
                   type="checkbox"
@@ -279,10 +297,16 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
                   containerstyle={{ marginTop: 0, marginRight: 0 }}
                 />
                 {!settings.platform_https_enabled && (
-                  <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
+                  <Tooltip
+                    title={t_i18n(
+                      'Client certificate requires the platform to be configured with HTTPS',
+                    )}
+                  >
                     <span style={{ display: 'inline-flex', marginLeft: 4 }}>
                       <IconButton
-                        aria-label={t_i18n('Client certificate requires the platform to be configured with HTTPS')}
+                        aria-label={t_i18n(
+                          'Client certificate requires the platform to be configured with HTTPS',
+                        )}
                         size="small"
                         disabled
                         sx={{
@@ -326,14 +350,10 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
           )}
 
           {/* Tab 1: Groups */}
-          {currentTab === 1 && (
-            <AuthProviderGroupsFields />
-          )}
+          {currentTab === 1 && <AuthProviderGroupsFields />}
 
           {/* Tab 2: Organizations */}
-          {currentTab === 2 && (
-            <AuthProviderOrganizationsFields />
-          )}
+          {currentTab === 2 && <AuthProviderOrganizationsFields />}
 
           {/* Shared Cancel / Update buttons */}
           <div style={{ marginTop: 20, textAlign: 'right' }}>

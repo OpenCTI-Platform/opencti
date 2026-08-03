@@ -10,7 +10,10 @@ import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/Trigge
 import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
-import { TriggersLinesPaginationQuery, TriggersLinesPaginationQuery$variables } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
+import {
+  TriggersLinesPaginationQuery,
+  TriggersLinesPaginationQuery$variables,
+} from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { LOCAL_STORAGE_KEY_TRIGGERS } from '../../profile/Triggers';
@@ -22,10 +25,7 @@ interface TriggersProps {
   recipientId: string;
   filterKey: string;
 }
-const Triggers: FunctionComponent<TriggersProps> = ({
-  recipientId,
-  filterKey,
-}) => {
+const Triggers: FunctionComponent<TriggersProps> = ({ recipientId, filterKey }) => {
   const { t_i18n } = useFormatter();
   const ref = useRef(null);
   const {
@@ -54,9 +54,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     includeAuthorities: true,
     filters: {
       mode: 'and',
-      filters: [
-        { key: [filterKey], values: [recipientId], operator: 'eq', mode: 'or' },
-      ],
+      filters: [{ key: [filterKey], values: [recipientId], operator: 'eq', mode: 'or' }],
       filterGroups: [],
     } as GqlFilterGroup,
   };
@@ -97,7 +95,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
     <Grid item xs={12} style={{ marginTop: 10 }}>
       <Card
         title={t_i18n('Triggers and Digests')}
-        action={(
+        action={
           <Stack direction="row" gap={1}>
             <div>
               <Tooltip title={t_i18n('Add a live trigger')}>
@@ -134,7 +132,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
               keyword={searchTerm}
             />
           </Stack>
-        )}
+        }
       >
         <div ref={ref}>
           <ColumnsLinesTitles
@@ -146,7 +144,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
           />
           {queryRef && (
             <React.Suspense
-              fallback={(
+              fallback={
                 <>
                   {Array(20)
                     .fill(0)
@@ -154,7 +152,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
                       <TriggerLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
-              )}
+              }
             >
               <TriggersLines
                 queryRef={queryRef}

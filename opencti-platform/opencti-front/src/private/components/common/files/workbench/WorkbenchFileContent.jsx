@@ -40,16 +40,35 @@ import ItemEntityType from '../../../../../components/ItemEntityType';
 import ItemIcon from '../../../../../components/ItemIcon';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import TextField from '../../../../../components/TextField';
-import { APP_BASE_PATH, commitMutation, handleError, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  handleError,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../../relay/environment';
 import { defaultKey, getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
-import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType, resolveThreatActorType } from '../../../../../utils/Entity';
+import {
+  observableValue,
+  resolveIdentityClass,
+  resolveIdentityType,
+  resolveLink,
+  resolveLocationType,
+  resolveThreatActorType,
+} from '../../../../../utils/Entity';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../utils/hooks/useGranted';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
 import Security from '../../../../../utils/Security';
-import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
+import {
+  computeDuplicates,
+  convertFromStixType,
+  convertToStixType,
+  truncate,
+  uniqWithByFields,
+} from '../../../../../utils/String';
 import { buildDate, now } from '../../../../../utils/Time';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -226,43 +245,58 @@ export const workbenchFileContentAttributesQuery = graphql`
 `;
 
 const workbenchFileContentMutation = graphql`
-  mutation WorkbenchFileContentMutation($file: Upload!, $entityId: String, $file_markings: [String!], $refreshEntity: Boolean) {
-    uploadPending(file: $file, entityId: $entityId, file_markings: $file_markings, refreshEntity: $refreshEntity) {
+  mutation WorkbenchFileContentMutation(
+    $file: Upload!
+    $entityId: String
+    $file_markings: [String!]
+    $refreshEntity: Boolean
+  ) {
+    uploadPending(
+      file: $file
+      entityId: $entityId
+      file_markings: $file_markings
+      refreshEntity: $refreshEntity
+    ) {
       id
     }
   }
 `;
 
-const importValidation = (t) => Yup.object().shape({
-  connector_id: Yup.string().trim().required(t('This field is required')),
-});
+const importValidation = (t) =>
+  Yup.object().shape({
+    connector_id: Yup.string().trim().required(t('This field is required')),
+  });
 
-const uniqStixDomainObjectsFields = ['name', 'type', 'pattern', 'identity_class', 'x_opencti_location_type'];
+const uniqStixDomainObjectsFields = [
+  'name',
+  'type',
+  'pattern',
+  'identity_class',
+  'x_opencti_location_type',
+];
 
 // for an entity, get a default value that can be filtered (to check if the entity is in the platform)
 // (simplified version of getMainRepresentative with only the filterable attributes)
 const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') => {
   if (!n) return '';
-  const mainValue = n.name
-    || n.pattern
-    || n.attribute_abstract
-    || n.opinion
-    || n.value
-    || n.source_name
-    || n.phase_name
-    || n.result_name
-    || n.content
-    || n.key
-    || n.path
-    || (n.hashes
-      && (n.hashes.MD5
-        || n.hashes['SHA-1']
-        || n.hashes['SHA-256']
-        || n.hashes['SHA-512']))
-      || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
-      || n.main_entity_name
-      || n.dst_port
-      || fallback;
+  const mainValue =
+    n.name ||
+    n.pattern ||
+    n.attribute_abstract ||
+    n.opinion ||
+    n.value ||
+    n.source_name ||
+    n.phase_name ||
+    n.result_name ||
+    n.content ||
+    n.key ||
+    n.path ||
+    (n.hashes &&
+      (n.hashes.MD5 || n.hashes['SHA-1'] || n.hashes['SHA-256'] || n.hashes['SHA-512'])) ||
+    getEntityMainRepresentativeForWorkbenchChecks(R.head(n.objects?.edges ?? [])?.node) ||
+    n.main_entity_name ||
+    n.dst_port ||
+    fallback;
   return mainValue;
 };
 
@@ -370,21 +404,15 @@ const WorkbenchFileContentComponent = ({
     const scoTypes = observableTypes.edges.map((n) => convertToStixType(n.node.id));
     const newStixDomainObjects = objects
       .filter((n) => sdoTypes.includes(n.type) && n.id)
-      .map((n) => (typeof n.definition === 'object' && !n.name
-        ? { ...n, name: R.toPairs(n.definition)[0][1] }
-        : n));
-    const newStixCyberObservables = objects.filter(
-      (n) => scoTypes.includes(n.type) && n.id,
-    );
-    const newStixCoreRelationships = objects.filter(
-      (n) => n.type === 'relationship' && n.id,
-    );
-    const newContainers = objects.filter(
-      (n) => typesContainers.includes(n.type) && n.id,
-    );
-    const newStixSightings = objects.filter(
-      (n) => n.type === 'sighting' && n.id,
-    );
+      .map((n) =>
+        typeof n.definition === 'object' && !n.name
+          ? { ...n, name: R.toPairs(n.definition)[0][1] }
+          : n,
+      );
+    const newStixCyberObservables = objects.filter((n) => scoTypes.includes(n.type) && n.id);
+    const newStixCoreRelationships = objects.filter((n) => n.type === 'relationship' && n.id);
+    const newContainers = objects.filter((n) => typesContainers.includes(n.type) && n.id);
+    const newStixSightings = objects.filter((n) => n.type === 'sighting' && n.id);
     setStixDomainObjects(newStixDomainObjects);
     setStixCyberObservables(newStixCyberObservables);
     setStixCoreRelationships(newStixCoreRelationships);
@@ -405,31 +433,26 @@ const WorkbenchFileContentComponent = ({
   };
 
   const saveFile = () => {
-    const numberOfObjects = stixDomainObjects.length
-      + stixCyberObservables.length
-      + stixCoreRelationships.length
-      + stixSightings.length
-      + containers.length;
+    const numberOfObjects =
+      stixDomainObjects.length +
+      stixCyberObservables.length +
+      stixCoreRelationships.length +
+      stixSightings.length +
+      containers.length;
     if (numberOfObjects > 0) {
-      const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
+      const currentEntityId =
+        file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
       // update entity container objects_refs
       if (currentEntityId) {
         const currentEntityContainer = containers.find(
           (container) => container.x_opencti_id === currentEntityId,
         );
         if (currentEntityContainer) {
-          const currentEntityObjectRefs = Array.isArray(
-            currentEntityContainer.object_refs,
-          )
+          const currentEntityObjectRefs = Array.isArray(currentEntityContainer.object_refs)
             ? currentEntityContainer.object_refs
             : [];
-          const objectIds = [...stixDomainObjects, ...stixCyberObservables].map(
-            (s) => s.id,
-          );
-          currentEntityContainer.object_refs = R.uniq([
-            ...currentEntityObjectRefs,
-            ...objectIds,
-          ]);
+          const objectIds = [...stixDomainObjects, ...stixCyberObservables].map((s) => s.id);
+          currentEntityContainer.object_refs = R.uniq([...currentEntityObjectRefs, ...objectIds]);
         }
       }
       const objects = [
@@ -440,7 +463,8 @@ const WorkbenchFileContentComponent = ({
         ...containers,
       ];
       const objectsJson = JSON.stringify(objects);
-      if (objectsJson !== fileObjectsJson) { // check that objects have changed
+      if (objectsJson !== fileObjectsJson) {
+        // check that objects have changed
         setFileObjectsJson(objectsJson);
         const data = {
           id: `bundle--${uuid()}`,
@@ -480,7 +504,9 @@ const WorkbenchFileContentComponent = ({
   // region utils
   const findEntityById = (id) => stixDomainObjects.filter((n) => n.id === id).at(0);
 
-  const connectors = connectorsImport.filter(({ connector_scope }) => connector_scope.includes('application/json'));
+  const connectors = connectorsImport.filter(({ connector_scope }) =>
+    connector_scope.includes('application/json'),
+  );
   let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
   let elements = [];
   if (currentTab === 0) {
@@ -537,18 +563,10 @@ const WorkbenchFileContentComponent = ({
       const newDeSelectedElements = R.omit([object.id], deSelectedElements);
       setDeselectedElements(newDeSelectedElements);
     } else if (selectAll) {
-      const newDeSelectedElements = R.assoc(
-        object.id,
-        object,
-        deSelectedElements || {},
-      );
+      const newDeSelectedElements = R.assoc(object.id, object, deSelectedElements || {});
       setDeselectedElements(newDeSelectedElements);
     } else {
-      const newSelectedElements = R.assoc(
-        object.id,
-        object,
-        selectedElements || {},
-      );
+      const newSelectedElements = R.assoc(object.id, object, selectedElements || {});
       setSelectAll(false);
       setSelectedElements(newSelectedElements);
     }
@@ -604,34 +622,17 @@ const WorkbenchFileContentComponent = ({
     event.stopPropagation();
     event.preventDefault();
     if (object.id in (containerSelectedElements || {})) {
-      const newSelectedElements = R.omit(
-        [object.id],
-        containerSelectedElements,
-      );
+      const newSelectedElements = R.omit([object.id], containerSelectedElements);
       setContainerSelectAll(false);
       setContainerSelectedElements(newSelectedElements);
-    } else if (
-      containerSelectAll
-      && object.id in (containerDeselectedElements || {})
-    ) {
-      const newDeSelectedElements = R.omit(
-        [object.id],
-        containerDeselectedElements,
-      );
+    } else if (containerSelectAll && object.id in (containerDeselectedElements || {})) {
+      const newDeSelectedElements = R.omit([object.id], containerDeselectedElements);
       setContainerDeselectedElements(newDeSelectedElements);
     } else if (containerSelectAll) {
-      const newDeSelectedElements = R.assoc(
-        object.id,
-        object,
-        containerDeselectedElements || {},
-      );
+      const newDeSelectedElements = R.assoc(object.id, object, containerDeselectedElements || {});
       setContainerDeselectedElements(newDeSelectedElements);
     } else {
-      const newSelectedElements = R.assoc(
-        object.id,
-        object,
-        containerSelectedElements || {},
-      );
+      const newSelectedElements = R.assoc(object.id, object, containerSelectedElements || {});
       setContainerSelectAll(false);
       setContainerSelectedElements(newSelectedElements);
     }
@@ -670,93 +671,90 @@ const WorkbenchFileContentComponent = ({
     let finalStixCoreRelationships = stixCoreRelationships.filter(
       (n) => !objectsToBeDeletedIds.includes(n.id),
     );
-    let finalStixSightings = stixSightings.filter(
-      (n) => !objectsToBeDeletedIds.includes(n.id),
-    );
-    let finalContainers = containers.filter(
-      (n) => !objectsToBeDeletedIds.includes(n.id),
-    );
+    let finalStixSightings = stixSightings.filter((n) => !objectsToBeDeletedIds.includes(n.id));
+    let finalContainers = containers.filter((n) => !objectsToBeDeletedIds.includes(n.id));
 
     // In case one of the object is an author
-    finalStixDomainObjects = finalStixDomainObjects.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
-      ? R.dissoc('created_by_ref', n)
-      : n));
-    finalStixCyberObservables = finalStixCyberObservables.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
-      ? R.dissoc('created_by_ref', n)
-      : n));
-    finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
-      ? R.dissoc('created_by_ref', n)
-      : n));
-    finalStixSightings = finalStixSightings.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
-      ? R.dissoc('created_by_ref', n)
-      : n));
-    finalContainers = finalContainers.map((n) => (objectsToBeDeletedIds.includes(n.created_by_ref)
-      ? R.dissoc('created_by_ref', n)
-      : n));
+    finalStixDomainObjects = finalStixDomainObjects.map((n) =>
+      objectsToBeDeletedIds.includes(n.created_by_ref) ? R.dissoc('created_by_ref', n) : n,
+    );
+    finalStixCyberObservables = finalStixCyberObservables.map((n) =>
+      objectsToBeDeletedIds.includes(n.created_by_ref) ? R.dissoc('created_by_ref', n) : n,
+    );
+    finalStixCoreRelationships = finalStixCoreRelationships.map((n) =>
+      objectsToBeDeletedIds.includes(n.created_by_ref) ? R.dissoc('created_by_ref', n) : n,
+    );
+    finalStixSightings = finalStixSightings.map((n) =>
+      objectsToBeDeletedIds.includes(n.created_by_ref) ? R.dissoc('created_by_ref', n) : n,
+    );
+    finalContainers = finalContainers.map((n) =>
+      objectsToBeDeletedIds.includes(n.created_by_ref) ? R.dissoc('created_by_ref', n) : n,
+    );
 
     // In case on of the object is a marking
-    finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
-      'object_marking_refs',
-      n.object_marking_refs?.filter(
-        (o) => !objectsToBeDeletedIds.includes(o),
+    finalStixDomainObjects = finalStixDomainObjects.map((n) =>
+      R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => !objectsToBeDeletedIds.includes(o)),
+        n,
       ),
-      n,
-    ));
-    finalStixCyberObservables = finalStixCyberObservables.map((n) => R.assoc(
-      'object_marking_refs',
-      n.object_marking_refs?.filter(
-        (o) => !objectsToBeDeletedIds.includes(o),
+    );
+    finalStixCyberObservables = finalStixCyberObservables.map((n) =>
+      R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => !objectsToBeDeletedIds.includes(o)),
+        n,
       ),
-      n,
-    ));
-    finalStixCoreRelationships = finalStixCoreRelationships.map((n) => R.assoc(
-      'object_marking_refs',
-      n.object_marking_refs?.filter(
-        (o) => !objectsToBeDeletedIds.includes(o),
+    );
+    finalStixCoreRelationships = finalStixCoreRelationships.map((n) =>
+      R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => !objectsToBeDeletedIds.includes(o)),
+        n,
       ),
-      n,
-    ));
-    finalStixSightings = finalStixSightings.map((n) => R.assoc(
-      'object_marking_refs',
-      n.object_marking_refs?.filter(
-        (o) => !objectsToBeDeletedIds.includes(o),
+    );
+    finalStixSightings = finalStixSightings.map((n) =>
+      R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => !objectsToBeDeletedIds.includes(o)),
+        n,
       ),
-      n,
-    ));
-    finalContainers = finalContainers.map((n) => R.assoc(
-      'object_marking_refs',
-      n.object_marking_refs?.filter(
-        (o) => !objectsToBeDeletedIds.includes(o),
+    );
+    finalContainers = finalContainers.map((n) =>
+      R.assoc(
+        'object_marking_refs',
+        n.object_marking_refs?.filter((o) => !objectsToBeDeletedIds.includes(o)),
+        n,
       ),
-      n,
-    ));
+    );
     // Impact
     const stixCoreRelationshipsToRemove = finalStixCoreRelationships
       .filter(
-        (n) => objectsToBeDeletedIds.includes(n.source_ref)
-          || objectsToBeDeletedIds.includes(n.target_ref),
+        (n) =>
+          objectsToBeDeletedIds.includes(n.source_ref) ||
+          objectsToBeDeletedIds.includes(n.target_ref),
       )
       .map((n) => n.id);
     const stixSightingsToRemove = finalStixSightings
       .filter(
-        (n) => objectsToBeDeletedIds.includes(n.sighting_of_ref)
-          || objectsToBeDeletedIds.includes(n.where_sighted_refs?.at(0)),
+        (n) =>
+          objectsToBeDeletedIds.includes(n.sighting_of_ref) ||
+          objectsToBeDeletedIds.includes(n.where_sighted_refs?.at(0)),
       )
       .map((n) => n.id);
-    finalContainers = finalContainers.map((n) => R.assoc(
-      'object_refs',
-      (n.object_refs || []).filter(
-        (o) => !objectsToBeDeletedIds.includes(o)
-          && !stixCoreRelationshipsToRemove.includes(o),
+    finalContainers = finalContainers.map((n) =>
+      R.assoc(
+        'object_refs',
+        (n.object_refs || []).filter(
+          (o) => !objectsToBeDeletedIds.includes(o) && !stixCoreRelationshipsToRemove.includes(o),
+        ),
+        n,
       ),
-      n,
-    ));
+    );
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
-    finalStixSightings = finalStixSightings.filter(
-      (n) => !stixSightingsToRemove.includes(n.id),
-    );
+    finalStixSightings = finalStixSightings.filter((n) => !stixSightingsToRemove.includes(n.id));
     setStixDomainObjects(finalStixDomainObjects);
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
@@ -798,10 +796,7 @@ const WorkbenchFileContentComponent = ({
       if ((n.object_refs || []).includes(id)) {
         return R.assoc(
           'object_refs',
-          [
-            ...(n.object_refs || []).filter((o) => o !== id),
-            updatedObservable.id,
-          ],
+          [...(n.object_refs || []).filter((o) => o !== id), updatedObservable.id],
           n,
         );
       }
@@ -809,16 +804,18 @@ const WorkbenchFileContentComponent = ({
     });
     const observableDefaultKey = defaultKey(updatedObservable);
     const observablesOfSameTypeAndKey = stixCyberObservables.filter(
-      (n) => n.type === updatedObservable.type
-        && observableDefaultKey
-        && n[observableDefaultKey]
-        && n[observableDefaultKey].length > 0,
+      (n) =>
+        n.type === updatedObservable.type &&
+        observableDefaultKey &&
+        n[observableDefaultKey] &&
+        n[observableDefaultKey].length > 0,
     );
     const otherObservables = stixCyberObservables.filter(
-      (n) => n.type !== updatedObservable.type
-        || !observableDefaultKey
-        || !n[observableDefaultKey]
-        || n[observableDefaultKey].length === 0,
+      (n) =>
+        n.type !== updatedObservable.type ||
+        !observableDefaultKey ||
+        !n[observableDefaultKey] ||
+        n[observableDefaultKey].length === 0,
     );
     setStixCyberObservables([
       ...uniqWithByFields(
@@ -837,7 +834,8 @@ const WorkbenchFileContentComponent = ({
 
   // region submission
   const onSubmitValidate = (values, { setSubmitting, resetForm }) => {
-    const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
+    const currentEntityId =
+      file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
@@ -877,9 +875,7 @@ const WorkbenchFileContentComponent = ({
               setDisplayValidate(false);
               MESSAGING$.notifySuccess('Import successfully asked');
               if (file.metaData.entity) {
-                const entityLink = `${resolveLink(
-                  file.metaData.entity.entity_type,
-                )}/${file.metaData.entity.id}`;
+                const entityLink = `${resolveLink(file.metaData.entity.entity_type)}/${file.metaData.entity.id}`;
                 navigate(`${entityLink}/files`);
               } else {
                 navigate('/dashboard/data/import');
@@ -898,7 +894,8 @@ const WorkbenchFileContentComponent = ({
   };
 
   const onSubmitConvertToDraft = (values, { setSubmitting, resetForm }) => {
-    const currentEntityId = file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
+    const currentEntityId =
+      file.metaData.entity_id && file.metaData.entity ? file.metaData.entity_id : null;
     const data = {
       id: `bundle--${uuid()}`,
       type: 'bundle',
@@ -940,9 +937,7 @@ const WorkbenchFileContentComponent = ({
               setDisplayValidate(false);
               MESSAGING$.notifySuccess('Convertion to draft successfully asked');
               if (file.metaData.entity) {
-                const entityLink = `${resolveLink(
-                  file.metaData.entity.entity_type,
-                )}/${file.metaData.entity.id}`;
+                const entityLink = `${resolveLink(file.metaData.entity.entity_type)}/${file.metaData.entity.id}`;
                 navigate(`${entityLink}/files`);
               } else {
                 navigate('/dashboard/data/import/draft');
@@ -961,14 +956,12 @@ const WorkbenchFileContentComponent = ({
   };
 
   const onSubmitApplyMarking = (values, { resetForm }) => {
-    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
-      (n) => ({
-        ...n,
-        id: n.standard_id || n.id,
-        name: n.name || n.definition,
-        type: 'marking-definition',
-      }),
-    );
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map((n) => ({
+      ...n,
+      id: n.standard_id || n.id,
+      name: n.name || n.definition,
+      type: 'marking-definition',
+    }));
     let objects = [];
     if (currentTab === 0) {
       objects = stixDomainObjects;
@@ -987,7 +980,9 @@ const WorkbenchFileContentComponent = ({
         (n) => !Object.keys(deSelectedElements || {}).includes(n.id),
       );
     } else {
-      objectsToBeProcessed = objects.filter((n) => Object.keys(selectedElements || {}).includes(n.id));
+      objectsToBeProcessed = objects.filter((n) =>
+        Object.keys(selectedElements || {}).includes(n.id),
+      );
     }
     const objectsToBeProccessedIds = objectsToBeProcessed.map((n) => n.id);
     const filteredObjects = objects.filter((n) => !objectsToBeProccessedIds.includes(n.id));
@@ -1000,19 +995,9 @@ const WorkbenchFileContentComponent = ({
     }));
     const finalObjects = filteredObjects.concat(objectsToAdd);
     if (currentTab === 0) {
-      setStixDomainObjects(
-        R.uniqBy(R.prop('id'), [
-          ...finalObjects,
-          ...markingDefinitions,
-        ]),
-      );
+      setStixDomainObjects(R.uniqBy(R.prop('id'), [...finalObjects, ...markingDefinitions]));
     } else {
-      setStixDomainObjects(
-        R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects,
-          ...markingDefinitions,
-        ]),
-      );
+      setStixDomainObjects(R.uniqBy(R.prop('id'), [...stixDomainObjects, ...markingDefinitions]));
     }
     if (currentTab === 1) {
       setStixCyberObservables(finalObjects);
@@ -1028,89 +1013,90 @@ const WorkbenchFileContentComponent = ({
 
   const submitDeleteObject = (obj) => {
     const toDeleteObject = obj ?? deleteObject;
-    let finalStixDomainObjects = stixDomainObjects.filter(
-      (n) => n.id !== toDeleteObject.id,
-    );
-    let finalStixCyberObservables = stixCyberObservables.filter(
-      (n) => n.id !== toDeleteObject.id,
-    );
+    let finalStixDomainObjects = stixDomainObjects.filter((n) => n.id !== toDeleteObject.id);
+    let finalStixCyberObservables = stixCyberObservables.filter((n) => n.id !== toDeleteObject.id);
     let finalStixCoreRelationships = stixCoreRelationships.filter(
       (n) => n.id !== toDeleteObject.id,
     );
-    let finalStixSightings = stixSightings.filter(
-      (n) => n.id !== toDeleteObject.id,
-    );
+    let finalStixSightings = stixSightings.filter((n) => n.id !== toDeleteObject.id);
     let finalContainers = containers.filter((n) => n.id !== toDeleteObject.id);
     if (toDeleteObject.type === 'identity') {
-      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === toDeleteObject.id
-        ? R.dissoc('created_by_ref', n)
-        : n));
-      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === toDeleteObject.id
-        ? R.dissoc('created_by_ref', n)
-        : n));
-      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === toDeleteObject.id
-        ? R.dissoc('created_by_ref', n)
-        : n));
-      finalStixSightings = finalStixSightings.map((n) => (n.created_by_ref === toDeleteObject.id
-        ? R.dissoc('created_by_ref', n)
-        : n));
-      finalContainers = finalContainers.map((n) => (n.created_by_ref === toDeleteObject.id
-        ? R.dissoc('created_by_ref', n)
-        : n));
+      finalStixDomainObjects = finalStixDomainObjects.map((n) =>
+        n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n,
+      );
+      finalStixCyberObservables = finalStixCyberObservables.map((n) =>
+        n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n,
+      );
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) =>
+        n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n,
+      );
+      finalStixSightings = finalStixSightings.map((n) =>
+        n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n,
+      );
+      finalContainers = finalContainers.map((n) =>
+        n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n,
+      );
     } else if (toDeleteObject.type === 'marking-definition') {
-      finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
-        'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
-        n,
-      ));
-      finalStixCyberObservables = finalStixCyberObservables.map((n) => R.assoc(
-        'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
-        n,
-      ));
-      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => R.assoc(
-        'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
-        n,
-      ));
-      finalStixSightings = finalStixSightings.map((n) => R.assoc(
-        'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
-        n,
-      ));
-      finalContainers = finalContainers.map((n) => R.assoc(
-        'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
-        n,
-      ));
+      finalStixDomainObjects = finalStixDomainObjects.map((n) =>
+        R.assoc(
+          'object_marking_refs',
+          n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+          n,
+        ),
+      );
+      finalStixCyberObservables = finalStixCyberObservables.map((n) =>
+        R.assoc(
+          'object_marking_refs',
+          n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+          n,
+        ),
+      );
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) =>
+        R.assoc(
+          'object_marking_refs',
+          n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+          n,
+        ),
+      );
+      finalStixSightings = finalStixSightings.map((n) =>
+        R.assoc(
+          'object_marking_refs',
+          n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+          n,
+        ),
+      );
+      finalContainers = finalContainers.map((n) =>
+        R.assoc(
+          'object_marking_refs',
+          n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
+          n,
+        ),
+      );
     }
     // Impact
     const stixCoreRelationshipsToRemove = finalStixCoreRelationships
-      .filter(
-        (n) => n.source_ref === toDeleteObject.id
-          || n.target_ref === toDeleteObject.id,
-      )
+      .filter((n) => n.source_ref === toDeleteObject.id || n.target_ref === toDeleteObject.id)
       .map((n) => n.id);
     const stixSightingsToRemove = finalStixSightings
       .filter(
-        (n) => n.sighting_of_ref === toDeleteObject.id
-          || n.where_sighted_refs?.at(0) === toDeleteObject.id,
+        (n) =>
+          n.sighting_of_ref === toDeleteObject.id ||
+          n.where_sighted_refs?.at(0) === toDeleteObject.id,
       )
       .map((n) => n.id);
-    finalContainers = finalContainers.map((n) => R.assoc(
-      'object_refs',
-      (n.object_refs || []).filter(
-        (o) => o !== toDeleteObject.id
-          && !stixCoreRelationshipsToRemove.includes(o),
+    finalContainers = finalContainers.map((n) =>
+      R.assoc(
+        'object_refs',
+        (n.object_refs || []).filter(
+          (o) => o !== toDeleteObject.id && !stixCoreRelationshipsToRemove.includes(o),
+        ),
+        n,
       ),
-      n,
-    ));
+    );
     finalStixCoreRelationships = finalStixCoreRelationships.filter(
       (n) => !stixCoreRelationshipsToRemove.includes(n.id),
     );
-    finalStixSightings = finalStixSightings.filter(
-      (n) => !stixSightingsToRemove.includes(n.id),
-    );
+    finalStixSightings = finalStixSightings.filter((n) => !stixSightingsToRemove.includes(n.id));
     setStixDomainObjects(finalStixDomainObjects);
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
@@ -1122,14 +1108,12 @@ const WorkbenchFileContentComponent = ({
 
   const onSubmitEntity = (values) => {
     const entity = R.head(stixDomainObjects.filter((n) => n.id === entityId)) || {};
-    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
-      (n) => ({
-        ...n,
-        id: n.standard_id || n.id,
-        name: n.name || n.definition,
-        type: 'marking-definition',
-      }),
-    );
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map((n) => ({
+      ...n,
+      id: n.standard_id || n.id,
+      name: n.name || n.definition,
+      type: 'marking-definition',
+    }));
     const identity = values.createdBy?.entity
       ? {
           ...values.createdBy.entity,
@@ -1138,16 +1122,12 @@ const WorkbenchFileContentComponent = ({
         }
       : null;
     const finalValues = {
-      ...R.omit(
-        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
-        values,
-      ),
+      ...R.omit(['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'], values),
       labels: R.pluck('label', values.objectLabel),
       object_marking_refs: R.pluck('entity', values.objectMarking).map(
         (n) => n.standard_id || n.id,
       ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
@@ -1189,23 +1169,22 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixCyberObservables),
     };
     const newEntities = Object.keys(values)
-      .map((key) => values[key].map((n) => {
-        const currentEntityType = n.type;
-        const newEntity = {
-          id: n.id,
-          type: convertToStixType(currentEntityType),
-          name: n.name,
-        };
-        if (newEntity.type === 'identity' && !newEntity.identity_class) {
-          newEntity.identity_class = resolveIdentityClass(currentEntityType);
-        } else if (
-          newEntity.type === 'location'
-          && !newEntity.x_opencti_location_type
-        ) {
-          newEntity.x_opencti_location_type = currentEntityType;
-        }
-        return newEntity;
-      }))
+      .map((key) =>
+        values[key].map((n) => {
+          const currentEntityType = n.type;
+          const newEntity = {
+            id: n.id,
+            type: convertToStixType(currentEntityType),
+            name: n.name,
+          };
+          if (newEntity.type === 'identity' && !newEntity.identity_class) {
+            newEntity.identity_class = resolveIdentityClass(currentEntityType);
+          } else if (newEntity.type === 'location' && !newEntity.x_opencti_location_type) {
+            newEntity.x_opencti_location_type = currentEntityType;
+          }
+          return newEntity;
+        }),
+      )
       .flat();
     const newRelationships = Object.keys(values)
       .map((key) => {
@@ -1228,32 +1207,26 @@ const WorkbenchFileContentComponent = ({
     // Compute relationships to delete
     const stixCoreRelationshipsToDelete = [
       ...stixCoreRelationships.filter(
-        (n) => fromRelationshipsTypes.includes(n.relationship_type)
-          && n.source_ref === entityId,
+        (n) => fromRelationshipsTypes.includes(n.relationship_type) && n.source_ref === entityId,
       ),
       ...stixCoreRelationships.filter(
-        (n) => toRelationshipsTypes.includes(n.relationship_type)
-          && n.target_ref === entityId,
+        (n) => toRelationshipsTypes.includes(n.relationship_type) && n.target_ref === entityId,
       ),
     ];
     // Delete objects, no matter that is parallel it will always success
     stixCoreRelationshipsToDelete.forEach((n) => submitDeleteObject(n));
-    const stixCoreRelationshipsToDeleteIds = stixCoreRelationshipsToDelete.map(
-      (n) => n.id,
-    );
+    const stixCoreRelationshipsToDeleteIds = stixCoreRelationshipsToDelete.map((n) => n.id);
     // Compute the objects to be check for purge in this specific context
     const stixDomainObjectsToCheckForPurging = [
       ...stixCoreRelationships
         .filter(
-          (n) => fromRelationshipsTypes.includes(n.relationship_type)
-            && n.source_ref === entityId,
+          (n) => fromRelationshipsTypes.includes(n.relationship_type) && n.source_ref === entityId,
         )
         .map((n) => indexedStixObjects[n.target_ref] || null)
         .filter((n) => n !== null),
       ...stixCoreRelationships
         .filter(
-          (n) => toRelationshipsTypes.includes(n.relationship_type)
-            && n.target_ref === entityId,
+          (n) => toRelationshipsTypes.includes(n.relationship_type) && n.target_ref === entityId,
         )
         .map((n) => indexedStixObjects[n.source_ref] || null)
         .filter((n) => n !== null),
@@ -1262,8 +1235,9 @@ const WorkbenchFileContentComponent = ({
     const stixDomainObjectsToDelete = stixDomainObjectsToCheckForPurging
       .map((value) => {
         const rels = stixCoreRelationships.filter(
-          (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id)
-            && (n.source_ref === value.id || n.target_ref === value.id),
+          (n) =>
+            !stixCoreRelationshipsToDeleteIds.includes(n.id) &&
+            (n.source_ref === value.id || n.target_ref === value.id),
         );
         if (rels.length === 0) {
           return value;
@@ -1272,16 +1246,12 @@ const WorkbenchFileContentComponent = ({
       })
       .filter((n) => n !== null);
     stixDomainObjectsToDelete.forEach((n) => submitDeleteObject(n));
-    const stixDomainObjectsToDeleteIds = stixDomainObjectsToDelete.map(
-      (n) => n.id,
-    );
+    const stixDomainObjectsToDeleteIds = stixDomainObjectsToDelete.map((n) => n.id);
     setStixDomainObjects(
       uniqWithByFields(
         uniqStixDomainObjectsFields,
         R.uniqBy(R.prop('id'), [
-          ...stixDomainObjects.filter(
-            (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
-          ),
+          ...stixDomainObjects.filter((n) => !stixDomainObjectsToDeleteIds.includes(n.id)),
           ...newEntities,
         ]),
       ),
@@ -1290,9 +1260,7 @@ const WorkbenchFileContentComponent = ({
       uniqWithByFields(
         ['source_ref', 'target_ref', 'relationship_type'],
         R.uniqBy(R.prop('id'), [
-          ...stixCoreRelationships.filter(
-            (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
-          ),
+          ...stixCoreRelationships.filter((n) => !stixCoreRelationshipsToDeleteIds.includes(n.id)),
           ...newRelationships,
         ]),
       ),
@@ -1301,16 +1269,13 @@ const WorkbenchFileContentComponent = ({
   };
 
   const onSubmitRelationship = (values) => {
-    const relationship = R.head(stixCoreRelationships.filter((n) => n.id === relationshipId))
-      || {};
-    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
-      (n) => ({
-        ...n,
-        id: n.standard_id || n.id,
-        name: n.name || n.definition,
-        type: 'marking-definition',
-      }),
-    );
+    const relationship = R.head(stixCoreRelationships.filter((n) => n.id === relationshipId)) || {};
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map((n) => ({
+      ...n,
+      id: n.standard_id || n.id,
+      name: n.name || n.definition,
+      type: 'marking-definition',
+    }));
     const identity = values.createdBy?.entity
       ? {
           ...values.createdBy.entity,
@@ -1319,16 +1284,12 @@ const WorkbenchFileContentComponent = ({
         }
       : null;
     const finalValues = {
-      ...R.omit(
-        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
-        values,
-      ),
+      ...R.omit(['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'], values),
       labels: R.pluck('label', values.objectLabel),
       object_marking_refs: R.pluck('entity', values.objectMarking).map(
         (n) => n.standard_id || n.id,
       ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
@@ -1343,9 +1304,7 @@ const WorkbenchFileContentComponent = ({
       uniqWithByFields(
         ['source_ref', 'target_ref', 'relationship_type'],
         R.uniqBy(R.prop('id'), [
-          ...stixCoreRelationships.filter(
-            (n) => n.id !== updatedRelationship.id,
-          ),
+          ...stixCoreRelationships.filter((n) => n.id !== updatedRelationship.id),
           updatedRelationship,
         ]),
       ),
@@ -1365,14 +1324,12 @@ const WorkbenchFileContentComponent = ({
 
   const onSubmitObservable = (values) => {
     const observable = R.head(stixCyberObservables.filter((n) => n.id === observableId)) || {};
-    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
-      (n) => ({
-        ...n,
-        id: n.standard_id || n.id,
-        name: n.name || n.definition,
-        type: 'marking-definition',
-      }),
-    );
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map((n) => ({
+      ...n,
+      id: n.standard_id || n.id,
+      name: n.name || n.definition,
+      type: 'marking-definition',
+    }));
     const hashes = {};
     if (values['hashes.MD5'] && values['hashes.MD5'].length > 0) {
       hashes.MD5 = values['hashes.MD5'];
@@ -1411,8 +1368,7 @@ const WorkbenchFileContentComponent = ({
       object_marking_refs: R.pluck('entity', values.objectMarking).map(
         (n) => n.standard_id || n.id,
       ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     // numberAttributes must be rewritten to actual number
@@ -1421,9 +1377,7 @@ const WorkbenchFileContentComponent = ({
       const numberAttribute = numberAttributes[i];
       if (availableKeys.includes(numberAttribute)) {
         const numericAttr = finalValues[numberAttribute];
-        finalValues[numberAttribute] = isEmptyField(numericAttr)
-          ? null
-          : parseInt(numericAttr, 10);
+        finalValues[numberAttribute] = isEmptyField(numericAttr) ? null : parseInt(numericAttr, 10);
       }
     }
     if (!R.isEmpty(hashes)) {
@@ -1446,23 +1400,23 @@ const WorkbenchFileContentComponent = ({
     };
     const observableDefaultKey = defaultKey(updatedObservable);
     const observablesOfSameTypeAndKey = stixCyberObservables.filter(
-      (n) => n.type === updatedObservable.type
-        && observableDefaultKey
-        && n[observableDefaultKey]
-        && isNotEmptyField(n[observableDefaultKey]),
+      (n) =>
+        n.type === updatedObservable.type &&
+        observableDefaultKey &&
+        n[observableDefaultKey] &&
+        isNotEmptyField(n[observableDefaultKey]),
     );
     const otherObservables = stixCyberObservables.filter(
-      (n) => n.type !== updatedObservable.type
-        || !observableDefaultKey
-        || !n[observableDefaultKey]
-        || isEmptyField(n[observableDefaultKey]),
+      (n) =>
+        n.type !== updatedObservable.type ||
+        !observableDefaultKey ||
+        !n[observableDefaultKey] ||
+        isEmptyField(n[observableDefaultKey]),
     );
     const groupedObservablesOfSameTypeAndKey = computeDuplicates(
       observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
       R.uniqBy(R.prop('id'), [
-        ...observablesOfSameTypeAndKey.filter(
-          (n) => n.id !== updatedObservable.id,
-        ),
+        ...observablesOfSameTypeAndKey.filter((n) => n.id !== updatedObservable.id),
         updatedObservable,
       ]),
     );
@@ -1495,14 +1449,12 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixCoreRelationships),
       ...R.indexBy(R.prop('id'), stixSightings),
     };
-    const markingDefinitions = R.pluck('entity', values.objectMarking).map(
-      (n) => ({
-        ...n,
-        id: n.standard_id || n.id,
-        name: n.name || n.definition,
-        type: 'marking-definition',
-      }),
-    );
+    const markingDefinitions = R.pluck('entity', values.objectMarking).map((n) => ({
+      ...n,
+      id: n.standard_id || n.id,
+      name: n.name || n.definition,
+      type: 'marking-definition',
+    }));
     const identity = values.createdBy?.entity
       ? {
           ...values.createdBy.entity,
@@ -1511,16 +1463,12 @@ const WorkbenchFileContentComponent = ({
         }
       : null;
     const finalValues = {
-      ...R.omit(
-        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
-        values,
-      ),
+      ...R.omit(['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'], values),
       labels: R.pluck('label', values.objectLabel),
       object_marking_refs: R.pluck('entity', values.objectMarking).map(
         (n) => n.standard_id || n.id,
       ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     const stixValues = R.reject(R.anyPass([R.isEmpty, R.isNil]))({
@@ -1552,8 +1500,7 @@ const WorkbenchFileContentComponent = ({
       ),
     );
     setContainerSelectAll(
-      (container.object_refs || []).length
-      >= Object.keys(indexedStixObjects).length,
+      (container.object_refs || []).length >= Object.keys(indexedStixObjects).length,
     );
     setContainerStep(1);
     setStixDomainObjects(
@@ -1580,15 +1527,14 @@ const WorkbenchFileContentComponent = ({
       containerElementsIds = R.uniq(
         R.values(indexedStixObjects)
           .filter(
-            (n) => !Object.keys(containerDeselectedElements || {}).includes(n.id)
-              && n.type !== 'marking-definition',
+            (n) =>
+              !Object.keys(containerDeselectedElements || {}).includes(n.id) &&
+              n.type !== 'marking-definition',
           )
           .map((n) => n.id),
       );
     } else {
-      containerElementsIds = R.uniq(
-        Object.keys(containerSelectedElements || {}),
-      );
+      containerElementsIds = R.uniq(Object.keys(containerSelectedElements || {}));
     }
     const updatedContainer = {
       ...container,
@@ -1645,10 +1591,7 @@ const WorkbenchFileContentComponent = ({
   const convertExternalReferences = (entity) => {
     if (entity && entity.external_references) {
       return entity.external_references.map((n) => ({
-        label: `[${n.source_name}] ${truncate(
-          n.description || n.url || n.external_id,
-          150,
-        )}`,
+        label: `[${n.source_name}] ${truncate(n.description || n.url || n.external_id, 150)}`,
         value: n.id,
         entity: n,
       }));
@@ -1689,10 +1632,7 @@ const WorkbenchFileContentComponent = ({
     );
     if (isSortable) {
       return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={() => reverseBy(field)}
-        >
+        <div style={inlineStylesHeaders[field]} onClick={() => reverseBy(field)}>
           <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
         </div>
@@ -1716,10 +1656,7 @@ const WorkbenchFileContentComponent = ({
     );
     if (isSortable) {
       return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={() => containerReverseBy(field)}
-        >
+        <div style={inlineStylesHeaders[field]} onClick={() => containerReverseBy(field)}>
           <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}
         </div>
@@ -1782,17 +1719,16 @@ const WorkbenchFileContentComponent = ({
               externalReferences: convertExternalReferences(entity),
             };
             const attributes = R.filter(
-              (n) => R.includes(
-                n,
-                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
-              ),
+              (n) =>
+                R.includes(
+                  n,
+                  R.map((o) => o.node.value, props.schemaAttributeNames.edges),
+                ),
               workbenchAttributes,
             );
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = entity[attribute]
-                  ? buildDate(entity[attribute])
-                  : now();
+                initialValues[attribute] = entity[attribute] ? buildDate(entity[attribute]) : now();
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = entity[attribute] || false;
               } else {
@@ -1805,16 +1741,8 @@ const WorkbenchFileContentComponent = ({
                 onSubmit={onSubmitEntity}
                 onReset={handleCloseEntity}
               >
-                {({
-                  submitForm,
-                  handleReset,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form
-                    style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}
-                  >
+                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+                  <Form style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}>
                     <div>
                       {attributes.map((attribute) => {
                         if (R.includes(attribute, dateAttributes)) {
@@ -1887,8 +1815,8 @@ const WorkbenchFileContentComponent = ({
                           );
                         }
                         if (
-                          R.includes(attribute, vocabularyAttributes)
-                          && fieldToCategory(type, attribute)
+                          R.includes(attribute, vocabularyAttributes) &&
+                          fieldToCategory(type, attribute)
                         ) {
                           return (
                             <OpenVocabField
@@ -1898,9 +1826,7 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={
-                                getFieldDefinition(attribute)?.multiple ?? false
-                              }
+                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
                               type={fieldToCategory(type, attribute)}
                             />
                           );
@@ -1958,9 +1884,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {entityId
-                          ? t_i18n('Update and complete')
-                          : t_i18n('Add and complete')}
+                        {entityId ? t_i18n('Update and complete') : t_i18n('Add and complete')}
                       </Button>
                     </div>
                   </Form>
@@ -2006,12 +1930,7 @@ const WorkbenchFileContentComponent = ({
       'Tool',
       'Channel',
     ];
-    const attributedToFrom = [
-      'Threat-Actor',
-      'Intrusion-Set',
-      'Campaign',
-      'Incident',
-    ];
+    const attributedToFrom = ['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident'];
     const hasFrom = ['System'];
     const targetsTo = [
       'Sector',
@@ -2028,46 +1947,37 @@ const WorkbenchFileContentComponent = ({
     const attributedToTo = ['Threat-Actor', 'Intrusion-Set', 'Campaign'];
     const usesTo = ['Attack-Pattern', 'Malware', 'Tool'];
     const initialValues = {};
-    const resolveObjects = (relationshipType, source, target) => stixCoreRelationships
-      .filter(
-        (n) => n[source] === entity.id && n.relationship_type === relationshipType,
-      )
-      .map((n) => {
-        const object = indexedStixObjects[n[target]];
-        if (object) {
-          let objectType = convertFromStixType(object.type);
-          if (objectType === 'Identity') {
-            objectType = resolveIdentityType(object.identity_class);
-          } else if (objectType === 'Location') {
-            objectType = resolveLocationType(object);
-          } else if (type === 'Threat-Actor') {
-            type = resolveThreatActorType(entity);
+    const resolveObjects = (relationshipType, source, target) =>
+      stixCoreRelationships
+        .filter((n) => n[source] === entity.id && n.relationship_type === relationshipType)
+        .map((n) => {
+          const object = indexedStixObjects[n[target]];
+          if (object) {
+            let objectType = convertFromStixType(object.type);
+            if (objectType === 'Identity') {
+              objectType = resolveIdentityType(object.identity_class);
+            } else if (objectType === 'Location') {
+              objectType = resolveLocationType(object);
+            } else if (type === 'Threat-Actor') {
+              type = resolveThreatActorType(entity);
+            }
+            return {
+              id: object.id,
+              type: objectType,
+              name: object.name,
+            };
           }
           return {
-            id: object.id,
-            type: objectType,
-            name: object.name,
+            id: n[target],
+            type: 'unknown',
+            name: 'unknown',
           };
-        }
-        return {
-          id: n[target],
-          type: 'unknown',
-          name: 'unknown',
-        };
-      });
+        });
     if (targetsFrom.includes(type)) {
-      initialValues.targets_from = resolveObjects(
-        'targets',
-        'source_ref',
-        'target_ref',
-      );
+      initialValues.targets_from = resolveObjects('targets', 'source_ref', 'target_ref');
     }
     if (usesFrom.includes(type)) {
-      initialValues.uses_from = resolveObjects(
-        'uses',
-        'source_ref',
-        'target_ref',
-      );
+      initialValues.uses_from = resolveObjects('uses', 'source_ref', 'target_ref');
     }
     if (attributedToFrom.includes(type)) {
       initialValues['attributed-to_from'] = resolveObjects(
@@ -2077,18 +1987,10 @@ const WorkbenchFileContentComponent = ({
       );
     }
     if (hasFrom.includes(type)) {
-      initialValues.has_from = resolveObjects(
-        'attributed-to',
-        'source_ref',
-        'target_ref',
-      );
+      initialValues.has_from = resolveObjects('attributed-to', 'source_ref', 'target_ref');
     }
     if (targetsTo.includes(type)) {
-      initialValues.targets_to = resolveObjects(
-        'targets',
-        'target_ref',
-        'source_ref',
-      );
+      initialValues.targets_to = resolveObjects('targets', 'target_ref', 'source_ref');
     }
     if (attributedToTo.includes(type)) {
       initialValues['attributed-to_to'] = resolveObjects(
@@ -2098,11 +2000,7 @@ const WorkbenchFileContentComponent = ({
       );
     }
     if (usesTo.includes(type)) {
-      initialValues.uses_to = resolveObjects(
-        'uses',
-        'target_ref',
-        'source_ref',
-      );
+      initialValues.uses_to = resolveObjects('uses', 'target_ref', 'source_ref');
     }
     return (
       <Formik
@@ -2142,13 +2040,7 @@ const WorkbenchFileContentComponent = ({
                 name="uses_from"
                 title={t_i18n('relationship_uses')}
                 fullWidth
-                types={[
-                  'Malware',
-                  'Tool',
-                  'Attack-Pattern',
-                  'Infrastructure',
-                  'Narrative',
-                ]}
+                types={['Malware', 'Tool', 'Attack-Pattern', 'Infrastructure', 'Narrative']}
                 stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
@@ -2172,14 +2064,7 @@ const WorkbenchFileContentComponent = ({
                 name="targets_to"
                 title={t_i18n('relationship_targets')}
                 fullWidth
-                types={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                  'Tool',
-                ]}
+                types={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware', 'Tool']}
                 stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
@@ -2203,13 +2088,7 @@ const WorkbenchFileContentComponent = ({
                 name="uses_to"
                 title={t_i18n('relationship_uses') + t_i18n(' (reversed)')}
                 fullWidth
-                types={[
-                  'Threat-Actor',
-                  'Intrusion-Set',
-                  'Campaign',
-                  'Incident',
-                  'Malware',
-                ]}
+                types={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Incident', 'Malware']}
                 stixDomainObjects={stixDomainObjects}
                 style={{ marginTop: 20 }}
               />
@@ -2238,8 +2117,7 @@ const WorkbenchFileContentComponent = ({
   };
 
   const renderRelationshipForm = () => {
-    const relationship = R.head(stixCoreRelationships.filter((n) => n.id === relationshipId))
-      || {};
+    const relationship = R.head(stixCoreRelationships.filter((n) => n.id === relationshipId)) || {};
     return (
       <QueryRenderer
         query={workbenchFileContentAttributesQuery}
@@ -2253,10 +2131,11 @@ const WorkbenchFileContentComponent = ({
               externalReferences: convertExternalReferences(relationship),
             };
             const attributes = R.filter(
-              (n) => R.includes(
-                n,
-                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
-              ),
+              (n) =>
+                R.includes(
+                  n,
+                  R.map((o) => o.node.value, props.schemaAttributeNames.edges),
+                ),
               workbenchAttributes,
             );
             for (const attribute of attributes) {
@@ -2276,16 +2155,8 @@ const WorkbenchFileContentComponent = ({
                 onSubmit={onSubmitRelationship}
                 onReset={handleCloseRelationship}
               >
-                {({
-                  submitForm,
-                  handleReset,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form
-                    style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}
-                  >
+                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+                  <Form style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}>
                     <div>
                       {attributes.map((attribute) => {
                         if (R.includes(attribute, dateAttributes)) {
@@ -2461,9 +2332,7 @@ const WorkbenchFileContentComponent = ({
             };
             const attributes = R.pipe(
               R.map((n) => n.node.value),
-              R.filter(
-                (n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_'),
-              ),
+              R.filter((n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_')),
             )(props.schemaAttributeNames.edges);
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
@@ -2478,16 +2347,16 @@ const WorkbenchFileContentComponent = ({
                   : observable[attribute];
               } else if (attribute === 'hashes') {
                 initialValues['hashes.MD5'] = observable[attribute]
-                  ? observable[attribute].MD5 ?? ''
+                  ? (observable[attribute].MD5 ?? '')
                   : '';
                 initialValues['hashes_SHA-1'] = observable[attribute]
-                  ? observable[attribute]['SHA-1'] ?? ''
+                  ? (observable[attribute]['SHA-1'] ?? '')
                   : '';
                 initialValues['hashes_SHA-256'] = observable[attribute]
-                  ? observable[attribute]['SHA-256'] ?? ''
+                  ? (observable[attribute]['SHA-256'] ?? '')
                   : '';
                 initialValues['hashes_SHA-512'] = observable[attribute]
-                  ? observable[attribute]['SHA-512'] ?? ''
+                  ? (observable[attribute]['SHA-512'] ?? '')
                   : '';
               } else {
                 initialValues[attribute] = observable[attribute] ?? '';
@@ -2499,16 +2368,8 @@ const WorkbenchFileContentComponent = ({
                 onSubmit={onSubmitObservable}
                 onReset={handleCloseObservable}
               >
-                {({
-                  submitForm,
-                  handleReset,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form
-                    style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}
-                  >
+                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+                  <Form style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}>
                     <div>
                       {attributes.map((attribute) => {
                         if (R.includes(attribute, dateAttributes)) {
@@ -2619,8 +2480,8 @@ const WorkbenchFileContentComponent = ({
                           );
                         }
                         if (
-                          R.includes(attribute, vocabularyAttributes)
-                          && fieldToCategory(observableType, attribute)
+                          R.includes(attribute, vocabularyAttributes) &&
+                          fieldToCategory(observableType, attribute)
                         ) {
                           return (
                             <OpenVocabField
@@ -2630,9 +2491,7 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={
-                                getFieldDefinition(attribute)?.multiple ?? false
-                              }
+                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
                               type={fieldToCategory(observableType, attribute)}
                             />
                           );
@@ -2715,10 +2574,11 @@ const WorkbenchFileContentComponent = ({
               externalReferences: convertExternalReferences(container),
             };
             const attributes = R.filter(
-              (n) => R.includes(
-                n,
-                R.map((o) => o.node.value, props.schemaAttributeNames.edges),
-              ),
+              (n) =>
+                R.includes(
+                  n,
+                  R.map((o) => o.node.value, props.schemaAttributeNames.edges),
+                ),
               workbenchAttributes,
             );
             for (const attribute of attributes) {
@@ -2738,16 +2598,8 @@ const WorkbenchFileContentComponent = ({
                 onSubmit={onSubmitContainer}
                 onReset={handleCloseContainer}
               >
-                {({
-                  submitForm,
-                  handleReset,
-                  isSubmitting,
-                  setFieldValue,
-                  values,
-                }) => (
-                  <Form
-                    style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}
-                  >
+                {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+                  <Form style={{ margin: '0 0 20px 0', padding: '0 15px 0 15px' }}>
                     <div>
                       {attributes.map((attribute) => {
                         if (R.includes(attribute, dateAttributes)) {
@@ -2793,8 +2645,8 @@ const WorkbenchFileContentComponent = ({
                           );
                         }
                         if (
-                          R.includes(attribute, markdownAttributes)
-                          || (containerType === 'Note' && attribute === 'content')
+                          R.includes(attribute, markdownAttributes) ||
+                          (containerType === 'Note' && attribute === 'content')
                         ) {
                           return (
                             <Field
@@ -2823,8 +2675,8 @@ const WorkbenchFileContentComponent = ({
                           );
                         }
                         if (
-                          R.includes(attribute, vocabularyAttributes)
-                          && fieldToCategory(containerType, attribute)
+                          R.includes(attribute, vocabularyAttributes) &&
+                          fieldToCategory(containerType, attribute)
                         ) {
                           return (
                             <OpenVocabField
@@ -2834,9 +2686,7 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={
-                                getFieldDefinition(attribute)?.multiple ?? false
-                              }
+                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
                               type={fieldToCategory(containerType, attribute)}
                             />
                           );
@@ -2891,9 +2741,7 @@ const WorkbenchFileContentComponent = ({
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >
-                        {containerId
-                          ? t_i18n('Update and complete')
-                          : t_i18n('Add and complete')}
+                        {containerId ? t_i18n('Update and complete') : t_i18n('Add and complete')}
                       </Button>
                     </div>
                   </Form>
@@ -2920,19 +2768,20 @@ const WorkbenchFileContentComponent = ({
         n.type === 'relationship'
           ? t_i18n(`relationship_${n.relationship_type}`)
           : t_i18n(`entity_${convertFromStixType(n.type)}`),
-      default_value: getMainRepresentative({
-        ...n,
-        source_ref_name: getMainRepresentative(
-          indexedStixObjects[n.source_ref]
-          || indexedStixObjects[n.sighting_of_ref]
-          || {},
-        ),
-        target_ref_name: getMainRepresentative(
-          indexedStixObjects[n.target_ref]
-          || indexedStixObjects[n.where_sighted_refs?.at(0)]
-          || {},
-        ),
-      }, null),
+      default_value: getMainRepresentative(
+        {
+          ...n,
+          source_ref_name: getMainRepresentative(
+            indexedStixObjects[n.source_ref] || indexedStixObjects[n.sighting_of_ref] || {},
+          ),
+          target_ref_name: getMainRepresentative(
+            indexedStixObjects[n.target_ref] ||
+              indexedStixObjects[n.where_sighted_refs?.at(0)] ||
+              {},
+          ),
+        },
+        null,
+      ),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
     const sort = R.sortWith(
@@ -2940,9 +2789,7 @@ const WorkbenchFileContentComponent = ({
         ? [R.ascend(R.prop(containerSortBy))]
         : [R.descend(R.prop(containerSortBy))],
     );
-    const sortedObjects = sort(
-      resolvedObjects.filter((n) => n.type !== 'marking-definition'),
-    );
+    const sortedObjects = sort(resolvedObjects.filter((n) => n.type !== 'marking-definition'));
     return (
       <div style={{ padding: '0 15px 0 15px' }}>
         <List classes={{ root: classes.linesContainer }}>
@@ -2957,21 +2804,17 @@ const WorkbenchFileContentComponent = ({
               }}
               onClick={handleToggleContainerSelectAll}
             >
-              <Checkbox
-                edge="start"
-                checked={containerSelectAll}
-                disableRipple
-              />
+              <Checkbox edge="start" checked={containerSelectAll} disableRipple />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeaderContainer('ttype', 'Type', true)}
                   {sortHeaderContainer('default_value', 'Default value', true)}
                   {sortHeaderContainer('labels', 'Labels', true)}
                   {sortHeaderContainer('markings', 'Marking definitions', true)}
                 </div>
-              )}
+              }
             />
           </ListItemButton>
           {sortedObjects.map((object) => {
@@ -2979,73 +2822,47 @@ const WorkbenchFileContentComponent = ({
             let secondaryType = '';
             if (type === 'Identity') {
               type = resolveIdentityType(object.identity_class);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveIdentityType(object.identity_class)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveIdentityType(object.identity_class)}`)})`;
             }
             if (type === 'Location') {
               type = resolveLocationType(object);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveLocationType(object)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveLocationType(object)}`)})`;
             }
             if (type === 'Threat-Actor') {
               type = resolveThreatActorType(object);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveThreatActorType(object)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveThreatActorType(object)}`)})`;
             }
             return (
               <ListItem
                 key={object.id}
                 classes={{ root: classes.item }}
                 divider
-                onClick={(event) => handleToggleContainerSelectObject(object, event)
-                }
+                onClick={(event) => handleToggleContainerSelectObject(object, event)}
               >
-                <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
-                  style={{ minWidth: 40 }}
-                >
+                <ListItemIcon classes={{ root: classes.itemIcon }} style={{ minWidth: 40 }}>
                   <Checkbox
                     edge="start"
                     checked={
-                      (containerSelectAll
-                        && !(object.id in (containerDeselectedElements || {})))
-                      || object.id in (containerSelectedElements || {})
+                      (containerSelectAll && !(object.id in (containerDeselectedElements || {}))) ||
+                      object.id in (containerSelectedElements || {})
                     }
                     disableRipple
                   />
                 </ListItemIcon>
                 <ListItemText
-                  primary={(
+                  primary={
                     <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
@@ -3053,7 +2870,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                  )}
+                  }
                 />
               </ListItem>
             );
@@ -3067,10 +2884,7 @@ const WorkbenchFileContentComponent = ({
           >
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={onSubmitContainerContext}
-            classes={{ root: classes.button }}
-          >
+          <Button onClick={onSubmitContainerContext} classes={{ root: classes.button }}>
             {t_i18n('Update context')}
           </Button>
         </div>
@@ -3086,9 +2900,7 @@ const WorkbenchFileContentComponent = ({
       // use an adapted version of getMainRepresentative because not possible to filter by representative.main (to check if the entity is in the platform)
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
-    const sort = R.sortWith(
-      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-    );
+    const sort = R.sortWith(orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))]);
     const sortedStixDomainObjects = sort(resolvedStixDomainObjects);
 
     const objectExistenceItem = (object, type) => {
@@ -3106,25 +2918,13 @@ const WorkbenchFileContentComponent = ({
             }}
             render={({ props }) => {
               if (props && props.markingDefinitions) {
-                return props.markingDefinitions.edges.length > 0
-                  ? (
-                      <ItemBoolean
-                        status={true}
-                        label={t_i18n('Yes')}
-                      />
-                    ) : (
-                      <ItemBoolean
-                        status={false}
-                        label={t_i18n('No')}
-                      />
-                    );
+                return props.markingDefinitions.edges.length > 0 ? (
+                  <ItemBoolean status={true} label={t_i18n('Yes')} />
+                ) : (
+                  <ItemBoolean status={false} label={t_i18n('No')} />
+                );
               }
-              return (
-                <ItemBoolean
-                  status={undefined}
-                  label={t_i18n('Pending')}
-                />
-              );
+              return <ItemBoolean status={undefined} label={t_i18n('Pending')} />;
             }}
           />
         );
@@ -3148,25 +2948,13 @@ const WorkbenchFileContentComponent = ({
           }}
           render={({ props }) => {
             if (props && props.stixDomainObjects) {
-              return props.stixDomainObjects.edges.length > 0
-                ? (
-                    <ItemBoolean
-                      status={true}
-                      label={t_i18n('Yes')}
-                    />
-                  ) : (
-                    <ItemBoolean
-                      status={false}
-                      label={t_i18n('No')}
-                    />
-                  );
+              return props.stixDomainObjects.edges.length > 0 ? (
+                <ItemBoolean status={true} label={t_i18n('Yes')} />
+              ) : (
+                <ItemBoolean status={false} label={t_i18n('No')} />
+              );
             }
-            return (
-              <ItemBoolean
-                status={undefined}
-                label={t_i18n('Pending')}
-              />
-            );
+            return <ItemBoolean status={undefined} label={t_i18n('Pending')} />;
           }}
         />
       );
@@ -3190,7 +2978,7 @@ const WorkbenchFileContentComponent = ({
               <Checkbox edge="start" checked={selectAll} disableRipple />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -3198,7 +2986,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              )}
+              }
             />
           </ListItem>
           {sortedStixDomainObjects.map((object) => {
@@ -3206,21 +2994,15 @@ const WorkbenchFileContentComponent = ({
             let secondaryType = '';
             if (type === 'Identity') {
               type = resolveIdentityType(object.identity_class);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveIdentityType(object.identity_class)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveIdentityType(object.identity_class)}`)})`;
             }
             if (type === 'Location') {
               type = resolveLocationType(object);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveLocationType(object)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveLocationType(object)}`)})`;
             }
             if (type === 'Threat-Actor') {
               type = resolveThreatActorType(object);
-              secondaryType = ` (${t_i18n(
-                `entity_${resolveThreatActorType(object)}`,
-              )})`;
+              secondaryType = ` (${t_i18n(`entity_${resolveThreatActorType(object)}`)})`;
             }
             return (
               <ListItem
@@ -3233,7 +3015,7 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenEntity(object.type, object.id)
                 }
-                secondaryAction={(
+                secondaryAction={
                   <IconButton
                     aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
@@ -3241,7 +3023,7 @@ const WorkbenchFileContentComponent = ({
                   >
                     <DeleteOutlined />
                   </IconButton>
-                )}
+                }
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3251,9 +3033,8 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                      (selectAll
-                        && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
+                      (selectAll && !(object.id in (deSelectedElements || {}))) ||
+                      object.id in (selectedElements || {})
                     }
                     disableRipple
                   />
@@ -3265,55 +3046,34 @@ const WorkbenchFileContentComponent = ({
                       alignItems: 'center',
                     },
                   }}
-                  primary={(
+                  primary={
                     <>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value || t_i18n('Unknown')}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.in_platform}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.in_platform}>
                         {object.default_value ? (
                           objectExistenceItem(object, type)
                         ) : (
-                          <ItemBoolean
-                            status={null}
-                            label={t_i18n('Not applicable')}
-                          />
+                          <ItemBoolean status={null} label={t_i18n('Not applicable')} />
                         )}
                       </div>
                     </>
-                  )}
+                  }
                 />
               </ListItem>
             );
@@ -3357,9 +3117,7 @@ const WorkbenchFileContentComponent = ({
       default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
-    const sort = R.sortWith(
-      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-    );
+    const sort = R.sortWith(orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))]);
     const sortedStixCyberObservables = sort(resolvedStixCyberObservables);
     return (
       <div>
@@ -3390,7 +3148,7 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -3398,7 +3156,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              )}
+              }
             />
           </ListItem>
           {sortedStixCyberObservables.map((object) => {
@@ -3414,7 +3172,7 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenObservable(object.type, object.id)
                 }
-                secondaryAction={(
+                secondaryAction={
                   <IconButton
                     aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
@@ -3422,7 +3180,7 @@ const WorkbenchFileContentComponent = ({
                   >
                     <DeleteOutlined />
                   </IconButton>
-                )}
+                }
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3432,9 +3190,8 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                      (selectAll
-                        && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
+                      (selectAll && !(object.id in (deSelectedElements || {}))) ||
+                      object.id in (selectedElements || {})
                     }
                     disableRipple
                   />
@@ -3449,18 +3206,14 @@ const WorkbenchFileContentComponent = ({
                       alignItems: 'center',
                     },
                   }}
-                  primary={(
+                  primary={
                     <>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         <Select
                           variant="standard"
                           labelId="type"
                           value={convertFromStixType(object.type)}
-                          onChange={(event) => handleChangeObservableType(object.id, event)
-                          }
+                          onChange={(event) => handleChangeObservableType(object.id, event)}
                           style={{
                             margin: 0,
                             width: '80%',
@@ -3478,35 +3231,20 @@ const WorkbenchFileContentComponent = ({
                           ))}
                         </Select>
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value || t_i18n('Unknown')}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.in_platform}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.in_platform}>
                         {object.default_value ? (
                           <QueryRenderer
                             query={stixCyberObservablesLinesSearchQuery}
@@ -3526,36 +3264,21 @@ const WorkbenchFileContentComponent = ({
                             }}
                             render={({ props }) => {
                               if (props && props.stixCyberObservables) {
-                                return props.stixCyberObservables.edges.length
-                                  > 0 ? (
-                                      <ItemBoolean
-                                        status={true}
-                                        label={t_i18n('Yes')}
-                                      />
-                                    ) : (
-                                      <ItemBoolean
-                                        status={false}
-                                        label={t_i18n('No')}
-                                      />
-                                    );
+                                return props.stixCyberObservables.edges.length > 0 ? (
+                                  <ItemBoolean status={true} label={t_i18n('Yes')} />
+                                ) : (
+                                  <ItemBoolean status={false} label={t_i18n('No')} />
+                                );
                               }
-                              return (
-                                <ItemBoolean
-                                  status={undefined}
-                                  label={t_i18n('Pending')}
-                                />
-                              );
+                              return <ItemBoolean status={undefined} label={t_i18n('Pending')} />;
                             }}
                           />
                         ) : (
-                          <ItemBoolean
-                            status={null}
-                            label={t_i18n('Not applicable')}
-                          />
+                          <ItemBoolean status={null} label={t_i18n('Not applicable')} />
                         )}
                       </div>
                     </>
-                  )}
+                  }
                 />
               </ListItem>
             );
@@ -3591,18 +3314,19 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixCoreRelationships = stixCoreRelationships.map((n) => ({
       ...n,
       ttype: t_i18n(`relationship_${n.relationship_type}`),
-      default_value: getMainRepresentative({
-        ...n,
-        source_ref_name: getMainRepresentative(indexedStixObjects[n.source_ref] || {}),
-        target_ref_name: getMainRepresentative(indexedStixObjects[n.target_ref] || {}),
-      }, null),
+      default_value: getMainRepresentative(
+        {
+          ...n,
+          source_ref_name: getMainRepresentative(indexedStixObjects[n.source_ref] || {}),
+          target_ref_name: getMainRepresentative(indexedStixObjects[n.target_ref] || {}),
+        },
+        null,
+      ),
       source_ref_name: getMainRepresentative(indexedStixObjects[n.source_ref] || {}),
       target_ref_name: getMainRepresentative(indexedStixObjects[n.target_ref] || {}),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
-    const sort = R.sortWith(
-      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-    );
+    const sort = R.sortWith(orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))]);
     const sortedStixCoreRelationships = sort(resolvedStixCoreRelationships);
     return (
       <>
@@ -3633,14 +3357,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              )}
+              }
             />
           </ListItem>
           {sortedStixCoreRelationships.map((object) => (
@@ -3648,7 +3372,7 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={(
+              secondaryAction={
                 <IconButton
                   aria-label={t_i18n('Delete')}
                   onClick={() => handleDeleteObject(object)}
@@ -3656,7 +3380,7 @@ const WorkbenchFileContentComponent = ({
                 >
                   <DeleteOutlined />
                 </IconButton>
-              )}
+              }
             >
               <ListItemButton
                 classes={{ root: classes.item }}
@@ -3670,8 +3394,8 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                      (selectAll && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
+                      (selectAll && !(object.id in (deSelectedElements || {}))) ||
+                      object.id in (selectedElements || {})
                     }
                     disableRipple
                   />
@@ -3686,33 +3410,18 @@ const WorkbenchFileContentComponent = ({
                       alignItems: 'center',
                     },
                   }}
-                  primary={(
+                  primary={
                     <>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         {object.ttype}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value || t_i18n('Unknown')}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
@@ -3720,7 +3429,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </>
-                  )}
+                  }
                 />
               </ListItemButton>
             </ListItem>
@@ -3745,26 +3454,21 @@ const WorkbenchFileContentComponent = ({
     const resolvedStixSightings = stixSightings.map((n) => ({
       ...n,
       ttype: t_i18n('Sighting'),
-      default_value: getMainRepresentative({
-        ...n,
-        source_ref_name: getMainRepresentative(
-          indexedStixObjects[n.sighting_of_ref] || {},
-        ),
-        target_ref_name: getMainRepresentative(
-          indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
-        ),
-      }, null),
-      source_ref_name: getMainRepresentative(
-        indexedStixObjects[n.sighting_of_ref] || {},
+      default_value: getMainRepresentative(
+        {
+          ...n,
+          source_ref_name: getMainRepresentative(indexedStixObjects[n.sighting_of_ref] || {}),
+          target_ref_name: getMainRepresentative(
+            indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
+          ),
+        },
+        null,
       ),
-      target_ref_name: getMainRepresentative(
-        indexedStixObjects[n.where_sighted_refs?.at(0)] || {},
-      ),
+      source_ref_name: getMainRepresentative(indexedStixObjects[n.sighting_of_ref] || {}),
+      target_ref_name: getMainRepresentative(indexedStixObjects[n.where_sighted_refs?.at(0)] || {}),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
-    const sort = R.sortWith(
-      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-    );
+    const sort = R.sortWith(orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))]);
     const sortedStixSightings = sort(resolvedStixSightings);
     return (
       <>
@@ -3795,14 +3499,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              )}
+              }
             />
           </ListItem>
           {sortedStixSightings.map((object) => (
@@ -3810,7 +3514,7 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={(
+              secondaryAction={
                 <IconButton
                   aria-label={t_i18n('Delete')}
                   onClick={() => handleDeleteObject(object)}
@@ -3818,11 +3522,9 @@ const WorkbenchFileContentComponent = ({
                 >
                   <DeleteOutlined />
                 </IconButton>
-              )}
+              }
             >
-              <ListItemButton
-                classes={{ root: classes.item }}
-              >
+              <ListItemButton classes={{ root: classes.item }}>
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
                   style={{ minWidth: 40 }}
@@ -3831,8 +3533,8 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                      (selectAll && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
+                      (selectAll && !(object.id in (deSelectedElements || {}))) ||
+                      object.id in (selectedElements || {})
                     }
                     disableRipple
                   />
@@ -3847,33 +3549,18 @@ const WorkbenchFileContentComponent = ({
                       alignItems: 'center',
                     },
                   }}
-                  primary={(
+                  primary={
                     <>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         {object.ttype}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value || t_i18n('Unknown')}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
@@ -3881,7 +3568,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </>
-                  )}
+                  }
                 />
               </ListItemButton>
             </ListItem>
@@ -3896,21 +3583,23 @@ const WorkbenchFileContentComponent = ({
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => [
-        'report',
-        'note',
-        'grouping',
-        'x-opencti-feedback',
-        'feedback',
-        'x-opencti-case-incident',
-        'case-incident',
-        'x-opencti-case-rfi',
-        'case-rfi',
-        'x-opencti-case-rft',
-        'case-rft',
-        'x-opencti-task',
-        'task',
-      ].includes(convertToStixType(n.label))),
+      R.filter((n) =>
+        [
+          'report',
+          'note',
+          'grouping',
+          'x-opencti-feedback',
+          'feedback',
+          'x-opencti-case-incident',
+          'case-incident',
+          'x-opencti-case-rfi',
+          'case-rfi',
+          'x-opencti-case-rft',
+          'case-rft',
+          'x-opencti-task',
+          'task',
+        ].includes(convertToStixType(n.label)),
+      ),
       R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
@@ -3937,9 +3626,7 @@ const WorkbenchFileContentComponent = ({
       default_value: getMainRepresentative(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
-    const sort = R.sortWith(
-      orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))],
-    );
+    const sort = R.sortWith(orderAsc ? [R.ascend(R.prop(sortBy))] : [R.descend(R.prop(sortBy))]);
     const sortedContainers = sort(resolvedContainers);
     return (
       <div>
@@ -3959,7 +3646,7 @@ const WorkbenchFileContentComponent = ({
               <Checkbox edge="start" checked={selectAll} disableRipple={true} />
             </ListItemIcon>
             <ListItemText
-              primary={(
+              primary={
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -3967,9 +3654,8 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              )}
+              }
             />
-
           </ListItem>
           {sortedContainers.map((object) => {
             const type = convertFromStixType(object.type);
@@ -3980,7 +3666,7 @@ const WorkbenchFileContentComponent = ({
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={() => handleOpenContainer(object.type, object.id)}
-                secondaryAction={(
+                secondaryAction={
                   <IconButton
                     aria-label={t_i18n('Delete')}
                     onClick={() => handleDeleteObject(object)}
@@ -3988,7 +3674,7 @@ const WorkbenchFileContentComponent = ({
                   >
                     <DeleteOutlined />
                   </IconButton>
-                )}
+                }
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3998,9 +3684,8 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                      (selectAll
-                        && !(object.id in (deSelectedElements || {})))
-                      || object.id in (selectedElements || {})
+                      (selectAll && !(object.id in (deSelectedElements || {}))) ||
+                      object.id in (selectedElements || {})
                     }
                     disableRipple={true}
                   />
@@ -4012,43 +3697,25 @@ const WorkbenchFileContentComponent = ({
                       alignItems: 'center',
                     },
                   }}
-                  primary={(
+                  primary={
                     <>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.ttype}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.ttype}>
                         <ItemEntityType showIcon entityType={type} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.default_value}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.default_value}>
                         {object.default_value || t_i18n('Unknown')}
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.labels}
-                      >
-                        <StixCoreObjectLabels
-                          variant="inList"
-                          labels={object.labels || []}
-                        />
+                      <div className={classes.bodyItem} style={inlineStyles.labels}>
+                        <StixCoreObjectLabels variant="inList" labels={object.labels || []} />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.markings}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.markings}>
                         <ItemMarkings
                           variant="inList"
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
                       </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.in_platform}
-                      >
+                      <div className={classes.bodyItem} style={inlineStyles.in_platform}>
                         {object.default_value ? (
                           <QueryRenderer
                             query={stixDomainObjectsLinesSearchQuery}
@@ -4072,36 +3739,21 @@ const WorkbenchFileContentComponent = ({
                             }}
                             render={({ props }) => {
                               if (props && props.stixDomainObjects) {
-                                return props.stixDomainObjects.edges.length
-                                  > 0 ? (
-                                      <ItemBoolean
-                                        status={true}
-                                        label={t_i18n('Yes')}
-                                      />
-                                    ) : (
-                                      <ItemBoolean
-                                        status={false}
-                                        label={t_i18n('No')}
-                                      />
-                                    );
+                                return props.stixDomainObjects.edges.length > 0 ? (
+                                  <ItemBoolean status={true} label={t_i18n('Yes')} />
+                                ) : (
+                                  <ItemBoolean status={false} label={t_i18n('No')} />
+                                );
                               }
-                              return (
-                                <ItemBoolean
-                                  status={undefined}
-                                  label={t_i18n('Pending')}
-                                />
-                              );
+                              return <ItemBoolean status={undefined} label={t_i18n('Pending')} />;
                             }}
                           />
                         ) : (
-                          <ItemBoolean
-                            status={null}
-                            label={t_i18n('Not applicable')}
-                          />
+                          <ItemBoolean status={null} label={t_i18n('Not applicable')} />
                         )}
                       </div>
                     </>
-                  )}
+                  }
                 />
               </ListItem>
             );
@@ -4142,22 +3794,13 @@ const WorkbenchFileContentComponent = ({
         ]}
       />
       <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
-        <TitleMainEntity sx={{ flex: 1 }}>
-          {fileName}
-        </TitleMainEntity>
+        <TitleMainEntity sx={{ flex: 1 }}>{fileName}</TitleMainEntity>
         <WorkbenchFilePopover file={file} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Button
-            variant="secondary"
-            onClick={handleOpenConvertToDraft}
-          >
+          <Button variant="secondary" onClick={handleOpenConvertToDraft}>
             {t_i18n('Convert to draft')}
           </Button>
-          <Button
-            onClick={handleOpenValidate}
-          >
-            {t_i18n('Validate this workbench')}
-          </Button>
+          <Button onClick={handleOpenValidate}>{t_i18n('Validate this workbench')}</Button>
         </Security>
       </Stack>
 
@@ -4165,9 +3808,7 @@ const WorkbenchFileContentComponent = ({
         <Tabs value={currentTab} onChange={handleChangeTab}>
           <Tab label={`${t_i18n('Entities')} (${stixDomainObjects.length})`} />
           <Tab label={`${t_i18n('Observables')} (${stixCyberObservables.length})`} />
-          <Tab
-            label={`${t_i18n('Relationships')} (${stixCoreRelationships.length})`}
-          />
+          <Tab label={`${t_i18n('Relationships')} (${stixCoreRelationships.length})`} />
           <Tab label={`${t_i18n('Sightings')} (${stixSightings.length})`} />
           <Tab label={`${t_i18n('Containers')} (${containers.length})`} />
         </Tabs>
@@ -4203,10 +3844,14 @@ const WorkbenchFileContentComponent = ({
                 <>
                   <Alert severity="info" variant="outlined">
                     <Typography>
-                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                      {t_i18n(
+                        'Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.',
+                      )}
                     </Typography>
                     <Typography>
-                      {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                      {t_i18n(
+                        "Because by default the workbench won't include the updates made on the entity after the creation of the workbench.",
+                      )}
                     </Typography>
                   </Alert>
                   <Field
@@ -4227,11 +3872,7 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
-                    key={connector.id}
-                    value={connector.id}
-                    disabled={!connector.active}
-                  >
+                  <MenuItem key={connector.id} value={connector.id} disabled={!connector.active}>
                     {connector.name}
                   </MenuItem>
                 ))}
@@ -4272,10 +3913,14 @@ const WorkbenchFileContentComponent = ({
                 <>
                   <Alert severity="info" variant="outlined">
                     <Typography>
-                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the convertion.')}
+                      {t_i18n(
+                        'Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the convertion.',
+                      )}
                     </Typography>
                     <Typography>
-                      {t_i18n('Because by default the draft won\'t include the updates made on the entity after the creation of the workbench.')}
+                      {t_i18n(
+                        "Because by default the draft won't include the updates made on the entity after the creation of the workbench.",
+                      )}
                     </Typography>
                   </Alert>
                   <Field
@@ -4296,11 +3941,7 @@ const WorkbenchFileContentComponent = ({
                 disabled={connectors.filter((n) => n.active).length === 0}
               >
                 {connectors.map((connector) => (
-                  <MenuItem
-                    key={connector.id}
-                    value={connector.id}
-                    disabled={!connector.active}
-                  >
+                  <MenuItem key={connector.id} value={connector.id} disabled={!connector.active}>
                     {connector.name}
                   </MenuItem>
                 ))}
@@ -4334,150 +3975,146 @@ const WorkbenchFileContentComponent = ({
   );
 };
 
-const WorkbenchFileContent = createFragmentContainer(
-  WorkbenchFileContentComponent,
-  {
-    connectorsImport: graphql`
-      fragment WorkbenchFileContent_connectorsImport on Connector
-      @relay(plural: true) {
-        id
-        name
-        active
-        only_contextual
-        connector_scope
-        updated_at
-      }
-    `,
-    file: graphql`
-      fragment WorkbenchFileContent_file on File {
-        id
-        name
-        uploadStatus
-        lastModified
-        lastModifiedSinceMin
-        metaData {
-          mimetype
-          encoding
-          file_markings
-          list_filters
-          messages {
-            timestamp
-            message
-          }
-          errors {
-            timestamp
-            message
-          }
-          entity_id
-          entity {
-            id
-            standard_id
-            entity_type
-            ... on AttackPattern {
-              name
-            }
-            ... on Campaign {
-              name
-            }
-            ... on Report {
-              name
-            }
-            ... on Grouping {
-              name
-            }
-            ... on CourseOfAction {
-              name
-            }
-            ... on Individual {
-              name
-            }
-            ... on Organization {
-              name
-            }
-            ... on Sector {
-              name
-            }
-            ... on System {
-              name
-            }
-            ... on Indicator {
-              name
-            }
-            ... on Infrastructure {
-              name
-            }
-            ... on IntrusionSet {
-              name
-            }
-            ... on Position {
-              name
-            }
-            ... on City {
-              name
-            }
-            ... on AdministrativeArea {
-              name
-            }
-            ... on Country {
-              name
-            }
-            ... on Region {
-              name
-            }
-            ... on Malware {
-              name
-            }
-            ... on ThreatActor {
-              name
-            }
-            ... on Tool {
-              name
-            }
-            ... on Vulnerability {
-              name
-            }
-            ... on Incident {
-              name
-            }
-            ... on Event {
-              name
-            }
-            ... on Channel {
-              name
-            }
-            ... on Narrative {
-              name
-            }
-            ... on Language {
-              name
-            }
-            ... on DataComponent {
-              name
-            }
-            ... on DataSource {
-              name
-            }
-            ... on Case {
-              name
-            }
-            ... on Feedback {
-              name
-            }
-            ... on Task {
-              name
-            }
-            ... on StixCyberObservable {
-              observable_value
-            }
-          }
+const WorkbenchFileContent = createFragmentContainer(WorkbenchFileContentComponent, {
+  connectorsImport: graphql`
+    fragment WorkbenchFileContent_connectorsImport on Connector @relay(plural: true) {
+      id
+      name
+      active
+      only_contextual
+      connector_scope
+      updated_at
+    }
+  `,
+  file: graphql`
+    fragment WorkbenchFileContent_file on File {
+      id
+      name
+      uploadStatus
+      lastModified
+      lastModifiedSinceMin
+      metaData {
+        mimetype
+        encoding
+        file_markings
+        list_filters
+        messages {
+          timestamp
+          message
         }
-        works {
+        errors {
+          timestamp
+          message
+        }
+        entity_id
+        entity {
           id
+          standard_id
+          entity_type
+          ... on AttackPattern {
+            name
+          }
+          ... on Campaign {
+            name
+          }
+          ... on Report {
+            name
+          }
+          ... on Grouping {
+            name
+          }
+          ... on CourseOfAction {
+            name
+          }
+          ... on Individual {
+            name
+          }
+          ... on Organization {
+            name
+          }
+          ... on Sector {
+            name
+          }
+          ... on System {
+            name
+          }
+          ... on Indicator {
+            name
+          }
+          ... on Infrastructure {
+            name
+          }
+          ... on IntrusionSet {
+            name
+          }
+          ... on Position {
+            name
+          }
+          ... on City {
+            name
+          }
+          ... on AdministrativeArea {
+            name
+          }
+          ... on Country {
+            name
+          }
+          ... on Region {
+            name
+          }
+          ... on Malware {
+            name
+          }
+          ... on ThreatActor {
+            name
+          }
+          ... on Tool {
+            name
+          }
+          ... on Vulnerability {
+            name
+          }
+          ... on Incident {
+            name
+          }
+          ... on Event {
+            name
+          }
+          ... on Channel {
+            name
+          }
+          ... on Narrative {
+            name
+          }
+          ... on Language {
+            name
+          }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
+          ... on Case {
+            name
+          }
+          ... on Feedback {
+            name
+          }
+          ... on Task {
+            name
+          }
+          ... on StixCyberObservable {
+            observable_value
+          }
         }
-        ...FileWork_file
       }
-    `,
-  },
-);
+      works {
+        id
+      }
+      ...FileWork_file
+    }
+  `,
+});
 
 export default WorkbenchFileContent;

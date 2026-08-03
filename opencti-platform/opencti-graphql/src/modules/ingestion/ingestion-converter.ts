@@ -14,7 +14,10 @@ import type {
   StoreEntityIngestionTaxiiCollection,
 } from './ingestion-types';
 import { cleanObject } from '../../database/stix-converter-utils';
-import type { CsvMapperRepresentationResolved, CsvMapperResolved } from '../internal/csvMapper/csvMapper-types';
+import type {
+  CsvMapperRepresentationResolved,
+  CsvMapperResolved,
+} from '../internal/csvMapper/csvMapper-types';
 
 export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): StixIngestionRss => {
   const stixObject = buildStixObject(instance);
@@ -34,7 +37,9 @@ export const convertIngestionRssToStix = (instance: StoreEntityIngestionRss): St
   };
 };
 
-export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii): StixIngestionTaxii => {
+export const convertIngestionTaxiiToStix = (
+  instance: StoreEntityIngestionTaxii,
+): StixIngestionTaxii => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
@@ -52,7 +57,9 @@ export const convertIngestionTaxiiToStix = (instance: StoreEntityIngestionTaxii)
   };
 };
 
-export const convertIngestionTaxiiCollectionToStix = (instance: StoreEntityIngestionTaxiiCollection): StixIngestionTaxiiCollection => {
+export const convertIngestionTaxiiCollectionToStix = (
+  instance: StoreEntityIngestionTaxiiCollection,
+): StixIngestionTaxiiCollection => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,
@@ -87,7 +94,9 @@ export const convertIngestionCsvToStix = (instance: StoreEntityIngestionCsv): St
   };
 };
 
-export const convertIngestionJsonToStix = (instance: StoreEntityIngestionJson): StixIngestionJson => {
+export const convertIngestionJsonToStix = (
+  instance: StoreEntityIngestionJson,
+): StixIngestionJson => {
   const stixObject = buildStixObject(instance);
   return {
     ...stixObject,

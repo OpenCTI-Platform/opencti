@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { extractEmbeddedStoragePathsFromMarkdown, getImageFiles, getMarkdownImageDragFeedback, isSvgImageFile } from './markdownImageFieldHelpers';
+import {
+  extractEmbeddedStoragePathsFromMarkdown,
+  getImageFiles,
+  getMarkdownImageDragFeedback,
+  isSvgImageFile,
+} from './markdownImageFieldHelpers';
 
 describe('markdown image field helpers', () => {
   it('extracts embedded storage paths from local embedded links', () => {
@@ -69,7 +74,10 @@ describe('markdown image field helpers', () => {
     const svg = new File(['svg'], 'sample.svg', { type: 'image/svg+xml' });
     const jpeg = new File(['jpeg'], 'sample.jpg', { type: 'image/jpeg' });
 
-    expect(getImageFiles([png, svg, jpeg]).map((f) => f.name)).toEqual(['sample.png', 'sample.jpg']);
+    expect(getImageFiles([png, svg, jpeg]).map((f) => f.name)).toEqual([
+      'sample.png',
+      'sample.jpg',
+    ]);
   });
 
   it('detects svg by mime type and extension', () => {

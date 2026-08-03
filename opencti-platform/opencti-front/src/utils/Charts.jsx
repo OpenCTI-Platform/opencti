@@ -68,16 +68,18 @@ const sanitizeCssColor = (value, fallback) => (HEX_COLOR_REGEX.test(value) ? val
  *
  * @param {Theme} theme
  */
-export const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => {
-  const safeNavColor = sanitizeCssColor(theme.palette.background.nav, 'inherit');
-  const safeTextColor = sanitizeCssColor(theme.palette.text.primary, 'inherit');
-  const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
-  return (`
+export const simpleLabelTooltip =
+  (theme) =>
+  ({ seriesIndex, w }) => {
+    const safeNavColor = sanitizeCssColor(theme.palette.background.nav, 'inherit');
+    const safeTextColor = sanitizeCssColor(theme.palette.text.primary, 'inherit');
+    const safeLabel = sanitize(String(w.config.labels[seriesIndex] ?? ''), true);
+    return `
   <div style="background: ${safeNavColor}; color: ${safeTextColor}; padding: 2px 6px; font-size: 12px">
     ${safeLabel}
   </div>
-`);
-};
+`;
+  };
 
 /**
  * @param {Theme} theme
@@ -111,10 +113,7 @@ export const lineChartOptions = (
   dataLabels: {
     enabled: dataLabels,
   },
-  colors: [
-    theme.palette.primary.main,
-    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-  ],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -124,10 +123,7 @@ export const lineChartOptions = (
     },
   },
   grid: {
-    borderColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
   },
   legend: {
@@ -210,10 +206,7 @@ export const areaChartOptions = (
     curve: 'smooth',
     width: 2,
   },
-  colors: [
-    theme.palette.primary.main,
-    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-  ],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -223,10 +216,7 @@ export const areaChartOptions = (
     },
   },
   grid: {
-    borderColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
   },
   legend: {
@@ -246,10 +236,7 @@ export const areaChartOptions = (
       shadeIntensity: 1,
       opacityFrom: 0.7,
       opacityTo: 0.1,
-      gradientToColors: [
-        theme.palette.primary.main,
-        theme.palette.primary.main,
-      ],
+      gradientToColors: [theme.palette.primary.main, theme.palette.primary.main],
     },
   },
   xaxis: {
@@ -316,10 +303,7 @@ export const verticalBarsChartOptions = (
   dataLabels: {
     enabled: false,
   },
-  colors: [
-    theme.palette.primary.main,
-    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-  ],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -329,10 +313,7 @@ export const verticalBarsChartOptions = (
     },
   },
   grid: {
-    borderColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
   },
   legend: {
@@ -438,23 +419,18 @@ export const horizontalBarsChartOptions = (
       },
       mouseMove: (event, chartContext, config) => {
         const { dataPointIndex, seriesIndex } = config;
-        if (redirectionUtils
-          && (
-            (dataPointIndex >= 0 // case click on a bar
-              && (
-                (seriesIndex >= 0 && redirectionUtils[dataPointIndex]?.series // case multi bars
-                  && redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type
-                  && resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type)
-                )
-                || (
-                  !(seriesIndex >= 0 && redirectionUtils[dataPointIndex]?.series) // case not multi bars
-                  && redirectionUtils[dataPointIndex]?.entity_type
-                  && resolveLink(redirectionUtils[dataPointIndex].entity_type)
-                )
-              )
-            )
-            || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label ' // case click on a label
-          )
+        if (
+          redirectionUtils &&
+          ((dataPointIndex >= 0 && // case click on a bar
+            ((seriesIndex >= 0 &&
+              redirectionUtils[dataPointIndex]?.series && // case multi bars
+              redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type &&
+              resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type)) ||
+              (!(seriesIndex >= 0 && redirectionUtils[dataPointIndex]?.series) && // case not multi bars
+                redirectionUtils[dataPointIndex]?.entity_type &&
+                resolveLink(redirectionUtils[dataPointIndex].entity_type)))) ||
+            event.target.parentNode.className.baseVal ===
+              'apexcharts-text apexcharts-yaxis-label ') // case click on a label
         ) {
           // for clickable parts of the graphs
 
@@ -468,14 +444,13 @@ export const horizontalBarsChartOptions = (
           const { dataPointIndex, seriesIndex } = config;
           if (dataPointIndex >= 0) {
             // click on a bar
-            if (
-              seriesIndex >= 0
-              && redirectionUtils[dataPointIndex].series
-            ) {
+            if (seriesIndex >= 0 && redirectionUtils[dataPointIndex].series) {
               // for multi horizontal bars representing entities
               if (redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type) {
                 // for series representing a single entity
-                const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
+                const link = resolveLink(
+                  redirectionUtils[dataPointIndex].series[seriesIndex].entity_type,
+                );
                 if (link) {
                   const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
                   handleNavigate(event, navigate, `${link}/${entityId}`);
@@ -502,10 +477,7 @@ export const horizontalBarsChartOptions = (
   dataLabels: {
     enabled: stackType === '100%',
   },
-  colors: [
-    theme.palette.primary.main,
-    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
-  ],
+  colors: [theme.palette.primary.main, ...colors(theme.palette.mode === 'dark' ? 400 : 600)],
   states: {
     hover: {
       filter: {
@@ -686,13 +658,9 @@ export const radarChartOptions = (
       size,
       polygons: {
         strokeColors:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, .1)'
-            : 'rgba(0, 0, 0, .1)',
+          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
         connectorColors:
-          theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, .1)'
-            : 'rgba(0, 0, 0, .1)',
+          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
         fill: { colors: [theme.palette.background.secondary] },
       },
     },
@@ -775,16 +743,12 @@ export const polarAreaChartOptions = (
         rings: {
           strokeWidth: 1,
           strokeColor:
-            theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, .1)'
-              : 'rgba(0, 0, 0, .1)',
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
         },
         spokes: {
           strokeWidth: 1,
           connectorColors:
-            theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, .1)'
-              : 'rgba(0, 0, 0, .1)',
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
         },
       },
     },
@@ -821,7 +785,9 @@ export const donutChartOptions = (
   const temp = theme.palette.mode === 'dark' ? 400 : 600;
   let dataLabelsColors = labels.map(() => theme.palette.text.primary);
   if (chartColors.length > 0) {
-    dataLabelsColors = chartColors.map((n) => (n === '#ffffff' ? '#000000' : theme.palette.text.primary));
+    dataLabelsColors = chartColors.map((n) =>
+      n === '#ffffff' ? '#000000' : theme.palette.text.primary,
+    );
   }
   let chartFinalColors = chartColors;
   if (chartFinalColors.length === 0) {
@@ -1031,10 +997,7 @@ export const heatMapOptions = (
     },
   },
   grid: {
-    borderColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+    borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     strokeDashArray: 3,
   },
   legend: {

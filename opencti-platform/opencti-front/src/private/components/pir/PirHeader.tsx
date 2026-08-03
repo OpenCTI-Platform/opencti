@@ -24,7 +24,10 @@ import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { PirEditionFragment$key } from './pir_form/__generated__/PirEditionFragment.graphql';
-import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import {
+  authorizedMembersToOptions,
+  useGetCurrentUserAccessRight,
+} from '../../../utils/authorizedMembers';
 import { PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import TitleMainEntity from '../../../components/common/typography/TitleMainEntity';
@@ -85,14 +88,16 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
       <Breadcrumbs elements={breadcrumb} />
 
       <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
-        <TitleMainEntity sx={{ flex: 1 }}>
-          {name}
-        </TitleMainEntity>
+        <TitleMainEntity sx={{ flex: 1 }}>{name}</TitleMainEntity>
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
+              <Security
+                matchAll
+                needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]}
+                hasAccess={canManage}
+              >
                 <FormAuthorizedMembersDialog
                   id={id}
                   owner={creators?.[0]}

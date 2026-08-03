@@ -1,13 +1,15 @@
 import { JsonMapperEdit, JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
-import { formDataToJsonMapperRepresentation, jsonMapperRepresentationToFormData } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import {
-  JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
-} from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
+  formDataToJsonMapperRepresentation,
+  jsonMapperRepresentationToFormData,
+} from '@components/data/jsonMapper/representations/RepresentationUtils';
+import { JsonMapperRepresentationAttributesForm_allSchemaAttributes$data } from '@components/data/jsonMapper/representations/attributes/__generated__/JsonMapperRepresentationAttributesForm_allSchemaAttributes.graphql';
 import { JsonMapperEditionContainerFragment_jsonMapper$data } from '@components/data/jsonMapper/__generated__/JsonMapperEditionContainerFragment_jsonMapper.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import { useComputeDefaultValues } from '../../../../utils/hooks/useDefaultValues';
 
-type JsonMapperRepresentations = JsonMapperEditionContainerFragment_jsonMapper$data['representations'];
+type JsonMapperRepresentations =
+  JsonMapperEditionContainerFragment_jsonMapper$data['representations'];
 
 type JsonMapperAddInput = {
   id: string;
@@ -50,9 +52,7 @@ export const jsonMapperToFormData = (
  *
  * @returns Data in backend format.
  */
-export const formDataToJsonMapper = (
-  data: JsonMapperFormData,
-): JsonMapperEdit => {
+export const formDataToJsonMapper = (data: JsonMapperFormData): JsonMapperEdit => {
   return {
     id: data.id,
     name: data.name ?? '',

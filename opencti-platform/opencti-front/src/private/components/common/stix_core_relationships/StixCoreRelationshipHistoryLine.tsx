@@ -3,19 +3,11 @@ import { StixCoreRelationshipHistoryLine_node$key } from './__generated__/StixCo
 import HistoryLineContent from '../history/HistoryLineContent';
 
 export const StixCoreRelationshipHistoryFragment = graphql`
-  fragment StixCoreRelationshipHistoryLine_node on Log @argumentDefinitions(
-    tz: {
-      type: "String",
-      defaultValue: null
-    }
-    locale: {
-      type: "String",
-      defaultValue: null
-    }
-    unit_system: {
-      type: "String",
-      defaultValue: null
-    }
+  fragment StixCoreRelationshipHistoryLine_node on Log
+  @argumentDefinitions(
+    tz: { type: "String", defaultValue: null }
+    locale: { type: "String", defaultValue: null }
+    unit_system: { type: "String", defaultValue: null }
   ) {
     id
     event_type
@@ -43,8 +35,14 @@ interface StixCoreRelationshipHistoryLineProps {
   isRelation: boolean;
 }
 
-const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }: StixCoreRelationshipHistoryLineProps) => {
-  const node = useFragment<StixCoreRelationshipHistoryLine_node$key>(StixCoreRelationshipHistoryFragment, nodeRef);
+const StixCoreRelationshipHistoryLine = ({
+  nodeRef,
+  isRelation,
+}: StixCoreRelationshipHistoryLineProps) => {
+  const node = useFragment<StixCoreRelationshipHistoryLine_node$key>(
+    StixCoreRelationshipHistoryFragment,
+    nodeRef,
+  );
 
   return (
     <HistoryLineContent

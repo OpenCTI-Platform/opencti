@@ -3,9 +3,7 @@ import { Field, FieldArray } from 'formik';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
-import {
-  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -49,10 +47,7 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
         render={(arrayHelpers) => (
           <>
             {values?.map(({ date_seen }, index) => (
-              <div
-                key={date_seen}
-                style={{ marginTop: 20, width: '100%', position: 'relative' }}
-              >
+              <div key={date_seen} style={{ marginTop: 20, width: '100%', position: 'relative' }}>
                 <div
                   style={{
                     paddingRight: 50,
@@ -138,10 +133,7 @@ export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
           <>
             {(values ?? []).map((weight, index) => {
               return (
-                <div
-                  key={index}
-                  style={{ marginTop: 20, width: '100%', position: 'relative' }}
-                >
+                <div key={index} style={{ marginTop: 20, width: '100%', position: 'relative' }}>
                   <div
                     style={{
                       paddingRight: 50,

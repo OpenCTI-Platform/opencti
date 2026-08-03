@@ -1,11 +1,19 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
+import {
+  playbookBundleElementsToApply,
+  type PlaybookBundleElementsToApply,
+  type PlaybookComponent,
+} from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
-import { convertMembersToUsersFromElements, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
+import {
+  convertMembersToUsersFromElements,
+  extractBundleBaseElement,
+  isBundleElementInScope,
+} from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
 import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
 
@@ -14,79 +22,103 @@ export interface SendEmailTemplateConfiguration {
   targets: object;
   applyToElements?: PlaybookBundleElementsToApply;
 }
-const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTemplateConfiguration> = {
-  type: 'object',
-  properties: {
-    email_template: {
-      type: 'string', $ref: 'Email template', oneOf: [],
+const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA: JSONSchemaType<SendEmailTemplateConfiguration> =
+  {
+    type: 'object',
+    properties: {
+      email_template: {
+        type: 'string',
+        $ref: 'Email template',
+        oneOf: [],
+      },
+      targets: { type: 'object' },
+      applyToElements: {
+        type: 'string',
+        nullable: true,
+        default: playbookBundleElementsToApply.onlyMain.value,
+        $ref: 'Resolve dynamic targets from',
+        oneOf: [
+          {
+            const: playbookBundleElementsToApply.onlyMain.value,
+            title: playbookBundleElementsToApply.onlyMain.title,
+          },
+          {
+            const: playbookBundleElementsToApply.allElements.value,
+            title: playbookBundleElementsToApply.allElements.title,
+          },
+          {
+            const: playbookBundleElementsToApply.allExceptMain.value,
+            title: playbookBundleElementsToApply.allExceptMain.title,
+          },
+        ],
+      },
     },
-    targets: { type: 'object' },
-    applyToElements: {
-      type: 'string',
-      nullable: true,
-      default: playbookBundleElementsToApply.onlyMain.value,
-      $ref: 'Resolve dynamic targets from',
-      oneOf: [
-        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
-        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
-        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
-      ],
-    },
-  },
-  required: ['email_template'],
-};
-export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmailTemplateConfiguration> = {
-  id: 'PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT',
-  name: 'Send email from template',
-  description: 'Automatically send template email',
-  icon: 'emailtemplate',
-  category: 'end_playbook',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [],
-  configuration_schema: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA,
-  schema: async () => {
-    const context = executionContext('playbook_components');
-    const emailTemplates = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_EMAIL_TEMPLATE]);
-    const elements = emailTemplates.map((c) => ({ const: c.id, title: c.name }));
-    const schemaElement = { properties: { email_template: { oneOf: elements } } };
-    return R.mergeDeepRight<JSONSchemaType<SendEmailTemplateConfiguration>, any>(PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA, schemaElement);
-  },
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const { email_template, targets, applyToElements } = playbookNode.configuration;
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-
-    // Resolve which elements to extract dynamic targets from
-    const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
-    const sourceElements = bundle.objects.filter((o) => isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId));
-
-    const targetUsers = await convertMembersToUsersFromElements(
-      targets as { value: string }[],
-      sourceElements.length > 0 ? sourceElements : [baseData],
-      bundle,
-    );
-    const sendEmailUserIds = [];
-    for (let index = 0; index < targetUsers.length; index += 1) {
-      const targetUser = targetUsers[index];
-      if (!targetUser.user_service_account && targetUser.account_status === ACCOUNT_STATUS_ACTIVE) {
-        sendEmailUserIds.push(targetUser.id);
-      }
-    }
-    const emailSend = async (user_id: string) => {
-      try {
-        await sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: user_id, email_template_id: email_template });
-      } catch (_err) {
-        logApp.warn('Could not send email to user', { user_id });
-      }
-    };
-    if (sendEmailUserIds.length > 0) {
-      await BluePromise.map(
-        sendEmailUserIds,
-        (user_id) => emailSend(user_id),
-        { concurrency: 3 },
+    required: ['email_template'],
+  };
+export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmailTemplateConfiguration> =
+  {
+    id: 'PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT',
+    name: 'Send email from template',
+    description: 'Automatically send template email',
+    icon: 'emailtemplate',
+    category: 'end_playbook',
+    is_entry_point: false,
+    is_internal: true,
+    ports: [],
+    configuration_schema: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA,
+    schema: async () => {
+      const context = executionContext('playbook_components');
+      const emailTemplates = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [
+        ENTITY_TYPE_EMAIL_TEMPLATE,
+      ]);
+      const elements = emailTemplates.map((c) => ({ const: c.id, title: c.name }));
+      const schemaElement = { properties: { email_template: { oneOf: elements } } };
+      return R.mergeDeepRight<JSONSchemaType<SendEmailTemplateConfiguration>, any>(
+        PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA,
+        schemaElement,
       );
-    }
-    return { output_port: undefined, bundle };
-  },
-};
+    },
+    executor: async ({ dataInstanceId, playbookNode, bundle }) => {
+      const context = executionContext('playbook_components');
+      const { email_template, targets, applyToElements } = playbookNode.configuration;
+      const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+
+      // Resolve which elements to extract dynamic targets from
+      const scope = applyToElements || playbookBundleElementsToApply.onlyMain.value;
+      const sourceElements = bundle.objects.filter((o) =>
+        isBundleElementInScope(o, scope as PlaybookBundleElementsToApply, dataInstanceId),
+      );
+
+      const targetUsers = await convertMembersToUsersFromElements(
+        targets as { value: string }[],
+        sourceElements.length > 0 ? sourceElements : [baseData],
+        bundle,
+      );
+      const sendEmailUserIds = [];
+      for (let index = 0; index < targetUsers.length; index += 1) {
+        const targetUser = targetUsers[index];
+        if (
+          !targetUser.user_service_account &&
+          targetUser.account_status === ACCOUNT_STATUS_ACTIVE
+        ) {
+          sendEmailUserIds.push(targetUser.id);
+        }
+      }
+      const emailSend = async (user_id: string) => {
+        try {
+          await sendEmailToUser(context, AUTOMATION_MANAGER_USER, {
+            target_user_id: user_id,
+            email_template_id: email_template,
+          });
+        } catch (_err) {
+          logApp.warn('Could not send email to user', { user_id });
+        }
+      };
+      if (sendEmailUserIds.length > 0) {
+        await BluePromise.map(sendEmailUserIds, (user_id) => emailSend(user_id), {
+          concurrency: 3,
+        });
+      }
+      return { output_port: undefined, bundle };
+    },
+  };

@@ -16,7 +16,11 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -106,20 +110,26 @@ const StixSightingRelationshipCreationForm = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const { mandatoryAttributes } = useIsMandatoryAttribute(STIX_SIGHTING_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    attribute_count: Yup.number(),
-    confidence: Yup.number().nullable(),
-    first_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    last_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('first_seen'), "The end date can't be before start date")
-      .nullable(),
-    description: Yup.string().nullable(),
-    x_opencti_negative: Yup.boolean().nullable(),
-  }, mandatoryAttributes);
-  const stixSightingRelationshipValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      attribute_count: Yup.number(),
+      confidence: Yup.number().nullable(),
+      first_seen: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .nullable(),
+      last_seen: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .min(Yup.ref('first_seen'), "The end date can't be before start date")
+        .nullable(),
+      description: Yup.string().nullable(),
+      x_opencti_negative: Yup.boolean().nullable(),
+    },
+    mandatoryAttributes,
+  );
+  const stixSightingRelationshipValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -190,9 +200,7 @@ const StixSightingRelationshipCreationForm = ({
                     </span>
                   ) : (
                     <Tooltip title={getMainRepresentative(fromEntity)}>
-                      <span className={classes.name}>
-                        {getMainRepresentative(fromEntity)}
-                      </span>
+                      <span className={classes.name}>{getMainRepresentative(fromEntity)}</span>
                     </Tooltip>
                   )}
                 </div>
@@ -201,11 +209,7 @@ const StixSightingRelationshipCreationForm = ({
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 {typeof handleReverseRelation === 'function' && (
-                  <Button
-                    variant="secondary"
-                    onClick={handleReverseRelation}
-                    size="small"
-                  >
+                  <Button variant="secondary" onClick={handleReverseRelation} size="small">
                     {t_i18n('Reverse')}
                   </Button>
                 )}
@@ -244,20 +248,17 @@ const StixSightingRelationshipCreationForm = ({
                     </span>
                   ) : (
                     <Tooltip title={getMainRepresentative(toEntity)}>
-                      <span className={classes.name}>
-                        {getMainRepresentative(toEntity)}
-                      </span>
+                      <span className={classes.name}>{getMainRepresentative(toEntity)}</span>
                     </Tooltip>
                   )}
                 </div>
-
               </div>
             </div>
             <Field
               component={TextField}
               variant="standard"
               name="attribute_count"
-              required={(mandatoryAttributes.includes('attribute_count'))}
+              required={mandatoryAttributes.includes('attribute_count')}
               label={t_i18n('Count')}
               fullWidth={true}
               type="number"
@@ -272,7 +273,7 @@ const StixSightingRelationshipCreationForm = ({
               name="first_seen"
               textFieldProps={{
                 label: t_i18n('First seen'),
-                required: (mandatoryAttributes.includes('first_seen')),
+                required: mandatoryAttributes.includes('first_seen'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -283,7 +284,7 @@ const StixSightingRelationshipCreationForm = ({
               name="last_seen"
               textFieldProps={{
                 label: t_i18n('Last seen'),
-                required: (mandatoryAttributes.includes('last_seen')),
+                required: mandatoryAttributes.includes('last_seen'),
                 variant: 'standard',
                 fullWidth: true,
                 style: { marginTop: 20 },
@@ -293,7 +294,7 @@ const StixSightingRelationshipCreationForm = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -301,13 +302,13 @@ const StixSightingRelationshipCreationForm = ({
             />
             <CreatedByField
               name="createdBy"
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectMarkingField
               name="objectMarking"
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
@@ -320,33 +321,22 @@ const StixSightingRelationshipCreationForm = ({
             />
             <ExternalReferencesField
               name="externalReferences"
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleResetSelection} disabled={isSubmitting}>
                   {t_i18n('Back')}
                 </Button>
               </div>
             )}
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

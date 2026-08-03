@@ -57,7 +57,10 @@ export const stripImageToRepositoryPath = (imageReference: string | null | undef
   // Strip the registry host even when it is the ONLY segment (host-only,
   // repository-less reference): returning it would leak the hostname the
   // whole helper exists to withhold. Callers treat '' as "no usable identity".
-  if (segments.length > 0 && (segments[0].includes('.') || segments[0].includes(':') || segments[0] === 'localhost')) {
+  if (
+    segments.length > 0 &&
+    (segments[0].includes('.') || segments[0].includes(':') || segments[0] === 'localhost')
+  ) {
     segments.shift();
   }
   return segments.join('/');
@@ -81,12 +84,17 @@ export const computeActiveConnectorsByIdentity = (
   activeConnectors.forEach((connector) => {
     const isManaged = (connector.catalog_id ?? '').length > 0;
     const slug = isManaged
-      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ?? stripImageToRepositoryPath(connector.manager_contract_image))
+      ? (contractsByImage.get(connector.manager_contract_image ?? '')?.slug ??
+        stripImageToRepositoryPath(connector.manager_contract_image))
       : (connector.name ?? '').trim().toLowerCase();
     if (slug.length === 0) {
       return;
     }
-    const attributes = { slug, managed: isManaged ? 'true' : 'false', type: connector.connector_type ?? '' };
+    const attributes = {
+      slug,
+      managed: isManaged ? 'true' : 'false',
+      type: connector.connector_type ?? '',
+    };
     // JSON-encode the key components: manual connector names are freeform, so
     // a naive separator-joined key could collide across identities.
     const identityKey = JSON.stringify([attributes.slug, attributes.managed, attributes.type]);
@@ -641,12 +649,21 @@ export class TelemetryMeterManager {
     this.ingestionObjectsProcessedCount = n;
   }
 
-  registerGauge(name: string, description: string, observer: string, opts: {
-    unit?: string;
-    valueType?: ValueType;
-  } = {}) {
+  registerGauge(
+    name: string,
+    description: string,
+    observer: string,
+    opts: {
+      unit?: string;
+      valueType?: ValueType;
+    } = {},
+  ) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
-    const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
+    const gaugeOptions = {
+      description,
+      unit: opts.unit ?? 'count',
+      valueType: opts.valueType ?? ValueType.INT,
+    };
     const activeUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
     activeUsersCountGauge.addCallback((observableResult: ObservableResult) => {
       /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -658,12 +675,21 @@ export class TelemetryMeterManager {
   // Multi-dimensional gauge: the observed property holds a list of
   // DimensionalGaugeItem, each exported as one datapoint with its own OTLP
   // attributes (labels).
-  registerDimensionalGauge(name: string, description: string, observer: string, opts: {
-    unit?: string;
-    valueType?: ValueType;
-  } = {}) {
+  registerDimensionalGauge(
+    name: string,
+    description: string,
+    observer: string,
+    opts: {
+      unit?: string;
+      valueType?: ValueType;
+    } = {},
+  ) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
-    const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
+    const gaugeOptions = {
+      description,
+      unit: opts.unit ?? 'count',
+      valueType: opts.valueType ?? ValueType.INT,
+    };
     const dimensionalGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions);
     dimensionalGauge.addCallback((observableResult: ObservableResult) => {
       const items = (this as unknown as Record<string, unknown>)[observer];
@@ -673,7 +699,9 @@ export class TelemetryMeterManager {
       if (!Array.isArray(items)) {
         return;
       }
-      (items as DimensionalGaugeItem[]).forEach((item) => observableResult.observe(item.value, item.attributes));
+      (items as DimensionalGaugeItem[]).forEach((item) =>
+        observableResult.observe(item.value, item.attributes),
+      );
     });
   }
 
@@ -681,86 +709,374 @@ export class TelemetryMeterManager {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     this.registerGauge('total_users_count', 'number of users', 'usersCount');
-    this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
+    this.registerGauge(
+      'total_service_account_count',
+      'number of service account',
+      'serviceAccountCount',
+    );
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
-    this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
-    this.registerDimensionalGauge('active_connectors_by_identity', 'active connectors broken down by catalog identity (slug, managed, type)', 'activeConnectorsByIdentity');
-    this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
+    this.registerGauge(
+      'active_connectors_count',
+      'number of active connectors',
+      'activeConnectorsCount',
+    );
+    this.registerDimensionalGauge(
+      'active_connectors_by_identity',
+      'active connectors broken down by catalog identity (slug, managed, type)',
+      'activeConnectorsByIdentity',
+    );
+    this.registerGauge(
+      'is_enterprise_edition',
+      'enterprise Edition is activated',
+      'isEEActivated',
+      { unit: 'boolean' },
+    );
     this.registerGauge('call_dissemination', 'dissemination feature usage', 'disseminationCount');
-    this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
-    this.registerGauge('capabilities_in_draft_tab_loaded_count', 'number of times the capabilities in draft tab is loaded', 'capabilitiesInDraftTabLoadedCount');
+    this.registerGauge(
+      'roles_with_capability_in_draft_count',
+      'number of roles with capability in draft',
+      'rolesWithCapabilityInDraftCount',
+    );
+    this.registerGauge(
+      'capabilities_in_draft_tab_loaded_count',
+      'number of times the capabilities in draft tab is loaded',
+      'capabilitiesInDraftTabLoadedCount',
+    );
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
     this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
-    this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');
-    this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
-    this.registerGauge('workbench_upload_count', 'number of workbench upload - creation and updates', 'workbenchUploadCount');
-    this.registerGauge('workbench_draft_convertion_count', 'number of workbench to draft convertion', 'workbenchDraftConvertionCount');
-    this.registerGauge('workbench_validation_count', 'number of workbench validation', 'workbenchValidationCount');
+    this.registerGauge(
+      'draft_validation_count',
+      'number of draft validation',
+      'draftValidationCount',
+    );
+    this.registerGauge(
+      'active_workbenches_count',
+      'number of active workbenches',
+      'workbenchCount',
+    );
+    this.registerGauge(
+      'workbench_upload_count',
+      'number of workbench upload - creation and updates',
+      'workbenchUploadCount',
+    );
+    this.registerGauge(
+      'workbench_draft_convertion_count',
+      'number of workbench to draft convertion',
+      'workbenchDraftConvertionCount',
+    );
+    this.registerGauge(
+      'workbench_validation_count',
+      'number of workbench validation',
+      'workbenchValidationCount',
+    );
     this.registerGauge('call_nlq', 'NLQ feature usage', 'nlqQueryCount');
-    this.registerGauge('request_access_creation_count', 'Number of RFI of request access type that are created', 'requestAccessCreationCount');
-    this.registerGauge('user_into_service_account_count', 'Number of User turned into Service Account', 'userIntoServiceAccountCount');
-    this.registerGauge('service_account_into_user_count', 'Number of Service Account turned into User', 'serviceAccountIntoUserCount');
-    this.registerGauge('user_email_send_count', 'Number of emails sent from the platform', 'userEmailSendCount');
-    this.registerGauge('user_background_task_count', 'Number of background tasks on User scope', 'userBackgroundTaskCount');
-    this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
-    this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
+    this.registerGauge(
+      'request_access_creation_count',
+      'Number of RFI of request access type that are created',
+      'requestAccessCreationCount',
+    );
+    this.registerGauge(
+      'user_into_service_account_count',
+      'Number of User turned into Service Account',
+      'userIntoServiceAccountCount',
+    );
+    this.registerGauge(
+      'service_account_into_user_count',
+      'Number of Service Account turned into User',
+      'serviceAccountIntoUserCount',
+    );
+    this.registerGauge(
+      'user_email_send_count',
+      'Number of emails sent from the platform',
+      'userEmailSendCount',
+    );
+    this.registerGauge(
+      'user_background_task_count',
+      'Number of background tasks on User scope',
+      'userBackgroundTaskCount',
+    );
+    this.registerGauge(
+      'email_template_created_count',
+      'Number of email templates created',
+      'emailTemplateCreatedCount',
+    );
+    this.registerGauge(
+      'forgot_password_count',
+      'Number of clicks on Forgot Password',
+      'forgotPasswordCount',
+    );
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
-    this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
-    this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
-    this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');
-    this.registerGauge('form_intake_updated_count', 'Number of form intakes updated', 'formIntakeUpdatedCount');
-    this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
-    this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
-    this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
-    this.registerGauge('decay_rule_creation_count', 'Number of decay rules created', 'decayRuleCreationCount');
-    this.registerGauge('is_history_retention_rule_active', 'Whether the history retention rule is active on the platform', 'isHistoryRetentionRuleActive', { unit: 'boolean' });
-    this.registerGauge('is_activity_retention_rule_active', 'Whether the activity retention rule is active on the platform', 'isActivityRetentionRuleActive', { unit: 'boolean' });
-    this.registerGauge('is_activity_enabled', 'Whether activity is enabled on the platform (has activity listeners)', 'isActivityEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_saml_strategy_enabled', 'SAMLStrategy is configured and enabled', 'ssoSAMLStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_authzero_strategy_enabled', 'AuthZeroStrategy is configured and enabled', 'ssoAuthZeroStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_cert_strategy_enabled', 'CertStrategy is configured and enabled', 'ssoCertStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_header_strategy_enabled', 'HeaderStrategy is configured and enabled', 'ssoHeaderStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_facebook_strategy_enabled', 'FacebookStrategy is configured and enabled', 'ssoFacebookStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_google_strategy_enabled', 'GoogleStrategy is configured and enabled', 'ssoGoogleStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
-    this.registerGauge('custom_view_created_count', 'Number of custom views created', 'customViewCreatedCount');
-    this.registerGauge('custom_view_enabled_count', 'Number of custom views enabled', 'customViewEnabledCount');
-    this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
-    this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
-    this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge(
+      'connector_deployed_count',
+      'Number of connectors deployed via composer',
+      'connectorDeployedCount',
+    );
+    this.registerGauge(
+      'user_login_count',
+      'Number of user that logs-in into application',
+      'userLoginCount',
+    );
+    this.registerGauge(
+      'form_intake_created_count',
+      'Number of form intakes created',
+      'formIntakeCreatedCount',
+    );
+    this.registerGauge(
+      'form_intake_updated_count',
+      'Number of form intakes updated',
+      'formIntakeUpdatedCount',
+    );
+    this.registerGauge(
+      'form_intake_deleted_count',
+      'Number of form intakes deleted',
+      'formIntakeDeletedCount',
+    );
+    this.registerGauge(
+      'form_intake_submitted_count',
+      'Number of form intakes submitted',
+      'formIntakeSubmittedCount',
+    );
+    this.registerGauge(
+      'security_coverages_count',
+      'Number of security coverages',
+      'securityCoveragesCount',
+    );
+    this.registerGauge(
+      'decay_rule_creation_count',
+      'Number of decay rules created',
+      'decayRuleCreationCount',
+    );
+    this.registerGauge(
+      'is_history_retention_rule_active',
+      'Whether the history retention rule is active on the platform',
+      'isHistoryRetentionRuleActive',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_activity_retention_rule_active',
+      'Whether the activity retention rule is active on the platform',
+      'isActivityRetentionRuleActive',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_activity_enabled',
+      'Whether activity is enabled on the platform (has activity listeners)',
+      'isActivityEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_local_strategy_enabled',
+      'LocalStrategy is configured and enabled',
+      'ssoLocalStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_openid_strategy_enabled',
+      'OpenidStrategy is configured and enabled',
+      'ssoOpenidStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_ldap_strategy_enabled',
+      'LDAPStrategy is configured and enabled',
+      'ssoLDAPStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_saml_strategy_enabled',
+      'SAMLStrategy is configured and enabled',
+      'ssoSAMLStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_authzero_strategy_enabled',
+      'AuthZeroStrategy is configured and enabled',
+      'ssoAuthZeroStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_cert_strategy_enabled',
+      'CertStrategy is configured and enabled',
+      'ssoCertStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_header_strategy_enabled',
+      'HeaderStrategy is configured and enabled',
+      'ssoHeaderStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_facebook_strategy_enabled',
+      'FacebookStrategy is configured and enabled',
+      'ssoFacebookStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_google_strategy_enabled',
+      'GoogleStrategy is configured and enabled',
+      'ssoGoogleStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_sso_github_strategy_enabled',
+      'GithubStrategy is configured and enabled',
+      'ssoGithubStrategyEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'custom_view_created_count',
+      'Number of custom views created',
+      'customViewCreatedCount',
+    );
+    this.registerGauge(
+      'custom_view_enabled_count',
+      'Number of custom views enabled',
+      'customViewEnabledCount',
+    );
+    this.registerGauge(
+      'shared_saved_filters_count',
+      'Number of saved filters shared with at least one other member (non-creator)',
+      'sharedSavedFiltersCount',
+    );
+    this.registerGauge(
+      'shared_saved_filters_permission_changes',
+      'Number of access restriction updates on shared saved filters',
+      'sharedSavedFiltersPermissionChangesCount',
+    );
+    this.registerGauge(
+      'workflow_publish_count',
+      'Number of workflow definitions published',
+      'workflowPublishCount',
+    );
     // region AI usage (backend-agnostic counters, see telemetryManager)
-    this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
-    this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
-    this.registerDimensionalGauge('ask_ai_query_count', 'Ask AI queries broken down by feature', 'askAiQueryItems');
-    this.registerDimensionalGauge('xtm_agent_call_count', 'Direct XTM One agent calls broken down by channel (direct, direct_files)', 'xtmAgentCallItems');
-    this.registerGauge('playbook_ai_agent_run_count', 'Number of playbook AI agent component runs', 'playbookAiAgentRunCount');
-    this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
-    this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });
-    this.registerGauge('is_chatbot_cgu_accepted', 'Filigran chatbot AI CGU accepted', 'isChatbotCguAccepted', { unit: 'boolean' });
+    this.registerGauge(
+      'chatbot_message_count',
+      'Number of chatbot messages sent (legacy and XTM One combined)',
+      'chatbotMessageCount',
+    );
+    this.registerDimensionalGauge(
+      'ai_insight_request_count',
+      'AI Insights requests broken down by cache state (hit, miss)',
+      'aiInsightRequestItems',
+    );
+    this.registerDimensionalGauge(
+      'ask_ai_query_count',
+      'Ask AI queries broken down by feature',
+      'askAiQueryItems',
+    );
+    this.registerDimensionalGauge(
+      'xtm_agent_call_count',
+      'Direct XTM One agent calls broken down by channel (direct, direct_files)',
+      'xtmAgentCallItems',
+    );
+    this.registerGauge(
+      'playbook_ai_agent_run_count',
+      'Number of playbook AI agent component runs',
+      'playbookAiAgentRunCount',
+    );
+    this.registerDimensionalGauge(
+      'is_ai_enabled',
+      'Built-in LLM configuration state with provider type dimension',
+      'isAiEnabledItems',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_xtm_one_configured',
+      'XTM One is configured (url and token)',
+      'isXtmOneConfigured',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_chatbot_cgu_accepted',
+      'Filigran chatbot AI CGU accepted',
+      'isChatbotCguAccepted',
+      { unit: 'boolean' },
+    );
     // endregion
     // region Product adoption
-    this.registerDimensionalGauge('knowledge_objects_by_type', 'knowledge graph scale broken down by curated entity type', 'knowledgeObjectsByType');
-    this.registerDimensionalGauge('ingesters_by_type', 'built-in ingesters broken down by type and running state', 'ingestersByType');
-    this.registerDimensionalGauge('data_shares_by_type', 'data sharing surfaces broken down by type and public state', 'dataSharesByType');
-    this.registerDimensionalGauge('playbooks_count', 'playbooks broken down by running state', 'playbooksItems');
-    this.registerGauge('inference_rules_active_count', 'number of activated inference rules', 'inferenceRulesActiveCount');
-    this.registerDimensionalGauge('triggers_by_type', 'notification triggers broken down by type (live, digest)', 'triggersByType');
-    this.registerDimensionalGauge('notifiers_count', 'notifiers broken down by connector (email, webhook, ui, other)', 'notifiersByConnector');
+    this.registerDimensionalGauge(
+      'knowledge_objects_by_type',
+      'knowledge graph scale broken down by curated entity type',
+      'knowledgeObjectsByType',
+    );
+    this.registerDimensionalGauge(
+      'ingesters_by_type',
+      'built-in ingesters broken down by type and running state',
+      'ingestersByType',
+    );
+    this.registerDimensionalGauge(
+      'data_shares_by_type',
+      'data sharing surfaces broken down by type and public state',
+      'dataSharesByType',
+    );
+    this.registerDimensionalGauge(
+      'playbooks_count',
+      'playbooks broken down by running state',
+      'playbooksItems',
+    );
+    this.registerGauge(
+      'inference_rules_active_count',
+      'number of activated inference rules',
+      'inferenceRulesActiveCount',
+    );
+    this.registerDimensionalGauge(
+      'triggers_by_type',
+      'notification triggers broken down by type (live, digest)',
+      'triggersByType',
+    );
+    this.registerDimensionalGauge(
+      'notifiers_count',
+      'notifiers broken down by connector (email, webhook, ui, other)',
+      'notifiersByConnector',
+    );
     this.registerGauge('groups_count', 'number of groups', 'groupsCount');
     this.registerGauge('roles_count', 'number of roles', 'rolesCount');
     this.registerGauge('organizations_count', 'number of organizations', 'organizationsCount');
-    this.registerGauge('synchronizers_count', 'number of OpenCTI synchronizers', 'synchronizersCount');
-    this.registerGauge('is_organization_segregation_enabled', 'organization segregation is configured', 'isOrganizationSegregationEnabled', { unit: 'boolean' });
-    this.registerGauge('is_file_indexing_enabled', 'file indexing manager is running', 'isFileIndexingEnabled', { unit: 'boolean' });
-    this.registerGauge('is_xtm_hub_registered', 'platform is registered on XTM Hub', 'isXtmHubRegistered', { unit: 'boolean' });
+    this.registerGauge(
+      'synchronizers_count',
+      'number of OpenCTI synchronizers',
+      'synchronizersCount',
+    );
+    this.registerGauge(
+      'is_organization_segregation_enabled',
+      'organization segregation is configured',
+      'isOrganizationSegregationEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_file_indexing_enabled',
+      'file indexing manager is running',
+      'isFileIndexingEnabled',
+      { unit: 'boolean' },
+    );
+    this.registerGauge(
+      'is_xtm_hub_registered',
+      'platform is registered on XTM Hub',
+      'isXtmHubRegistered',
+      { unit: 'boolean' },
+    );
     this.registerGauge('indexed_files_count', 'number of indexed files', 'indexedFilesCount');
-    this.registerGauge('playbook_execution_count', 'number of playbook executions started', 'playbookExecutionCount');
-    this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
-    this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
-    this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');
+    this.registerGauge(
+      'playbook_execution_count',
+      'number of playbook executions started',
+      'playbookExecutionCount',
+    );
+    this.registerDimensionalGauge(
+      'notification_sent_count',
+      'notifications sent broken down by channel (email, webhook, ui)',
+      'notificationSentItems',
+    );
+    this.registerGauge(
+      'export_generated_count',
+      'number of export generations requested',
+      'exportGeneratedCount',
+    );
+    this.registerGauge(
+      'ingestion_objects_processed_count',
+      'number of objects processed by completed works',
+      'ingestionObjectsProcessedCount',
+    );
     // endregion
   }
 }

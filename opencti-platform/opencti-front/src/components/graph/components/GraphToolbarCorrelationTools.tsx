@@ -10,9 +10,7 @@ const GraphToolbarCorrelationTools = () => {
   const { setCorrelationMode } = useGraphInteractions();
 
   const {
-    graphState: {
-      correlationMode,
-    },
+    graphState: { correlationMode },
   } = useGraphContext();
 
   return (

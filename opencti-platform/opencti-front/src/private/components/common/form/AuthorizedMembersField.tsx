@@ -14,7 +14,13 @@ import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMe
 import AccordionDetails from '@mui/material/AccordionDetails';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import { AccessRight, ALL_MEMBERS_AUTHORIZED_CONFIG, AuthorizedMemberOption, Creator, CREATOR_AUTHORIZED_CONFIG } from '../../../../utils/authorizedMembers';
+import {
+  AccessRight,
+  ALL_MEMBERS_AUTHORIZED_CONFIG,
+  AuthorizedMemberOption,
+  Creator,
+  CREATOR_AUTHORIZED_CONFIG,
+} from '../../../../utils/authorizedMembers';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -31,17 +37,13 @@ import useHelper from '../../../../utils/hooks/useHelper';
  * @param memberId The ID to check.
  */
 export const isGenericOption = (memberId: string) => {
-  return [
-    ALL_MEMBERS_AUTHORIZED_CONFIG.id,
-    CREATOR_AUTHORIZED_CONFIG.id,
-  ].includes(memberId);
+  return [ALL_MEMBERS_AUTHORIZED_CONFIG.id, CREATOR_AUTHORIZED_CONFIG.id].includes(memberId);
 };
 
 // Type of data of the field in a Formik form.
 export type AuthorizedMembersFieldValue = AuthorizedMemberOption[] | null;
 
-interface AuthorizedMembersFieldProps
-  extends FieldProps<AuthorizedMembersFieldValue> {
+interface AuthorizedMembersFieldProps extends FieldProps<AuthorizedMembersFieldValue> {
   owner?: Creator;
   showAllMembersLine?: boolean;
   showCreatorLine?: boolean;
@@ -132,9 +134,7 @@ const AuthorizedMembersField = ({
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
-  const accessForCreator = (value ?? []).find(
-    (o) => o.value === CREATOR_AUTHORIZED_CONFIG.id,
-  );
+  const accessForCreator = (value ?? []).find((o) => o.value === CREATOR_AUTHORIZED_CONFIG.id);
 
   const allMembersOption: AuthorizedMemberOption = {
     label: t_i18n(ALL_MEMBERS_AUTHORIZED_CONFIG.labelKey),
@@ -161,9 +161,10 @@ const AuthorizedMembersField = ({
 
   const buildAccessRights = (): { label: string; value: string }[] => {
     // If 'use' is requested but 'access restriction' feature flag is disabled, filter it out
-    const rights = customAccessRights.includes('use') && !featureFlagAccessRestriction
-      ? customAccessRights.filter((r) => r !== 'use')
-      : customAccessRights;
+    const rights =
+      customAccessRights.includes('use') && !featureFlagAccessRestriction
+        ? customAccessRights.filter((r) => r !== 'use')
+        : customAccessRights;
     return rights.map((right) => ({
       label: accessRightLabels[right],
       value: right,
@@ -298,21 +299,20 @@ const AuthorizedMembersField = ({
    */
   const changeMemberAccess = (id: string, accessRight: AccessRight) => {
     if (accessRight === 'none') {
-      setFieldValue(name, [
-        ...(value ?? []).filter((option) => option.value !== id),
-      ]);
+      setFieldValue(name, [...(value ?? []).filter((option) => option.value !== id)]);
     } else {
       let modifiedAccess = value?.find((option) => option.value === id);
       if (!modifiedAccess) {
-        modifiedAccess = id === ALL_MEMBERS_AUTHORIZED_CONFIG.id
-          ? {
-              ...allMembersOption,
-              accessRight,
-            }
-          : {
-              ...creatorOption,
-              accessRight,
-            };
+        modifiedAccess =
+          id === ALL_MEMBERS_AUTHORIZED_CONFIG.id
+            ? {
+                ...allMembersOption,
+                accessRight,
+              }
+            : {
+                ...creatorOption,
+                accessRight,
+              };
       }
       setFieldValue(name, [
         ...(value ?? []).filter((option) => option.value !== id),
@@ -342,16 +342,16 @@ const AuthorizedMembersField = ({
   }
 
   const doesNewMemberAlreadyExist = (values: AuthorizedMembersFieldInternalValue) => {
-    return value?.some(
-      (a) => {
-        const sameMember = a.value === values.newAccessMember?.value;
-        const sameGroupsLength = a.groupsRestriction.length === values.groupsRestriction.length;
-        const sameGroups = sameGroupsLength && a.groupsRestriction.every((g1) => {
+    return value?.some((a) => {
+      const sameMember = a.value === values.newAccessMember?.value;
+      const sameGroupsLength = a.groupsRestriction.length === values.groupsRestriction.length;
+      const sameGroups =
+        sameGroupsLength &&
+        a.groupsRestriction.every((g1) => {
           return values.groupsRestriction.find((g2) => g1.value === g2.value);
         });
-        return sameMember && sameGroups;
-      },
-    );
+      return sameMember && sameGroups;
+    });
   };
 
   return (
@@ -371,14 +371,7 @@ const AuthorizedMembersField = ({
         }}
         onSubmit={addAuthorizedMembers}
       >
-        {({
-          values,
-          handleSubmit,
-          isValid,
-          dirty,
-          resetForm,
-          setFieldValue: setField,
-        }) => {
+        {({ values, handleSubmit, isValid, dirty, resetForm, setFieldValue: setField }) => {
           const shouldShowGroupsRestriction = (() => {
             if (!values.newAccessMember) {
               return false;
@@ -394,8 +387,10 @@ const AuthorizedMembersField = ({
 
           return (
             <>
-              {(!hideInfo && !!accessInfoMessage) && (
-                <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
+              {!hideInfo && !!accessInfoMessage && (
+                <Alert severity="info" variant="outlined">
+                  {accessInfoMessage}
+                </Alert>
               )}
               {isDisabledInDraft && (
                 <Alert style={{ marginTop: 15 }} severity="warning">
@@ -447,11 +442,11 @@ const AuthorizedMembersField = ({
                         dynamicContextTypeLabel={dynamicContextTypeLabel}
                         dynamicBundleTypeLabel={dynamicBundleTypeLabel}
                         dynamicAuthorOrgLabel={dynamicAuthorOrgLabel}
-                        includeBundleOrganizationDynamicOption={includeBundleOrganizationDynamicOption}
+                        includeBundleOrganizationDynamicOption={
+                          includeBundleOrganizationDynamicOption
+                        }
                       />
-                      {value?.find(
-                        (a) => a.value === values.newAccessMember?.value,
-                      ) && (
+                      {value?.find((a) => a.value === values.newAccessMember?.value) && (
                         <FormHelperText style={{ position: 'absolute' }}>
                           {t_i18n('Access already granted')}
                         </FormHelperText>
@@ -466,10 +461,7 @@ const AuthorizedMembersField = ({
                       disabled={!values.applyAccesses}
                     >
                       {accessRights.map((accessRight) => (
-                        <MenuItem
-                          value={accessRight.value}
-                          key={accessRight.value}
-                        >
+                        <MenuItem value={accessRight.value} key={accessRight.value}>
                           {accessRight.label}
                         </MenuItem>
                       ))}
@@ -478,10 +470,10 @@ const AuthorizedMembersField = ({
                       aria-label="More"
                       onClick={() => handleSubmit()}
                       disabled={
-                        !dirty
-                        || !isValid
-                        || doesNewMemberAlreadyExist(values)
-                        || !values.applyAccesses
+                        !dirty ||
+                        !isValid ||
+                        doesNewMemberAlreadyExist(values) ||
+                        !values.applyAccesses
                       }
                       style={{ marginTop: 10 }}
                     >
@@ -496,7 +488,9 @@ const AuthorizedMembersField = ({
                         </AccordionSummary>
                         <AccordionDetails style={{ padding: 0 }}>
                           <Alert severity="info" style={{ fontSize: 11 }}>
-                            {t_i18n('Restrict access by selecting groups to intersect with the selected member\'s access rights')}
+                            {t_i18n(
+                              "Restrict access by selecting groups to intersect with the selected member's access rights",
+                            )}
                           </Alert>
                           <div style={{ padding: '8px 16px 16px 16px' }}>
                             <ObjectMembersField
@@ -562,21 +556,24 @@ const AuthorizedMembersField = ({
             <>
               {value && value.length > 0 && (
                 <List sx={{ pt: 0 }}>
-                  {value.map((authorizedMember, index) => (
-                    !isGenericOption(authorizedMember.value)
-                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID)
-                      ? (
-                          <AuthorizedMembersFieldListItem
-                            key={index}
-                            authorizedMember={authorizedMember}
-                            name={`${name}[${index}].accessRight`}
-                            accessRights={accessRights}
-                            ownerId={owner?.id}
-                            onRemove={() => arrayHelpers.remove(index)}
-                            disabled={disableOwnerAccessRightsEdition && authorizedMember.value === owner?.id ? true : disabled}
-                          />
-                        )
-                      : null))}
+                  {value.map((authorizedMember, index) =>
+                    !isGenericOption(authorizedMember.value) &&
+                    !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID) ? (
+                      <AuthorizedMembersFieldListItem
+                        key={index}
+                        authorizedMember={authorizedMember}
+                        name={`${name}[${index}].accessRight`}
+                        accessRights={accessRights}
+                        ownerId={owner?.id}
+                        onRemove={() => arrayHelpers.remove(index)}
+                        disabled={
+                          disableOwnerAccessRightsEdition && authorizedMember.value === owner?.id
+                            ? true
+                            : disabled
+                        }
+                      />
+                    ) : null,
+                  )}
                 </List>
               )}
             </>

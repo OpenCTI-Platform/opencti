@@ -25,36 +25,21 @@ const useStyles = makeStyles({
 interface BasicRelationshipDetailsProps {
   relation: GraphLink;
 }
-const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({ relation }) => {
+const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps> = ({
+  relation,
+}) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <div>
-      <Label>
-        {t_i18n('Relation type')}
-      </Label>
-      <Tag
-        label={t_i18n(`relationship_${relation.relationship_type}`)}
-      />
-      {relation.source_id && (
-        <RelationShipFromAndTo
-          id={relation.source_id}
-          direction="From"
-        />
-      )}
-      {relation.target_id && (
-        <RelationShipFromAndTo
-          id={relation.target_id}
-          direction="To"
-        />
-      )}
+      <Label>{t_i18n('Relation type')}</Label>
+      <Tag label={t_i18n(`relationship_${relation.relationship_type}`)} />
+      {relation.source_id && <RelationShipFromAndTo id={relation.source_id} direction="From" />}
+      {relation.target_id && <RelationShipFromAndTo id={relation.target_id} direction="To" />}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t_i18n('Marking')}
       </Typography>
-      <ItemMarkings
-        markingDefinitions={relation.markedBy}
-        limit={2}
-      />
+      <ItemMarkings markingDefinitions={relation.markedBy} limit={2} />
     </div>
   );
 };

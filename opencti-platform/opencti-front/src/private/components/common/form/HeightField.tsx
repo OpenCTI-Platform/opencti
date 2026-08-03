@@ -4,9 +4,7 @@ import Button from '@common/button/Button';
 import { IconButton } from '@mui/material';
 import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
 import { graphql } from 'react-relay';
-import {
-  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import { GenericContext } from '../model/GenericContextModel';
 import { useFormatter } from '../../../../components/i18n';
@@ -54,10 +52,7 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
           <div id="total_height_read">
             {(values ?? []).map((height, index) => {
               return (
-                <div
-                  key={index}
-                  style={{ marginTop: 20, width: '100%', position: 'relative' }}
-                >
+                <div key={index} style={{ marginTop: 20, width: '100%', position: 'relative' }}>
                   <div
                     style={{
                       paddingRight: 50,
@@ -204,10 +199,7 @@ export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
           <>
             <div id="total_height_read">
               {values?.map((_, index) => (
-                <div
-                  key={index}
-                  style={{ marginTop: 20, width: '100%', position: 'relative' }}
-                >
+                <div key={index} style={{ marginTop: 20, width: '100%', position: 'relative' }}>
                   <div
                     style={{
                       paddingRight: 50,

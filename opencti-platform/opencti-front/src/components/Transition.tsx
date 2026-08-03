@@ -8,10 +8,7 @@ const Transition = React.forwardRef(
       children,
       ...props
     }: TransitionProps & {
-      children: React.ReactElement<
-        unknown,
-      string | JSXElementConstructor<unknown>
-      >;
+      children: React.ReactElement<unknown, string | JSXElementConstructor<unknown>>;
     },
     ref: React.Ref<unknown>,
   ) => {

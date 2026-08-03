@@ -15,7 +15,11 @@ export const playbooksForEnrollmentIdsQuery = graphql`
 `;
 
 export const playbooksForEnrollmentByFiltersQuery = graphql`
-  query enrollPlaybookDrawerFiltersQuery($filters: FilterGroup, $search: String, $excludedIds: [String!]) {
+  query enrollPlaybookDrawerFiltersQuery(
+    $filters: FilterGroup
+    $search: String
+    $excludedIds: [String!]
+  ) {
     playbooksForEnrollmentByFilters(filters: $filters, search: $search, excludedIds: $excludedIds) {
       id
       name
@@ -41,7 +45,10 @@ export interface FetchPlaybooksParams {
   entityIds?: string[];
 }
 
-export type Fetcher = (query: GraphQLTaggedNode, variables: Record<string, unknown>) => Promise<unknown>;
+export type Fetcher = (
+  query: GraphQLTaggedNode,
+  variables: Record<string, unknown>,
+) => Promise<unknown>;
 
 export function mapIdsResponse(data: IdsResponseData): Playbook[] {
   return (data.playbooksForEnrollment ?? [])
@@ -67,7 +74,10 @@ export function sortPlaybooks(playbooks: Playbook[]): Playbook[] {
   return [...playbooks].sort((a, b) => a.label.localeCompare(b.label));
 }
 
-export async function fetchPlaybooks(params: FetchPlaybooksParams, fetcher: Fetcher): Promise<Playbook[]> {
+export async function fetchPlaybooks(
+  params: FetchPlaybooksParams,
+  fetcher: Fetcher,
+): Promise<Playbook[]> {
   if (params.isSelectAll) {
     const response = await fetcher(playbooksForEnrollmentByFiltersQuery, {
       filters: params.filters ?? undefined,

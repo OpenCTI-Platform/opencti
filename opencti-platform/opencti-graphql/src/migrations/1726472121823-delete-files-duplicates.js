@@ -16,26 +16,33 @@ export const up = async (next) => {
   const internalObjectsIndexAlias = await elIndexGetAlias(READ_INDEX_INTERNAL_OBJECTS);
   if (internalObjectsIndexAlias && Object.keys(internalObjectsIndexAlias).length > 1) {
     logApp.info(`${message} > multiple indices found for internal objects, running migration`);
-    const allFiles = await fullEntitiesList(
-      context,
-      SYSTEM_USER,
-      [ENTITY_TYPE_INTERNAL_FILE],
-      { indices: [READ_INDEX_INTERNAL_OBJECTS], baseData: true, baseFields: ['internal_id', '_index', 'lastModified'] },
-    );
+    const allFiles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INTERNAL_FILE], {
+      indices: [READ_INDEX_INTERNAL_OBJECTS],
+      baseData: true,
+      baseFields: ['internal_id', '_index', 'lastModified'],
+    });
     const filesGroupedById = Object.entries(groupBy((f) => f.internal_id, allFiles));
     const filesToDelete = [];
     filesGroupedById.forEach(([_, filesList]) => {
-      if (filesList.length > 1) { // if a duplicate exists
-        const sortedFileList = filesList.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+      if (filesList.length > 1) {
+        // if a duplicate exists
+        const sortedFileList = filesList.sort(
+          (a, b) => new Date(b.lastModified) - new Date(a.lastModified),
+        );
         pushAll(filesToDelete, sortedFileList.slice(1));
       }
     });
-    const finalFilesToDelete = filesToDelete.map((h) => ({ _index: h._index, internal_id: h.internal_id }));
+    const finalFilesToDelete = filesToDelete.map((h) => ({
+      _index: h._index,
+      internal_id: h.internal_id,
+    }));
     logApp.info(`Deleting ${finalFilesToDelete.length} files that have duplicates.`);
     // delete the files
     await elDeleteInstances(context, finalFilesToDelete);
   } else {
-    logApp.info(`${message} > no multiple indices found for internal objects, no need to run migration`);
+    logApp.info(
+      `${message} > no multiple indices found for internal objects, no need to run migration`,
+    );
   }
   logApp.info(`${message} > done`);
   next();

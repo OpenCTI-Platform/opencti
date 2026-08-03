@@ -37,19 +37,24 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 export const ingestionTaxiiEditionUserHandlingPatch = graphql`
-  mutation IngestionTaxiiEditionUserHandlingMutation($id: ID!, $input: IngestionTaxiiAddAutoUserInput!) {
+  mutation IngestionTaxiiEditionUserHandlingMutation(
+    $id: ID!
+    $input: IngestionTaxiiAddAutoUserInput!
+  ) {
     ingestionTaxiiAddAutoUser(id: $id, input: $input) {
+      id
+      name
+      user {
         id
+        entity_type
         name
-        user {
-            id
-            entity_type
-            name
-        }
+      }
     }
   }
 `;
-export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data) => {
+export const initIngestionValue = (
+  ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data,
+) => {
   return {
     ...{
       name: ingestionTaxiiData.name,
@@ -97,10 +102,7 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
 };
 
 export const ingestionTaxiiMutationFieldPatch = graphql`
-  mutation IngestionTaxiiEditionFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation IngestionTaxiiEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     ingestionTaxiiFieldPatch(id: $id, input: $input) {
       ...IngestionTaxiiEditionFragment_ingestionTaxii
     }
@@ -163,7 +165,6 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
   ingestionTaxii,
   handleClose,
   enableReferences = false,
-
 }) => {
   const { t_i18n } = useFormatter();
   const ingestionTaxiiData = useFragment(ingestionTaxiiEditionFragment, ingestionTaxii);
@@ -194,7 +195,10 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
   const ingestionTaxiiValidator = useSchemaEditionValidation('IngestionTaxii', basicShape);
   const [commitUpdate] = useApiMutation(ingestionTaxiiMutationFieldPatch);
 
-  const onSubmit: FormikConfig<IngestionTaxiiEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<IngestionTaxiiEditionForm>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -272,7 +276,10 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
       .catch(() => false);
   };
 
-  const initialValues = useMemo(() => initIngestionValue(ingestionTaxiiData), [ingestionTaxiiData.id]);
+  const initialValues = useMemo(
+    () => initIngestionValue(ingestionTaxiiData),
+    [ingestionTaxiiData.id],
+  );
 
   return (
     <Formik<IngestionTaxiiEditionForm>
@@ -281,14 +288,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
       validationSchema={ingestionTaxiiValidator}
       onSubmit={onSubmit}
     >
-      {({
-        values,
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        isValid,
-        dirty,
-      }) => (
+      {({ values, submitForm, isSubmitting, setFieldValue, isValid, dirty }) => (
         <Form>
           <Field
             component={TextField}
@@ -345,7 +345,9 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             variant="standard"
             name="authentication_type"
             label={t_i18n('Authentication type')}
-            onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
+            onChange={(_: string, value: string) =>
+              updateAuthenticationFields(setFieldValue, value)
+            }
             onSubmit={handleSubmitField}
             fullWidth={true}
             containerstyle={{
@@ -356,9 +358,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             <MenuItem value="none">{t_i18n('None')}</MenuItem>
             <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
             <MenuItem value="bearer">{t_i18n('Bearer token')}</MenuItem>
-            <MenuItem value="certificate">
-              {t_i18n('Client certificate')}
-            </MenuItem>
+            <MenuItem value="certificate">{t_i18n('Client certificate')}</MenuItem>
           </Field>
           {values.authentication_type === BASIC_AUTH && (
             <>
@@ -432,25 +432,21 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             containerStyle={fieldSpacingContainerStyle}
             showConfidence
           />
-          {ingestionTaxiiData.user?.name === 'SYSTEM'
-            && (
-              <IngestionEditionUserHandling
-                key={values.name}
-                feedName={values.name}
-                onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
-                dataId={ingestionTaxiiData.id}
-                mutation={ingestionTaxiiEditionUserHandlingPatch}
-              />
-            )
-          }
+          {ingestionTaxiiData.user?.name === 'SYSTEM' && (
+            <IngestionEditionUserHandling
+              key={values.name}
+              feedName={values.name}
+              onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+              dataId={ingestionTaxiiData.id}
+              mutation={ingestionTaxiiEditionUserHandlingPatch}
+            />
+          )}
           <Field
             component={DateTimePickerField}
             name="added_after_start"
             onSubmit={handleSubmitField}
             textFieldProps={{
-              label: t_i18n(
-                'Import from date (empty = all TAXII collection possible items)',
-              ),
+              label: t_i18n('Import from date (empty = all TAXII collection possible items)'),
               fullWidth: true,
               style: { marginTop: 20 },
             }}

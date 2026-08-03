@@ -102,15 +102,17 @@ export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
   if (isCoverage) {
     return {
       ...baseSchema,
-      coverage: Yup.array().of(
-        Yup.object().shape({
-          coverage_name: Yup.string().required(t('This field is required')),
-          coverage_score: Yup.number()
-            .required(t('This field is required'))
-            .min(0, t('Score must be at least 0'))
-            .max(100, t('Score must be at most 100')),
-        }),
-      ).nullable(),
+      coverage: Yup.array()
+        .of(
+          Yup.object().shape({
+            coverage_name: Yup.string().required(t('This field is required')),
+            coverage_score: Yup.number()
+              .required(t('This field is required'))
+              .min(0, t('Score must be at least 0'))
+              .max(100, t('Score must be at most 100')),
+          }),
+        )
+        .nullable(),
     };
   }
 
@@ -136,7 +138,10 @@ const StixCoreRelationshipCreationForm = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation(
+    STIX_CORE_RELATIONSHIP_TYPE,
+    stixCoreRelationshipBasicShape(t_i18n, isCoverage),
+  );
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -151,21 +156,18 @@ const StixCoreRelationshipCreationForm = ({
 
   const defaultTime = now();
 
-  const initialValues = useDefaultValues(
-    STIX_CORE_RELATIONSHIP_TYPE,
-    {
-      relationship_type: defaultRelationshipType,
-      confidence: defaultConfidence,
-      start_time: !isNone(defaultStartTime) ? defaultStartTime : minutesBefore(1, defaultTime),
-      stop_time: !isNone(defaultStopTime) ? defaultStopTime : defaultTime,
-      description: '',
-      killChainPhases: [],
-      externalReferences: [],
-      objectMarking: defaultMarkingDefinitions ?? [],
-      createdBy: defaultCreatedBy ?? '',
-      ...(isCoverage && { coverage_information: [] }),
-    },
-  );
+  const initialValues = useDefaultValues(STIX_CORE_RELATIONSHIP_TYPE, {
+    relationship_type: defaultRelationshipType,
+    confidence: defaultConfidence,
+    start_time: !isNone(defaultStartTime) ? defaultStartTime : minutesBefore(1, defaultTime),
+    stop_time: !isNone(defaultStopTime) ? defaultStopTime : defaultTime,
+    description: '',
+    killChainPhases: [],
+    externalReferences: [],
+    objectMarking: defaultMarkingDefinitions ?? [],
+    createdBy: defaultCreatedBy ?? '',
+    ...(isCoverage && { coverage_information: [] }),
+  });
 
   return (
     <Formik
@@ -207,9 +209,11 @@ const StixCoreRelationshipCreationForm = ({
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
-                    {isMultipleFrom
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (getMainRepresentative(fromEntity))}
+                    {isMultipleFrom ? (
+                      <em>{t_i18n('Multiple entities selected')}</em>
+                    ) : (
+                      getMainRepresentative(fromEntity)
+                    )}
                   </span>
                 </div>
               </div>
@@ -217,11 +221,7 @@ const StixCoreRelationshipCreationForm = ({
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 {typeof handleReverseRelation === 'function' && (
-                  <Button
-                    variant="secaondary"
-                    onClick={handleReverseRelation}
-                    size="small"
-                  >
+                  <Button variant="secaondary" onClick={handleReverseRelation} size="small">
                     {t_i18n('Reverse')}
                   </Button>
                 )}
@@ -255,9 +255,11 @@ const StixCoreRelationshipCreationForm = ({
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
-                    {isMultipleTo
-                      ? (<em>{t_i18n('Multiple entities selected')}</em>)
-                      : (getMainRepresentative(toEntity))}
+                    {isMultipleTo ? (
+                      <em>{t_i18n('Multiple entities selected')}</em>
+                    ) : (
+                      getMainRepresentative(toEntity)
+                    )}
                   </span>
                 </div>
               </div>
@@ -270,13 +272,11 @@ const StixCoreRelationshipCreationForm = ({
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
-              {relationshipTypes.map(
-                (type) => (
-                  <MenuItem key={type} value={type}>
-                    {t_i18n(`relationship_${type}`)}
-                  </MenuItem>
-                ),
-              )}
+              {relationshipTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {t_i18n(`relationship_${type}`)}
+                </MenuItem>
+              ))}
             </Field>
             <ConfidenceField
               entityType="stix-core-relationship"
@@ -320,10 +320,7 @@ const StixCoreRelationshipCreationForm = ({
               />
             )}
             {hasKillChainPhase(values.relationship_type) ? (
-              <KillChainPhasesField
-                name="killChainPhases"
-                style={fieldSpacingContainerStyle}
-              />
+              <KillChainPhasesField name="killChainPhases" style={fieldSpacingContainerStyle} />
             ) : (
               ''
             )}
@@ -345,25 +342,14 @@ const StixCoreRelationshipCreationForm = ({
 
             <FormButtonContainer>
               {typeof handleResetSelection === 'function' && (
-                <Button
-                  variant="secondary"
-                  onClick={handleResetSelection}
-                  disabled={isSubmitting}
-                >
+                <Button variant="secondary" onClick={handleResetSelection} disabled={isSubmitting}>
                   {t_i18n('Back')}
                 </Button>
               )}
-              <Button
-                variant="secondary"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>

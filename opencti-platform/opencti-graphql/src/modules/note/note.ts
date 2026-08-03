@@ -15,7 +15,4 @@ const noteDefaultOverviewLayout: OverviewLayoutCustomization[] = [
 ];
 
 // Register only the default layout
-registerEntityOverviewLayoutCustomization(
-  ENTITY_TYPE_CONTAINER_NOTE,
-  noteDefaultOverviewLayout,
-);
+registerEntityOverviewLayoutCustomization(ENTITY_TYPE_CONTAINER_NOTE, noteDefaultOverviewLayout);

@@ -86,21 +86,18 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   );
 };
 
-const IncidentEditionContainerFragment = createFragmentContainer(
-  IncidentEditionContainer,
-  {
-    incident: graphql`
-      fragment IncidentEditionContainer_incident on Incident {
-        id
-        ...IncidentEditionOverview_incident
-        ...IncidentEditionDetails_incident
-        editContext {
-          name
-          focusOn
-        }
+const IncidentEditionContainerFragment = createFragmentContainer(IncidentEditionContainer, {
+  incident: graphql`
+    fragment IncidentEditionContainer_incident on Incident {
+      id
+      ...IncidentEditionOverview_incident
+      ...IncidentEditionDetails_incident
+      editContext {
+        name
+        focusOn
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default IncidentEditionContainerFragment;

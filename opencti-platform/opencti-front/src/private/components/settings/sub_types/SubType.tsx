@@ -31,9 +31,9 @@ export const subTypeQuery = graphql`
         ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesManager_templates
-        requestAccessConfiguration{
-            ...RequestAccessStatusFragment_requestAccess
-            ...RequestAccessConfigurationEdition_requestAccess
+        requestAccessConfiguration {
+          ...RequestAccessStatusFragment_requestAccess
+          ...RequestAccessConfigurationEdition_requestAccess
         }
       }
       ...GlobalWorkflowSettings_global
@@ -67,13 +67,16 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace';
 
-  const isWorkflowConfigurationEnabled = !!subType.settings?.availableSettings.includes('workflow_configuration');
+  const isWorkflowConfigurationEnabled =
+    !!subType.settings?.availableSettings.includes('workflow_configuration');
 
-  const isFINTELTemplatesEnabled
-    = typesWithFintelTemplates.includes(subType.id)
-      && !!subType.settings?.availableSettings.includes('templates');
+  const isFINTELTemplatesEnabled =
+    typesWithFintelTemplates.includes(subType.id) &&
+    !!subType.settings?.availableSettings.includes('templates');
 
-  const isAttributesConfigurationEnabled = !!subType.settings?.availableSettings.includes('attributes_configuration');
+  const isAttributesConfigurationEnabled = !!subType.settings?.availableSettings.includes(
+    'attributes_configuration',
+  );
 
   const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
 
@@ -87,23 +90,18 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   return (
     <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Settings') },
-        { label: t_i18n('Customization') },
-        { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-        { label: t_i18n(`entity_${subType.label}`), current: true },
-      ]}
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
+          { label: t_i18n(`entity_${subType.label}`), current: true },
+        ]}
       />
 
-      <TitleMainEntity>
-        {t_i18n(`entity_${subType.label}`)}
-      </TitleMainEntity>
+      <TitleMainEntity>{t_i18n(`entity_${subType.label}`)}</TitleMainEntity>
 
-      {
-        !isDraftWorkspaceType && (
-          <EntitySettingSettings entitySettingsData={subType.settings} />
-        )
-      }
+      {!isDraftWorkspaceType && <EntitySettingSettings entitySettingsData={subType.settings} />}
 
       <SubTypeMenu entityType={subType.label} tabs={tabs} />
 
@@ -111,12 +109,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
        * that have different content size with magic number */}
       <Box sx={{ minHeight: '240px' }}>
         <ErrorBoundary>
-          <Outlet
-            context={{ subType, tabs }}
-          />
+          <Outlet context={{ subType, tabs }} />
         </ErrorBoundary>
       </Box>
-
     </Stack>
   );
 };

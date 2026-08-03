@@ -67,12 +67,7 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
   return (
     <FieldOrEmpty source={data}>
       <Tooltip title={displayedData}>
-        <Stack
-          direction="row"
-          gap={1}
-          alignItems="center"
-          sx={{ maxWidth: '100%' }}
-        >
+        <Stack direction="row" gap={1} alignItems="center" sx={{ maxWidth: '100%' }}>
           <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
         </Stack>
@@ -99,32 +94,17 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
               }}
             >
               <Tooltip title={country.name}>
-                <img
-                  style={{ width: 20 }}
-                  src={flagUrl}
-                  alt={country.name}
-                />
+                <img style={{ width: 20 }} src={flagUrl} alt={country.name} />
               </Tooltip>
-              <div>
-                {defaultRender(
-                  observable.observable_value,
-                  observable.draftVersion,
-                )}
-              </div>
+              <div>{defaultRender(observable.observable_value, observable.draftVersion)}</div>
             </div>
           );
         }
       }
-      return defaultRender(
-        observable.observable_value,
-        observable.draftVersion,
-      );
+      return defaultRender(observable.observable_value, observable.draftVersion);
     }
     default:
-      return defaultRender(
-        observable.observable_value,
-        observable.draftVersion,
-      );
+      return defaultRender(observable.observable_value, observable.draftVersion);
   }
 };
 
@@ -139,9 +119,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
           <TagsOverflow
             items={aliases}
             getKey={(alias: string) => alias}
-            renderTag={(alias: string) => (<Tag label={alias} />)}
-          >
-          </TagsOverflow>
+            renderTag={(alias: string) => <Tag label={alias} />}
+          ></TagsOverflow>
         </FieldOrEmpty>
       );
     },
@@ -308,11 +287,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: false,
     render: ({ coverage_information }) => {
-      return (
-        <SecurityCoverageScores
-          coverage_information={coverage_information}
-        />
-      );
+      return <SecurityCoverageScores coverage_information={coverage_information} />;
     },
   },
   definition: {
@@ -341,9 +316,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Operation',
     percentWidth: 10,
     isSortable: false,
-    render: ({ draftVersion }) => (
-      <ItemOperations draftOperation={draftVersion?.draft_operation} />
-    ),
+    render: ({ draftVersion }) => <ItemOperations draftOperation={draftVersion?.draft_operation} />,
   },
   workflowInstance: {
     id: 'workflowInstance',
@@ -351,7 +324,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: false,
     render: ({ workflowInstance }) => (
-      <ItemStatus status={workflowInstance?.currentStatus ?? null} disabled={!workflowInstance?.currentStatus} />
+      <ItemStatus
+        status={workflowInstance?.currentStatus ?? null}
+        disabled={!workflowInstance?.currentStatus}
+      />
     ),
   },
   draft_status: {
@@ -365,9 +341,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'due_date',
     label: 'Due Date',
     percentWidth: 15,
-    render: ({ due_date }) => (
-      <ItemDueDate due_date={due_date} variant="inList" />
-    ),
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant="inList" />,
   },
   effective_confidence_level: {
     id: 'effective_confidence_level',
@@ -403,9 +377,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         items={data.category.entity_types || []}
         getKey={(entityType) => entityType}
         getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
-        renderTag={(entityType) => (
-          <Tag label={t_i18n(`entity_${entityType}`)} />
-        )}
+        renderTag={(entityType) => <Tag label={t_i18n(`entity_${entityType}`)} />}
       />
     ),
   },
@@ -431,8 +403,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 12,
     isSortable: false,
     render: (data) => {
-      const file
-        = data.importFiles?.edges && data.importFiles.edges.length > 0
+      const file =
+        data.importFiles?.edges && data.importFiles.edges.length > 0
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
@@ -448,8 +420,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: false,
     render: (data) => {
-      const file
-        = data.importFiles?.edges && data.importFiles.edges.length > 0
+      const file =
+        data.importFiles?.edges && data.importFiles.edges.length > 0
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
@@ -465,8 +437,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: false,
     render: (data, { b }) => {
-      const file
-        = data.importFiles?.edges && data.importFiles.edges.length > 0
+      const file =
+        data.importFiles?.edges && data.importFiles.edges.length > 0
           ? data.importFiles.edges[0]?.node
           : { name: 'N/A', metaData: { mimetype: 'N/A' }, size: 0 };
       return (
@@ -503,9 +475,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 18,
     isSortable: false,
     render: ({ from }, helpers) => {
-      const value = from
-        ? getMainRepresentative(from)
-        : helpers.t_i18n('Restricted');
+      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
       const displayDraftChip = !!from?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
@@ -516,11 +486,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType
-        showIcon
-        entityType={node.from?.entity_type}
-        isRestricted={!node.from}
-      />
+      <ItemEntityType showIcon entityType={node.from?.entity_type} isRestricted={!node.from} />
     ),
   },
   from_created_at: {
@@ -547,9 +513,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'from_entity_type',
     label: 'Source type',
     percentWidth: 10,
-    render: ({ from }) => (
-      <ItemEntityType showIcon entityType={from?.entity_type} />
-    ),
+    render: ({ from }) => <ItemEntityType showIcon entityType={from?.entity_type} />,
   },
   from_objectLabel: {
     id: 'from_objectLabel',
@@ -580,9 +544,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 10,
     render: ({ from }, helpers) => {
-      const value = from
-        ? getMainRepresentative(from)
-        : helpers.t_i18n('Restricted');
+      const value = from ? getMainRepresentative(from) : helpers.t_i18n('Restricted');
       return defaultRender(value);
     },
   },
@@ -591,10 +553,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Incident type',
     percentWidth: 9,
     isSortable: true,
-    render: (
-      { incident_type },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ incident_type }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={incident_type}>
           <Tag
@@ -614,10 +573,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Request for information types',
     percentWidth: 9,
     isSortable: true,
-    render: (
-      { information_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ information_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={information_types}>
           <Tag
@@ -625,11 +581,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              handleAddFilter(
-                'information_types',
-                information_types?.at(0) ?? null,
-                'eq',
-              );
+              handleAddFilter('information_types', information_types?.at(0) ?? null, 'eq');
             }}
           />
         </FieldOrEmpty>
@@ -641,10 +593,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 8,
     isSortable: true,
-    render: (
-      { infrastructure_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ infrastructure_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={infrastructure_types}>
           <Tag
@@ -652,11 +601,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              handleAddFilter(
-                'infrastructure_types',
-                infrastructure_types?.at(0) ?? null,
-                'eq',
-              );
+              handleAddFilter('infrastructure_types', infrastructure_types?.at(0) ?? null, 'eq');
             }}
           />
         </FieldOrEmpty>
@@ -669,10 +614,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: true,
     render: ({ is_family }, { t_i18n }) => (
-      <ItemBoolean
-        status={is_family}
-        label={is_family ? t_i18n('Yes') : t_i18n('No')}
-      />
+      <ItemBoolean status={is_family} label={is_family ? t_i18n('Yes') : t_i18n('No')} />
     ),
   },
   isShared: {
@@ -681,10 +623,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 8,
     isSortable: false,
     render: ({ isShared }, { t_i18n }) => (
-      <ItemBoolean
-        status={isShared}
-        label={isShared ? t_i18n('Yes') : t_i18n('No')}
-      />
+      <ItemBoolean status={isShared} label={isShared ? t_i18n('Yes') : t_i18n('No')} />
     ),
   },
   killChainPhase: {
@@ -693,8 +632,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: false,
     render: ({ killChainPhases }) => {
-      const formattedKillChainPhase
-        = killChainPhases && killChainPhases.length > 0
+      const formattedKillChainPhase =
+        killChainPhases && killChainPhases.length > 0
           ? `[${killChainPhases[0].kill_chain_name}] ${killChainPhases[0].phase_name}`
           : EMPTY_VALUE;
       return defaultRender(formattedKillChainPhase);
@@ -759,10 +698,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: (
-      { note_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ note_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={note_types}>
           <Tag
@@ -805,11 +741,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: false,
     render: ({ objectLabel }, { storageHelpers: { handleAddFilter } }) => {
       return (
-        <StixCoreObjectLabels
-          variant="inList"
-          labels={objectLabel}
-          onClick={handleAddFilter}
-        />
+        <StixCoreObjectLabels variant="inList" labels={objectLabel} onClick={handleAddFilter} />
       );
     },
   },
@@ -861,9 +793,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Opinions mean',
     percentWidth: 10,
     render: ({ opinions_metrics }) => (
-      <span style={{ fontWeight: 700, fontSize: 15 }}>
-        {opinions_metrics?.mean ?? EMPTY_VALUE}
-      </span>
+      <span style={{ fontWeight: 700, fontSize: 15 }}>{opinions_metrics?.mean ?? EMPTY_VALUE}</span>
     ),
   },
   order: {
@@ -933,11 +863,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ priority }) => (
-      <ItemPriority
-        variant="inList"
-        priority={priority}
-        label={priority}
-      />
+      <ItemPriority variant="inList" priority={priority} label={priority} />
     ),
   },
   product: {
@@ -960,12 +886,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ rating }) => (
-      <RatingField
-        rating={rating}
-        size="tiny"
-        readOnly
-        style={{ paddingTop: 2 }}
-      />
+      <RatingField rating={rating} size="tiny" readOnly style={{ paddingTop: 2 }} />
     ),
   },
   relationship_type: {
@@ -973,23 +894,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 7,
     isSortable: true,
-    render: (
-      { relationship_type },
-      { t_i18n, storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ relationship_type }, { t_i18n, storageHelpers: { handleAddFilter } }) => {
       return (
         <Tag
-          label={
-            t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')
-          }
+          label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddFilter(
-              'relationship_type',
-              relationship_type ?? null,
-              'eq',
-            );
+            handleAddFilter('relationship_type', relationship_type ?? null, 'eq');
           }}
         />
       );
@@ -1000,10 +912,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: (
-      { report_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ report_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={report_types}>
           <Tag
@@ -1024,10 +933,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: (threatActorGroup) => (
-      <ItemOpenVocab
-        type="attack-resource-level-ov"
-        value={threatActorGroup.resource_level}
-      />
+      <ItemOpenVocab type="attack-resource-level-ov" value={threatActorGroup.resource_level} />
     ),
   },
   response_types: {
@@ -1035,10 +941,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Response type',
     percentWidth: 9,
     isSortable: true,
-    render: (
-      { response_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ response_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={response_types}>
           <Tag
@@ -1046,11 +949,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              handleAddFilter(
-                'response_types',
-                response_types?.at(0) ?? null,
-                'eq',
-              );
+              handleAddFilter('response_types', response_types?.at(0) ?? null, 'eq');
             }}
           />
         </FieldOrEmpty>
@@ -1062,8 +961,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Result name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ result_name, draftVersion }) =>
-      defaultRender(result_name, draftVersion),
+    render: ({ result_name, draftVersion }) => defaultRender(result_name, draftVersion),
   },
   secondary_motivations: {
     id: 'secondary_motivations',
@@ -1089,11 +987,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: true,
     render: ({ severity }) => (
-      <ItemSeverity
-        variant="inList"
-        severity={severity}
-        label={severity}
-      />
+      <ItemSeverity variant="inList" severity={severity} label={severity} />
     ),
   },
   sophistication: {
@@ -1113,8 +1007,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Source name',
     percentWidth: 15,
     isSortable: true,
-    render: ({ source_name, draftVersion }) =>
-      defaultRender(source_name, draftVersion),
+    render: ({ source_name, draftVersion }) => defaultRender(source_name, draftVersion),
   },
   start_date: {
     id: 'start_date',
@@ -1149,10 +1042,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Request for takedown types',
     percentWidth: 9,
     isSortable: true,
-    render: (
-      { takedown_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ takedown_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={takedown_types}>
           <Tag
@@ -1160,11 +1050,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              handleAddFilter(
-                'takedown_types',
-                takedown_types?.at(0) ?? null,
-                'eq',
-              );
+              handleAddFilter('takedown_types', takedown_types?.at(0) ?? null, 'eq');
             }}
           />
         </FieldOrEmpty>
@@ -1180,13 +1066,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       if (!tags || tags.length === 0) return EMPTY_VALUE;
       return (
         <Tooltip
-          title={(
+          title={
             <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: '4px' }}>
               {tags.map((tag: string) => (
                 <Chip key={tag} label={tag} style={chipStyle} />
               ))}
             </div>
-          )}
+          }
         >
           <div>
             <Chip label={tags[0]} style={chipStyle} />
@@ -1218,9 +1104,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 18,
     isSortable: false,
     render: ({ to }, helpers) => {
-      const value = to
-        ? getMainRepresentative(to)
-        : helpers.t_i18n('Restricted');
+      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
       const displayDraftChip = !!to?.draftVersion;
       return defaultRender(value, displayDraftChip);
     },
@@ -1230,10 +1114,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 10,
     isSortable: true,
-    render: (
-      { tool_types },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ tool_types }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={tool_types}>
           <Tag
@@ -1254,29 +1135,21 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 10,
     isSortable: false,
     render: (node) => (
-      <ItemEntityType
-        showIcon
-        entityType={node.to?.entity_type}
-        isRestricted={!node.to}
-      />
+      <ItemEntityType showIcon entityType={node.to?.entity_type} isRestricted={!node.to} />
     ),
   },
   to_entity_type: {
     id: 'to_entity_type',
     label: 'Target type',
     percentWidth: 10,
-    render: ({ to }) => (
-      <ItemEntityType showIcon entityType={to?.entity_type} />
-    ),
+    render: ({ to }) => <ItemEntityType showIcon entityType={to?.entity_type} />,
   },
   to_relationship_type: {
     id: 'to_relationship_type',
     label: 'Target name',
     percentWidth: 10,
     render: ({ to }, helpers) => {
-      const value = to
-        ? getMainRepresentative(to)
-        : helpers.t_i18n('Restricted');
+      const value = to ? getMainRepresentative(to) : helpers.t_i18n('Restricted');
       return defaultRender(value);
     },
   },
@@ -1285,24 +1158,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Labels',
     percentWidth: 20,
     isSortable: false,
-    render: ({ to }) => (
-      <StixCoreObjectLabels
-        variant="inList"
-        labels={to?.objectLabel}
-      />
-    ),
+    render: ({ to }) => <StixCoreObjectLabels variant="inList" labels={to?.objectLabel} />,
   },
   to_object_marking: {
     id: 'to_object_marking',
     label: 'Markings',
     percentWidth: 20,
     isSortable: false,
-    render: ({ to }) => (
-      <ItemMarkings
-        markingDefinitions={to?.objectMarking ?? []}
-        limit={1}
-      />
-    ),
+    render: ({ to }) => <ItemMarkings markingDefinitions={to?.objectMarking ?? []} limit={1} />,
   },
   updated_at: {
     id: 'updated_at',
@@ -1413,16 +1276,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const theme = useTheme<Theme>();
       return (
         <Tag
-          label={
-            x_opencti_negative
-              ? t_i18n('False positive')
-              : t_i18n('True positive')
-          }
-          color={
-            x_opencti_negative
-              ? theme.palette.severity.low
-              : theme.palette.severity.critical
-          }
+          label={x_opencti_negative ? t_i18n('False positive') : t_i18n('True positive')}
+          color={x_opencti_negative ? theme.palette.severity.low : theme.palette.severity.critical}
         />
       );
     },
@@ -1488,10 +1343,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     percentWidth: 15,
     isSortable: true,
     render: ({ x_opencti_cvss_base_severity }) => (
-      <ItemSeverity
-        severity={x_opencti_cvss_base_severity}
-        label={x_opencti_cvss_base_severity}
-      />
+      <ItemSeverity severity={x_opencti_cvss_base_severity} label={x_opencti_cvss_base_severity} />
     ),
   },
   x_opencti_cvss_v4_base_severity: {
@@ -1511,10 +1363,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Type',
     percentWidth: 15,
     isSortable: true,
-    render: (
-      { x_opencti_organization_type },
-      { storageHelpers: { handleAddFilter } },
-    ) => {
+    render: ({ x_opencti_organization_type }, { storageHelpers: { handleAddFilter } }) => {
       return (
         <FieldOrEmpty source={x_opencti_organization_type}>
           <Tag
@@ -1538,15 +1387,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Processing status',
     percentWidth: 8,
     isSortable: true,
-    render: (
-      { status, workflowEnabled },
-      { storageHelpers: { handleAddFilter } },
-    ) => (
-      <ItemStatus
-        status={status}
-        disabled={!workflowEnabled}
-        onClick={handleAddFilter}
-      />
+    render: ({ status, workflowEnabled }, { storageHelpers: { handleAddFilter } }) => (
+      <ItemStatus status={status} disabled={!workflowEnabled} onClick={handleAddFilter} />
     ),
   },
   x_opencti_aliases: {
@@ -1571,11 +1413,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               }}
             >
               <Tooltip title={x_opencti_aliases}>
-                <img
-                  style={{ width: 20 }}
-                  src={flagUrl}
-                  alt={x_opencti_aliases}
-                />
+                <img style={{ width: 20 }} src={flagUrl} alt={x_opencti_aliases} />
               </Tooltip>
               <div>{x_opencti_aliases[0]}</div>
             </div>

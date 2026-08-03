@@ -12,8 +12,13 @@ import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
+import {
+  useIsEnforceReference,
+  useSchemaCreationValidation,
+} from '../../../../utils/hooks/useEntitySettings';
+import StixCoreRelationshipCreationForm, {
+  stixCoreRelationshipBasicShape,
+} from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
 import { findFlagUrl } from '../../../../utils/flags';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -228,11 +233,7 @@ const stixCoreRelationshipCreationFromEntityListRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
@@ -242,15 +243,10 @@ const StixCoreRelationshipCreationFromEntityDummyList = () => {
       {Array.from(Array(20), (e, i) => (
         <ListItem key={i} divider={true}>
           <ListItemIcon>
-            <Skeleton
-              animation="wave"
-              variant="circular"
-              width={30}
-              height={30}
-            />
+            <Skeleton animation="wave" variant="circular" width={30} height={30} />
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -258,15 +254,8 @@ const StixCoreRelationshipCreationFromEntityDummyList = () => {
                 height={15}
                 style={{ marginBottom: 10 }}
               />
-            )}
-            secondary={(
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height={15}
-              />
-            )}
+            }
+            secondary={<Skeleton animation="wave" variant="rectangular" width="90%" height={15} />}
           />
         </ListItem>
       ))}
@@ -285,9 +274,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const [commitRelationAdd] = useApiMutation(
-    stixCoreRelationshipCreationFromEntityListRelationAdd,
-  );
+  const [commitRelationAdd] = useApiMutation(stixCoreRelationshipCreationFromEntityListRelationAdd);
   const [commitRelationDelete] = useApiMutation(
     stixCoreRelationshipCreationFromEntityListRelationDelete,
   );
@@ -323,19 +310,11 @@ const StixCoreRelationshipCreationFromEntityList = ({
     if (alreadyAdded) {
       commitRelationDelete({
         variables: { ...input },
-        updater: (store) => deleteNodeFromEdge(
-          store,
-          updaterOptions.path,
-          entity.id,
-          data.id,
-          updaterOptions.params,
-        ),
+        updater: (store) =>
+          deleteNodeFromEdge(store, updaterOptions.path, entity.id, data.id, updaterOptions.params),
       });
       // Add with references
-    } else if (
-      enableReferences
-      || !stixCoreRelationshipValidator.isValidSync(input)
-    ) {
+    } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
       handleOpenForm();
       setSelected(data);
       // Add
@@ -375,9 +354,10 @@ const StixCoreRelationshipCreationFromEntityList = ({
     .filter((edge) => edge.node.id !== entity.id)
     .map((edge) => edge.node);
 
-  const defaultDescription = (data) => (data.parent_types.includes('Stix-Cyber-Observable')
-    ? data.x_opencti_description
-    : data.description);
+  const defaultDescription = (data) =>
+    data.parent_types.includes('Stix-Cyber-Observable')
+      ? data.x_opencti_description
+      : data.description;
 
   return (
     <>
@@ -398,8 +378,8 @@ const StixCoreRelationshipCreationFromEntityList = ({
                 .map((edge) => {
                   const { node } = edge;
                   const alreadyAdded = existingIds.includes(node.id);
-                  const flagUrl = node.entity_type === 'Country'
-                    && findFlagUrl(node.x_opencti_aliases);
+                  const flagUrl =
+                    node.entity_type === 'Country' && findFlagUrl(node.x_opencti_aliases);
                   return (
                     <ListItemButton
                       dense
@@ -413,11 +393,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
                         ) : (
                           <>
                             {flagUrl ? (
-                              <img
-                                style={{ width: 20 }}
-                                src={flagUrl}
-                                alt={node.name}
-                              />
+                              <img style={{ width: 20 }} src={flagUrl} alt={node.name} />
                             ) : (
                               <ItemIcon type={node.entity_type} />
                             )}

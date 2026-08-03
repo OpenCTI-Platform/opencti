@@ -122,7 +122,12 @@ describe('useStixRelationshipsMultiHorizontalBars', () => {
     const finalSubDistributionFieldMarkings = 'object-marking.internal_id';
 
     const { hook } = testRenderHook(() => {
-      return useStixRelationshipsMultiHorizontalBars(subSelectionMock, stixRelationshipsDistributionWithMarkings, finalSubDistributionFieldMarkings, finalFieldMock);
+      return useStixRelationshipsMultiHorizontalBars(
+        subSelectionMock,
+        stixRelationshipsDistributionWithMarkings,
+        finalSubDistributionFieldMarkings,
+        finalFieldMock,
+      );
     });
 
     const hookResult = hook.result.current;
@@ -210,7 +215,12 @@ describe('useStixRelationshipsMultiHorizontalBars', () => {
     const finalSubDistributionFieldUsers = 'creator_id';
 
     const { hook } = testRenderHook(() => {
-      return useStixRelationshipsMultiHorizontalBars(subSelectionMock, stixRelationshipsDistributionWithUsers, finalSubDistributionFieldUsers, finalFieldMock);
+      return useStixRelationshipsMultiHorizontalBars(
+        subSelectionMock,
+        stixRelationshipsDistributionWithUsers,
+        finalSubDistributionFieldUsers,
+        finalFieldMock,
+      );
     });
 
     const hookResult = hook.result.current;
@@ -286,7 +296,12 @@ describe('useStixRelationshipsMultiHorizontalBars', () => {
     const finalSubDistributionFieldRelationships = 'relationship_type';
 
     const { hook } = testRenderHook(() => {
-      return useStixRelationshipsMultiHorizontalBars(subSelectionMock, stixRelationshipsDistributionWithRelationships, finalSubDistributionFieldRelationships, finalFieldMock);
+      return useStixRelationshipsMultiHorizontalBars(
+        subSelectionMock,
+        stixRelationshipsDistributionWithRelationships,
+        finalSubDistributionFieldRelationships,
+        finalFieldMock,
+      );
     });
 
     const hookResult = hook.result.current;

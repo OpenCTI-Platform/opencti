@@ -4,7 +4,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   created_at: DateTime!
   # DecayExclusionRule
   name: String!
@@ -49,7 +49,9 @@ input DecayExclusionRuleAddInput {
 }
 
 type Mutation {
-  decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule
+    @auth(for: [SETTINGS_SETCUSTOMIZATION])
   decayExclusionRuleDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }

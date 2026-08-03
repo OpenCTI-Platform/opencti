@@ -17,10 +17,17 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { ChannelCreationMutation, ChannelCreationMutation$variables } from './__generated__/ChannelCreationMutation.graphql';
+import {
+  ChannelCreationMutation,
+  ChannelCreationMutation$variables,
+} from './__generated__/ChannelCreationMutation.graphql';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
@@ -65,7 +72,11 @@ interface ChannelAddInput {
 }
 
 interface ChannelFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: ChannelCreationMutation['response']['channelAdd']) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: ChannelCreationMutation['response']['channelAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -90,41 +101,33 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   const { t_i18n } = useFormatter();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CHANNEL_TYPE,
-  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CHANNEL_TYPE);
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    channel_types: Yup.array().nullable(),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-  }, mandatoryAttributes);
-  const validator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-
-  const [commit] = useApiMutation<ChannelCreationMutation>(
-    channelMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<ChannelCreationMutation>({
-    commit,
-    relayUpdater: (store, response) => {
-      if (updater) {
-        updater(store, 'channelAdd', response?.channelAdd);
-      }
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      channel_types: Yup.array().nullable(),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
     },
+    mandatoryAttributes,
+  );
+  const validator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+
+  const [commit] = useApiMutation<ChannelCreationMutation>(channelMutation, undefined, {
+    successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<ChannelCreationMutation>({
+      commit,
+      relayUpdater: (store, response) => {
+        if (updater) {
+          updater(store, 'channelAdd', response?.channelAdd);
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -220,7 +223,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Channel', 'Malware']}
             />
@@ -228,7 +231,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               type="channel_types_ov"
               name="channel_types"
               label={t_i18n('Channel type')}
-              required={(mandatoryAttributes.includes('channel_types'))}
+              required={mandatoryAttributes.includes('channel_types')}
               multiple
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}
@@ -237,7 +240,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -246,33 +249,30 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               registerMarkdownImagesController={registerMarkdownImagesController}
               uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
-            <ConfidenceField
-              entityType="Channel"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Channel" containerStyle={fieldSpacingContainerStyle} />
             <CreatedByField
               name="createdBy"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
             />
@@ -281,23 +281,17 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -318,7 +312,8 @@ const ChannelCreation = ({
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   return (

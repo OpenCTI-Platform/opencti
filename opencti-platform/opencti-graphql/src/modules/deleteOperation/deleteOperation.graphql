@@ -10,7 +10,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   representative: Representative!
   standard_id: String!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   # DeleteOperation
   objectMarking: [MarkingDefinition!]
   confidence: Int

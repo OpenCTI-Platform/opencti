@@ -1,4 +1,9 @@
-import { ExpandLess, ExpandMore, KeyboardArrowRightOutlined, NotificationsOutlined } from '@mui/icons-material';
+import {
+  ExpandLess,
+  ExpandMore,
+  KeyboardArrowRightOutlined,
+  NotificationsOutlined,
+} from '@mui/icons-material';
 
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -37,16 +42,28 @@ import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { convertEventTypes, convertNotifiers, instanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  instanceEventTypesOptions,
+} from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { deserializeFilterGroupForFrontend, findFilterFromKey, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  findFilterFromKey,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useComputeLink } from '../../../../utils/hooks/useAppData';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import { TriggerEventType, TriggerLiveAddInput, TriggerLiveCreationKnowledgeMutation } from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
+import {
+  TriggerEventType,
+  TriggerLiveAddInput,
+  TriggerLiveCreationKnowledgeMutation,
+} from '../../profile/triggers/__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
 import { triggerLiveKnowledgeCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
@@ -104,10 +121,16 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
   const [deleting, setDeleting] = useState<boolean>(false);
   const [expandedLines, setExpandedLines] = useState<boolean>(false);
 
-  const [existingInstanceTriggersData, refetch] = useRefetchableFragment<TriggerQuery, FragmentKey>(stixCoreObjectTriggersFragment, triggerData);
+  const [existingInstanceTriggersData, refetch] = useRefetchableFragment<TriggerQuery, FragmentKey>(
+    stixCoreObjectTriggersFragment,
+    triggerData,
+  );
 
-  const existingInstanceTriggersEdges = existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
-  const myInstanceTriggers = existingInstanceTriggersEdges.filter((e) => e.node.recipients?.some((r) => r.id === me.id)) ?? [];
+  const existingInstanceTriggersEdges =
+    existingInstanceTriggersData?.triggersKnowledge?.edges ?? [];
+  const myInstanceTriggers =
+    existingInstanceTriggersEdges.filter((e) => e.node.recipients?.some((r) => r.id === me.id)) ??
+    [];
 
   const [commitAddTrigger] = useApiMutation<TriggerLiveCreationKnowledgeMutation>(
     triggerLiveKnowledgeCreationMutation,
@@ -129,27 +152,22 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     setExpandedLines(!expandedLines);
   };
 
-  const liveTriggerValidation = () => Yup.object().shape({
-    name: Yup.string().trim().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-    event_types: Yup.array()
-      .min(1, t_i18n('Minimum one event type'))
-      .required(t_i18n('This field is required')),
-    notifiers: Yup.array().required(t_i18n('This field is required')),
-  });
+  const liveTriggerValidation = () =>
+    Yup.object().shape({
+      name: Yup.string().trim().required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+      event_types: Yup.array()
+        .min(1, t_i18n('Minimum one event type'))
+        .required(t_i18n('This field is required')),
+      notifiers: Yup.array().required(t_i18n('This field is required')),
+    });
 
   const createInstanceTrigger = () => {
     const finalValues: TriggerLiveAddInput = {
       name: instanceName,
       description: '',
-      event_types: [
-        EVENT_TYPES.update,
-        EVENT_TYPES.delete,
-      ],
-      notifiers: [
-        NOTIFIER_IDS.userInterface,
-        NOTIFIER_IDS.defaultMailer,
-      ],
+      event_types: [EVENT_TYPES.update, EVENT_TYPES.delete],
+      notifiers: [NOTIFIER_IDS.userInterface, NOTIFIER_IDS.defaultMailer],
       instance_trigger: true,
       filters: serializeFilterGroupForBackend({
         mode: 'and',
@@ -186,7 +204,10 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     });
   };
 
-  const onSubmitUpdate: FormikConfig<InstanceTriggerEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmitUpdate: FormikConfig<InstanceTriggerEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const finalValues = [
       {
         key: 'name',
@@ -238,33 +259,34 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
   const submitRemove = (triggerIdToUpdate: string, filters: string | null) => {
     setDeleting(true);
     const filterGroup = deserializeFilterGroupForFrontend(filters);
-    const newInstanceValues = findFilterFromKey(
-      filterGroup?.filters ?? [],
-      'connectedToId',
-    )?.values?.filter((id) => id !== instanceId) ?? [];
-    const newInstanceFilters = filterGroup && newInstanceValues.length > 0
-      ? {
-          ...filterGroup,
-          filters: [
-            ...filterGroup.filters.filter(
-              (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
-            ),
-            {
-              key: 'connectedToId',
-              values: newInstanceValues,
-              operator: 'eq',
-              mode: 'or',
-            },
-          ],
-        }
-      : {
-          mode: filterGroup?.mode ?? 'and',
-          filters:
+    const newInstanceValues =
+      findFilterFromKey(filterGroup?.filters ?? [], 'connectedToId')?.values?.filter(
+        (id) => id !== instanceId,
+      ) ?? [];
+    const newInstanceFilters =
+      filterGroup && newInstanceValues.length > 0
+        ? {
+            ...filterGroup,
+            filters: [
+              ...filterGroup.filters.filter(
+                (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+              ),
+              {
+                key: 'connectedToId',
+                values: newInstanceValues,
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
+          }
+        : {
+            mode: filterGroup?.mode ?? 'and',
+            filters:
               filterGroup?.filters.filter(
                 (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
               ) ?? [],
-          filterGroups: filterGroup?.filterGroups ?? [],
-        };
+            filterGroups: filterGroup?.filterGroups ?? [],
+          };
     commitFieldPatch({
       variables: {
         id: triggerIdToUpdate,
@@ -297,9 +319,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
   ) => {
     let instanceTriggerFilters: FilterGroup | null;
     if (instanceTrigger) {
-      instanceTriggerFilters = deserializeFilterGroupForFrontend(
-        instanceTrigger.filters,
-      );
+      instanceTriggerFilters = deserializeFilterGroupForFrontend(instanceTrigger.filters);
     }
 
     //
@@ -316,16 +336,9 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     };
 
     return (
-      <Stack
-        key={instanceTrigger?.id}
-        gap={3}
-      >
+      <Stack key={instanceTrigger?.id} gap={3}>
         <Stack gap={1}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={1}
-          >
+          <Stack direction="row" alignItems="center" gap={1}>
             <Typography variant="h6">{t_i18n('Subscribe')}</Typography>
             <Tag
               label={instanceTrigger ? t_i18n('Subscribed') : t_i18n('Not subscribed')}
@@ -373,9 +386,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                       ) => (
                         <MenuItem value={option.value} {...props}>
                           <Checkbox
-                            checked={values.event_types
-                              .map((n) => n.value)
-                              .includes(option.value)}
+                            checked={values.event_types.map((n) => n.value).includes(option.value)}
                           />
                           <ListItemText primary={option.label} />
                         </MenuItem>
@@ -395,37 +406,29 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                 </Stack>
 
                 <FormButtonContainer>
-                  {
-                    instanceTrigger ? (
-                      <>
-                        <Button
-                          variant="secondary"
-                          intent="destructive"
-                          onClick={
-                            multipleInstanceTrigger
-                              ? () => submitRemove(values.id, values.filters)
-                              : () => submitDelete(values.id)
-                          }
-                          disabled={deleting}
-                        >
-                          {multipleInstanceTrigger ? t_i18n('Remove') : t_i18n('Unsubscribe')}
-                        </Button>
-                        <Button
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
-                          {t_i18n('Update')}
-                        </Button>
-                      </>
-                    ) : (
+                  {instanceTrigger ? (
+                    <>
                       <Button
-                        onClick={createInstanceTrigger}
-                        disabled={isSubmitting}
+                        variant="secondary"
+                        intent="destructive"
+                        onClick={
+                          multipleInstanceTrigger
+                            ? () => submitRemove(values.id, values.filters)
+                            : () => submitDelete(values.id)
+                        }
+                        disabled={deleting}
                       >
-                        {t_i18n('Subscribe')}
+                        {multipleInstanceTrigger ? t_i18n('Remove') : t_i18n('Unsubscribe')}
                       </Button>
-                    )
-                  }
+                      <Button onClick={submitForm} disabled={isSubmitting}>
+                        {t_i18n('Update')}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button onClick={createInstanceTrigger} disabled={isSubmitting}>
+                      {t_i18n('Subscribe')}
+                    </Button>
+                  )}
                 </FormButtonContainer>
               </Form>
             )}
@@ -433,7 +436,9 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
         </Stack>
 
         <Stack>
-          <Typography variant="h6">{t_i18n('Subscribers list')} ({triggersKnowledge?.edges?.length})</Typography>
+          <Typography variant="h6">
+            {t_i18n('Subscribers list')} ({triggersKnowledge?.edges?.length})
+          </Typography>
           <List>
             {triggersKnowledge?.edges.map((triggerEdge) => (
               <React.Fragment key={triggerEdge.node.id}>
@@ -461,18 +466,11 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
     );
   };
 
-  const isInstanceTriggerOnMultipleInstances = (
-    triggerValue: InstanceTriggerEditionFormValues,
-  ) => {
+  const isInstanceTriggerOnMultipleInstances = (triggerValue: InstanceTriggerEditionFormValues) => {
     const filters = deserializeFilterGroupForFrontend(triggerValue.filters);
     if (filters) {
-      const connectedToIdFilter = findFilterFromKey(
-        filters.filters,
-        'connectedToId',
-      );
-      return (
-        connectedToIdFilter?.values && connectedToIdFilter.values.length > 1
-      );
+      const connectedToIdFilter = findFilterFromKey(filters.filters, 'connectedToId');
+      return connectedToIdFilter?.values && connectedToIdFilter.values.length > 1;
     }
     return false;
   };
@@ -492,37 +490,31 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
       .filter((n) => isInstanceTriggerOnMultipleInstances(n))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((n) => ({ values: n, multiple: true }));
-    const sortedTriggersToDisplay = uniqInstanceTriggers.concat(
-      multipleInstanceTriggers,
-    );
+    const sortedTriggersToDisplay = uniqInstanceTriggers.concat(multipleInstanceTriggers);
     const firstInstanceTriggerToDisplay = sortedTriggersToDisplay[0];
     const otherInstanceTriggersToDisplay = sortedTriggersToDisplay.slice(1); // the other instance triggers
 
     return (
-      <Drawer
-        title={t_i18n('Manage subscription')}
-        open={open}
-        onClose={handleClose}
-      >
+      <Drawer title={t_i18n('Manage subscription')} open={open} onClose={handleClose}>
         <Stack gap={3}>
           <Alert severity="info" variant="outlined">
-            {t_i18n('When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.')}
+            {t_i18n(
+              'When subscribing to an object, it notifies you about modifications of this object, containers (reports, groupings, etc.) about this object as well as creation and deletion of relationships related to this object.',
+            )}
           </Alert>
 
-          {
-            renderForm(
-              firstInstanceTriggerToDisplay?.values ?? null,
-              true,
-              firstInstanceTriggerToDisplay?.multiple ?? null,
-            )
-          }
+          {renderForm(
+            firstInstanceTriggerToDisplay?.values ?? null,
+            true,
+            firstInstanceTriggerToDisplay?.multiple ?? null,
+          )}
 
           {otherInstanceTriggersToDisplay.length > 0 && (
             <List>
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={(
+                secondaryAction={
                   <IconButton
                     aria-label={expandedLines ? t_i18n('Collapse') : t_i18n('Expand')}
                     onClick={handleToggleLine}
@@ -530,25 +522,18 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
-                )}
+                }
               >
-                <ListItemButton
-                  classes={{ root: classes.nested }}
-                  onClick={handleToggleLine}
-                >
+                <ListItemButton classes={{ root: classes.nested }} onClick={handleToggleLine}>
                   <ListItemText
-                    primary={`${otherInstanceTriggersToDisplay.length} ${t_i18n(
-                      'other trigger(s) related to this entity',
-                    )}`}
+                    primary={`${otherInstanceTriggersToDisplay.length} ${t_i18n('other trigger(s) related to this entity')}`}
                   />
                 </ListItemButton>
               </ListItem>
               <Collapse in={expandedLines}>
-                {otherInstanceTriggersToDisplay.map((instanceTrigger) => renderForm(
-                  instanceTrigger.values,
-                  false,
-                  instanceTrigger.multiple,
-                ))}
+                {otherInstanceTriggersToDisplay.map((instanceTrigger) =>
+                  renderForm(instanceTrigger.values, false, instanceTrigger.multiple),
+                )}
               </Collapse>
             </List>
           )}
@@ -563,10 +548,7 @@ const StixCoreObjectQuickSubscription: FunctionComponent<
 
   return (
     <>
-      <Tooltip
-        title={tooltip}
-        placement="bottom-start"
-      >
+      <Tooltip title={tooltip} placement="bottom-start">
         <Badge badgeContent={triggersKnowledgeCount} color="primary">
           <ToggleButton
             onClick={() => !disabledInDraft && handleOpen()}

@@ -3,7 +3,12 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 
-import { addCaseRft, caseRftContainsStixObjectOrStixRelationship, findRftPaginated, findById } from './case-rft-domain';
+import {
+  addCaseRft,
+  caseRftContainsStixObjectOrStixRelationship,
+  findRftPaginated,
+  findById,
+} from './case-rft-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 
 const caseRftResolvers: Resolvers = {
@@ -11,7 +16,12 @@ const caseRftResolvers: Resolvers = {
     caseRft: (_, { id }, context) => findById(context, context.user, id),
     caseRfts: (_, args, context) => findRftPaginated(context, context.user, args),
     caseRftContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return caseRftContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return caseRftContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   CaseRftsOrdering: {

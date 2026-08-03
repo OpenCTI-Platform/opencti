@@ -1,11 +1,19 @@
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
-import React, { cloneElement, CSSProperties, FunctionComponent, ReactElement, ReactNode } from 'react';
+import React, {
+  cloneElement,
+  CSSProperties,
+  FunctionComponent,
+  ReactElement,
+  ReactNode,
+} from 'react';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';
 import { useFormatter } from '../../../../components/i18n';
-import useSensitiveModifications, { SensitiveConfigType } from '../../../../utils/hooks/useSensitiveModifications';
+import useSensitiveModifications, {
+  SensitiveConfigType,
+} from '../../../../utils/hooks/useSensitiveModifications';
 import { Stack } from '@mui/material';
 
 interface ChildProps {
@@ -34,10 +42,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
-  const {
-    isSensitive,
-    isAllowed,
-  } = useSensitiveModifications(type);
+  const { isSensitive, isAllowed } = useSensitiveModifications(type);
 
   let currentTitle = title;
   if (isSensitive) {
@@ -54,11 +59,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
       return (
         <>
           {displayTitle && (
-            <Typography
-              variant="h4"
-              gutterBottom
-              style={{ ...sx?.title, height: '18px' }}
-            >
+            <Typography variant="h4" gutterBottom style={{ ...sx?.title, height: '18px' }}>
               {currentTitle}
             </Typography>
           )}
@@ -66,7 +67,9 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
             title: currentTitle,
             disabled: isSensitive && !isAllowed,
             style: {
-              border: isSensitive ? `1px solid ${hexToRGB(theme.palette.dangerZone.main, 0.5)}` : undefined,
+              border: isSensitive
+                ? `1px solid ${hexToRGB(theme.palette.dangerZone.main, 0.5)}`
+                : undefined,
             },
           })}
         </>
@@ -75,11 +78,7 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
     return (
       <>
         {displayTitle && (
-          <Typography
-            variant="h4"
-            gutterBottom
-            style={{ ...sx?.title, height: '16px' }}
-          >
+          <Typography variant="h4" gutterBottom style={{ ...sx?.title, height: '16px' }}>
             {currentTitle}
           </Typography>
         )}
@@ -89,7 +88,9 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
           title: currentTitle,
           disabled: isSensitive && !isAllowed,
           style: {
-            border: isSensitive ? `1px solid ${hexToRGB(theme.palette.dangerZone.main, 0.5)}` : undefined,
+            border: isSensitive
+              ? `1px solid ${hexToRGB(theme.palette.dangerZone.main, 0.5)}`
+              : undefined,
           },
         })}
       </>
@@ -142,7 +143,8 @@ const DangerZoneBlock: FunctionComponent<DangerZoneBlockProps> = ({
             ...(sx?.title ?? {}),
           }}
         >
-          {t_i18n('Danger Zone')}{title && (<> - {title}</>)}
+          {t_i18n('Danger Zone')}
+          {title && <> - {title}</>}
         </Typography>
       )}
       {child}

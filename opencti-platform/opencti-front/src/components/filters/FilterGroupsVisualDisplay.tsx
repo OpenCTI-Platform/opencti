@@ -52,17 +52,8 @@ const FilterValuesDisplay: FunctionComponent<FilterValuesDisplayProps> = ({
     <>
       {values.map((value, j) => (
         <Fragment key={value}>
-          <span>
-            {' '}
-            {filtersRepresentativesMap.get(value)?.value ?? value}{' '}
-          </span>
-          {j + 1 < values.length && (
-            <Box
-              sx={innerValuesModeBadgeSx}
-            >
-              {t_i18n(mode ?? 'or')}
-            </Box>
-          )}
+          <span> {filtersRepresentativesMap.get(value)?.value ?? value} </span>
+          {j + 1 < values.length && <Box sx={innerValuesModeBadgeSx}>{t_i18n(mode ?? 'or')}</Box>}
         </Fragment>
       ))}
     </>
@@ -111,23 +102,27 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
               {t_i18n('WITH')}
             </Box>
           )}
-          {values.filter((v) => v.key === 'id').map((value) => (
-            <span key="regardingOf-id">
-              <FilterValuesDisplay
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                values={value.values}
-              />
-            </span>
-          ))}
-          {values.filter((v) => v.key === 'dynamic').map((value) => (
-            <span key="regardingOf-dynamic">
-              <FilterGroupsVisualDisplay
-                filterGroups={value.values}
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                filterMode="and"
-              />
-            </span>
-          ))}
+          {values
+            .filter((v) => v.key === 'id')
+            .map((value) => (
+              <span key="regardingOf-id">
+                <FilterValuesDisplay
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  values={value.values}
+                />
+              </span>
+            ))}
+          {values
+            .filter((v) => v.key === 'dynamic')
+            .map((value) => (
+              <span key="regardingOf-dynamic">
+                <FilterGroupsVisualDisplay
+                  filterGroups={value.values}
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  filterMode="and"
+                />
+              </span>
+            ))}
         </>
       );
     }
@@ -166,11 +161,7 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
             alignItems: 'center',
           }}
         >
-          {i !== 0 && (
-            <Box sx={{ ...modeBadgeSx, display: 'inline-block' }}>
-              {parentMode}
-            </Box>
-          )}
+          {i !== 0 && <Box sx={{ ...modeBadgeSx, display: 'inline-block' }}>{parentMode}</Box>}
           <Box
             sx={{
               display: 'flex',
@@ -183,12 +174,8 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
             }}
           >
             <span>{t_i18n(key)}</span>
-            <Box sx={operatorBadgeSx}>
-              {operator}
-            </Box>
-            <Box sx={{ display: 'inline-block' }}>
-              {renderFilterValues(f)}
-            </Box>
+            <Box sx={operatorBadgeSx}>{operator}</Box>
+            <Box sx={{ display: 'inline-block' }}>{renderFilterValues(f)}</Box>
           </Box>
         </Box>
       );
@@ -215,9 +202,7 @@ const FilterGroupsVisualDisplay: FunctionComponent<FilterGroupsVisualDisplayProp
           marginBottom: '16px',
         }}
       >
-        <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>
-          {renderFilters(f.filters, f.mode)}
-        </Stack>
+        <Stack sx={{ gap: '8px', paddingBottom: '8px' }}>{renderFilters(f.filters, f.mode)}</Stack>
         {f.filterGroups.length > 0 && (
           <Stack direction="row">
             <Box

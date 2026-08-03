@@ -15,13 +15,13 @@ const publicStixRelationshipsWordCloudQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -82,10 +82,7 @@ const PublicStixCoreObjectsWordCloudComponent = ({
     publicStixRelationshipsWordCloudQuery,
     queryRef,
   );
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     return (
       <WidgetWordCloud
         data={[...publicStixRelationshipsDistribution]}
@@ -116,9 +113,7 @@ const PublicStixRelationshipsWordCloud = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Relationships distribution')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Relationships distribution')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsWordCloudComponent

@@ -1,6 +1,12 @@
-import { JsonMapperRepresentationEdit, JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
+import {
+  JsonMapperRepresentationEdit,
+  JsonMapperRepresentationFormData,
+} from '@components/data/jsonMapper/representations/Representation';
 
-export type JsonMapperEdit = Omit<JsonMapperEditionContainerFragment_jsonMapper$data, ' $fragmentType' | 'errors' | 'representations'> & {
+export type JsonMapperEdit = Omit<
+  JsonMapperEditionContainerFragment_jsonMapper$data,
+  ' $fragmentType' | 'errors' | 'representations'
+> & {
   representations: JsonMapperRepresentationEdit[];
 };
 

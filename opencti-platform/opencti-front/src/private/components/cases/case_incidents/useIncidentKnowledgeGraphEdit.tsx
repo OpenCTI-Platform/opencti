@@ -4,17 +4,13 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const incidentKnowledgeGraphEdit = graphql`
   mutation useIncidentKnowledgeGraphEditMutation(
-    $id: ID! 
+    $id: ID!
     $input: [EditInput]!
     $commitMessage: String
     $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         id
       }
     }
@@ -22,9 +18,7 @@ const incidentKnowledgeGraphEdit = graphql`
 `;
 
 const useIncidentKnowledgeGraphEdit = () => {
-  return useApiMutation<useIncidentKnowledgeGraphEditMutation>(
-    incidentKnowledgeGraphEdit,
-  );
+  return useApiMutation<useIncidentKnowledgeGraphEditMutation>(incidentKnowledgeGraphEdit);
 };
 
 export default useIncidentKnowledgeGraphEdit;

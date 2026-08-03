@@ -4,7 +4,7 @@ type Form implements BasicObject & InternalObject {
   entity_type: String!
   representative: Representative!
   parent_types: [String!]!
-  metrics:[Metric]
+  metrics: [Metric]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -57,7 +57,8 @@ type FormSubmissionResponse {
 
 # Queries
 type Query {
-  form(id: ID!): Form @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
+  form(id: ID!): Form
+    @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
   forms(
     search: String
     first: Int
@@ -65,7 +66,8 @@ type Query {
     orderBy: FormsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
-  ): FormConnection @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
+  ): FormConnection
+    @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT], forDraft: [KNOWLEDGE_KNASKIMPORT])
 }
 
 # Mutations
@@ -73,6 +75,7 @@ type Mutation {
   formAdd(input: FormAddInput!): Form @auth(for: [INGESTION_SETINGESTIONS])
   formFieldPatch(id: ID!, input: [EditInput!]!): Form @auth(for: [INGESTION_SETINGESTIONS])
   formDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
-  formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE])
+  formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
+    @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE])
   formImport(file: Upload!): Form @auth(for: [INGESTION_SETINGESTIONS])
 }

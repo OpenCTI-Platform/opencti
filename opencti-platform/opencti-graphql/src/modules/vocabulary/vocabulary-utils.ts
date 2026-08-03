@@ -5,11 +5,12 @@ import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { STIX_PATTERN_TYPE } from '../../utils/syntax';
 
-export const builtInOv = [
-  'pattern_type_ov',
-];
+export const builtInOv = ['pattern_type_ov'];
 
-export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; description?: string; aliases?: string[]; order?: number }>> = {
+export const openVocabularies: Record<
+  VocabularyCategory,
+  Array<{ key: string; description?: string; aliases?: string[]; order?: number }>
+> = {
   // A
   account_type_ov: [
     { key: 'facebook', description: 'Specifies a Facebook account' },
@@ -27,8 +28,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   attack_resource_level_ov: [
     {
       key: 'individual',
-      description:
-        'Resources limited to the average individual; Threat Actor acts independently.',
+      description: 'Resources limited to the average individual; Threat Actor acts independently.',
     },
     {
       key: 'club',
@@ -65,7 +65,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     {
       key: 'coercion',
       description:
-        'Being forced to act on someone else\'s behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.',
+        "Being forced to act on someone else's behalf. Adversaries who are motivated by coercion are often forced through intimidation or blackmail to act illegally for someone else’s benefit. Unlike the other motivations, a coerced person does not act for personal gain, but out of fear of incurring a loss.",
     },
     {
       key: 'dominance',
@@ -126,10 +126,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'P3', description: 'Medium priority', order: 3 },
     { key: 'P4', description: 'Low priority', order: 4 },
   ],
-  channel_types_ov: [
-    { key: 'Twitter' },
-    { key: 'Facebook' },
-  ],
+  channel_types_ov: [{ key: 'Twitter' }, { key: 'Facebook' }],
   // E
   event_type_ov: [
     {
@@ -165,13 +162,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   grouping_context_ov: [
     {
       key: 'suspicious-activity',
-      description:
-        'A set of STIX content related to a particular suspicious activity event.',
+      description: 'A set of STIX content related to a particular suspicious activity event.',
     },
     {
       key: 'malware-analysis',
-      description:
-        'A set of STIX content related to a particular malware instance or family.',
+      description: 'A set of STIX content related to a particular malware instance or family.',
     },
     {
       key: 'unspecified',
@@ -203,8 +198,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'go',
-      description:
-        'Specifies the Go (sometimes referred to as golang) programming language.',
+      description: 'Specifies the Go (sometimes referred to as golang) programming language.',
     },
     {
       key: 'java',
@@ -327,8 +321,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'anonymization',
-      description:
-        'Suspected anonymization tools or infrastructure (proxy, TOR, VPN, etc.).',
+      description: 'Suspected anonymization tools or infrastructure (proxy, TOR, VPN, etc.).',
     },
     {
       key: 'benign',
@@ -350,20 +343,17 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'unknown',
-      description:
-        'There is not enough information available to determine the type of indicator.',
+      description: 'There is not enough information available to determine the type of indicator.',
     },
   ],
   infrastructure_type_ov: [
     {
       key: 'amplification',
-      description:
-        'Specifies infrastructure used for conducting amplification attacks.',
+      description: 'Specifies infrastructure used for conducting amplification attacks.',
     },
     {
       key: 'anonymization',
-      description:
-        'Specific infrastructure used for anonymization, such as a proxy.',
+      description: 'Specific infrastructure used for anonymization, such as a proxy.',
     },
     {
       key: 'botnet',
@@ -377,13 +367,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'control-system',
-      description:
-        'Specifies equipment such as IoT, HMI, RTU, PLC or other ICS devices.',
+      description: 'Specifies equipment such as IoT, HMI, RTU, PLC or other ICS devices.',
     },
     {
       key: 'exfiltration',
-      description:
-        'Specifies infrastructure used as an endpoint for data exfiltration.',
+      description: 'Specifies infrastructure used as an endpoint for data exfiltration.',
     },
     {
       key: 'firewall',
@@ -401,18 +389,15 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'phishing',
-      description:
-        'Specifies infrastructure used for conducting phishing attacks.',
+      description: 'Specifies infrastructure used for conducting phishing attacks.',
     },
     {
       key: 'reconnaissance',
-      description:
-        'Specifies infrastructure used for conducting reconnaissance activities.',
+      description: 'Specifies infrastructure used for conducting reconnaissance activities.',
     },
     {
       key: 'routers-switches',
-      description:
-        'Specifies IT infrastructure used to connect devices to the network.',
+      description: 'Specifies IT infrastructure used to connect devices to the network.',
     },
     {
       key: 'staging',
@@ -475,17 +460,17 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     {
       key: 'captures-input-peripherals',
       description:
-        'Indicates that the malware instance or family is able to capture data from a system\'s input peripheral devices, such as a keyboard or mouse. This includes things like keylogging.',
+        "Indicates that the malware instance or family is able to capture data from a system's input peripheral devices, such as a keyboard or mouse. This includes things like keylogging.",
     },
     {
       key: 'captures-output-peripherals',
       description:
-        'Indicates that the malware instance or family captures data sent to a system\'s output peripherals, such as a display. Examples include things like screen scraping.',
+        "Indicates that the malware instance or family captures data sent to a system's output peripherals, such as a display. Examples include things like screen scraping.",
     },
     {
       key: 'captures-system-state-data',
       description:
-        'Indicates that the malware instance or family is able to capture information about a system\'s state (e.g., data currently in its RAM).',
+        "Indicates that the malware instance or family is able to capture information about a system's state (e.g., data currently in its RAM).",
     },
     {
       key: 'cleans-traces-of-infection',
@@ -609,8 +594,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'self-modifies',
-      description:
-        'Indicates that the malware instance or family is able to modify itself.',
+      description: 'Indicates that the malware instance or family is able to modify itself.',
     },
     {
       key: 'steals-authentication-credentials',
@@ -625,9 +609,16 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
   malware_result_ov: [
     { key: 'malicious', description: 'The tool reported the malware binary as malicious.' },
-    { key: 'suspicious', description: 'The tool reported the malware binary as suspicious but not definitively malicious.' },
+    {
+      key: 'suspicious',
+      description:
+        'The tool reported the malware binary as suspicious but not definitively malicious.',
+    },
     { key: 'benign', description: 'The tool reported the malware binary as benign.' },
-    { key: 'unknown', description: 'The tool was unable to determine whether the malware binary is malicious.' },
+    {
+      key: 'unknown',
+      description: 'The tool was unable to determine whether the malware binary is malicious.',
+    },
   ],
   malware_type_ov: [
     {
@@ -652,8 +643,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'ddos',
-      description:
-        'A program that is used to perform a distributed denial of service attack.',
+      description: 'A program that is used to perform a distributed denial of service attack.',
     },
     {
       key: 'downloader',
@@ -677,7 +667,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     {
       key: ' ransomware',
       description:
-        'A type of malware that encrypts files on a victim\'s system, demanding payment of ransom in return for the access codes required to unlock files.',
+        "A type of malware that encrypts files on a victim's system, demanding payment of ransom in return for the access codes required to unlock files.",
     },
     {
       key: 'remote-access-trojan',
@@ -687,12 +677,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     {
       key: 'resource-exploitation',
       description:
-        'A type of malware that steals a system\'s resources (e.g., CPU cycles), such as a malicious bitcoin miner.',
+        "A type of malware that steals a system's resources (e.g., CPU cycles), such as a malicious bitcoin miner.",
     },
     {
       key: 'rogue-security-software',
-      description:
-        'A fake security product that demands money to clean phony infections.',
+      description: 'A fake security product that demands money to clean phony infections.',
     },
     {
       key: 'rootkit',
@@ -707,7 +696,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     {
       key: 'spyware',
       description:
-        'Software that gathers information on a user\'s system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.',
+        "Software that gathers information on a user's system without their knowledge and sends it to another party. Spyware is generally used to track activities for the purpose of delivering advertising.",
     },
     {
       key: 'trojan',
@@ -716,8 +705,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'unknown',
-      description:
-        'There is not enough information available to determine the type of malware.',
+      description: 'There is not enough information available to determine the type of malware.',
     },
     {
       key: 'virus',
@@ -752,42 +740,54 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   opinion_ov: [
     {
       key: 'strongly-disagree',
-      description: 'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.',
+      description:
+        'The creator strongly disagrees with the information and believes it is inaccurate or incorrect.',
       order: 1,
     },
     {
       key: 'disagree',
-      description: 'The creator disagrees with the information and believes it is inaccurate or incorrect.',
+      description:
+        'The creator disagrees with the information and believes it is inaccurate or incorrect.',
       order: 2,
     },
-    { key: 'neutral', description: 'The creator is neutral about the accuracy or correctness of the information.', order: 3 },
+    {
+      key: 'neutral',
+      description: 'The creator is neutral about the accuracy or correctness of the information.',
+      order: 3,
+    },
     {
       key: 'agree',
-      description: 'The creator agrees with the information and believes that it is accurate and correct.',
+      description:
+        'The creator agrees with the information and believes that it is accurate and correct.',
       order: 4,
     },
     {
       key: 'strongly-agree',
-      description: 'The creator strongly agrees with the information and believes that it is accurate and correct.',
+      description:
+        'The creator strongly agrees with the information and believes that it is accurate and correct.',
       order: 5,
     },
   ],
   organization_type_ov: [
     {
       key: 'constituent',
-      description: 'Group, or entity that is a part of or associated with the organization, often having a stake or interest in its activities, decisions, or outcomes.',
+      description:
+        'Group, or entity that is a part of or associated with the organization, often having a stake or interest in its activities, decisions, or outcomes.',
     },
     {
       key: 'csirt',
-      description: 'Computer Security Incident Response Team. Specialized team or unit responsible for responding to and managing incidents that pose a threat to the security of an organization\'s information technology systems.',
+      description:
+        "Computer Security Incident Response Team. Specialized team or unit responsible for responding to and managing incidents that pose a threat to the security of an organization's information technology systems.",
     },
     {
       key: 'partner',
-      description: 'Entity, organization, or individual with whom a collaboration or a working relationship is established to address or enhance various aspects of information sharing.',
+      description:
+        'Entity, organization, or individual with whom a collaboration or a working relationship is established to address or enhance various aspects of information sharing.',
     },
     {
       key: 'vendor',
-      description: 'Organizations often collaborate with cybersecurity vendors or solution providers to implement security technologies, tools, or services to protect their systems and data.',
+      description:
+        'Organizations often collaborate with cybersecurity vendors or solution providers to implement security technologies, tools, or services to protect their systems and data.',
     },
     {
       key: 'other',
@@ -795,16 +795,8 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
   ],
   // P
-  permissions_ov: [
-    { key: 'User' },
-    { key: 'Administrator' },
-  ],
-  platforms_ov: [
-    { key: 'android' },
-    { key: 'macos' },
-    { key: 'linux' },
-    { key: 'windows' },
-  ],
+  permissions_ov: [{ key: 'User' }, { key: 'Administrator' }],
+  platforms_ov: [{ key: 'android' }, { key: 'macos' }, { key: 'linux' }, { key: 'windows' }],
   collection_layers_ov: [
     { key: 'container' },
     { key: 'cloud-control-plane' },
@@ -872,27 +864,32 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   reliability_ov: [
     {
       key: 'A - Completely reliable',
-      description: 'No doubt of authenticity, trustworthiness, or competency; has a history of complete reliability',
+      description:
+        'No doubt of authenticity, trustworthiness, or competency; has a history of complete reliability',
       order: 1,
     },
     {
       key: 'B - Usually reliable',
-      description: 'Minor doubt about authenticity, trustworthiness, or competency; has a history of valid information most of the time',
+      description:
+        'Minor doubt about authenticity, trustworthiness, or competency; has a history of valid information most of the time',
       order: 2,
     },
     {
       key: 'C - Fairly reliable',
-      description: 'Doubt of authenticity, trustworthiness, or competency but has provided valid information in the past',
+      description:
+        'Doubt of authenticity, trustworthiness, or competency but has provided valid information in the past',
       order: 3,
     },
     {
       key: 'D - Not usually reliable',
-      description: 'Significant doubt about authenticity, trustworthiness, or competency but has provided valid information in the past',
+      description:
+        'Significant doubt about authenticity, trustworthiness, or competency but has provided valid information in the past',
       order: 4,
     },
     {
       key: 'E - Unreliable',
-      description: 'Lacking in authenticity, trustworthiness, and competency; history of invalid information',
+      description:
+        'Lacking in authenticity, trustworthiness, and competency; history of invalid information',
       order: 5,
     },
     {
@@ -901,17 +898,9 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
       order: 6,
     },
   ],
-  report_types_ov: [
-    { key: 'threat-report' },
-    { key: 'internal-report' },
-  ],
-  request_for_information_types_ov: [
-    { key: 'none' },
-  ],
-  request_for_takedown_types_ov: [
-    { key: 'phishing' },
-    { key: 'brand-abuse' },
-  ],
+  report_types_ov: [{ key: 'threat-report' }, { key: 'internal-report' }],
+  request_for_information_types_ov: [{ key: 'none' }],
+  request_for_takedown_types_ov: [{ key: 'phishing' }, { key: 'brand-abuse' }],
   // S
   security_platform_type_ov: [
     { key: 'EDR' },
@@ -1022,8 +1011,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'malware-author',
-      description:
-        'The threat actor who authors malware or other malicious tools.',
+      description: 'The threat actor who authors malware or other malicious tools.',
     },
     {
       key: 'sponsor',
@@ -1107,8 +1095,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     },
     {
       key: 'malware-author',
-      description:
-        'The threat actor who authors malware or other malicious tools.',
+      description: 'The threat actor who authors malware or other malicious tools.',
     },
     {
       key: 'sponsor',
@@ -1155,21 +1142,38 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   tool_types_ov: [
     {
       key: 'denial-of-service',
-      description: 'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig',
+      description:
+        'Tools used to perform denial of service attacks or DDoS attacks, such as Low Orbit Ion Cannon (LOIC) and DHCPig',
     },
-    { key: 'exploitation', description: 'Tools used to exploit software and systems, such as sqlmap and Metasploit' },
-    { key: 'information-gathering', description: 'Tools used to enumerate system and network information, e.g., NMAP' },
-    { key: 'network-capture', description: 'Tools used to capture network traffic, such as Wireshark and Kismet' },
+    {
+      key: 'exploitation',
+      description: 'Tools used to exploit software and systems, such as sqlmap and Metasploit',
+    },
+    {
+      key: 'information-gathering',
+      description: 'Tools used to enumerate system and network information, e.g., NMAP',
+    },
+    {
+      key: 'network-capture',
+      description: 'Tools used to capture network traffic, such as Wireshark and Kismet',
+    },
     {
       key: 'credential-exploitation',
-      description: 'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack',
+      description:
+        'Tools used to crack password databases or otherwise exploit/discover credentials, either locally or remotely, such as John the Ripper and NCrack',
     },
-    { key: 'remote-access', description: 'Tools used to access machines remotely, such as VNC and Remote Desktop' },
+    {
+      key: 'remote-access',
+      description: 'Tools used to access machines remotely, such as VNC and Remote Desktop',
+    },
     {
       key: 'vulnerability-scanning',
       description: 'Tools used to scan systems and networks for vulnerabilities, e.g., Nessus',
     },
-    { key: 'unknown', description: 'There is not enough information available to determine the type of tool' },
+    {
+      key: 'unknown',
+      description: 'There is not enough information available to determine the type of tool',
+    },
   ],
   gender_ov: [
     { key: 'male' },
@@ -1209,12 +1213,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'hazel' },
     { key: 'other' },
   ],
-  key_type_ov: [
-    { key: 'rsa' },
-    { key: 'ecdsa' },
-    { key: 'ed25519' },
-    { key: 'dsa' },
-  ],
+  key_type_ov: [{ key: 'rsa' }, { key: 'ecdsa' }, { key: 'ed25519' }, { key: 'dsa' }],
 };
 
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
@@ -1225,9 +1224,11 @@ export const getVocabulariesCategories = (): VocabularyDefinition[] => {
 };
 
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
-  return Object.entries(vocabularyDefinitions)
-    .filter(([, { entity_types }]) => entity_types.includes(entityType))
-    .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
+  return (
+    Object.entries(vocabularyDefinitions)
+      .filter(([, { entity_types }]) => entity_types.includes(entityType))
+      .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0
+  );
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
@@ -1240,19 +1241,27 @@ export const getVocabularyCategoryForField = (fieldName: string, entityType: str
     const field = def.fields.find(({ key }) => key === fieldName);
     return { definition: def, category: cat, field };
   }
-  throw UnsupportedError('You can\'t have multiple category on the same field for the same entity type', {
-    fieldName,
-    entityType,
-  });
+  throw UnsupportedError(
+    "You can't have multiple category on the same field for the same entity type",
+    {
+      fieldName,
+      entityType,
+    },
+  );
 };
 
-export const updateElasticVocabularyValue = async (oldNames: string[], name: string, category: VocabularyDefinition) => {
+export const updateElasticVocabularyValue = async (
+  oldNames: string[],
+  name: string,
+  category: VocabularyDefinition,
+) => {
   await elRawUpdateByQuery({
     index: READ_ENTITIES_INDICES,
     wait_for_completion: false,
     body: {
       script: {
-        source: 'for(field in params.category.fields) for(oldName in params.oldNames) if(ctx._source[field.key] instanceof List && ctx._source[field.key].indexOf(oldName) > -1){ ctx._source[field.key][ctx._source[field.key].indexOf(oldName)] = params.name; ctx._source[field.key] = ctx._source[field.key].stream().distinct().collect(Collectors.toList()) } else if (ctx._source[field.key] == oldName) ctx._source[field.key] = params.name;',
+        source:
+          'for(field in params.category.fields) for(oldName in params.oldNames) if(ctx._source[field.key] instanceof List && ctx._source[field.key].indexOf(oldName) > -1){ ctx._source[field.key][ctx._source[field.key].indexOf(oldName)] = params.name; ctx._source[field.key] = ctx._source[field.key].stream().distinct().collect(Collectors.toList()) } else if (ctx._source[field.key] == oldName) ctx._source[field.key] = params.name;',
         lang: 'painless',
         params: { oldNames, name, category },
       },

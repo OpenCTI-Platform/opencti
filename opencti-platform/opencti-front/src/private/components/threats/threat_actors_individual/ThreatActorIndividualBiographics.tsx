@@ -74,12 +74,7 @@ const InfoTooltip = ({ text }: { text: string }) => (
 const DetailGrid = ({ title, tooltip, children, extra }: DetailValue) => (
   <Grid item xs={3} sx={{ mt: -1 }}>
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Label action={(
-        <InfoTooltip text={tooltip} />
-      )}
-      >
-        {title}
-      </Label>
+      <Label action={<InfoTooltip text={tooltip} />}>{title}</Label>
       {extra}
     </Box>
     {children}
@@ -102,11 +97,7 @@ const ThreatActorIndividualBiographicsComponent = ({
           tooltip={t_i18n('Known observed eye color(s) for the Identity.')}
         >
           <FieldOrEmpty source={threatActorIndividual.eye_color}>
-            <ItemOpenVocab
-              type="eye-color-ov"
-              value={threatActorIndividual.eye_color}
-              small
-            />
+            <ItemOpenVocab type="eye-color-ov" value={threatActorIndividual.eye_color} small />
           </FieldOrEmpty>
         </DetailGrid>
 
@@ -115,11 +106,7 @@ const ThreatActorIndividualBiographicsComponent = ({
           tooltip={t_i18n('Known observed hair color(s) for the Identity.')}
         >
           <FieldOrEmpty source={threatActorIndividual.hair_color}>
-            <ItemOpenVocab
-              type="hair-color-ov"
-              value={threatActorIndividual.hair_color}
-              small
-            />
+            <ItemOpenVocab type="hair-color-ov" value={threatActorIndividual.hair_color} small />
           </FieldOrEmpty>
         </DetailGrid>
 
@@ -130,11 +117,7 @@ const ThreatActorIndividualBiographicsComponent = ({
           <List dense={true} disablePadding={true} id="HeightIDRead">
             {(threatActorIndividual.height ?? []).length > 0 ? (
               (threatActorIndividual.height ?? []).map((height, i) => (
-                <HeightDisplay
-                  key={i}
-                  height={height?.measure}
-                  date={height?.date_seen}
-                />
+                <HeightDisplay key={i} height={height?.measure} date={height?.date_seen} />
               ))
             ) : (
               <ListItem dense={true} disablePadding={true}>
@@ -152,11 +135,7 @@ const ThreatActorIndividualBiographicsComponent = ({
           <List dense={true} disablePadding={true} id="WeightIDRead">
             {(threatActorIndividual.weight ?? []).length > 0 ? (
               (threatActorIndividual.weight ?? []).map((weight, i) => (
-                <WeightDisplay
-                  key={i}
-                  weight={weight?.measure}
-                  date={weight?.date_seen}
-                />
+                <WeightDisplay key={i} weight={weight?.measure} date={weight?.date_seen} />
               ))
             ) : (
               <ListItem dense={true} disablePadding={true}>

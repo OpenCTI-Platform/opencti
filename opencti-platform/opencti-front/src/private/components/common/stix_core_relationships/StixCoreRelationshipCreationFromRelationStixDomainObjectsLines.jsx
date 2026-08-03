@@ -77,10 +77,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
 
   render() {
     const { t, classes, data, handleSelect } = this.props;
-    const stixDomainObjectsNodes = map(
-      (n) => n.node,
-      data.stixDomainObjects.edges,
-    );
+    const stixDomainObjectsNodes = map((n) => n.node, data.stixDomainObjects.edges);
     const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
     const stixDomainObjects = byType(stixDomainObjectsNodes);
     const stixDomainObjectsTypes = keys(stixDomainObjects);
@@ -103,8 +100,8 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                 elevation={3}
                 style={{
                   marginBottom:
-                    increment === stixDomainObjectsTypes.length
-                    && this.isExpanded(
+                    increment === stixDomainObjectsTypes.length &&
+                    this.isExpanded(
                       type,
                       stixDomainObjects[type].length,
                       stixDomainObjectsTypes.length,
@@ -114,16 +111,12 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                 }}
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography className={classes.heading}>
-                    {t(`entity_${type}`)}
-                  </Typography>
+                  <Typography className={classes.heading}>{t(`entity_${type}`)}</Typography>
                   <Typography className={classes.secondaryHeading}>
                     {stixDomainObjects[type].length} {t('entitie(s)')}
                   </Typography>
                 </AccordionSummary>
-                <AccordionDetails
-                  classes={{ root: classes.expansionPanelContent }}
-                >
+                <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
                   <List classes={{ root: classes.list }}>
                     {stixDomainObjects[type].map((stixDomainObject) => (
                       <ListItemButton
@@ -137,15 +130,12 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={
-                            stixDomainObject.name
-                            || stixDomainObject.attribute_abstract
-                            || truncate(stixDomainObject.content, 30)
-                            || stixDomainObject.opinion
+                            stixDomainObject.name ||
+                            stixDomainObject.attribute_abstract ||
+                            truncate(stixDomainObject.content, 30) ||
+                            stixDomainObject.opinion
                           }
-                          secondary={truncate(
-                            stixDomainObject.description,
-                            100,
-                          )}
+                          secondary={truncate(stixDomainObject.description, 100)}
                         />
                         <StixCoreObjectLabels
                           variant="inList"
@@ -160,9 +150,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
             );
           })
         ) : (
-          <div className={classes.noResult}>
-            {t('No entities were found for this search.')}
-          </div>
+          <div className={classes.noResult}>{t('No entities were found for this search.')}</div>
         )}
       </div>
     );
@@ -203,159 +191,159 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
   StixCoreRelationshipCreationFromRelationLinesContainer,
   {
     data: graphql`
-        fragment StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
-          stixDomainObjects(
-            search: $search
-            types: $types
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-          ) @connection(key: "Pagination_stixDomainObjects") {
-            edges {
-              node {
+      fragment StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data on Query
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
+        stixDomainObjects(
+          search: $search
+          types: $types
+          first: $count
+          after: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_stixDomainObjects") {
+          edges {
+            node {
+              id
+              entity_type
+              parent_types
+              revoked
+              objectLabel {
                 id
-                entity_type
-                parent_types
-                revoked
-                objectLabel {
-                  id
-                  value
-                  color
-                }
-                ... on AttackPattern {
-                  name
-                  description
-                }
-                ... on Note {
-                  attribute_abstract
-                  content
-                }
-                ... on Opinion {
-                  opinion
-                }
-                ... on Report {
-                  name
-                }
-                ... on Grouping {
-                  name
-                }
-                ... on Campaign {
-                  name
-                  description
-                }
-                ... on CourseOfAction {
-                  name
-                  description
-                }
-                ... on Individual {
-                  name
-                  description
-                }
-                ... on Organization {
-                  name
-                  description
-                }
-                ... on Sector {
-                  name
-                  description
-                }
-                ... on System {
-                  name
-                  description
-                }
-                ... on Indicator {
-                  name
-                  description
-                }
-                ... on Infrastructure {
-                  name
-                  description
-                }
-                ... on IntrusionSet {
-                  name
-                  description
-                }
-                ... on Position {
-                  name
-                  description
-                }
-                ... on City {
-                  name
-                  description
-                }
-                ... on AdministrativeArea {
-                  name
-                  description
-                }
-                ... on Country {
-                  name
-                  description
-                }
-                ... on Region {
-                  name
-                  description
-                }
-                ... on Malware {
-                  name
-                  description
-                }
-                ... on MalwareAnalysis {
-                  result_name
-                }
-                ... on ThreatActor {
-                  name
-                  description
-                }
-                ... on Tool {
-                  name
-                  description
-                }
-                ... on Vulnerability {
-                  name
-                  description
-                }
-                ... on Incident {
-                  name
-                  description
-                }
-                ... on Event {
-                  name
-                  description
-                }
-                ... on Channel {
-                  name
-                  description
-                }
-                ... on Narrative {
-                  name
-                  description
-                }
-                ... on Language {
-                  name
-                }
-                ... on DataComponent {
-                  name
-                }
-                ... on DataSource {
-                  name
-                }
-                ... on Case {
-                  name
-                }
+                value
+                color
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on Note {
+                attribute_abstract
+                content
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
+              }
+              ... on Grouping {
+                name
+              }
+              ... on Campaign {
+                name
+                description
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on System {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+                description
+              }
+              ... on Infrastructure {
+                name
+                description
+              }
+              ... on IntrusionSet {
+                name
+                description
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on AdministrativeArea {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+              }
+              ... on MalwareAnalysis {
+                result_name
+              }
+              ... on ThreatActor {
+                name
+                description
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on Incident {
+                name
+                description
+              }
+              ... on Event {
+                name
+                description
+              }
+              ... on Channel {
+                name
+                description
+              }
+              ... on Narrative {
+                name
+                description
+              }
+              ... on Language {
+                name
+              }
+              ... on DataComponent {
+                name
+              }
+              ... on DataSource {
+                name
+              }
+              ... on Case {
+                name
               }
             }
           }
         }
-      `,
+      }
+    `,
   },
   {
     direction: 'forward',
@@ -378,8 +366,7 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query:
-        stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
+    query: stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
   },
 );
 

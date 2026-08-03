@@ -13,9 +13,9 @@ interface InputSliderFieldProps {
   onFocus?: (name: string, value: string) => void;
   editContext?:
     | readonly ({
-      readonly focusOn: string | null;
-      readonly name: string;
-    } | null)[]
+        readonly focusOn: string | null;
+        readonly name: string;
+      } | null)[]
     | null;
   containerStyle?: Record<string, string | number>;
   entityType: string;
@@ -46,9 +46,10 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   } = useLevel(entityType, attributeName, value);
   const min = scale?.min ? scale.min.value : 0;
   const defaultMaxValue = scale?.max ? scale.max.value : 0;
-  const max = maxLimit !== undefined && Number.isFinite(maxLimit) && maxLimit <= defaultMaxValue
-    ? maxLimit
-    : defaultMaxValue;
+  const max =
+    maxLimit !== undefined && Number.isFinite(maxLimit) && maxLimit <= defaultMaxValue
+      ? maxLimit
+      : defaultMaxValue;
   const marks = defaultMarks.filter((mark) => mark.value <= max);
   const sliderStyle = {
     color,
@@ -65,7 +66,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   const [initialValue] = useState(value);
   if (variant === 'edit') {
     // disabled prop is "forced", be it true or false
-    const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
+    const finalDisabled = disabled === true || disabled === false ? disabled : initialValue > max;
     return (
       <>
         <Grid container={true} spacing={3}>
@@ -79,9 +80,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
               onSubmit={onSubmit}
               onFocus={onFocus}
               disabled={finalDisabled}
-              helpertext={
-                <SubscriptionFocus context={editContext} fieldName={name} />
-              }
+              helpertext={<SubscriptionFocus context={editContext} fieldName={name} />}
             />
           </Grid>
           <Grid item xs={6}>
@@ -95,10 +94,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             >
               {marks.map((mark, i: number) => {
                 return (
-                  <MenuItem
-                    key={i}
-                    value={mark.value.toString()}
-                  >
+                  <MenuItem key={i} value={mark.value.toString()}>
                     {mark.label}
                   </MenuItem>
                 );
@@ -107,7 +103,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           </Grid>
         </Grid>
         <Slider
-          value={typeof value === 'string' ? parseInt(value, 10) : value ?? 0}
+          value={typeof value === 'string' ? parseInt(value, 10) : (value ?? 0)}
           min={min}
           max={max}
           onChange={(_, v) => setFieldValue(name, v.toString())}
@@ -147,10 +143,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           >
             {marks.map((mark, i: number) => {
               return (
-                <MenuItem
-                  key={i}
-                  value={mark.value.toString()}
-                >
+                <MenuItem key={i} value={mark.value.toString()}>
                   {mark.label}
                 </MenuItem>
               );

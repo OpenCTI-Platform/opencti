@@ -22,11 +22,7 @@ const AlertConfidenceForEntity: React.FC<AlertConfidenceForEntityProps> = ({ ent
   }
 
   return (
-    <Alert
-      severity="warning"
-      variant="outlined"
-      style={{ marginBottom: theme.spacing(2) }}
-    >
+    <Alert severity="warning" variant="outlined" style={{ marginBottom: theme.spacing(2) }}>
       {t_i18n('Your confidence level is insufficient to edit this object.')}
     </Alert>
   );

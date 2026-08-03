@@ -27,7 +27,9 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
   const deleteElement = useDeleteElement();
 
   // 1. State Flags
-  const isStatus = selectedElement?.type === WorkflowNodeType.status || selectedElement?.type === WorkflowNodeType.placeholder;
+  const isStatus =
+    selectedElement?.type === WorkflowNodeType.status ||
+    selectedElement?.type === WorkflowNodeType.placeholder;
   const isNewStatus = selectedElement?.type === WorkflowNodeType.placeholder;
 
   // 2. Computed Titles & Schemas
@@ -36,10 +38,7 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
     return t_i18n('Edit transition');
   }, [isStatus, isNewStatus, t_i18n]);
 
-  const validationSchema = useMemo(
-    () => getValidationSchema(isStatus, t_i18n),
-    [isStatus, t_i18n],
-  );
+  const validationSchema = useMemo(() => getValidationSchema(isStatus, t_i18n), [isStatus, t_i18n]);
 
   // 3. Handlers
   const onSubmit = (values: WorkflowEditionFormValues) => {
@@ -48,9 +47,7 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
     } else {
       setNodes((nodes) =>
         nodes.map((node) =>
-          node.id === selectedElement.id
-            ? { ...node, data: { ...node.data, ...values } }
-            : node,
+          node.id === selectedElement.id ? { ...node, data: { ...node.data, ...values } } : node,
         ),
       );
     }

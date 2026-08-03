@@ -1,14 +1,26 @@
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityCustomFieldDefinition, type CustomFieldEntityTypeSetting, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION, type CustomFieldType } from './custom-field-types';
+import {
+  type BasicStoreEntityCustomFieldDefinition,
+  type CustomFieldEntityTypeSetting,
+  ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
+  type CustomFieldType,
+} from './custom-field-types';
 
 // ----- Custom field definitions read through the platform generic cache -----
 // Registered like any other cached entity type in cacheManager.ts (writeCacheForEntity),
 // so it's kept in sync across every platform instance for free via the existing
 // ADDED/EDIT/DELETE pub/sub topics, without any bespoke cache module.
 
-export const getCustomFieldDefinitions = (context: AuthContext, user: AuthUser): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
-  return getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(context, user, ENTITY_TYPE_CUSTOM_FIELD_DEFINITION);
+export const getCustomFieldDefinitions = (
+  context: AuthContext,
+  user: AuthUser,
+): Promise<BasicStoreEntityCustomFieldDefinition[]> => {
+  return getEntitiesListFromCache<BasicStoreEntityCustomFieldDefinition>(
+    context,
+    user,
+    ENTITY_TYPE_CUSTOM_FIELD_DEFINITION,
+  );
 };
 
 /**

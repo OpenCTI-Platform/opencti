@@ -1,7 +1,9 @@
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Dialog from '@common/dialog/Dialog';
-import IngestionTaxiiEditionContainer, { ingestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
+import IngestionTaxiiEditionContainer, {
+  ingestionTaxiiEditionContainerQuery,
+} from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
 import { IngestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionContainerQuery.graphql';
 import { IngestionTaxiiLinesPaginationQuery$variables } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
 import { IngestionTaxiiPopoverExportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiPopoverExportQuery.graphql';
@@ -30,11 +32,11 @@ const ingestionTaxiiPopoverDeletionMutation = graphql`
 `;
 
 const ingestionTaxiiPopoverResetStateMutation = graphql`
-    mutation IngestionTaxiiPopoverResetStateMutation($id: ID!) {
-        ingestionTaxiiResetState(id: $id) {
-            ...IngestionTaxiiLine_node
-        }
+  mutation IngestionTaxiiPopoverResetStateMutation($id: ID!) {
+    ingestionTaxiiResetState(id: $id) {
+      ...IngestionTaxiiLine_node
     }
+  }
 `;
 
 const ingestionTaxiiPopoverExportQuery = graphql`
@@ -79,7 +81,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   // -- Edition --
-  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiEditionContainerQuery>(ingestionTaxiiEditionContainerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiEditionContainerQuery>(
+    ingestionTaxiiEditionContainerQuery,
+  );
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
@@ -124,12 +128,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         id: ingestionTaxiiId,
       },
       updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination_ingestionTaxiis',
-          paginationOptions,
-          ingestionTaxiiId,
-        );
+        deleteNode(store, 'Pagination_ingestionTaxiis', paginationOptions, ingestionTaxiiId);
       },
       onCompleted: () => {
         setDeleting(false);
@@ -185,10 +184,9 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   const exportTaxiiFeed = async () => {
-    const { ingestionTaxii } = await fetchQuery(
-      ingestionTaxiiPopoverExportQuery,
-      { id: ingestionTaxiiId },
-    ).toPromise() as IngestionTaxiiPopoverExportQuery$data;
+    const { ingestionTaxii } = (await fetchQuery(ingestionTaxiiPopoverExportQuery, {
+      id: ingestionTaxiiId,
+    }).toPromise()) as IngestionTaxiiPopoverExportQuery$data;
 
     if (ingestionTaxii) {
       const blob = new Blob([ingestionTaxii.toConfigurationExport], { type: 'text/json' });
@@ -214,33 +212,13 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        {!running && (
-          <MenuItem onClick={handleOpenStart}>
-            {t_i18n('Start')}
-          </MenuItem>
-        )}
-        {running && (
-          <MenuItem onClick={handleOpenStop}>
-            {t_i18n('Stop')}
-          </MenuItem>
-        )}
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleExport}>
-          {t_i18n('Export')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenResetState}>
-          {t_i18n('Reset state')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {!running && <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>}
+        {running && <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>}
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleExport}>{t_i18n('Export')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset state')}</MenuItem>
       </Menu>
       {displayUpdate && queryRef && (
         <Suspense>
@@ -262,68 +240,37 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
         title={t_i18n('Are you sure?')}
       >
         <DialogContentText>
-          {t_i18n('Do you want to reset the state of this TAXII ingester? It will restart ingestion from the beginning.')}
+          {t_i18n(
+            'Do you want to reset the state of this TAXII ingester? It will restart ingestion from the beginning.',
+          )}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseResetState}
-            disabled={resettingState}
-          >
+          <Button variant="secondary" onClick={handleCloseResetState} disabled={resettingState}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitResetState}
-            disabled={resettingState}
-          >
+          <Button onClick={submitResetState} disabled={resettingState}>
             {t_i18n('Reset state')}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayStart}
-        onClose={handleCloseStart}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to start this TAXII ingester?')}
-        </DialogContentText>
+      <Dialog open={displayStart} onClose={handleCloseStart} title={t_i18n('Are you sure?')}>
+        <DialogContentText>{t_i18n('Do you want to start this TAXII ingester?')}</DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseStart}
-            disabled={starting}
-          >
+          <Button variant="secondary" onClick={handleCloseStart} disabled={starting}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitStart}
-            disabled={starting}
-          >
+          <Button onClick={submitStart} disabled={starting}>
             {t_i18n('Start')}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayStop}
-        onClose={handleCloseStop}
-        title={t_i18n('Are you sure?')}
-      >
-        <DialogContentText>
-          {t_i18n('Do you want to stop this TAXII ingester?')}
-        </DialogContentText>
+      <Dialog open={displayStop} onClose={handleCloseStop} title={t_i18n('Are you sure?')}>
+        <DialogContentText>{t_i18n('Do you want to stop this TAXII ingester?')}</DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseStop}
-            disabled={stopping}
-          >
+          <Button variant="secondary" onClick={handleCloseStop} disabled={stopping}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitStop}
-            disabled={stopping}
-          >
+          <Button onClick={submitStop} disabled={stopping}>
             {t_i18n('Stop')}
           </Button>
         </DialogActions>

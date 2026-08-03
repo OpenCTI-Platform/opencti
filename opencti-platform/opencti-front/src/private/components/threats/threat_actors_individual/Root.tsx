@@ -23,12 +23,18 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { PATH_THREAT_ACTORS_INDIVIDUAL, PATH_THREAT_ACTORS_INDIVIDUALS } from '@components/common/routes/paths';
+import {
+  PATH_THREAT_ACTORS_INDIVIDUAL,
+  PATH_THREAT_ACTORS_INDIVIDUALS,
+} from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -61,7 +67,8 @@ const ThreatActorIndividualQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject
+        @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -81,7 +88,12 @@ const ThreatActorIndividualQuery = graphql`
   }
 `;
 
-const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of', 'impersonates', 'known-as'];
+const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = [
+  'related-to',
+  'part-of',
+  'impersonates',
+  'known-as',
+];
 
 type RootThreatActorIndividualProps = {
   threatActorIndividualId: string;
@@ -92,9 +104,7 @@ const RootThreatActorIndividualComponent = ({
   queryRef,
   threatActorIndividualId,
 }: RootThreatActorIndividualProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>>(
     () => ({
       subscription,
       variables: { id: threatActorIndividualId },
@@ -104,14 +114,8 @@ const RootThreatActorIndividualComponent = ({
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootThreatActorIndividualSubscription>(subConfig);
-  const {
-    threatActorIndividual,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootThreatActorIndividualQuery>(
-    ThreatActorIndividualQuery,
-    queryRef,
-  );
+  const { threatActorIndividual, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootThreatActorIndividualQuery>(ThreatActorIndividualQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_THREAT_ACTORS_INDIVIDUAL(threatActorIndividualId);
   const isOverview = isPathOverview(location.pathname, basePath);
@@ -124,7 +128,7 @@ const RootThreatActorIndividualComponent = ({
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -148,36 +152,42 @@ const RootThreatActorIndividualComponent = ({
                   ]}
                   data={threatActorIndividual}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Threats') },
-              { label: t_i18n('Threat actors (individual)'), link: PATH_THREAT_ACTORS_INDIVIDUALS },
-              { label: threatActorIndividual.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Threats') },
+                {
+                  label: t_i18n('Threat actors (individual)'),
+                  link: PATH_THREAT_ACTORS_INDIVIDUALS,
+                },
+                { label: threatActorIndividual.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Threat-Actor-Individual"
               stixDomainObject={threatActorIndividual}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ThreatActorIndividualEdition
                     threatActorIndividualId={threatActorIndividual.id}
                   />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={threatActorIndividual}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={threatActorIndividual} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <ThreatActorIndividualDeletion id={threatActorIndividual.id} isOpen={isOpen} handleClose={onClose} />
+                  <ThreatActorIndividualDeletion
+                    id={threatActorIndividual.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -189,8 +199,9 @@ const RootThreatActorIndividualComponent = ({
               entity={threatActorIndividual}
               basePath={basePath}
               pages={{
-                overview:
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />,
+                overview: (
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
+                ),
                 knowledge: (
                   <div key={forceUpdate}>
                     <ThreatActorIndividualKnowledge
@@ -199,13 +210,12 @@ const RootThreatActorIndividualComponent = ({
                     />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={threatActorIndividual}
+                content: <StixCoreObjectContentRoot stixCoreObject={threatActorIndividual} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={threatActorIndividual}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual} />,
                 files: (
                   <FileManager
                     id={threatActorIndividualId}
@@ -214,8 +224,7 @@ const RootThreatActorIndividualComponent = ({
                     entity={threatActorIndividual}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />,
               }}
               extraActions={isOverview && <AIInsights id={threatActorIndividual.id} />}
             />
@@ -232,13 +241,10 @@ const Root = () => {
   const { threatActorIndividualId } = useParams() as {
     threatActorIndividualId: string;
   };
-  const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(
-    ThreatActorIndividualQuery,
-    {
-      id: threatActorIndividualId,
-      relatedRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES,
-    },
-  );
+  const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(ThreatActorIndividualQuery, {
+    id: threatActorIndividualId,
+    relatedRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES,
+  });
   return (
     <>
       {queryRef && (

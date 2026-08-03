@@ -11,7 +11,9 @@ import { deleteNode } from '../../../../utils/store';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
-import DecayExclusionRuleEdition, { decayExclusionRuleEditionFieldPatch } from './DecayExclusionRuleEdition';
+import DecayExclusionRuleEdition, {
+  decayExclusionRuleEditionFieldPatch,
+} from './DecayExclusionRuleEdition';
 
 const decayExclusionRulePopoverDeleteMutation = graphql`
   mutation DecayExclusionRulePopoverDeleteMutation($id: ID!) {
@@ -83,7 +85,9 @@ const DecayExclusionRulePopover = ({ data, paginationOptions }: DecayExclusionRu
         <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClosePopover}>
-        <MenuItem onClick={handleEnable}>{data.active ? t_i18n('Disable') : t_i18n('Enable')}</MenuItem>
+        <MenuItem onClick={handleEnable}>
+          {data.active ? t_i18n('Disable') : t_i18n('Enable')}
+        </MenuItem>
         <MenuItem onClick={handleOpenEditionForm}>{t_i18n('Update')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>

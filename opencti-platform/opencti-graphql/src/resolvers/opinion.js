@@ -32,9 +32,12 @@ import { isEmptyField } from '../database/utils';
 // Needs to have edit rights or needs to be creator of the opinion
 const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-  const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
+  const isAuthorized =
+    userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
   const opinion = await findById(context, user, id);
-  const isCreator = opinion[RELATION_CREATED_BY] ? opinion[RELATION_CREATED_BY] === user.individual_id : false;
+  const isCreator = opinion[RELATION_CREATED_BY]
+    ? opinion[RELATION_CREATED_BY] === user.individual_id
+    : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;
   if (!accessGranted) throw ForbiddenAccess();
@@ -67,7 +70,12 @@ const opinionResolvers = {
       return [];
     },
     opinionContainsStixObjectOrStixRelationship: (_, args, context) => {
-      return opinionContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
+      return opinionContainsStixObjectOrStixRelationship(
+        context,
+        context.user,
+        args.id,
+        args.stixObjectOrStixRelationshipId,
+      );
     },
   },
   Mutation: {
@@ -80,7 +88,13 @@ const opinionResolvers = {
         await checkUserAccess(context, context.user, id);
         const isManager = isUserHasCapability(context.user, KNOWLEDGE_KNUPDATE);
         const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
-        const opinion = await stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+        const opinion = await stixDomainObjectEditField(
+          context,
+          context.user,
+          id,
+          availableInputs,
+          { commitMessage, references },
+        );
         await updateOpinionsMetrics(context, context.user, id);
         return opinion;
       },
@@ -100,7 +114,13 @@ const opinionResolvers = {
       },
       relationDelete: async ({ toId, relationship_type: relationshipType }) => {
         await checkUserAccess(context, context.user, id);
-        const rel = await stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+        const rel = await stixDomainObjectDeleteRelation(
+          context,
+          context.user,
+          id,
+          toId,
+          relationshipType,
+        );
         await updateOpinionsMetrics(context, context.user, id);
         return rel;
       },

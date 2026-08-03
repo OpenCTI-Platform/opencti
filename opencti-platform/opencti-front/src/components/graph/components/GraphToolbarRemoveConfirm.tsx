@@ -36,7 +36,12 @@ export interface GraphToolbarDeleteConfirmProps {
   onClose: () => void;
   enableReferences?: boolean;
   entityId: string;
-  onDeleteRelation?: (relId: string, onCompleted: () => void, message?: string, references?: string[]) => void;
+  onDeleteRelation?: (
+    relId: string,
+    onCompleted: () => void,
+    message?: string,
+    references?: string[],
+  ) => void;
   onRemove?: (ids: string[], onCompleted: () => void) => void;
 }
 
@@ -62,10 +67,7 @@ const GraphToolbarRemoveConfirm = ({
   const {
     context,
     graphData,
-    graphState: {
-      selectedLinks,
-      selectedNodes,
-    },
+    graphState: { selectedLinks, selectedNodes },
   } = useGraphContext();
 
   const close = () => {
@@ -75,11 +77,7 @@ const GraphToolbarRemoveConfirm = ({
     onClose();
   };
 
-  const {
-    clearSelection,
-    removeLinks,
-    removeNodes,
-  } = useGraphInteractions();
+  const { clearSelection, removeLinks, removeNodes } = useGraphInteractions();
 
   const promiseDeleteRel = async (id: string) => {
     return new Promise((resolve) => {
@@ -105,12 +103,7 @@ const GraphToolbarRemoveConfirm = ({
     references?: string[],
   ) => {
     return new Promise((resolve) => {
-      onDeleteRelation?.(
-        relId,
-        () => resolve(relId),
-        message,
-        references,
-      );
+      onDeleteRelation?.(relId, () => resolve(relId), message, references);
     });
   };
 
@@ -133,14 +126,14 @@ const GraphToolbarRemoveConfirm = ({
       const { id } = el;
       const isNode = isGraphNode(el);
 
-      const data = (await fetchQuery(
-        knowledgeGraphQueryCheckObjectQuery,
-        { id, entityTypes: containerTypes },
-      ).toPromise()) as KnowledgeGraphQueryCheckObjectQuery$data;
+      const data = (await fetchQuery(knowledgeGraphQueryCheckObjectQuery, {
+        id,
+        entityTypes: containerTypes,
+      }).toPromise()) as KnowledgeGraphQueryCheckObjectQuery$data;
       if (
-        andDelete
-        && !data.stixObjectOrStixRelationship?.is_inferred
-        && data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
+        andDelete &&
+        !data.stixObjectOrStixRelationship?.is_inferred &&
+        data.stixObjectOrStixRelationship?.containers?.edges?.length === 1
       ) {
         if (isNode) {
           await promiseDeleteObject(id);
@@ -188,16 +181,15 @@ const GraphToolbarRemoveConfirm = ({
     } else {
       const nodesIds = selectedNodes.map((s) => s.id);
       const linksIds = selectedLinks.map((s) => s.id);
-      const correlatedLinksIds = (graphData?.links ?? []).filter((l) => {
-        return nodesIds.includes(l.source_id) || nodesIds.includes(l.target_id);
-      }).map((l) => l.id);
-      onRemove(
-        [...nodesIds, ...linksIds, ...correlatedLinksIds],
-        () => {
-          removeNodes(nodesIds);
-          removeLinks([...linksIds, ...correlatedLinksIds]);
-        },
-      );
+      const correlatedLinksIds = (graphData?.links ?? [])
+        .filter((l) => {
+          return nodesIds.includes(l.source_id) || nodesIds.includes(l.target_id);
+        })
+        .map((l) => l.id);
+      onRemove([...nodesIds, ...linksIds, ...correlatedLinksIds], () => {
+        removeNodes(nodesIds);
+        removeLinks([...linksIds, ...correlatedLinksIds]);
+      });
       clearSelection();
       close();
     }
@@ -225,26 +217,16 @@ const GraphToolbarRemoveConfirm = ({
         title={t_i18n('Do you want to remove these elements?')}
       >
         {context !== 'investigation' && (
-          <Alert
-            severity="warning"
-            variant="outlined"
-            style={{ marginTop: 20 }}
-          >
+          <Alert severity="warning" variant="outlined" style={{ marginTop: 20 }}>
             <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
             <FormGroup>
               <FormControlLabel
                 label={t_i18n('Delete the element if no other containers contain it')}
-                control={(
-                  <Checkbox
-                    checked={andDelete}
-                    onChange={() => setAndDelete((d) => !d)}
-                  />
-                )}
+                control={<Checkbox checked={andDelete} onChange={() => setAndDelete((d) => !d)} />}
               />
             </FormGroup>
           </Alert>
-        )
-        }
+        )}
 
         {totalToDelete > 0 && (
           <div

@@ -8,7 +8,12 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
-import type { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  Widget,
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import { DraftsMultiAreaChartTimeSeriesQuery } from './__generated__/DraftsMultiAreaChartTimeSeriesQuery.graphql';
 import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
 
@@ -60,13 +65,15 @@ const DraftsMultiAreaChartComponent = ({
 
   return (
     <WidgetMultiAreas
-      series={[{
-        name: selection?.label || t_i18n('Number of draft workspaces'),
-        data: data.draftWorkspacesTimeSeries.map((entry) => ({
-          x: new Date(entry?.date),
-          y: entry?.value,
-        })),
-      }]}
+      series={[
+        {
+          name: selection?.label || t_i18n('Number of draft workspaces'),
+          data: data.draftWorkspacesTimeSeries.map((entry) => ({
+            x: new Date(entry?.date),
+            y: entry?.value,
+          })),
+        },
+      ]}
       interval={parameters.interval}
       isStacked={parameters.stacked ?? undefined}
       hasLegend={parameters.legend ?? undefined}
@@ -119,7 +126,13 @@ const DraftsMultiAreaChart = ({
 }: DraftsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsMultiAreaChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<DraftsMultiAreaChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,

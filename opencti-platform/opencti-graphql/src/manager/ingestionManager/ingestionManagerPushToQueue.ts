@@ -28,7 +28,12 @@ interface UpdateInfo {
   messages_size?: number;
 }
 
-export const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: string | undefined, id: string, opts: UpdateInfo = {}) => {
+export const updateBuiltInConnectorInfo = async (
+  context: AuthContext,
+  user_id: string | undefined,
+  id: string,
+  opts: UpdateInfo = {},
+) => {
   // Patch the related connector
   const csvNow = utcDate();
   const connectorPatch: any = {
@@ -49,18 +54,40 @@ export const updateBuiltInConnectorInfo = async (context: AuthContext, user_id: 
   const connectorId = connectorIdFromIngestId(id);
   await patchAttribute(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR, connectorPatch);
 };
-export const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-  | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson) => {
+export const createWorkForIngestion = async (
+  context: AuthContext,
+  ingestion:
+    | BasicStoreEntityIngestionTaxii
+    | BasicStoreEntityIngestionRss
+    | BasicStoreEntityIngestionCsv
+    | BasicStoreEntityIngestionTaxiiCollection
+    | BasicStoreEntityIngestionJson,
+) => {
   const connector = {
     internal_id: connectorIdFromIngestId(ingestion.id),
     connector_type: ConnectorType.ExternalImport,
   };
   const workName = `run @ ${now()}`;
-  const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
+  const work: any = await createWork(
+    context,
+    SYSTEM_USER,
+    connector,
+    workName,
+    connector.internal_id,
+    { receivedTime: now() },
+  );
   return work;
 };
-export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
-  | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
+export const pushBundleToConnectorQueue = async (
+  context: AuthContext,
+  ingestion:
+    | BasicStoreEntityIngestionTaxii
+    | BasicStoreEntityIngestionRss
+    | BasicStoreEntityIngestionCsv
+    | BasicStoreEntityIngestionTaxiiCollection
+    | BasicStoreEntityIngestionJson,
+  bundle: StixBundle,
+) => {
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);

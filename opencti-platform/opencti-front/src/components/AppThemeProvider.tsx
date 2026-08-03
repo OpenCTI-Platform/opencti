@@ -11,14 +11,17 @@ import themeDark, {
   THEME_DARK_DEFAULT_TEXT,
 } from './ThemeDark';
 import themeLight from './ThemeLight';
-import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
+import {
+  useDocumentFaviconModifier,
+  useDocumentThemeModifier,
+} from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 import { useExportTheme } from '../utils/ExportThemeContext';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
   settings: AppThemeProvider_settings$data;
-  activeTheme?: { id: string } & AppThemeType | null;
+  activeTheme?: ({ id: string } & AppThemeType) | null;
 }
 
 interface AppThemeType {
@@ -35,9 +38,7 @@ interface AppThemeType {
   theme_text_color: string;
 }
 
-const themeBuilder = (
-  theme: AppThemeType,
-) => {
+const themeBuilder = (theme: AppThemeType) => {
   const platformThemeLogo = theme?.theme_logo ?? null;
   const platformThemeLogoCollapsed = theme?.theme_logo_collapsed ?? null;
   const platformThemeBackground = theme?.theme_background ?? null;
@@ -125,32 +126,29 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };
 
-export const ConnectedThemeProvider = createFragmentContainer(
-  AppThemeProvider,
-  {
-    settings: graphql`
-      fragment AppThemeProvider_settings on ThemeSettings {
-        platform_title
-        platform_favicon
-        platform_theme {
-          name
-          theme_logo
-          theme_logo_login
-          theme_logo_collapsed
-          theme_text_color
-          id
-          built_in
-          theme_nav
-          theme_primary
-          theme_secondary
-          theme_text_color
-          theme_accent
-          theme_background
-          theme_paper
-        }
+export const ConnectedThemeProvider = createFragmentContainer(AppThemeProvider, {
+  settings: graphql`
+    fragment AppThemeProvider_settings on ThemeSettings {
+      platform_title
+      platform_favicon
+      platform_theme {
+        name
+        theme_logo
+        theme_logo_login
+        theme_logo_collapsed
+        theme_text_color
+        id
+        built_in
+        theme_nav
+        theme_primary
+        theme_secondary
+        theme_text_color
+        theme_accent
+        theme_background
+        theme_paper
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default AppThemeProvider;

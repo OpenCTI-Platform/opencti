@@ -1,127 +1,107 @@
 type Narrative implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
-    id: ID! # internal_id
-    standard_id: String!
-    entity_type: String!
-    parent_types: [String!]!
-    metrics:[Metric]
-    # StixObject
-    representative: Representative!
-    x_opencti_stix_ids: [StixId]
-    is_inferred: Boolean!
-    spec_version: String!
-    created_at: DateTime!
-    updated_at: DateTime!
-    x_opencti_modified_at: DateTime
-    refreshed_at: DateTime
-    draftVersion: DraftVersion
-    # inferences
-    x_opencti_inferences: [Inference]
-    # StixCoreObject
-    createdBy: Identity
-    currentUserAccessRight: String
-    numberOfConnectedElement: Int!
-    objectMarking: [MarkingDefinition!]
-    objectOrganization: [Organization!]
-    objectLabel: [Label!]
-    externalReferences(first: Int): ExternalReferenceConnection
-    containersNumber: Number
-    containers(first: Int, entityTypes: [String!]): ContainerConnection
-    reports(first: Int): ReportConnection
-    notes(first: Int): NoteConnection
-    opinions(first: Int): OpinionConnection
-    observedData(first: Int): ObservedDataConnection
-    groupings(first: Int): GroupingConnection
-    cases(first: Int): CaseConnection
-    stixCoreRelationships(
-        first: Int
-        after: ID
-        orderBy: StixCoreRelationshipsOrdering
-        orderMode: OrderingMode
-        fromId: StixRef
-        toId: StixRef
-        fromTypes: [String]
-        toTypes: [String]
-        relationship_type: String
-        startTimeStart: DateTime
-        startTimeStop: DateTime
-        stopTimeStart: DateTime
-        stopTimeStop: DateTime
-        firstSeenStart: DateTime
-        firstSeenStop: DateTime
-        lastSeenStart: DateTime
-        lastSeenStop: DateTime
-        confidences: [Int]
-        search: String
-        filters: FilterGroup
-    ): StixCoreRelationshipConnection
-    stixCoreObjectsDistribution(
-        relationship_type: [String]
-        toTypes: [String]
-        field: String!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        operation: StatsOperation!
-        limit: Int
-        order: String
-        types: [String]
-        filters: FilterGroup
-        search: String
-    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-    stixCoreRelationshipsDistribution(
-        field: String!
-        operation: StatsOperation!
-        startDate: DateTime
-        endDate: DateTime
-        dateAttribute: String
-        isTo: Boolean
-        limit: Int
-        order: String
-        elementWithTargetTypes: [String]
-        fromId: [String]
-        fromRole: String
-        fromTypes: [String]
-        toId: [String]
-        toRole: String
-        toTypes: [String]
-        relationship_type: [String]
-        confidences: [Int]
-        search: String
-        filters: FilterGroup
-    ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-    opinions_metrics: OpinionsMetrics
-    # StixDomainObject
-    revoked: Boolean!
-    confidence: Int
-    lang: String
-    created: DateTime
-    modified: DateTime
-    x_opencti_graph_data: String
-    objectAssignee: [Assignee!]
-    objectParticipant: [Participant!]
-    avatar: OpenCtiFile
-    fintelTemplates: [FintelTemplate!]
-    filesFromTemplate(
-        first: Int
-        prefixMimeType: String
-        after: ID
-        orderBy: FileOrdering
-        orderMode: OrderingMode
-        search: String
-        filters: FilterGroup
-    ): FileConnection
-    # Narrative
-    name: String!
-    description: String
-    narrative_types: [String]
-    aliases: [String]
-    parentNarratives: NarrativeConnection
-    subNarratives: NarrativeConnection
-    isSubNarrative: Boolean
-    # Technical
-    creators: [Creator!]
-    toStix(version: Version): String
-    importFiles(
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(
     first: Int
     prefixMimeType: String
     after: ID
@@ -130,7 +110,27 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     search: String
     filters: FilterGroup
   ): FileConnection
-    pendingFiles(
+  # Narrative
+  name: String!
+  description: String
+  narrative_types: [String]
+  aliases: [String]
+  parentNarratives: NarrativeConnection
+  subNarratives: NarrativeConnection
+  isSubNarrative: Boolean
+  # Technical
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  pendingFiles(
     first: Int
     after: ID
     orderBy: FileOrdering
@@ -138,89 +138,96 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     search: String
     filters: FilterGroup
   ): FileConnection
-    exportFiles(first: Int): FileConnection
-    editContext: [EditUserContext!]
-    connectors(onlyAlive: Boolean): [Connector]
-    jobs(first: Int): [Work]
-    status: Status
-    workflowEnabled: Boolean
-    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering
 enum NarrativesOrdering {
-    name
-    narrative_types
-    created
-    modified
-    created_at
-    updated_at
-    objectMarking
-    objectLabel
-    x_opencti_workflow_id
-    _score
+  name
+  narrative_types
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
+  _score
 }
 
 # Relay connections
 type NarrativeConnection {
-    pageInfo: PageInfo!
-    edges: [NarrativeEdge!]!
+  pageInfo: PageInfo!
+  edges: [NarrativeEdge!]!
 }
 type NarrativeEdge {
-    cursor: String!
-    node: Narrative!
+  cursor: String!
+  node: Narrative!
 }
 
 # Queries
 type Query {
-    narrative(id: String!): Narrative @auth(for: [KNOWLEDGE])
-    narratives(
-        first: Int
-        after: ID
-        orderBy: NarrativesOrdering
-        orderMode: OrderingMode
-        filters: FilterGroup
-        search: String
-    ): NarrativeConnection @auth(for: [KNOWLEDGE])
+  narrative(id: String!): Narrative @auth(for: [KNOWLEDGE])
+  narratives(
+    first: Int
+    after: ID
+    orderBy: NarrativesOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): NarrativeConnection @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
 input NarrativeAddInput {
-    stix_id: StixId
-    x_opencti_stix_ids: [StixId]
-    name: String! @constraint(minLength: 2, format: "not-blank")
-    description: String
-    narrative_types: [String!]
-    aliases: [String]
-    confidence: Int
-    revoked: Boolean
-    lang: String
-    createdBy: String
-    objectMarking: [String]
-    objectOrganization: [String]
-    objectLabel: [String]
-    externalReferences: [String]
-    created: DateTime
-    modified: DateTime
-    clientMutationId: String
-    update: Boolean
-    file: Upload
-    fileMarkings: [String]
-    files: [Upload]
-    filesMarkings: [[String]]
-    noTriggerImport: [Boolean]
-    embedded: [Boolean]
-    x_opencti_modified_at: DateTime
-    x_opencti_workflow_id: String
-    upsertOperations: [EditInput!]
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  narrative_types: [String!]
+  aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  upsertOperations: [EditInput!]
 }
 
 type Mutation {
-    narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeAdd(input: NarrativeAddInput!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  narrativeFieldPatch(
+    id: ID!
+    input: [EditInput]!
+    commitMessage: String
+    references: [String]
+  ): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -35,36 +35,50 @@ export const schemaRelationsRefDefinition = {
     relationsRefDefinition.forEach((relationRefDefinition) => {
       // Check name collision with STIX_CORE_RELATIONSHIP
       if (STIX_CORE_RELATIONSHIPS.includes(relationRefDefinition.name)) {
-        throw UnsupportedError('You can\'t register a relations ref with an existing stix-core-relationship name', {
-          relationRef: relationRefDefinition.name,
-        });
+        throw UnsupportedError(
+          "You can't register a relations ref with an existing stix-core-relationship name",
+          {
+            relationRef: relationRefDefinition.name,
+          },
+        );
       }
       // Check duplicate relations ref
       if (directRefs.has(relationRefDefinition.name)) {
-        throw UnsupportedError('You can\'t register two relations ref with the same name on an entity', {
-          relationRef: relationRefDefinition.name,
-          entityType,
-        });
+        throw UnsupportedError(
+          "You can't register two relations ref with the same name on an entity",
+          {
+            relationRef: relationRefDefinition.name,
+            entityType,
+          },
+        );
       }
       // Check different refs have different labels
       let refsWithSameLabelAndDifferentName: RefAttribute[] = [];
-      currentRefs
-        .forEach((m) => {
-          const refDefinitionsList = Array.from(m.values());
-          refsWithSameLabelAndDifferentName = refDefinitionsList.filter((ref) => (ref.label === relationRefDefinition.label) && (ref.name !== relationRefDefinition.name));
-        });
+      currentRefs.forEach((m) => {
+        const refDefinitionsList = Array.from(m.values());
+        refsWithSameLabelAndDifferentName = refDefinitionsList.filter(
+          (ref) =>
+            ref.label === relationRefDefinition.label && ref.name !== relationRefDefinition.name,
+        );
+      });
       if (refsWithSameLabelAndDifferentName.length > 0) {
-        throw UnsupportedError('You can\'t have two relations ref with the same label and a different name in the platform', {
-          refsWithSameLabelAndDifferentName,
-          relationRefDefinition,
-        });
+        throw UnsupportedError(
+          "You can't have two relations ref with the same label and a different name in the platform",
+          {
+            refsWithSameLabelAndDifferentName,
+            relationRefDefinition,
+          },
+        );
       }
       // check name and databaseName are different
       if (relationRefDefinition.name === relationRefDefinition.databaseName) {
-        throw UnsupportedError('You can\'t register a relations ref with equal name and databaseName', {
-          relationRef: relationRefDefinition.name,
-          entityType,
-        });
+        throw UnsupportedError(
+          "You can't register a relations ref with equal name and databaseName",
+          {
+            relationRef: relationRefDefinition.name,
+            entityType,
+          },
+        );
       }
       // set relation ref
       directRefs.set(relationRefDefinition.name, relationRefDefinition);
@@ -73,9 +87,12 @@ export const schemaRelationsRefDefinition = {
       }
     });
     // Register inheritance attributes
-    const parentRefs = new Map(getParentTypes(entityType)
-      .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
-      .flat().map((e) => [e.name, e]));
+    const parentRefs = new Map(
+      getParentTypes(entityType)
+        .map((type) => Array.from((this.relationsRef[type] ?? new Map()).values()))
+        .flat()
+        .map((e) => [e.name, e]),
+    );
     const computedWithParentsRefs = new Map([...parentRefs, ...directRefs]);
     this.relationsRef[entityType] = computedWithParentsRefs;
     this.relationsRefCacheMap.set(entityType, computedWithParentsRefs);
@@ -84,11 +101,25 @@ export const schemaRelationsRefDefinition = {
     this.namesCache.set(entityType, Array.from(computedWithParentsRefs.keys()));
     const computedWithParentsRefsArray = Array.from(computedWithParentsRefs.values());
     this.relationsRefCacheArray.set(entityType, computedWithParentsRefsArray);
-    this.stixNamesCache.set(entityType, computedWithParentsRefsArray.map((rel) => rel.stixName));
-    this.databaseNameMultipleCache.set(entityType, computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.databaseName));
-    computedWithParentsRefsArray.forEach((ref) => this.nameToDatabaseName.set(ref.name, ref.databaseName));
-    this.databaseNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.databaseName, ref.name])));
-    this.stixNameToInputNameCache.set(entityType, new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.name])));
+    this.stixNamesCache.set(
+      entityType,
+      computedWithParentsRefsArray.map((rel) => rel.stixName),
+    );
+    this.databaseNameMultipleCache.set(
+      entityType,
+      computedWithParentsRefsArray.filter((rel) => rel.multiple).map((rel) => rel.databaseName),
+    );
+    computedWithParentsRefsArray.forEach((ref) =>
+      this.nameToDatabaseName.set(ref.name, ref.databaseName),
+    );
+    this.databaseNameToInputNameCache.set(
+      entityType,
+      new Map(computedWithParentsRefsArray.map((ref) => [ref.databaseName, ref.name])),
+    );
+    this.stixNameToInputNameCache.set(
+      entityType,
+      new Map(computedWithParentsRefsArray.map((ref) => [ref.stixName, ref.name])),
+    );
   },
 
   selectEntityType(entityType: string) {
@@ -143,15 +174,24 @@ export const schemaRelationsRefDefinition = {
   },
 
   isMultipleDatabaseName(entityType: string, databaseName: string): boolean {
-    return this.databaseNameMultipleCache.get(this.selectEntityType(entityType))?.includes(databaseName) ?? false;
+    return (
+      this.databaseNameMultipleCache
+        .get(this.selectEntityType(entityType))
+        ?.includes(databaseName) ?? false
+    );
   },
 
   convertDatabaseNameToInputName(entityType: string, databaseName: string): string | null {
-    return this.databaseNameToInputNameCache.get(this.selectEntityType(entityType))?.get(databaseName) ?? null;
+    return (
+      this.databaseNameToInputNameCache.get(this.selectEntityType(entityType))?.get(databaseName) ??
+      null
+    );
   },
 
   convertStixNameToInputName(entityType: string, stixName: string): string | null {
-    return this.stixNameToInputNameCache.get(this.selectEntityType(entityType))?.get(stixName) ?? null;
+    return (
+      this.stixNameToInputNameCache.get(this.selectEntityType(entityType))?.get(stixName) ?? null
+    );
   },
 
   isDatable(entityType: string, databaseName: string): boolean | undefined {
@@ -164,7 +204,8 @@ export const schemaRelationsRefDefinition = {
 
   getDatables(): string[] {
     usageProtection = true;
-    return Array.from(this.relationsRefCacheArray.values()).flat()
+    return Array.from(this.relationsRefCacheArray.values())
+      .flat()
       .filter((rel) => rel.datable)
       .map((rel) => rel.name);
   },

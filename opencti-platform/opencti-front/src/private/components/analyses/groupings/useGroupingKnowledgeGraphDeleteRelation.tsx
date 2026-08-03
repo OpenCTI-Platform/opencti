@@ -8,11 +8,7 @@ const groupingKnowledgeGraphDeleteRelation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    groupingRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
+    groupingRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
       id
     }
   }

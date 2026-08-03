@@ -1,8 +1,6 @@
 import { FormatNumberOptions, useIntl } from 'react-intl';
 import convert, { Length, Mass, Unit } from 'convert';
-import {
-  ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data,
-} from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
+import { ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualEditionBiographics_ThreatActorIndividual.graphql';
 import { MeasureInput } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividualCreationMutation.graphql';
 import useAuth from './useAuth';
 import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';
@@ -21,7 +19,7 @@ type UnitType = {
 
 export const Units: { [k in SupportedUnitType]: UnitType } = {
   Imperial: {
-    length: '\'',
+    length: "'",
     weight: 'lb',
   },
   Metric: {
@@ -30,17 +28,23 @@ export const Units: { [k in SupportedUnitType]: UnitType } = {
   },
 };
 
-const computeUserUnit = (selectedSystem?: UnitSystem | null, selectedLanguage = DEFAULT_LANG): SupportedUnitType => {
+const computeUserUnit = (
+  selectedSystem?: UnitSystem | null,
+  selectedLanguage = DEFAULT_LANG,
+): SupportedUnitType => {
   const unitSystem = selectedSystem || 'auto';
   if (unitSystem === 'auto' || unitSystem === '%future added value') {
-    const languageLocale = selectedLanguage && selectedLanguage !== LANGUAGES.AUTO ? selectedLanguage : DEFAULT_LANG;
+    const languageLocale =
+      selectedLanguage && selectedLanguage !== LANGUAGES.AUTO ? selectedLanguage : DEFAULT_LANG;
     return languageLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
   }
   return unitSystem;
 };
 
 const heightsConverterLoad = (userMetricType: SupportedUnitType) => {
-  return (heights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height']): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'] => {
+  return (
+    heights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'],
+  ): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'] => {
     return (heights ?? []).map((data) => {
       const { measure, date_seen, index } = data;
       const numericMeasure = parseFloat(String(measure));
@@ -67,11 +71,15 @@ const heightsConverterSave = (userMetricType: SupportedUnitType) => {
 };
 
 const weightsConverterLoad = (userMetricType: SupportedUnitType) => {
-  return (weights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight']): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'] => {
+  return (
+    weights: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'],
+  ): ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'] => {
     return (weights ?? []).map(({ measure, date_seen, index }) => {
       const numericMeasure = parseFloat(String(measure));
       const weightPrimaryUnit = Units[userMetricType].weight;
-      const converted = convert<number, Unit>(numericMeasure, 'kg').to(weightPrimaryUnit).toFixed(2); // Meter is the pivot format
+      const converted = convert<number, Unit>(numericMeasure, 'kg')
+        .to(weightPrimaryUnit)
+        .toFixed(2); // Meter is the pivot format
       return { measure: Number(converted), date_seen, index };
     });
   };

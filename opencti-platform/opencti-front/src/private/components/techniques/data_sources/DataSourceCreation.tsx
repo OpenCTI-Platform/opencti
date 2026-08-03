@@ -24,7 +24,11 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
-import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaCreationValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -33,7 +37,10 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
+import {
+  DataSourceCreationMutation,
+  DataSourceCreationMutation$variables,
+} from './__generated__/DataSourceCreationMutation.graphql';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
@@ -101,36 +108,30 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-  }, mandatoryAttributes);
-  const dataSourceValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-  );
-
-  const [commit] = useApiMutation<DataSourceCreationMutation>(
-    dataSourceMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
-  );
-  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
-  const {
-    bulkCommit,
-    bulkCount,
-    bulkCurrentCount,
-    BulkResult,
-    resetBulk,
-  } = useBulkCommit<DataSourceCreationMutation>({
-    commit,
-    relayUpdater: (store) => {
-      if (updater) {
-        updater(store, 'dataSourceAdd');
-      }
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
     },
+    mandatoryAttributes,
+  );
+  const dataSourceValidator = useDynamicSchemaCreationValidation(mandatoryAttributes, basicShape);
+
+  const [commit] = useApiMutation<DataSourceCreationMutation>(dataSourceMutation, undefined, {
+    successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}`,
   });
+  const { buildCreationFilesInput, registerMarkdownImagesController } =
+    useMarkdownCreationFilesInput();
+  const { bulkCommit, bulkCount, bulkCurrentCount, BulkResult, resetBulk } =
+    useBulkCommit<DataSourceCreationMutation>({
+      commit,
+      relayUpdater: (store) => {
+        if (updater) {
+          updater(store, 'dataSourceAdd');
+        }
+      },
+    });
 
   useEffect(() => {
     if (bulkCount > 1) {
@@ -227,19 +228,16 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               component={BulkTextField}
               name="name"
               label={t_i18n('Name')}
-              required={(mandatoryAttributes.includes('name'))}
+              required={mandatoryAttributes.includes('name')}
               fullWidth={true}
               detectDuplicate={['Data-Source']}
             />
-            <ConfidenceField
-              entityType="Data-Source"
-              containerStyle={fieldSpacingContainerStyle}
-            />
+            <ConfidenceField entityType="Data-Source" containerStyle={fieldSpacingContainerStyle} />
             <Field
               component={MarkdownField}
               name="description"
               label={t_i18n('Description')}
-              required={(mandatoryAttributes.includes('description'))}
+              required={mandatoryAttributes.includes('description')}
               fullWidth={true}
               multiline={true}
               rows="4"
@@ -251,26 +249,26 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             <CreatedByField
               name="createdBy"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('createdBy'))}
+              required={mandatoryAttributes.includes('createdBy')}
               setFieldValue={setFieldValue}
             />
             <ObjectLabelField
               name="objectLabel"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('objectLabel'))}
+              required={mandatoryAttributes.includes('objectLabel')}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('objectMarking'))}
+              required={mandatoryAttributes.includes('objectMarking')}
               setFieldValue={setFieldValue}
             />
             <ExternalReferencesField
               name="externalReferences"
               style={fieldSpacingContainerStyle}
-              required={(mandatoryAttributes.includes('externalReferences'))}
+              required={mandatoryAttributes.includes('externalReferences')}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
             />
@@ -279,16 +277,17 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               name="file"
               setFieldValue={setFieldValue}
               disabled={splitMultilines(values.name).length > 1}
-              noFileSelectedLabel={splitMultilines(values.name).length > 1
-                ? t_i18n('File upload not allowed in bulk creation')
-                : undefined
+              noFileSelectedLabel={
+                splitMultilines(values.name).length > 1
+                  ? t_i18n('File upload not allowed in bulk creation')
+                  : undefined
               }
             />
             <OpenVocabField
               label={t_i18n('Platforms')}
               type="platforms_ov"
               name="x_mitre_platforms"
-              required={(mandatoryAttributes.includes('x_mitre_platforms'))}
+              required={mandatoryAttributes.includes('x_mitre_platforms')}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
@@ -297,23 +296,16 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               label={t_i18n('Layers')}
               type="collection_layers_ov"
               name="collection_layers"
-              required={(mandatoryAttributes.includes('collection_layers'))}
+              required={mandatoryAttributes.includes('collection_layers')}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
               multiple={true}
             />
             <FormButtonContainer>
-              <Button
-                variant="secondary"
-                onClick={handleReset}
-                disabled={isSubmitting}
-              >
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
+              <Button onClick={submitForm} disabled={isSubmitting}>
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
@@ -336,12 +328,8 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_dataSources',
-    paginationOptions,
-    'dataSourceAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_dataSources', paginationOptions, 'dataSourceAdd');
   const CreateDataSourceControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Data-Source" {...props} />
   );
@@ -374,12 +362,12 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       <Dialog
         open={open}
         onClose={handleClose}
-        title={(
+        title={
           <Stack direction="row" justifyContent="space-between" alignContent="center">
             {t_i18n('Create a data source')}
             <BulkTextModalButton onClick={() => setBulkOpen(true)} />
           </Stack>
-        )}
+        }
       >
         <DataSourceCreationForm
           inputValue={inputValue}

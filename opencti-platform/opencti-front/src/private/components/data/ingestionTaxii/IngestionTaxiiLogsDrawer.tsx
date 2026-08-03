@@ -35,7 +35,9 @@ const IngestionTaxiiLogsDrawerBody: React.FC<{
   feedName: string;
 }> = ({ queryRef, feedName }) => {
   const data = usePreloadedQuery(ingestionTaxiiLogsDrawerQuery, queryRef);
-  const logs = (data?.ingestionTaxiiLogs ?? []).filter((e): e is NonNullable<typeof e> => e != null);
+  const logs = (data?.ingestionTaxiiLogs ?? []).filter(
+    (e): e is NonNullable<typeof e> => e != null,
+  );
 
   return <IngestionLogTab name={feedName} logHistory={logs} />;
 };
@@ -62,11 +64,11 @@ const IngestionTaxiiLogsDrawerContent: React.FC<{
 
   const content = queryRef ? (
     <Suspense
-      fallback={(
+      fallback={
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={32} />
         </Box>
-      )}
+      }
     >
       <IngestionTaxiiLogsDrawerBody queryRef={queryRef} feedName={feedName} />
     </Suspense>
@@ -81,7 +83,7 @@ const IngestionTaxiiLogsDrawerContent: React.FC<{
       title={`${t_i18n('Logs')} – ${feedName}`}
       open
       onClose={onClose}
-      header={(
+      header={
         <Tooltip title={t_i18n('Refresh')}>
           <span>
             <IconButton
@@ -94,7 +96,7 @@ const IngestionTaxiiLogsDrawerContent: React.FC<{
             </IconButton>
           </span>
         </Tooltip>
-      )}
+      }
     >
       {content}
     </Drawer>
@@ -107,7 +109,9 @@ const IngestionTaxiiLogsDrawer: React.FC<IngestionTaxiiLogsDrawerProps> = ({
   feedId,
   feedName,
 }) => {
-  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsDrawerQuery>(ingestionTaxiiLogsDrawerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiLogsDrawerQuery>(
+    ingestionTaxiiLogsDrawerQuery,
+  );
 
   useEffect(() => {
     if (isOpen && feedId) {

@@ -62,11 +62,11 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
 
   const content = queryRef ? (
     <Suspense
-      fallback={(
+      fallback={
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <CircularProgress size={32} />
         </Box>
-      )}
+      }
     >
       <AuthLogsByIdentifierDrawerBody name={name} queryRef={queryRef} />
     </Suspense>
@@ -81,17 +81,13 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
       title={title}
       open
       onClose={onClose}
-      header={(
+      header={
         <Tooltip title={t_i18n('Refresh')}>
-          <IconButton
-            size="small"
-            onClick={handleRefresh}
-            disabled={refreshing}
-          >
+          <IconButton size="small" onClick={handleRefresh} disabled={refreshing}>
             <RefreshOutlined fontSize="small" sx={{ opacity: refreshing ? 0.6 : 1 }} />
           </IconButton>
         </Tooltip>
-      )}
+      }
     >
       {content}
     </Drawer>
@@ -104,7 +100,9 @@ const AuthLogsByIdentifierDrawer: React.FC<AuthLogsByIdentifierDrawerProps> = ({
   id,
   name,
 }) => {
-  const [queryRef, loadQuery] = useQueryLoader<AuthLogsByIdentifierDrawerQuery>(authLogsByIdentifierDrawerQuery);
+  const [queryRef, loadQuery] = useQueryLoader<AuthLogsByIdentifierDrawerQuery>(
+    authLogsByIdentifierDrawerQuery,
+  );
 
   useEffect(() => {
     if (isOpen && id) {

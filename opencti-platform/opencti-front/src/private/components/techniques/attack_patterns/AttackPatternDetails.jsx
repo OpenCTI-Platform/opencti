@@ -25,36 +25,21 @@ class AttackPatternDetailsComponent extends Component {
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
             <Grid item xs={12}>
-              <Label>
-                {t('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={attackPattern.description}
-                limit={300}
-              />
+              <Label>{t('Description')}</Label>
+              <ExpandableMarkdown source={attackPattern.description} limit={300} />
             </Grid>
             <Grid item xs={6}>
               {attackPattern.isSubAttackPattern && (
-                <AttackPatternParentAttackPatterns
-                  attackPattern={attackPattern}
-                />
+                <AttackPatternParentAttackPatterns attackPattern={attackPattern} />
               )}
-              <Label
-                sx={{ marginTop: attackPattern.isSubAttackPattern ? 2 : 0 }}
-              >
+              <Label sx={{ marginTop: attackPattern.isSubAttackPattern ? 2 : 0 }}>
                 {t('External ID')}
               </Label>
               <FieldOrEmpty source={attackPattern.x_mitre_id}>
-                <Tag
-                  label={attackPattern.x_mitre_id}
-                />
+                <Tag label={attackPattern.x_mitre_id} />
               </FieldOrEmpty>
               <div>
-                <Label
-                  sx={{ marginTop: 2 }}
-                >
-                  {t('Platforms')}
-                </Label>
+                <Label sx={{ marginTop: 2 }}>{t('Platforms')}</Label>
                 <List style={{ paddingTop: 0 }}>
                   <TextList list={attackPattern.x_mitre_platforms} />
                 </List>
@@ -66,20 +51,9 @@ class AttackPatternDetailsComponent extends Component {
                 killChainPhases={attackPattern.killChainPhases}
                 firstLine={true}
               />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Detection')}
-              </Label>
-              <ExpandableMarkdown
-                source={attackPattern.x_mitre_detection}
-                limit={400}
-              />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Required permissions')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Detection')}</Label>
+              <ExpandableMarkdown source={attackPattern.x_mitre_detection} limit={400} />
+              <Label sx={{ marginTop: 2 }}>{t('Required permissions')}</Label>
               <TextList list={attackPattern.x_mitre_permissions_required} />
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />
@@ -98,37 +72,34 @@ AttackPatternDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const AttackPatternDetails = createFragmentContainer(
-  AttackPatternDetailsComponent,
-  {
-    attackPattern: graphql`
-      fragment AttackPatternDetails_attackPattern on AttackPattern {
+const AttackPatternDetails = createFragmentContainer(AttackPatternDetailsComponent, {
+  attackPattern: graphql`
+    fragment AttackPatternDetails_attackPattern on AttackPattern {
+      id
+      description
+      x_mitre_platforms
+      x_mitre_permissions_required
+      x_mitre_id
+      x_mitre_detection
+      isSubAttackPattern
+      killChainPhases {
         id
-        description
-        x_mitre_platforms
-        x_mitre_permissions_required
-        x_mitre_id
-        x_mitre_detection
-        isSubAttackPattern
-        killChainPhases {
-          id
-          entity_type
-          kill_chain_name
-          phase_name
-          x_opencti_order
-        }
-        objectLabel {
-          id
-          value
-          color
-        }
-        ...AttackPatternSubAttackPatterns_attackPattern
-        ...AttackPatternParentAttackPatterns_attackPattern
-        ...AttackPatternCoursesOfAction_attackPattern
-        ...AttackPatternDataComponents_attackPattern
+        entity_type
+        kill_chain_name
+        phase_name
+        x_opencti_order
       }
-    `,
-  },
-);
+      objectLabel {
+        id
+        value
+        color
+      }
+      ...AttackPatternSubAttackPatterns_attackPattern
+      ...AttackPatternParentAttackPatterns_attackPattern
+      ...AttackPatternCoursesOfAction_attackPattern
+      ...AttackPatternDataComponents_attackPattern
+    }
+  `,
+});
 
 export default compose(inject18n)(AttackPatternDetails);

@@ -39,16 +39,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 25,
     color: theme.palette.primary.main,
     backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
       backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .2)' : 'rgba(0, 0, 0, .2)',
     },
   },
   bodyItem: {
@@ -318,22 +314,17 @@ interface RelationshipDetailsComponentProps {
   queryRef: PreloadedQuery<RelationshipDetailsQuery>;
 }
 
-const RelationshipDetailsComponent: FunctionComponent<
-  RelationshipDetailsComponentProps
-> = ({ queryRef }) => {
+const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsComponentProps> = ({
+  queryRef,
+}) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
-  const entity = usePreloadedQuery<RelationshipDetailsQuery>(
-    relationshipDetailsQuery,
-    queryRef,
-  );
+  const entity = usePreloadedQuery<RelationshipDetailsQuery>(relationshipDetailsQuery, queryRef);
   const { stixRelationship } = entity;
   const [expanded, setExpanded] = useState(false);
   const externalReferencesEdges = stixRelationship?.externalReferences?.edges;
   const reportsEdges = stixRelationship?.reports?.edges;
-  const expandable = externalReferencesEdges
-    ? externalReferencesEdges.length > 3
-    : false;
+  const expandable = externalReferencesEdges ? externalReferencesEdges.length > 3 : false;
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
@@ -345,9 +336,7 @@ const RelationshipDetailsComponent: FunctionComponent<
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
       return (
         <div>
-          <Label>
-            {t_i18n('Creators')}
-          </Label>
+          <Label>{t_i18n('Creators')}</Label>
           <ItemCreators creators={stixRelationship.creators ?? []} />
         </div>
       );
@@ -375,47 +364,30 @@ const RelationshipDetailsComponent: FunctionComponent<
             : fldt(stixRelationship.last_seen)}
         </div>
         <div>
-          <Label>
-            {t_i18n('Description')}
-          </Label>
-          {stixRelationship.description
-            && stixRelationship.description.length > 0 ? (
-                <ExpandableMarkdown
-                  source={stixRelationship.description}
-                  limit={400}
-                />
-              ) : (
-                EMPTY_VALUE
-              )}
+          <Label>{t_i18n('Description')}</Label>
+          {stixRelationship.description && stixRelationship.description.length > 0 ? (
+            <ExpandableMarkdown source={stixRelationship.description} limit={400} />
+          ) : (
+            EMPTY_VALUE
+          )}
         </div>
         <div>
-          <Label>
-            {t_i18n('Confidence level')}
-          </Label>
+          <Label>{t_i18n('Confidence level')}</Label>
           <ItemConfidence
             confidence={stixRelationship.confidence}
             entityType="stix-core-relationship"
           />
         </div>
         <div>
-          <Label>
-            {t_i18n('Marking')}
-          </Label>
-          <ItemMarkings
-            markingDefinitions={stixRelationship.objectMarking}
-            limit={2}
-          />
+          <Label>{t_i18n('Marking')}</Label>
+          <ItemMarkings markingDefinitions={stixRelationship.objectMarking} limit={2} />
         </div>
         <div>
-          <Label>
-            {t_i18n('Author')}
-          </Label>
+          <Label>{t_i18n('Author')}</Label>
           <ItemAuthor createdBy={stixRelationship.createdBy} />
         </div>
         <div>
-          <Label>
-            {t_i18n('Creators')}
-          </Label>
+          <Label>{t_i18n('Creators')}</Label>
           <ItemCreators creators={stixRelationship.creators ?? []} />
         </div>
         <div>
@@ -424,8 +396,7 @@ const RelationshipDetailsComponent: FunctionComponent<
               (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
                 ? 10
                 : stixRelationship.reports?.pageInfo.globalCount
-            } ${t_i18n('reports')} ${t_i18n('of')} ${stixRelationship.reports?.pageInfo
-              .globalCount}`}
+            } ${t_i18n('reports')} ${t_i18n('of')} ${stixRelationship.reports?.pageInfo.globalCount}`}
           </Label>
           {reportsEdges && reportsEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
@@ -445,16 +416,16 @@ const RelationshipDetailsComponent: FunctionComponent<
                         <ItemIcon type={report.entity_type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={(
+                        primary={
                           <Tooltip title={report.name}>
                             <div className={classes.bodyItem}>{report.name}</div>
                           </Tooltip>
-                        )}
-                        secondary={(
+                        }
+                        secondary={
                           <div className={classes.bodyItem}>
                             {report.createdBy?.name ?? EMPTY_VALUE}
                           </div>
-                        )}
+                        }
                       />
                     </ListItemButton>
                   );
@@ -467,58 +438,49 @@ const RelationshipDetailsComponent: FunctionComponent<
           )}
         </div>
         <div>
-          <Label>
-            {t_i18n('External References')}
-          </Label>
+          <Label>{t_i18n('External References')}</Label>
           {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
-              {externalReferencesEdges
-                .slice(0, expanded ? 200 : 3)
-                .map((externalReference) => {
-                  const externalReferenceId = externalReference.node.external_id
-                    ? `(${externalReference.node.external_id})`
-                    : EMPTY_VALUE;
-                  let externalReferenceSecondary;
-                  if (
-                    externalReference.node.url
-                    && externalReference.node.url.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.node.url;
-                  } else if (
-                    externalReference.node.description
-                    && externalReference.node.description.length > 0
-                  ) {
-                    externalReferenceSecondary = externalReference.node.description;
-                  } else {
-                    externalReferenceSecondary = EMPTY_VALUE;
-                  }
-                  return (
-                    <React.Fragment key={externalReference.node.id}>
-                      <ListItemButton
-                        component={Link}
-                        to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <ItemIcon type="External-Reference" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={(
-                            <div className={classes.bodyItem}>
-                              {`${externalReference.node.source_name} ${externalReferenceId}`}
-                            </div>
-                          )}
-                          secondary={(
-                            <div className={classes.bodyItem}>
-                              {externalReferenceSecondary}
-                            </div>
-                          )}
-                        />
-                      </ListItemButton>
-                    </React.Fragment>
-                  );
-                })}
+              {externalReferencesEdges.slice(0, expanded ? 200 : 3).map((externalReference) => {
+                const externalReferenceId = externalReference.node.external_id
+                  ? `(${externalReference.node.external_id})`
+                  : EMPTY_VALUE;
+                let externalReferenceSecondary;
+                if (externalReference.node.url && externalReference.node.url.length > 0) {
+                  externalReferenceSecondary = externalReference.node.url;
+                } else if (
+                  externalReference.node.description &&
+                  externalReference.node.description.length > 0
+                ) {
+                  externalReferenceSecondary = externalReference.node.description;
+                } else {
+                  externalReferenceSecondary = EMPTY_VALUE;
+                }
+                return (
+                  <React.Fragment key={externalReference.node.id}>
+                    <ListItemButton
+                      component={Link}
+                      to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                      dense={true}
+                      divider={true}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type="External-Reference" />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <div
+                            className={classes.bodyItem}
+                          >{`${externalReference.node.source_name} ${externalReferenceId}`}</div>
+                        }
+                        secondary={
+                          <div className={classes.bodyItem}>{externalReferenceSecondary}</div>
+                        }
+                      />
+                    </ListItemButton>
+                  </React.Fragment>
+                );
+              })}
             </List>
           ) : (
             EMPTY_VALUE
@@ -531,27 +493,18 @@ const RelationshipDetailsComponent: FunctionComponent<
   return (
     <Stack gap={2}>
       <div>
-        <Label>
-          {t_i18n('Relation type')}
-        </Label>
+        <Label>{t_i18n('Relation type')}</Label>
         <ItemEntityType
           entityType={stixRelationship.relationship_type ?? 'unknown'}
           maxWidth="100px"
         />
       </div>
-      {!stixRelationship.from?.relationship_type
-        && stixRelationship.from?.id && (
-        <RelationShipFromAndTo
-          id={stixRelationship.from?.id}
-          direction="From"
-        />
+      {!stixRelationship.from?.relationship_type && stixRelationship.from?.id && (
+        <RelationShipFromAndTo id={stixRelationship.from?.id} direction="From" />
       )}
-      {stixRelationship.from?.relationship_type
-        && stixRelationship.from?.id && (
+      {stixRelationship.from?.relationship_type && stixRelationship.from?.id && (
         <div>
-          <Label>
-            {t_i18n('Source')}
-          </Label>
+          <Label>{t_i18n('Source')}</Label>
           {stixRelationship.from?.relationship_type}
         </div>
       )}
@@ -560,21 +513,15 @@ const RelationshipDetailsComponent: FunctionComponent<
       )}
       {stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
         <div>
-          <Label>
-            {t_i18n('Target')}
-          </Label>
+          <Label>{t_i18n('Target')}</Label>
           {stixRelationship.to?.relationship_type}
         </div>
       )}
-      {stixRelationship.relationship_type === 'has-covered'
-        && (
-          <SecurityCoverageInformation coverage_information={stixRelationship.coverage_information} />
-        )
-      }
+      {stixRelationship.relationship_type === 'has-covered' && (
+        <SecurityCoverageInformation coverage_information={stixRelationship.coverage_information} />
+      )}
       <div>
-        <Label>
-          {t_i18n('Platform creation date')}
-        </Label>
+        <Label>{t_i18n('Platform creation date')}</Label>
         {fldt(stixRelationship.created_at)}
       </div>
       {computeNotGenericDetails()}
@@ -585,11 +532,7 @@ const RelationshipDetailsComponent: FunctionComponent<
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
         >
-          {expanded ? (
-            <ExpandLessOutlined />
-          ) : (
-            <ExpandMoreOutlined />
-          )}
+          {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
         </IconButton>
       )}
     </Stack>
@@ -601,13 +544,12 @@ interface RelationshipDetailsProps {
   queryRef: PreloadedQuery<RelationshipDetailsQuery>;
 }
 
-const RelationshipDetails: FunctionComponent<
-  Omit<RelationshipDetailsProps, 'queryRef'>
-> = ({ relation }) => {
-  const queryRef = useQueryLoading<RelationshipDetailsQuery>(
-    relationshipDetailsQuery,
-    { id: relation.id },
-  );
+const RelationshipDetails: FunctionComponent<Omit<RelationshipDetailsProps, 'queryRef'>> = ({
+  relation,
+}) => {
+  const queryRef = useQueryLoading<RelationshipDetailsQuery>(relationshipDetailsQuery, {
+    id: relation.id,
+  });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <RelationshipDetailsComponent queryRef={queryRef} />

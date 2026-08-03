@@ -14,7 +14,10 @@ interface SubTypeStatusPopoverProps {
   scope: string;
 }
 
-const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ subTypeId, scope }) => {
+const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({
+  subTypeId,
+  scope,
+}) => {
   const queryRef = useQueryLoading<SubTypeWorkflowDrawerEditionQuery>(
     subTypeWorkflowDrawerEditionQuery,
     { id: subTypeId },
@@ -29,12 +32,11 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
       <Stack direction="row" alignItems="center" gap={1}>
         {requestAccessScope && (
           <Tooltip
-            title={t_i18n('RFI of type "request access" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.')}
+            title={t_i18n(
+              'RFI of type "request access" are subject to a specific workflow, that you can configure here. Request Access cases have 2 actions, Validate and Decline, that change the status automatically according to your configuration. Only specific groups of users are authorized to validate and decline Request Access cases.',
+            )}
           >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-            />
+            <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         )}
 
@@ -49,9 +51,7 @@ const SubTypeStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({ su
       </Stack>
 
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <SubTypeWorkflowDrawer
             scope={scope}
             queryRef={queryRef}

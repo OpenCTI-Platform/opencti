@@ -10,7 +10,7 @@ describe('NotionLikeRedirector', () => {
       <Routes>
         <Route
           path="*"
-          element={(
+          element={
             <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
@@ -20,7 +20,7 @@ describe('NotionLikeRedirector', () => {
               renderMatch={() => 'Yes'}
               NoMatch="No"
             />
-          )}
+          }
         />
       </Routes>,
       {
@@ -35,7 +35,7 @@ describe('NotionLikeRedirector', () => {
       <Routes>
         <Route
           path="*"
-          element={(
+          element={
             <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
@@ -45,7 +45,7 @@ describe('NotionLikeRedirector', () => {
               renderMatch={() => 'Yes'}
               NoMatch="No"
             />
-          )}
+          }
         />
       </Routes>,
       {
@@ -60,7 +60,7 @@ describe('NotionLikeRedirector', () => {
       <Routes>
         <Route
           path="*"
-          element={(
+          element={
             <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3-e3df-41c6-bfa0-16862be6cd4d': {
@@ -70,7 +70,7 @@ describe('NotionLikeRedirector', () => {
               renderMatch={() => 'Yes'}
               NoMatch="No"
             />
-          )}
+          }
         />
       </Routes>,
       {

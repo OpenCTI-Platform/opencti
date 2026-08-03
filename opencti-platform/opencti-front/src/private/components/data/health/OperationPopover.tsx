@@ -47,7 +47,11 @@ interface OperationPopoverProps {
   onUpdate?: () => void;
 }
 
-const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationName, isStoppable, onUpdate }) => {
+const OperationPopover: FunctionComponent<OperationPopoverProps> = ({
+  operationName,
+  isStoppable,
+  onUpdate,
+}) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayScheduleRun, setDisplayScheduleRun] = useState(false);
@@ -56,7 +60,9 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
   const [stopping, setStopping] = useState(false);
   const [displayDryRun, setDisplayDryRun] = useState(false);
   const [dryRunLoading, setDryRunLoading] = useState(false);
-  const [dryRunResult, setDryRunResult] = useState<OperationPopoverDryRunQuery$data['dataSanityOperationDryRun'] | null>(null);
+  const [dryRunResult, setDryRunResult] = useState<
+    OperationPopoverDryRunQuery$data['dataSanityOperationDryRun'] | null
+  >(null);
 
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
@@ -127,10 +133,9 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
     setDryRunResult(null);
     handleClose();
     try {
-      const result = await fetchQuery(
-        operationPopoverDryRunQuery,
-        { operation_name: operationName },
-      ).toPromise() as OperationPopoverDryRunQuery$data;
+      const result = (await fetchQuery(operationPopoverDryRunQuery, {
+        operation_name: operationName,
+      }).toPromise()) as OperationPopoverDryRunQuery$data;
       setDryRunResult(result.dataSanityOperationDryRun);
     } finally {
       setDryRunLoading(false);
@@ -152,20 +157,16 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenScheduleRun}>
-          {t_i18n('Schedule a run')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenStop} disabled={!isStoppable} data-testid="stop-operation-menu-item">
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenScheduleRun}>{t_i18n('Schedule a run')}</MenuItem>
+        <MenuItem
+          onClick={handleOpenStop}
+          disabled={!isStoppable}
+          data-testid="stop-operation-menu-item"
+        >
           {t_i18n('Stop')}
         </MenuItem>
-        <MenuItem onClick={handleOpenDryRun}>
-          {t_i18n('Estimate impact')}
-        </MenuItem>
+        <MenuItem onClick={handleOpenDryRun}>{t_i18n('Estimate impact')}</MenuItem>
       </Menu>
       <Dialog
         open={displayScheduleRun}
@@ -176,35 +177,22 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
           {t_i18n('Do you want to schedule a run for this operation?')}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseScheduleRun}
-            disabled={scheduling}
-          >
+          <Button variant="secondary" onClick={handleCloseScheduleRun} disabled={scheduling}>
             {t_i18n('Cancel')}
           </Button>
-          <Button
-            onClick={submitScheduleRun}
-            disabled={scheduling}
-          >
+          <Button onClick={submitScheduleRun} disabled={scheduling}>
             {t_i18n('Schedule')}
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayStop}
-        onClose={handleCloseStop}
-        title={t_i18n('Stop the operation')}
-      >
+      <Dialog open={displayStop} onClose={handleCloseStop} title={t_i18n('Stop the operation')}>
         <DialogContentText>
-          {t_i18n('Do you want to stop this operation? It will be marked as done, even if it is currently running, and can be scheduled again afterwards.')}
+          {t_i18n(
+            'Do you want to stop this operation? It will be marked as done, even if it is currently running, and can be scheduled again afterwards.',
+          )}
         </DialogContentText>
         <DialogActions>
-          <Button
-            variant="secondary"
-            onClick={handleCloseStop}
-            disabled={stopping}
-          >
+          <Button variant="secondary" onClick={handleCloseStop} disabled={stopping}>
             {t_i18n('Cancel')}
           </Button>
           <Button
@@ -216,11 +204,7 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={displayDryRun}
-        onClose={handleCloseDryRun}
-        title={t_i18n('Estimated impact')}
-      >
+      <Dialog open={displayDryRun} onClose={handleCloseDryRun} title={t_i18n('Estimated impact')}>
         {dryRunLoading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
             <CircularProgress />
@@ -241,9 +225,7 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
           </>
         )}
         <DialogActions>
-          <Button onClick={handleCloseDryRun}>
-            {t_i18n('Close')}
-          </Button>
+          <Button onClick={handleCloseDryRun}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
     </div>

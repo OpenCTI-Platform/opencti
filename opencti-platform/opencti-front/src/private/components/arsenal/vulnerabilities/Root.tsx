@@ -23,7 +23,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { RootVulnerabilityQuery } from './__generated__/RootVulnerabilityQuery.graphql';
 import { RootVulnerabilitySubscription } from './__generated__/RootVulnerabilitySubscription.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import VulnerabilityEdition from './VulnerabilityEdition';
 import VulnerabilityDeletion from './VulnerabilityDeletion';
 import { PATH_VULNERABILITIES, PATH_VULNERABILITY } from '@components/common/routes/paths';
@@ -83,20 +86,20 @@ type RootVulnerabilityProps = {
 };
 
 const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootVulnerabilitySubscription>>(() => ({
-    subscription,
-    variables: { id: vulnerabilityId },
-  }), [vulnerabilityId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootVulnerabilitySubscription>>(
+    () => ({
+      subscription,
+      variables: { id: vulnerabilityId },
+    }),
+    [vulnerabilityId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootVulnerabilitySubscription>(subConfig);
 
-  const {
-    vulnerability,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootVulnerabilityQuery>(vulnerabilityQuery, queryRef);
+  const { vulnerability, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootVulnerabilityQuery>(vulnerabilityQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -110,7 +113,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -129,34 +132,37 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                   ]}
                   data={vulnerability}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Vulnerabilities'), link: PATH_VULNERABILITIES },
-              { label: vulnerability.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Arsenal') },
+                { label: t_i18n('Vulnerabilities'), link: PATH_VULNERABILITIES },
+                { label: vulnerability.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={vulnerability}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={vulnerability} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <VulnerabilityDeletion id={vulnerability.id} isOpen={isOpen} handleClose={onClose} />
+                  <VulnerabilityDeletion
+                    id={vulnerability.id}
+                    isOpen={isOpen}
+                    handleClose={onClose}
+                  />
                 </Security>
               )}
               enableEnricher={true}
@@ -169,21 +175,13 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               entity={vulnerability}
               basePath={basePath}
               pages={{
-                overview: (
-                  <Vulnerability
-                    vulnerabilityData={vulnerability}
-                  />
-                ),
+                overview: <Vulnerability vulnerabilityData={vulnerability} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <VulnerabilityKnowledge vulnerabilityData={vulnerability} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={vulnerability}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={vulnerability} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={vulnerability}
@@ -197,11 +195,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                     entity={vulnerability}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={vulnerabilityId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={vulnerabilityId} />,
               }}
             />
           </div>

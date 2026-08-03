@@ -21,7 +21,13 @@ import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
-import { emptyFilterGroup, isFilterGroupNotEmpty, serializeFilterGroupForBackend, stixFilters, streamOriginFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  streamOriginFilters,
+} from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
@@ -73,7 +79,9 @@ const StreamCollectionCreationForm = ({
   const { t_i18n } = useFormatter();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
-  const [commit] = useApiMutation<StreamCollectionCreationMutation>(streamCollectionCreationMutation);
+  const [commit] = useApiMutation<StreamCollectionCreationMutation>(
+    streamCollectionCreationMutation,
+  );
 
   const onSubmit: FormikConfig<StreamCollectionCreationFormValues>['onSubmit'] = (
     values,
@@ -124,8 +132,12 @@ const StreamCollectionCreationForm = ({
     description: Yup.string().nullable(),
     stream_public: Yup.bool(),
     authorized_members: Yup.array().nullable(),
-    stream_public_user_id: Yup.object().nullable()
-      .when('stream_public', { is: true, then: (s) => s.required(t_i18n('This field is required')) }),
+    stream_public_user_id: Yup.object()
+      .nullable()
+      .when('stream_public', {
+        is: true,
+        then: (s) => s.required(t_i18n('This field is required')),
+      }),
   });
 
   return (
@@ -162,7 +174,8 @@ const StreamCollectionCreationForm = ({
               icon={false}
               severity="warning"
               variant="outlined"
-              sx={{ width: '100%',
+              sx={{
+                width: '100%',
                 position: 'relative',
                 '& .MuiAlert-message': {
                   width: '100%',
@@ -170,17 +183,15 @@ const StreamCollectionCreationForm = ({
                 },
               }}
             >
-              <AlertTitle>
-                {t_i18n('Make this stream public and available to anyone')}
-              </AlertTitle>
+              <AlertTitle>{t_i18n('Make this stream public and available to anyone')}</AlertTitle>
               <FormControlLabel
-                control={(
+                control={
                   <Switch
                     checked={values.stream_public}
                     onChange={(_, checked) => setFieldValue('stream_public', checked)}
                     disabled={!isGrantedToSetAccesses}
                   />
-                )}
+                }
                 style={{ marginLeft: 1 }}
                 label={t_i18n('Public stream')}
               />
@@ -196,7 +207,9 @@ const StreamCollectionCreationForm = ({
               {values.stream_public && (
                 <CreatorField
                   name="stream_public_user_id"
-                  label={t_i18n('Share data corresponding to permissions associated with this user')}
+                  label={t_i18n(
+                    'Share data corresponding to permissions associated with this user',
+                  )}
                   containerStyle={fieldSpacingContainerStyle}
                   onChange={(name, value) => setFieldValue(name, value)}
                 />
@@ -206,7 +219,9 @@ const StreamCollectionCreationForm = ({
               <Filters
                 availableFilterKeys={stixFilters}
                 helpers={helpers}
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                searchContext={{
+                  entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'],
+                }}
               />
             </Box>
             <FilterIconButton
@@ -228,7 +243,9 @@ const StreamCollectionCreationForm = ({
                     style={{ position: 'relative', width: '100%', overflow: 'hidden' }}
                   >
                     <div>
-                      {t_i18n('Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.')}
+                      {t_i18n(
+                        'Origin filters only apply to live events. Recovery mode (when starting from a past date) and dependency events will ignore them.',
+                      )}
                     </div>
                   </Alert>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -249,17 +266,10 @@ const StreamCollectionCreationForm = ({
             </Accordion>
           </div>
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -269,17 +279,17 @@ const StreamCollectionCreationForm = ({
   );
 };
 
-const StreamCollectionCreation = ({ paginationOptions }: { paginationOptions: StreamLinesPaginationQuery$variables }) => {
+const StreamCollectionCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: StreamLinesPaginationQuery$variables;
+}) => {
   const { t_i18n } = useFormatter();
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
   const [originFilters, originHelpers] = useFiltersState(emptyFilterGroup);
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_streamCollections',
-    paginationOptions,
-    'streamCollectionAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) =>
+    insertNode(store, 'Pagination_streamCollections', paginationOptions, 'streamCollectionAdd');
 
   const CreateStreamControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="StreamCollection" {...props} />

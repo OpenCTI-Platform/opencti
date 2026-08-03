@@ -51,19 +51,14 @@ interface LocationCreationFormProps {
   onlyAuthors?: boolean;
 }
 
-const locations = [
-  'Administrative-Area',
-  'Region',
-  'Country',
-  'City',
-  'Position',
-];
+const locations = ['Administrative-Area', 'Region', 'Country', 'City', 'Position'];
 
-const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  type: Yup.string().trim().required(t('This field is required')),
-});
+const locationValidation = (t: (name: string | object) => string) =>
+  Yup.object().shape({
+    name: Yup.string().trim().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    type: Yup.string().trim().required(t('This field is required')),
+  });
 
 const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   inputValue,
@@ -80,11 +75,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
 
   const onSubmit: FormikConfig<LocationAddInput>['onSubmit'] = (
     values,
-    {
-      setSubmitting,
-      resetForm,
-      setErrors,
-    },
+    { setSubmitting, resetForm, setErrors },
   ) => {
     const input: LocationCreationMutation$variables['input'] = {
       name: values.name,
@@ -125,11 +116,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Field
             component={TextField}
@@ -156,22 +143,18 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
             fullWidth={true}
             containerstyle={fieldSpacingContainerStyle}
           >
-            {!onlyAuthors && locations.map((location, idx) => (
-              <MenuItem key={idx} value={location}>{t_i18n(location)}</MenuItem>
-            ))}
+            {!onlyAuthors &&
+              locations.map((location, idx) => (
+                <MenuItem key={idx} value={location}>
+                  {t_i18n(location)}
+                </MenuItem>
+              ))}
           </Field>
           <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={handleReset}
-              disabled={isSubmitting}
-            >
+            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
               {t_i18n('Cancel')}
             </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
+            <Button onClick={submitForm} disabled={isSubmitting}>
               {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
@@ -195,10 +178,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
 
   const renderClassic = () => {
     return (
-      <Drawer
-        title={t_i18n('Add a location')}
-        variant={DrawerVariant.create}
-      >
+      <Drawer title={t_i18n('Add a location')} variant={DrawerVariant.create}>
         {({ onClose }) => (
           <LocationCreationForm
             inputValue={inputValue}
@@ -214,18 +194,10 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Button
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-        >
+        <Button onClick={handleOpen} color="secondary" aria-label="Add">
           {t_i18n('Create Location')}
         </Button>
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          title={t_i18n('Add a location')}
-        >
+        <Dialog open={open} onClose={handleClose} title={t_i18n('Add a location')}>
           <LocationCreationForm
             inputValue={inputValue}
             updater={updater}

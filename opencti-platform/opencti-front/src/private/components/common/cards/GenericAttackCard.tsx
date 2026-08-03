@@ -63,7 +63,10 @@ export interface GenericAttack {
   description: string | null;
   modified: string;
   aliases: ReadonlyArray<string | null> | null;
-  objectLabel: ReadonlyArray<{ id: string; value: string | null; color: string | null | undefined }> | null | undefined;
+  objectLabel:
+    | ReadonlyArray<{ id: string; value: string | null; color: string | null | undefined }>
+    | null
+    | undefined;
   avatar?: { id: string; name: string } | null;
   relatedIntrusionSets?: fromEdges | null;
   usedMalware?: toEdges | null;
@@ -93,18 +96,18 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
 
   const isBookmarked = !!bookmarksIds?.includes(cardData.id);
 
-  const relatedIntrusionSets = R.uniq((cardData.relatedIntrusionSets?.edges ?? [])
-    .map((n) => n?.node?.from?.name))
-    .join(', ');
-  const usedMalware = R.uniq((cardData.usedMalware?.edges ?? [])
-    .map((n) => n?.node?.to?.name))
-    .join(', ');
-  const targetedCountries = R.uniq((cardData.targetedCountries?.edges ?? [])
-    .map((n) => n?.node?.to?.name))
-    .join(', ');
-  const targetedSectors = R.uniq((cardData.targetedSectors?.edges ?? [])
-    .map((n) => n?.node?.to?.name))
-    .join(', ');
+  const relatedIntrusionSets = R.uniq(
+    (cardData.relatedIntrusionSets?.edges ?? []).map((n) => n?.node?.from?.name),
+  ).join(', ');
+  const usedMalware = R.uniq(
+    (cardData.usedMalware?.edges ?? []).map((n) => n?.node?.to?.name),
+  ).join(', ');
+  const targetedCountries = R.uniq(
+    (cardData.targetedCountries?.edges ?? []).map((n) => n?.node?.to?.name),
+  ).join(', ');
+  const targetedSectors = R.uniq(
+    (cardData.targetedSectors?.edges ?? []).map((n) => n?.node?.to?.name),
+  ).join(', ');
 
   const resolveEmbeddedImageUrl = (url: string) => {
     if (!url) {
@@ -150,27 +153,14 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
   return (
     <Card to={cardLink}>
       <CardContent sx={{ p: 0 }}>
-        <Stack
-          flexWrap="nowrap"
-          overflow="hidden"
-          direction="row"
-          gap={1}
-          mb={2}
-          width="100%"
-        >
+        <Stack flexWrap="nowrap" overflow="hidden" direction="row" gap={1} mb={2} width="100%">
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderCardTitle(cardData)}
             <Typography
               variant="body1"
-              sx={{ color: theme.palette.text.light,
-                lineHeight: '21px',
-                fontSize: '12px',
-              }}
+              sx={{ color: theme.palette.text.light, lineHeight: '21px', fontSize: '12px' }}
             >
-              {t_i18n(
-                'Last modified on',
-                { values: { date: fld(cardData.modified) } },
-              )}
+              {t_i18n('Last modified on', { values: { date: fld(cardData.modified) } })}
             </Typography>
           </div>
           {cardData.avatar && (
@@ -205,31 +195,16 @@ export const GenericAttackCard: FunctionComponent<GenericAttackCardProps> = ({
             value={emptyFilled((cardData.aliases || []).join(', '))}
           />
           {entityType === 'Malware' ? (
-            <Info
-              title={t_i18n('Intrusion sets')}
-              value={emptyFilled(relatedIntrusionSets)}
-            />
+            <Info title={t_i18n('Intrusion sets')} value={emptyFilled(relatedIntrusionSets)} />
           ) : (
-            <Info
-              title={t_i18n('Used malware')}
-              value={emptyFilled(usedMalware)}
-            />
+            <Info title={t_i18n('Used malware')} value={emptyFilled(usedMalware)} />
           )}
-          <Info
-            title={t_i18n('Targeted countries')}
-            value={emptyFilled(targetedCountries)}
-          />
-          <Info
-            title={t_i18n('Targeted sectors')}
-            value={emptyFilled(targetedSectors)}
-          />
+          <Info title={t_i18n('Targeted countries')} value={emptyFilled(targetedCountries)} />
+          <Info title={t_i18n('Targeted sectors')} value={emptyFilled(targetedSectors)} />
         </div>
       </CardContent>
       <CardActions sx={{ p: 0, mt: 2, justifyContent: 'space-between' }}>
-        <StixCoreObjectLabels
-          labels={cardData.objectLabel}
-          onClick={onLabelClick}
-        />
+        <StixCoreObjectLabels labels={cardData.objectLabel} onClick={onLabelClick} />
         <BookmarkToggle
           stixId={cardData.id}
           stixEntityType={entityType}
@@ -247,22 +222,22 @@ export const GenericAttackCardDummy = () => {
       <CardHeader
         sx={{ padding: 0 }}
         classes={{ root: classes.header }}
-        title={(
+        title={
           <Skeleton
             animation="wave"
             variant="rectangular"
             width="90%"
             style={{ marginBottom: 10 }}
           />
-        )}
-        subheader={(
+        }
+        subheader={
           <Skeleton
             animation="wave"
             variant="rectangular"
             width="90%"
             style={{ marginBottom: 10 }}
           />
-        )}
+        }
         slotProps={{
           title: { color: 'inherit' },
         }}

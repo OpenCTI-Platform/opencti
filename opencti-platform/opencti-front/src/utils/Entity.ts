@@ -212,9 +212,7 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   return 'Position';
 };
 
-export const resolveThreatActorType = (
-  entity: Record<string, string>,
-): string => {
+export const resolveThreatActorType = (entity: Record<string, string>): string => {
   if (entity.x_opencti_type) {
     return entity.x_opencti_type;
   }
@@ -240,67 +238,53 @@ export const hashValue = (stixCyberObservable: Record<string, never>) => {
 export const observableValue = (stixCyberObservable: Record<string, never>) => {
   switch ((stixCyberObservable.entity_type as string).toLowerCase()) {
     case 'Autonomous-System'.toLowerCase():
-      return (
-        stixCyberObservable.name || stixCyberObservable.number || 'Unknown'
-      );
+      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
     case 'Directory'.toLowerCase():
       return stixCyberObservable.path || 'Unknown';
     case 'Email-Message'.toLowerCase():
       return stixCyberObservable.body || stixCyberObservable.subject;
     case 'Artifact'.toLowerCase():
       return (
-        hashValue(stixCyberObservable)
-        || stixCyberObservable.payload_bin
-        || stixCyberObservable.url
-        || 'Unknown'
+        hashValue(stixCyberObservable) ||
+        stixCyberObservable.payload_bin ||
+        stixCyberObservable.url ||
+        'Unknown'
       );
     case 'StixFile'.toLowerCase():
-      return (
-        hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown'
-      );
+      return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
     case 'X509-Certificate'.toLowerCase():
       return (
-        hashValue(stixCyberObservable)
-        || stixCyberObservable.subject
-        || stixCyberObservable.issuer
-        || 'Unknown'
+        hashValue(stixCyberObservable) ||
+        stixCyberObservable.subject ||
+        stixCyberObservable.issuer ||
+        'Unknown'
       );
     case 'Mutex'.toLowerCase():
       return stixCyberObservable.name || 'Unknown';
     case 'Network-Traffic'.toLowerCase():
       return stixCyberObservable.src_port || stixCyberObservable.dst_port || 'Unknown';
     case 'Process'.toLowerCase():
-      return (
-        stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown'
-      );
+      return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
     case 'Software'.toLowerCase():
-      return stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
+      return (
+        stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown'
+      );
     case 'User-Account'.toLowerCase():
-      return (
-        stixCyberObservable.account_login
-        || stixCyberObservable.user_id
-        || 'Unknown'
-      );
+      return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
     case 'Bank-Account'.toLowerCase():
-      return (
-        stixCyberObservable.iban || stixCyberObservable.number || 'Unknown'
-      );
+      return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
     case 'Payment-Card'.toLowerCase():
-      return (
-        stixCyberObservable.card_number
-        || stixCyberObservable.holder_name
-        || 'Unknown'
-      );
+      return stixCyberObservable.card_number || stixCyberObservable.holder_name || 'Unknown';
     case 'Windows-Registry-Key'.toLowerCase():
       return stixCyberObservable.attribute_key || 'Unknown';
     case 'Windows-Registry-Value-Type'.toLowerCase():
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case 'Media-Content'.toLowerCase():
       return (
-        stixCyberObservable.content
-        || stixCyberObservable.title
-        || stixCyberObservable.url
-        || 'Unknown'
+        stixCyberObservable.content ||
+        stixCyberObservable.title ||
+        stixCyberObservable.url ||
+        'Unknown'
       );
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';

@@ -41,10 +41,7 @@ interface StixContainer {
 }
 
 const investigationToContainerMutation = graphql`
-  mutation WorkspaceTurnToContainerDialogMutation(
-    $containerId: ID!
-    $workspaceId: ID!
-  ) {
+  mutation WorkspaceTurnToContainerDialogMutation($containerId: ID!, $workspaceId: ID!) {
     containerEdit(id: $containerId) {
       knowledgeAddFromInvestigation(workspaceId: $workspaceId) {
         id
@@ -54,7 +51,11 @@ const investigationToContainerMutation = graphql`
   }
 `;
 
-const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({ workspace, open, handleClose }) => {
+const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainerDialogProps> = ({
+  workspace,
+  open,
+  handleClose,
+}) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [containerCreation, setContainerCreation] = useState(false);
@@ -66,13 +67,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
     availableRelationshipTypes: [],
     searchContext: { entityTypes: ['Container'] },
     searchScope: {
-      id: [
-        'Report',
-        'Grouping',
-        'Case-Incident',
-        'Case-Rfi',
-        'Case-Rft',
-      ],
+      id: ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'],
     },
   }) as [
     Record<string, EntityValue[]>,
@@ -85,9 +80,8 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   ]; // change when useSearchEntities will be in TS;
   const containersFromElements = entities.id ?? [];
 
-  const [commitInvestigationToContainerAdd] = useApiMutation<WorkspaceTurnToContainerDialogMutation>(
-    investigationToContainerMutation,
-  );
+  const [commitInvestigationToContainerAdd] =
+    useApiMutation<WorkspaceTurnToContainerDialogMutation>(investigationToContainerMutation);
   const navigate = useNavigate();
   const handleCloseUpdate = () => {
     setActionsInputs(null);
@@ -102,9 +96,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       onCompleted: (data) => {
         const id = data.containerEdit?.knowledgeAddFromInvestigation?.id;
         const entityType = data.containerEdit?.knowledgeAddFromInvestigation?.entity_type || '';
-        navigate(
-          `${resolveLink(entityType.toString())}/${id}/knowledge/graph`,
-        );
+        navigate(`${resolveLink(entityType.toString())}/${id}/knowledge/graph`);
       },
       onError: (error) => {
         handleError(error);
@@ -140,24 +132,14 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={() => handleClose()}
-      title={t_i18n('Add to container')}
-    >
+    <Dialog open={open} onClose={() => handleClose()} title={t_i18n('Add to container')}>
       <StixDomainObjectCreation
         isFromBulkRelation={undefined}
         inputValue={actionsInputs?.inputValue || ''}
         open={containerCreation}
         display={true}
         speeddial={true}
-        stixDomainObjectTypes={[
-          'Report',
-          'Grouping',
-          'Case-Incident',
-          'Case-Rfi',
-          'Case-Rft',
-        ]}
+        stixDomainObjectTypes={['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft']}
         handleClose={() => setContainerCreation(false)}
         creationCallback={({ name, id, entity_type }: StixContainer) => {
           if (name && id && entity_type) {
@@ -203,18 +185,20 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
         onChange={(event, value) => handleChangeActionInputValues(event, value as EntityValue[])}
         renderOption={(props, option) => (
           <li {...props}>
-            <div style={{
-              display: 'inline-block',
-              paddingTop: 4,
-              marginRight: theme.spacing(1),
-            }}
+            <div
+              style={{
+                display: 'inline-block',
+                paddingTop: 4,
+                marginRight: theme.spacing(1),
+              }}
             >
               <ItemIcon type={option.type} />
             </div>
-            <div style={{
-              display: 'inline-block',
-              flexGrow: 1,
-            }}
+            <div
+              style={{
+                display: 'inline-block',
+                flexGrow: 1,
+              }}
             >
               {option.label}
             </div>

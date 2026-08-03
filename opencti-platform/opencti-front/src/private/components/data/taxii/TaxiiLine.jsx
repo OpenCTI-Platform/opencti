@@ -15,15 +15,16 @@ import TaxiiPopover from './TaxiiPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+} from '../../../../utils/filters/filtersUtils';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
+const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
@@ -87,14 +88,11 @@ class TaxiiLineLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={(
+        secondaryAction={
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <TaxiiPopover
-              taxiiCollectionId={node.id}
-              paginationOptions={paginationOptions}
-            />
+            <TaxiiPopover taxiiCollectionId={node.id} paginationOptions={paginationOptions} />
           </Security>
-        )}
+        }
       >
         <ListItemButton
           classes={{ root: classes.item }}
@@ -106,18 +104,12 @@ class TaxiiLineLineComponent extends Component {
             <DatabaseExportOutline />
           </ListItemIcon>
           <ListItemText
-            primary={(
+            primary={
               <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                   {node.name}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.description.width }}
-                >
+                <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
                   <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
                 </div>
                 <div
@@ -126,22 +118,15 @@ class TaxiiLineLineComponent extends Component {
                 >
                   <ItemCopy content={node.id} variant="inLine" />
                 </div>
-                <div
-                  className={classes.filtersItem}
-                  style={{ width: dataColumns.filters.width }}
-                >
-                  {isFilterGroupNotEmpty(filters)
-                    ? (
-                        <FilterIconButton
-                          filters={filters}
-                          dataColumns={dataColumns}
-                          variant="small"
-                        />
-                      )
-                    : EMPTY_VALUE}
+                <div className={classes.filtersItem} style={{ width: dataColumns.filters.width }}>
+                  {isFilterGroupNotEmpty(filters) ? (
+                    <FilterIconButton filters={filters} dataColumns={dataColumns} variant="small" />
+                  ) : (
+                    EMPTY_VALUE
+                  )}
                 </div>
               </>
-            )}
+            }
           />
         </ListItemButton>
       </ListItem>
@@ -169,10 +154,7 @@ const TaxiiLineFragment = createFragmentContainer(TaxiiLineLineComponent, {
   `,
 });
 
-export const TaxiiLine = compose(
-  inject18n,
-  withStyles(styles),
-)(TaxiiLineFragment);
+export const TaxiiLine = compose(inject18n, withStyles(styles))(TaxiiLineFragment);
 
 class TaxiiDummyComponent extends Component {
   render() {
@@ -184,62 +166,25 @@ class TaxiiDummyComponent extends Component {
         secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton
-            animation="wave"
-            variant="circular"
-            width={30}
-            height={30}
-          />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.description.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.id.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="50%"
-                />
+              <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height="50%" />
               </div>
             </>
-          )}
+          }
         />
       </ListItem>
     );
@@ -251,7 +196,4 @@ TaxiiDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const TaxiiLineDummy = compose(
-  inject18n,
-  withStyles(styles),
-)(TaxiiDummyComponent);
+export const TaxiiLineDummy = compose(inject18n, withStyles(styles))(TaxiiDummyComponent);

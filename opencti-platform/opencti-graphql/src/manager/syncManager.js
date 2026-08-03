@@ -35,9 +35,11 @@ const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_00
 const waitLoopTimer = new InterruptibleTimer();
 
 const hasEmbeddedStorageRef = (markdown) => {
-  return markdown.includes('embedded/')
-    || markdown.includes('/storage/get/embedded/')
-    || markdown.includes('/storage/view/embedded');
+  return (
+    markdown.includes('embedded/') ||
+    markdown.includes('/storage/get/embedded/') ||
+    markdown.includes('/storage/view/embedded')
+  );
 };
 
 const extractMimeTypeFromHeader = (response) => {
@@ -77,7 +79,10 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       }
       const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
       if (normalizedPath.startsWith('embedded/')) {
-        const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+        const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, {
+          entityType,
+          entityId,
+        });
         return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
       }
       return null;
@@ -93,7 +98,10 @@ const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
 
   const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
   if (normalizedPath.startsWith('embedded/')) {
-    const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
+    const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, {
+      entityType,
+      entityId,
+    });
     return `${httpBase(syncUri)}storage/get/${resolvedEmbeddedPath}`;
   }
 
@@ -118,12 +126,20 @@ const syncManagerInstance = (syncId) => {
     const token = await decryptSynchronizerCredential(syncElement.token);
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     abortController = new AbortController();
-    const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
+    const streamClient = getHttpClient({
+      headers,
+      rejectUnauthorized: ssl,
+      responseType: 'stream',
+    });
     const response = await streamClient.get(sseUri, { signal: abortController.signal });
     const queue = [];
     const parser = createParser({
       onEvent(event) {
-        queue.push({ type: event.event ?? 'message', data: event.data, lastEventId: event.id ?? '' });
+        queue.push({
+          type: event.event ?? 'message',
+          data: event.data,
+          lastEventId: event.id ?? '',
+        });
       },
     });
     for await (const chunk of response.data) {
@@ -151,47 +167,61 @@ const syncManagerInstance = (syncId) => {
       try {
         const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
         if (!fetchUri) {
-          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+          logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', {
+            fileUri,
+          });
           continue;
         }
         const response = await httpClient.get(fetchUri);
         entityFile.data = Buffer.from(response.data).toString('base64');
       } catch (e) {
-        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
+        logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', {
+          fileUri,
+          message: e.message,
+        });
       }
     }
 
     const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
-      const embeddedReferences = extractMarkdownImageReferences(markdown)
-        .filter((reference) => reference.isEmbeddedStorage);
+      const embeddedReferences = extractMarkdownImageReferences(markdown).filter(
+        (reference) => reference.isEmbeddedStorage,
+      );
       if (embeddedReferences.length === 0) {
         return markdown;
       }
 
       const uriByReferenceUrl = new Map();
-      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+      const uniqueReferenceUrls = [
+        ...new Set(embeddedReferences.map((reference) => reference.url)),
+      ];
 
       for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
         const embeddedStorageUri = uniqueReferenceUrls[i];
         try {
           const fetchUri = buildSyncStorageFetchUri(uri, embeddedStorageUri, markdownEntityContext);
           if (!fetchUri) {
-            logApp.warn('[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.', {
-              embeddedStorageUri,
-            });
+            logApp.warn(
+              '[OPENCTI] Sync: Invalid embedded markdown storage URI, keeping original URI.',
+              {
+                embeddedStorageUri,
+              },
+            );
             uriByReferenceUrl.set(embeddedStorageUri, null);
             continue;
           }
           const response = await httpClient.get(fetchUri);
           const headerMimeType = extractMimeTypeFromHeader(response);
           const pathMimeType = mime.lookup(embeddedStorageUri);
-          const detectedMime = headerMimeType || (pathMimeType || null);
+          const detectedMime = headerMimeType || pathMimeType || null;
 
           if (!detectedMime || !ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET.has(detectedMime)) {
-            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
-              embeddedStorageUri,
-              mimeType: detectedMime,
-            });
+            logApp.warn(
+              '[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.',
+              {
+                embeddedStorageUri,
+                mimeType: detectedMime,
+              },
+            );
             uriByReferenceUrl.set(embeddedStorageUri, null);
             continue;
           }
@@ -199,10 +229,13 @@ const syncManagerInstance = (syncId) => {
           const base64Data = Buffer.from(response.data).toString('base64');
           uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
         } catch (e) {
-          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
-            embeddedStorageUri,
-            message: e.message,
-          });
+          logApp.warn(
+            '[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.',
+            {
+              embeddedStorageUri,
+              message: e.message,
+            },
+          );
           uriByReferenceUrl.set(embeddedStorageUri, null);
         }
       }
@@ -242,7 +275,10 @@ const syncManagerInstance = (syncId) => {
     const [time] = eventId.split('-');
     const dateTime = parseInt(time, 10);
     const eventDate = utcDate(dateTime).toISOString();
-    if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
+    if (
+      lastStateSaveTime === undefined ||
+      (dateTime !== lastState && currentTime - lastStateSaveTime > 15000)
+    ) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
       await patchSync(context, SYSTEM_USER, syncId, { current_state_date: eventDate });
       lastState = dateTime;
@@ -303,22 +339,47 @@ const syncManagerInstance = (syncId) => {
                 const metrics = JSON.parse(eventData);
                 const syncConnectedAt = connectedAt || new Date().toISOString();
                 const syncConnectionId = connectionId || '';
-                await storeSyncConsumerMetrics(syncId, syncConnectionId, syncConnectedAt, metrics, lastEventId);
+                await storeSyncConsumerMetrics(
+                  syncId,
+                  syncConnectionId,
+                  syncConnectedAt,
+                  metrics,
+                  lastEventId,
+                );
               } catch (metricsError) {
-                logApp.warn('[OPENCTI] Sync: Error storing consumer metrics', { syncId, cause: metricsError });
+                logApp.warn('[OPENCTI] Sync: Error storing consumer metrics', {
+                  syncId,
+                  cause: metricsError,
+                });
               }
               continue;
             }
             // Handle data events (create, update, delete, merge)
-            const { data: stixData, context: eventContext, version, event_id } = JSON.parse(eventData);
+            const {
+              data: stixData,
+              context: eventContext,
+              version,
+              event_id,
+            } = JSON.parse(eventData);
             if (version !== EVENT_CURRENT_VERSION) continue;
             // Process the event with retry: if pushToWorkerForConnector or saveCurrentState fails,
             // retry indefinitely until it succeeds or the manager is stopped.
             let processed = false;
             while (!processed && running) {
               try {
-                const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
-                const enrichedEvent = JSON.stringify({ id: lastEventId, type: eventType, data: syncData, context: eventContext });
+                const { data: syncData, previous_standard } =
+                  await transformDataWithReverseIdAndFilesData(
+                    sync,
+                    httpClient,
+                    stixData,
+                    eventContext,
+                  );
+                const enrichedEvent = JSON.stringify({
+                  id: lastEventId,
+                  type: eventType,
+                  data: syncData,
+                  context: eventContext,
+                });
                 const content = Buffer.from(enrichedEvent, 'utf-8').toString('base64');
                 await pushToWorkerForConnector(sync.internal_id, {
                   type: 'event',
@@ -333,7 +394,9 @@ const syncManagerInstance = (syncId) => {
                 processed = true;
               } catch (processingError) {
                 logApp.error('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
-                  cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
+                  cause: processingError,
+                  id: syncId,
+                  manager: 'SYNC_MANAGER',
                 });
                 await wait(5000);
               }
@@ -346,7 +409,9 @@ const syncManagerInstance = (syncId) => {
         } catch (streamError) {
           if (!running) break; // Abort was intentional (stop() was called)
           logApp.warn('[OPENCTI] Sync stream error, reconnecting...', {
-            id: syncId, manager: 'SYNC_MANAGER', cause: streamError,
+            id: syncId,
+            manager: 'SYNC_MANAGER',
+            cause: streamError,
           });
           await wait(5000);
         }
@@ -383,13 +448,17 @@ const initSyncManager = () => {
         const manager = syncManagerInstance(id);
         syncManagers.set(id, manager);
         // noinspection ES6MissingAwait
-        manager.start(context).catch((reason) => logApp.error('[SYNC MANAGER] global error', { reason }));
+        manager
+          .start(context)
+          .catch((reason) => logApp.error('[SYNC MANAGER] global error', { reason }));
       }
     }
     // endregion
     // region Handle potential deletions
     const existingSyncs = syncs.map((s) => s.id);
-    const deletedSyncs = Array.from(syncManagers.values()).filter((s) => !existingSyncs.includes(s.id));
+    const deletedSyncs = Array.from(syncManagers.values()).filter(
+      (s) => !existingSyncs.includes(s.id),
+    );
     for (let deleteIndex = 0; deleteIndex < deletedSyncs.length; deleteIndex += 1) {
       const deletedSync = deletedSyncs[deleteIndex];
       deletedSync.stop();
@@ -421,7 +490,10 @@ const initSyncManager = () => {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Sync manager already in progress by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Sync manager handler error', { cause: e, manager: 'SYNC_MANAGER' });
+        logApp.error('[OPENCTI-MODULE] Sync manager handler error', {
+          cause: e,
+          manager: 'SYNC_MANAGER',
+        });
       }
     } finally {
       managerRunning = false;

@@ -13,55 +13,55 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 
 const systemFragment = graphql`
   fragment System_system on System {
-      id
-      standard_id
-      entity_type
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      x_opencti_reliability
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-          x_opencti_reliability
-        }
-      }
-      creators {
+    id
+    standard_id
+    entity_type
+    x_opencti_stix_ids
+    spec_version
+    revoked
+    x_opencti_reliability
+    confidence
+    created
+    modified
+    created_at
+    updated_at
+    createdBy {
+      ... on Identity {
         id
         name
+        entity_type
+        x_opencti_reliability
       }
-      objectMarking {
-        id
-        definition_type
-        definition
-        x_opencti_order
-        x_opencti_color
-      }
-      objectLabel {
-        id
-        value
+    }
+    creators {
+      id
+      name
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    name
+    x_opencti_aliases
+    status {
+      id
+      order
+      template {
+        name
         color
       }
-      name
-      x_opencti_aliases
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-      ...SystemDetails_system
     }
+    workflowEnabled
+    ...SystemDetails_system
+  }
 `;
 
 interface SystemProps {
@@ -69,33 +69,23 @@ interface SystemProps {
   viewAs: string;
 }
 
-const System: React.FC<SystemProps> = ({
-  systemData, viewAs,
-}) => {
+const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
   useInitCreateRelationshipContext();
 
-  const system = useFragment<System_system$key>(
-    systemFragment,
-    systemData,
-  );
-  const lastReportsProps = viewAs === 'knowledge'
-    ? { stixCoreObjectOrStixRelationshipId: system.id }
-    : { authorId: system.id };
+  const system = useFragment<System_system$key>(systemFragment, systemData);
+  const lastReportsProps =
+    viewAs === 'knowledge'
+      ? { stixCoreObjectOrStixRelationshipId: system.id }
+      : { authorId: system.id };
 
   return (
     <div data-testid="system-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
         <Grid item xs={6}>
           <SystemDetails system={system} />
         </Grid>
         <Grid item xs={6}>
-          <StixDomainObjectOverview
-            stixDomainObject={system}
-          />
+          <StixDomainObjectOverview stixDomainObject={system} />
         </Grid>
         {viewAs === 'knowledge' && (
           <Grid item xs={6}>
@@ -105,13 +95,8 @@ const System: React.FC<SystemProps> = ({
             />
           </Grid>
         )}
-        <Grid
-          item
-          xs={viewAs === 'knowledge' ? 6 : 12}
-        >
-          <StixCoreObjectOrStixRelationshipLastContainers
-            {...lastReportsProps}
-          />
+        <Grid item xs={viewAs === 'knowledge' ? 6 : 12}>
+          <StixCoreObjectOrStixRelationshipLastContainers {...lastReportsProps} />
         </Grid>
         <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={system.id} />

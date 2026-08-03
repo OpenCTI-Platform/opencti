@@ -12,7 +12,9 @@ import { ThemeManagerQuery$variables } from './__generated__/ThemeManagerQuery.g
 
 const importMutation = graphql`
   mutation ThemeImporterImportMutation($file: Upload!) {
-    themeImport(file: $file) { id }
+    themeImport(file: $file) {
+      id
+    }
   }
 `;
 
@@ -27,14 +29,10 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useApiMutation<ThemeImporterImportMutation>(
-    importMutation,
-    undefined,
-    {
-      successMessage: `${t_i18n('Theme')} ${t_i18n('successfully created')}`,
-      errorMessage: t_i18n('Failed to import theme'),
-    },
-  );
+  const [commit] = useApiMutation<ThemeImporterImportMutation>(importMutation, undefined, {
+    successMessage: `${t_i18n('Theme')} ${t_i18n('successfully created')}`,
+    errorMessage: t_i18n('Failed to import theme'),
+  });
 
   // empty the input when clicking on it because the browser
   // doesn't retrigger onclick if it is the same file
@@ -52,12 +50,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     commit({
       variables: { file },
       updater: (store: RecordSourceSelectorProxy) => {
-        return insertNode(
-          store,
-          'Pagination_themes',
-          paginationOptions,
-          'themeImport',
-        );
+        return insertNode(store, 'Pagination_themes', paginationOptions, 'themeImport');
       },
       onCompleted: () => {
         handleRefetch();

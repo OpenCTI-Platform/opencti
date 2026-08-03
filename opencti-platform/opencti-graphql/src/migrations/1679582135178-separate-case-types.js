@@ -7,7 +7,10 @@ import { findByType } from '../modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { elRawUpdateByQuery } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import {
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+} from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { generateStandardId } from '../schema/identifier';
@@ -19,9 +22,10 @@ const updateCaseEntity = async (fromCase, toType, standardId) => {
   const updateEntityQuery = {
     script: {
       params: { toType, standardId, original: 'Case' },
-      source: 'ctx._source.entity_type = params.toType; '
-        + 'ctx._source.standard_id = params.standardId; '
-        + 'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
+      source:
+        'ctx._source.entity_type = params.toType; ' +
+        'ctx._source.standard_id = params.standardId; ' +
+        'if (!ctx._source.parent_types.contains(params.original)) { ctx._source.parent_types.add(params.original); }',
     },
     query: {
       term: { 'internal_id.keyword': { value: fromCase.internal_id } },
@@ -41,11 +45,12 @@ const updateCaseRelationships = async (fromCase, toType) => {
   const updateRelationsQuery = {
     script: {
       params: { toType, toId: fromCase.internal_id },
-      source: 'for(def connection : ctx._source.connections) {'
-        + ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }'
-        + ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }'
-        + ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }'
-        + '}',
+      source:
+        'for(def connection : ctx._source.connections) {' +
+        ' if (connection.internal_id == params.toId && !connection.types.contains(params.toType)) { connection.types.add(params.toType); }' +
+        ' if (connection.internal_id == params.toId && connection.role.endsWith("_from")) { ctx._source.fromType = params.toType; }' +
+        ' if (connection.internal_id == params.toId && connection.role.endsWith("_to")) { ctx._source.toType = params.toType; }' +
+        '}',
     },
     query: {
       nested: {
@@ -89,7 +94,12 @@ export const up = async (next) => {
   // region Delete the classic container case setting
   const caseEntitySettings = await findByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE);
   if (caseEntitySettings?.id) {
-    await deleteElementById(context, SYSTEM_USER, caseEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING);
+    await deleteElementById(
+      context,
+      SYSTEM_USER,
+      caseEntitySettings.id,
+      ENTITY_TYPE_ENTITY_SETTING,
+    );
   }
   // endregion
 

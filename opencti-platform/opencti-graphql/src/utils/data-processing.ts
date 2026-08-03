@@ -2,7 +2,10 @@ import { doYield } from './eventloop-utils';
 
 // Filter an array without blocking the event loop
 // Instead of using ARRAY.filter(predicate) use asyncFilter(ARRAY, predicate)
-export const asyncFilter = async <T>(elements: T[], predicate: (value: T, index: number) => boolean) => {
+export const asyncFilter = async <T>(
+  elements: T[],
+  predicate: (value: T, index: number) => boolean,
+) => {
   const filtered: T[] = [];
   for (let index = 0; index < elements.length; index += 1) {
     await doYield();
@@ -14,7 +17,12 @@ export const asyncFilter = async <T>(elements: T[], predicate: (value: T, index:
   return filtered;
 };
 
-export const asyncMap = async <T, Z>(elements: T[], transform: (value: T) => Z | Promise<Z>, filter?: (value: Z) => boolean, opts: { flat?: boolean } = {}) => {
+export const asyncMap = async <T, Z>(
+  elements: T[],
+  transform: (value: T) => Z | Promise<Z>,
+  filter?: (value: Z) => boolean,
+  opts: { flat?: boolean } = {},
+) => {
   const { flat = false } = opts;
   const transformed: Z[] = [];
   for (let index = 0; index < elements.length; index += 1) {
@@ -38,7 +46,12 @@ export const asyncMap = async <T, Z>(elements: T[], transform: (value: T) => Z |
   return transformed;
 };
 
-export const uniqAsyncMap = async <T, Z>(elements: T[], transform: (value: T) => Z, filter?: (value: Z) => boolean, opts: { flat?: boolean } = {}) => {
+export const uniqAsyncMap = async <T, Z>(
+  elements: T[],
+  transform: (value: T) => Z,
+  filter?: (value: Z) => boolean,
+  opts: { flat?: boolean } = {},
+) => {
   const { flat = false } = opts;
   const transformedSet: Set<Z> = new Set();
   for (let index = 0; index < elements.length; index += 1) {

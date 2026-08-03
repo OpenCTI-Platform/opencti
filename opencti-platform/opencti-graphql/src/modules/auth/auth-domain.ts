@@ -4,12 +4,23 @@ import { findById, getUserByEmail, userEditField } from '../../domain/user';
 import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
-import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
+import type {
+  AskSendOtpInput,
+  ChangePasswordInput,
+  VerifyMfaInput,
+  VerifyOtpInput,
+} from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { OTP_TTL, redisDelForgotPassword, redisGetForgotPasswordOtp, redisGetForgotPasswordOtpPointer, redisSetForgotPasswordOtp } from '../../database/redis';
+import {
+  OTP_TTL,
+  redisDelForgotPassword,
+  redisGetForgotPasswordOtp,
+  redisGetForgotPasswordOtpPointer,
+  redisSetForgotPasswordOtp,
+} from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { SYSTEM_USER } from '../../utils/access';
 import { killUserSessions } from '../../database/session';
@@ -32,7 +43,11 @@ export const generateOtp = () => {
 };
 
 export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const resetOtp = generateOtp();
   const hashedOtp = bcrypt.hashSync(resetOtp);
   const transactionId = uuid();
@@ -55,24 +70,31 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
 
   // Don't generate new redis key under 30-second delay
   const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
-  const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
+  const isTooRecent = previousKey.ttl > OTP_TTL - 30;
   if (isTooRecent) return transactionId;
 
   // Delete the previous OTP if it exists based on the pointer
   if (previousKey.id) await redisDelForgotPassword(previousKey.id, email);
 
   // Store the new OTP; create a new key using the new UUID
-  await redisSetForgotPasswordOtp(transactionId, { hashedOtp, email, mfa_activated: mfa_activated ?? false, mfa_validated: false, userId: id });
+  await redisSetForgotPasswordOtp(transactionId, {
+    hashedOtp,
+    email,
+    mfa_activated: mfa_activated ?? false,
+    mfa_validated: false,
+    userId: id,
+  });
 
   // Send email
   try {
-    const body = `<p>Hi ${name},</p>`
-      + '<p>We have received a request to reset the password for your account associated with this email address. To proceed with resetting your password, please use the verification code provided below:</p>'
-      + `<p><b>${resetOtp}</b></p>`
-      + '<p>Please enter this code on the password reset page to create a new password for your account.</p>'
-      + '<p>If you did not request this password reset, it is possible that someone else is trying to access your account. Do not forward or give this code to anyone.</p>'
-      + '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>'
-      + '<p>Sincerely,</p>';
+    const body =
+      `<p>Hi ${name},</p>` +
+      '<p>We have received a request to reset the password for your account associated with this email address. To proceed with resetting your password, please use the verification code provided below:</p>' +
+      `<p><b>${resetOtp}</b></p>` +
+      '<p>Please enter this code on the password reset page to create a new password for your account.</p>' +
+      '<p>If you did not request this password reset, it is possible that someone else is trying to access your account. Do not forward or give this code to anyone.</p>' +
+      '<p>For any assistance or if you have concerns, do not hesitate to contact the system administrator.</p>' +
+      '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: await smtpComputeFrom(),
       to: user_email,
@@ -99,7 +121,9 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       context_data: undefined,
       message: `Failed to send password reset code to ${input.email}`,
     });
-    throw UnsupportedError('Unable to send password reset code. Please try again later or contact your administrator.');
+    throw UnsupportedError(
+      'Unable to send password reset code. Please try again later or contact your administrator.',
+    );
   }
   await addForgotPasswordCount();
 
@@ -144,7 +168,9 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
 };
 
 export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => {
-  const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(
+    input.transactionId,
+  );
   const { otp_secret: mfa_secret } = await findById(context, SYSTEM_USER, userId);
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
@@ -153,14 +179,23 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
   if (!valid) {
     throw AuthenticationFailure();
   } else {
-    await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: valid, userId }, ttl);
+    await redisSetForgotPasswordOtp(
+      input.transactionId,
+      { hashedOtp, email, mfa_activated, mfa_validated: valid, userId },
+      ttl,
+    );
   }
   return valid;
 };
 
 export const changePassword = async (context: AuthContext, input: ChangePasswordInput) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const { hashedOtp, email, mfa_activated, mfa_validated, userId } = await redisGetForgotPasswordOtp(input.transactionId);
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
+  const { hashedOtp, email, mfa_activated, mfa_validated, userId } =
+    await redisGetForgotPasswordOtp(input.transactionId);
   const isMatch = bcrypt.compareSync(input.otp, hashedOtp);
   const isStateMfaValid = !mfa_activated || (mfa_activated && mfa_validated);
   if (!isMatch || !isStateMfaValid) {
@@ -181,10 +216,11 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     ]);
     await killUserSessions(authUser.id);
     await redisDelForgotPassword(input.transactionId, email);
-    const body = `<p>Hi ${authUser.name},</p>`
-      + '<p>We wanted to let you know that your account password was successfully changed.</p>'
-      + '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>'
-      + '<p>Sincerely,</p>';
+    const body =
+      `<p>Hi ${authUser.name},</p>` +
+      '<p>We wanted to let you know that your account password was successfully changed.</p>' +
+      '<p>If you initiated this change, no further action is required. However, if you did not request this change, please reset your password immediately and contact the system administrator.</p>' +
+      '<p>Sincerely,</p>';
     const sendMailArgs: SendMailArgs = {
       from: await smtpComputeFrom(),
       to: email,

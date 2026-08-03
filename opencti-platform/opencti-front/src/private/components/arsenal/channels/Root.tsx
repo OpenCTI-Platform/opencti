@@ -23,7 +23,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
 import ChannelDeletion from './ChannelDeletion';
 import { PATH_CHANNEL, PATH_CHANNELS } from '@components/common/routes/paths';
@@ -83,20 +86,22 @@ type RootChannelProps = {
 };
 
 const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootChannelSubscription>>(() => ({
-    subscription,
-    variables: { id: channelId },
-  }), [channelId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootChannelSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: channelId },
+    }),
+    [channelId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootChannelSubscription>(subConfig);
 
-  const {
-    channel,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootChannelQuery>(channelQuery, queryRef);
+  const { channel, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootChannelQuery>(
+    channelQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -110,7 +115,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -129,31 +134,30 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                   ]}
                   data={channel}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Arsenal') },
-              { label: t_i18n('Channels'), link: PATH_CHANNELS },
-              { label: channel.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Arsenal') },
+                { label: t_i18n('Channels'), link: PATH_CHANNELS },
+                { label: channel.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Channel"
               stixDomainObject={channel}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ChannelEdition channelId={channel.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={channel}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={channel} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ChannelDeletion id={channel.id} isOpen={isOpen} handleClose={onClose} />
@@ -168,18 +172,13 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               entity={channel}
               basePath={basePath}
               pages={{
-                overview:
-                  <Channel channelData={channel} />,
+                overview: <Channel channelData={channel} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <ChannelKnowledge channelData={channel} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={channel}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={channel} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={channel}
@@ -193,11 +192,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     entity={channel}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={channelId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={channelId} />,
               }}
             />
           </div>

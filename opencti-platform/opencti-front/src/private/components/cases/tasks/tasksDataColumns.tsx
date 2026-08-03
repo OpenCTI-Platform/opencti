@@ -30,9 +30,10 @@ export const tasksDataColumns: DataColumns = {
     width: '17%',
     isSortable: true,
 
-    render: (task: TasksLine_node$data) => ((task.objectAssignee ?? []).length > 0
-      ? (task.objectAssignee ?? []).map((node) => node.name).join(', ')
-      : EMPTY_VALUE),
+    render: (task: TasksLine_node$data) =>
+      (task.objectAssignee ?? []).length > 0
+        ? (task.objectAssignee ?? []).map((node) => node.name).join(', ')
+        : EMPTY_VALUE,
   },
   objectLabel: {
     label: 'Labels',
@@ -47,10 +48,7 @@ export const tasksDataColumns: DataColumns = {
     width: '12%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (
-      <ItemStatus
-        status={task.status}
-        disabled={!task.workflowEnabled}
-      />
+      <ItemStatus status={task.status} disabled={!task.workflowEnabled} />
     ),
   },
 };

@@ -83,25 +83,15 @@ const regionFragment = graphql`
   }
 `;
 
-const RegionComponent = ({
-  regionData,
-}: {
-  regionData: Region_region$key;
-}) => {
+const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
   useInitCreateRelationshipContext();
 
   const classes = useStyles();
   const region = useFragment<Region_region$key>(regionFragment, regionData);
-  const countries = region.countries?.edges.map(
-    (countryEdge) => countryEdge.node,
-  );
+  const countries = region.countries?.edges.map((countryEdge) => countryEdge.node);
   return (
     <div data-testid="region-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={4}>
           <LocationDetails locationData={region} />
         </Grid>
@@ -117,9 +107,7 @@ const RegionComponent = ({
           />
         </Grid>
         <Grid item xs={4}>
-          <StixDomainObjectOverview
-            stixDomainObject={region}
-          />
+          <StixDomainObjectOverview stixDomainObject={region} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships

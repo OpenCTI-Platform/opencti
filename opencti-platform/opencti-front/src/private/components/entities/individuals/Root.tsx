@@ -19,7 +19,10 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndividualAnalysis from './IndividualAnalysis';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
@@ -27,7 +30,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import IndividualDeletion from './IndividualDeletion';
 import { PATH_INDIVIDUAL, PATH_INDIVIDUALS } from '@components/common/routes/paths';
 
@@ -87,29 +93,23 @@ type RootIndividualProps = {
 };
 
 const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIndicatorSubscription>>(() => ({
-    subscription,
-    variables: { id: individualId },
-  }), [individualId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIndicatorSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: individualId },
+    }),
+    [individualId],
+  );
   const location = useLocation();
 
   const navigate = useNavigate();
   const LOCAL_STORAGE_KEY = `individual-${individualId}`;
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  );
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY);
 
   const [viewAs, setViewAs] = useState<string>(propOr('knowledge', 'viewAs', params));
 
   const saveView = () => {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      viewAs,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, viewAs);
   };
 
   const handleChangeViewAs = (event: React.ChangeEvent<{ value: string }>) => {
@@ -120,11 +120,8 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   const { t_i18n } = useFormatter();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
-  const {
-    individual,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootIndividualQuery>(individualQuery, queryRef);
+  const { individual, connectorsForExport, connectorsForImport } =
+    usePreloadedQuery<RootIndividualQuery>(individualQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
 
@@ -142,51 +139,54 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={viewAs === 'knowledge' && (
-                <StixCoreObjectKnowledgeBar
-                  stixCoreObjectLink={link}
-                  availableSections={[
-                    'organizations',
-                    'locations',
-                    'threats',
-                    'threat_actors',
-                    'intrusion_sets',
-                    'campaigns',
-                    'incidents',
-                    'malwares',
-                    'attack_patterns',
-                    'tools',
-                    'observables',
-                  ]}
-                  data={individual}
-                />
-              )}
+              element={
+                viewAs === 'knowledge' && (
+                  <StixCoreObjectKnowledgeBar
+                    stixCoreObjectLink={link}
+                    availableSections={[
+                      'organizations',
+                      'locations',
+                      'threats',
+                      'threat_actors',
+                      'intrusion_sets',
+                      'campaigns',
+                      'incidents',
+                      'malwares',
+                      'attack_patterns',
+                      'tools',
+                      'observables',
+                    ]}
+                    data={individual}
+                  />
+                )
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Individuals'), link: PATH_INDIVIDUALS },
-              { label: individual.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Individuals'), link: PATH_INDIVIDUALS },
+                { label: individual.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Individual"
               stixDomainObject={individual}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
-              EditComponent={!individual.isUser && (
+              EditComponent={
+                !individual.isUser && (
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                    <IndividualEdition individualId={individual.id} />
+                  </Security>
+                )
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <IndividualEdition individualId={individual.id} />
+                  <StixCoreRelationshipCreationFromEntityHeader data={individual} />
                 </Security>
-              )}
-              RelateComponent={(
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={individual}
-                  />
-                </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <IndividualDeletion id={individual.id} isOpen={isOpen} handleClose={onClose} />
@@ -202,31 +202,14 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               entity={individual}
               basePath={basePath}
               pages={{
-                overview: (
-                  <Individual
-                    individualData={individual}
-                    viewAs={viewAs}
-                  />
-                ),
+                overview: <Individual individualData={individual} viewAs={viewAs} />,
                 knowledge: (
                   <div key={forceUpdate}>
-                    <IndividualKnowledge
-                      individualData={individual}
-                      viewAs={viewAs}
-                    />
+                    <IndividualKnowledge individualData={individual} viewAs={viewAs} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={individual}
-                  />
-                ),
-                analyses: (
-                  <IndividualAnalysis
-                    individual={individual}
-                    viewAs={viewAs}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={individual} />,
+                analyses: <IndividualAnalysis individual={individual} viewAs={viewAs} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={individual.id}
@@ -253,11 +236,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                     entity={individual}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={individualId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={individualId} />,
               }}
             />
           </div>

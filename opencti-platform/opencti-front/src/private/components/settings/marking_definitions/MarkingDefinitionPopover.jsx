@@ -25,19 +25,20 @@ const markingDefinitionEditionQuery = graphql`
   query MarkingDefinitionPopoverEditionQuery($id: String!) {
     markingDefinition(id: $id) {
       editContext {
-          name
-          focusOn
+        name
+        focusOn
       }
       ...MarkingDefinitionEdition_markingDefinition
     }
   }
 `;
 
-const MarkingDefinitionPopover = ({
-  markingDefinition, paginationOptions,
-}) => {
+const MarkingDefinitionPopover = ({ markingDefinition, paginationOptions }) => {
   const { t_i18n } = useFormatter();
-  const { isSensitive, isAllowed } = useSensitiveModifications('markings', markingDefinition.standard_id);
+  const { isSensitive, isAllowed } = useSensitiveModifications(
+    'markings',
+    markingDefinition.standard_id,
+  );
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const disabled = !isAllowed && isSensitive;
@@ -90,17 +91,9 @@ const MarkingDefinitionPopover = ({
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t_i18n('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <QueryRenderer
         query={markingDefinitionEditionQuery}

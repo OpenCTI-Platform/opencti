@@ -35,17 +35,10 @@ const TokenCreationDrawer: FunctionComponent<TokenCreationDrawerProps> = ({
       size="medium"
     >
       {generatedToken ? (
-        <TokenResultView
-          token={generatedToken}
-          onClose={handleClose}
-        />
+        <TokenResultView token={generatedToken} onClose={handleClose} />
       ) : (
         <>
-          <TokenCreationForm
-            userId={userId}
-            onSuccess={onSuccess}
-            onClose={handleClose}
-          />
+          <TokenCreationForm userId={userId} onSuccess={onSuccess} onClose={handleClose} />
         </>
       )}
     </Drawer>

@@ -36,7 +36,11 @@ import {
   findPlaybooksForEnrollment,
   findPlaybooksForEnrollmentByFilters,
 } from './playbook-domain';
-import { executePlaybookOnEntity, playbookStepExecution, getManagerInfo } from '../../manager/playbookManager/playbookManager';
+import {
+  executePlaybookOnEntity,
+  playbookStepExecution,
+  getManagerInfo,
+} from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 import { loadCreators } from '../../database/members';
@@ -46,9 +50,16 @@ const playbookResolvers: Resolvers = {
     playbook: (_, { id }, context) => findById(context, context.user, id),
     playbooks: (_, args, context) => findPlaybookPaginated(context, context.user, args),
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
-    playbooksForEnrollment: (_, { ids }, context) => findPlaybooksForEnrollment(context, context.user, ids),
+    playbooksForEnrollment: (_, { ids }, context) =>
+      findPlaybooksForEnrollment(context, context.user, ids),
     playbooksForEnrollmentByFilters: (_, { filters, search, excludedIds }, context) => {
-      return findPlaybooksForEnrollmentByFilters(context, context.user, filters ?? null, search ?? null, excludedIds ?? []);
+      return findPlaybooksForEnrollmentByFilters(
+        context,
+        context.user,
+        filters ?? null,
+        search ?? null,
+        excludedIds ?? [],
+      );
     },
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -59,7 +70,8 @@ const playbookResolvers: Resolvers = {
     creators: async (current, _, context) => loadCreators(context, context.user, current),
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
-    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id),
+    queue_messages: async (current, _, context) =>
+      getConnectorQueueSize(context, context.user, current.id),
     toConfigurationExport: (playbook, _, __) => playbookExport(playbook),
   },
   PlaybookComponent: {
@@ -72,19 +84,35 @@ const playbookResolvers: Resolvers = {
   },
   Mutation: {
     playbookAdd: (_, { input }, context) => playbookAdd(context, context.user, input),
-    playbookAddNode: (_, { id, input }, context) => playbookAddNode(context, context.user, id, input),
-    playbookAddLink: (_, { id, input }, context) => playbookAddLink(context, context.user, id, input),
-    playbookReplaceNode: (_, { id, nodeId, input }, context) => playbookReplaceNode(context, context.user, id, nodeId, input),
+    playbookAddNode: (_, { id, input }, context) =>
+      playbookAddNode(context, context.user, id, input),
+    playbookAddLink: (_, { id, input }, context) =>
+      playbookAddLink(context, context.user, id, input),
+    playbookReplaceNode: (_, { id, nodeId, input }, context) =>
+      playbookReplaceNode(context, context.user, id, nodeId, input),
     playbookInsertNode: (_, { id, parentNodeId, parentPortId, childNodeId, input }, context) => {
-      return playbookInsertNode(context, context.user, id, parentNodeId, parentPortId, childNodeId, input);
+      return playbookInsertNode(
+        context,
+        context.user,
+        id,
+        parentNodeId,
+        parentPortId,
+        childNodeId,
+        input,
+      );
     },
     playbookDelete: (_, { id }, context) => playbookDelete(context, context.user, id),
-    playbookDeleteNode: (_, { id, nodeId }, context) => playbookDeleteNode(context, context.user, id, nodeId),
-    playbookDeleteLink: (_, { id, linkId }, context) => playbookDeleteLink(context, context.user, id, linkId),
-    playbookUpdatePositions: (_, { id, positions }, context) => playbookUpdatePositions(context, context.user, id, positions),
-    playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),
+    playbookDeleteNode: (_, { id, nodeId }, context) =>
+      playbookDeleteNode(context, context.user, id, nodeId),
+    playbookDeleteLink: (_, { id, linkId }, context) =>
+      playbookDeleteLink(context, context.user, id, linkId),
+    playbookUpdatePositions: (_, { id, positions }, context) =>
+      playbookUpdatePositions(context, context.user, id, positions),
+    playbookFieldPatch: (_, { id, input }, context) =>
+      playbookEdit(context, context.user, id, input),
     playbookStepExecution: (_, args, context) => playbookStepExecution(context, context.user, args),
-    playbookExecute: (_, { id, entityId }, context) => executePlaybookOnEntity(context, id, entityId),
+    playbookExecute: (_, { id, entityId }, context) =>
+      executePlaybookOnEntity(context, id, entityId),
     playbookImport: (_, { file }, context) => playbookImport(context, context.user, file),
     playbookDuplicate: (_, { id }, context) => playbookDuplicate(context, context.user, id),
   },

@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import {
-  SecurityCoverageEditionOverview_securityCoverage$key,
-} from '@components/analyses/security_coverages/__generated__/SecurityCoverageEditionOverview_securityCoverage.graphql';
+import { SecurityCoverageEditionOverview_securityCoverage$key } from '@components/analyses/security_coverages/__generated__/SecurityCoverageEditionOverview_securityCoverage.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { SecurityCoverageEditionContainerQuery } from './__generated__/SecurityCoverageEditionContainerQuery.graphql';
 import SecurityCoverageEditionOverview from './SecurityCoverageEditionOverview';
@@ -28,12 +26,9 @@ interface SecurityCoverageEditionContainerProps {
   controlledDial?: DrawerControlledDialType;
 }
 
-const SecurityCoverageEditionContainer: FunctionComponent<SecurityCoverageEditionContainerProps> = ({
-  handleClose,
-  queryRef,
-  open,
-  controlledDial,
-}) => {
+const SecurityCoverageEditionContainer: FunctionComponent<
+  SecurityCoverageEditionContainerProps
+> = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
   const { securityCoverage } = usePreloadedQuery(securityCoverageEditionContainerQuery, queryRef);
   return (

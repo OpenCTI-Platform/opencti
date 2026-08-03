@@ -26,19 +26,19 @@ const ProgressBar = ({
   const { t_i18n } = useFormatter();
 
   return (
-    <Dialog
-      open={open}
-      title={title}
-    >
+    <Dialog open={open} title={title}>
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <LinearProgress style={{ flex: 1 }} variant={variant} value={value} valueBuffer={value + 10} />
+        <LinearProgress
+          style={{ flex: 1 }}
+          variant={variant}
+          value={value}
+          valueBuffer={value + 10}
+        />
         {label && <Typography style={{ flexShrink: 0 }}>{label}</Typography>}
       </div>
       {children}
       <DialogActions>
-        <Button onClick={onClose}>
-          {t_i18n('Close')}
-        </Button>
+        <Button onClick={onClose}>{t_i18n('Close')}</Button>
       </DialogActions>
     </Dialog>
   );

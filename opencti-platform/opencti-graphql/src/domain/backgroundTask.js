@@ -2,12 +2,36 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES } from '../database/utils';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_BACKGROUND_TASK,
+  ENTITY_TYPE_INTERNAL_FILE,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { getUserAccessRight, isBypassUser, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../utils/access';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
-import { buildEntityFilters, countAllThings, topEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask, TASK_TYPE_QUERY, TASK_TYPE_RULE } from './backgroundTask-common';
+import {
+  getUserAccessRight,
+  isBypassUser,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SYSTEM_USER,
+} from '../utils/access';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  RULE_PREFIX,
+} from '../schema/general';
+import {
+  buildEntityFilters,
+  countAllThings,
+  topEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../database/middleware-loader';
+import {
+  checkActionValidity,
+  createDefaultTask,
+  TASK_TYPE_QUERY,
+  TASK_TYPE_RULE,
+} from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 import { ForbiddenAccess } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -47,7 +71,10 @@ export const findById = async (context, user, taskId) => {
 
 export const findBackgroundTaskPaginated = (context, user, args) => {
   if (isBypassUser(user)) {
-    return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], { ...args, includeAuthorities: true });
+    return pageEntitiesConnection(context, user, [ENTITY_TYPE_BACKGROUND_TASK], {
+      ...args,
+      includeAuthorities: true,
+    });
   }
   const initiatorFilter = {
     mode: 'and',
@@ -67,7 +94,16 @@ export const findBackgroundTask = (context, user, args) => {
   return topEntitiesList(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-export const buildQueryFilters = async (context, user, filters, search, taskPosition, scope, orderMode, excludedIds) => {
+export const buildQueryFilters = async (
+  context,
+  user,
+  filters,
+  search,
+  taskPosition,
+  scope,
+  orderMode,
+  excludedIds,
+) => {
   let inputFilters = filters ? JSON.parse(filters) : undefined;
   if (scope === BackgroundTaskScope.Import) {
     const entityIdFilters = inputFilters.filters.findIndex(({ key }) => key.includes('entity_id'));
@@ -87,21 +123,20 @@ export const buildQueryFilters = async (context, user, filters, search, taskPosi
   }
   let types = DEFAULT_ALLOWED_TASK_ENTITY_TYPES;
   if (scope === BackgroundTaskScope.PublicDashboard) {
-    const dashboards = await findAllWorkspaces(
-      context,
-      user,
-      {
-        filters: {
-          mode: FilterMode.And,
-          filters: [{ key: ['type'], values: ['dashboard'] }],
-          filterGroups: [],
-        },
+    const dashboards = await findAllWorkspaces(context, user, {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ key: ['type'], values: ['dashboard'] }],
+        filterGroups: [],
       },
-    );
+    });
     const dashboardIds = dashboards.map((n) => n.id);
     inputFilters = addFilter(inputFilters, 'dashboard_id', dashboardIds);
     types = [ENTITY_TYPE_PUBLIC_DASHBOARD];
-  } else if (scope === BackgroundTaskScope.Dashboard || scope === BackgroundTaskScope.Investigation) {
+  } else if (
+    scope === BackgroundTaskScope.Dashboard ||
+    scope === BackgroundTaskScope.Investigation
+  ) {
     types = [ENTITY_TYPE_WORKSPACE];
   } else if (scope === BackgroundTaskScope.Playbook) {
     types = [ENTITY_TYPE_PLAYBOOK];
@@ -128,11 +163,12 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   const { scan } = ruleDefinition;
   const opts = enable
     ? buildEntityFilters(scan.types, scan)
-    : { filters: {
-        mode: 'and',
-        filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
-        filterGroups: [],
-      },
+    : {
+        filters: {
+          mode: 'and',
+          filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }],
+          filterGroups: [],
+        },
       };
   const queryData = await elPaginate(context, user, READ_DATA_INDICES, { ...opts, first: 1 });
   const countExpected = queryData.pageInfo.globalCount;
@@ -145,7 +181,10 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
 export const createQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null, scope, orderMode } = input;
   await checkActionValidity(context, user, input, scope, TASK_TYPE_QUERY);
-  const impactsNumber = await countAllThings(context, context.user, { search, filters: JSON.parse(filters) });
+  const impactsNumber = await countAllThings(context, context.user, {
+    search,
+    filters: JSON.parse(filters),
+  });
   const countExpected = impactsNumber - excluded_ids.length;
   const task = await createDefaultTask(context, user, input, TASK_TYPE_QUERY, countExpected, scope);
   const queryTask = {
@@ -172,12 +211,17 @@ export const createQueryTask = async (context, user, input) => {
 export const deleteRuleTasks = async (context, user, ruleId) => {
   const tasksFilters = {
     mode: 'and',
-    filters: [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }],
+    filters: [
+      { key: 'type', values: ['RULE'] },
+      { key: 'rule', values: [ruleId] },
+    ],
     filterGroups: [],
   };
   const args = { filters: tasksFilters };
   const tasks = await topEntitiesList(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
-  await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_BACKGROUND_TASK)));
+  await Promise.all(
+    tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_BACKGROUND_TASK)),
+  );
 };
 
 export const deleteTask = async (context, user, taskId) => {

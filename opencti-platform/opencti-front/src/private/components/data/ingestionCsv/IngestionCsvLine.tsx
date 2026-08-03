@@ -90,12 +90,14 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
-  const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : EMPTY_VALUE);
+  const [stateHash, setStateHash] = useState(
+    data.current_state_hash ? data.current_state_hash : EMPTY_VALUE,
+  );
   return (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={(
+      secondaryAction={
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionCsvPopover
             ingestionCsvId={data.id}
@@ -104,20 +106,16 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             setStateHash={setStateHash}
           />
         </Security>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <TableViewIcon />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <Cell width={dataColumns.name.width}>
-              {data.name}
-            </Cell>
-            <Cell width={dataColumns.uri.width}>
-              {data.uri}
-            </Cell>
+            <Cell width={dataColumns.name.width}>{data.name}</Cell>
+            <Cell width={dataColumns.uri.width}>{data.uri}</Cell>
             <Cell width={dataColumns.ingestion_running.width} withTooltip={false}>
               <ItemBoolean
                 label={data.ingestion_running ? t_i18n('Active') : t_i18n('Inactive')}
@@ -127,11 +125,9 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
             <Cell width={dataColumns.last_execution_date.width}>
               {fldt(data.last_execution_date) || EMPTY_VALUE}
             </Cell>
-            <Cell width={dataColumns.current_state_hash.width}>
-              {stateHash}
-            </Cell>
+            <Cell width={dataColumns.current_state_hash.width}>{stateHash}</Cell>
           </div>
-        )}
+        }
       />
     </ListItem>
   );
@@ -146,72 +142,34 @@ export const IngestionCsvLineDummy = ({ dataColumns }: { dataColumns: DataColumn
       secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.uri.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.uri.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.ingestion_running.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.current_state_hash.width }}
             >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

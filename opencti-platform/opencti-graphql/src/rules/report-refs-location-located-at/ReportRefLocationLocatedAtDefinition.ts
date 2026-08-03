@@ -47,7 +47,11 @@ const display = {
 };
 
 // For rescan
-const scan: RuleFilters = { types: [RELATION_LOCATED_AT], fromTypes: [ENTITY_TYPE_LOCATION], toTypes: [ENTITY_TYPE_LOCATION] };
+const scan: RuleFilters = {
+  types: [RELATION_LOCATED_AT],
+  fromTypes: [ENTITY_TYPE_LOCATION],
+  toTypes: [ENTITY_TYPE_LOCATION],
+};
 
 // For live
 const scopes: Array<RuleScope> = [
@@ -56,7 +60,11 @@ const scopes: Array<RuleScope> = [
     attributes: [{ name: 'object_refs' }],
   },
   {
-    filters: { types: [RELATION_LOCATED_AT], fromTypes: [ENTITY_TYPE_LOCATION], toTypes: [ENTITY_TYPE_LOCATION] },
+    filters: {
+      types: [RELATION_LOCATED_AT],
+      fromTypes: [ENTITY_TYPE_LOCATION],
+      toTypes: [ENTITY_TYPE_LOCATION],
+    },
     attributes: [],
   },
 ];

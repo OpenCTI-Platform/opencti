@@ -11,6 +11,8 @@ const getSmtpKeyPair = memoize(async () => {
   return factory.deriveAesKey(['smtp', 'elastic'], 1);
 });
 
-export const encryptSmtpSecret = async (value: string | undefined | null) => encryptValue(await getSmtpKeyPair(), value);
+export const encryptSmtpSecret = async (value: string | undefined | null) =>
+  encryptValue(await getSmtpKeyPair(), value);
 
-export const decryptSmtpSecret = async (value: string | undefined | null) => decryptValue(await getSmtpKeyPair(), value);
+export const decryptSmtpSecret = async (value: string | undefined | null) =>
+  decryptValue(await getSmtpKeyPair(), value);

@@ -39,11 +39,7 @@ const AddAttackPatterns: FunctionComponent<{
 
   return (
     <div>
-      <IconButton
-        color="primary"
-        aria-label="Add"
-        onClick={handleOpen}
-      >
+      <IconButton color="primary" aria-label="Add" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -51,23 +47,12 @@ const AddAttackPatterns: FunctionComponent<{
         onClose={handleClose}
         title={t_i18n('Add attack patterns')}
         subHeader={{
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="searchInput"
-            />
-          )],
+          left: [<SearchInput variant="inDrawer" onSubmit={handleSearch} key="searchInput" />],
         }}
       >
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <AddAttackPatternsLines
-              dataComponent={dataComponent}
-              queryRef={queryRef}
-            />
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <AddAttackPatternsLines dataComponent={dataComponent} queryRef={queryRef} />
           </React.Suspense>
         )}
       </Drawer>

@@ -8,34 +8,39 @@ import SelectField from './SelectField';
 import { useFormatter } from '../i18n';
 
 export const disseminationListFieldQuery = graphql`
-    query DisseminationListFieldQuery(
-        $cursor: ID
-        $orderBy: DisseminationListOrdering
-        $orderMode: OrderingMode
-        $filters: FilterGroup
+  query DisseminationListFieldQuery(
+    $cursor: ID
+    $orderBy: DisseminationListOrdering
+    $orderMode: OrderingMode
+    $filters: FilterGroup
+  ) {
+    disseminationLists(
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
     ) {
-        disseminationLists(
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
+      edges {
+        node {
+          id
+          name
         }
+      }
     }
+  }
 `;
 
 const DisseminationListField: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const [lists, setLists] = useState<DisseminationListFieldQuery$data['disseminationLists'] | null>(null);
+  const [lists, setLists] = useState<DisseminationListFieldQuery$data['disseminationLists'] | null>(
+    null,
+  );
 
   const fetchDisseminationLists = async () => {
-    return await fetchQuery(disseminationListFieldQuery, {}).toPromise() as Promise<DisseminationListFieldQuery$data>;
+    return (await fetchQuery(
+      disseminationListFieldQuery,
+      {},
+    ).toPromise()) as Promise<DisseminationListFieldQuery$data>;
   };
 
   useEffect(() => {

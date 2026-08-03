@@ -1,6 +1,8 @@
 import React from 'react';
 import { DataColumns } from '../../../../../components/list_lines';
-import EntitySettingAttributeLine, { EntitySettingAttributeLineDummy } from './EntitySettingAttributeLine';
+import EntitySettingAttributeLine, {
+  EntitySettingAttributeLineDummy,
+} from './EntitySettingAttributeLine';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { useFormatter } from '../../../../../components/i18n';
 import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
@@ -33,28 +35,25 @@ const EntitySettingAttributeLines = ({
     if (keyword) {
       const value = node.label ?? node.name;
       const filterOnValue = value.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-      const filterOnValueTranslated = t_i18n(`${value}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      const filterOnValueTranslated =
+        t_i18n(`${value}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
 
       const type = computeAttributeNodeType(node);
       const filterOnType = type.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
-      const filterOnTypeTranslated = t_i18n(`${type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      const filterOnTypeTranslated =
+        t_i18n(`${type}`).toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
 
       return filterOnValue || filterOnValueTranslated || filterOnType || filterOnTypeTranslated;
     }
     return true;
   };
-  const sortOn = (
-    edgeA: { node: AttributeNode },
-    edgeB: { node: AttributeNode },
-  ) => {
+  const sortOn = (edgeA: { node: AttributeNode }, edgeB: { node: AttributeNode }) => {
     const valueA = edgeA.node.label ?? edgeA.node.name;
     const valueB = edgeB.node.label ?? edgeB.node.name;
     return t_i18n(`${valueA}`).localeCompare(t_i18n(`${valueB}`));
   };
 
-  const attributes = (datas ?? [])
-    .filter(filterOn)
-    .sort(sortOn);
+  const attributes = (datas ?? []).filter(filterOn).sort(sortOn);
 
   return (
     <ListLinesContent

@@ -5,7 +5,9 @@ import {
   SupportPackageLinesPaginationQuery,
   SupportPackageLinesPaginationQuery$variables,
 } from '@components/settings/support/__generated__/SupportPackageLinesPaginationQuery.graphql';
-import SupportPackageLines, { supportPackageLinesQuery } from '@components/settings/support/SupportPackageLines';
+import SupportPackageLines, {
+  supportPackageLinesQuery,
+} from '@components/settings/support/SupportPackageLines';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
@@ -22,9 +24,7 @@ import Card from '../../../../components/common/card/Card';
 const LOCAL_STORAGE_KEY = 'support-packages';
 
 export const supportPackageAddMutation = graphql`
-  mutation SupportPackagesMutation(
-    $input: SupportPackageAddInput!
-  ) {
+  mutation SupportPackagesMutation($input: SupportPackageAddInput!) {
     supportPackageAdd(input: $input) {
       id
       name
@@ -39,14 +39,12 @@ const SupportPackages = () => {
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
   const [commitSupportPackageAdd] = useApiMutation(supportPackageAddMutation);
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SupportPackageLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY,
-    {
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<SupportPackageLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
       searchTerm: '',
       sortBy: 'created_at',
       orderAsc: false,
-    },
-  );
+    });
   const generateSupportPackage = () => {
     const supportPackageName = `support-package-${nsdt(new Date())}`;
     commitSupportPackageAdd({
@@ -56,17 +54,10 @@ const SupportPackages = () => {
         },
       },
       updater: (store: RecordSourceSelectorProxy) => {
-        insertNode(
-          store,
-          'Pagination_supportPackages',
-          paginationOptions,
-          'supportPackageAdd',
-        );
+        insertNode(store, 'Pagination_supportPackages', paginationOptions, 'supportPackageAdd');
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess(
-          `Support package request send for ${supportPackageName}.`,
-        );
+        MESSAGING$.notifySuccess(`Support package request send for ${supportPackageName}.`);
       },
       onError: (error: Error) => {
         handleError(error);
@@ -131,18 +122,23 @@ const SupportPackages = () => {
           overflowY: 'auto',
           paddingTop: 1,
         }}
-        action={(
-          <Tooltip title={(
-            <Alert
-              severity="warning"
-              variant="outlined"
-              style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
-            >
-              {disabledInDraft
-                ? t_i18n('You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.')
-                : t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
-            </Alert>
-          )}
+        action={
+          <Tooltip
+            title={
+              <Alert
+                severity="warning"
+                variant="outlined"
+                style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+              >
+                {disabledInDraft
+                  ? t_i18n(
+                      'You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.',
+                    )
+                  : t_i18n(
+                      'We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.',
+                    )}
+              </Alert>
+            }
           >
             <span style={{ float: 'right', marginTop: '-34px', display: 'inline-block' }}>
               <Button
@@ -156,7 +152,7 @@ const SupportPackages = () => {
               </Button>
             </span>
           </Tooltip>
-        )}
+        }
       >
         {renderLines()}
       </Card>

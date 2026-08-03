@@ -15,7 +15,11 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -28,11 +32,7 @@ const systemMutationFieldPatch = graphql`
     $references: [String]
   ) {
     systemEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...SystemEditionOverview_system
         ...System_system
       }
@@ -85,17 +85,20 @@ const SystemEditionOverviewComponent = (props) => {
   const { system, enableReferences, context, handleClose } = props;
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(SYSTEM_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
-    contact_information: Yup.string().nullable(),
-    x_opencti_reliability: Yup.string().nullable(),
-    references: Yup.array(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      description: Yup.string().nullable(),
+      confidence: Yup.number().nullable(),
+      contact_information: Yup.string().nullable(),
+      x_opencti_reliability: Yup.string().nullable(),
+      references: Yup.array(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const systemValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
   const queries = {
@@ -123,8 +126,7 @@ const SystemEditionOverviewComponent = (props) => {
       variables: {
         id: system.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -181,14 +183,7 @@ const SystemEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form>
           <AlertConfidenceForEntity entity={system} />
           <Field
@@ -197,19 +192,17 @@ const SystemEditionOverviewComponent = (props) => {
             name="name"
             disabled={external}
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             uploadEntityId={system.id}
             fullWidth={true}
             multiline={true}
@@ -217,9 +210,7 @@ const SystemEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -234,22 +225,20 @@ const SystemEditionOverviewComponent = (props) => {
             variant="standard"
             name="contact_information"
             label={t_i18n('Contact information')}
-            required={(mandatoryAttributes.includes('contact_information'))}
+            required={mandatoryAttributes.includes('contact_information')}
             fullWidth={true}
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="contact_information" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="contact_information" />}
           />
           <OpenVocabField
             label={t_i18n('Reliability')}
             type="reliability_ov"
             name="x_opencti_reliability"
-            required={(mandatoryAttributes.includes('x_opencti_reliability'))}
+            required={mandatoryAttributes.includes('x_opencti_reliability')}
             onChange={setFieldValue}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -266,28 +255,22 @@ const SystemEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -309,37 +292,37 @@ const SystemEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(SystemEditionOverviewComponent, {
   system: graphql`
-      fragment SystemEditionOverview_system on System {
-        id
-        name
-        description
-        confidence
-        entity_type
-        contact_information
-        x_opencti_reliability
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
+    fragment SystemEditionOverview_system on System {
+      id
+      name
+      description
+      confidence
+      entity_type
+      contact_information
+      x_opencti_reliability
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
+          name
+          entity_type
         }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
       }
-    `,
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

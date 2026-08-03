@@ -91,10 +91,7 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
         },
       }}
     >
-      <Box
-        sx={imageModalStyle}
-        onClick={onClose}
-      >
+      <Box sx={imageModalStyle} onClick={onClose}>
         {images.length > 1 ? (
           <Carousel
             autoPlay={false}

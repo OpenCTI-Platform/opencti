@@ -102,10 +102,7 @@ const StixRelationshipsTreeMapComponent = ({
   parameters,
   onMounted,
 }: StixRelationshipsTreeMapComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsTreeMapsDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsTreeMapsDistributionQuery, queryRef);
 
   const distribution = data?.stixRelationshipsDistribution ?? [];
   const selection = dataSelection[0];
@@ -129,7 +126,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsTreeMapDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { startDate, endDate, dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
 
   return {
     field: selection.attribute ?? 'entity_type',
@@ -168,7 +166,13 @@ const StixRelationshipsTreeMap = ({
 }: StixRelationshipsTreeMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

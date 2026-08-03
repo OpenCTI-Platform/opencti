@@ -38,7 +38,11 @@ const display = {
 };
 
 // For rescan
-const scan = { types: [RELATION_PARTICIPATE_TO], fromTypes: [ENTITY_TYPE_USER], toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION] };
+const scan = {
+  types: [RELATION_PARTICIPATE_TO],
+  fromTypes: [ENTITY_TYPE_USER],
+  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+};
 
 // For live
 const filterParticipateTo = {

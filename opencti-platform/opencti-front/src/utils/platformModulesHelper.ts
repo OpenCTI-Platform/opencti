@@ -1,6 +1,7 @@
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
 
-export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
+export const DISABLE_MANAGER_MESSAGE =
+  'To use this feature, your platform administrator must enable the according manager in the config.';
 
 export const RUNTIME_SORTING = 'RUNTIME_SORTING';
 export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
@@ -38,10 +39,7 @@ export interface ModuleHelper {
   isChatbotAiEnabled: () => boolean;
 }
 
-export const isFeatureEnable = (
-  settings: RootSettings$data,
-  id: string,
-) => {
+export const isFeatureEnable = (settings: RootSettings$data, id: string) => {
   const flags = settings.platform_feature_flags ?? [];
   // config can target all FF available with special FF id "*"
   if (flags.find((f) => f.id === '*' && f.enable)) {
@@ -50,25 +48,17 @@ export const isFeatureEnable = (
   return flags.some((flag) => flag.id === id && flag.enable);
 };
 
-const isModuleEnable = (
-  settings: RootSettings$data,
-  id: string,
-) => {
+const isModuleEnable = (settings: RootSettings$data, id: string) => {
   const modules = settings.platform_modules || [];
   return modules.some((module) => module.id === id && module.enable);
 };
 
-const isModuleWarning = (
-  settings: RootSettings$data,
-  id: string,
-) => {
+const isModuleWarning = (settings: RootSettings$data, id: string) => {
   const modules = settings.platform_modules || [];
   return modules.some((module) => module.id === id && module.warning);
 };
 
-const platformModuleHelper = (
-  settings: RootSettings$data,
-): ModuleHelper => ({
+const platformModuleHelper = (settings: RootSettings$data): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
   isModuleWarning: (id: string) => isModuleWarning(settings, id),
   isFeatureEnable: (id: string) => isFeatureEnable(settings, id),
@@ -84,7 +74,8 @@ const platformModuleHelper = (
   isTelemetryManagerEnable: () => isModuleEnable(settings, TELEMETRY_MANAGER),
   isTrashEnable: () => settings.platform_trash_enabled,
   isPlaygroundEnable: () => settings.playground_enabled,
-  generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
+  generateDisableMessage: (id: string) =>
+    !isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : '',
   isRequestAccessEnabled: () => settings.request_access_enabled,
   isChatbotAiEnabled: () => settings.filigran_chatbot_ai_cgu_status === 'enabled',
 });

@@ -11,9 +11,7 @@ import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQue
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
-  dataComponentId,
-}) => {
+const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({ dataComponentId }) => {
   const { t_i18n } = useFormatter();
 
   const [open, setOpen] = useState(false);
@@ -30,18 +28,13 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
     setSearch('');
   };
 
-  const queryRef = useQueryLoading<AddDataSourcesLinesQuery>(
-    addDataSourcesLinesQuery,
-    { ...paginationOptions },
-  );
+  const queryRef = useQueryLoading<AddDataSourcesLinesQuery>(addDataSourcesLinesQuery, {
+    ...paginationOptions,
+  });
 
   return (
     <div>
-      <IconButton
-        color="primary"
-        aria-label="Add"
-        onClick={handleOpen}
-      >
+      <IconButton color="primary" aria-label="Add" onClick={handleOpen}>
         <Add fontSize="small" />
       </IconButton>
       <Drawer
@@ -49,32 +42,21 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         onClose={handleClose}
         title={t_i18n('Add data sources')}
         subHeader={{
-          right: [(
+          right: [
             <DataSourceCreation
               contextual={true}
               display={open}
               inputValue={search}
               paginationOptions={paginationOptions}
               key="rightButton"
-            />
-          )],
-          left: [(
-            <SearchInput
-              variant="inDrawer"
-              onSubmit={handleSearch}
-              key="leftInput"
-            />
-          )],
+            />,
+          ],
+          left: [<SearchInput variant="inDrawer" onSubmit={handleSearch} key="leftInput" />],
         }}
       >
         {queryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement} />}
-          >
-            <AddDataSourcesLines
-              dataComponentId={dataComponentId}
-              queryRef={queryRef}
-            />
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <AddDataSourcesLines dataComponentId={dataComponentId} queryRef={queryRef} />
           </React.Suspense>
         )}
       </Drawer>

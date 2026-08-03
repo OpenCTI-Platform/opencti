@@ -11,7 +11,11 @@ import { Box, Stack } from '@mui/material';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
-import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
+import {
+  getCurrentCategory,
+  getCurrentDataSelectionLimit,
+  isWidgetUsingRelationsAggregation,
+} from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 
@@ -107,62 +111,58 @@ const WidgetCreationDataSelection = () => {
 
   return (
     <div style={{ marginTop: 20 }}>
-      {
-        dataSelection.map((item, i) => {
-          return (
-            <StepContainer
-              id={`widget-selection-${i}`}
-              key={itemIds[i]}
-              perspective={item.perspective}
+      {dataSelection.map((item, i) => {
+        return (
+          <StepContainer
+            id={`widget-selection-${i}`}
+            key={itemIds[i]}
+            perspective={item.perspective}
+          >
+            <IconButton
+              disabled={dataSelection.length === 1}
+              aria-label="Delete"
+              style={{
+                position: 'absolute',
+                top: -20,
+                right: -20,
+              }}
+              onClick={() => handleRemoveDataSelection(i)}
             >
-              <IconButton
-                disabled={dataSelection.length === 1}
-                aria-label="Delete"
-                style={{
-                  position: 'absolute',
-                  top: -20,
-                  right: -20,
-                }}
-                onClick={() => handleRemoveDataSelection(i)}
-              >
-                <CancelOutlined fontSize="small" />
-              </IconButton>
+              <CancelOutlined fontSize="small" />
+            </IconButton>
 
-              <Stack direction="row" sx={{ width: '100%' }}>
-                <TextField
-                  style={{ flex: 1 }}
-                  label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
-                  fullWidth={true}
-                  value={dataSelection[i].label}
-                  onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
-                />
-                {
-                  perspective === 'relationships' && (
-                    <Tooltip
-                      title={t_i18n(
-                        'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
-                      )}
-                    >
-                      <InformationOutline
-                        fontSize="small"
-                        color="primary"
-                        style={{ marginRight: 5, marginTop: 20 }}
-                      />
-                    </Tooltip>
-                  )
-                }
-              </Stack>
-
-              <WidgetFilters
-                dataSelection={dataSelection[i]}
-                setDataSelection={(data) => setDataSelectionWithIndex(data, i)}
-                perspective={dataSelection[i].perspective ?? perspective}
-                type={type}
+            <Stack direction="row" sx={{ width: '100%' }}>
+              <TextField
+                style={{ flex: 1 }}
+                label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
+                fullWidth={true}
+                value={dataSelection[i].label}
+                onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
               />
-            </StepContainer>
-          );
-        })
-      }
+              {perspective === 'relationships' && (
+                <Tooltip
+                  title={t_i18n(
+                    "The relationships taken into account are: stix core relationships, sightings and 'contains' relationships",
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ marginRight: 5, marginTop: 20 }}
+                  />
+                </Tooltip>
+              )}
+            </Stack>
+
+            <WidgetFilters
+              dataSelection={dataSelection[i]}
+              setDataSelection={(data) => setDataSelectionWithIndex(data, i)}
+              perspective={dataSelection[i].perspective ?? perspective}
+              type={type}
+            />
+          </StepContainer>
+        );
+      })}
 
       {perspective === 'entities' && canAddDataSelection && (
         <div style={{ display: 'flex' }}>
@@ -218,8 +218,8 @@ const WidgetCreationDataSelection = () => {
         <Stack direction="row">
           <Button
             disabled={
-              getCurrentDataSelectionLimit(type) === dataSelection.length
-              || getCurrentCategory(type) === 'distribution'
+              getCurrentDataSelectionLimit(type) === dataSelection.length ||
+              getCurrentCategory(type) === 'distribution'
             }
             color="secondary"
             size="small"

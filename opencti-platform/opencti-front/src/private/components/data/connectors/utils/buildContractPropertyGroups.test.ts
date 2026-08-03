@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { IngestionTypedProperty } from '@components/integrations/catalog/types';
-import { augmentPasswordDescriptions, buildContractPropertyGroups } from './buildContractPropertyGroups';
+import {
+  augmentPasswordDescriptions,
+  buildContractPropertyGroups,
+} from './buildContractPropertyGroups';
 import { ManagerContractProperty } from './reconcileManagedConnectorContractDataWithSchema';
 
 type TestStringProperty = IngestionTypedProperty<'string'> & {
@@ -17,8 +20,10 @@ const prop = (overrides: Partial<TestStringProperty> = {}): TestStringProperty =
   ...overrides,
 });
 
-const passwordProp = (overrides: Partial<TestStringProperty> = {}) => prop({ format: 'password', ...overrides });
-const deprecatedProp = (overrides: Partial<TestStringProperty> = {}) => prop({ deprecated: true, default: 'default_val', ...overrides });
+const passwordProp = (overrides: Partial<TestStringProperty> = {}) =>
+  prop({ format: 'password', ...overrides });
+const deprecatedProp = (overrides: Partial<TestStringProperty> = {}) =>
+  prop({ deprecated: true, default: 'default_val', ...overrides });
 
 // ---------------------------------------------------------------------------
 // augmentPasswordDescriptions
@@ -32,9 +37,13 @@ describe('augmentPasswordDescriptions', () => {
   });
 
   it('appends hidden-value note to password fields', () => {
-    const properties: ManagerContractProperty[] = [['secret', passwordProp({ description: 'My secret' })]];
+    const properties: ManagerContractProperty[] = [
+      ['secret', passwordProp({ description: 'My secret' })],
+    ];
     const result = augmentPasswordDescriptions(properties);
-    expect(result[0][1].description).toBe('My secret Current value is hidden, but can still be replaced.');
+    expect(result[0][1].description).toBe(
+      'My secret Current value is hidden, but can still be replaced.',
+    );
   });
 
   it('does not mutate the original property', () => {
@@ -52,7 +61,9 @@ describe('augmentPasswordDescriptions', () => {
     ];
     const result = augmentPasswordDescriptions(properties);
     expect(result[0][1].description).toBe('Name');
-    expect(result[1][1].description).toBe('Pass Current value is hidden, but can still be replaced.');
+    expect(result[1][1].description).toBe(
+      'Pass Current value is hidden, but can still be replaced.',
+    );
     expect(result[2][1].description).toBe('Other');
   });
 });
@@ -112,14 +123,16 @@ describe('buildContractPropertyGroups', () => {
       ['a_req', required],
       ['c_dep', deprecated],
     ];
-    const { requiredProperties, optionalProperties, deprecatedProperties } = buildContractPropertyGroups(ordered, ['a_req']);
+    const { requiredProperties, optionalProperties, deprecatedProperties } =
+      buildContractPropertyGroups(ordered, ['a_req']);
     expect(Object.keys(requiredProperties.properties ?? {})).toEqual(['a_req']);
     expect(Object.keys(optionalProperties.properties ?? {})).toEqual(['b_opt']);
     expect(Object.keys(deprecatedProperties)).toEqual(['c_dep']);
   });
 
   it('handles an empty properties list', () => {
-    const { requiredProperties, optionalProperties, deprecatedProperties } = buildContractPropertyGroups([], []);
+    const { requiredProperties, optionalProperties, deprecatedProperties } =
+      buildContractPropertyGroups([], []);
     expect(requiredProperties.properties).toEqual({});
     expect(optionalProperties.properties).toEqual({});
     expect(deprecatedProperties).toEqual({});

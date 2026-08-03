@@ -68,9 +68,7 @@ interface ToolProps {
   toolData: Tool_tool$key;
 }
 
-const Tool: React.FC<ToolProps> = ({
-  toolData,
-}) => {
+const Tool: React.FC<ToolProps> = ({ toolData }) => {
   useInitCreateRelationshipContext();
 
   const tool = useFragment(toolFragment, toolData);
@@ -78,73 +76,63 @@ const Tool: React.FC<ToolProps> = ({
 
   return (
     <div data-testid="tool-overview">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <ToolDetails tools={tool} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview stixDomainObject={tool} />
-                  </Grid>
-                );
-              case 'latestCreatedRelationships':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                      stixObjectOrStixRelationshipId={tool.id}
-                      stixObjectOrStixRelationshipLink={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
-                    />
-                  </Grid>
-                );
-              case 'latestContainers':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixRelationshipLastContainers
-                      stixCoreObjectOrStixRelationshipId={tool.id}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={tool.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={tool.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={tool.id}
-                      defaultMarkings={tool.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ToolDetails tools={tool} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview stixDomainObject={tool} />
+                </Grid>
+              );
+            case 'latestCreatedRelationships':
+              return (
+                <Grid key={key} item xs={width}>
+                  <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                    stixObjectOrStixRelationshipId={tool.id}
+                    stixObjectOrStixRelationshipLink={`/dashboard/arsenal/tools/${tool.id}/knowledge`}
+                  />
+                </Grid>
+              );
+            case 'latestContainers':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixRelationshipLastContainers
+                    stixCoreObjectOrStixRelationshipId={tool.id}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={tool.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={tool.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={tool.id}
+                    defaultMarkings={tool.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </div>
   );

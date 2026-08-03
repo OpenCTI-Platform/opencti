@@ -5,9 +5,7 @@ import {
   EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery,
   EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery$variables,
 } from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery.graphql';
-import {
-  EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data,
-} from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsEntitiesView_data.graphql';
+import { EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data } from '@components/common/stix_core_relationships/views/indicators/__generated__/EntityStixCoreRelationshipsIndicatorsEntitiesView_data.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -15,16 +13,26 @@ import { Group, RelationManyToMany } from 'mdi-material-ui';
 import Security from '../../../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../../StixCoreRelationshipCreationFromEntity';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
+import {
+  PaginationLocalStorage,
+  usePaginationLocalStorage,
+} from '../../../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../../../components/list_lines';
 import useAuth from '../../../../../../utils/hooks/useAuth';
-import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  isFilterGroupNotEmpty,
+  useRemoveIdAndIncorrectKeysFromFilterGroupObject,
+} from '../../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 import DataTable from '../../../../../../components/dataGrid/DataTable';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
-import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../../CreateRelationshipContextProvider';
+import {
+  CreateRelationshipContext,
+  useInitCreateRelationshipContext,
+} from '../../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string;
@@ -46,14 +54,14 @@ export const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`
     $filters: FilterGroup
   ) {
     ...EntityStixCoreRelationshipsIndicatorsEntitiesView_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      filters: $filters
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -119,7 +127,9 @@ export const entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment = gra
   }
 `;
 
-const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<EntityStixCoreRelationshipsIndicatorsEntitiesViewProps> = ({
+const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<
+  EntityStixCoreRelationshipsIndicatorsEntitiesViewProps
+> = ({
   entityId,
   relationshipTypes,
   defaultStartTime,
@@ -130,12 +140,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 }) => {
   const { t_i18n } = useFormatter();
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
-  const {
-    filters,
-    searchTerm,
-    orderAsc,
-    openExports,
-  } = viewStorage;
+  const { filters, searchTerm, orderAsc, openExports } = viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
@@ -156,11 +161,12 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     view: currentView ?? 'entities',
   };
 
-  const { paginationOptions } = usePaginationLocalStorage<EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery$variables>(
-    localStorageKey,
-    initialValues,
-    true,
-  );
+  const { paginationOptions } =
+    usePaginationLocalStorage<EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery$variables>(
+      localStorageKey,
+      initialValues,
+      true,
+    );
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['Indicator']);
   const contextFilters: FilterGroup = {
@@ -183,10 +189,11 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     filters: contextFilters,
   } as unknown as EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery$variables;
 
-  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery>(
-    entityStixCoreRelationshipsIndicatorsEntitiesViewQuery,
-    queryPaginationOptions,
-  );
+  const [queryRef, loadQuery] =
+    useQueryLoadingWithLoadQuery<EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery>(
+      entityStixCoreRelationshipsIndicatorsEntitiesViewQuery,
+      queryPaginationOptions,
+    );
 
   const refetch = React.useCallback(() => {
     loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
@@ -202,28 +209,34 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 
   const entitiesViewButton = (
     <Tooltip title={t_i18n('Entities view')}>
-      <ToggleButton value="entities" aria-label="entities" onClick={() => storageHelpers.handleChangeView('entities')}>
-        <LibraryBooksOutlined
-          fontSize="small"
-        />
+      <ToggleButton
+        value="entities"
+        aria-label="entities"
+        onClick={() => storageHelpers.handleChangeView('entities')}
+      >
+        <LibraryBooksOutlined fontSize="small" />
       </ToggleButton>
     </Tooltip>
   );
   const relationshipsView = (
     <Tooltip title={t_i18n('Relationships view')}>
-      <ToggleButton value="relationships" aria-label="relationships" onClick={() => storageHelpers.handleChangeView('relationships')}>
-        <RelationManyToMany
-          fontSize="small"
-        />
+      <ToggleButton
+        value="relationships"
+        aria-label="relationships"
+        onClick={() => storageHelpers.handleChangeView('relationships')}
+      >
+        <RelationManyToMany fontSize="small" />
       </ToggleButton>
     </Tooltip>
   );
   const knowledgeFromRelatedContainersView = (
     <Tooltip title={t_i18n('Knowledge from related containers view')}>
-      <ToggleButton value="contextual" aria-label="contextual" onClick={() => storageHelpers.handleChangeView('contextual')}>
-        <Group
-          fontSize="small"
-        />
+      <ToggleButton
+        value="contextual"
+        aria-label="contextual"
+        onClick={() => storageHelpers.handleChangeView('contextual')}
+      >
+        <Group fontSize="small" />
       </ToggleButton>
     </Tooltip>
   );
@@ -249,7 +262,9 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
+          resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) =>
+            (data.indicators?.edges ?? []).map((n) => n?.node)
+          }
           storageKey={localStorageKey}
           initialValues={initialValues}
           contextFilters={contextFilters}

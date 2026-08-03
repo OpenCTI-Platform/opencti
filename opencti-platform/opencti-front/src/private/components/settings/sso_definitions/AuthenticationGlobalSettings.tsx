@@ -41,7 +41,10 @@ const validationSchema = Yup.object().shape({
 const AuthenticationGlobalSettingsContent = () => {
   const { t_i18n } = useFormatter();
 
-  const data = useLazyLoadQuery<AuthenticationGlobalSettingsQuery>(authenticationGlobalSettingsQuery, {});
+  const data = useLazyLoadQuery<AuthenticationGlobalSettingsQuery>(
+    authenticationGlobalSettingsQuery,
+    {},
+  );
   const settings = data.settings;
 
   const [commitField] = useApiMutation(authenticationGlobalSettingsMutation);
@@ -101,7 +104,9 @@ const AuthenticationGlobalSettingsContent = () => {
                 name="platform_session_max_concurrent"
                 label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
                 fullWidth
-                onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+                onSubmit={(name: string, value: string) =>
+                  handleSubmitField(name, value !== '' ? value : '0')
+                }
               />
             </Card>
           </Grid>

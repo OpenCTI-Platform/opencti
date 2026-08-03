@@ -8,7 +8,9 @@ import { nodeAdversaryUtils } from './nodeAdversaryUtils';
 import { emptyFilled } from '../../../../../../../../utils/String';
 
 const NodeAdversary = ({ data }: NodeProps) => {
-  const { entityLink, generatedFilters, aliases, isArsenal, lastAttributions } = nodeAdversaryUtils({ data });
+  const { entityLink, generatedFilters, aliases, isArsenal, lastAttributions } = nodeAdversaryUtils(
+    { data },
+  );
   const { t_i18n } = useFormatter();
   return (
     <NodeContainer

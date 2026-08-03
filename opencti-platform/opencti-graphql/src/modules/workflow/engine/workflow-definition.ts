@@ -1,4 +1,12 @@
-import type { ConditionValidator, Context, Event, SideEffect, State, StateDefinition, Transition } from '../types/workflow-types';
+import type {
+  ConditionValidator,
+  Context,
+  Event,
+  SideEffect,
+  State,
+  StateDefinition,
+  Transition,
+} from '../types/workflow-types';
 
 /**
  * Represents a stateless definition of a workflow graph.
@@ -78,13 +86,8 @@ export class WorkflowDefinition<TContext extends Context = Context> {
   /**
    * Searches for a valid transition from a current state given a specific event.
    */
-  public getTransition(
-    currentState: State,
-    event: Event,
-  ): Transition<TContext> | undefined {
-    return this.transitions.find(
-      (t) => t.from === currentState && t.event === event,
-    );
+  public getTransition(currentState: State, event: Event): Transition<TContext> | undefined {
+    return this.transitions.find((t) => t.from === currentState && t.event === event);
   }
 
   /**
@@ -97,9 +100,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
   /**
    * Retrieves the definition (hooks, etc.) for a specific state.
    */
-  public getStateDefinition(
-    state: State,
-  ): StateDefinition<TContext> | undefined {
+  public getStateDefinition(state: State): StateDefinition<TContext> | undefined {
     return this.states.get(state);
   }
 }

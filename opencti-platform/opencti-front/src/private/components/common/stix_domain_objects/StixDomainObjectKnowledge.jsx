@@ -56,10 +56,7 @@ const styles = (theme) => ({
 });
 
 const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
-  query StixDomainObjectKnowledgeReportsNumberQuery(
-    $objectId: String
-    $endDate: DateTime
-  ) {
+  query StixDomainObjectKnowledgeReportsNumberQuery($objectId: String, $endDate: DateTime) {
     reportsNumber(objectId: $objectId, endDate: $endDate) {
       total
       count
@@ -113,7 +110,7 @@ class StixDomainObjectKnowledge extends Component {
                       value={n(total)}
                       diffLabel={t('30 days')}
                       diffValue={difference}
-                      icon={(
+                      icon={
                         <DescriptionOutlined
                           style={{
                             color: theme.palette.text.secondary,
@@ -121,7 +118,7 @@ class StixDomainObjectKnowledge extends Component {
                           }}
                           fontSize="large"
                         />
-                      )}
+                      }
                     />
                   );
                 }
@@ -135,9 +132,7 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
           <Grid item xs={4}>
             <QueryRenderer
-              query={
-                stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
-              }
+              query={stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery}
               variables={{
                 fromOrToId: stixDomainObjectId,
                 elementWithTargetTypes: ['Stix-Cyber-Observable'],
@@ -153,7 +148,7 @@ class StixDomainObjectKnowledge extends Component {
                       value={n(total)}
                       diffLabel={t('30 days')}
                       diffValue={difference}
-                      icon={(
+                      icon={
                         <HexagonMultipleOutline
                           style={{
                             color: theme.palette.text.secondary,
@@ -161,7 +156,7 @@ class StixDomainObjectKnowledge extends Component {
                           }}
                           fontSize="large"
                         />
-                      )}
+                      }
                     />
                   );
                 }
@@ -175,9 +170,7 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
           <Grid item xs={4}>
             <QueryRenderer
-              query={
-                stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
-              }
+              query={stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery}
               variables={{
                 fromOrToId: stixDomainObjectId,
                 endDate: monthsAgo(1),
@@ -192,7 +185,7 @@ class StixDomainObjectKnowledge extends Component {
                       value={n(total)}
                       diffLabel={t('30 days')}
                       diffValue={difference}
-                      icon={(
+                      icon={
                         <DeviceHubOutlined
                           style={{
                             color: theme.palette.text.secondary,
@@ -200,7 +193,7 @@ class StixDomainObjectKnowledge extends Component {
                           }}
                           fontSize="large"
                         />
-                      )}
+                      }
                     />
                   );
                 }
@@ -222,12 +215,7 @@ class StixDomainObjectKnowledge extends Component {
           <Grid item xs={6} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars
               toId={stixDomainObjectId}
-              fromTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-              ]}
+              fromTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
               relationshipType="targets"
               title={t('Top 10 threats targeting this entity')}
               field="internal_id"
@@ -255,8 +243,4 @@ StixDomainObjectKnowledge.propTypes = {
   theme: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(StixDomainObjectKnowledge);
+export default compose(inject18n, withTheme, withStyles(styles))(StixDomainObjectKnowledge);

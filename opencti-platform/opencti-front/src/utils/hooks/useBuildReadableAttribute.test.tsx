@@ -7,12 +7,15 @@ import { FilterDefinition } from './useAuth';
 
 describe('Hook: useBuildReadableAttribute', () => {
   beforeAll(() => {
-    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(() => new Map([
-      ['entity_type', { type: 'string' } as FilterDefinition],
-      ['published', { type: 'date' } as FilterDefinition],
-      ['revoked', { type: 'boolean' } as FilterDefinition],
-      ['description', { type: 'text' } as FilterDefinition],
-    ]));
+    vi.spyOn(filterUtils, 'useBuildFilterKeysMapFromEntityType').mockImplementation(
+      () =>
+        new Map([
+          ['entity_type', { type: 'string' } as FilterDefinition],
+          ['published', { type: 'date' } as FilterDefinition],
+          ['revoked', { type: 'boolean' } as FilterDefinition],
+          ['description', { type: 'text' } as FilterDefinition],
+        ]),
+    );
   });
   afterAll(() => {
     vi.restoreAllMocks();
@@ -24,17 +27,33 @@ describe('Hook: useBuildReadableAttribute', () => {
 
     const stringAttribute = buildReadableAttribute('Report', { attribute: 'entity_type' });
     expect(stringAttribute).toEqual('Report');
-    const dateAttribute = buildReadableAttribute('2024-11-07T14:42:41.000Z', { attribute: 'published' });
+    const dateAttribute = buildReadableAttribute('2024-11-07T14:42:41.000Z', {
+      attribute: 'published',
+    });
     expect(dateAttribute).toEqual('2024-11-07');
-    const listAttribute = buildReadableAttribute(['label1', 'label2'], { attribute: 'objectLabel.value' });
+    const listAttribute = buildReadableAttribute(['label1', 'label2'], {
+      attribute: 'objectLabel.value',
+    });
     expect(listAttribute).toEqual('label1, label2');
-    const listAttribute2 = buildReadableAttribute(['label1', 'label2'], { attribute: 'objectLabel.value', displayStyle: 'text' });
+    const listAttribute2 = buildReadableAttribute(['label1', 'label2'], {
+      attribute: 'objectLabel.value',
+      displayStyle: 'text',
+    });
     expect(listAttribute2).toEqual('label1, label2');
-    const emptyListAttribute = buildReadableAttribute([], { attribute: 'objectLabel.value', displayStyle: 'text' });
+    const emptyListAttribute = buildReadableAttribute([], {
+      attribute: 'objectLabel.value',
+      displayStyle: 'text',
+    });
     expect(emptyListAttribute).toEqual('');
-    const listAttributeWithChips = buildReadableAttribute(['label1', 'label2'], { attribute: 'objectLabel.value', displayStyle: 'list' });
+    const listAttributeWithChips = buildReadableAttribute(['label1', 'label2'], {
+      attribute: 'objectLabel.value',
+      displayStyle: 'list',
+    });
     expect(listAttributeWithChips).toEqual('<ul><li>label1</li><li>label2</li></ul>');
-    const emptyListAttributeWithChips = buildReadableAttribute([], { attribute: 'objectLabel.value', displayStyle: 'chip' });
+    const emptyListAttributeWithChips = buildReadableAttribute([], {
+      attribute: 'objectLabel.value',
+      displayStyle: 'chip',
+    });
     expect(emptyListAttributeWithChips).toEqual('');
     const nullAttribute = buildReadableAttribute(null, { attribute: 'objectLabel.value' });
     expect(nullAttribute).toEqual('null');
@@ -45,9 +64,12 @@ describe('Hook: useBuildReadableAttribute', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
     const { buildReadableAttribute } = hook.result.current;
 
-    const result = (<div dangerouslySetInnerHTML={{ __html: '<img src="x">' }} />);
+    const result = <div dangerouslySetInnerHTML={{ __html: '<img src="x">' }} />;
 
-    const textAttribute1 = buildReadableAttribute('<img src="x" onerror="alert(\'not happening\')">', { attribute: 'description' });
+    const textAttribute1 = buildReadableAttribute(
+      '<img src="x" onerror="alert(\'not happening\')">',
+      { attribute: 'description' },
+    );
     expect(typeof textAttribute1).toEqual('object');
     expect(textAttribute1).toEqual(result);
 

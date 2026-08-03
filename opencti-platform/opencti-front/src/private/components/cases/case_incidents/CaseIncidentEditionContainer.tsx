@@ -27,9 +27,12 @@ export const caseIncidentEditionQuery = graphql`
   }
 `;
 
-const CaseIncidentEditionContainer: FunctionComponent<
-  CaseIncidentEditionContainerProps
-> = ({ queryRef, handleClose, open, controlledDial }) => {
+const CaseIncidentEditionContainer: FunctionComponent<CaseIncidentEditionContainerProps> = ({
+  queryRef,
+  handleClose,
+  open,
+  controlledDial,
+}) => {
   const { t_i18n } = useFormatter();
   const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
   if (caseIncident === null) {

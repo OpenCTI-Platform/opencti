@@ -9,7 +9,11 @@ import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
-const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource, Stix2DataSource> = {
+const DATA_SOURCE_DEFINITION: ModuleDefinition<
+  StoreEntityDataSource,
+  StixDataSource,
+  Stix2DataSource
+> = {
   type: {
     id: 'dataSources',
     name: ENTITY_TYPE_DATA_SOURCE,
@@ -36,22 +40,60 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     { key: 'notes', width: 12, label: 'Notes about this entity' },
   ],
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'vocabulary', vocabularyCategory: 'platforms_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
-    { name: 'collection_layers', label: 'Layers', type: 'string', format: 'vocabulary', vocabularyCategory: 'collection_layers_ov', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'x_mitre_platforms',
+      label: 'Platforms',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'platforms_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
+    {
+      name: 'collection_layers',
+      label: 'Layers',
+      type: 'string',
+      format: 'vocabulary',
+      vocabularyCategory: 'collection_layers_ov',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: true,
+      upsert: true,
+      isFilterable: true,
+    },
   ],
   relations: [
     {
       name: RELATION_DERIVED_FROM,
-      targets: [
-        { name: ENTITY_TYPE_DATA_SOURCE, type: REL_BUILT_IN },
-      ],
+      targets: [{ name: ENTITY_TYPE_DATA_SOURCE, type: REL_BUILT_IN }],
     },
   ],
-  relationsRefs: [
-    { ...objectOrganization, isFilterable: false },
-  ],
+  relationsRefs: [{ ...objectOrganization, isFilterable: false }],
   representative: (stix: StixDataSource) => {
     return stix.name;
   },

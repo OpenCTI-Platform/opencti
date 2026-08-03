@@ -32,11 +32,14 @@ describe('ListParameters utils', () => {
     });
 
     it('should convert localStorage string values to arrays (backward compatibility)', () => {
-      localStorage.setItem('test-key', JSON.stringify({
-        disabledEntityTypes: 'toto,tutu',
-        disabledCreators: 'creator1',
-        disabledMarkings: 'marking1,marking2,marking3',
-      }));
+      localStorage.setItem(
+        'test-key',
+        JSON.stringify({
+          disabledEntityTypes: 'toto,tutu',
+          disabledCreators: 'creator1',
+          disabledMarkings: 'marking1,marking2,marking3',
+        }),
+      );
 
       mockLocation.search = '';
 
@@ -76,9 +79,12 @@ describe('ListParameters utils', () => {
     });
 
     it('should give URL parameters priority over localStorage', () => {
-      localStorage.setItem('test-key', JSON.stringify({
-        disabledEntityTypes: ['toto', 'tutu'],
-      }));
+      localStorage.setItem(
+        'test-key',
+        JSON.stringify({
+          disabledEntityTypes: ['toto', 'tutu'],
+        }),
+      );
 
       mockLocation.search = '?disabledEntityTypes=Malware,Indicator';
 
@@ -95,11 +101,7 @@ describe('ListParameters utils', () => {
       mockLocation.search = '?otherParam=value';
 
       expect(() => {
-        buildViewParamsFromUrlAndStorage(
-          mockNavigate,
-          mockLocation,
-          'test-key',
-        );
+        buildViewParamsFromUrlAndStorage(mockNavigate, mockLocation, 'test-key');
       }).not.toThrow();
     });
   });

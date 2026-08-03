@@ -1,13 +1,20 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
+import {
+  GroupingsLinesPaginationQuery,
+  GroupingsLinesPaginationQuery$variables,
+} from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingsLines_data$data } from '@components/analyses/__generated__/GroupingsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import GroupingCreation from './groupings/GroupingCreation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
+import {
+  emptyFilterGroup,
+  useBuildEntityTypeBasedFilterContext,
+  useGetDefaultFilterObject,
+} from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -80,14 +87,14 @@ const groupingsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...GroupingsLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -145,7 +152,9 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
 
   const initialValues = {
     filters: {
@@ -166,9 +175,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const {
-    filters,
-  } = viewStorage;
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Grouping', filters);
   const queryPaginationOptions = {
@@ -202,11 +209,15 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
 
   return (
     <span data-testid="groupings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]} />
+      <Breadcrumbs
+        elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Groupings'), current: true }]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: GroupingsLines_data$data) => data.groupings?.edges?.map((n) => n?.node)}
+          resolvePath={(data: GroupingsLines_data$data) =>
+            data.groupings?.edges?.map((n) => n?.node)
+          }
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}
@@ -214,15 +225,19 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           lineFragment={groupingLineFragment}
           exportContext={{ entity_type: 'Grouping' }}
           additionalHeaderButtons={[
-            <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+            <Security
+              key="form-intake"
+              needs={[KNOWLEDGE_KNUPDATE]}
+              capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}
+            >
               <StixCoreObjectForms entityType="Grouping" />
             </Security>,
           ]}
-          createButton={(
+          createButton={
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <GroupingCreation paginationOptions={queryPaginationOptions} />
             </Security>
-          )}
+          }
         />
       )}
     </span>

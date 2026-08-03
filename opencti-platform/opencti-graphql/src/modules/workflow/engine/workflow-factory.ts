@@ -3,7 +3,12 @@ import type { ActionConfig, WorkflowSchema } from './workflow-schema';
 import type { ConditionValidator, Context, SideEffect } from '../types/workflow-types';
 import { WorkflowDefinition } from './workflow-definition';
 import { WorkflowInstance } from './workflow-instance';
-import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../../../generated/graphql';
+import {
+  FilterMode,
+  FilterOperator,
+  type Filter,
+  type FilterGroup,
+} from '../../../generated/graphql';
 
 /**
  * Utility factory to create workflow definitions and instances from various sources.
@@ -22,7 +27,7 @@ export class WorkflowFactory {
     } else if (key === 'workflow_role') {
       return (ctxUser?.roles || []).map((r: any) => r.name);
     } else if (key === 'workflow_user') {
-      return (ctxUser?.id || ctxUser?.internal_id || null);
+      return ctxUser?.id || ctxUser?.internal_id || null;
     } else if (key === 'name') {
       return ctx.entity.name;
     } else {
@@ -33,7 +38,9 @@ export class WorkflowFactory {
   /**
    * Translates a list of condition configurations into executable validator functions.
    */
-  public static createConditions<TContext extends Context>(configs?: { filters: FilterGroup }): ConditionValidator<TContext>[] {
+  public static createConditions<TContext extends Context>(configs?: {
+    filters: FilterGroup;
+  }): ConditionValidator<TContext>[] {
     const { filters } = configs || {};
     if (!filters) return [];
 
@@ -45,7 +52,10 @@ export class WorkflowFactory {
     return [rootValidator];
   }
 
-  private static evaluateFilterGroup<TContext extends Context>(ctx: TContext, group: FilterGroup): boolean {
+  private static evaluateFilterGroup<TContext extends Context>(
+    ctx: TContext,
+    group: FilterGroup,
+  ): boolean {
     const { mode, filters, filterGroups } = group;
 
     // Evaluate individual filters in this group
@@ -105,7 +115,9 @@ export class WorkflowFactory {
         case FilterOperator.StartsWith:
           return String(actualValue).toLowerCase().startsWith(String(expectedValue).toLowerCase());
         default:
-          console.warn(`Operator '${operator}' not yet implemented in engine, defaulting to false.`);
+          console.warn(
+            `Operator '${operator}' not yet implemented in engine, defaulting to false.`,
+          );
           return false;
       }
     });
@@ -119,7 +131,9 @@ export class WorkflowFactory {
   /**
    * Translates a list of action configurations into executable side effect functions.
    */
-  public static createSideEffects<TContext extends Context>(configs?: ActionConfig[]): SideEffect<TContext>[] {
+  public static createSideEffects<TContext extends Context>(
+    configs?: ActionConfig[],
+  ): SideEffect<TContext>[] {
     if (!configs || configs.length === 0) return [];
 
     return configs.map((config) => {
@@ -138,7 +152,9 @@ export class WorkflowFactory {
   /**
    * Creates a stateless WorkflowDefinition from a serialized schema.
    */
-  static createDefinition<TContext extends Context>(schema: WorkflowSchema): WorkflowDefinition<TContext> {
+  static createDefinition<TContext extends Context>(
+    schema: WorkflowSchema,
+  ): WorkflowDefinition<TContext> {
     const definition = new WorkflowDefinition<TContext>(schema.initialState);
 
     schema.states.forEach((state) => {
@@ -159,13 +175,19 @@ export class WorkflowFactory {
       ];
 
       // Compute org-input requirements from asyncAction params — more reliable than the stored boolean.
-      const requiresShareOrganizationInput = (t.asyncActions ?? []).some((a) =>
-        a.type === 'asyncBulkAction'
-        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'SHARE' && !ia.context?.values?.length),
+      const requiresShareOrganizationInput = (t.asyncActions ?? []).some(
+        (a) =>
+          a.type === 'asyncBulkAction' &&
+          ((a.params as any)?.actions ?? []).some(
+            (ia: any) => ia.type === 'SHARE' && !ia.context?.values?.length,
+          ),
       );
-      const requiresUnshareOrganizationInput = (t.asyncActions ?? []).some((a) =>
-        a.type === 'asyncBulkAction'
-        && ((a.params as any)?.actions ?? []).some((ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length),
+      const requiresUnshareOrganizationInput = (t.asyncActions ?? []).some(
+        (a) =>
+          a.type === 'asyncBulkAction' &&
+          ((a.params as any)?.actions ?? []).some(
+            (ia: any) => ia.type === 'UNSHARE' && !ia.context?.values?.length,
+          ),
       );
 
       definition.addTransition(t.from, t.to, t.event, {

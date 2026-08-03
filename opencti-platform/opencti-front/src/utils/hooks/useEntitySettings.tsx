@@ -15,13 +15,19 @@ const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   return entitySettings.edges
-    .map(({ node }) => useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, node))
-    .filter(({ target_type }: EntitySetting) => (entityType ? entityTypes.includes(target_type) : true));
+    .map(({ node }) =>
+      useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, node),
+    )
+    .filter(({ target_type }: EntitySetting) =>
+      entityType ? entityTypes.includes(target_type) : true,
+    );
 };
 
 export const useHiddenEntities = () => {
   const { me } = useAuth();
-  const platformHiddenTypes = useEntitySettings().filter((n) => n.platform_hidden_type === true).map((n) => n.target_type);
+  const platformHiddenTypes = useEntitySettings()
+    .filter((n) => n.platform_hidden_type === true)
+    .map((n) => n.target_type);
   return [...platformHiddenTypes, ...me.default_hidden_types];
 };
 
@@ -29,13 +35,18 @@ export const useIsHiddenEntities = (...types: string[]): boolean => {
   const { me } = useAuth();
   return useEntitySettings(types)
     .filter((node) => node.platform_hidden_type !== null)
-    .every((node) => node.platform_hidden_type || me.default_hidden_types.includes(node.target_type));
+    .every(
+      (node) => node.platform_hidden_type || me.default_hidden_types.includes(node.target_type),
+    );
 };
 
 export const useIsHiddenEntity = (id: string): boolean => {
   const { me } = useAuth();
-  return useEntitySettings(id).some((node) => node.platform_hidden_type !== null
-    && (node.platform_hidden_type || me.default_hidden_types.includes(node.target_type)));
+  return useEntitySettings(id).some(
+    (node) =>
+      node.platform_hidden_type !== null &&
+      (node.platform_hidden_type || me.default_hidden_types.includes(node.target_type)),
+  );
 };
 
 export const useIsEnforceReference = (id: string): boolean => {
@@ -85,18 +96,18 @@ export const useYupSchemaBuilder = (
             // Yup has issues with validating 'null' dates as required, so we will swap it
             // to 'undefined' to get the validator to identify the missing required field
             validator = (existingShape[attrName] as Schema)
-              .transform((v) => ((v === null) ? undefined : v))
+              .transform((v) => (v === null ? undefined : v))
               .required(t_i18n('This field is required'))
               .nullable(false);
           } else {
             validator = (existingShape[attrName] as Schema)
-              .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+              .transform((v) => (Array.isArray(v) && v.length === 0 ? undefined : v))
               .required(t_i18n('This field is required'))
               .nullable(false);
           }
         } else {
           validator = Yup.mixed()
-            .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+            .transform((v) => (Array.isArray(v) && v.length === 0 ? undefined : v))
             .required(t_i18n('This field is required'));
         }
         return [attrName, validator];
@@ -176,18 +187,18 @@ const useYupDynamicSchemaBuilder = (
             // Yup has issues with validating 'null' dates as required, so we will swap it
             // to 'undefined' to get the validator to identify the missing required field
             validator = (existingShape[attrName] as Schema)
-              .transform((v) => ((v === null) ? undefined : v))
+              .transform((v) => (v === null ? undefined : v))
               .required(t_i18n('This field is required'))
               .nullable(false);
           } else {
             validator = (existingShape[attrName] as Schema)
-              .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+              .transform((v) => (Array.isArray(v) && v.length === 0 ? undefined : v))
               .required(t_i18n('This field is required'))
               .nullable(false);
           }
         } else {
           validator = Yup.mixed()
-            .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
+            .transform((v) => (Array.isArray(v) && v.length === 0 ? undefined : v))
             .required(t_i18n('This field is required'));
         }
         return [attrName, validator];
@@ -202,12 +213,7 @@ export const useDynamicSchemaCreationValidation = (
   existingShape: ObjectShape,
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
-  return useYupDynamicSchemaBuilder(
-    mandatoryAttributes,
-    existingShape,
-    true,
-    exclusions,
-  );
+  return useYupDynamicSchemaBuilder(mandatoryAttributes, existingShape, true, exclusions);
 };
 
 export const useDynamicSchemaEditionValidation = (
@@ -215,12 +221,7 @@ export const useDynamicSchemaEditionValidation = (
   existingShape: ObjectShape,
   exclusions?: string[],
 ): ObjectSchema<{ [p: string]: unknown }> => {
-  return useYupDynamicSchemaBuilder(
-    mandatoryAttributes,
-    existingShape,
-    false,
-    exclusions,
-  );
+  return useYupDynamicSchemaBuilder(mandatoryAttributes, existingShape, false, exclusions);
 };
 
 export default useEntitySettings;

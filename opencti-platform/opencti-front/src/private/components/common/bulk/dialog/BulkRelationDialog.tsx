@@ -6,7 +6,10 @@ import Button from '@common/button/Button';
 import Dialog from '@mui/material/Dialog';
 import BulkSelectRawLineData from '@components/common/bulk/BulkSelectRawLineData';
 import EntityRelationshipCard from '@components/common/bulk/EntityRelationshipCard';
-import { stixCoreRelationshipCreationFromEntityFromMutation, TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import {
+  stixCoreRelationshipCreationFromEntityFromMutation,
+  TargetEntity,
+} from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
@@ -25,14 +28,14 @@ import StixDomainObjectCreation from '@components/common/stix_domain_objects/Sti
 import { PaginationOptions } from 'src/components/list_lines';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
-import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
+import {
+  getRelationsFromOneEntityToAny,
+  RelationsDataFromEntity,
+  RelationsToEntity,
+} from '../../../../../utils/Relation';
 
 export const searchStixCoreObjectsByRepresentativeQuery = graphql`
-  query BulkRelationDialogQuery(
-    $types: [String]
-    $filters: FilterGroup
-    $search: String
-  ) {
+  query BulkRelationDialogQuery($types: [String], $filters: FilterGroup, $search: String) {
     stixCoreObjects(types: $types, search: $search, filters: $filters) {
       edges {
         node {
@@ -133,13 +136,14 @@ const querySearchEntityByText = async (text: string) => {
     count: 1,
   };
 
-  const result = await fetchQuery(
+  const result = (await fetchQuery(
     searchStixCoreObjectsByRepresentativeQuery,
     searchPaginationOptions,
-  ).toPromise()
+  )
+    .toPromise()
     .then((data) => {
       return data;
-    }) as StixCoreResultsType;
+    })) as StixCoreResultsType;
   return { ...result, searchTerm: text };
 };
 
@@ -175,7 +179,9 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   onBulkCreate,
 }) => {
   const { t_i18n } = useFormatter();
-  const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
+  const [textAreaValue, setTextAreaValue] = useState<string[]>([
+    ...selectedEntities.map((item) => item.name ?? ''),
+  ]);
   const [entityToSearch, setEntityToSearch] = useState<string[]>([]);
   const [bulkEntityList, setBulkEntityList] = useState<BulkEntityTypeInfo[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -186,7 +192,8 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       const newEntityToSearch = [...textAreaValue];
-      if (newEntityToSearch.length && newEntityToSearch[newEntityToSearch.length - 1] === '') newEntityToSearch.pop();
+      if (newEntityToSearch.length && newEntityToSearch[newEntityToSearch.length - 1] === '')
+        newEntityToSearch.pop();
       setEntityToSearch([...newEntityToSearch]);
     }, 500);
     return () => clearTimeout(timeoutId);
@@ -194,41 +201,65 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
 
   const { schema } = useAuth();
   const scoLabelList = schema.scos.map(({ label }) => label);
-  const resolvedRelations: RelationsDataFromEntity = getRelationsFromOneEntityToAny(stixDomainObjectType, schema);
+  const resolvedRelations: RelationsDataFromEntity = getRelationsFromOneEntityToAny(
+    stixDomainObjectType,
+    schema,
+  );
   const entityList = resolvedRelations.allRelationsToEntity;
   const relationListArray = resolvedRelations.allPossibleRelations;
 
   const getDefaultSelectedRelationshipType = () => {
-    if (defaultRelationshipType && relationListArray.includes(defaultRelationshipType.toLowerCase())) {
+    if (
+      defaultRelationshipType &&
+      relationListArray.includes(defaultRelationshipType.toLowerCase())
+    ) {
       return defaultRelationshipType.toLowerCase();
     }
     return relationListArray[0];
   };
 
-  const [selectedRelationType, setSelectedRelationType] = useState<string>(getDefaultSelectedRelationshipType());
+  const [selectedRelationType, setSelectedRelationType] = useState<string>(
+    getDefaultSelectedRelationshipType(),
+  );
 
-  const getRelationMatchStatus = (selectedEntityType: RelationsToEntity, entityTypeList: entityTypeListType[]): boolean => {
-    const matchingEntity = entityTypeList?.find((foundEntity) => foundEntity.entity_type === selectedEntityType?.toEntitytype);
+  const getRelationMatchStatus = (
+    selectedEntityType: RelationsToEntity,
+    entityTypeList: entityTypeListType[],
+  ): boolean => {
+    const matchingEntity = entityTypeList?.find(
+      (foundEntity) => foundEntity.entity_type === selectedEntityType?.toEntitytype,
+    );
     return !!(selectedEntityType?.legitRelations.includes(selectedRelationType) && matchingEntity);
   };
 
   const selectMissingEntities = (currentBulkEntityList: BulkEntityTypeInfo[]) => {
-    const foundMissingEntity = currentBulkEntityList.find((item) => !item.isExisting && item.selectedEntityType.legitRelations.includes(selectedRelationType));
+    const foundMissingEntity = currentBulkEntityList.find(
+      (item) =>
+        !item.isExisting && item.selectedEntityType.legitRelations.includes(selectedRelationType),
+    );
     if (!foundMissingEntity) {
       if (missingEntity) setMissingEntity(undefined);
       return;
     }
-    if (EntityTypeWithoutBulkEntityCreation.includes(foundMissingEntity.selectedEntityType.toEntitytype)) {
+    if (
+      EntityTypeWithoutBulkEntityCreation.includes(
+        foundMissingEntity.selectedEntityType.toEntitytype,
+      )
+    ) {
       setMissingEntity({
         key: foundMissingEntity.selectedEntityType.toEntitytype,
         values: [foundMissingEntity.searchTerm],
       });
     } else {
-      const { selectedEntityType: { toEntitytype } } = foundMissingEntity;
+      const {
+        selectedEntityType: { toEntitytype },
+      } = foundMissingEntity;
       setMissingEntity({
         key: toEntitytype,
         values: currentBulkEntityList
-          .filter((item) => item.selectedEntityType.toEntitytype === toEntitytype && !item.isExisting)
+          .filter(
+            (item) => item.selectedEntityType.toEntitytype === toEntitytype && !item.isExisting,
+          )
           .map((item) => item.searchTerm),
       });
     }
@@ -258,57 +289,85 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
 
   useEffect(() => {
     const getBulkEntities = async () => {
-      const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) => querySearchEntityByText(content));
+      const rawLinesPromises: Promise<StixCoreResultsType>[] = entityToSearch.map((content) =>
+        querySearchEntityByText(content),
+      );
       const resultsAwait: StixCoreResultsType[] = await Promise.all(rawLinesPromises);
-      const newBulkEntityList = resultsAwait.reduce((acc: BulkEntityTypeInfo[], cur: StixCoreResultsType, index: number) => {
-        const foundItem = bulkEntityList.find((item) => item.searchTerm === cur.searchTerm);
-        const defaultEntityType = getDefaultEntityType();
-        if (cur.stixCoreObjects.edges.length > 0) {
-          const { edges } = cur.stixCoreObjects;
+      const newBulkEntityList = resultsAwait.reduce(
+        (acc: BulkEntityTypeInfo[], cur: StixCoreResultsType, index: number) => {
+          const foundItem = bulkEntityList.find((item) => item.searchTerm === cur.searchTerm);
+          const defaultEntityType = getDefaultEntityType();
+          if (cur.stixCoreObjects.edges.length > 0) {
+            const { edges } = cur.stixCoreObjects;
 
-          const currentStixObject = foundItem
-            ? edges.find((item) => item.node.entity_type === foundItem.selectedEntityType.toEntitytype)?.node
-            : edges[0].node;
-          const entityTypeList = edges.map(({ node }) => ({
-            entity_type: node.entity_type,
-            representative: node.representative.main,
-            id: node.id,
-          }));
+            const currentStixObject = foundItem
+              ? edges.find(
+                  (item) => item.node.entity_type === foundItem.selectedEntityType.toEntitytype,
+                )?.node
+              : edges[0].node;
+            const entityTypeList = edges.map(({ node }) => ({
+              entity_type: node.entity_type,
+              representative: node.representative.main,
+              id: node.id,
+            }));
 
-          const foundEntityType = entityList.filter((entityType) => entityType.toEntitytype === entityTypeList[0].entity_type);
-          const newSelectedEntityType: RelationsToEntity = foundEntityType.length ? foundEntityType[0] : entityList[0];
+            const foundEntityType = entityList.filter(
+              (entityType) => entityType.toEntitytype === entityTypeList[0].entity_type,
+            );
+            const newSelectedEntityType: RelationsToEntity = foundEntityType.length
+              ? foundEntityType[0]
+              : entityList[0];
 
-          let selectedEntityType: RelationsToEntity = (foundItem && foundItem.selectedEntityType) ?? newSelectedEntityType;
+            let selectedEntityType: RelationsToEntity =
+              (foundItem && foundItem.selectedEntityType) ?? newSelectedEntityType;
 
-          const isExisting = foundItem ? !!entityTypeList.find((item) => item.entity_type === selectedEntityType.toEntitytype) : true;
-          const isMatchingEntity = getRelationMatchStatus(selectedEntityType, entityTypeList);
+            const isExisting = foundItem
+              ? !!entityTypeList.find(
+                  (item) => item.entity_type === selectedEntityType.toEntitytype,
+                )
+              : true;
+            const isMatchingEntity = getRelationMatchStatus(selectedEntityType, entityTypeList);
 
-          const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
+            const foundSelectedItem = selectedEntities.find((item) => item.name === cur.searchTerm);
 
-          if (!isFirstLoadDone) {
-            const selectedEntityTypeFromSelectedEntity = entityList.find((item) => item.toEntitytype === foundSelectedItem?.entity_type);
-            if (selectedEntityTypeFromSelectedEntity) selectedEntityType = selectedEntityTypeFromSelectedEntity;
-            setIsFirstLoadDone(true);
+            if (!isFirstLoadDone) {
+              const selectedEntityTypeFromSelectedEntity = entityList.find(
+                (item) => item.toEntitytype === foundSelectedItem?.entity_type,
+              );
+              if (selectedEntityTypeFromSelectedEntity)
+                selectedEntityType = selectedEntityTypeFromSelectedEntity;
+              setIsFirstLoadDone(true);
+            }
+            return [
+              ...acc,
+              {
+                representative:
+                  currentStixObject?.representative.main ??
+                  foundItem?.representative ??
+                  cur.searchTerm,
+                entityTypeList,
+                isMatchingEntity,
+                isExisting,
+                selectedEntityType,
+                index,
+                searchTerm: cur.searchTerm,
+              },
+            ];
           }
-          return [...acc, {
-            representative: currentStixObject?.representative.main ?? foundItem?.representative ?? cur.searchTerm,
-            entityTypeList,
-            isMatchingEntity,
-            isExisting,
-            selectedEntityType,
-            index,
-            searchTerm: cur.searchTerm,
-          }];
-        }
-        return [...acc, {
-          isExisting: false,
-          representative: foundItem?.representative ?? cur.searchTerm,
-          selectedEntityType: foundItem?.selectedEntityType ?? defaultEntityType,
-          index,
-          isMatchingEntity: false,
-          searchTerm: cur.searchTerm,
-        }];
-      }, []);
+          return [
+            ...acc,
+            {
+              isExisting: false,
+              representative: foundItem?.representative ?? cur.searchTerm,
+              selectedEntityType: foundItem?.selectedEntityType ?? defaultEntityType,
+              index,
+              isMatchingEntity: false,
+              searchTerm: cur.searchTerm,
+            },
+          ];
+        },
+        [],
+      );
       setBulkEntityList([...newBulkEntityList]);
     };
     getBulkEntities().catch(() => false);
@@ -347,17 +406,23 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   const onChangeEntityType = (value: RelationsToEntity, entityIndex: number) => {
     const bulkEntityListToEdit = bulkEntityList;
     const { entityTypeList } = bulkEntityListToEdit[entityIndex];
-    const foundEntityType = (entityTypeList ?? []).find((item) => item.entity_type === value.toEntitytype);
+    const foundEntityType = (entityTypeList ?? []).find(
+      (item) => item.entity_type === value.toEntitytype,
+    );
     if (foundEntityType) {
       bulkEntityListToEdit[entityIndex].representative = foundEntityType.representative;
       bulkEntityListToEdit[entityIndex].isExisting = true;
     }
     if (!foundEntityType) {
       bulkEntityListToEdit[entityIndex].isExisting = false;
-      bulkEntityListToEdit[entityIndex].representative = bulkEntityListToEdit[entityIndex].searchTerm;
+      bulkEntityListToEdit[entityIndex].representative =
+        bulkEntityListToEdit[entityIndex].searchTerm;
     }
     bulkEntityListToEdit[entityIndex].selectedEntityType = value;
-    bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(value, entityTypeList ?? []);
+    bulkEntityListToEdit[entityIndex].isMatchingEntity = getRelationMatchStatus(
+      value,
+      entityTypeList ?? [],
+    );
     setBulkEntityList([...bulkEntityListToEdit]);
     selectMissingEntities(bulkEntityListToEdit);
   };
@@ -397,7 +462,11 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     for (const bulkEntity of bulkEntityList) {
-      const foundEntityType = bulkEntity.entityTypeList && bulkEntity.entityTypeList.find((entity) => entity.entity_type === bulkEntity.selectedEntityType.toEntitytype);
+      const foundEntityType =
+        bulkEntity.entityTypeList &&
+        bulkEntity.entityTypeList.find(
+          (entity) => entity.entity_type === bulkEntity.selectedEntityType.toEntitytype,
+        );
       if (!foundEntityType) return;
       const finalValues = {
         relationship_type: selectedRelationType,
@@ -417,20 +486,31 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
     dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
-  const isSubmitDisable = !bulkEntityList.every((item) => item.isMatchingEntity) || bulkEntityList.length === 0;
+  const isSubmitDisable =
+    !bulkEntityList.every((item) => item.isMatchingEntity) || bulkEntityList.length === 0;
 
   const renderHeaders = () => (
     <Box sx={{ height: '30px', display: 'flex', gap: '15px' }}>
       <Typography sx={{ width: `${toHeaderWidth}px` }}>{t_i18n('relationship_to')}</Typography>
       <Typography sx={{ width: `${entityTypeHeaderWidth}px` }}>{t_i18n('entity_type')}</Typography>
-      <Typography sx={{ width: `${entityNameHeaderWidth}px` }}>{t_i18n('Representation')}</Typography>
+      <Typography sx={{ width: `${entityNameHeaderWidth}px` }}>
+        {t_i18n('Representation')}
+      </Typography>
       <Typography sx={{ width: `${matchHeaderWidth}px` }}>{t_i18n('Match')}</Typography>
       <Box sx={{ width: '50px' }} />
     </Box>
   );
 
   const renderLoader = () => (
-    <Box sx={{ width: '100%', height: '100%', backgroundColor: '#000000', opacity: 0.5, position: 'absolute' }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#000000',
+        opacity: 0.5,
+        position: 'absolute',
+      }}
+    >
       <Loader />
     </Box>
   );
@@ -478,29 +558,80 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog
+        open={isOpen}
+        slotProps={{ paper: { elevation: 1 } }}
+        scroll="paper"
+        sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }}
+        onClose={onClose}
+        maxWidth="xl"
+      >
         {isSubmitting && renderLoader()}
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
-          <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
-          {missingEntity ? <BulkTextModalButton title={t_i18n('Create missing entities')} onClick={handleOpenObjectCreateEntityForm} /> : null}
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '70px',
+          }}
+        >
+          <div>
+            {t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}
+          </div>
+          {missingEntity ? (
+            <BulkTextModalButton
+              title={t_i18n('Create missing entities')}
+              onClick={handleOpenObjectCreateEntityForm}
+            />
+          ) : null}
         </DialogTitle>
-        <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
+        <DialogContent
+          id="container"
+          sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}
+        >
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
+            <Typography sx={{ height: '25px', paddingLeft: '10px' }}>
+              {t_i18n('relationship_from')}
+            </Typography>
             <Box sx={{ display: 'flex' }}>
-              <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
+              <Box
+                id="entityCard"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '0 10px',
+                  flexDirection: 'column',
+                }}
+              >
                 <EntityRelationshipCard
                   entityName={stixDomainObjectName}
                   entityType={stixDomainObjectType}
                 />
               </Box>
-              <Box id="relationArrow" sx={{ display: 'flex', justifyContent: 'center', padding: '0 20px', flexDirection: 'column', minWidth: '200px' }}>
-                <Select disabled={isSubmitting} onChange={handleChangeSelectedRelationType} value={selectedRelationType}>
-                  {relationListArray.sort((a, b) => (t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1)).map((relation) => (
-                    <MenuItem key={relation} value={relation}>
-                      {t_i18n(`relationship_${relation}`)}
-                    </MenuItem>
-                  ))}
+              <Box
+                id="relationArrow"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '0 20px',
+                  flexDirection: 'column',
+                  minWidth: '200px',
+                }}
+              >
+                <Select
+                  disabled={isSubmitting}
+                  onChange={handleChangeSelectedRelationType}
+                  value={selectedRelationType}
+                >
+                  {relationListArray
+                    .sort((a, b) =>
+                      t_i18n(`relationship_${a}`) < t_i18n(`relationship_${b}`) ? -1 : 1,
+                    )
+                    .map((relation) => (
+                      <MenuItem key={relation} value={relation}>
+                        {t_i18n(`relationship_${relation}`)}
+                      </MenuItem>
+                    ))}
                 </Select>
                 <ArrowRightAlt sx={{ alignSelf: 'center', margin: '10px' }} fontSize="large" />
               </Box>
@@ -508,7 +639,16 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
           </Box>
           <Box>
             {renderHeaders()}
-            <Box id="forms" sx={{ display: 'flex', height: '100%', overflowY: 'auto', width: '100%', gap: '10px' }}>
+            <Box
+              id="forms"
+              sx={{
+                display: 'flex',
+                height: '100%',
+                overflowY: 'auto',
+                width: '100%',
+                gap: '10px',
+              }}
+            >
               <Box sx={{ width: `${toHeaderWidth}px` }}>
                 <TextField
                   disabled={isSubmitting}
@@ -551,7 +691,9 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
+          <Button variant="secondary" onClick={onClose}>
+            {t_i18n('Cancel')}
+          </Button>
           <Button onClick={handleSubmit} disabled={isSubmitDisable || isSubmitting}>
             {t_i18n('Create')}
           </Button>

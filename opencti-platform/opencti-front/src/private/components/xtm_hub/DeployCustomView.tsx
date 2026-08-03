@@ -37,23 +37,21 @@ const DeployCustomView = () => {
     },
   );
 
-  const importForEntityType = (
-    importedFile: File,
-    targetEntityType: string | null,
-  ) => new Promise<{ id: string; targetEntityType: string }>((resolve, reject) => {
-    commitImportMutation({
-      variables: { targetEntityType, file: importedFile },
-      onCompleted: (data) => {
-        resolve({
-          id: data.customViewConfigurationImport.id,
-          targetEntityType: data.customViewConfigurationImport.targetEntityType,
-        });
-      },
-      onError: (error) => {
-        reject(error);
-      },
+  const importForEntityType = (importedFile: File, targetEntityType: string | null) =>
+    new Promise<{ id: string; targetEntityType: string }>((resolve, reject) => {
+      commitImportMutation({
+        variables: { targetEntityType, file: importedFile },
+        onCompleted: (data) => {
+          resolve({
+            id: data.customViewConfigurationImport.id,
+            targetEntityType: data.customViewConfigurationImport.targetEntityType,
+          });
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
     });
-  });
 
   const sendImportToBack = async (importedFile: File) => {
     const entityTypes = targetEntityTypes.length > 0 ? targetEntityTypes : [null];
@@ -61,7 +59,10 @@ const DeployCustomView = () => {
       entityTypes.map((entityType: string | null) => importForEntityType(importedFile, entityType)),
     );
     const createdCustomViews = results
-      .filter((r): r is PromiseFulfilledResult<{ id: string; targetEntityType: string }> => r.status === 'fulfilled')
+      .filter(
+        (r): r is PromiseFulfilledResult<{ id: string; targetEntityType: string }> =>
+          r.status === 'fulfilled',
+      )
       .map((r) => r.value);
 
     if (createdCustomViews.length === entityTypes.length) {
@@ -82,7 +83,9 @@ const DeployCustomView = () => {
   const onDownloadError = () => {
     navigate('/dashboard');
     MESSAGING$.notifyError(
-      t_i18n('An error occurred while importing custom view. You have been redirected to home page.'),
+      t_i18n(
+        'An error occurred while importing custom view. You have been redirected to home page.',
+      ),
     );
   };
 

@@ -55,11 +55,7 @@ const ItemNumberDifference = (props) => {
       <div className={classes.diff} style={inlineStyles.red}>
         <ArrowDownward color="inherit" classes={{ root: classes.diffIcon }} />
         <div className={classes.diffNumber}>{difference}</div>
-        {description ? (
-          <div className={classes.diffDescription}>({t(description)})</div>
-        ) : (
-          ''
-        )}
+        {description ? <div className={classes.diffDescription}>({t(description)})</div> : ''}
       </div>
     );
   }
@@ -68,11 +64,7 @@ const ItemNumberDifference = (props) => {
       <div className={classes.diff} style={inlineStyles.blueGrey}>
         <ArrowForward color="inherit" classes={{ root: classes.diffIcon }} />
         <div className={classes.diffNumber}>{difference}</div>
-        {description ? (
-          <div className={classes.diffDescription}>({t(description)})</div>
-        ) : (
-          ''
-        )}
+        {description ? <div className={classes.diffDescription}>({t(description)})</div> : ''}
       </div>
     );
   }
@@ -80,11 +72,7 @@ const ItemNumberDifference = (props) => {
     <div className={classes.diff} style={inlineStyles.green}>
       <ArrowUpward color="inherit" classes={{ root: classes.diffIcon }} />
       <div className={classes.diffNumber}>{difference}</div>
-      {description ? (
-        <div className={classes.diffDescription}>({t(description)})</div>
-      ) : (
-        ''
-      )}
+      {description ? <div className={classes.diffDescription}>({t(description)})</div> : ''}
     </div>
   );
 };

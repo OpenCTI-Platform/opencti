@@ -23,7 +23,10 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  serializeFilterGroupForBackend,
+} from '../../../../utils/filters/filtersUtils';
 import { enabledFilters } from './utils/enabledFilters';
 import { useTheme } from '@mui/material/styles';
 
@@ -58,7 +61,9 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
-  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? undefined);
+  const [filters, filterHelpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? undefined,
+  );
 
   useEffect(() => {
     commitUpdate({
@@ -123,13 +128,14 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
           />
-          <Box sx={{
-            paddingTop: '30px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: theme.spacing(1),
-            marginBottom: theme.spacing(1),
-          }}
+          <Box
+            sx={{
+              paddingTop: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing(1),
+              marginBottom: theme.spacing(1),
+            }}
           >
             <Filters
               availableFilterKeys={enabledFilters}
@@ -169,7 +175,9 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                 <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
                   <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <span>{t_i18n('Reaction points')}</span>
-                    <Tooltip title={t_i18n('Define at which score thresholds the indicator is updated.')}>
+                    <Tooltip
+                      title={t_i18n('Define at which score thresholds the indicator is updated.')}
+                    >
                       <InformationOutline fontSize="small" color="primary" />
                     </Tooltip>
                     <Tooltip title={t_i18n('Add a reaction point')}>
@@ -183,7 +191,8 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                     </Tooltip>
                   </Box>
                 </Typography>
-                {values.decay_points && values.decay_points.length > 0 && (
+                {values.decay_points &&
+                  values.decay_points.length > 0 &&
                   values.decay_points.map((_, index) => (
                     <div key={index} style={{ display: 'flex' }}>
                       <div style={{ flex: 1 }}>
@@ -219,8 +228,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                         </Tooltip>
                       </div>
                     </div>
-                  ))
-                )}
+                  ))}
               </div>
             )}
           />
@@ -261,9 +269,7 @@ interface DecayRuleEditionProps {
   decayRule: DecayRule_decayRule$data;
 }
 
-const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
-  decayRule,
-}) => {
+const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({ decayRule }) => {
   const { t_i18n } = useFormatter();
   const initialValues: DecayRuleEditionFormData = {
     name: decayRule.name,
@@ -277,14 +283,8 @@ const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
     decay_filters: decayRule.decay_filters,
   };
   return (
-    <Drawer
-      title={t_i18n('Update a decay rule')}
-      controlledDial={EditEntityControlledDial}
-    >
-      <DecayRuleEditionForm
-        decayRuleId={decayRule.id}
-        initialValues={initialValues}
-      />
+    <Drawer title={t_i18n('Update a decay rule')} controlledDial={EditEntityControlledDial}>
+      <DecayRuleEditionForm decayRuleId={decayRule.id} initialValues={initialValues} />
     </Drawer>
   );
 };

@@ -38,21 +38,13 @@ interface ThemeEditionProps {
   handleClose: () => void;
 }
 
-const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
-  theme,
-  open,
-  handleClose,
-}) => {
+const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({ theme, open, handleClose }) => {
   const { t_i18n } = useFormatter();
 
-  const [commit] = useApiMutation(
-    editThemeMutation,
-    undefined,
-    {
-      successMessage: t_i18n('Successfully updated theme'),
-      errorMessage: t_i18n('Failed to update theme'),
-    },
-  );
+  const [commit] = useApiMutation(editThemeMutation, undefined, {
+    successMessage: t_i18n('Successfully updated theme'),
+    errorMessage: t_i18n('Failed to update theme'),
+  });
 
   const validator = themeValidationSchema(t_i18n);
 
@@ -74,8 +66,14 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             { key: 'theme_logo_login', value: values.theme_logo_login },
             { key: 'theme_text_color', value: values.theme_text_color },
             { key: 'theme_login_aside_color', value: values.theme_login_aside_color ?? '' },
-            { key: 'theme_login_aside_gradient_start', value: values.theme_login_aside_gradient_start ?? '' },
-            { key: 'theme_login_aside_gradient_end', value: values.theme_login_aside_gradient_end ?? '' },
+            {
+              key: 'theme_login_aside_gradient_start',
+              value: values.theme_login_aside_gradient_start ?? '',
+            },
+            {
+              key: 'theme_login_aside_gradient_end',
+              value: values.theme_login_aside_gradient_end ?? '',
+            },
             { key: 'theme_login_aside_image', value: values.theme_login_aside_image ?? '' },
           ],
         },
@@ -124,12 +122,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
   };
 
   return (
-    <Drawer
-      title={t_i18n('Update a theme')}
-      open={open}
-      onClose={handleClose}
-      size="medium"
-    >
+    <Drawer title={t_i18n('Update a theme')} open={open} onClose={handleClose} size="medium">
       <Formik<ThemeType>
         initialValues={theme}
         onSubmit={handleSubmit}
@@ -146,7 +139,9 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             themeId={theme.id}
             onSubmit={submitForm}
             onCancel={handleClose}
-            onChange={(updatedValues) => handleOnChange(updatedValues ?? values, setSubmitting, setErrors, resetForm)}
+            onChange={(updatedValues) =>
+              handleOnChange(updatedValues ?? values, setSubmitting, setErrors, resetForm)
+            }
             withButtons={false}
           />
         )}

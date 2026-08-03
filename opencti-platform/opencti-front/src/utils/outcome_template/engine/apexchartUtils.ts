@@ -1,8 +1,9 @@
 import { ApexOptions } from 'apexcharts';
 
-const sleep = (delay: number) => new Promise((resolve) => {
-  setTimeout(resolve, delay);
-});
+const sleep = (delay: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, delay);
+  });
 
 /**
  * Creates a chart in base64 that can be inject inside a <img /> tag.

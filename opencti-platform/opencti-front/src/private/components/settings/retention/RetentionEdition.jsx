@@ -29,19 +29,19 @@ import { useTheme } from '@mui/material/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
 
 const retentionMutationFieldPatch = graphql`
-    mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-        retentionRuleEdit(id: $id) {
-            fieldPatch(input: $input) {
-                ...RetentionEdition_retentionRule
-            }
-        }
+  mutation RetentionEditionFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    retentionRuleEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ...RetentionEdition_retentionRule
+      }
     }
+  }
 `;
 
 const RetentionCheckMutation = graphql`
-    mutation RetentionEditionCheckMutation($input: RetentionRuleAddInput!) {
-        retentionRuleCheck(input: $input)
-    }
+  mutation RetentionEditionCheckMutation($input: RetentionRuleAddInput!) {
+    retentionRuleCheck(input: $input)
+  }
 `;
 
 const RetentionEditionContainer = (props) => {
@@ -54,9 +54,14 @@ const RetentionEditionContainer = (props) => {
     retention_unit: retentionRule.retention_unit,
     active: retentionRule.active,
   };
-  const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
+  const [filters, helpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined),
+  );
   const [verified, setVerified] = useState(false);
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes([
+    'Stix-Core-Object',
+    'stix-core-relationship',
+  ]);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -68,8 +73,7 @@ const RetentionEditionContainer = (props) => {
     const inputValues = Object.entries({
       ...values,
       filters: isFilterGroupNotEmpty(filters) ? serializeFilterGroupForBackend(filters) : '',
-    })
-      .map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     commitMutation({
       mutation: retentionMutationFieldPatch,
       variables: {
@@ -108,11 +112,7 @@ const RetentionEditionContainer = (props) => {
     });
   };
   return (
-    <Drawer
-      title={t_i18n('Update a retention policy')}
-      open={open}
-      onClose={handleClose}
-    >
+    <Drawer title={t_i18n('Update a retention policy')} open={open} onClose={handleClose}>
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
@@ -178,61 +178,57 @@ const RetentionEditionContainer = (props) => {
               label={t_i18n('Active')}
               containerstyle={{ marginTop: 20 }}
             />
-            {retentionRule.scope === 'activity'
-              && (
-                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                  {t_i18n('The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)')}
-                </Alert>
-              )
-            }
-            {retentionRule.scope === 'file'
-              && (
-                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                  {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
-                </Alert>
-              )
-            }
-            {retentionRule.scope === 'workbench'
-              && (
-                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                  {t_i18n('The retention policy will be applied on all workbenches (both global and entity-attached)')}
-                </Alert>
-              )
-            }
-            {retentionRule.scope === 'knowledge'
-              && (
-                <>
-                  <Box
-                    sx={{
-                      paddingTop: 4,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: theme.spacing(1),
-                      marginBottom: theme.spacing(1),
-                    }}
-                  >
-                    <Filters
-                      availableFilterKeys={availableFilterKeys}
-                      helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                    />
-                  </Box>
-                  <FilterIconButton
-                    filters={filters}
+            {retentionRule.scope === 'activity' && (
+              <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                {t_i18n(
+                  'The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)',
+                )}
+              </Alert>
+            )}
+            {retentionRule.scope === 'file' && (
+              <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
+              </Alert>
+            )}
+            {retentionRule.scope === 'workbench' && (
+              <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                {t_i18n(
+                  'The retention policy will be applied on all workbenches (both global and entity-attached)',
+                )}
+              </Alert>
+            )}
+            {retentionRule.scope === 'knowledge' && (
+              <>
+                <Box
+                  sx={{
+                    paddingTop: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: theme.spacing(1),
+                    marginBottom: theme.spacing(1),
+                  }}
+                >
+                  <Filters
+                    availableFilterKeys={availableFilterKeys}
                     helpers={helpers}
-                    redirection
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
-                </>
-              )
-            }
-            {retentionRule.scope === 'history'
-              && (
-                <Alert severity="info" style={{ margin: '15px 0 15px 0' }}>
-                  {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
-                </Alert>
-              )
-            }
+                </Box>
+                <FilterIconButton
+                  filters={filters}
+                  helpers={helpers}
+                  redirection
+                  searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                />
+              </>
+            )}
+            {retentionRule.scope === 'history' && (
+              <Alert severity="info" style={{ margin: '15px 0 15px 0' }}>
+                {t_i18n(
+                  'The retention policy will be applied on history logs of knowledge entities',
+                )}
+              </Alert>
+            )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
               <Button
                 color="secondary"
@@ -264,21 +260,18 @@ const RetentionEditionContainer = (props) => {
   );
 };
 
-const RetentionEditionFragment = createFragmentContainer(
-  RetentionEditionContainer,
-  {
-    retentionRule: graphql`
-            fragment RetentionEdition_retentionRule on RetentionRule {
-                id
-                name
-                retention_unit
-                max_retention
-                filters
-                scope
-                active
-            }
-        `,
-  },
-);
+const RetentionEditionFragment = createFragmentContainer(RetentionEditionContainer, {
+  retentionRule: graphql`
+    fragment RetentionEdition_retentionRule on RetentionRule {
+      id
+      name
+      retention_unit
+      max_retention
+      filters
+      scope
+      active
+    }
+  `,
+});
 
 export default RetentionEditionFragment;

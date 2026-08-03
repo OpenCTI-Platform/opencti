@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { bytesFormat, computeLevel, numberFormat, setNumberOfElements, simpleNumberFormat } from './Number';
+import {
+  bytesFormat,
+  computeLevel,
+  numberFormat,
+  setNumberOfElements,
+  simpleNumberFormat,
+} from './Number';
 
 describe('Function: numberFormat', () => {
   it('should format a number with the appropriate SI symbol', () => {

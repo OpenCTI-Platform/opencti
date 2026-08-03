@@ -15,12 +15,7 @@ interface WidgetTreeProps {
   isDistributed?: boolean;
 }
 
-const WidgetTree = ({
-  data,
-  groupBy,
-  onMounted,
-  isDistributed = false,
-}: WidgetTreeProps) => {
+const WidgetTree = ({ data, groupBy, onMounted, isDistributed = false }: WidgetTreeProps) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
 
@@ -38,12 +33,7 @@ const WidgetTree = ({
   }, [data, groupBy, t_i18n]);
 
   const options: ApexOptions = useMemo(() => {
-    return treeMapOptions(
-      theme,
-      simpleNumberFormat,
-      'bottom',
-      isDistributed,
-    ) as ApexOptions;
+    return treeMapOptions(theme, simpleNumberFormat, 'bottom', isDistributed) as ApexOptions;
   }, [theme, isDistributed]);
 
   return (

@@ -13,9 +13,7 @@ const reportKnowledgeGraphEdit = graphql`
 `;
 
 const useReportKnowledgeGraphEdit = () => {
-  return useApiMutation<useReportKnowledgeGraphEditMutation>(
-    reportKnowledgeGraphEdit,
-  );
+  return useApiMutation<useReportKnowledgeGraphEditMutation>(reportKnowledgeGraphEdit);
 };
 
 export default useReportKnowledgeGraphEdit;

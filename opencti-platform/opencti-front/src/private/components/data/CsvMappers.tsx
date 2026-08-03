@@ -5,8 +5,14 @@ import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCrea
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
 import { CancelOutlined, CheckCircleOutlined, FileUploadOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
-import CsvMappersProvider, { mappersQuery, schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
-import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
+import CsvMappersProvider, {
+  mappersQuery,
+  schemaAttributesQuery,
+} from '@components/data/csvMapper/csvMappers.data';
+import {
+  csvMappers_MappersQuery,
+  csvMappers_MappersQuery$variables,
+} from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
 import { csvMappers_SchemaAttributesQuery } from '@components/data/csvMapper/__generated__/csvMappers_SchemaAttributesQuery.graphql';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
@@ -78,28 +84,24 @@ const CsvMappers = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Mappers | Processing | Data'));
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
-    LOCAL_STORAGE_KEY_CSV_MAPPERS,
-    {
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<csvMappers_MappersQuery$variables>(LOCAL_STORAGE_KEY_CSV_MAPPERS, {
       sortBy: 'name',
       orderAsc: false,
       view: 'lines',
       searchTerm: '',
-    },
-  );
+    });
   const [open, setOpen] = useState(false);
 
-  const [importedFileData, setImportedFileData] = useState<CsvMappersImportQuery$data['csvMapperAddInputFromImport'] | null>(null);
+  const [importedFileData, setImportedFileData] = useState<
+    CsvMappersImportQuery$data['csvMapperAddInputFromImport'] | null
+  >(null);
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
-  const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
-    schemaAttributesQuery,
-  );
-  const queryRefMappers = useQueryLoading<csvMappers_MappersQuery>(
-    mappersQuery,
-    paginationOptions,
-  );
+  const queryRefSchemaAttributes =
+    useQueryLoading<csvMappers_SchemaAttributesQuery>(schemaAttributesQuery);
+  const queryRefMappers = useQueryLoading<csvMappers_MappersQuery>(mappersQuery, paginationOptions);
 
   const dataColumns = {
     name: {
@@ -142,15 +144,22 @@ const CsvMappers = () => {
     }
   };
 
-  return queryRefMappers && queryRefSchemaAttributes
-    && (
+  return (
+    queryRefMappers &&
+    queryRefSchemaAttributes && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <CsvMappersProvider
           mappersQueryRef={queryRefMappers}
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
           <div className={classes.container} data-testid="csv-mapper-page">
-            <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV Mappers'), current: true }]} />
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Data') },
+                { label: t_i18n('Processing') },
+                { label: t_i18n('CSV Mappers'), current: true },
+              ]}
+            />
             <ProcessingMenu />
             <ListLines
               helpers={helpers}
@@ -164,7 +173,7 @@ const CsvMappers = () => {
               keyword={viewStorage.searchTerm}
               paginationOptions={paginationOptions}
               numberOfElements={viewStorage.numberOfElements}
-              createButton={(
+              createButton={
                 <>
                   <>
                     <ToggleButton
@@ -177,24 +186,16 @@ const CsvMappers = () => {
                     >
                       <FileUploadOutlined fontSize="small" color="primary" />
                     </ToggleButton>
-                    <Button
-                      disableElevation
-                      onClick={() => setOpen(true)}
-                    >
+                    <Button disableElevation onClick={() => setOpen(true)}>
                       {t_i18n('Create a CSV mapper')}
                     </Button>
                   </>
                 </>
-              )}
+              }
               iconExtension
             >
-              <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-              >
-                <CsvMapperLines
-                  paginationOptions={paginationOptions}
-                  dataColumns={dataColumns}
-                />
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <CsvMapperLines paginationOptions={paginationOptions} dataColumns={dataColumns} />
               </React.Suspense>
             </ListLines>
             <VisuallyHiddenInput
@@ -204,27 +205,25 @@ const CsvMappers = () => {
               onChange={handleFileImport}
             />
 
-            {importedFileData
-              ? (
-                  <CsvMapperCreationContainer
-                    importedFileData={importedFileData}
-                    paginationOptions={paginationOptions}
-                    open={true}
-                    onClose={handleClose}
-                  />
-                )
-              : (
-                  <CsvMapperCreationContainer
-                    paginationOptions={paginationOptions}
-                    open={open}
-                    onClose={handleClose}
-                  />
-                )
-            }
+            {importedFileData ? (
+              <CsvMapperCreationContainer
+                importedFileData={importedFileData}
+                paginationOptions={paginationOptions}
+                open={true}
+                onClose={handleClose}
+              />
+            ) : (
+              <CsvMapperCreationContainer
+                paginationOptions={paginationOptions}
+                open={open}
+                onClose={handleClose}
+              />
+            )}
           </div>
         </CsvMappersProvider>
       </Suspense>
-    );
+    )
+  );
 };
 
 export default CsvMappers;

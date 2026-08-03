@@ -16,7 +16,15 @@ import { isNotEmptyField } from '../../../../utils/utils';
 
 // The built-in methods whose configuration can be imported from a JSON file
 // (matching the backend ...AddInputFromImport queries / mutations).
-const IMPORTABLE_BUILT_IN_KINDS = ['sync', 'taxii', 'taxii-push', 'rss', 'csv', 'json', 'form'] as const;
+const IMPORTABLE_BUILT_IN_KINDS = [
+  'sync',
+  'taxii',
+  'taxii-push',
+  'rss',
+  'csv',
+  'json',
+  'form',
+] as const;
 
 export type ImportableBuiltInKind = (typeof IMPORTABLE_BUILT_IN_KINDS)[number];
 
@@ -43,12 +51,18 @@ interface BuiltInIntegrationImportProps {
 // Configuration import (JSON file upload, or XTM Hub deep link download) for a
 // built-in ingestion method: reuses the per-kind import components, which open
 // the matching creation drawer prefilled with the parsed configuration.
-export const BuiltInIntegrationImport = ({ kind, hideTrigger, onClose }: BuiltInIntegrationImportProps) => {
+export const BuiltInIntegrationImport = ({
+  kind,
+  hideTrigger,
+  onClose,
+}: BuiltInIntegrationImportProps) => {
   switch (kind) {
     case 'sync':
       return <SyncImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} />;
     case 'taxii':
-      return <IngestionTaxiiImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} />;
+      return (
+        <IngestionTaxiiImport paginationOptions={{}} hideTrigger={hideTrigger} onClose={onClose} />
+      );
     case 'rss':
       return (
         <IngestionRssImport

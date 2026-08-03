@@ -1,10 +1,15 @@
 import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { createRetentionRule, deleteRetentionRule, listRules } from '../modules/retentionRules/retentionRules-domain';
+import {
+  createRetentionRule,
+  deleteRetentionRule,
+  listRules,
+} from '../modules/retentionRules/retentionRules-domain';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
-const message = '[MIGRATION] Add active field to retention rules and create default disabled technical rules';
+const message =
+  '[MIGRATION] Add active field to retention rules and create default disabled technical rules';
 
 const DEFAULT_RULE_NAMES = [
   'Global files retention',
@@ -29,9 +34,13 @@ const deduplicateScopeRules = async (context, rules) => {
   const [keepRule, ...duplicates] = sorted;
   for (const duplicate of duplicates) {
     await deleteRetentionRule(context, SYSTEM_USER, duplicate.id);
-    logMigration.info(`${message} > Deleted duplicate retention rule "${duplicate.name}" (id: ${duplicate.id}, max_retention: ${duplicate.max_retention})`);
+    logMigration.info(
+      `${message} > Deleted duplicate retention rule "${duplicate.name}" (id: ${duplicate.id}, max_retention: ${duplicate.max_retention})`,
+    );
   }
-  logMigration.info(`${message} > Kept retention rule "${keepRule.name}" (id: ${keepRule.id}, max_retention: ${keepRule.max_retention})`);
+  logMigration.info(
+    `${message} > Kept retention rule "${keepRule.name}" (id: ${keepRule.id}, max_retention: ${keepRule.max_retention})`,
+  );
   return keepRule;
 };
 
@@ -88,9 +97,13 @@ export const up = async (next) => {
         scope,
         active: false,
       });
-      logMigration.info(`${message} > Created disabled ${scope} retention rule (${max_retention} days, inactive)`);
+      logMigration.info(
+        `${message} > Created disabled ${scope} retention rule (${max_retention} days, inactive)`,
+      );
     } else if (scopeRules.length > 1) {
-      logMigration.info(`${message} > Found ${scopeRules.length} rules for scope "${scope}", deduplicating...`);
+      logMigration.info(
+        `${message} > Found ${scopeRules.length} rules for scope "${scope}", deduplicating...`,
+      );
       await deduplicateScopeRules(context, scopeRules);
     } else {
       logMigration.info(`${message} > ${scope} retention rule already exists (1 rule), skipping`);
@@ -114,9 +127,7 @@ export const up = async (next) => {
           { terms: { 'name.keyword': DEFAULT_RULE_NAMES } },
           { term: { active: true } },
         ],
-        must_not: [
-          { exists: { field: 'last_execution_date' } },
-        ],
+        must_not: [{ exists: { field: 'last_execution_date' } }],
       },
     },
   };
@@ -125,7 +136,9 @@ export const up = async (next) => {
     READ_INDEX_INTERNAL_OBJECTS,
     deactivateDefaultsQuery,
   );
-  logMigration.info(`${message} > Set default retention rules that have never run to active = false`);
+  logMigration.info(
+    `${message} > Set default retention rules that have never run to active = false`,
+  );
 
   logMigration.info(`${message} > done`);
   next();

@@ -7,12 +7,22 @@ import { forgetPromise } from '../../utils/promiseUtils';
 import type { CERT_PROVIDER_NAME } from './provider-cert';
 import type { HEADERS_PROVIDER_NAME } from './provider-headers';
 
-export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
+export const logAuthInfo = (
+  message: string,
+  strategyType: EnvStrategyType | AuthenticationProviderType,
+  meta?: any,
+) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
 };
 
-export const logAuthError = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType | undefined, meta?: any) => {
-  logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, { meta });
+export const logAuthError = (
+  message: string,
+  strategyType: EnvStrategyType | AuthenticationProviderType | undefined,
+  meta?: any,
+) => {
+  logApp.error(`[Auth][${strategyType ? strategyType.toUpperCase() : 'Not provided'}]${message}`, {
+    meta,
+  });
 };
 
 export interface AuthenticationProviderLogger {
@@ -43,11 +53,25 @@ export const createAuthLogger = (
     const messageText = isAuthError ? err.message : message;
     const realMeta = {
       ...(isAuthError ? err.meta : meta),
-      ...(err && !isAuthError ? { message: err.errors ? [err.message, ...err.errors.map((e: any) => e.message)].filter(Boolean) : err.message || undefined } : {}),
+      ...(err && !isAuthError
+        ? {
+            message: err.errors
+              ? [err.message, ...err.errors.map((e: any) => e.message)].filter(Boolean)
+              : err.message || undefined,
+          }
+        : {}),
     };
-    forgetPromise(redisPushAuthLog(id, { level: 'error', type, identifier, message: messageText, meta: realMeta }));
+    forgetPromise(
+      redisPushAuthLog(id, {
+        level: 'error',
+        type,
+        identifier,
+        message: messageText,
+        meta: realMeta,
+      }),
+    );
   };
-  return ({
+  return {
     success: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
       forgetPromise(redisPushAuthLog(id, { level: 'success', type, identifier, message, meta }));
@@ -68,5 +92,5 @@ export const createAuthLogger = (
       logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
       return () => doLogError(message, meta, err);
     },
-  });
+  };
 };

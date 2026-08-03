@@ -24,48 +24,53 @@ export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: theme.spacing(3),
-    height: '100%',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  },
-  mainButton: ({ bannerHeightNumber }) => ({
-    position: 'fixed',
-    bottom: `${bannerHeightNumber + 30}px`,
+const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) =>
+  createStyles({
+    header: {
+      backgroundColor:
+        theme.palette.mode === 'light'
+          ? theme.palette.background.default
+          : theme.palette.background.nav,
+      padding: '10px 0',
+      display: 'inline-flex',
+      alignItems: 'center',
+    },
+    container: {
+      padding: theme.spacing(3),
+      height: '100%',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(2),
+    },
+    mainButton: ({ bannerHeightNumber }) => ({
+      position: 'fixed',
+      bottom: `${bannerHeightNumber + 30}px`,
+    }),
+    withLargePanel: {
+      right: 280,
+    },
+    withPanel: {
+      right: 230,
+    },
+    noPanel: {
+      right: 30,
+    },
   }),
-  withLargePanel: {
-    right: 280,
-  },
-  withPanel: {
-    right: 230,
-  },
-  noPanel: {
-    right: 30,
-  },
-}));
+);
 
 export interface DrawerControlledDialProps {
   onOpen: () => void;
   onClose?: () => void;
 }
-export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
+export type DrawerControlledDialType = ({
+  onOpen,
+  onClose,
+}: DrawerControlledDialProps) => React.ReactElement;
 
 interface DrawerProps {
   title: string;
-  children?:
-  | ((props: { onClose: () => void }) => React.ReactElement)
-  | React.ReactElement
-  | null;
+  children?: ((props: { onClose: () => void }) => React.ReactElement) | React.ReactElement | null;
   open?: boolean;
   onClose?: () => void;
   variant?: DrawerVariant;
@@ -85,189 +90,197 @@ interface DrawerProps {
 
 const getDrawerWidth = (size: DrawerSize) => {
   switch (size) {
-    case 'small': return '420px';
-    case 'medium': return '640px';
-    case 'large': return '960px';
-    case 'extraLarge': return '90vw';
+    case 'small':
+      return '420px';
+    case 'medium':
+      return '640px';
+    case 'large':
+      return '960px';
+    case 'extraLarge':
+      return '90vw';
   }
 };
 
 // eslint-disable-next-line react/display-name
-const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
-  title,
-  children,
-  open: defaultOpen = false,
-  onClose,
-  variant,
-  context,
-  header,
-  subHeader,
-  controlledDial,
-  containerStyle,
-  disabled = false,
-  size = 'large',
-  disableBackdropClose = false,
-}: DrawerProps, ref) => {
-  const {
-    bannerSettings: { bannerHeightNumber },
-  } = useAuth();
+const Drawer = forwardRef<HTMLDivElement, DrawerProps>(
+  (
+    {
+      title,
+      children,
+      open: defaultOpen = false,
+      onClose,
+      variant,
+      context,
+      header,
+      subHeader,
+      controlledDial,
+      containerStyle,
+      disabled = false,
+      size = 'large',
+      disableBackdropClose = false,
+    }: DrawerProps,
+    ref,
+  ) => {
+    const {
+      bannerSettings: { bannerHeightNumber },
+    } = useAuth();
 
-  const theme = useTheme<Theme>();
-  const classes = useStyles({ bannerHeightNumber });
-  const [open, setOpen] = useState(defaultOpen);
-  useEffect(() => {
-    if (open !== defaultOpen) {
-      setOpen(defaultOpen);
+    const theme = useTheme<Theme>();
+    const classes = useStyles({ bannerHeightNumber });
+    const [open, setOpen] = useState(defaultOpen);
+    useEffect(() => {
+      if (open !== defaultOpen) {
+        setOpen(defaultOpen);
+      }
+    }, [defaultOpen]);
+
+    const handleClose = () => {
+      onClose?.();
+      setOpen(false);
+    };
+
+    const update = variant
+      ? [DrawerVariant.update, DrawerVariant.updateWithPanel].includes(variant)
+      : undefined;
+    let component;
+    if (children) {
+      if (typeof children === 'function') {
+        component = children({ onClose: handleClose });
+      } else if (isValidElement(children) && children.type === React.Fragment) {
+        // Fragments don't accept props, so we can't pass onClose to them
+        component = children;
+      } else {
+        component = React.cloneElement(children as React.ReactElement, {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          onClose: handleClose,
+        });
+      }
     }
-  }, [defaultOpen]);
 
-  const handleClose = () => {
-    onClose?.();
-    setOpen(false);
-  };
+    const renderSubHeader = () => {
+      if (!subHeader) return null;
 
-  const update = variant
-    ? [DrawerVariant.update, DrawerVariant.updateWithPanel].includes(variant)
-    : undefined;
-  let component;
-  if (children) {
-    if (typeof children === 'function') {
-      component = children({ onClose: handleClose });
-    } else if (isValidElement(children) && children.type === React.Fragment) {
-      // Fragments don't accept props, so we can't pass onClose to them
-      component = children;
-    } else {
-      component = React.cloneElement(children as React.ReactElement, {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        onClose: handleClose,
-      });
-    }
-  }
+      if (subHeader.left && subHeader.right) {
+        return (
+          <Stack direction="row" justifyContent="space-between">
+            <Stack direction="row" gap={1}>
+              {subHeader.left}
+            </Stack>
+            <Stack direction="row" gap={1}>
+              {subHeader.right}
+            </Stack>
+          </Stack>
+        );
+      }
 
-  const renderSubHeader = () => {
-    if (!subHeader) return null;
-
-    if (subHeader.left && subHeader.right) {
-      return (
-        <Stack direction="row" justifyContent="space-between">
+      if (subHeader.left && !subHeader.right) {
+        return (
           <Stack direction="row" gap={1}>
             {subHeader.left}
           </Stack>
-          <Stack direction="row" gap={1}>
+        );
+      }
+
+      if (!subHeader.left && subHeader.right) {
+        return (
+          <Stack direction="row" gap={1} justifyContent="flex-end">
             {subHeader.right}
           </Stack>
-        </Stack>
-      );
-    }
+        );
+      }
+    };
 
-    if (subHeader.left && !subHeader.right) {
-      return (
-        <Stack direction="row" gap={1}>
-          {subHeader.left}
-        </Stack>
-      );
-    }
-
-    if (!subHeader.left && subHeader.right) {
-      return (
-        <Stack direction="row" gap={1} justifyContent="flex-end">
-          {subHeader.right}
-        </Stack>
-      );
-    }
-  };
-
-  return (
-    <>
-      {controlledDial && (
-        // issue with calling controlledDial as function, so all hooks inside controlledDial func are counted
-        // as Drawer hook list, when undefined, the hooks disapear, breaks the rules of hooks
-        // -> creating new element will separate component with isolated hooks tree
-        React.createElement(controlledDial, { onOpen: () => setOpen(true), onClose: handleClose })
-      )}
-
-      {variant && (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="primary"
-          aria-label={update ? 'Edit' : 'Add'}
-          disabled={disabled}
-          className={classNames({
-            [classes.mainButton]: true,
-            [classes.withPanel]: [
-              DrawerVariant.createWithPanel,
-              DrawerVariant.updateWithPanel,
-            ].includes(variant),
-            [classes.withLargePanel]: [
-              DrawerVariant.createWithLargePanel,
-            ].includes(variant),
-            [classes.noPanel]: [
-              DrawerVariant.create,
-              DrawerVariant.update,
-            ].includes(variant),
+    return (
+      <>
+        {controlledDial &&
+          // issue with calling controlledDial as function, so all hooks inside controlledDial func are counted
+          // as Drawer hook list, when undefined, the hooks disapear, breaks the rules of hooks
+          // -> creating new element will separate component with isolated hooks tree
+          React.createElement(controlledDial, {
+            onOpen: () => setOpen(true),
+            onClose: handleClose,
           })}
-        >
-          {update ? <Edit /> : <Add />}
-        </Fab>
-      )}
-      <DrawerMUI
-        open={open}
-        anchor="right"
-        elevation={1}
-        onClose={disableBackdropClose
-          ? (_, reason) => {
-              if (reason !== 'backdropClick') {
-                handleClose();
-              }
-            }
-          : handleClose}
-        onClick={(e) => e.stopPropagation()}
-        sx={{
-          zIndex: 1202,
-        }}
-        slotProps={{
-          paper: {
-            ref,
-            sx: {
-              minHeight: '100vh',
-              width: getDrawerWidth(size),
-              position: 'fixed',
-              overflow: 'auto',
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-              paddingTop: `${bannerHeightNumber}px`,
-              paddingBottom: `${bannerHeightNumber}px`,
-            },
-          },
-        }}
-      >
-        <DrawerHeader
-          title={title}
-          endContent={(
-            <>
-              {context && <SubscriptionAvatars context={context} />}
-              {header}
-            </>
-          )}
-          onClose={handleClose}
-        />
 
-        <div
-          className={classes.container}
-          style={{
-            ...containerStyle,
-            backgroundColor: theme.palette.background.drawer,
+        {variant && (
+          <Fab
+            onClick={() => setOpen(true)}
+            color="primary"
+            aria-label={update ? 'Edit' : 'Add'}
+            disabled={disabled}
+            className={classNames({
+              [classes.mainButton]: true,
+              [classes.withPanel]: [
+                DrawerVariant.createWithPanel,
+                DrawerVariant.updateWithPanel,
+              ].includes(variant),
+              [classes.withLargePanel]: [DrawerVariant.createWithLargePanel].includes(variant),
+              [classes.noPanel]: [DrawerVariant.create, DrawerVariant.update].includes(variant),
+            })}
+          >
+            {update ? <Edit /> : <Add />}
+          </Fab>
+        )}
+        <DrawerMUI
+          open={open}
+          anchor="right"
+          elevation={1}
+          onClose={
+            disableBackdropClose
+              ? (_, reason) => {
+                  if (reason !== 'backdropClick') {
+                    handleClose();
+                  }
+                }
+              : handleClose
+          }
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            zIndex: 1202,
+          }}
+          slotProps={{
+            paper: {
+              ref,
+              sx: {
+                minHeight: '100vh',
+                width: getDrawerWidth(size),
+                position: 'fixed',
+                overflow: 'auto',
+                transition: theme.transitions.create('width', {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+                paddingTop: `${bannerHeightNumber}px`,
+                paddingBottom: `${bannerHeightNumber}px`,
+              },
+            },
           }}
         >
-          {renderSubHeader()}
-          {component}
-        </div>
-      </DrawerMUI>
-    </>
-  );
-});
+          <DrawerHeader
+            title={title}
+            endContent={
+              <>
+                {context && <SubscriptionAvatars context={context} />}
+                {header}
+              </>
+            }
+            onClose={handleClose}
+          />
+
+          <div
+            className={classes.container}
+            style={{
+              ...containerStyle,
+              backgroundColor: theme.palette.background.drawer,
+            }}
+          >
+            {renderSubHeader()}
+            {component}
+          </div>
+        </DrawerMUI>
+      </>
+    );
+  },
+);
 
 export default Drawer;

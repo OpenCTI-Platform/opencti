@@ -44,21 +44,13 @@ class ObservedDataDetailsComponent extends Component {
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={2} sx={{ mb: 2 }}>
             <Grid item xs={6}>
-              <Label>
-                {t('First observed')}
-              </Label>
+              <Label>{t('First observed')}</Label>
               {fldt(observedData.first_observed)}
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Number observed')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Number observed')}</Label>
               {observedData.number_observed}
             </Grid>
             <Grid item xs={6}>
-              <Label>
-                {t('Last observed')}
-              </Label>
+              <Label>{t('Last observed')}</Label>
               {fldt(observedData.last_observed)}
             </Grid>
           </Grid>
@@ -82,18 +74,15 @@ ObservedDataDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const ObservedDataDetails = createFragmentContainer(
-  ObservedDataDetailsComponent,
-  {
-    observedData: graphql`
-      fragment ObservedDataDetails_observedData on ObservedData {
-        id
-        first_observed
-        last_observed
-        number_observed
-      }
-    `,
-  },
-);
+const ObservedDataDetails = createFragmentContainer(ObservedDataDetailsComponent, {
+  observedData: graphql`
+    fragment ObservedDataDetails_observedData on ObservedData {
+      id
+      first_observed
+      last_observed
+      number_observed
+    }
+  `,
+});
 
 export default compose(inject18n)(ObservedDataDetails);

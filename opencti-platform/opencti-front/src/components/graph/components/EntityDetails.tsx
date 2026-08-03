@@ -39,16 +39,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     height: 25,
     color: theme.palette.primary.main,
     backgroundColor:
-      theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .1)'
-        : 'rgba(0, 0, 0, .1)',
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
       backgroundColor:
-        theme.palette.mode === 'dark'
-          ? 'rgba(255, 255, 255, .2)'
-          : 'rgba(0, 0, 0, .2)',
+        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .2)' : 'rgba(0, 0, 0, .2)',
     },
   },
   bodyItem: {
@@ -289,22 +285,15 @@ interface EntityDetailsComponentProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 
-const EntityDetailsComponent: FunctionComponent<
-  EntityDetailsComponentProps
-> = ({ queryRef }) => {
+const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
-  const entity = usePreloadedQuery<EntityDetailsQuery>(
-    entityDetailsQuery,
-    queryRef,
-  );
+  const entity = usePreloadedQuery<EntityDetailsQuery>(entityDetailsQuery, queryRef);
   const { stixCoreObject } = entity;
   const [expanded, setExpanded] = useState(false);
   const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
   const reportsEdges = stixCoreObject?.reports?.edges;
-  const expandable = externalReferencesEdges
-    ? externalReferencesEdges.length > 3
-    : false;
+  const expandable = externalReferencesEdges ? externalReferencesEdges.length > 3 : false;
 
   const handleToggleExpand = () => {
     setExpanded(!expanded);
@@ -317,9 +306,7 @@ const EntityDetailsComponent: FunctionComponent<
     <Stack gap={2}>
       {stixCoreObject.entity_type !== 'StixFile' && (
         <div>
-          <Label>
-            {t_i18n('Value')}
-          </Label>
+          <Label>{t_i18n('Value')}</Label>
           <Tooltip title={getMainRepresentative(stixCoreObject)}>
             <span>{truncate(getMainRepresentative(stixCoreObject), 40)}</span>
           </Tooltip>
@@ -327,59 +314,49 @@ const EntityDetailsComponent: FunctionComponent<
       )}
       {stixCoreObject.entity_type === 'StixFile' && (
         <>
-          {stixCoreObject.hashes && stixCoreObject.hashes.map((hashObj, index) => (hashObj ? (
-            <div key={`${hashObj.algorithm}-${index}`}>
-              <Label>
-                {hashObj.algorithm ? String(hashObj.algorithm) : ''}
-              </Label>
-              <Tooltip title={hashObj.hash ? String(hashObj.hash) : ''}>
-                <span>{truncate(hashObj.hash, 40)}</span>
-              </Tooltip>
-            </div>
-          ) : null))}
+          {stixCoreObject.hashes &&
+            stixCoreObject.hashes.map((hashObj, index) =>
+              hashObj ? (
+                <div key={`${hashObj.algorithm}-${index}`}>
+                  <Label>{hashObj.algorithm ? String(hashObj.algorithm) : ''}</Label>
+                  <Tooltip title={hashObj.hash ? String(hashObj.hash) : ''}>
+                    <span>{truncate(hashObj.hash, 40)}</span>
+                  </Tooltip>
+                </div>
+              ) : null,
+            )}
 
           {stixCoreObject.observableName && (
             <div>
-              <Label>
-                {t_i18n('Name')}
-              </Label>
+              <Label>{t_i18n('Name')}</Label>
               <span>{stixCoreObject.observableName}</span>
             </div>
           )}
 
-          {stixCoreObject.x_opencti_additional_names && (
+          {stixCoreObject.x_opencti_additional_names &&
             (() => {
               const filteredAdditionalNames = stixCoreObject.x_opencti_additional_names.filter(
                 (additionalName) => additionalName !== stixCoreObject.observableName,
               );
               return filteredAdditionalNames.length > 0 ? (
                 <div>
-                  <Label>
-                    {t_i18n('Additional Names')}
-                  </Label>
+                  <Label>{t_i18n('Additional Names')}</Label>
                   <span>{filteredAdditionalNames.join(', ')}</span>
                 </div>
               ) : null;
-            })()
-          )}
+            })()}
         </>
       )}
       <div>
-        <Label>
-          {t_i18n('Type')}
-        </Label>
+        <Label>{t_i18n('Type')}</Label>
         <ItemEntityType entityType={stixCoreObject.entity_type} />
       </div>
       <div>
-        <Label>
-          {t_i18n('Platform creation date')}
-        </Label>
+        <Label>{t_i18n('Platform creation date')}</Label>
         {fldt(stixCoreObject.created_at)}
       </div>
       <div>
-        <Label>
-          {t_i18n('Description')}
-        </Label>
+        <Label>{t_i18n('Description')}</Label>
         {entityDescription && entityDescription.length > 0 ? (
           <ExpandableMarkdown source={entityDescription} limit={400} />
         ) : (
@@ -388,9 +365,7 @@ const EntityDetailsComponent: FunctionComponent<
       </div>
       {!stixCoreObject.parent_types.includes('Stix-Cyber-Observable') && (
         <div>
-          <Label>
-            {t_i18n('Confidence level')}
-          </Label>
+          <Label>{t_i18n('Confidence level')}</Label>
           <FieldOrEmpty source={stixCoreObject.confidence}>
             {stixCoreObject.confidence && (
               <ItemConfidence
@@ -402,24 +377,15 @@ const EntityDetailsComponent: FunctionComponent<
         </div>
       )}
       <div>
-        <Label>
-          {t_i18n('Marking')}
-        </Label>
-        <ItemMarkings
-          markingDefinitions={stixCoreObject.objectMarking}
-          limit={2}
-        />
+        <Label>{t_i18n('Marking')}</Label>
+        <ItemMarkings markingDefinitions={stixCoreObject.objectMarking} limit={2} />
       </div>
       <div>
-        <Label>
-          {t_i18n('Author')}
-        </Label>
+        <Label>{t_i18n('Author')}</Label>
         <ItemAuthor createdBy={stixCoreObject.createdBy} />
       </div>
       <div>
-        <Label>
-          {t_i18n('Creators')}
-        </Label>
+        <Label>{t_i18n('Creators')}</Label>
         <ItemCreators creators={stixCoreObject.creators ?? []} />
       </div>
       <div>
@@ -428,8 +394,7 @@ const EntityDetailsComponent: FunctionComponent<
             (stixCoreObject.reports?.pageInfo.globalCount ?? 0) >= 10
               ? 10
               : stixCoreObject.reports?.pageInfo.globalCount
-          } ${t_i18n('reports')} ${t_i18n('of')} ${stixCoreObject.reports?.pageInfo
-            .globalCount}`}
+          } ${t_i18n('reports')} ${t_i18n('of')} ${stixCoreObject.reports?.pageInfo.globalCount}`}
         </Label>
         {reportsEdges && reportsEdges.length > 0 ? (
           <List style={{ marginBottom: 0 }}>
@@ -449,16 +414,16 @@ const EntityDetailsComponent: FunctionComponent<
                       <ItemIcon type={report.entity_type} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={(
+                      primary={
                         <Tooltip title={report.name}>
                           <div className={classes.bodyItem}>{report.name}</div>
                         </Tooltip>
-                      )}
-                      secondary={(
+                      }
+                      secondary={
                         <div className={classes.bodyItem}>
                           {report.createdBy?.name ?? EMPTY_VALUE}
                         </div>
-                      )}
+                      }
                     />
                   </ListItemButton>
                 );
@@ -471,58 +436,49 @@ const EntityDetailsComponent: FunctionComponent<
         )}
       </div>
       <div>
-        <Label>
-          {t_i18n('External references')}
-        </Label>
+        <Label>{t_i18n('External references')}</Label>
         {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
           <List style={{ marginBottom: 0 }}>
-            {externalReferencesEdges
-              .slice(0, expanded ? 200 : 3)
-              .map((externalReference) => {
-                const externalReferenceId = externalReference.node.external_id
-                  ? `(${externalReference.node.external_id})`
-                  : '';
-                let externalReferenceSecondary: string;
-                if (
-                  externalReference.node.url
-                  && externalReference.node.url.length > 0
-                ) {
-                  externalReferenceSecondary = externalReference.node.url;
-                } else if (
-                  externalReference.node.description
-                  && externalReference.node.description.length > 0
-                ) {
-                  externalReferenceSecondary = externalReference.node.description;
-                } else {
-                  externalReferenceSecondary = t_i18n('No description');
-                }
-                return (
-                  <React.Fragment key={externalReference.node.id}>
-                    <ListItemButton
-                      component={Link}
-                      to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
-                      dense={true}
-                      divider={true}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type="External-Reference" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <div className={classes.bodyItem}>
-                            {`${externalReference.node.source_name} ${externalReferenceId}`}
-                          </div>
-                        )}
-                        secondary={(
-                          <div className={classes.bodyItem}>
-                            {externalReferenceSecondary}
-                          </div>
-                        )}
-                      />
-                    </ListItemButton>
-                  </React.Fragment>
-                );
-              })}
+            {externalReferencesEdges.slice(0, expanded ? 200 : 3).map((externalReference) => {
+              const externalReferenceId = externalReference.node.external_id
+                ? `(${externalReference.node.external_id})`
+                : '';
+              let externalReferenceSecondary: string;
+              if (externalReference.node.url && externalReference.node.url.length > 0) {
+                externalReferenceSecondary = externalReference.node.url;
+              } else if (
+                externalReference.node.description &&
+                externalReference.node.description.length > 0
+              ) {
+                externalReferenceSecondary = externalReference.node.description;
+              } else {
+                externalReferenceSecondary = t_i18n('No description');
+              }
+              return (
+                <React.Fragment key={externalReference.node.id}>
+                  <ListItemButton
+                    component={Link}
+                    to={`/dashboard/analyses/external_references/${externalReference.node.id}`}
+                    dense={true}
+                    divider={true}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type="External-Reference" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div
+                          className={classes.bodyItem}
+                        >{`${externalReference.node.source_name} ${externalReferenceId}`}</div>
+                      }
+                      secondary={
+                        <div className={classes.bodyItem}>{externalReferenceSecondary}</div>
+                      }
+                    />
+                  </ListItemButton>
+                </React.Fragment>
+              );
+            })}
           </List>
         ) : (
           EMPTY_VALUE
@@ -535,11 +491,7 @@ const EntityDetailsComponent: FunctionComponent<
           onClick={handleToggleExpand}
           className={classes.buttonExpand}
         >
-          {expanded ? (
-            <ExpandLessOutlined />
-          ) : (
-            <ExpandMoreOutlined />
-          )}
+          {expanded ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
         </IconButton>
       )}
     </Stack>
@@ -551,9 +503,7 @@ interface EntityDetailsProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
 
-const EntityDetails: FunctionComponent<
-  Omit<EntityDetailsProps, 'queryRef'>
-> = ({ entity }) => {
+const EntityDetails: FunctionComponent<Omit<EntityDetailsProps, 'queryRef'>> = ({ entity }) => {
   const queryRef = useQueryLoading<EntityDetailsQuery>(entityDetailsQuery, {
     id: entity.id,
   });

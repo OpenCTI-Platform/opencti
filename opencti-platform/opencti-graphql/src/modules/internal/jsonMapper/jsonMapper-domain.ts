@@ -1,16 +1,41 @@
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { type EditInput, FilterMode, type JsonMapperAddInput, type QueryJsonMappersArgs } from '../../../generated/graphql';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
-import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
+import {
+  type EditInput,
+  FilterMode,
+  type JsonMapperAddInput,
+  type QueryJsonMappersArgs,
+} from '../../../generated/graphql';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../../database/middleware-loader';
+import {
+  type BasicStoreEntityJsonMapper,
+  ENTITY_TYPE_JSON_MAPPER,
+  type JsonMapperRepresentation,
+  type StoreEntityJsonMapper,
+} from './jsonMapper-types';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import pjson from '../../../../package.json';
-import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '../../ingestion/ingestion-types';
+import {
+  type BasicStoreEntityIngestionJson,
+  ENTITY_TYPE_INGESTION_JSON,
+} from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
-import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
-import { parseJsonMapper, parseJsonMapperWithDefaultValues, validateJsonMapper } from './jsonMapper-utils';
+import {
+  createInternalObject,
+  deleteInternalObject,
+  editInternalObject,
+} from '../../../domain/internalObject';
+import {
+  parseJsonMapper,
+  parseJsonMapperWithDefaultValues,
+  validateJsonMapper,
+} from './jsonMapper-utils';
 import type { FileUploadData } from '../../../database/file-storage';
 import { streamConverter } from '../../../database/file-storage';
 import jsonMappingExecution from '../../../parser/json-mapper';
@@ -20,14 +45,33 @@ import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
 export const findById = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
-  return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
+  return storeLoadById<BasicStoreEntityJsonMapper>(
+    context,
+    user,
+    jsonMapperId,
+    ENTITY_TYPE_JSON_MAPPER,
+  );
 };
 
-export const findJsonMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
+export const findJsonMapperPaginated = (
+  context: AuthContext,
+  user: AuthUser,
+  opts: QueryJsonMappersArgs,
+) => {
+  return pageEntitiesConnection<BasicStoreEntityJsonMapper>(
+    context,
+    user,
+    [ENTITY_TYPE_JSON_MAPPER],
+    opts,
+  );
 };
 
-export const jsonMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
+export const jsonMapperTest = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: string,
+  fileUpload: Promise<FileUploadData>,
+) => {
   let parsedConfiguration;
   try {
     parsedConfiguration = JSON.parse(configuration);
@@ -46,7 +90,11 @@ export const jsonMapperTest = async (context: AuthContext, user: AuthUser, confi
   };
 };
 
-export const getParsedRepresentations = async (context: AuthContext, user: AuthUser, jsonMapper: BasicStoreEntityJsonMapper) => {
+export const getParsedRepresentations = async (
+  context: AuthContext,
+  user: AuthUser,
+  jsonMapper: BasicStoreEntityJsonMapper,
+) => {
   const parsedMapper = await parseJsonMapperWithDefaultValues(context, user, jsonMapper);
   return parsedMapper.representations;
 };
@@ -84,20 +132,34 @@ export const createJsonMapperFromConfiguration = async (
   return importMapper as BasicStoreEntityJsonMapper;
 };
 
-export const jsonMapperImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+export const jsonMapperImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>,
+) => {
   const parsedData = await extractContentFrom(file);
   // check platform version compatibility
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
     throw FunctionalError(
       `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
-      { reason: parsedData.openCTI_version },
+      {
+        reason: parsedData.openCTI_version,
+      },
     );
   }
-  const importMapper = await createJsonMapperFromConfiguration(context, user, parsedData.configuration);
+  const importMapper = await createJsonMapperFromConfiguration(
+    context,
+    user,
+    parsedData.configuration,
+  );
   return importMapper.id;
 };
 
-export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jsonMapper: BasicStoreEntityJsonMapper) => {
+export const jsonMapperExport = async (
+  context: AuthContext,
+  user: AuthUser,
+  jsonMapper: BasicStoreEntityJsonMapper,
+) => {
   const { name, representations, variables } = jsonMapper;
   const parsedRepresentations: JsonMapperRepresentation[] = JSON.parse(representations);
   await convertRepresentationsIds(context, user, parsedRepresentations, 'internal');
@@ -112,7 +174,11 @@ export const jsonMapperExport = async (context: AuthContext, user: AuthUser, jso
   });
 };
 
-export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
+export const deleteJsonMapper = async (
+  context: AuthContext,
+  user: AuthUser,
+  jsonMapperId: string,
+) => {
   const opts = {
     filters: {
       mode: FilterMode.Or,
@@ -120,23 +186,51 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
       filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }],
     },
   };
-  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(
+    context,
+    user,
+    [ENTITY_TYPE_INGESTION_JSON],
+    opts,
+  );
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
-    throw FunctionalError('Cannot delete this JSON Mapper: it is used by one or more IngestionJson ingester(s)', { id: jsonMapperId });
+    throw FunctionalError(
+      'Cannot delete this JSON Mapper: it is used by one or more IngestionJson ingester(s)',
+      { id: jsonMapperId },
+    );
   }
 
   return deleteInternalObject(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
 };
 
-export const createJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperInput: JsonMapperAddInput) => {
+export const createJsonMapper = async (
+  context: AuthContext,
+  user: AuthUser,
+  jsonMapperInput: JsonMapperAddInput,
+) => {
   // attempt to parse and validate the mapper representations ; this can throw errors
   const parsedMapper = parseJsonMapper(jsonMapperInput);
   await validateJsonMapper(context, user, parsedMapper);
 
-  return createInternalObject<StoreEntityJsonMapper>(context, user, jsonMapperInput, ENTITY_TYPE_JSON_MAPPER);
+  return createInternalObject<StoreEntityJsonMapper>(
+    context,
+    user,
+    jsonMapperInput,
+    ENTITY_TYPE_JSON_MAPPER,
+  );
 };
 
-export const fieldPatchJsonMapper = async (context: AuthContext, user: AuthUser, jsonMapperId: string, input: EditInput[]) => {
-  return editInternalObject<StoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER, input);
+export const fieldPatchJsonMapper = async (
+  context: AuthContext,
+  user: AuthUser,
+  jsonMapperId: string,
+  input: EditInput[],
+) => {
+  return editInternalObject<StoreEntityJsonMapper>(
+    context,
+    user,
+    jsonMapperId,
+    ENTITY_TYPE_JSON_MAPPER,
+    input,
+  );
 };

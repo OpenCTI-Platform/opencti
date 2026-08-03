@@ -28,11 +28,7 @@ const HeaderMainEntityLayout = ({
   return (
     <Stack gap={1} sx={{ marginBottom: 0 }}>
       {/* Title + TitleRight on left + Actions on right */}
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        gap={3}
-      >
+      <Stack direction="row" justifyContent="space-between" gap={3}>
         <Stack
           direction="row"
           sx={{
@@ -71,50 +67,40 @@ const HeaderMainEntityLayout = ({
         </Stack>
 
         {/* Right actions */}
-        <Stack
-          direction="row"
-          alignItems="center"
-          gap={1}
-        >
+        <Stack direction="row" alignItems="center" gap={1}>
           {rightActions}
         </Stack>
       </Stack>
 
       {/* Second row */}
-      {hasTagsRow
-        && (
+      {hasTagsRow && (
+        <Stack direction="row" alignContent="center" justifyContent="space-between" gap={3}>
           <Stack
             direction="row"
-            alignContent="center"
-            justifyContent="space-between"
-            gap={3}
+            gap={1}
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              maxWidth: hasBothTags ? '50%' : '100%',
+              overflow: 'hidden',
+            }}
           >
-            <Stack
-              direction="row"
-              gap={1}
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                maxWidth: hasBothTags ? '50%' : '100%',
-                overflow: 'hidden',
-              }}
-            >
-              {leftTags}
-            </Stack>
-
-            <Stack
-              direction="row"
-              alignItems="center"
-              sx={{
-                flex: 1,
-                minWidth: 0,
-                maxWidth: hasBothTags ? '50%' : '100%',
-              }}
-            >
-              {rightTags}
-            </Stack>
+            {leftTags}
           </Stack>
-        )}
+
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              maxWidth: hasBothTags ? '50%' : '100%',
+            }}
+          >
+            {rightTags}
+          </Stack>
+        </Stack>
+      )}
     </Stack>
   );
 };

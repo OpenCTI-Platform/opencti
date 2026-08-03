@@ -10,23 +10,29 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 const IndividualDeletionDeleteMutation = graphql`
   mutation IndividualDeletionDeleteMutation($id: ID!) {
     individualEdit(id: $id) {
-        delete
-      }
+      delete
     }
-  `;
+  }
+`;
 
-const IndividualDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+const IndividualDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Individual') },
   });
-  const [commit] = useApiMutation(
-    IndividualDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(IndividualDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
   const submitDelete = () => {

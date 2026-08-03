@@ -24,7 +24,10 @@ import { GroupEditionContainerQuery } from './__generated__/GroupEditionContaine
 import { GroupEditionContainer_group$key } from './__generated__/GroupEditionContainer_group.graphql';
 import GroupEditionMarkings from './GroupEditionMarkings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import {
+  PaginationLocalStorage,
+  usePaginationLocalStorage,
+} from '../../../../utils/hooks/useLocalStorage';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { useDataTablePaginationLocalStorage } from '../../../../components/dataGrid/dataTableHooks';
@@ -57,11 +60,7 @@ const GroupEditionContainerFragment = graphql`
     ...GroupEditionOverview_group
     ...GroupEditionMarkings_group
     ...GroupEditionConfidence_group
-    ...GroupEditionRoles_group
-    @arguments(
-      orderBy: $rolesOrderBy
-      orderMode: $rolesOrderMode
-    )
+    ...GroupEditionRoles_group @arguments(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode)
     editContext {
       name
       focusOn
@@ -87,8 +86,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   const [currentTab, setTab] = useState(0);
 
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const groupData = usePreloadedQuery<GroupEditionContainerQuery>(groupEditionContainerQuery, groupQueryRef);
-  const roleQueryRef = useQueryLoading<GroupEditionRolesLinesSearchQuery>(groupEditionRolesLinesSearchQuery);
+  const groupData = usePreloadedQuery<GroupEditionContainerQuery>(
+    groupEditionContainerQuery,
+    groupQueryRef,
+  );
+  const roleQueryRef = useQueryLoading<GroupEditionRolesLinesSearchQuery>(
+    groupEditionRolesLinesSearchQuery,
+  );
 
   const group = useFragment<GroupEditionContainer_group$key>(
     GroupEditionContainerFragment,
@@ -99,7 +103,11 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     return <ErrorNotFound />;
   }
 
-  const { viewStorage: { searchTerm }, paginationOptions: paginationOptionsForUserEdition, helpers } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
+  const {
+    viewStorage: { searchTerm },
+    paginationOptions: paginationOptionsForUserEdition,
+    helpers,
+  } = usePaginationLocalStorage<GroupUsersLinesQuery$variables>(
     `group-${group.id}-users`,
     {
       id: group.id,
@@ -108,18 +116,15 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
     true,
   );
   const LOCAL_STORAGE_KEY = `group-${group.id}-users`;
-  const paginationLocalStorage: PaginationLocalStorage<DataTableToolBarUsersLinesSearchQuery$variables> = useDataTablePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
+  const paginationLocalStorage: PaginationLocalStorage<DataTableToolBarUsersLinesSearchQuery$variables> =
+    useDataTablePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
   const { orderMode, orderBy } = paginationLocalStorage.paginationOptions;
   const userQueryRef = useQueryLoading<DataTableToolBarUsersLinesSearchQuery>(
     toolBarUsersLinesSearchQuery,
     { search: searchTerm, orderBy, orderMode },
   );
   const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
-    <EditEntityControlledDial
-      style={{ float: 'right' }}
-      disabled={disabled}
-      {...props}
-    />
+    <EditEntityControlledDial style={{ float: 'right' }} disabled={disabled} {...props} />
   );
 
   const { editContext } = group;
@@ -132,7 +137,9 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
-      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <Box
+        sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflow: 'hidden' }}
+      >
         <Box sx={{ borderBottom: 1, borderColor: 'divider', flexShrink: 0 }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t_i18n('Overview')} />
@@ -142,22 +149,16 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
             <Tab label={t_i18n('Confidences')} />
           </Tabs>
         </Box>
-        {currentTab === 0 && (
-          <GroupEditionOverview group={group} context={editContext} />
-        )}
+        {currentTab === 0 && <GroupEditionOverview group={group} context={editContext} />}
         {currentTab === 1 && roleQueryRef && (
-          <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inline} />}
-          >
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
             <GroupEditionRoles group={group} queryRef={roleQueryRef} />
           </React.Suspense>
         )}
         {currentTab === 2 && <GroupEditionMarkings group={group} />}
         {currentTab === 3 && userQueryRef && (
           <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inline} />}
-            >
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
               <GroupEditionUsers
                 group={group}
                 queryRef={userQueryRef}

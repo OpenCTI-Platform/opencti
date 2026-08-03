@@ -55,7 +55,8 @@ const ingestionTaxiiResolvers: Resolvers = {
       const decrypted = await decryptIngestionCredential(ingestionTaxii.authentication_value);
       return removeAuthenticationCredentials(ingestionTaxii.authentication_type, decrypted);
     },
-    user: (ingestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),
+    user: (ingestionTaxii, _, context) =>
+      loadCreator(context, context.user, ingestionTaxii.user_id),
     toConfigurationExport: (ingestionTaxii) => taxiiFeedExport(ingestionTaxii),
     ingestionLogs: async (ingestionTaxii: BasicStoreEntityIngestionTaxii) => {
       const entries = await redisGetIngestionLogHistory(ingestionTaxii.internal_id);

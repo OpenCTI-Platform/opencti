@@ -17,12 +17,15 @@ describe('Function: getLevel', () => {
 
 describe('Function: parseError', () => {
   it('should return a full parsed error with an entity', () => {
-    expect(parseError({
-      timestamp: '2024-10-11T20:10:06.700Z',
-      message: '{\'name\': \'INTERNAL_SERVER_ERROR\', \'error_message\': \'Test error report\'}',
-      sequence: null,
-      source: '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
-    })).toEqual({
+    expect(
+      parseError({
+        timestamp: '2024-10-11T20:10:06.700Z',
+        message: "{'name': 'INTERNAL_SERVER_ERROR', 'error_message': 'Test error report'}",
+        sequence: null,
+        source:
+          '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
+      }),
+    ).toEqual({
       isParsed: true,
       level: 'Critical',
       parsedError: {
@@ -38,20 +41,25 @@ describe('Function: parseError', () => {
       },
       rawError: {
         timestamp: '2024-10-11T20:10:06.700Z',
-        message: '{\'name\': \'INTERNAL_SERVER_ERROR\', \'error_message\': \'Test error report\'}',
+        message: "{'name': 'INTERNAL_SERVER_ERROR', 'error_message': 'Test error report'}",
         sequence: null,
-        source: '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
+        source:
+          '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
       },
     });
   });
 
   it('should return a full parsed error with a relationship', () => {
-    expect(parseError({
-      timestamp: '2024-10-11T20:10:06.708Z',
-      message: '{\'name\': \'UNSUPPORTED_ERROR\', \'error_message\': \'Test error relationship\', \'doc_code\': \'RESTRICTED_ELEMENT\'}',
-      sequence: null,
-      source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--3bb06e4f-0702-40da-a7db-3ae8e8800000", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd00000", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa1000000", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e00000", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0000"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
-    })).toEqual({
+    expect(
+      parseError({
+        timestamp: '2024-10-11T20:10:06.708Z',
+        message:
+          "{'name': 'UNSUPPORTED_ERROR', 'error_message': 'Test error relationship', 'doc_code': 'RESTRICTED_ELEMENT'}",
+        sequence: null,
+        source:
+          '{"type": "relationship", "spec_version": "2.1", "id": "relationship--3bb06e4f-0702-40da-a7db-3ae8e8800000", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd00000", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa1000000", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e00000", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0000"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
+      }),
+    ).toEqual({
       isParsed: true,
       level: 'Warning',
       parsedError: {
@@ -71,20 +79,26 @@ describe('Function: parseError', () => {
       },
       rawError: {
         timestamp: '2024-10-11T20:10:06.708Z',
-        message: '{\'name\': \'UNSUPPORTED_ERROR\', \'error_message\': \'Test error relationship\', \'doc_code\': \'RESTRICTED_ELEMENT\'}',
+        message:
+          "{'name': 'UNSUPPORTED_ERROR', 'error_message': 'Test error relationship', 'doc_code': 'RESTRICTED_ELEMENT'}",
         sequence: null,
-        source: '{"type": "relationship", "spec_version": "2.1", "id": "relationship--3bb06e4f-0702-40da-a7db-3ae8e8800000", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd00000", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa1000000", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e00000", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0000"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
+        source:
+          '{"type": "relationship", "spec_version": "2.1", "id": "relationship--3bb06e4f-0702-40da-a7db-3ae8e8800000", "created_by_ref": "identity--180d3ffd-a014-54ff-a817-211dddd00000", "created": "2024-10-11T17:19:43.689008Z", "modified": "2024-10-11T17:19:43.689008Z", "relationship_type": "originates-from", "source_ref": "intrusion-set--826cb3d9-0de3-5af7-9e95-f64fa1000000", "target_ref": "location--efa1b9b0-dc59-5bad-baa2-4fc495e00000", "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0000"], "nb_deps": 1, "x_opencti_granted_refs": null, "x_opencti_workflow_id": null}',
       },
     });
   });
 
   it('should return a full parsed error with a bundle', () => {
-    expect(parseError({
-      timestamp: '2024-10-11T20:10:06.788Z',
-      message: '{\'name\': \'MISSING_REFERENCE_ERROR\', \'error_message\': \'Element(s) not found [with bundle]\', \'doc_code\': \'ELEMENT_NOT_FOUND\'}',
-      sequence: null,
-      source: '{"type": "bundle", "id": "bundle--3d4b0539-a7c0-45b5-8f3f-edebe4000000", "spec_version": "2.1", "x_opencti_seq": 8, "objects": [{"type": "relationship", "spec_version": "2.1", "id": "relationship--41ea9593-cfc4-5d4b-b31d-ca9e4dd00000", "relationship_type": "targets", "source_ref": "malware--fc7e8c2e-6aa7-55cf-9f29-69c66d800000", "target_ref": "identity--f67fbf06-f3cd-58b3-bad9-ed0b45800000", "nb_deps": 8}]}',
-    })).toEqual({
+    expect(
+      parseError({
+        timestamp: '2024-10-11T20:10:06.788Z',
+        message:
+          "{'name': 'MISSING_REFERENCE_ERROR', 'error_message': 'Element(s) not found [with bundle]', 'doc_code': 'ELEMENT_NOT_FOUND'}",
+        sequence: null,
+        source:
+          '{"type": "bundle", "id": "bundle--3d4b0539-a7c0-45b5-8f3f-edebe4000000", "spec_version": "2.1", "x_opencti_seq": 8, "objects": [{"type": "relationship", "spec_version": "2.1", "id": "relationship--41ea9593-cfc4-5d4b-b31d-ca9e4dd00000", "relationship_type": "targets", "source_ref": "malware--fc7e8c2e-6aa7-55cf-9f29-69c66d800000", "target_ref": "identity--f67fbf06-f3cd-58b3-bad9-ed0b45800000", "nb_deps": 8}]}',
+      }),
+    ).toEqual({
       isParsed: true,
       level: 'Warning',
       parsedError: {
@@ -104,38 +118,46 @@ describe('Function: parseError', () => {
       },
       rawError: {
         timestamp: '2024-10-11T20:10:06.788Z',
-        message: '{\'name\': \'MISSING_REFERENCE_ERROR\', \'error_message\': \'Element(s) not found [with bundle]\', \'doc_code\': \'ELEMENT_NOT_FOUND\'}',
+        message:
+          "{'name': 'MISSING_REFERENCE_ERROR', 'error_message': 'Element(s) not found [with bundle]', 'doc_code': 'ELEMENT_NOT_FOUND'}",
         sequence: null,
-        source: '{"type": "bundle", "id": "bundle--3d4b0539-a7c0-45b5-8f3f-edebe4000000", "spec_version": "2.1", "x_opencti_seq": 8, "objects": [{"type": "relationship", "spec_version": "2.1", "id": "relationship--41ea9593-cfc4-5d4b-b31d-ca9e4dd00000", "relationship_type": "targets", "source_ref": "malware--fc7e8c2e-6aa7-55cf-9f29-69c66d800000", "target_ref": "identity--f67fbf06-f3cd-58b3-bad9-ed0b45800000", "nb_deps": 8}]}',
+        source:
+          '{"type": "bundle", "id": "bundle--3d4b0539-a7c0-45b5-8f3f-edebe4000000", "spec_version": "2.1", "x_opencti_seq": 8, "objects": [{"type": "relationship", "spec_version": "2.1", "id": "relationship--41ea9593-cfc4-5d4b-b31d-ca9e4dd00000", "relationship_type": "targets", "source_ref": "malware--fc7e8c2e-6aa7-55cf-9f29-69c66d800000", "target_ref": "identity--f67fbf06-f3cd-58b3-bad9-ed0b45800000", "nb_deps": 8}]}',
       },
     });
   });
 
   it('should return a partial parsed error', () => {
-    expect(parseError({
-      timestamp: '2024-10-11T20:10:06.788Z',
-      message: '[This message can\'t be parsed]',
-      sequence: null,
-      source: '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
-    })).toEqual({
+    expect(
+      parseError({
+        timestamp: '2024-10-11T20:10:06.788Z',
+        message: "[This message can't be parsed]",
+        sequence: null,
+        source:
+          '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
+      }),
+    ).toEqual({
       isParsed: false,
       level: 'Unclassified',
       rawError: {
         timestamp: '2024-10-11T20:10:06.788Z',
-        message: '[This message can\'t be parsed]',
+        message: "[This message can't be parsed]",
         sequence: null,
-        source: '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
+        source:
+          '{"type": "report", "spec_version": "2.1", "id": "report--423ae31f-5344-55de-970b-cc902b3d0000"}',
       },
     });
   });
 
   it('should manage null value', () => {
-    expect(parseError({
-      timestamp: null,
-      message: null,
-      sequence: null,
-      source: null,
-    })).toEqual({
+    expect(
+      parseError({
+        timestamp: null,
+        message: null,
+        sequence: null,
+        source: null,
+      }),
+    ).toEqual({
       isParsed: false,
       level: 'Unclassified',
       rawError: {

@@ -64,11 +64,7 @@ const campaignFragment = graphql`
   }
 `;
 
-const CampaignComponent = ({
-  campaignData,
-}: {
-  campaignData: Campaign_campaign$key;
-}) => {
+const CampaignComponent = ({ campaignData }: { campaignData: Campaign_campaign$key }) => {
   useInitCreateRelationshipContext();
 
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
@@ -76,73 +72,63 @@ const CampaignComponent = ({
 
   return (
     <div data-testid="campaign-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20 }}
-      >
-        {
-          overviewLayoutCustomization.map(({ key, width }) => {
-            switch (key) {
-              case 'details':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <CampaignDetails campaign={campaign} />
-                  </Grid>
-                );
-              case 'basicInformation':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview stixDomainObject={campaign} />
-                  </Grid>
-                );
-              case 'latestCreatedRelationships':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-                      stixObjectOrStixRelationshipId={campaign.id}
-                      stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
-                    />
-                  </Grid>
-                );
-              case 'latestContainers':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixRelationshipLastContainers
-                      stixCoreObjectOrStixRelationshipId={campaign.id}
-                    />
-                  </Grid>
-                );
-              case 'externalReferences':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectExternalReferences
-                      stixCoreObjectId={campaign.id}
-                    />
-                  </Grid>
-                );
-              case 'mostRecentHistory':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectLatestHistory
-                      stixCoreObjectId={campaign.id}
-                    />
-                  </Grid>
-                );
-              case 'notes':
-                return (
-                  <Grid key={key} item xs={width}>
-                    <StixCoreObjectOrStixCoreRelationshipNotes
-                      stixCoreObjectOrStixCoreRelationshipId={campaign.id}
-                      defaultMarkings={campaign.objectMarking ?? []}
-                    />
-                  </Grid>
-                );
-              default:
-                return null;
-            }
-          })
-        }
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        {overviewLayoutCustomization.map(({ key, width }) => {
+          switch (key) {
+            case 'details':
+              return (
+                <Grid key={key} item xs={width}>
+                  <CampaignDetails campaign={campaign} />
+                </Grid>
+              );
+            case 'basicInformation':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixDomainObjectOverview stixDomainObject={campaign} />
+                </Grid>
+              );
+            case 'latestCreatedRelationships':
+              return (
+                <Grid key={key} item xs={width}>
+                  <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                    stixObjectOrStixRelationshipId={campaign.id}
+                    stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
+                  />
+                </Grid>
+              );
+            case 'latestContainers':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixRelationshipLastContainers
+                    stixCoreObjectOrStixRelationshipId={campaign.id}
+                  />
+                </Grid>
+              );
+            case 'externalReferences':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectExternalReferences stixCoreObjectId={campaign.id} />
+                </Grid>
+              );
+            case 'mostRecentHistory':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectLatestHistory stixCoreObjectId={campaign.id} />
+                </Grid>
+              );
+            case 'notes':
+              return (
+                <Grid key={key} item xs={width}>
+                  <StixCoreObjectOrStixCoreRelationshipNotes
+                    stixCoreObjectOrStixCoreRelationshipId={campaign.id}
+                    defaultMarkings={campaign.objectMarking ?? []}
+                  />
+                </Grid>
+              );
+            default:
+              return null;
+          }
+        })}
       </Grid>
     </div>
   );

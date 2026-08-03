@@ -16,8 +16,7 @@ export interface BasicStoreEntityDeleteOperation extends BasicStoreEntity {
   deleted_elements: Array<DeletedElement>;
 }
 
-export interface StoreEntityDeleteOperation extends BasicStoreEntityDeleteOperation, StoreEntity {
-}
+export interface StoreEntityDeleteOperation extends BasicStoreEntityDeleteOperation, StoreEntity {}
 
 export interface StixDeleteOperation extends StixObject {
   main_entity_type: string;

@@ -13,10 +13,7 @@ interface TokenResultViewProps {
   onClose: () => void;
 }
 
-const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
-  token,
-  onClose,
-}) => {
+const TokenResultView: FunctionComponent<TokenResultViewProps> = ({ token, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   // No explicit focus on Close button anymore, handled by ItemCopy focusOnMount
@@ -27,7 +24,9 @@ const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
       <Alert severity="success" variant="outlined" sx={{ mb: 2 }}>
         <strong>{t_i18n('Token generated successfully')}</strong>
         <br />
-        {t_i18n('Make sure to copy your new personal access token now. You won\'t be able to see it again!')}
+        {t_i18n(
+          "Make sure to copy your new personal access token now. You won't be able to see it again!",
+        )}
       </Alert>
 
       <Box
@@ -41,9 +40,7 @@ const TokenResultView: FunctionComponent<TokenResultViewProps> = ({
       </Box>
 
       <FormButtonContainer>
-        <Button onClick={onClose}>
-          {t_i18n('Close')}
-        </Button>
+        <Button onClick={onClose}>{t_i18n('Close')}</Button>
       </FormButtonContainer>
     </div>
   );

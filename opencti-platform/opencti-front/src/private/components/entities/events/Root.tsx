@@ -24,7 +24,10 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import EventEdition from './EventEdition';
 import EventDeletion from './EventDeletion';
 import { PATH_EVENT, PATH_EVENTS } from '@components/common/routes/paths';
@@ -82,20 +85,22 @@ type RootEventProps = {
 };
 
 const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootEventsSubscription>>(() => ({
-    subscription,
-    variables: { id: eventId },
-  }), [eventId]);
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootEventsSubscription>>(
+    () => ({
+      subscription,
+      variables: { id: eventId },
+    }),
+    [eventId],
+  );
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription<RootEventsSubscription>(subConfig);
 
-  const {
-    event,
-    connectorsForExport,
-    connectorsForImport,
-  } = usePreloadedQuery<RootEventQuery>(eventQuery, queryRef);
+  const { event, connectorsForExport, connectorsForImport } = usePreloadedQuery<RootEventQuery>(
+    eventQuery,
+    queryRef,
+  );
 
   const { forceUpdate } = useForceUpdate();
 
@@ -109,7 +114,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -126,32 +131,31 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   ]}
                   data={event}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Entities') },
-              { label: t_i18n('Events'), link: PATH_EVENTS },
-              { label: event.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Entities') },
+                { label: t_i18n('Events'), link: PATH_EVENTS },
+                { label: event.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Event"
               stixDomainObject={event}
               enableQuickSubscription={true}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={event}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={event} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <EventDeletion id={event.id} isOpen={isOpen} handleClose={onClose} />
@@ -164,18 +168,13 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entity={event}
               basePath={basePath}
               pages={{
-                overview:
-                  <Event eventData={event} />,
+                overview: <Event eventData={event} />,
                 knowledge: (
                   <div key={forceUpdate}>
                     <EventKnowledge eventData={event} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={event}
-                  />
-                ),
+                content: <StixCoreObjectContentRoot stixCoreObject={event} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={event}
@@ -207,11 +206,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                     entity={event}
                   />
                 ),
-                history: (
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={eventId}
-                  />
-                ),
+                history: <StixCoreObjectHistory stixCoreObjectId={eventId} />,
               }}
             />
           </div>

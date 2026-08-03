@@ -13,34 +13,24 @@ interface SettingsOrganizationDetailsProps {
   settingsOrganization: SettingsOrganization_organization$data;
 }
 
-const SettingsOrganizationDetails: FunctionComponent<
-  SettingsOrganizationDetailsProps
-> = ({ settingsOrganization }) => {
+const SettingsOrganizationDetails: FunctionComponent<SettingsOrganizationDetailsProps> = ({
+  settingsOrganization,
+}) => {
   const { t_i18n } = useFormatter();
   const organization = settingsOrganization;
   return (
     <Card title={t_i18n('Basic information')}>
       <Grid container={true} spacing={2}>
         <Grid item xs={12}>
-          <Label>
-            {t_i18n('Description')}
-          </Label>
+          <Label>{t_i18n('Description')}</Label>
           <ExpandableMarkdown source={organization.description} limit={400} />
         </Grid>
         <Grid item xs={12}>
-          <Label>
-            {t_i18n('Organization type')}
-          </Label>
+          <Label>{t_i18n('Organization type')}</Label>
           <FieldOrEmpty source={organization.x_opencti_organization_type}>
-            <Tag
-              label={organization.x_opencti_organization_type}
-            />
+            <Tag label={organization.x_opencti_organization_type} />
           </FieldOrEmpty>
-          <Label
-            sx={{ marginTop: 2 }}
-          >
-            {t_i18n('Contact information')}
-          </Label>
+          <Label sx={{ marginTop: 2 }}>{t_i18n('Contact information')}</Label>
           <MarkdownDisplay
             content={organization.contact_information}
             remarkGfmPlugin={true}

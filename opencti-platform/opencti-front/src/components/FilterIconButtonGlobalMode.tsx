@@ -9,9 +9,7 @@ interface FilterIconButtonGlobalModeProps {
   handleSwitchGlobalMode?: () => void;
   isOperatorClickable: boolean;
 }
-const FilterIconButtonGlobalMode: FunctionComponent<
-  FilterIconButtonGlobalModeProps
-> = ({
+const FilterIconButtonGlobalMode: FunctionComponent<FilterIconButtonGlobalModeProps> = ({
   operatorStyle,
   globalMode,
   handleSwitchGlobalMode,

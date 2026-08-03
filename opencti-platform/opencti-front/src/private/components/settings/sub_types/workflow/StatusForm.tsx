@@ -13,16 +13,36 @@ const StatusForm = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
-  const hasUpdateAuthorizedMembersOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
-  const hasUpdateAuthorizedMembersOnExit = values.onExit?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
+  const hasUpdateAuthorizedMembersOnEnter = values.onEnter?.some(
+    (a) => a.type === WorkflowActionType.updateAuthorizedMembers,
+  );
+  const hasUpdateAuthorizedMembersOnExit = values.onExit?.some(
+    (a) => a.type === WorkflowActionType.updateAuthorizedMembers,
+  );
 
   const handleToggleUpdateAuthorizedMembers = (field: 'onEnter' | 'onExit', checked: boolean) => {
     const currentActions = values[field] ?? [];
     if (checked) {
-      const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creator', type: CREATOR_AUTHORIZED_CONFIG.type, value: CREATOR_AUTHORIZED_CONFIG.id, accessRight: 'admin' as const, groupsRestriction: [] }] } };
+      const newAction = {
+        type: WorkflowActionType.updateAuthorizedMembers,
+        params: {
+          authorized_members: [
+            {
+              label: 'Creator',
+              type: CREATOR_AUTHORIZED_CONFIG.type,
+              value: CREATOR_AUTHORIZED_CONFIG.id,
+              accessRight: 'admin' as const,
+              groupsRestriction: [],
+            },
+          ],
+        },
+      };
       setFieldValue(field, [...currentActions, newAction]);
     } else {
-      setFieldValue(field, currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers));
+      setFieldValue(
+        field,
+        currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers),
+      );
     }
   };
 
@@ -31,7 +51,9 @@ const StatusForm = () => {
       <StatusTemplateField
         name="statusTemplate"
         label="Status"
-        setFieldValue={(field, { value, label, color }) => setFieldValue(field, { id: value, name: label, color })}
+        setFieldValue={(field, { value, label, color }) =>
+          setFieldValue(field, { id: value, name: label, color })
+        }
         helpertext=""
       />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
@@ -39,13 +61,13 @@ const StatusForm = () => {
           {t_i18n('On enter actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <FormControlLabel
-          control={(
+          control={
             <Switch
               checked={hasUpdateAuthorizedMembersOnEnter}
               disabled={!isEnterpriseEdition}
               onChange={(e) => handleToggleUpdateAuthorizedMembers('onEnter', e.target.checked)}
             />
-          )}
+          }
           label={t_i18n('Update authorized members on enter')}
         />
         {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} />}
@@ -55,13 +77,13 @@ const StatusForm = () => {
           {t_i18n('On exit actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
         </Typography>
         <FormControlLabel
-          control={(
+          control={
             <Switch
               checked={hasUpdateAuthorizedMembersOnExit}
               disabled={!isEnterpriseEdition}
               onChange={(e) => handleToggleUpdateAuthorizedMembers('onExit', e.target.checked)}
             />
-          )}
+          }
           label={t_i18n('Update authorized members on exit')}
         />
         {hasUpdateAuthorizedMembersOnExit && <WorkflowFieldList name={WorkflowDataType.onExit} />}

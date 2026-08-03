@@ -11,25 +11,21 @@ const VerticalLayoutWithSpacingRenderer = (props: LayoutProps) => {
     return null;
   }
 
-  return (
-    layout.elements.map((child, index) => (
-      <Box key={index} sx={{ marginTop: index === 0 ? 0 : '20px' }}>
-        <JsonFormsDispatch
-          uischema={child}
-          schema={schema}
-          path={path}
-          enabled={enabled}
-          renderers={renderers}
-          cells={cells}
-        />
-      </Box>
-    ))
-  );
+  return layout.elements.map((child, index) => (
+    <Box key={index} sx={{ marginTop: index === 0 ? 0 : '20px' }}>
+      <JsonFormsDispatch
+        uischema={child}
+        schema={schema}
+        path={path}
+        enabled={enabled}
+        renderers={renderers}
+        cells={cells}
+      />
+    </Box>
+  ));
 };
 
-export const JsonFormVerticalLayout = withJsonFormsLayoutProps(
-  VerticalLayoutWithSpacingRenderer,
-);
+export const JsonFormVerticalLayout = withJsonFormsLayoutProps(VerticalLayoutWithSpacingRenderer);
 
 export const jsonFormVerticalLayoutTester = rankWith(
   1000, // very high rank to ensure it uses this custom renderer

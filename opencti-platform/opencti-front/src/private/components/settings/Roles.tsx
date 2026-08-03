@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
@@ -27,13 +30,19 @@ const Role = () => {
   const location = useLocation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Roles | Security | Settings'));
-  const params = buildViewParamsFromUrlAndStorage(
-    navigate,
-    location,
-    LOCAL_STORAGE_KEY,
-  ) as { orderAsc?: boolean; searchTerm?: string; view?: string; sortBy?: string };
+  const params = buildViewParamsFromUrlAndStorage(navigate, location, LOCAL_STORAGE_KEY) as {
+    orderAsc?: boolean;
+    searchTerm?: string;
+    view?: string;
+    sortBy?: string;
+  };
   const classes = useStyles();
-  const [rolesState, setRolesState] = useState<{ orderAsc: boolean; searchTerm: string; view: string; sortBy: string }>({
+  const [rolesState, setRolesState] = useState<{
+    orderAsc: boolean;
+    searchTerm: string;
+    view: string;
+    sortBy: string;
+  }>({
     orderAsc: params.orderAsc !== false,
     searchTerm: params.searchTerm ?? '',
     view: params.view ?? 'lines',
@@ -41,12 +50,7 @@ const Role = () => {
   });
 
   function saveView() {
-    saveViewParameters(
-      navigate,
-      location,
-      LOCAL_STORAGE_KEY,
-      rolesState,
-    );
+    saveViewParameters(navigate, location, LOCAL_STORAGE_KEY, rolesState);
   }
 
   function handleSearch(value: string) {
@@ -95,11 +99,7 @@ const Role = () => {
         displayImport={false}
         secondaryAction={false}
         keyword={rolesState.searchTerm}
-        createButton={(
-          <RoleCreation
-            paginationOptions={paginationOptions}
-          />
-        )}
+        createButton={<RoleCreation paginationOptions={paginationOptions} />}
       >
         <QueryRenderer
           query={rolesLinesQuery}
@@ -124,7 +124,13 @@ const Role = () => {
   };
   return (
     <div className={classes.container} data-testid="roles-settings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Roles'), current: true },
+        ]}
+      />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );

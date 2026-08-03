@@ -68,9 +68,11 @@ const Role = ({
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
     return (groupsData.groups?.edges ?? [])
-      .map((group) => ((group?.node.roles?.edges ?? []).map(({ node: r }) => r?.id).includes(role.id)
-        ? group?.node
-        : null))
+      .map((group) =>
+        (group?.node.roles?.edges ?? []).map(({ node: r }) => r?.id).includes(role.id)
+          ? group?.node
+          : null,
+      )
       .filter((n) => n !== null && n !== undefined);
   };
   const role = useFragment<Role_role$key>(roleFragment, roleData);
@@ -80,27 +82,16 @@ const Role = ({
 
   return (
     <div className={classes.container} data-testid="role-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={12}>
           <Card title={t_i18n('Basic information')}>
             <Grid container={true} spacing={2}>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Description')}
-                </Label>
-                <ExpandableMarkdown
-                  source={role.description}
-                  limit={400}
-                />
+                <Label>{t_i18n('Description')}</Label>
+                <ExpandableMarkdown source={role.description} limit={400} />
               </Grid>
               <Grid item xs={12}>
-                <Label>
-                  {t_i18n('Groups using this role')}
-                </Label>
+                <Label>{t_i18n('Groups using this role')}</Label>
                 <div>
                   {groupNodes(role)?.map((group) => (
                     <ListItemButton
@@ -136,12 +127,13 @@ const Role = ({
             </Card>
           </Grid>
           <Grid item xs={6}>
-            <Card title={(
-              <>
-                {t_i18n('Capabilities in Draft')}
-                <EEChip feature={t_i18n('Capabilities in Draft')} />
-              </>
-            )}
+            <Card
+              title={
+                <>
+                  {t_i18n('Capabilities in Draft')}
+                  <EEChip feature={t_i18n('Capabilities in Draft')} />
+                </>
+              }
             >
               <Grid container={true} spacing={3}>
                 <Grid item xs={12} style={{ paddingTop: 10 }}>

@@ -2,8 +2,14 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import StixCoreObjectOrStixCoreRelationshipNotesCards, { stixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './StixCoreObjectOrStixCoreRelationshipNotesCards';
-import { NotesOrdering, OrderingMode, StixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import StixCoreObjectOrStixCoreRelationshipNotesCards, {
+  stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+} from './StixCoreObjectOrStixCoreRelationshipNotesCards';
+import {
+  NotesOrdering,
+  OrderingMode,
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
@@ -15,12 +21,9 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   readonly defaultMarkings?: readonly DefaultMarking[];
 }
 
-const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjectOrStixCoreRelationshipNotesProps> = ({
-  stixCoreObjectOrStixCoreRelationshipId,
-  marginTop,
-  isRelationship,
-  defaultMarkings,
-}) => {
+const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<
+  StixCoreObjectOrStixCoreRelationshipNotesProps
+> = ({ stixCoreObjectOrStixCoreRelationshipId, marginTop, isRelationship, defaultMarkings }) => {
   const { t_i18n } = useFormatter();
   const hiddenNote = useIsHiddenEntities('Note');
   const paginationOptions = {
@@ -58,17 +61,13 @@ const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjec
     <>
       {queryRef && !hiddenNote && (
         <React.Suspense
-          fallback={(
+          fallback={
             <div style={{ height: '100%', marginTop }}>
-              <Typography
-                variant="h4"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
+              <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
                 {title}
               </Typography>
             </div>
-          )}
+          }
         >
           <StixCoreObjectOrStixCoreRelationshipNotesCards
             id={stixCoreObjectOrStixCoreRelationshipId}

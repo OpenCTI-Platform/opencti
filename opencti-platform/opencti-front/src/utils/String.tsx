@@ -13,7 +13,11 @@ export const EMPTY_VALUE = '-';
 export function truncate(str: string, limit?: number, truncateSpaces?: boolean): string;
 export function truncate(str: undefined, limit?: number, truncateSpaces?: boolean): undefined;
 export function truncate(str: null, limit?: number, truncateSpaces?: boolean): null;
-export function truncate(str: string | undefined | null, limit?: number, truncateSpaces?: boolean): string | undefined | null;
+export function truncate(
+  str: string | undefined | null,
+  limit?: number,
+  truncateSpaces?: boolean,
+): string | undefined | null;
 export function truncate(
   str: string | undefined | null,
   limit?: number,
@@ -26,10 +30,7 @@ export function truncate(
   if (!truncateSpaces || !trimmedStr.includes(' ')) {
     return `${trimmedStr}...`;
   }
-  return `${trimmedStr.substring(
-    0,
-    Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')),
-  )}...`;
+  return `${trimmedStr.substring(0, Math.min(trimmedStr.length, trimmedStr.lastIndexOf(' ')))}...`;
 }
 
 /**
@@ -63,15 +64,21 @@ export function adaptFieldValue(value: unknown): string | unknown[] {
 export const splitIntoLines = (text: string) => {
   return text
     .split('\n')
-    .map((o) => o
-      .split(',')
-      .map((p) => p.split(';'))
-      .flat())
+    .map((o) =>
+      o
+        .split(',')
+        .map((p) => p.split(';'))
+        .flat(),
+    )
     .flat()
     .join('\n');
 };
 
-export const pascalize = (s: string) => s.replace(/(\w)(\w*)/g, (g0: string, g1: string, g2: string) => g1.toUpperCase() + g2.toLowerCase());
+export const pascalize = (s: string) =>
+  s.replace(
+    /(\w)(\w*)/g,
+    (g0: string, g1: string, g2: string) => g1.toUpperCase() + g2.toLowerCase(),
+  );
 
 export const convertFromStixType = (s: string | undefined | null): string | undefined | null => {
   if (!s) {
@@ -134,21 +141,24 @@ const areSameByFields = <T extends Record<string, unknown>>(
   fields: string[],
   a: T,
   b: T,
-): boolean =>
-  fields.every((f) => JSON.stringify(a[f]) === JSON.stringify(b[f]));
+): boolean => fields.every((f) => JSON.stringify(a[f]) === JSON.stringify(b[f]));
 
 /** Deduplicate an array by keeping only the first occurrence of each unique combination of the given fields. */
-export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (keyof T)[], data: T[]): T[] => {
-  return data.filter((item, index) =>
-    data.findIndex((other) =>
-      areSameByFields(fields as string[], item, other),
-    ) === index,
+export const uniqWithByFields = <T extends Record<string, unknown>>(
+  fields: (keyof T)[],
+  data: T[],
+): T[] => {
+  return data.filter(
+    (item, index) =>
+      data.findIndex((other) => areSameByFields(fields as string[], item, other)) === index,
   );
 };
 
-export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalizeFirstLetter = (str: string): string =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
-export const capitalizeWords = (str: string): string => str.split(' ').map(capitalizeFirstLetter).join(' ');
+export const capitalizeWords = (str: string): string =>
+  str.split(' ').map(capitalizeFirstLetter).join(' ');
 
 export const toCamelCase = (str: string): string => {
   return str
@@ -172,7 +182,10 @@ export const snakeCaseToSentenceCase = (str: string): string => {
 /**
  * Group consecutive elements that share the same values for the given fields.
  */
-export const computeDuplicates = <T extends Record<string, unknown>>(fields: string[], data: T[]): T[][] => {
+export const computeDuplicates = <T extends Record<string, unknown>>(
+  fields: string[],
+  data: T[],
+): T[][] => {
   if (data.length === 0) return [];
   const result: T[][] = [[data[0]]];
   for (let i = 1; i < data.length; i++) {
@@ -185,7 +198,8 @@ export const computeDuplicates = <T extends Record<string, unknown>>(fields: str
   return result;
 };
 
-export const emptyFilled = (str: string | undefined | null): string => (isNotEmptyField(str) ? str : EMPTY_VALUE);
+export const emptyFilled = (str: string | undefined | null): string =>
+  isNotEmptyField(str) ? str : EMPTY_VALUE;
 
 /**
  * Split a string by newlines, filter out empty lines, and trim each resulting line.
@@ -193,10 +207,11 @@ export const emptyFilled = (str: string | undefined | null): string => (isNotEmp
  * @param str The input string to split.
  * @returns Array of non-empty trimmed lines.
  */
-export const splitMultilines = (str: string | undefined | null): string[] => (str ?? '')
-  .split(/\r?\n/)
-  .filter((v) => !!v)
-  .map((s) => s.trim());
+export const splitMultilines = (str: string | undefined | null): string[] =>
+  (str ?? '')
+    .split(/\r?\n/)
+    .filter((v) => !!v)
+    .map((s) => s.trim());
 
 /**
  * Split a string using a separator, trim each part and remove empty values.
@@ -205,10 +220,11 @@ export const splitMultilines = (str: string | undefined | null): string[] => (st
  * @param separator {string}
  * @returns {string[]}
  */
-export const splitAndTrim = (value: string | null | undefined, separator = ',') => (value ?? '')
-  .split(separator)
-  .map((s) => s.trim())
-  .filter((s) => isNotEmptyField(s));
+export const splitAndTrim = (value: string | null | undefined, separator = ',') =>
+  (value ?? '')
+    .split(separator)
+    .map((s) => s.trim())
+    .filter((s) => isNotEmptyField(s));
 
 /**
  * Split and trim each entry of an array, then flatten the result.
@@ -217,10 +233,11 @@ export const splitAndTrim = (value: string | null | undefined, separator = ',') 
  * @param separator {string}
  * @returns {string[]}
  */
-export const splitAndTrimArray = (values: (string | null | undefined)[], separator = ',') => values
-  .flatMap((value) => splitAndTrim(value, separator));
+export const splitAndTrimArray = (values: (string | null | undefined)[], separator = ',') =>
+  values.flatMap((value) => splitAndTrim(value, separator));
 
-export const maskString = (value: string | undefined | null): string => (value ? '•'.repeat(value.length) : '');
+export const maskString = (value: string | undefined | null): string =>
+  value ? '•'.repeat(value.length) : '';
 
 /**
  * Add zero-width spaces every 10 characters in a string.
@@ -261,11 +278,13 @@ type RelativeUnit = 's' | 'm' | 'H' | 'h' | 'w' | 'd' | 'M' | 'y';
  * @returns {boolean} If the array is translatable in a relative date interval phrase
  */
 export const isDateIntervalTranslatable = (filterValues: string[]): boolean => {
-  return filterValues.length === 2
-    && filterValues[1] === 'now'
-    && !!filterValues[0].match(RELATIVE_DATE_REGEX)
-    && filterValues[0].includes('-')
-    && !filterValues[0].includes('/');
+  return (
+    filterValues.length === 2 &&
+    filterValues[1] === 'now' &&
+    !!filterValues[0].match(RELATIVE_DATE_REGEX) &&
+    filterValues[0].includes('-') &&
+    !filterValues[0].includes('/')
+  );
 };
 
 /**
@@ -275,7 +294,10 @@ export const isDateIntervalTranslatable = (filterValues: string[]): boolean => {
  * @param t_i18n {function} The translation function.
  * @returns {string} Translation in a relative date interval phrase
  */
-export const translateDateInterval = (filterValues: string[], t_i18n: (s: string) => string): string => {
+export const translateDateInterval = (
+  filterValues: string[],
+  t_i18n: (s: string) => string,
+): string => {
   if (!isDateIntervalTranslatable(filterValues)) {
     throw Error('The interval of value is not translatable in a relative date interval phrase.');
   }
@@ -300,11 +322,12 @@ export const translateDateInterval = (filterValues: string[], t_i18n: (s: string
     y: t_i18n('year'),
   };
   const relativeExtraction = last(filterValues[0].split('now-')) ?? '';
-  const relativeUnitLetter = last(relativeExtraction) ?? '' as string;
+  const relativeUnitLetter = last(relativeExtraction) ?? ('' as string);
   const relativeNumber = relativeExtraction.split(relativeUnitLetter)[0];
-  const relativeUnit = relativeNumber === '1'
-    ? relativeUnitMapInSingular[relativeUnitLetter as RelativeUnit]
-    : relativeUnitMapInPlural[relativeUnitLetter as RelativeUnit];
+  const relativeUnit =
+    relativeNumber === '1'
+      ? relativeUnitMapInSingular[relativeUnitLetter as RelativeUnit]
+      : relativeUnitMapInPlural[relativeUnitLetter as RelativeUnit];
 
   return `${t_i18n('Last')} ${relativeNumber} ${t_i18n(relativeUnit)}`;
 };

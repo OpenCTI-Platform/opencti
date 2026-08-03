@@ -3,7 +3,13 @@ import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
-import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
+import {
+  FileOutline,
+  FilePdfBox,
+  LanguageHtml5,
+  LanguageMarkdownOutline,
+  NoteTextOutline,
+} from 'mdi-material-ui';
 import { FileLineDeleteMutation as deleteMutation } from '@components/common/files/FileLine';
 import { FileLineDeleteMutation } from '@components/common/files/__generated__/FileLineDeleteMutation.graphql';
 import MenuItem from '@mui/material/MenuItem';
@@ -11,7 +17,9 @@ import Menu from '@mui/material/Menu';
 import { Link } from 'react-router-dom';
 import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
-import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, {
+  BUILT_IN_HTML_TO_PDF,
+} from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
 import { useTheme } from '@mui/styles';
 import Drawer from '@components/common/drawer/Drawer';
@@ -21,7 +29,12 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import type { Theme } from '../../../../components/Theme';
-import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNDISSEMINATION, KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNDISSEMINATION,
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EETooltip from '../entreprise_edition/EETooltip';
@@ -47,9 +60,12 @@ export interface ContentFile {
   id: string;
   lastModified: string;
   name: string;
-  metaData: {
-    mimetype: string | null | undefined;
-  } | null | undefined;
+  metaData:
+    | {
+        mimetype: string | null | undefined;
+      }
+    | null
+    | undefined;
   objectMarking?: readonly {
     readonly id: string;
     readonly definition?: string | null;
@@ -125,14 +141,17 @@ const StixCoreObjectContentFilesList = ({
     return setDrawerOpen(true);
   };
 
-  const canDownloadAsPdf = menuFile?.metaData?.mimetype === 'text/html' || menuFile?.metaData?.mimetype === 'text/markdown';
+  const canDownloadAsPdf =
+    menuFile?.metaData?.mimetype === 'text/html' ||
+    menuFile?.metaData?.mimetype === 'text/markdown';
 
   return (
     <List>
       {files.length === 0 && <ListItem dense={true} divider={true} />}
       {files.map((file) => {
         const fileMimeType = file.metaData?.mimetype ?? '';
-        const canDisseminate = !draftContext && ['application/pdf', 'text/html'].includes(fileMimeType);
+        const canDisseminate =
+          !draftContext && ['application/pdf', 'text/html'].includes(fileMimeType);
 
         return (
           <Fragment key={file.id}>
@@ -141,7 +160,7 @@ const StixCoreObjectContentFilesList = ({
                 dense={true}
                 divider={true}
                 disablePadding
-                secondaryAction={(
+                secondaryAction={
                   <>
                     {canDisseminate && (
                       <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
@@ -170,16 +189,14 @@ const StixCoreObjectContentFilesList = ({
                       <MoreVert fontSize="small" />
                     </IconButton>
                   </>
-                )}
+                }
               >
                 <ListItemButton
                   selected={file.id === currentFileId}
                   onClick={() => handleSelectFile(file.id)}
                   disabled={deleting}
                 >
-                  <ListItemIcon>
-                    {renderIcon(fileMimeType)}
-                  </ListItemIcon>
+                  <ListItemIcon>{renderIcon(fileMimeType)}</ListItemIcon>
                   <ListItemText
                     sx={{
                       '.MuiListItemText-primary': {
@@ -190,22 +207,20 @@ const StixCoreObjectContentFilesList = ({
                       },
                     }}
                     primary={file.name}
-                    secondary={(
-                      <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'start',
-                      }}
+                    secondary={
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'start',
+                        }}
                       >
                         <span style={{ paddingBottom: theme.spacing(0.5) }}>
                           {fld(file.lastModified ?? moment())}
                         </span>
-                        <ItemMarkings
-                          markingDefinitions={file.objectMarking ?? []}
-                          limit={1}
-                        />
+                        <ItemMarkings markingDefinitions={file.objectMarking ?? []} limit={1} />
                       </div>
-                    )}
+                    }
                   />
                 </ListItemButton>
               </ListItem>
@@ -231,11 +246,7 @@ const StixCoreObjectContentFilesList = ({
         );
       })}
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={closePopover}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closePopover}>
         {menuFile && (
           <MenuItem
             component={Link}
@@ -261,17 +272,13 @@ const StixCoreObjectContentFilesList = ({
               }}
               onExportCompleted={onFileChange}
               OpenFormComponent={({ onOpen }) => (
-                <MenuItem onClick={onOpen}>
-                  {t_i18n('Generate a PDF export')}
-                </MenuItem>
+                <MenuItem onClick={onOpen}>{t_i18n('Generate a PDF export')}</MenuItem>
               )}
             />
           </Security>
         )}
         <Security needs={[KNOWLEDGE_KNASKIMPORT]} matchAll>
-          <MenuItem onClick={handleDelete}>
-            {t_i18n('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleDelete}>{t_i18n('Delete')}</MenuItem>
         </Security>
         <DeleteDialog
           deletion={deletion}

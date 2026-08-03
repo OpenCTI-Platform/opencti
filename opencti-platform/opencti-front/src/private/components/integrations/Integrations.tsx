@@ -3,10 +3,17 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useQueryLoader } from 'react-relay';
-import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
+import {
+  ConnectorManagerStatusProvider,
+  useConnectorManagerStatus,
+} from '@components/data/connectors/ConnectorManagerStatusContext';
 import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
-import IngestionConnectorsCatalogs, { ingestionConnectorsCatalogsQuery } from '@components/integrations/catalog/IngestionConnectorsCatalog';
-import IngestionConnectors, { ingestionConnectorsQuery } from '@components/integrations/catalog/IngestionConnectors';
+import IngestionConnectorsCatalogs, {
+  ingestionConnectorsCatalogsQuery,
+} from '@components/integrations/catalog/IngestionConnectorsCatalog';
+import IngestionConnectors, {
+  ingestionConnectorsQuery,
+} from '@components/integrations/catalog/IngestionConnectors';
 import { IngestionConnectorsCatalogsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsCatalogsQuery.graphql';
 import { IngestionConnectorsQuery } from '@components/integrations/catalog/__generated__/IngestionConnectorsQuery.graphql';
 import {
@@ -29,7 +36,12 @@ import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  INGESTION,
+  KNOWLEDGE_KNASKIMPORT,
+  KNOWLEDGE_KNUPDATE,
+  MODULES,
+} from '../../../utils/hooks/useGranted';
 
 export type IntegrationsTab = 'deployed' | 'available';
 
@@ -55,8 +67,11 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
   const isIngestionReader = useGranted([INGESTION]);
   const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT]);
 
-  const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
-  const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
+  const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(
+    ingestionConnectorsCatalogsQuery,
+  );
+  const [deploymentRef, loadDeployment] =
+    useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
   const [feedsRef, loadFeeds] = useQueryLoader<IngestionFeedsQuery>(ingestionFeedsQuery);
   const [formsRef, loadForms] = useQueryLoader<IngestionFeedsFormsQuery>(ingestionFeedsFormsQuery);
 
@@ -95,11 +110,27 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     if (formsRef) {
       return (
         <IngestionFeedsForms queryRef={formsRef}>
-          {({ data: formsData }) => children({ catalogsData, deploymentData, feedsData, formsData, refetchFeeds, refetchForms })}
+          {({ data: formsData }) =>
+            children({
+              catalogsData,
+              deploymentData,
+              feedsData,
+              formsData,
+              refetchFeeds,
+              refetchForms,
+            })
+          }
         </IngestionFeedsForms>
       );
     }
-    return children({ catalogsData, deploymentData, feedsData, formsData: null, refetchFeeds, refetchForms });
+    return children({
+      catalogsData,
+      deploymentData,
+      feedsData,
+      formsData: null,
+      refetchFeeds,
+      refetchForms,
+    });
   };
 
   const renderWithFeeds = (
@@ -131,9 +162,10 @@ const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) =
     return renderWithFeeds(null, null);
   };
 
-  const isLoading = (isConnectorReader && (!catalogsRef || !deploymentRef))
-    || (isIngestionReader && !feedsRef)
-    || (isFormReader && !formsRef);
+  const isLoading =
+    (isConnectorReader && (!catalogsRef || !deploymentRef)) ||
+    (isIngestionReader && !feedsRef) ||
+    (isFormReader && !formsRef);
   if (isLoading) {
     return <Loader variant={LoaderVariant.container} />;
   }
@@ -172,7 +204,13 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
           filter: 'blur(60px)',
         }}
       />
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2} sx={{ position: 'relative' }}>
+      <Stack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        gap={2}
+        sx={{ position: 'relative' }}
+      >
         <Box>
           <Typography
             variant="h1"
@@ -185,7 +223,9 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
             {t_i18n('Integrations')}
           </Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 640 }}>
-            {t_i18n('Browse, deploy and monitor all the integrations feeding your platform with threat intelligence.')}
+            {t_i18n(
+              'Browse, deploy and monitor all the integrations feeding your platform with threat intelligence.',
+            )}
           </Typography>
         </Box>
         <BrowseMoreButton />
@@ -219,17 +259,19 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
       ...(formsData?.forms?.edges ?? []),
     ].flatMap((edge) => (edge?.node ? [edge.node.id] : []));
     const twinConnectorIds = new Set(feedIds.map((id) => connectorIdFromIngestId(id)));
-    const connectorCount = (deploymentData?.connectors ?? [])
-      .filter((connector) => !twinConnectorIds.has(connector.id))
-      .length;
-    return connectorCount
-      + (feedsData?.synchronizers?.pageInfo?.globalCount ?? 0)
-      + (feedsData?.ingestionRsss?.pageInfo?.globalCount ?? 0)
-      + (feedsData?.ingestionTaxiis?.pageInfo?.globalCount ?? 0)
-      + (feedsData?.ingestionTaxiiCollections?.pageInfo?.globalCount ?? 0)
-      + (feedsData?.ingestionCsvs?.pageInfo?.globalCount ?? 0)
-      + (feedsData?.ingestionJsons?.pageInfo?.globalCount ?? 0)
-      + (formsData?.forms?.pageInfo?.globalCount ?? 0);
+    const connectorCount = (deploymentData?.connectors ?? []).filter(
+      (connector) => !twinConnectorIds.has(connector.id),
+    ).length;
+    return (
+      connectorCount +
+      (feedsData?.synchronizers?.pageInfo?.globalCount ?? 0) +
+      (feedsData?.ingestionRsss?.pageInfo?.globalCount ?? 0) +
+      (feedsData?.ingestionTaxiis?.pageInfo?.globalCount ?? 0) +
+      (feedsData?.ingestionTaxiiCollections?.pageInfo?.globalCount ?? 0) +
+      (feedsData?.ingestionCsvs?.pageInfo?.globalCount ?? 0) +
+      (feedsData?.ingestionJsons?.pageInfo?.globalCount ?? 0) +
+      (formsData?.forms?.pageInfo?.globalCount ?? 0)
+    );
   }, [deploymentData, feedsData, formsData]);
 
   return (
@@ -238,10 +280,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
       <PageContainer withGap style={{ paddingBottom: 50 }}>
         {/* The active tab is enough context: the breadcrumb only carries the
             section name (detail pages do include the originating tab). */}
-        <Breadcrumbs
-          elements={[{ label: t_i18n('Integrations'), current: true }]}
-          noMargin
-        />
+        <Breadcrumbs elements={[{ label: t_i18n('Integrations'), current: true }]} noMargin />
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
         <IntegrationsHero deployedCount={deployedCount} />

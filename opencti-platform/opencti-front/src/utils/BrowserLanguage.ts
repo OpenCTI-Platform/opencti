@@ -43,7 +43,9 @@ interface NonStandardNavigator {
   systemLanguage?: string;
 }
 
-export const detectedLocale = (navigatorInstance: (Partial<Navigator> & NonStandardNavigator) | null | undefined): string | undefined => {
+export const detectedLocale = (
+  navigatorInstance: (Partial<Navigator> & NonStandardNavigator) | null | undefined,
+): string | undefined => {
   if (!navigatorInstance) return undefined;
 
   const nav = navigatorInstance as Record<string, string | string[] | undefined>;

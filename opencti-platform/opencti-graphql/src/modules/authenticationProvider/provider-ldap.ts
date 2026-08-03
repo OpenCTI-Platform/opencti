@@ -1,4 +1,8 @@
-import type { LdapStoreConfiguration, ProviderMeta, SecretProvider } from './authenticationProvider-types';
+import type {
+  LdapStoreConfiguration,
+  ProviderMeta,
+  SecretProvider,
+} from './authenticationProvider-types';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType } from './providers-configuration';
@@ -7,7 +11,10 @@ import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { REDACTED_INFORMATION } from '../../database/utils';
 
-const createLdapOptions = async (conf: LdapStoreConfiguration, secretsProvider: SecretProvider): Promise<LdapStrategy.Options> => ({
+const createLdapOptions = async (
+  conf: LdapStoreConfiguration,
+  secretsProvider: SecretProvider,
+): Promise<LdapStrategy.Options> => ({
   server: {
     url: conf.url,
     bindDN: conf.bind_dn,
@@ -27,7 +34,11 @@ const createLdapOptions = async (conf: LdapStoreConfiguration, secretsProvider: 
   passwordField: conf.password_field,
 });
 
-export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+export const createLDAPStrategy = async (
+  logger: AuthenticationProviderLogger,
+  _meta: ProviderMeta,
+  storeConf: LdapStoreConfiguration,
+) => {
   const secretsProvider = await retrieveSecrets(storeConf);
   const ldapOptions = await createLdapOptions(storeConf, secretsProvider);
   const mapper = createMapper(storeConf);

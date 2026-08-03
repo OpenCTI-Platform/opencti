@@ -13,8 +13,7 @@ const customViewExportQuery = graphql`
 `;
 
 const onExport = async (id: string) => {
-  const data = await fetchQuery(customViewExportQuery, { id })
-    .toPromise();
+  const data = await fetchQuery(customViewExportQuery, { id }).toPromise();
   const result = data as customViewExportUtils_Query$data;
   const exportString = result.customView?.toConfigurationExport;
   if (!exportString) {

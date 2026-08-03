@@ -5,7 +5,11 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
-import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
+import type {
+  WidgetDataSelection,
+  WidgetHost,
+  WidgetParameters,
+} from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -542,7 +546,7 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
                 main
                 secondary
               }
-            }  
+            }
             ... on StixDomainObject {
               id
               entity_type
@@ -983,11 +987,15 @@ interface StixRelationshipsTimelineComponentProps {
 export const RELATIONSHIP_TIMELINE_DATE_KEY = 'relTimelineDate';
 
 type TimelineEdges = NonNullable<
-  NonNullable<StixRelationshipsTimelineStixRelationshipQuery['response']['stixRelationships']>['edges']
+  NonNullable<
+    StixRelationshipsTimelineStixRelationshipQuery['response']['stixRelationships']
+  >['edges']
 >;
 
 type TimelineRelationshipNode = TimelineEdges[number]['node'];
-type TimelineRemoteNode = NonNullable<TimelineRelationshipNode['from']> | NonNullable<TimelineRelationshipNode['to']>;
+type TimelineRemoteNode =
+  | NonNullable<TimelineRelationshipNode['from']>
+  | NonNullable<TimelineRelationshipNode['to']>;
 
 export const buildStixRelationshipsTimelineData = (
   edges: TimelineEdges,
@@ -995,15 +1003,11 @@ export const buildStixRelationshipsTimelineData = (
   dateAttribute: string,
   dateKey: string = RELATIONSHIP_TIMELINE_DATE_KEY,
 ) => {
-  const fromId
-    = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
+  const fromId = selection.filters?.filters?.find((o) => o.key === 'fromId')?.values ?? null;
   return edges.flatMap((edge) => {
     const rel = edge.node;
-    const remoteNode: TimelineRemoteNode | null | undefined
-      = rel.from
-        && fromId
-        && fromId.includes(rel.from.id)
-        && selection.isTo !== false
+    const remoteNode: TimelineRemoteNode | null | undefined =
+      rel.from && fromId && fromId.includes(rel.from.id) && selection.isTo !== false
         ? rel.to
         : rel.from;
     if (!remoteNode) return [];
@@ -1011,13 +1015,15 @@ export const buildStixRelationshipsTimelineData = (
     const link = restricted
       ? undefined
       : `${resolveLink(remoteNode.entity_type)}/${remoteNode.id}/knowledge/relations/${rel.id}`;
-    return [{
-      value: {
-        ...remoteNode,
-        [dateKey]: rel[dateAttribute as keyof TimelineRelationshipNode],
+    return [
+      {
+        value: {
+          ...remoteNode,
+          [dateKey]: rel[dateAttribute as keyof TimelineRelationshipNode],
+        },
+        link,
       },
-      link,
-    }];
+    ];
   });
 };
 
@@ -1025,30 +1031,21 @@ const StixRelationshipsTimelineComponent = ({
   queryRef,
   dataSelection,
 }: StixRelationshipsTimelineComponentProps) => {
-  const data = usePreloadedQuery(
-    stixRelationshipsTimelineStixRelationshipQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixRelationshipsTimelineStixRelationshipQuery, queryRef);
 
   if (!data?.stixRelationships?.edges?.length) {
     return <WidgetNoData />;
   }
 
   const selection = dataSelection[0];
-  const dateAttribute
-    = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
+  const dateAttribute = selection.date_attribute?.length ? selection.date_attribute : 'created_at';
   const timelineData = buildStixRelationshipsTimelineData(
     data.stixRelationships.edges,
     selection,
     dateAttribute,
   );
 
-  return (
-    <WidgetTimeline
-      data={timelineData}
-      dateAttribute={RELATIONSHIP_TIMELINE_DATE_KEY}
-    />
-  );
+  return <WidgetTimeline data={timelineData} dateAttribute={RELATIONSHIP_TIMELINE_DATE_KEY} />;
 };
 
 const buildQueryVariables = (
@@ -1056,7 +1053,8 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixRelationshipsTimelineStixRelationshipQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, filters, dynamicFrom, dynamicTo } = buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
+  const { dateAttribute, filters, dynamicFrom, dynamicTo } =
+    buildRelationshipSingleWidgetBaseQueryVariables(selection, config);
   return {
     filters,
     dynamicFrom,
@@ -1089,7 +1087,13 @@ const StixRelationshipsTimeline = ({
   refreshRate = null,
 }: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
     perspective: 'relationships',
     dataSelection,
     host,

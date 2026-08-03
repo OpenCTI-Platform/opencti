@@ -41,31 +41,20 @@ const PirTabs = ({ data }: PirTabsProps) => {
   if (pathname.endsWith('activities')) index = 3;
 
   return (
-    <Box sx={{
-      borderBottom: 1,
-      borderColor: 'divider',
-      marginBottom: 3,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    }}
+    <Box
+      sx={{
+        borderBottom: 1,
+        borderColor: 'divider',
+        marginBottom: 3,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
     >
       <Tabs value={index}>
-        <Tab
-          component={Link}
-          label={t_i18n('Overview')}
-          to={`/dashboard/pirs/${id}`}
-        />
-        <Tab
-          component={Link}
-          label={t_i18n('Threats')}
-          to={`/dashboard/pirs/${id}/threats`}
-        />
-        <Tab
-          component={Link}
-          label={t_i18n('Analyses')}
-          to={`/dashboard/pirs/${id}/analyses`}
-        />
+        <Tab component={Link} label={t_i18n('Overview')} to={`/dashboard/pirs/${id}`} />
+        <Tab component={Link} label={t_i18n('Threats')} to={`/dashboard/pirs/${id}/threats`} />
+        <Tab component={Link} label={t_i18n('Analyses')} to={`/dashboard/pirs/${id}/analyses`} />
         <Tab
           component={Link}
           label={t_i18n('Activities')}

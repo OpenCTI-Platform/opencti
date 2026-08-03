@@ -43,7 +43,13 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
-import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
+import {
+  addFilter,
+  checkFiltersValidity,
+  emptyFilterGroup,
+  extractFilterGroupValues,
+  filtersEntityIdsMappingResult,
+} from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
@@ -51,9 +57,16 @@ import { NLQPromptTemplate } from './ai-nlq-utils';
 import { callWithTimeout, TimeoutError } from '../../utils/promiseUtils';
 import { addAskAiQueryCount, addNlqQueryCount } from '../../manager/telemetryManager';
 
-const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
+const SYSTEM_PROMPT =
+  'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
-export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+export const fixSpelling = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+  format: InputMaybe<Format> = Format.Text,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('fix_spelling');
   if (content.length < 5) {
@@ -74,7 +87,13 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
   return response;
 };
 
-export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+export const makeShorter = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+  format: InputMaybe<Format> = Format.Text,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('make_shorter');
   if (content.length < 5) {
@@ -95,7 +114,13 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
   return response;
 };
 
-export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+export const makeLonger = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+  format: InputMaybe<Format> = Format.Text,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('make_longer');
   if (content.length < 5) {
@@ -118,7 +143,14 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
 };
 
 // eslint-disable-next-line max-len
-export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Tactical) => {
+export const changeTone = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+  format: InputMaybe<Format> = Format.Text,
+  tone: InputMaybe<Tone> = Tone.Tactical,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('change_tone');
   if (content.length < 5) {
@@ -139,7 +171,13 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
   return response;
 };
 
-export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
+export const summarize = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+  format: InputMaybe<Format> = Format.Text,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('summarize');
   if (content.length < 5) {
@@ -159,7 +197,12 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
   return response;
 };
 
-export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
+export const explain = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  content: string,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('explain');
   if (content.length < 5) {
@@ -179,13 +222,33 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
   return response;
 };
 
-export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
+export const generateContainerReport = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationAiContainerGenerateReportArgs,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('container_report');
-  const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
+  const {
+    id,
+    containerId,
+    paragraphs = 10,
+    tone = 'technical',
+    format = 'HTML',
+    language = 'en-us',
+  } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
-  const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
-  const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, containerId);
+  const container = (await storeLoadById(
+    context,
+    user,
+    containerId,
+    ENTITY_TYPE_CONTAINER,
+  )) as BasicStoreEntity;
+  const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(
+    context,
+    user,
+    containerId,
+  );
   // Meaningful type
   let meaningfulType: string;
   if (container.entity_type === ENTITY_TYPE_CONTAINER_REPORT) {
@@ -221,12 +284,29 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
 };
 
 // TODO This function is deprecated (AI Insights)
-export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
+export const summarizeFiles = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationAiSummarizeFilesArgs,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('summarize_files');
-  const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
+  const {
+    id,
+    elementId,
+    paragraphs = 10,
+    fileIds,
+    tone = 'technical',
+    format = 'HTML',
+    language = 'en-us',
+  } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
-  const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
+  const stixCoreObject = (await storeLoadById(
+    context,
+    user,
+    elementId,
+    ABSTRACT_STIX_CORE_OBJECT,
+  )) as BasicStoreEntity;
   let finalFilesIds = fileIds ?? [];
   if (isEmptyField(fileIds)) {
     // get content files
@@ -236,21 +316,35 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
       entity_id: stixCoreObject.id,
       entity_type: stixCoreObject.entity_type,
     };
-    const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+    const importFiles = await paginatedForPathWithEnrichment(
+      context,
+      user,
+      `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`,
+      stixCoreObject.id,
+      opts,
+    );
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
     // get external ref files
     const refs = stixCoreObject[RELATION_EXTERNAL_REFERENCE] ?? [];
-    await Promise.all(refs.map(async (ref) => {
-      const optsRef = {
-        first: 20,
-        prefixMimeTypes: undefined,
-        entity_id: ref,
-        entity_type: 'External-Reference',
-      };
-      const importRefFiles = await paginatedForPathWithEnrichment(context, user, `import/External-Reference/${ref}`, ref, optsRef);
-      const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
-      refFilesIds.forEach((refFileId) => finalFilesIds.push(refFileId));
-    }));
+    await Promise.all(
+      refs.map(async (ref) => {
+        const optsRef = {
+          first: 20,
+          prefixMimeTypes: undefined,
+          entity_id: ref,
+          entity_type: 'External-Reference',
+        };
+        const importRefFiles = await paginatedForPathWithEnrichment(
+          context,
+          user,
+          `import/External-Reference/${ref}`,
+          ref,
+          optsRef,
+        );
+        const refFilesIds = importRefFiles.edges.map((n) => n.node.id);
+        refFilesIds.forEach((refFileId) => finalFilesIds.push(refFileId));
+      }),
+    );
   }
   if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
     return 'Unable to summarize files as no file is associated to this entity.';
@@ -281,11 +375,20 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
 };
 
 // TODO This function is deprecated (NLP)
-export const convertFilesToStix = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
+export const convertFilesToStix = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationAiSummarizeFilesArgs,
+) => {
   await checkEnterpriseEdition(context);
   addAskAiQueryCount('convert_files_to_stix');
   const { id, elementId, fileIds } = args;
-  const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
+  const stixCoreObject = (await storeLoadById(
+    context,
+    user,
+    elementId,
+    ABSTRACT_STIX_CORE_OBJECT,
+  )) as BasicStoreEntity;
   let finalFilesIds = fileIds;
   if (isEmptyField(fileIds)) {
     const opts = {
@@ -294,7 +397,13 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
       entity_id: stixCoreObject.id,
       entity_type: stixCoreObject.entity_type,
     };
-    const importFiles = await paginatedForPathWithEnrichment(context, user, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`, stixCoreObject.id, opts);
+    const importFiles = await paginatedForPathWithEnrichment(
+      context,
+      user,
+      `import/${stixCoreObject.entity_type}/${stixCoreObject.id}`,
+      stixCoreObject.id,
+      opts,
+    );
     finalFilesIds = importFiles.edges.map((n) => n.node.id);
   }
   if (isEmptyField(finalFilesIds) || finalFilesIds?.length === 0) {
@@ -325,57 +434,73 @@ export const convertFilesToStix = async (context: AuthContext, user: AuthUser, a
   return response;
 };
 
-const resolveValuesIdsMapForEntityTypes = async (context: AuthContext, user: AuthUser, valuesIdsToResolve: string[], entityTypes: string[]) => {
+const resolveValuesIdsMapForEntityTypes = async (
+  context: AuthContext,
+  user: AuthUser,
+  valuesIdsToResolve: string[],
+  entityTypes: string[],
+) => {
   const notResolvedValues: string[] = [];
-  const mapContent = await Promise.all(valuesIdsToResolve.map(async (value): Promise<[string, string | null]> => {
-    const entityTypesFilter = addFilter(undefined, 'entity_type', entityTypes);
-    let resultIds: string[] = [];
-    // case Stix-Core-Object
-    if (entityTypes.every((type) => isStixCoreObject(type))) {
-      const result = await findStixCoreObjectPaginated(context, user, {
-        filters: entityTypesFilter,
-        search: value,
-        orderBy: '_score',
-        orderMode: 'desc',
-      });
-      resultIds = result.edges.map((n) => n.node.id);
-    } else if (entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_USER)) { // case User
-      const result = await findUserPaginated(context, user, {
-        filters: entityTypesFilter,
-        search: value,
-        orderBy: '_score',
-        orderMode: 'desc',
-      });
-      resultIds = result.edges.map((n) => n.node.id);
-    } else if (entityTypes.every((type) => isStixMetaObject(type))) { // case Stix-Meta-Object
-      const result = await findStixMetaObjectPaginated(context, user, {
-        filters: entityTypesFilter,
-        search: value,
-        orderBy: '_score',
-        orderMode: 'desc',
-        useWildcardPrefix: !!(entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_MARKING_DEFINITION)),
-      });
-      resultIds = ((result as unknown as StixMetaObjectConnection).edges ?? [])
-        .map((n) => n?.node.id)
-        .filter((n) => !!n) as string[];
-    }
-    // keep only the first result
-    if (resultIds.length > 0) {
-      return [value, resultIds[0]];
-    }
-    // if no results, the value is not resolved
-    notResolvedValues.push(value);
-    return [value, null];
-  }));
+  const mapContent = await Promise.all(
+    valuesIdsToResolve.map(async (value): Promise<[string, string | null]> => {
+      const entityTypesFilter = addFilter(undefined, 'entity_type', entityTypes);
+      let resultIds: string[] = [];
+      // case Stix-Core-Object
+      if (entityTypes.every((type) => isStixCoreObject(type))) {
+        const result = await findStixCoreObjectPaginated(context, user, {
+          filters: entityTypesFilter,
+          search: value,
+          orderBy: '_score',
+          orderMode: 'desc',
+        });
+        resultIds = result.edges.map((n) => n.node.id);
+      } else if (entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_USER)) {
+        // case User
+        const result = await findUserPaginated(context, user, {
+          filters: entityTypesFilter,
+          search: value,
+          orderBy: '_score',
+          orderMode: 'desc',
+        });
+        resultIds = result.edges.map((n) => n.node.id);
+      } else if (entityTypes.every((type) => isStixMetaObject(type))) {
+        // case Stix-Meta-Object
+        const result = await findStixMetaObjectPaginated(context, user, {
+          filters: entityTypesFilter,
+          search: value,
+          orderBy: '_score',
+          orderMode: 'desc',
+          useWildcardPrefix: !!(
+            entityTypes.length === 1 && entityTypes.includes(ENTITY_TYPE_MARKING_DEFINITION)
+          ),
+        });
+        resultIds = ((result as unknown as StixMetaObjectConnection).edges ?? [])
+          .map((n) => n?.node.id)
+          .filter((n) => !!n) as string[];
+      }
+      // keep only the first result
+      if (resultIds.length > 0) {
+        return [value, resultIds[0]];
+      }
+      // if no results, the value is not resolved
+      notResolvedValues.push(value);
+      return [value, null];
+    }),
+  );
   return { mapContent, notResolvedValues };
 };
 
-export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUser, filters: FilterGroup) => {
+export const filtersEntityIdsMapping = async (
+  context: AuthContext,
+  user: AuthUser,
+  filters: FilterGroup,
+) => {
   // 01. fetch the filter keys corresponding to an id
   const filterDefinitions = await generateFilterKeysSchema();
-  const stixCoreObjectsFilterDefinitions = filterDefinitions
-    .find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)?.filters_schema
-    .map((f) => f.filterDefinition) ?? [];
+  const stixCoreObjectsFilterDefinitions =
+    filterDefinitions
+      .find((f) => f.entity_type === ABSTRACT_STIX_CORE_OBJECT)
+      ?.filters_schema.map((f) => f.filterDefinition) ?? [];
   const idsFiltersDefinitions = stixCoreObjectsFilterDefinitions.filter((f) => f.type === 'id');
   // 02. separate stix core objects ids from other entity types ids, and fetch the values to resolve
   // for stix core objects ids
@@ -397,20 +522,21 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
     idsFilterResolutionsForOtherTypes.map((n) => n.filterKey),
   );
   // 03. create a map of the values to resolve and their potential corresponding id, and list the not resolved values
-  const { mapContent: scosMapContent, notResolvedValues: notResolvedScos } = await resolveValuesIdsMapForEntityTypes(
-    context,
-    user,
-    scoValuesIdsToResolve,
-    [ABSTRACT_STIX_CORE_OBJECT],
+  const { mapContent: scosMapContent, notResolvedValues: notResolvedScos } =
+    await resolveValuesIdsMapForEntityTypes(context, user, scoValuesIdsToResolve, [
+      ABSTRACT_STIX_CORE_OBJECT,
+    ]);
+  const otherIdsResolution = await Promise.all(
+    idsFilterResolutionsForOtherTypes.map((n) =>
+      resolveValuesIdsMapForEntityTypes(context, user, n.valuesToResolve, n.entityTypes),
+    ),
   );
-  const otherIdsResolution = await Promise.all(idsFilterResolutionsForOtherTypes.map((n) => resolveValuesIdsMapForEntityTypes(
-    context,
-    user,
-    n.valuesToResolve,
-    n.entityTypes,
-  )));
-  const valuesIdsMap = new Map(scosMapContent.concat(otherIdsResolution.flatMap((n) => n.mapContent)));
-  const notResolvedValues = notResolvedScos.concat(otherIdsResolution.flatMap((n) => n.notResolvedValues));
+  const valuesIdsMap = new Map(
+    scosMapContent.concat(otherIdsResolution.flatMap((n) => n.mapContent)),
+  );
+  const notResolvedValues = notResolvedScos.concat(
+    otherIdsResolution.flatMap((n) => n.notResolvedValues),
+  );
   // 04. replace the values in filters with their corresponding ids
   return {
     filters: filtersEntityIdsMappingResult(filters, idsFilterKeys, valuesIdsMap),
@@ -418,7 +544,11 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
   };
 };
 
-export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {
+export const generateNLQresponse = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: MutationAiNlqArgs,
+) => {
   await checkEnterpriseEdition(context);
   // Counted here (feature entry point) rather than in the LLM client so the
   // metric stays backend-agnostic if NLQ is ever served by XTM One.
@@ -440,18 +570,25 @@ export const generateNLQresponse = async (context: AuthContext, user: AuthUser, 
     }
   }
   const parsedResponse = rawResponse
-    ? { ...rawResponse, filterGroups: [] } as unknown as FilterGroup
+    ? ({ ...rawResponse, filterGroups: [] } as unknown as FilterGroup)
     : emptyFilterGroup;
 
   // 02. check the filters validity
   try {
     checkFiltersValidity(parsedResponse);
   } catch (error) {
-    throw FunctionalError(`The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`, { error, data: parsedResponse });
+    throw FunctionalError(
+      `The NLQ filters response format is not correct: ${JSON.stringify(parsedResponse)}`,
+      { error, data: parsedResponse },
+    );
   }
 
   // 03. map entities ids
-  const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(context, user, parsedResponse);
+  const { filters: filtersResult, notResolvedValues } = await filtersEntityIdsMapping(
+    context,
+    user,
+    parsedResponse,
+  );
 
   // return the stringified filters
   return { filters: JSON.stringify(filtersResult), notResolvedValues };

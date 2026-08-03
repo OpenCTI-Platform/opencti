@@ -14,13 +14,14 @@ import Typography from '@mui/material/Typography';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { StixCoreObjectContent_stixCoreObject$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  StixCoreObjectContentFilesUploadStixCoreObjectMutation,
-} from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
+import { StixCoreObjectContentFilesUploadStixCoreObjectMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContentFilesUploadStixCoreObjectMutation.graphql';
 import CreateFileForm, { CreateFileFormInputs } from '@components/common/form/CreateFileForm';
 import StixCoreObjectContentFilesList from '@components/common/stix_core_objects/StixCoreObjectContentFilesList';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import StixCoreObjectFileExport, { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
+import StixCoreObjectFileExport, {
+  BUILT_IN_FROM_TEMPLATE,
+  BUILT_IN_HTML_TO_PDF,
+} from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { useFormatter } from '../../../../components/i18n';
@@ -62,7 +63,12 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
     $fromTemplate: Boolean
   ) {
     stixCoreObjectEdit(id: $id) {
-      importPush(file: $file, noTriggerImport: $noTriggerImport, fileMarkings: $fileMarkings, fromTemplate: $fromTemplate) {
+      importPush(
+        file: $file
+        noTriggerImport: $noTriggerImport
+        fileMarkings: $fileMarkings
+        fromTemplate: $fromTemplate
+      ) {
         id
         name
         uploadStatus
@@ -86,7 +92,9 @@ export const stixCoreObjectContentFilesUploadStixCoreObjectMutation = graphql`
 `;
 
 interface StixCoreObjectContentFilesProps {
-  files: NonNullable<StixCoreObjectContent_stixCoreObject$data['importFiles']>['edges'][number]['node'][];
+  files: NonNullable<
+    StixCoreObjectContent_stixCoreObject$data['importFiles']
+  >['edges'][number]['node'][];
   stixCoreObjectId: string;
   stixCoreObjectName: string;
   stixCoreObjectType: string;
@@ -96,8 +104,12 @@ interface StixCoreObjectContentFilesProps {
   contentSelected: boolean;
   currentFileId: string;
   onFileChange: (fileName?: string, isDeleted?: boolean) => void;
-  exportFiles: NonNullable<StixCoreObjectContent_stixCoreObject$data['exportFiles']>['edges'][number]['node'][];
-  filesFromTemplate: NonNullable<StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']>['edges'][number]['node'][];
+  exportFiles: NonNullable<
+    StixCoreObjectContent_stixCoreObject$data['exportFiles']
+  >['edges'][number]['node'][];
+  filesFromTemplate: NonNullable<
+    StixCoreObjectContent_stixCoreObject$data['filesFromTemplate']
+  >['edges'][number]['node'][];
   hasOutcomesTemplate?: boolean;
 }
 
@@ -160,8 +172,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
     });
   };
 
-  const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))]
-    .sort((a, b) => b.name.localeCompare(a.name));
+  const filesList = [...files, ...exportFiles.map((n) => ({ ...n, perspective: 'export' }))].sort(
+    (a, b) => b.name.localeCompare(a.name),
+  );
 
   return (
     <Drawer
@@ -185,28 +198,26 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               dense={true}
               divider={true}
               disablePadding
-              secondaryAction={!draftContext && (
-                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setAnchorEl(e.currentTarget);
-                    }}
-                    aria-haspopup="true"
-                    aria-label={t_i18n('Open menu')}
-                    color="primary"
-                    size="small"
-                  >
-                    <MoreVert />
-                  </IconButton>
-                </Security>
-              )
+              secondaryAction={
+                !draftContext && (
+                  <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAnchorEl(e.currentTarget);
+                      }}
+                      aria-haspopup="true"
+                      aria-label={t_i18n('Open menu')}
+                      color="primary"
+                      size="small"
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  </Security>
+                )
               }
             >
-              <ListItemButton
-                selected={contentSelected}
-                onClick={handleSelectContent}
-              >
+              <ListItemButton selected={contentSelected} onClick={handleSelectContent}>
                 <ListItemIcon>
                   <FileOutline fontSize="small" />
                 </ListItemIcon>
@@ -217,11 +228,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               </ListItemButton>
             </ListItem>
           </List>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-          >
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
             <StixCoreObjectFileExport
               onClose={() => setAnchorEl(null)}
               scoId={stixCoreObjectId}
@@ -234,9 +241,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               }}
               onExportCompleted={onFileChange}
               OpenFormComponent={({ onOpen }) => (
-                <MenuItem onClick={onOpen}>
-                  {t_i18n('Generate a PDF export')}
-                </MenuItem>
+                <MenuItem onClick={onOpen}>{t_i18n('Generate a PDF export')}</MenuItem>
               )}
             />
           </Menu>
@@ -245,7 +250,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       <ContentBloc
         title={t_i18n('Files')}
-        actions={(
+        actions={
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
             <Stack direction="row" gap={1}>
               <FileUploader
@@ -263,7 +268,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               </IconButton>
             </Stack>
           </Security>
-        )}
+        }
       >
         <StixCoreObjectContentFilesList
           files={filesList}
@@ -278,49 +283,45 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       {hasOutcomesTemplate && (
         <ContentBloc
-          title={(
+          title={
             <>
               {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
-              {isEnterpriseEdition
-                && (
-                  <Tooltip
-                    title={t_i18n('Files generated from a template')}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ marginLeft: 5 }}
-                    />
-                  </Tooltip>
-                )}
-            </>
-          )}
-          actions={!draftContext && isEnterpriseEdition && (
-            <StixCoreObjectFileExport
-              scoId={stixCoreObjectId}
-              scoName={stixCoreObjectName}
-              scoEntityType={stixCoreObjectType}
-              defaultValues={{
-                connector: BUILT_IN_FROM_TEMPLATE.value,
-                format: 'text/html',
-              }}
-              onExportCompleted={onFileChange}
-              OpenFormComponent={({ onOpen }) => (
-                <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
-                  <Tooltip title={t_i18n('Generate an export based on a template')}>
-                    <IconButton
-                      onClick={onOpen}
-                      color="primary"
-                      size="small"
-                      aria-label={t_i18n('Generate an export based on a template')}
-                    >
-                      <FileExportOutline />
-                    </IconButton>
-                  </Tooltip>
-                </Security>
+              {isEnterpriseEdition && (
+                <Tooltip title={t_i18n('Files generated from a template')}>
+                  <InformationOutline fontSize="small" color="primary" style={{ marginLeft: 5 }} />
+                </Tooltip>
               )}
-            />
-          )}
+            </>
+          }
+          actions={
+            !draftContext &&
+            isEnterpriseEdition && (
+              <StixCoreObjectFileExport
+                scoId={stixCoreObjectId}
+                scoName={stixCoreObjectName}
+                scoEntityType={stixCoreObjectType}
+                defaultValues={{
+                  connector: BUILT_IN_FROM_TEMPLATE.value,
+                  format: 'text/html',
+                }}
+                onExportCompleted={onFileChange}
+                OpenFormComponent={({ onOpen }) => (
+                  <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]} matchAll>
+                    <Tooltip title={t_i18n('Generate an export based on a template')}>
+                      <IconButton
+                        onClick={onOpen}
+                        color="primary"
+                        size="small"
+                        aria-label={t_i18n('Generate an export based on a template')}
+                      >
+                        <FileExportOutline />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                )}
+              />
+            )
+          }
         >
           {isEnterpriseEdition && (
             <StixCoreObjectContentFilesList

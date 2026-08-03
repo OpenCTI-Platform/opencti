@@ -25,22 +25,17 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
     } as ImagesData,
   };
 
-  const hasImages = intrusionSet.images?.edges && intrusionSet.images.edges.filter((n) => (
-    n?.node?.metaData?.inCarousel
-  )).length > 0;
+  const hasImages =
+    intrusionSet.images?.edges &&
+    intrusionSet.images.edges.filter((n) => n?.node?.metaData?.inCarousel).length > 0;
 
   return (
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown
-              source={intrusionSet.description}
-              limit={hasImages ? 400 : 600}
-            />
+            <Label>{t_i18n('Description')}</Label>
+            <ExpandableMarkdown source={intrusionSet.description} limit={hasImages ? 400 : 600} />
           </Grid>
           {hasImages && (
             <Grid item xs={4}>
@@ -49,58 +44,32 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           )}
           <Grid item xs={hasImages ? 8 : 12}>
             <IntrusionSetLocations intrusionSet={intrusionSet} />
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('First seen')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('First seen')}</Label>
             {fldt(intrusionSet.first_seen)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Last seen')}
-            </Label>
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Last seen')}</Label>
             {fldt(intrusionSet.last_seen)}
           </Grid>
         </Grid>
         <Grid container spacing={2} mt={0}>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Resource level')}
-            </Label>
+            <Label>{t_i18n('Resource level')}</Label>
             <FieldOrEmpty source={intrusionSet.resource_level}>
-              <ItemOpenVocab
-                type="attack-resource-level-ov"
-                value={intrusionSet.resource_level}
-              />
+              <ItemOpenVocab type="attack-resource-level-ov" value={intrusionSet.resource_level} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Primary motivation')}
-            </Label>
+            <Label>{t_i18n('Primary motivation')}</Label>
             <FieldOrEmpty source={intrusionSet.primary_motivation}>
-              <ItemOpenVocab
-                type="attack-motivation-ov"
-                value={intrusionSet.primary_motivation}
-              />
+              <ItemOpenVocab type="attack-motivation-ov" value={intrusionSet.primary_motivation} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Goals')}
-            </Label>
-            <TextList
-              list={intrusionSet.goals}
-            />
+            <Label>{t_i18n('Goals')}</Label>
+            <TextList list={intrusionSet.goals} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Secondary motivations')}
-            </Label>
-            <TextList
-              list={intrusionSet.secondary_motivations}
-            />
+            <Label>{t_i18n('Secondary motivations')}</Label>
+            <TextList list={intrusionSet.secondary_motivations} />
           </Grid>
         </Grid>
       </Card>
@@ -108,37 +77,34 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
   );
 };
 
-const IntrusionSetDetails = createFragmentContainer(
-  IntrusionSetDetailsComponent,
-  {
-    intrusionSet: graphql`
-      fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
-        id
-        first_seen
-        last_seen
-        description
-        resource_level
-        primary_motivation
-        secondary_motivations
-        goals
-        images: importFiles(prefixMimeType: "image/") {
-          edges {
-            node {
-              id
-              name
-              metaData {
-                mimetype
-                order
-                inCarousel
-                description
-              }
+const IntrusionSetDetails = createFragmentContainer(IntrusionSetDetailsComponent, {
+  intrusionSet: graphql`
+    fragment IntrusionSetDetails_intrusionSet on IntrusionSet {
+      id
+      first_seen
+      last_seen
+      description
+      resource_level
+      primary_motivation
+      secondary_motivations
+      goals
+      images: importFiles(prefixMimeType: "image/") {
+        edges {
+          node {
+            id
+            name
+            metaData {
+              mimetype
+              order
+              inCarousel
+              description
             }
           }
         }
-        ...IntrusionSetLocations_intrusionSet
       }
-    `,
-  },
-);
+      ...IntrusionSetLocations_intrusionSet
+    }
+  `,
+});
 
 export default IntrusionSetDetails;

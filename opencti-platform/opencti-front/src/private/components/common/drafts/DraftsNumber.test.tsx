@@ -10,7 +10,9 @@ vi.mock('../../../../relay/environment', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="widget-container">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="widget-container">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../components/dashboard/WidgetNoData', () => ({
@@ -37,9 +39,8 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
 }));
 
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) => (
-    queryRef ? <>{children}</> : <div data-testid="loader" />
-  ),
+  default: ({ queryRef, children }: { queryRef: unknown; children: React.ReactNode }) =>
+    queryRef ? <>{children}</> : <div data-testid="loader" />,
 }));
 
 vi.mock('../../../../components/dashboard/dashboardVizUtils', () => ({
@@ -60,10 +61,12 @@ import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
 describe('DraftsNumber', () => {
   const minimalProps = {
     config: { relativeDate: null, startDate: null, endDate: null },
-    dataSelection: [{
-      filters: emptyFilterGroup,
-      date_attribute: 'created_at',
-    }],
+    dataSelection: [
+      {
+        filters: emptyFilterGroup,
+        date_attribute: 'created_at',
+      },
+    ],
     parameters: {},
   };
 

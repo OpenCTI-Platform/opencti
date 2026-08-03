@@ -9,7 +9,11 @@ import EnterpriseEditionButton from '@components/common/entreprise_edition/Enter
 import FiligranIcon from '@components/common/FiligranIcon';
 import { CatalogItem } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { getConnectorMetadata } from '@components/integrations/catalog/utils/ingestionConnectorTypeMetadata';
-import { BuiltInIntegrationHubButton, BuiltInIntegrationImport, isImportableBuiltInKind } from '@components/integrations/available/BuiltInIntegrationImport';
+import {
+  BuiltInIntegrationHubButton,
+  BuiltInIntegrationImport,
+  isImportableBuiltInKind,
+} from '@components/integrations/available/BuiltInIntegrationImport';
 import { DeployedCountChip } from '@components/integrations/components/MarketplaceUi';
 import { LogoFiligranIcon } from 'filigran-icon';
 import { useFormatter } from '../../../../components/i18n';
@@ -88,7 +92,12 @@ export interface AvailableIntegrationLineProps {
 // Compact row variant of the available tab cards (marketplace connectors and
 // built-in ingestion methods). Cells share their geometry with
 // AvailableIntegrationLinesHeader so rows align like a table.
-const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, onClickCreate }: AvailableIntegrationLineProps) => {
+const AvailableIntegrationLine = ({
+  item,
+  isEnterpriseEdition,
+  onClickDeploy,
+  onClickCreate,
+}: AvailableIntegrationLineProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -221,7 +230,9 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
             ) : (
               <GroupsOutlined sx={{ fontSize: 16 }} color="disabled" />
             )}
-            <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}>
+            <Typography
+              sx={{ fontSize: 12, color: theme.palette.text.secondary, whiteSpace: 'nowrap' }}
+            >
               {item.verified ? t_i18n('Filigran') : t_i18n('Community')}
             </Typography>
           </Stack>
@@ -232,9 +243,11 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
         {item.deploymentCount > 0 ? (
           <DeployedCountChip
             count={item.deploymentCount}
-            to={item.builtIn
-              ? `/dashboard/integrations/deployed?type=${item.builtIn.kind}`
-              : `/dashboard/integrations/deployed?search=${encodeURIComponent(item.title)}`}
+            to={
+              item.builtIn
+                ? `/dashboard/integrations/deployed?type=${item.builtIn.kind}`
+                : `/dashboard/integrations/deployed?search=${encodeURIComponent(item.title)}`
+            }
           />
         ) : (
           <Typography sx={{ fontSize: 12, color: theme.palette.text.secondary }}>
@@ -265,7 +278,11 @@ const AvailableIntegrationLine = ({ item, isEnterpriseEdition, onClickDeploy, on
                 </Button>
               ) : (
                 <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                  <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
+                  <EnterpriseEditionButton
+                    title="Deploy"
+                    feature="Connector deployment"
+                    withEEChip
+                  />
                 </Box>
               )}
             </>

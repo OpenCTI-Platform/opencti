@@ -36,10 +36,7 @@ const styles = (theme) => ({
 });
 
 export const workspaceMutationFieldPatch = graphql`
-  mutation WorkspaceEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput!]!
-  ) {
+  mutation WorkspaceEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
       ...WorkspaceEditionOverview_workspace
       ...CustomDashboard_workspace
@@ -49,10 +46,7 @@ export const workspaceMutationFieldPatch = graphql`
 `;
 
 export const workspaceEditionOverviewFocus = graphql`
-  mutation WorkspaceEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation WorkspaceEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     workspaceContextPatch(id: $id, input: $input) {
       id
     }
@@ -66,10 +60,11 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
     ...pick(['name', 'description'], workspace),
   };
 
-  const workspaceValidation = () => Yup.object().shape({
-    name: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
-  });
+  const workspaceValidation = () =>
+    Yup.object().shape({
+      name: Yup.string().required(t_i18n('This field is required')),
+      description: Yup.string().nullable(),
+    });
 
   const handleChangeFocus = (name) => {
     commitMutation({
@@ -114,9 +109,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             fullWidth={true}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
             component={MarkdownField}
@@ -129,9 +122,7 @@ const WorkspaceEditionOverviewComponent = ({ workspace, context }) => {
             style={{ marginTop: 20 }}
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
         </Form>
       )}
@@ -147,20 +138,17 @@ WorkspaceEditionOverviewComponent.propTypes = {
   context: PropTypes.array,
 };
 
-const WorkspaceEditionOverview = createFragmentContainer(
-  WorkspaceEditionOverviewComponent,
-  {
-    workspace: graphql`
-      fragment WorkspaceEditionOverview_workspace on Workspace {
-        id
-        name
-        description
-        type
-        refresh_interval
-      }
-    `,
-  },
-);
+const WorkspaceEditionOverview = createFragmentContainer(WorkspaceEditionOverviewComponent, {
+  workspace: graphql`
+    fragment WorkspaceEditionOverview_workspace on Workspace {
+      id
+      name
+      description
+      type
+      refresh_interval
+    }
+  `,
+});
 
 export default compose(
   inject18n,

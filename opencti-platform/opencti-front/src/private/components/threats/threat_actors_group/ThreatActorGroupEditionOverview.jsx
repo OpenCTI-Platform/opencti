@@ -13,10 +13,19 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -29,11 +38,7 @@ const ThreatActorGroupMutationFieldPatch = graphql`
     $references: [String]
   ) {
     threatActorGroupEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...ThreatActorGroupEditionOverview_ThreatActorGroup
         ...ThreatActorGroup_ThreatActorGroup
       }
@@ -42,10 +47,7 @@ const ThreatActorGroupMutationFieldPatch = graphql`
 `;
 
 export const ThreatActorGroupEditionOverviewFocus = graphql`
-  mutation ThreatActorGroupEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation ThreatActorGroupEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     threatActorGroupEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -91,16 +93,19 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
   const theme = useTheme();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_GROUP_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    threat_actor_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    createdBy: Yup.object().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      threat_actor_types: Yup.array().nullable(),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      createdBy: Yup.object().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
   const ThreatActorGroupValidator = useDynamicSchemaEditionValidation(
     mandatoryAttributes,
     basicShape,
@@ -134,8 +139,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
       variables: {
         id: threatActorGroup.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -170,9 +174,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.assoc(
       'threat_actor_types',
-      threatActorGroup.threat_actor_types
-        ? threatActorGroup.threat_actor_types
-        : [],
+      threatActorGroup.threat_actor_types ? threatActorGroup.threat_actor_types : [],
     ),
     R.pick([
       'name',
@@ -195,35 +197,26 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={threatActorGroup} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <OpenVocabField
             variant="edit"
             type="threat-actor-group-type-ov"
             name="threat_actor_types"
             label={t_i18n('Threat actor types')}
-            required={(mandatoryAttributes.includes('threat_actor_types'))}
+            required={mandatoryAttributes.includes('threat_actor_types')}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -243,7 +236,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -252,9 +245,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {threatActorGroup.workflowEnabled && (
             <StatusField
@@ -264,31 +255,22 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  field="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} field="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
@@ -308,41 +290,38 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
   );
 };
 
-export default createFragmentContainer(
-  ThreatActorGroupEditionOverviewComponent,
-  {
-    threatActorGroup: graphql`
-      fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
-        id
-        name
-        threat_actor_types
-        confidence
-        entity_type
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
+export default createFragmentContainer(ThreatActorGroupEditionOverviewComponent, {
+  threatActorGroup: graphql`
+    fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
+      id
+      name
+      threat_actor_types
+      confidence
+      entity_type
+      description
+      createdBy {
+        ... on Identity {
           id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
+          name
+          entity_type
         }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
       }
-    `,
-  },
-);
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
+});

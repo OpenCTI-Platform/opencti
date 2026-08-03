@@ -9,13 +9,7 @@ const renderSingleOpenVocab = (
   vocabType: string,
 ) => {
   const value = data[attribute] as string | undefined;
-  return (
-    <ItemOpenVocab
-      displayMode="chip"
-      type={vocabType}
-      value={value}
-    />
-  );
+  return <ItemOpenVocab displayMode="chip" type={vocabType} value={value} />;
 };
 
 const renderOpenVocabList = (
@@ -28,12 +22,7 @@ const renderOpenVocabList = (
     <FieldOrEmpty source={types}>
       <Stack direction="row" flexWrap="wrap" gap={1}>
         {types?.map((type) => (
-          <ItemOpenVocab
-            key={type}
-            displayMode="chip"
-            type={vocabType}
-            value={type}
-          />
+          <ItemOpenVocab key={type} displayMode="chip" type={vocabType} value={type} />
         ))}
       </Stack>
     </FieldOrEmpty>
@@ -50,7 +39,8 @@ export const openVocabSingleRenderers: Record<
   incident_type: (d) => renderSingleOpenVocab(d, 'incident_type', 'incident_type_ov'),
   resource_level: (d) => renderSingleOpenVocab(d, 'resource_level', 'attack-resource-level-ov'),
   primary_motivation: (d) => renderSingleOpenVocab(d, 'primary_motivation', 'attack-motivation-ov'),
-  x_opencti_organization_type: (d) => renderSingleOpenVocab(d, 'x_opencti_organization_type', 'organization_type_ov'),
+  x_opencti_organization_type: (d) =>
+    renderSingleOpenVocab(d, 'x_opencti_organization_type', 'organization_type_ov'),
   eye_color: (d) => renderSingleOpenVocab(d, 'eye_color', 'eye-color-ov'),
   context: (d) => renderSingleOpenVocab(d, 'context', 'grouping_context_ov'),
   hair_color: (d) => renderSingleOpenVocab(d, 'hair_color', 'hair-color-ov'),
@@ -72,10 +62,14 @@ export const openVocabListRenderers: Record<
   information_types: (d) => renderOpenVocabList(d, 'information_types', 'information_types_ov'),
   takedown_types: (d) => renderOpenVocabList(d, 'takedown_types', 'takedown_types_ov'),
   event_types: (d) => renderOpenVocabList(d, 'event_types', 'event_types_ov'),
-  infrastructure_types: (d) => renderOpenVocabList(d, 'infrastructure_types', 'infrastructure-type-ov'),
-  architecture_execution_envs: (d) => renderOpenVocabList(d, 'architecture_execution_envs', 'processor-architecture-ov'),
-  implementation_languages: (d) => renderOpenVocabList(d, 'implementation_languages', 'implementation-language-ov'),
+  infrastructure_types: (d) =>
+    renderOpenVocabList(d, 'infrastructure_types', 'infrastructure-type-ov'),
+  architecture_execution_envs: (d) =>
+    renderOpenVocabList(d, 'architecture_execution_envs', 'processor-architecture-ov'),
+  implementation_languages: (d) =>
+    renderOpenVocabList(d, 'implementation_languages', 'implementation-language-ov'),
   capabilities: (d) => renderOpenVocabList(d, 'capabilities', 'malware-capabilities-ov'),
   indicator_types: (d) => renderOpenVocabList(d, 'indicator_types', 'indicator-type-ov'),
-  x_opencti_main_observable_type: (d) => renderOpenVocabList(d, 'x_opencti_main_observable_type', 'observable_types_ov'),
+  x_opencti_main_observable_type: (d) =>
+    renderOpenVocabList(d, 'x_opencti_main_observable_type', 'observable_types_ov'),
 };

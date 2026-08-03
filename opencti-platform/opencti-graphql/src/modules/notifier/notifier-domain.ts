@@ -3,13 +3,28 @@ import { BUS_TOPICS } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import {
+  internalFindByIds,
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { isEmptyField } from '../../database/utils';
-import type { EditInput, NotifierAddInput, NotifierConnector, NotifierTestInput, QueryNotifiersArgs } from '../../generated/graphql';
+import type {
+  EditInput,
+  NotifierAddInput,
+  NotifierConnector,
+  NotifierTestInput,
+  QueryNotifiersArgs,
+} from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { internalProcessNotification } from '../../manager/publisherManager';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import {
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
@@ -33,7 +48,10 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 
 const ajv = new Ajv();
 
-const validateNotifier = (notifier: { notifier_connector_id: string; notifier_configuration: string }) => {
+const validateNotifier = (notifier: {
+  notifier_connector_id: string;
+  notifier_configuration: string;
+}) => {
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
     throw UnsupportedError('Invalid notifier connector', { id: notifier.notifier_connector_id });
@@ -41,12 +59,17 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   // Connector Schema is valued, we have checked that before
   const validate = ajv.compile(JSON.parse(notifierConnector.connector_schema ?? '{}'));
   if (isEmptyField(notifier.notifier_configuration)) {
-    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
+    throw UnsupportedError('This configuration is invalid', {
+      configuration: notifier.notifier_configuration,
+    });
   }
   const parsedConfiguration = JSON.parse(notifier.notifier_configuration) as unknown;
   const isValidConfiguration = validate(parsedConfiguration);
   if (!isValidConfiguration) {
-    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
+    throw UnsupportedError('This configuration is invalid', {
+      configuration: notifier.notifier_configuration,
+      errors: validate.errors,
+    });
   }
   if (notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
     const webhookConfiguration = parsedConfiguration as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
@@ -54,9 +77,18 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   }
 };
 
-export const addNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierAddInput): Promise<BasicStoreEntityNotifier> => {
+export const addNotifier = async (
+  context: AuthContext,
+  user: AuthUser,
+  notifier: NotifierAddInput,
+): Promise<BasicStoreEntityNotifier> => {
   validateNotifier(notifier);
-  const notifierToCreate = { ...notifier, created: now(), updated: now(), authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
+  const notifierToCreate = {
+    ...notifier,
+    created: now(),
+    updated: now(),
+    authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'],
+  };
   const created = await createEntity(context, user, notifierToCreate, ENTITY_TYPE_NOTIFIER);
   await publishUserAction({
     user,
@@ -69,11 +101,25 @@ export const addNotifier = async (context: AuthContext, user: AuthUser, notifier
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFIER].ADDED_TOPIC, created, user);
 };
 
-export const notifierGet = (context: AuthContext, user: AuthUser, notifierId: string): BasicStoreEntityNotifier => {
-  return storeLoadById(context, user, notifierId, ENTITY_TYPE_NOTIFIER) as unknown as BasicStoreEntityNotifier;
+export const notifierGet = (
+  context: AuthContext,
+  user: AuthUser,
+  notifierId: string,
+): BasicStoreEntityNotifier => {
+  return storeLoadById(
+    context,
+    user,
+    notifierId,
+    ENTITY_TYPE_NOTIFIER,
+  ) as unknown as BasicStoreEntityNotifier;
 };
 
-export const notifierEdit = async (context: AuthContext, user: AuthUser, notifierId: string, input: EditInput[]) => {
+export const notifierEdit = async (
+  context: AuthContext,
+  user: AuthUser,
+  notifierId: string,
+  input: EditInput[],
+) => {
   const getInputValue = (key: string) => input.find((n) => n.key === key)?.value[0] ?? '';
   const fieldsToValidate = {
     notifier_configuration: getInputValue('notifier_configuration'),
@@ -87,7 +133,13 @@ export const notifierEdit = async (context: AuthContext, user: AuthUser, notifie
     }
     return item;
   });
-  const { element: updatedElem } = await updateAttribute<StoreEntityNotifier>(context, user, notifierId, ENTITY_TYPE_NOTIFIER, finalInput);
+  const { element: updatedElem } = await updateAttribute<StoreEntityNotifier>(
+    context,
+    user,
+    notifierId,
+    ENTITY_TYPE_NOTIFIER,
+    finalInput,
+  );
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -106,23 +158,35 @@ export const notifierDelete = async (context: AuthContext, user: AuthUser, trigg
 };
 
 export const notifiersFind = (context: AuthContext, user: AuthUser, opts: QueryNotifiersArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { ...opts, includeAuthorities: true });
+  return pageEntitiesConnection<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], {
+    ...opts,
+    includeAuthorities: true,
+  });
 };
 
 export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: string[] = []) => {
   const cacheNotifiers = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_NOTIFIER);
   const missingIds = ids.filter((id) => !cacheNotifiers.has(id));
-  const notifiers = await internalFindByIds(context, user, missingIds, { type: ENTITY_TYPE_NOTIFIER }) as StoreEntityNotifier[];
+  const notifiers = (await internalFindByIds(context, user, missingIds, {
+    type: ENTITY_TYPE_NOTIFIER,
+  })) as StoreEntityNotifier[];
   const staticNotifiers = STATIC_NOTIFIERS.filter(({ id }) => missingIds.includes(id));
   return [
-    ...(ids.filter((id) => cacheNotifiers.has(id)).map((id) => cacheNotifiers.get(id) as BasicStoreEntityNotifier)),
+    ...ids
+      .filter((id) => cacheNotifiers.has(id))
+      .map((id) => cacheNotifiers.get(id) as BasicStoreEntityNotifier),
     ...notifiers,
     ...staticNotifiers,
   ] as BasicStoreEntityNotifier[];
 };
 
 export const usableNotifiers = async (context: AuthContext, user: AuthUser) => {
-  const notifiers = await fullEntitiesList<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { includeAuthorities: true });
+  const notifiers = await fullEntitiesList<BasicStoreEntityNotifier>(
+    context,
+    user,
+    [ENTITY_TYPE_NOTIFIER],
+    { includeAuthorities: true },
+  );
   return [...notifiers, ...STATIC_NOTIFIERS].sort((a, b) => {
     if (a.name < b.name) return -1;
     if (a.name > b.name) return 1;
@@ -130,7 +194,11 @@ export const usableNotifiers = async (context: AuthContext, user: AuthUser) => {
   });
 };
 
-export const getNotifierConnector = (context: AuthContext, user: AuthUser, connectorId: string): NotifierConnector | Promise<BasicStoreEntityNotifier> => {
+export const getNotifierConnector = (
+  context: AuthContext,
+  user: AuthUser,
+  connectorId: string,
+): NotifierConnector | Promise<BasicStoreEntityNotifier> => {
   const builtIn = BUILTIN_NOTIFIERS_CONNECTORS[connectorId];
   if (builtIn) {
     return builtIn;
@@ -142,17 +210,33 @@ export const getNotifierConnector = (context: AuthContext, user: AuthUser, conne
 };
 
 export const initDefaultNotifiers = (context: AuthContext) => {
-  return Promise.all([DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) => addNotifier(context, SYSTEM_USER, notifier)));
+  return Promise.all(
+    [DEFAULT_TEAM_MESSAGE, DEFAULT_TEAM_DIGEST_MESSAGE].map((notifier) =>
+      addNotifier(context, SYSTEM_USER, notifier),
+    ),
+  );
 };
 
-export const testNotifier = async (context: AuthContext, user: AuthUser, notifier: NotifierTestInput) => {
+export const testNotifier = async (
+  context: AuthContext,
+  user: AuthUser,
+  notifier: NotifierTestInput,
+) => {
   try {
     validateNotifier(notifier);
   } catch (error: any) {
     return error.data ? error.data.reason : error.message;
   }
-  const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const usersFromCache = await getEntitiesMapFromCache<AuthUser>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_USER,
+  );
+  const settings = await getEntityFromCache<BasicStoreSettings>(
+    context,
+    SYSTEM_USER,
+    ENTITY_TYPE_SETTINGS,
+  );
   const notificationMap = new Map([
     ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],
     ['default_notification_id_2', { name: 'test 2' } as BasicStoreEntityTrigger],
@@ -170,7 +254,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     },
     notifier,
     MOCK_NOTIFICATIONS[notifier.notifier_test_id],
-    [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
+    [{ created: new Date().toISOString() }] as unknown as BasicStoreEntityTrigger[],
     usersFromCache,
   ).catch((error) => {
     return error.message;

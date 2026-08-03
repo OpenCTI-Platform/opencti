@@ -106,14 +106,11 @@ const StixCoreObjectsDonutComponent = ({
   const selection = dataSelection[0];
   const data = stixCoreObjectsDistribution ?? [];
 
-  return data.length === 0
-    ? <WidgetNoData />
-    : (
-        <WidgetDonut
-          data={data}
-          groupBy={selection.attribute ?? 'entity_type'}
-        />
-      );
+  return data.length === 0 ? (
+    <WidgetNoData />
+  ) : (
+    <WidgetDonut data={data} groupBy={selection.attribute ?? 'entity_type'} />
+  );
 };
 
 interface StixCoreObjectsDonutProps {
@@ -163,7 +160,13 @@ const StixCoreObjectsDonut = ({
   host,
 }: StixCoreObjectsDonutProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -190,10 +193,7 @@ const StixCoreObjectsDonut = ({
         queryRef={queryRef}
         host={host}
       >
-        <StixCoreObjectsDonutComponent
-          queryRef={queryRef!}
-          dataSelection={resolvedDataSelection}
-        />
+        <StixCoreObjectsDonutComponent queryRef={queryRef!} dataSelection={resolvedDataSelection} />
       </WidgetRenderContent>
     </WidgetContainer>
   );

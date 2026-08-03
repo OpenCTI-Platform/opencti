@@ -69,7 +69,11 @@ interface EntitySettingAttributeLineProps {
   entitySetting: EntitySettingAttributes_entitySetting$data;
 }
 
-const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({ node = null, dataColumns, entitySetting }) => {
+const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({
+  node = null,
+  dataColumns,
+  entitySetting,
+}) => {
   const classes = useStyles();
   const isEnterpriseEdition = useEnterpriseEdition();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
@@ -94,42 +98,35 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         classes={{ root: classes.item }}
         onClick={() => !needEE && !nothingToUpdate && handleOpenUpdate()}
         disableRipple={needEE || nothingToUpdate}
-        sx={needEE || nothingToUpdate
-          ? {
-              '&:hover': {
-                cursor: 'default',
-                backgroundColor: 'transparent',
-              },
-            }
-          : {}
+        sx={
+          needEE || nothingToUpdate
+            ? {
+                '&:hover': {
+                  cursor: 'default',
+                  backgroundColor: 'transparent',
+                },
+              }
+            : {}
         }
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {attribute.name === INPUT_AUTHORIZED_MEMBERS
-            ? (
-                <LockPersonOutlined
-                  fontSize="small"
-                  color={!needEE ? 'warning' : 'ee'}
-                />
-              )
-            : <ShortTextOutlined />
-          }
+          {attribute.name === INPUT_AUTHORIZED_MEMBERS ? (
+            <LockPersonOutlined fontSize="small" color={!needEE ? 'warning' : 'ee'} />
+          ) : (
+            <ShortTextOutlined />
+          )}
         </ListItemIcon>
         <ListItemText
-          primary={(
+          primary={
             <div>
               {Object.values(dataColumns ?? {}).map((value, i) => (
-                <div
-                  key={value.label}
-                  className={classes.bodyItem}
-                  style={{ width: value.width }}
-                >
+                <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
                   {value.render?.(attribute)}
                   {needEE && i === 0 && <EEChip />}
                 </div>
               ))}
             </div>
-          )}
+          }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           {!needEE && !nothingToUpdate && <NorthEastOutlined />}
@@ -147,44 +144,31 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
 
 export default EntitySettingAttributeLine;
 
-export const EntitySettingAttributeLineDummy = ({
-  dataColumns,
-}: {
-  dataColumns: DataColumns;
-}) => {
+export const EntitySettingAttributeLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem
       divider={true}
       classes={{ root: classes.item }}
-      secondaryAction={(
+      secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <NorthEastOutlined />
         </Box>
-      )}
+      }
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div
-                key={value.label}
-                className={classes.bodyItem}
-                style={{ width: value.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height={20}
-                />
+              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+                <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
               </div>
             ))}
           </div>
-        )}
+        }
       />
     </ListItem>
   );

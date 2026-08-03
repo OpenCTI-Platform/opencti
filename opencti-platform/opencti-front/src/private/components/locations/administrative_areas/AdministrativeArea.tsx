@@ -89,11 +89,7 @@ const AdministrativeArea = ({
   );
   return (
     <div data-testid="administrative-area-details-page">
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+      <Grid container={true} spacing={3} classes={{ container: classes.gridContainer }}>
         <Grid item xs={4}>
           <LocationDetails locationData={administrativeArea} />
         </Grid>
@@ -109,9 +105,7 @@ const AdministrativeArea = ({
           />
         </Grid>
         <Grid item xs={4}>
-          <StixDomainObjectOverview
-            stixDomainObject={administrativeArea}
-          />
+          <StixDomainObjectOverview stixDomainObject={administrativeArea} />
         </Grid>
         <Grid item xs={6}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
@@ -125,14 +119,10 @@ const AdministrativeArea = ({
           />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectExternalReferences
-            stixCoreObjectId={administrativeArea.id}
-          />
+          <StixCoreObjectExternalReferences stixCoreObjectId={administrativeArea.id} />
         </Grid>
         <Grid item xs={6}>
-          <StixCoreObjectLatestHistory
-            stixCoreObjectId={administrativeArea.id}
-          />
+          <StixCoreObjectLatestHistory stixCoreObjectId={administrativeArea.id} />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes

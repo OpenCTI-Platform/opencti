@@ -4,7 +4,10 @@ import Migration from 'migrate/lib/migration';
 import { logApp, logMigration, PLATFORM_VERSION } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
-import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_MIGRATION_REFERENCE,
+  ENTITY_TYPE_MIGRATION_STATUS,
+} from '../schema/internalObject';
 import { createEntity, createRelation, loadEntity, patchAttribute } from './middleware';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
@@ -71,14 +74,31 @@ const migrationStorage = {
       // Get current done migration
       const mig = R.head(R.filter((m) => m.title === set.lastRun, set.migrations));
       // Update the reference status to the last run
-      const migrationStatus = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
+      const migrationStatus = await loadEntity(context, SYSTEM_USER, [
+        ENTITY_TYPE_MIGRATION_STATUS,
+      ]);
       const statusPatch = { lastRun: set.lastRun };
-      await patchAttribute(context, SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
+      await patchAttribute(
+        context,
+        SYSTEM_USER,
+        migrationStatus.internal_id,
+        ENTITY_TYPE_MIGRATION_STATUS,
+        statusPatch,
+      );
       // Insert the migration reference
       const migrationRefInput = { title: mig.title, timestamp: mig.timestamp };
-      const migrationRef = await createEntity(context, SYSTEM_USER, migrationRefInput, ENTITY_TYPE_MIGRATION_REFERENCE);
+      const migrationRef = await createEntity(
+        context,
+        SYSTEM_USER,
+        migrationRefInput,
+        ENTITY_TYPE_MIGRATION_REFERENCE,
+      );
       // Attach the reference to the migration status.
-      const migrationRel = { fromId: migrationStatus.id, toId: migrationRef.id, relationship_type: RELATION_MIGRATES };
+      const migrationRel = {
+        fromId: migrationStatus.id,
+        toId: migrationRef.id,
+        relationship_type: RELATION_MIGRATES,
+      };
       await createRelation(context, SYSTEM_USER, migrationRel);
       logMigration.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       return fn();
@@ -92,53 +112,65 @@ const migrationStorage = {
 export const applyMigration = (context) => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
-    migrationStorage.load((err, state) => {
-      if (err) {
-        throw DatabaseError('[MIGRATION] Error applying migration', { cause: err });
-      }
-      // Set last run date on the set
-      set.lastRun = state.lastRun;
-      // Read migrations from webpack
-      const filesMigrationSet = retrieveMigrations();
-      // Filter migration to apply. Should be > lastRun
-      const [lastMigrationTime] = state.lastRun.split('-');
-      const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
-      const migrationToApply = filesMigrationSet.filter((file) => new Date(file.timestamp) > lastMigrationDate);
-      const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map((i) => [i.title, i]) : null);
-      /** Match the files migrations to the database migrations.
+    migrationStorage
+      .load((err, state) => {
+        if (err) {
+          throw DatabaseError('[MIGRATION] Error applying migration', { cause: err });
+        }
+        // Set last run date on the set
+        set.lastRun = state.lastRun;
+        // Read migrations from webpack
+        const filesMigrationSet = retrieveMigrations();
+        // Filter migration to apply. Should be > lastRun
+        const [lastMigrationTime] = state.lastRun.split('-');
+        const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
+        const migrationToApply = filesMigrationSet.filter(
+          (file) => new Date(file.timestamp) > lastMigrationDate,
+        );
+        const alreadyAppliedMigrations = new Map(
+          state.migrations ? state.migrations.map((i) => [i.title, i]) : null,
+        );
+        /** Match the files migrations to the database migrations.
        Plays migrations that does not have matching name / timestamp */
-      if (migrationToApply.length > 0) {
-        logMigration.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
-      } else {
-        logMigration.info('[MIGRATION] Platform already up to date, nothing to migrate');
-      }
-      for (let index = 0; index < migrationToApply.length; index += 1) {
-        const migSet = migrationToApply[index];
-        const migration = new Migration(migSet.title, migSet.up, migSet.down);
-        const stateMigration = alreadyAppliedMigrations.get(migration.title);
-        if (stateMigration) {
-          logMigration.info(`[MIGRATION] Replaying migration ${migration.title}`);
+        if (migrationToApply.length > 0) {
+          logMigration.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
+        } else {
+          logMigration.info('[MIGRATION] Platform already up to date, nothing to migrate');
         }
-        set.addMigration(migration);
-      }
-      // Start the set migration
-      set.up((migrationError) => {
-        if (migrationError) {
-          logApp.error('Migration up error', { cause: migrationError });
-          reject(migrationError);
-          return;
+        for (let index = 0; index < migrationToApply.length; index += 1) {
+          const migSet = migrationToApply[index];
+          const migration = new Migration(migSet.title, migSet.up, migSet.down);
+          const stateMigration = alreadyAppliedMigrations.get(migration.title);
+          if (stateMigration) {
+            logMigration.info(`[MIGRATION] Replaying migration ${migration.title}`);
+          }
+          set.addMigration(migration);
         }
-        logMigration.info('[MIGRATION] Migration process completed');
-        resolve(state);
+        // Start the set migration
+        set.up((migrationError) => {
+          if (migrationError) {
+            logApp.error('Migration up error', { cause: migrationError });
+            reject(migrationError);
+            return;
+          }
+          logMigration.info('[MIGRATION] Migration process completed');
+          resolve(state);
+        });
+      })
+      .catch((reason) => {
+        logApp.error('[MIGRATION] error on load', { cause: reason });
+        reject(reason);
       });
-    }).catch((reason) => {
-      logApp.error('[MIGRATION] error on load', { cause: reason });
-      reject(reason);
-    });
   }).then(async (state) => {
     // After migration, path the current version runtime
     const statusPatch = { platformVersion: PLATFORM_VERSION };
-    await patchAttribute(context, SYSTEM_USER, state.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
+    await patchAttribute(
+      context,
+      SYSTEM_USER,
+      state.internal_id,
+      ENTITY_TYPE_MIGRATION_STATUS,
+      statusPatch,
+    );
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
   }); // no catch to make sure the platform stops if migration throws an error
 };

@@ -10,7 +10,11 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
-import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap } from '../../../../utils/filters/filtersUtils';
+import {
+  useBuildFilterKeysMapFromEntityType,
+  getDefaultFilterObject,
+  getFilterDefinitionFromFilterKeysMap,
+} from '../../../../utils/filters/filtersUtils';
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 import ClearFiltersIcon from 'src/components/filters/ClearFiltersIcon';
@@ -82,24 +86,27 @@ const ListFilters = ({
 
   const getParameters = (relationshipType?: string): ParametersType => {
     switch (relationshipType) {
-      case 'from': return {
-        icon: <RayStartArrow fontSize="medium" />,
-        tooltip: t_i18n('Dynamic source filters'),
-        placeholder: t_i18n('Dynamic source filters'),
-        color: 'primary',
-      };
-      case 'to': return {
-        icon: <RayEndArrow fontSize="medium" />,
-        tooltip: t_i18n('Dynamic target filters'),
-        placeholder: t_i18n('Dynamic target filters'),
-        color: 'primary',
-      };
-      default: return {
-        icon: <FilterListOutlined fontSize="medium" />,
-        tooltip: t_i18n('Filters'),
-        placeholder: t_i18n('Add filter'),
-        color: 'primary',
-      };
+      case 'from':
+        return {
+          icon: <RayStartArrow fontSize="medium" />,
+          tooltip: t_i18n('Dynamic source filters'),
+          placeholder: t_i18n('Dynamic source filters'),
+          color: 'primary',
+        };
+      case 'to':
+        return {
+          icon: <RayEndArrow fontSize="medium" />,
+          tooltip: t_i18n('Dynamic target filters'),
+          placeholder: t_i18n('Dynamic target filters'),
+          color: 'primary',
+        };
+      default:
+        return {
+          icon: <FilterListOutlined fontSize="medium" />,
+          tooltip: t_i18n('Filters'),
+          placeholder: t_i18n('Add filter'),
+          color: 'primary',
+        };
     }
   };
 
@@ -117,17 +124,28 @@ const ListFilters = ({
     helpers?.handleAddFilterWithEmptyValue(getDefaultFilterObject(value, filterDefinition));
   };
 
-  const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
-    || (entityTypes.length > 1);
+  const isNotUniqEntityTypes =
+    (entityTypes.length === 1 &&
+      ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(
+        entityTypes[0],
+      )) ||
+    entityTypes.length > 1;
 
   const isFilterKeyForAllTypes = (subEntityTypes: string[]): boolean => {
-    return (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
-      || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
+    return (
+      (entityTypes.length === 1 &&
+        subEntityTypes.some((subType) => entityTypes.includes(subType))) ||
+      (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)))
+    );
   };
 
-  const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
+  const getGroupLabel = (
+    key: string,
+    filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>,
+  ): string => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    const isDraftSpecificKey =
+      subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (isDraftSpecificKey) {
       return t_i18n('Draft filters');
     }
@@ -140,9 +158,13 @@ const ListFilters = ({
     return t_i18n('All other filters');
   };
 
-  const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
+  const getGroupOrder = (
+    key: string,
+    filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>,
+  ): number => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    const isDraftSpecificKey = subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
+    const isDraftSpecificKey =
+      subEntityTypes.length > 0 && subEntityTypes.every((t) => t === 'DraftWorkspace');
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
       return 1;
     }
@@ -185,11 +207,7 @@ const ListFilters = ({
     <>
       {variant === 'text' ? (
         <Tooltip title={tooltip}>
-          <Button
-            onClick={handleOpenFilters}
-            startIcon={icon}
-            size="small"
-          >
+          <Button onClick={handleOpenFilters} startIcon={icon} size="small">
             {t_i18n('Filters')}
           </Button>
         </Tooltip>
@@ -228,11 +246,7 @@ const ListFilters = ({
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          <ClearFiltersIcon
-            disabled={disabled}
-            color={color}
-            onClear={handleClearFilters}
-          />
+          <ClearFiltersIcon disabled={disabled} color={color} onClear={handleClearFilters} />
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilterButton
               currentSavedFilter={currentSavedFilter}

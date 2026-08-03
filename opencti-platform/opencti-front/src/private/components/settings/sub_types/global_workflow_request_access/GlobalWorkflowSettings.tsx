@@ -5,18 +5,18 @@ import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import { GlobalWorkflowSettings_global$key } from './__generated__/GlobalWorkflowSettings_global.graphql';
 
 const globalWorkflowSettingsFragment = graphql`
-    fragment GlobalWorkflowSettings_global on SubType {
-        statuses {
-            id
-            scope
-            order
-            template {
-                id
-                name
-                color
-            }
-        }
+  fragment GlobalWorkflowSettings_global on SubType {
+    statuses {
+      id
+      scope
+      order
+      template {
+        id
+        name
+        color
+      }
     }
+  }
 `;
 
 interface GlobalWorkflowSettingsProps {
@@ -25,7 +25,11 @@ interface GlobalWorkflowSettingsProps {
   data: GlobalWorkflowSettings_global$key;
 }
 
-const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWorkflowSettingsProps) => {
+const GlobalWorkflowSettings = ({
+  subTypeId,
+  data,
+  workflowEnabled,
+}: GlobalWorkflowSettingsProps) => {
   const statusesData = useFragment(globalWorkflowSettingsFragment, data);
 
   const statusList = statusesData.statuses.map((statusData) => ({
@@ -42,12 +46,9 @@ const GlobalWorkflowSettings = ({ subTypeId, data, workflowEnabled }: GlobalWork
     <ItemStatusTemplate
       statuses={statusList}
       disabled={!workflowEnabled}
-      actionComponent={(
-        <SubTypeStatusPopover
-          subTypeId={subTypeId}
-          scope={StatusScopeEnum.GLOBAL}
-        />
-      )}
+      actionComponent={
+        <SubTypeStatusPopover subTypeId={subTypeId} scope={StatusScopeEnum.GLOBAL} />
+      }
     />
   );
 };

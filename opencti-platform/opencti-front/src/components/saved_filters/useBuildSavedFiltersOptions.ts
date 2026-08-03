@@ -1,4 +1,8 @@
-import { SavedFiltersAutocompleteOptionType, SavedFiltersSelectionData, WidgetSavedFilterScope } from 'src/components/saved_filters/SavedFilterSelection';
+import {
+  SavedFiltersAutocompleteOptionType,
+  SavedFiltersSelectionData,
+  WidgetSavedFilterScope,
+} from 'src/components/saved_filters/SavedFilterSelection';
 import useAuth from 'src/utils/hooks/useAuth';
 
 /**
@@ -29,8 +33,10 @@ const useBuildSavedFiltersOptions = (
         disabled = true;
       } else if (scope === 'History' && !item.scope.includes('audit')) {
         disabled = true;
-      } else if (scope === 'Stix-Core-Object'
-        && (item.scope.includes('audit') || item.scope === 'relationships')) {
+      } else if (
+        scope === 'Stix-Core-Object' &&
+        (item.scope.includes('audit') || item.scope === 'relationships')
+      ) {
         disabled = true;
       }
     }

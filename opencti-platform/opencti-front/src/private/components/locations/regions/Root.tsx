@@ -27,7 +27,10 @@ import { getPaddingRight } from '../../../../utils/utils';
 import { isPathOverview } from '../../../../utils/tabUtils';
 import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import RegionDeletion from './RegionDeletion';
 import { PATH_REGION, PATH_REGIONS } from '@components/common/routes/paths';
 
@@ -84,9 +87,7 @@ interface RootRegionComponentProps {
 }
 
 const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) => {
-  const subConfig = useMemo<
-    GraphQLSubscriptionConfig<RootCountriesSubscription>
-  >(
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootCountriesSubscription>>(
     () => ({
       subscription,
       variables: { id: regionId },
@@ -110,7 +111,7 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
           <Routes>
             <Route
               path="/knowledge/*"
-              element={(
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -131,32 +132,31 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
                   ]}
                   data={region}
                 />
-              )}
+              }
             />
           </Routes>
           <div style={{ paddingRight }}>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Locations') },
-              { label: t_i18n('Regions'), link: PATH_REGIONS },
-              { label: region.name, current: true },
-            ]}
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Locations') },
+                { label: t_i18n('Regions'), link: PATH_REGIONS },
+                { label: region.name, current: true },
+              ]}
             />
             <StixDomainObjectHeader
               entityType="Region"
               disableSharing={true}
               stixDomainObject={region}
-              EditComponent={(
+              EditComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <RegionEdition regionId={region.id} />
                 </Security>
-              )}
-              RelateComponent={(
+              }
+              RelateComponent={
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <StixCoreRelationshipCreationFromEntityHeader
-                    data={region}
-                  />
+                  <StixCoreRelationshipCreationFromEntityHeader data={region} />
                 </Security>
-              )}
+              }
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <RegionDeletion id={region.id} isOpen={isOpen} handleClose={onClose} />
@@ -177,13 +177,12 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
                     <RegionKnowledge regionData={region} />
                   </div>
                 ),
-                content: (
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={region}
+                content: <StixCoreObjectContentRoot stixCoreObject={region} />,
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={region}
                   />
                 ),
-                analyses:
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />,
                 sightings: (
                   <EntityStixSightingRelationships
                     entityId={region.id}
@@ -200,8 +199,7 @@ const RootRegionComponent = ({ queryRef, regionId }: RootRegionComponentProps) =
                     entity={region}
                   />
                 ),
-                history:
-                  <StixCoreObjectHistory stixCoreObjectId={regionId} />,
+                history: <StixCoreObjectHistory stixCoreObjectId={regionId} />,
               }}
               extraActions={isOverview && <AIInsights id={region.id} />}
             />

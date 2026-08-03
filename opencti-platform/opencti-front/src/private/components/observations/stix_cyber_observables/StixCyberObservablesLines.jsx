@@ -55,12 +55,7 @@ export const stixCyberObservablesLinesSearchQuery = graphql`
     $filters: FilterGroup
     $count: Int
   ) {
-    stixCyberObservables(
-      types: $types
-      search: $search
-      filters: $filters
-      first: $count
-    ) {
+    stixCyberObservables(types: $types, search: $search, filters: $filters, first: $count) {
       edges {
         node {
           id
@@ -82,10 +77,7 @@ export const stixCyberObservablesLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: {
-      type: "StixCyberObservablesOrdering"
-      defaultValue: created_at
-    }
+    orderBy: { type: "StixCyberObservablesOrdering", defaultValue: created_at }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
@@ -122,4 +114,4 @@ export const stixCyberObservablesLinesFragment = graphql`
       }
     }
   }
-  `;
+`;

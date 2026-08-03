@@ -2,7 +2,9 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreObjectsExportsContent, { stixCoreObjectsExportsContentQuery } from './StixCoreObjectsExportsContent';
+import StixCoreObjectsExportsContent, {
+  stixCoreObjectsExportsContentQuery,
+} from './StixCoreObjectsExportsContent';
 import { useFormatter } from '../../../../components/i18n';
 
 const StixCoreObjectsExports = ({
@@ -14,12 +16,7 @@ const StixCoreObjectsExports = ({
 }) => {
   const { t_i18n } = useFormatter();
   return (
-    <Drawer
-      open={open}
-      title={t_i18n('Exports list')}
-      onClose={handleToggle}
-      size="medium"
-    >
+    <Drawer open={open} title={t_i18n('Exports list')} onClose={handleToggle} size="medium">
       <QueryRenderer
         query={stixCoreObjectsExportsContentQuery}
         variables={{ count: 25, exportContext }}

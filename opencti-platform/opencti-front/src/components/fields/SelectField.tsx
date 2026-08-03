@@ -8,14 +8,15 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import { SelectProps } from '@mui/material';
 
-export type SelectFieldProps = FieldProps<string> & Omit<SelectProps<string>, 'onChange' | 'onFocus'> & {
-  required: boolean;
-  onChange?: (name: string, value: string) => void;
-  onFocus?: (name: string) => void;
-  onSubmit?: (name: string, value: string) => void;
-  containerstyle?: Record<string, string | number>;
-  helpertext?: string;
-};
+export type SelectFieldProps = FieldProps<string> &
+  Omit<SelectProps<string>, 'onChange' | 'onFocus'> & {
+    required: boolean;
+    onChange?: (name: string, value: string) => void;
+    onFocus?: (name: string) => void;
+    onSubmit?: (name: string, value: string) => void;
+    containerstyle?: Record<string, string | number>;
+    helpertext?: string;
+  };
 
 const fieldToSelect = (muiProps: SelectFieldProps) => {
   const {
@@ -34,15 +35,17 @@ const fieldToSelect = (muiProps: SelectFieldProps) => {
     error: showError,
     onBlur: () => {},
     onChange: fieldOnChange ?? (() => {}),
-    onClose: onClose ?? (async (e) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { dataset } = e.target;
-      if (dataset && dataset.value) {
-        await setFieldValue(field.name, dataset.value);
-      }
-      setFieldTouched(field.name, true);
-    }),
+    onClose:
+      onClose ??
+      (async (e) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const { dataset } = e.target;
+        if (dataset && dataset.value) {
+          await setFieldValue(field.name, dataset.value);
+        }
+        setFieldTouched(field.name, true);
+      }),
   };
 };
 
@@ -89,10 +92,7 @@ const SelectField = (muiProps: SelectFieldProps) => {
   const labelId = uuid();
 
   return (
-    <FormControl
-      style={containerstyle}
-      error={meta.touched && !isNil(meta.error)}
-    >
+    <FormControl style={containerstyle} error={meta.touched && !isNil(meta.error)}>
       <InputLabel
         style={{ color: muiProps.disabled ? '#4f4f4f' : '' }}
         variant={muiProps.variant}
@@ -113,8 +113,7 @@ const SelectField = (muiProps: SelectFieldProps) => {
         variant={muiProps.variant}
         style={{
           display:
-            (meta.touched && !isNil(meta.error))
-            || (isNil(meta.error) && helpertext)
+            (meta.touched && !isNil(meta.error)) || (isNil(meta.error) && helpertext)
               ? 'block'
               : 'none',
         }}

@@ -67,62 +67,48 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
       isSortable: true,
     },
   };
-  const paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables = {
-    count: 8,
-    fromOrToId: [stixObjectOrStixRelationshipId],
-    relationship_type: relationshipType ? [relationshipType] : ['stix-core-relationship'],
-    orderBy: 'created_at',
-    orderMode: 'desc',
-  };
-  const queryRef = useQueryLoading<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery>(
-    simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
-    paginationOptions,
-  );
+  const paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables =
+    {
+      count: 8,
+      fromOrToId: [stixObjectOrStixRelationshipId],
+      relationship_type: relationshipType ? [relationshipType] : ['stix-core-relationship'],
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
+  const queryRef =
+    useQueryLoading<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery>(
+      simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
+      paginationOptions,
+    );
   return (
-    <Card
-      padding="horizontal"
-      title={t_i18n('Latest created relationships')}
-    >
+    <Card padding="horizontal" title={t_i18n('Latest created relationships')}>
       {queryRef && (
-        <React.Suspense fallback={(
-          <List>
-            {Array.from(Array(5), (e, i) => (
-              <ListItem
-                key={i}
-                dense={true}
-                divider={true}
-              >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <Skeleton
-                    animation="wave"
-                    variant="circular"
-                    width={30}
-                    height={30}
+        <React.Suspense
+          fallback={
+            <List>
+              {Array.from(Array(5), (e, i) => (
+                <ListItem key={i} dense={true} divider={true}>
+                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <Skeleton animation="wave" variant="circular" width={30} height={30} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        width="90%"
+                        height={15}
+                        style={{ marginBottom: 10 }}
+                      />
+                    }
+                    secondary={
+                      <Skeleton animation="wave" variant="rectangular" width="90%" height={15} />
+                    }
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary={(
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height={15}
-                      style={{ marginBottom: 10 }}
-                    />
-                  )}
-                  secondary={(
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height={15}
-                    />
-                  )}
-                />
-              </ListItem>
-            ))}
-          </List>
-        )}
+                </ListItem>
+              ))}
+            </List>
+          }
         >
           <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
             stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}

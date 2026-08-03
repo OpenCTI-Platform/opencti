@@ -23,16 +23,17 @@ const PlaceholderNode = ({ id }: NodeProps) => {
           fontSize: 12,
           height: NODE_SIZE.height,
           borderRadius: 4,
-          backgroundColor: theme.palette.mode === 'dark'
-            ? 'rgba(255, 255, 255, 0.04)'
-            : 'rgba(0, 0, 0, 0.04)',
-          color: theme.palette.mode === 'dark'
-            ? `rgba(255, 255, 255, ${isHover ? 0.2 : 0.04})`
-            : `rgba(0, 0, 0, ${isHover ? 0.2 : 0.04})`,
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
+          color:
+            theme.palette.mode === 'dark'
+              ? `rgba(255, 255, 255, ${isHover ? 0.2 : 0.04})`
+              : `rgba(0, 0, 0, ${isHover ? 0.2 : 0.04})`,
 
-          border: theme.palette.mode === 'dark'
-            ? `1px dashed rgba(255, 255, 255, ${isHover ? 0.2 : 0.05})`
-            : `1px dashed rgba(0, 0, 0, ${isHover ? 0.2 : 0.05})`,
+          border:
+            theme.palette.mode === 'dark'
+              ? `1px dashed rgba(255, 255, 255, ${isHover ? 0.2 : 0.05})`
+              : `1px dashed rgba(0, 0, 0, ${isHover ? 0.2 : 0.05})`,
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           textAlign: 'center',

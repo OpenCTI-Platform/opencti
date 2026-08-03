@@ -62,10 +62,7 @@ export const positionDetailsRelationshipsFragment = graphql`
     fromOrToId: { type: "[String]!" }
     relationship_type: { type: "[String]" }
     confidences: { type: "[Int]" }
-    orderBy: {
-      type: "StixCoreRelationshipsOrdering"
-      defaultValue: entity_type
-    }
+    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: entity_type }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -128,10 +125,7 @@ export const positionDetailsRelationshipsFragment = graphql`
   }
 `;
 
-const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
-  position,
-  queryRef,
-}) => {
+const PositionDetails: FunctionComponent<PositionDetailsProps> = ({ position, queryRef }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = usePreloadedFragment<
@@ -142,10 +136,11 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
     fragmentDef: positionDetailsRelationshipsFragment,
     queryRef,
   });
-  const getTargetedEntities = (type: string) => (data?.stixCoreRelationships?.edges ?? [])
-    .filter(({ node }) => isNotEmptyField(node.to))
-    .filter(({ node }) => node.to?.entity_type === type)
-    .map(({ node }) => node.to?.name);
+  const getTargetedEntities = (type: string) =>
+    (data?.stixCoreRelationships?.edges ?? [])
+      .filter(({ node }) => isNotEmptyField(node.to))
+      .filter(({ node }) => node.to?.entity_type === type)
+      .map(({ node }) => node.to?.name);
   const cities = getTargetedEntities('City');
   const countries = getTargetedEntities('Country');
   const regions = getTargetedEntities('Region');
@@ -155,105 +150,62 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
           <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
+            <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={position.description} limit={300} />
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Latitude')}
-            </Label>
+            <Label>{t_i18n('Latitude')}</Label>
             <FieldOrEmpty source={position.latitude}>
-              <ExpandableMarkdown
-                source={position.latitude?.toString()}
-                limit={300}
-              />
+              <ExpandableMarkdown source={position.latitude?.toString()} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Longitude')}
-            </Label>
+            <Label>{t_i18n('Longitude')}</Label>
             <FieldOrEmpty source={position.longitude}>
-              <ExpandableMarkdown
-                source={position.longitude?.toString()}
-                limit={300}
-              />
+              <ExpandableMarkdown source={position.longitude?.toString()} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Street address')}
-            </Label>
+            <Label>{t_i18n('Street address')}</Label>
             <FieldOrEmpty source={position.street_address}>
-              <ExpandableMarkdown
-                source={position.street_address}
-                limit={300}
-              />
+              <ExpandableMarkdown source={position.street_address} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Postal code')}
-            </Label>
+            <Label>{t_i18n('Postal code')}</Label>
             <FieldOrEmpty source={position.postal_code}>
               <ExpandableMarkdown source={position.postal_code} limit={300} />
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('City')}
-            </Label>
+            <Label>{t_i18n('City')}</Label>
             <FieldOrEmpty source={cities}>
               {cities?.map((name) => (
-                <Chip
-                  key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
-                />
+                <Chip key={name} classes={{ root: classes.chip }} label={name} />
               ))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Country')}
-            </Label>
+            <Label>{t_i18n('Country')}</Label>
             <FieldOrEmpty source={countries}>
               {countries?.map((name) => (
-                <Chip
-                  key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
-                />
+                <Chip key={name} classes={{ root: classes.chip }} label={name} />
               ))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('Region')}
-            </Label>
+            <Label>{t_i18n('Region')}</Label>
             <FieldOrEmpty source={regions}>
               {regions?.map((name) => (
-                <Chip
-                  key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
-                />
+                <Chip key={name} classes={{ root: classes.chip }} label={name} />
               ))}
             </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
-            <Label>
-              {t_i18n('entity_Administrative-Area')}
-            </Label>
+            <Label>{t_i18n('entity_Administrative-Area')}</Label>
             <FieldOrEmpty source={areas}>
               {areas?.map((name) => (
-                <Chip
-                  key={name}
-                  classes={{ root: classes.chip }}
-                  label={name}
-                />
+                <Chip key={name} classes={{ root: classes.chip }} label={name} />
               ))}
             </FieldOrEmpty>
           </Grid>

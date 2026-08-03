@@ -24,7 +24,10 @@ import PirOverviewTopSources from './PirOverviewTopSources';
 import PirOverviewDetails from './PirOverviewDetails';
 import PirOverviewHistory from './PirOverviewHistory';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { PirOverviewFragment$data, PirOverviewFragment$key } from './__generated__/PirOverviewFragment.graphql';
+import {
+  PirOverviewFragment$data,
+  PirOverviewFragment$key,
+} from './__generated__/PirOverviewFragment.graphql';
 import { PirOverviewRedisStreamQuery } from './__generated__/PirOverviewRedisStreamQuery.graphql';
 import { PirOverviewHistoryQuery } from './__generated__/PirOverviewHistoryQuery.graphql';
 import { PirOverviewThreatMapQuery } from './__generated__/PirOverviewThreatMapQuery.graphql';

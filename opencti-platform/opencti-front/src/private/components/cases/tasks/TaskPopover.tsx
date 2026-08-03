@@ -52,10 +52,7 @@ const TaskPopover = ({
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [commit] = useApiMutation(taskPopoverDeletionMutation);
-  const queryRef = useQueryLoading<TasksEditionContainerQuery>(
-    tasksEditionQuery,
-    { id },
-  );
+  const queryRef = useQueryLoading<TasksEditionContainerQuery>(tasksEditionQuery, { id });
   const handleOpen = (event: React.SyntheticEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -111,11 +108,7 @@ const TaskPopover = ({
           <MoreVert />
         </IconButton>
       ) : (
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
+        <ToggleButton value="popover" size="small" onClick={handleOpen}>
           <MoreVert fontSize="small" color="primary" />
         </ToggleButton>
       )}
@@ -131,9 +124,7 @@ const TaskPopover = ({
         message={t_i18n('Do you want to delete this task?')}
       />
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <TasksEditionContainer
             queryRef={queryRef}
             handleClose={handleCloseEdit}

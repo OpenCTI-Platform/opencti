@@ -43,7 +43,9 @@ const ProfileOverviewXtmOneMcp = () => {
   return (
     <Card title={t_i18n('XTM One MCP server')}>
       <Typography variant="body1" gutterBottom>
-        {t_i18n('This platform is connected to XTM One, which natively exposes an MCP (Model Context Protocol) server for OpenCTI. AI clients such as Cursor or Claude Desktop can search, read and create threat intelligence knowledge with your own permissions.')}
+        {t_i18n(
+          'This platform is connected to XTM One, which natively exposes an MCP (Model Context Protocol) server for OpenCTI. AI clients such as Cursor or Claude Desktop can search, read and create threat intelligence knowledge with your own permissions.',
+        )}
       </Typography>
       <div style={{ marginTop: 16 }}>
         <Label>{t_i18n('MCP endpoint URL')}</Label>
@@ -61,7 +63,9 @@ const ProfileOverviewXtmOneMcp = () => {
         </Stack>
       </div>
       <Typography variant="body2" style={{ marginTop: 16 }}>
-        {t_i18n('Authenticate with a personal XTM One API key passed as a bearer token. Your endpoint, connection status and ready-to-copy client configuration are available in your XTM One profile.')}
+        {t_i18n(
+          'Authenticate with a personal XTM One API key passed as a bearer token. Your endpoint, connection status and ready-to-copy client configuration are available in your XTM One profile.',
+        )}
       </Typography>
       <Stack direction="row" justifyContent="flex-end" style={{ marginTop: 16 }}>
         <Button

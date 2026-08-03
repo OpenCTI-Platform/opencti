@@ -5,28 +5,19 @@ import { graphql } from 'react-relay';
 import { commitMutation } from '../../../../../relay/environment';
 
 export const useManipulateComponentsPlaybookUpdatePositionsMutation = graphql`
-  mutation useManipulateComponentsPlaybookUpdatePositionsMutation(
-    $id: ID!
-    $positions: String!
-  ) {
+  mutation useManipulateComponentsPlaybookUpdatePositionsMutation($id: ID!, $positions: String!) {
     playbookUpdatePositions(id: $id, positions: $positions)
   }
 `;
 
 export const useManipulateComponentsAddNodeMutation = graphql`
-  mutation useManipulateComponentsAddNodeMutation(
-    $id: ID!
-    $input: PlaybookAddNodeInput!
-  ) {
+  mutation useManipulateComponentsAddNodeMutation($id: ID!, $input: PlaybookAddNodeInput!) {
     playbookAddNode(id: $id, input: $input)
   }
 `;
 
 export const useManipulateComponentsAddLinkMutation = graphql`
-  mutation useManipulateComponentsAddLinkMutation(
-    $id: ID!
-    $input: PlaybookAddLinkInput!
-  ) {
+  mutation useManipulateComponentsAddLinkMutation($id: ID!, $input: PlaybookAddLinkInput!) {
     playbookAddLink(id: $id, input: $input)
   }
 `;
@@ -77,29 +68,30 @@ const deleteEdgesAndAllChildren = (definitionNodes, definitionEdges, edges) => {
   let childrenNodes = definitionNodes.filter((n) => edges.map((o) => o.target).includes(n.id));
   if (childrenNodes.length > 0) {
     nodesToDelete.push(...childrenNodes);
-    childrenEdges = definitionEdges.filter((n) => childrenNodes.map((o) => o.id).includes(n.source));
+    childrenEdges = definitionEdges.filter((n) =>
+      childrenNodes.map((o) => o.id).includes(n.source),
+    );
   }
   while (childrenEdges.length > 0) {
     edgesToDelete.push(...childrenEdges);
     childrenNodes = definitionNodes.filter(
-      (n) => edgesToDelete.map((o) => o.target).includes(n.id)
-        && !nodesToDelete.map((o) => o.id).includes(n.id),
+      (n) =>
+        edgesToDelete.map((o) => o.target).includes(n.id) &&
+        !nodesToDelete.map((o) => o.id).includes(n.id),
     );
     if (childrenNodes.length > 0) {
       nodesToDelete.push(...childrenNodes);
 
-      childrenEdges = definitionEdges.filter((n) => childrenNodes.map((o) => o.id).includes(n.source));
+      childrenEdges = definitionEdges.filter((n) =>
+        childrenNodes.map((o) => o.id).includes(n.source),
+      );
     } else {
       childrenEdges = [];
     }
   }
   return {
-    nodes: definitionNodes.filter(
-      (n) => !nodesToDelete.map((o) => o.id).includes(n.id),
-    ),
-    edges: definitionEdges.filter(
-      (n) => !edgesToDelete.map((o) => o.id).includes(n.id),
-    ),
+    nodes: definitionNodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
+    edges: definitionEdges.filter((n) => !edgesToDelete.map((o) => o.id).includes(n.id)),
   };
 };
 
@@ -110,13 +102,7 @@ const useManipulateComponents = (playbook) => {
   const { getNode, getNodes, getEdges, setNodes, setEdges } = useReactFlow();
 
   // region local graph
-  const applyAddNodeFromPlaceholder = (
-    result,
-    component,
-    name,
-    configuration,
-    description,
-  ) => {
+  const applyAddNodeFromPlaceholder = (result, component, name, configuration, description) => {
     const childPlaceholderId = uuid();
     const childPlaceholderNodes = component.ports
       .filter((n) => n.type === 'out')
@@ -152,59 +138,63 @@ const useManipulateComponents = (playbook) => {
           },
         },
       }));
-    setNodes((nodes) => nodes
-      .map((node) => {
-        if (node.id === selectedNode.id) {
-          return {
-            ...node,
-            id: result.nodeId,
-            type: 'workflow',
-            data: {
-              name,
-              description,
-              configuration,
-              component,
-              openConfig: (nodeId) => {
-                setSelectedNode(nodeId);
-                setAction('config');
+    setNodes((nodes) =>
+      nodes
+        .map((node) => {
+          if (node.id === selectedNode.id) {
+            return {
+              ...node,
+              id: result.nodeId,
+              type: 'workflow',
+              data: {
+                name,
+                description,
+                configuration,
+                component,
+                openConfig: (nodeId) => {
+                  setSelectedNode(nodeId);
+                  setAction('config');
+                },
+                openReplace: (nodeId) => {
+                  setSelectedNode(nodeId);
+                  setAction('replace');
+                },
+                openAddSibling: (nodeId) => {
+                  setSelectedNode(nodeId);
+                  setAction('add');
+                },
+                openDelete: (nodeId) => {
+                  setSelectedNode(nodeId);
+                  setAction('delete');
+                },
               },
-              openReplace: (nodeId) => {
-                setSelectedNode(nodeId);
-                setAction('replace');
+            };
+          }
+          return node;
+        })
+        .concat(childPlaceholderNodes),
+    );
+    setEdges((edges) =>
+      edges
+        .map((edge) => {
+          if (edge.target === selectedNode.id) {
+            return {
+              ...edge,
+              id: result.linkId,
+              type: 'workflow',
+              target: result.nodeId,
+              data: {
+                openConfig: (edgeId) => {
+                  setSelectedEdge(edgeId);
+                  setAction('config');
+                },
               },
-              openAddSibling: (nodeId) => {
-                setSelectedNode(nodeId);
-                setAction('add');
-              },
-              openDelete: (nodeId) => {
-                setSelectedNode(nodeId);
-                setAction('delete');
-              },
-            },
-          };
-        }
-        return node;
-      })
-      .concat(childPlaceholderNodes));
-    setEdges((edges) => edges
-      .map((edge) => {
-        if (edge.target === selectedNode.id) {
-          return {
-            ...edge,
-            id: result.linkId,
-            type: 'workflow',
-            target: result.nodeId,
-            data: {
-              openConfig: (edgeId) => {
-                setSelectedEdge(edgeId);
-                setAction('config');
-              },
-            },
-          };
-        }
-        return edge;
-      })
-      .concat(childPlaceholderEdges));
+            };
+          }
+          return edge;
+        })
+        .concat(childPlaceholderEdges),
+    );
   };
   const applyAddNode = (result, component, name, configuration, originEdge, description) => {
     const newNode = {
@@ -320,9 +310,9 @@ const useManipulateComponents = (playbook) => {
     // Connect the parent node to the new node using the existing link
     newEdges = newEdges.map((edge) => {
       if (
-        edge.source === selectedEdge.source
-        && edge.sourceHandle === selectedEdge.sourceHandle
-        && edge.target === targetNode.id
+        edge.source === selectedEdge.source &&
+        edge.sourceHandle === selectedEdge.sourceHandle &&
+        edge.target === targetNode.id
       ) {
         return {
           ...edge,
@@ -343,11 +333,7 @@ const useManipulateComponents = (playbook) => {
       newNodes = newNodes.filter((n) => n.id !== targetNode.id);
       newEdges = newEdges.filter((n) => n.target !== targetNode.id);
       const edgesToDelete = newEdges.filter((n) => n.source === targetNode.id);
-      const deleteResult = deleteEdgesAndAllChildren(
-        newNodes,
-        newEdges,
-        edgesToDelete,
-      );
+      const deleteResult = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
       newNodes = deleteResult.nodes;
       newEdges = deleteResult.edges;
     } else {
@@ -446,11 +432,10 @@ const useManipulateComponents = (playbook) => {
       const childPlaceholderId = uuid();
       for (
         let i = selectedNode.data.component.ports.length;
-        i
-        < component.ports.length
-        - selectedNode.data.component.ports.length
-        + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
-
+        i <
+        component.ports.length -
+          selectedNode.data.component.ports.length +
+          (selectedNode.data.component.ports.length > 0 ? 1 : 0);
         i++
       ) {
         const port = component.ports[i];
@@ -485,25 +470,15 @@ const useManipulateComponents = (playbook) => {
           },
         });
       }
-    } else if (
-      selectedNode.data.component.ports.length > component.ports.length
-    ) {
-      for (
-        let i = selectedNode.data.component.ports.length - 1;
-        i >= component.ports.length;
-
-        i--
-      ) {
+    } else if (selectedNode.data.component.ports.length > component.ports.length) {
+      for (let i = selectedNode.data.component.ports.length - 1; i >= component.ports.length; i--) {
         // Find all links to the port
         const edgesToDelete = newEdges.filter(
-          (n) => n.source === selectedNode.id
-            && n.sourceHandle === selectedNode.data.component.ports[i].id,
+          (n) =>
+            n.source === selectedNode.id &&
+            n.sourceHandle === selectedNode.data.component.ports[i].id,
         );
-        const result = deleteEdgesAndAllChildren(
-          newNodes,
-          newEdges,
-          edgesToDelete,
-        );
+        const result = deleteEdgesAndAllChildren(newNodes, newEdges, edgesToDelete);
         newNodes = result.nodes;
         newEdges = result.edges;
       }
@@ -527,8 +502,7 @@ const useManipulateComponents = (playbook) => {
       .filter((n) => n.id === originEdge?.source)
       ?.at(0);
     const otherEdgesToParentNode = getEdges().filter(
-      (o) => o.source === originEdge?.source
-        && o.sourceHandle === originEdge?.sourceHandle,
+      (o) => o.source === originEdge?.source && o.sourceHandle === originEdge?.sourceHandle,
     );
     const childPlaceholderId = uuid();
     if (originEdge && otherEdgesToParentNode.length === 1) {

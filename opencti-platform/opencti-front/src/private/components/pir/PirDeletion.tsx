@@ -45,7 +45,9 @@ const PirDeletion = ({ pirId, onDeleteComplete, children }: PirDeletionProps) =>
   const [deleteMutation, deleting] = useApiMutation<PirDeletionMutation>(
     pirDeleteMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully deleted')}` },
+    {
+      successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully deleted')}`,
+    },
   );
 
   const deletion = useDeletion({});

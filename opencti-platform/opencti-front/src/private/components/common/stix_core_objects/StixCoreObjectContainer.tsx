@@ -76,7 +76,8 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
 
   const [processing, setProcessing] = useState<boolean>(false);
   const [displayAddInContainer, setDisplayAddInContainer] = useState<boolean>(false);
-  const [isContainerCreationDrawerOpen, setIsContainerCreationDrawerOpen] = useState<boolean>(false);
+  const [isContainerCreationDrawerOpen, setIsContainerCreationDrawerOpen] =
+    useState<boolean>(false);
 
   const [optionList, setOptionList] = useState<OptionListType[]>([]);
   const [selectedContainers, setSelectedContainers] = useState<OptionListType[]>([]);
@@ -90,11 +91,12 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
       .toPromise()
       .then((data) => {
         const stixCoreObjectContainer = data as StixCoreObjectContainerContainersQuery$data;
-        const newContainerList = stixCoreObjectContainer.containers?.edges?.map?.((edge) => ({
-          label: edge?.node.representative.main ?? '',
-          type: edge?.node.entity_type ?? '',
-          id: edge?.node.id ?? '',
-        })) ?? [];
+        const newContainerList =
+          stixCoreObjectContainer.containers?.edges?.map?.((edge) => ({
+            label: edge?.node.representative.main ?? '',
+            type: edge?.node.entity_type ?? '',
+            id: edge?.node.id ?? '',
+          })) ?? [];
         setOptionList([...newContainerList]);
       });
   };
@@ -107,17 +109,25 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   }, [searchInputValue]);
 
   const handleToggleAddInContainer = (isOpen: boolean) => () => setDisplayAddInContainer(isOpen);
-  const handleToggleContainerCreationDrawer = (isOpen: boolean) => () => setIsContainerCreationDrawerOpen(isOpen);
+  const handleToggleContainerCreationDrawer = (isOpen: boolean) => () =>
+    setIsContainerCreationDrawerOpen(isOpen);
 
   const handleChangeActionInputValues = (values: OptionListType[]) => setSelectedContainers(values);
-  const handleChangeIncludeNeighboursOption = (event: ChangeEvent<HTMLInputElement>) => setIncludeNeighbours(event.target.checked);
+  const handleChangeIncludeNeighboursOption = (event: ChangeEvent<HTMLInputElement>) =>
+    setIncludeNeighbours(event.target.checked);
 
-  const handleSearch = (_: SyntheticEvent, newValue: string, reason: AutocompleteInputChangeReason) => {
+  const handleSearch = (
+    _: SyntheticEvent,
+    newValue: string,
+    reason: AutocompleteInputChangeReason,
+  ) => {
     if (reason === 'reset') return;
     setSearchInputValue(newValue);
   };
 
-  const [commit] = useApiMutation<StixCoreObjectContainerTaskAddMutation>(stixCoreObjectContainerTaskAddMutation);
+  const [commit] = useApiMutation<StixCoreObjectContainerTaskAddMutation>(
+    stixCoreObjectContainerTaskAddMutation,
+  );
 
   const handleLaunchUpdate = () => {
     setProcessing(true);
@@ -146,12 +156,15 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
         setDisplayAddInContainer(false);
         setSelectedContainers([]);
         setIncludeNeighbours(false);
-        const monitoringLink = !draftContext ? <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link> : t_i18n('the draft processes tab');
+        const monitoringLink = !draftContext ? (
+          <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
+        ) : (
+          t_i18n('the draft processes tab')
+        );
         MESSAGING$.notifySuccess(
           <span>
             {t_i18n('The background task has been executed. You can monitor it on')}{' '}
-            {monitoringLink}
-            .
+            {monitoringLink}.
           </span>,
         );
       },
@@ -161,11 +174,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
   return (
     <>
       <Tooltip title={t_i18n('Add in container')}>
-        <ToggleButton
-          onClick={handleToggleAddInContainer(true)}
-          value="container"
-          size="small"
-        >
+        <ToggleButton onClick={handleToggleAddInContainer(true)} value="container" size="small">
           <MoveToInboxOutlined color="primary" fontSize="small" />
         </ToggleButton>
       </Tooltip>
@@ -242,7 +251,9 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           options={optionList}
           onInputChange={handleSearch}
           inputValue={searchInputValue}
-          onChange={(_, currentSelectedOptions: OptionListType[]) => handleChangeActionInputValues(currentSelectedOptions)}
+          onChange={(_, currentSelectedOptions: OptionListType[]) =>
+            handleChangeActionInputValues(currentSelectedOptions)
+          }
           renderOption={(props, option) => (
             <li {...props} key={option.id}>
               <div style={{ padding: '4px' }}>
@@ -255,12 +266,9 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
         />
         <FormControlLabel
           style={{ marginTop: 20 }}
-          control={(
-            <Checkbox
-              checked={includeNeighbours}
-              onChange={handleChangeIncludeNeighboursOption}
-            />
-          )}
+          control={
+            <Checkbox checked={includeNeighbours} onChange={handleChangeIncludeNeighboursOption} />
+          }
           label={t_i18n('Also include first neighbours')}
         />
         <DialogActions>

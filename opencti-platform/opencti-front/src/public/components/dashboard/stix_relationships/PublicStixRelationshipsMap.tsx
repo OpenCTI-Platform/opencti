@@ -16,13 +16,13 @@ const publicStixRelationshipsMapQuery = graphql`
     $startDate: DateTime
     $endDate: DateTime
     $uriKey: String!
-    $widgetId : String!
+    $widgetId: String!
   ) {
     publicStixRelationshipsDistribution(
       startDate: $startDate
       endDate: $endDate
       uriKey: $uriKey
-      widgetId : $widgetId
+      widgetId: $widgetId
     ) {
       label
       value
@@ -64,10 +64,7 @@ const PublicStixRelationshipsMapComponent = ({
     queryRef,
   );
 
-  if (
-    publicStixRelationshipsDistribution
-    && publicStixRelationshipsDistribution.length > 0
-  ) {
+  if (publicStixRelationshipsDistribution && publicStixRelationshipsDistribution.length > 0) {
     const values = publicStixRelationshipsDistribution.flatMap((node) => {
       if (node?.value === null || node?.value === undefined) return [];
       return node.value;
@@ -118,15 +115,10 @@ const PublicStixRelationshipsMap = ({
   );
 
   return (
-    <WidgetContainer
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-    >
+    <WidgetContainer title={parameters?.title ?? title ?? t_i18n('Entities number')}>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixRelationshipsMapComponent
-            queryRef={queryRef}
-            dataSelection={dataSelection}
-          />
+          <PublicStixRelationshipsMapComponent queryRef={queryRef} dataSelection={dataSelection} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

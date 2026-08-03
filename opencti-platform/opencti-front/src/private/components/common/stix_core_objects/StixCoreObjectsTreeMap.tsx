@@ -86,10 +86,7 @@ const StixCoreObjectsTreeMapComponent = ({
   parameters,
   onMounted,
 }: StixCoreObjectsTreeMapComponentProps) => {
-  const data = usePreloadedQuery(
-    stixCoreObjectsTreeMapDistributionQuery,
-    queryRef,
-  );
+  const data = usePreloadedQuery(stixCoreObjectsTreeMapDistributionQuery, queryRef);
   const distribution = data?.stixCoreObjectsDistribution ?? [];
   const selection = dataSelection[0];
 
@@ -113,7 +110,10 @@ const buildQueryVariables = (
   config: DashboardConfig,
 ): StixCoreObjectsTreeMapDistributionQuery['variables'] => {
   const selection = resolvedDataSelection[0];
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(selection, config);
+  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+    selection,
+    config,
+  );
 
   return {
     types: DATA_SELECTION_TYPES,
@@ -150,7 +150,13 @@ const StixCoreObjectsTreeMap = ({
 }: StixCoreObjectsTreeMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTreeMapDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+  } = useDashboardViz<StixCoreObjectsTreeMapDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,

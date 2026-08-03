@@ -20,7 +20,10 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import type { Theme } from '../../../components/Theme';
-import { jsonMappers_MappersQuery, jsonMappers_MappersQuery$variables } from './jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
+import {
+  jsonMappers_MappersQuery,
+  jsonMappers_MappersQuery$variables,
+} from './jsonMapper/__generated__/jsonMappers_MappersQuery.graphql';
 import { handleError } from '../../../relay/environment';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
@@ -45,15 +48,13 @@ const JsonMappers = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('JSON Mappers | Processing | Data'));
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<jsonMappers_MappersQuery$variables>(
-    LOCAL_STORAGE_KEY_JSON_MAPPERS,
-    {
+  const { viewStorage, paginationOptions, helpers } =
+    usePaginationLocalStorage<jsonMappers_MappersQuery$variables>(LOCAL_STORAGE_KEY_JSON_MAPPERS, {
       sortBy: 'name',
       orderAsc: false,
       view: 'lines',
       searchTerm: '',
-    },
-  );
+    });
   const [open, setOpen] = useState(false);
   const handleClose = () => {
     setOpen(false);
@@ -63,9 +64,8 @@ const JsonMappers = () => {
 
   const inputFileRef = useRef<HTMLInputElement>(null);
 
-  const queryRefSchemaAttributes = useQueryLoading<jsonMappers_SchemaAttributesQuery>(
-    schemaAttributesQuery,
-  );
+  const queryRefSchemaAttributes =
+    useQueryLoading<jsonMappers_SchemaAttributesQuery>(schemaAttributesQuery);
   const queryRefMappers = useQueryLoading<jsonMappers_MappersQuery>(
     mappersQuery,
     paginationOptions,
@@ -111,12 +111,22 @@ const JsonMappers = () => {
     });
   };
 
-  return queryRefMappers && queryRefSchemaAttributes
-    && (
+  return (
+    queryRefMappers &&
+    queryRefSchemaAttributes && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
+        <JsonMappersProvider
+          mappersQueryRef={queryRefMappers}
+          schemaAttributesQueryRef={queryRefSchemaAttributes}
+        >
           <div className={classes.container} data-testid="json-mapper-page">
-            <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
+            <Breadcrumbs
+              elements={[
+                { label: t_i18n('Data') },
+                { label: t_i18n('Processing') },
+                { label: t_i18n('JSON mappers'), current: true },
+              ]}
+            />
             <ProcessingMenu />
             <ListLines
               helpers={helpers}
@@ -130,7 +140,7 @@ const JsonMappers = () => {
               keyword={viewStorage.searchTerm}
               paginationOptions={paginationOptions}
               numberOfElements={viewStorage.numberOfElements}
-              createButton={(
+              createButton={
                 <>
                   <ToggleButton
                     value="import"
@@ -141,23 +151,15 @@ const JsonMappers = () => {
                   >
                     <FileUploadOutlined fontSize="small" color="primary" />
                   </ToggleButton>
-                  <Button
-                    disableElevation
-                    onClick={() => setOpen(true)}
-                  >
+                  <Button disableElevation onClick={() => setOpen(true)}>
                     {t_i18n('Create a JSON mapper')}
                   </Button>
                 </>
-              )}
+              }
               iconExtension
             >
-              <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-              >
-                <JsonMapperLines
-                  paginationOptions={paginationOptions}
-                  dataColumns={dataColumns}
-                />
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                <JsonMapperLines paginationOptions={paginationOptions} dataColumns={dataColumns} />
               </React.Suspense>
             </ListLines>
             <VisuallyHiddenInput
@@ -174,7 +176,8 @@ const JsonMappers = () => {
           </div>
         </JsonMappersProvider>
       </Suspense>
-    );
+    )
+  );
 };
 
 export default JsonMappers;

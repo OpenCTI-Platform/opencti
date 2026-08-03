@@ -6,7 +6,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import GroupUsersLines, { groupUsersLinesQuery } from './GroupUsersLines';
 import SearchInput from '../../../../components/SearchInput';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { GroupUsersLinesQuery, GroupUsersLinesQuery$variables } from './__generated__/GroupUsersLinesQuery.graphql';
+import {
+  GroupUsersLinesQuery,
+  GroupUsersLinesQuery$variables,
+} from './__generated__/GroupUsersLinesQuery.graphql';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import { UserLineDummy } from './UserLine';
 import Card from '../../../../components/common/card/Card';
@@ -46,10 +49,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
     ...paginationOptionsFromStorage,
     count: 25,
   };
-  const queryRef = useQueryLoading<GroupUsersLinesQuery>(
-    groupUsersLinesQuery,
-    paginationOptions,
-  );
+  const queryRef = useQueryLoading<GroupUsersLinesQuery>(groupUsersLinesQuery, paginationOptions);
   const dataColumns = {
     name: {
       label: 'Name',
@@ -98,13 +98,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
       <Card
         title={t_i18n('Members')}
         titleSx={{ alignItems: 'end' }}
-        action={(
-          <SearchInput
-            variant="thin"
-            onSubmit={helpers.handleSearch}
-            keyword={searchTerm}
-          />
-        )}
+        action={<SearchInput variant="thin" onSubmit={helpers.handleSearch} keyword={searchTerm} />}
       >
         <ColumnsLinesTitles
           dataColumns={dataColumns}
@@ -114,7 +108,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
         />
         {queryRef && (
           <React.Suspense
-            fallback={(
+            fallback={
               <>
                 {Array(20)
                   .fill(0)
@@ -122,7 +116,7 @@ const GroupUsers: FunctionComponent<GroupUsersProps> = ({ groupId }) => {
                     <UserLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            )}
+            }
           >
             <GroupUsersLines
               dataColumns={dataColumns}

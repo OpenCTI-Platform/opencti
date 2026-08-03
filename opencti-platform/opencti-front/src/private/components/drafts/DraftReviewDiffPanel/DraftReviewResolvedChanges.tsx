@@ -25,12 +25,9 @@ interface DraftReviewResolvedChangesComponentProps {
   renderChangeValues: RenderChangeValuesFn;
 }
 
-const DraftReviewResolvedChangesComponent: FunctionComponent<DraftReviewResolvedChangesComponentProps> = ({
-  queryRef,
-  changes,
-  labelMap,
-  renderChangeValues,
-}) => {
+const DraftReviewResolvedChangesComponent: FunctionComponent<
+  DraftReviewResolvedChangesComponentProps
+> = ({ queryRef, changes, labelMap, renderChangeValues }) => {
   const { t_i18n } = useFormatter();
 
   const resolvedData = usePreloadedQuery<DraftReviewResolvedChangesQuery>(
@@ -49,8 +46,25 @@ const DraftReviewResolvedChangesComponent: FunctionComponent<DraftReviewResolved
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {changes.map((row) => (
-        <Box key={row.field} sx={{ backgroundColor: 'background.paper', borderRadius: '4px', p: '8px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <Typography sx={{ color: 'text.secondary', fontWeight: 500, fontSize: 12, letterSpacing: '0.0075em' }}>
+        <Box
+          key={row.field}
+          sx={{
+            backgroundColor: 'background.paper',
+            borderRadius: '4px',
+            p: '8px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+          }}
+        >
+          <Typography
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 500,
+              fontSize: 12,
+              letterSpacing: '0.0075em',
+            }}
+          >
             {formatFieldKey(row.field, labelMap, t_i18n)}
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'row', gap: '16px' }}>
@@ -81,9 +95,11 @@ const DraftReviewResolvedChanges: FunctionComponent<DraftReviewResolvedChangesPr
   renderChangeValues,
 }) => {
   const stixIds = useMemo(() => {
-    return Array.from(new Set(
-      changes.flatMap((c) => [...(c.added ?? []), ...(c.removed ?? [])]).filter(isResolvableId),
-    ));
+    return Array.from(
+      new Set(
+        changes.flatMap((c) => [...(c.added ?? []), ...(c.removed ?? [])]).filter(isResolvableId),
+      ),
+    );
   }, [changes]);
   const queryRef = useQueryLoading<DraftReviewResolvedChangesQuery>(
     draftReviewResolvedChangesQuery,

@@ -7,14 +7,13 @@ const HealthRoot = () => {
   return (
     <div data-testid="data-health-page" style={{ height: '100%' }}>
       <HealthMenu />
-      <PageContainer
-        withGap
-        withRightMenu
-        style={{ height: '100%' }}
-      >
+      <PageContainer withGap withRightMenu style={{ height: '100%' }}>
         <Routes>
           <Route path="/operations" element={<Operations />} />
-          <Route index element={<Navigate to="/dashboard/data/health/operations" replace={true} />} />
+          <Route
+            index
+            element={<Navigate to="/dashboard/data/health/operations" replace={true} />}
+          />
         </Routes>
       </PageContainer>
     </div>

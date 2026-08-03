@@ -10,12 +10,13 @@ export const up = async (next) => {
     READ_INDEX_INTERNAL_OBJECTS,
     {
       script: {
-        source: 'if (ctx._source.current_state == params.emptyCurrentState) {'
-          + 'ctx._source.current_state_date = params.defaultDate'
-          + '} else {'
-          + 'ctx._source.current_state_date = ctx._source.current_state'
-          + '}'
-          + 'ctx._source.remove("current_state")',
+        source:
+          'if (ctx._source.current_state == params.emptyCurrentState) {' +
+          'ctx._source.current_state_date = params.defaultDate' +
+          '} else {' +
+          'ctx._source.current_state_date = ctx._source.current_state' +
+          '}' +
+          'ctx._source.remove("current_state")',
         params: {
           emptyCurrentState: {},
           defaultDate,

@@ -71,10 +71,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
         {node.id in (addedElements || {}) ? (
-          <CheckCircleOutlined
-            classes={{ root: classes.icon }}
-            color="primary"
-          />
+          <CheckCircleOutlined classes={{ root: classes.icon }} color="primary" />
         ) : (
           <CircleOutlined classes={{ root: classes.icon }} />
         )}
@@ -83,47 +80,29 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               <ItemEntityType entityType={node.entity_type} />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
               {getMainRepresentative(node)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
               {node.createdBy?.name ?? EMPTY_VALUE}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
               <StixCoreObjectLabels
                 variant="inList"
                 labels={node.objectLabel}
                 onClick={onLabelClick}
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <ItemMarkings
-                markingDefinitions={(node.objectMarking ?? [])}
-                limit={1}
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <ItemMarkings markingDefinitions={node.objectMarking ?? []} limit={1} />
             </div>
           </div>
-        )}
+        }
       />
     </ListItemButton>
   );
@@ -190,7 +169,7 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
           name
           description
         }
-        ... on SecurityPlatform{
+        ... on SecurityPlatform {
           name
           description
           security_platform_type
@@ -333,85 +312,38 @@ interface InvestigationAddStixCoreObjecstLineDummyProps {
   dataColumns: DataColumns;
 }
 
-export const InvestigationAddStixCoreObjecstLineDummy = (
-  { dataColumns }: InvestigationAddStixCoreObjecstLineDummyProps,
-) => {
+export const InvestigationAddStixCoreObjecstLineDummy = ({
+  dataColumns,
+}: InvestigationAddStixCoreObjecstLineDummyProps) => {
   const classes = useStyles();
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      style={{ minWidth: 40 }}
-    >
-      <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
-        style={{ minWidth: 40 }}
-      >
+    <ListItem classes={{ root: classes.item }} divider={true} style={{ minWidth: 40 }}>
+      <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
         <CircleOutlined />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={(
+        primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.value.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.createdBy.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectLabel.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
+              <Skeleton animation="wave" variant="rectangular" width="90%" height="100%" />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.objectMarking.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width={100}
-                height="100%"
-              />
+            <div className={classes.bodyItem} style={{ width: dataColumns.objectMarking.width }}>
+              <Skeleton animation="wave" variant="rectangular" width={100} height="100%" />
             </div>
           </div>
-        )}
+        }
       />
     </ListItem>
   );

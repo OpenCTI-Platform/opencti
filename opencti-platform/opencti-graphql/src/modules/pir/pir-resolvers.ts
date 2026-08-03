@@ -39,8 +39,10 @@ const pirResolvers: Resolvers = {
     pir: (_, { id }, context) => findById(context, context.user, id),
     pirs: (_, args, context) => findPirPaginated(context, context.user, args),
     pirRelationships: (_, args, context) => findPirRelationPaginated(context, context.user, args),
-    pirRelationshipsDistribution: (_, args, context) => pirRelationshipsDistribution(context, context.user, args),
-    pirRelationshipsMultiTimeSeries: (_, args, context) => pirRelationshipsMultiTimeSeries(context, context.user, args),
+    pirRelationshipsDistribution: (_, args, context) =>
+      pirRelationshipsDistribution(context, context.user, args),
+    pirRelationshipsMultiTimeSeries: (_, args, context) =>
+      pirRelationshipsMultiTimeSeries(context, context.user, args),
     pirLogs: (_, args, context) => findPirHistory(context, context.user, args),
   },
   Pir: {
@@ -53,16 +55,22 @@ const pirResolvers: Resolvers = {
     queue_messages: async (pir, _, context) => getConnectorQueueSize(context, context.user, pir.id),
   },
   PirRelationship: {
-    from: (rel, _, context) => (rel.from ? rel.from : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType })),
-    to: (rel, _, context) => (rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType })),
+    from: (rel, _, context) =>
+      rel.from
+        ? rel.from
+        : context.batch.idsBatchLoader.load({ id: rel.fromId, type: rel.fromType }),
+    to: (rel, _, context) =>
+      rel.to ? rel.to : context.batch.idsBatchLoader.load({ id: rel.toId, type: rel.toType }),
   },
   Mutation: {
     pirAdd: (_, { input }, context) => pirAdd(context, context.user, input),
     pirFieldPatch: (_, { id, input }, context) => updatePir(context, context.user, id, input),
-    pirEditAuthorizedMembers: (_, { id, input }, context) => pirEditAuthorizedMembers(context, context.user, id, input),
+    pirEditAuthorizedMembers: (_, { id, input }, context) =>
+      pirEditAuthorizedMembers(context, context.user, id, input),
     pirDelete: (_, { id }, context) => deletePir(context, context.user, id),
     pirFlagElement: (_, { id, input }, context) => pirFlagElement(context, context.user, id, input),
-    pirUnflagElement: (_, { id, input }, context) => pirUnflagElement(context, context.user, id, input),
+    pirUnflagElement: (_, { id, input }, context) =>
+      pirUnflagElement(context, context.user, id, input),
   },
 };
 

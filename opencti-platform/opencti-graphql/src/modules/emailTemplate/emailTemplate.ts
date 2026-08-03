@@ -15,7 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { ENTITY_TYPE_EMAIL_TEMPLATE, type StixEmailTemplate, type StoreEntityEmailTemplate } from './emailTemplate-types';
+import {
+  ENTITY_TYPE_EMAIL_TEMPLATE,
+  type StixEmailTemplate,
+  type StoreEntityEmailTemplate,
+} from './emailTemplate-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEmailTemplateToStix from './emailTemplate-converter';
 
@@ -32,11 +36,61 @@ const EMAIL_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityEmailTemplate, Stix
     },
   },
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: false },
-    { name: 'email_object', label: 'Email Object', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'sender_email', label: 'Sender email', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'template_body', label: 'Template body', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: false },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: true,
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'customizable',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
+    {
+      name: 'email_object',
+      label: 'Email Object',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'customizable',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'sender_email',
+      label: 'Sender email',
+      type: 'string',
+      format: 'short',
+      mandatoryType: 'external',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+    },
+    {
+      name: 'template_body',
+      label: 'Template body',
+      type: 'string',
+      format: 'text',
+      mandatoryType: 'external',
+      editDefault: true,
+      multiple: false,
+      upsert: true,
+      isFilterable: false,
+    },
   ],
   relations: [],
   representative: (stix: StixEmailTemplate) => {

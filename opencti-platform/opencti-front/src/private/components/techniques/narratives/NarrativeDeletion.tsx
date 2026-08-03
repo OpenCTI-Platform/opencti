@@ -13,18 +13,24 @@ const NarrativeDeletionDeleteMutation = graphql`
   }
 `;
 
-const NarrativeDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+const NarrativeDeletion = ({
+  id,
+  isOpen,
+  handleClose,
+}: {
+  id: string;
+  isOpen: boolean;
+  handleClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Narrative') },
   });
-  const [commit] = useApiMutation(
-    NarrativeDeletionDeleteMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const [commit] = useApiMutation(NarrativeDeletionDeleteMutation, undefined, {
+    successMessage: deleteSuccessMessage,
+  });
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
   const submitDelete = () => {

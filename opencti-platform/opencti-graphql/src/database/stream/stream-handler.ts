@@ -1,9 +1,23 @@
 import { ATTR_DB_NAMESPACE, SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
-import type { ActivityStreamEvent, BaseEvent, Change, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
+import type {
+  ActivityStreamEvent,
+  BaseEvent,
+  Change,
+  CreateEventOpts,
+  EventOpts,
+  SseEvent,
+  StreamDataEvent,
+  StreamNotifEvent,
+  UpdateEventOpts,
+} from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
-import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../data-changes';
+import {
+  generateCreateMessage,
+  generateDeleteMessage,
+  generateRestoreMessage,
+} from '../data-changes';
 import {
   buildCreateEvent,
   buildDeleteEvent,
@@ -31,7 +45,12 @@ export const initializeStreamStack = async () => {
   }
 };
 
-const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
+const pushToStream = async <T extends BaseEvent>(
+  context: AuthContext,
+  user: AuthUser,
+  event: T,
+  opts: EventOpts = {},
+) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
@@ -41,15 +60,25 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
     const pushToStreamFn = async () => {
       await streamClient.rawPushToStream(eventToPush);
     };
-    await telemetry(context, user, 'INSERT STREAM', {
-      [ATTR_DB_NAMESPACE]: 'stream_engine',
-      // Deprecated attribute to be removed when transition done
-      [SEMATTRS_DB_NAME]: 'stream_engine',
-    }, pushToStreamFn);
+    await telemetry(
+      context,
+      user,
+      'INSERT STREAM',
+      {
+        [ATTR_DB_NAMESPACE]: 'stream_engine',
+        // Deprecated attribute to be removed when transition done
+        [SEMATTRS_DB_NAME]: 'stream_engine',
+      },
+      pushToStreamFn,
+    );
   }
 };
 
-export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
+export const publishStixToStream = async (
+  context: AuthContext,
+  user: AuthUser,
+  event: StreamDataEvent,
+) => {
   await pushToStream(context, user, event);
 };
 
@@ -89,7 +118,12 @@ export const storeUpdateEvent = async (
   }
 };
 
-export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
+export const storeCreateRelationEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StoreRelation,
+  opts: CreateEventOpts = {},
+) => {
   try {
     if (isStixExportableInStreamData(instance)) {
       const { withoutMessage = false, restore = false } = opts;
@@ -107,7 +141,13 @@ export const storeCreateRelationEvent = async (context: AuthContext, user: AuthU
   }
 };
 
-export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
+export const storeCreateEntityEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StoreObject,
+  message: string,
+  opts: CreateEventOpts = {},
+) => {
   try {
     if (isStixExportableInStreamData(instance)) {
       const event = buildCreateEvent(user, instance, message);
@@ -119,7 +159,12 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
     throw DatabaseError('Error in store create entity event', { cause: e });
   }
 };
-export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
+export const storeDeleteEvent = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StoreObject,
+  opts: EventOpts = {},
+) => {
   try {
     if (isStixExportableInStreamData(instance)) {
       const message = generateDeleteMessage(instance);
@@ -133,7 +178,7 @@ export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, ins
   }
 };
 
-export const createStreamProcessor = <T extends BaseEvent> (
+export const createStreamProcessor = <T extends BaseEvent>(
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
   opts: StreamProcessorOption = {},
@@ -145,7 +190,7 @@ export const fetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   return streamClient.rawFetchStreamInfo(streamName);
 };
 
-export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
+export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent>(
   startEventId: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
   opts: FetchEventRangeOption = {},
@@ -154,7 +199,10 @@ export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
 };
 
 // region opencti notification stream
-export const storeNotificationEvent = async <T extends StreamNotifEvent>(_context: AuthContext, event: T) => {
+export const storeNotificationEvent = async <T extends StreamNotifEvent>(
+  _context: AuthContext,
+  event: T,
+) => {
   await streamClient.rawStoreNotificationEvent(event);
 };
 export const fetchRangeNotifications = async <T extends StreamNotifEvent>(

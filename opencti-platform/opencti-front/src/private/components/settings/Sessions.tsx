@@ -13,10 +13,7 @@ const Sessions = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Sessions | Security | Settings'));
-  const { viewStorage, helpers } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
-    {},
-  );
+  const { viewStorage, helpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {});
   return (
     <div
       style={{
@@ -25,7 +22,13 @@ const Sessions = () => {
       }}
       data-testid="session-settings-page"
     >
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Sessions'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Security') },
+          { label: t_i18n('Sessions'), current: true },
+        ]}
+      />
       <div style={{ float: 'left', marginBottom: 10 }}>
         <div style={{ float: 'left', marginRight: 20 }}>
           <SearchInput

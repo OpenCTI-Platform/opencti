@@ -12,20 +12,12 @@ export const addAttackPatternsMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
+    stixCoreRelationshipDelete(fromId: $fromId, toId: $toId, relationship_type: $relationship_type)
   }
 `;
 
 export const addAttackPatternsLinesQuery = graphql`
-  query AddAttackPatternsLinesToDataComponentQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
+  query AddAttackPatternsLinesToDataComponentQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddAttackPatternsLinesToDataComponent_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }
@@ -59,9 +51,10 @@ interface AddAttackPatternsLinesContainerProps {
   queryRef: PreloadedQuery<AddAttackPatternsLinesToDataComponentQuery>;
 }
 
-const AddAttackPatternsLines: FunctionComponent<
-  AddAttackPatternsLinesContainerProps
-> = ({ dataComponent, queryRef }) => {
+const AddAttackPatternsLines: FunctionComponent<AddAttackPatternsLinesContainerProps> = ({
+  dataComponent,
+  queryRef,
+}) => {
   const { data } = usePreloadedPaginationFragment<
     AddAttackPatternsLinesToDataComponentQuery,
     AddAttackPatternsLinesToDataComponent_data$key

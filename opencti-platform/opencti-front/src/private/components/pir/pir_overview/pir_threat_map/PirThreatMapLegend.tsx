@@ -38,13 +38,14 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      gap: theme.spacing(2),
-      fontSize: 12,
-      cursor: 'pointer',
-    }}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: theme.spacing(2),
+        fontSize: 12,
+        cursor: 'pointer',
+      }}
     >
       {entityTypes.map((type) => (
         <div

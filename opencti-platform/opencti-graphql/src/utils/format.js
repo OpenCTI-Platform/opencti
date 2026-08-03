@@ -175,10 +175,11 @@ export const hashValue = (stixCyberObservable) => {
 // Moment.js parsing is only compatible with ISO-8601 and RFC-2822 date formats
 // see https://momentjs.com/docs/#/parsing/string/
 // We handle cases that might happen in the platform (data ingestion for instance)
-export const sanitizeForMomentParsing = (date) => date
-  .replace('CET', '+0100') // reported in RSS feeds
-  .replace('CEST', '+0200'); // reported in RSS feeds
-  // add more if needed.
+export const sanitizeForMomentParsing = (date) =>
+  date
+    .replace('CET', '+0100') // reported in RSS feeds
+    .replace('CEST', '+0200'); // reported in RSS feeds
+// add more if needed.
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -197,7 +198,8 @@ export const truncate = (str, limit = DEFAULT_TRUNCATE_LIMIT, withPoints = true)
 };
 
 const formatSoftware = (stixCyberObservable) => {
-  const value = stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
+  const value =
+    stixCyberObservable.name || stixCyberObservable.cpe || stixCyberObservable.swid || 'Unknown';
   if (value !== 'Unknown' && !!stixCyberObservable.version) {
     return `${value} (${stixCyberObservable.version})`;
   }
@@ -214,11 +216,21 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || stixCyberObservable.url || 'Unknown';
+      return (
+        hashValue(stixCyberObservable) ||
+        stixCyberObservable.payload_bin ||
+        stixCyberObservable.url ||
+        'Unknown'
+      );
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      return hashValue(stixCyberObservable) || stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
+      return (
+        hashValue(stixCyberObservable) ||
+        stixCyberObservable.subject ||
+        stixCyberObservable.issuer ||
+        'Unknown'
+      );
     case ENTITY_MUTEX:
       return stixCyberObservable.name || 'Unknown';
     case ENTITY_NETWORK_TRAFFIC:
@@ -238,11 +250,21 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     case ENTITY_MEDIA_CONTENT:
-      return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
+      return (
+        stixCyberObservable.content ||
+        stixCyberObservable.title ||
+        stixCyberObservable.url ||
+        'Unknown'
+      );
     case ENTITY_PERSONA:
       return stixCyberObservable.persona_name || 'Unknown';
     case ENTITY_SSH_KEY:
-      return stixCyberObservable.fingerprint_sha256 || stixCyberObservable.fingerprint_md5 || stixCyberObservable.key_type || 'Unknown';
+      return (
+        stixCyberObservable.fingerprint_sha256 ||
+        stixCyberObservable.fingerprint_md5 ||
+        stixCyberObservable.key_type ||
+        'Unknown'
+      );
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }

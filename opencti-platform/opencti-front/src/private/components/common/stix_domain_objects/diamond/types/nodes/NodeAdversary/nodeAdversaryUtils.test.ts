@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
-import { nodeAdversaryUtils, NodeAdversaryUtilsProps, StixDomainObjectFromDiamond } from './nodeAdversaryUtils';
+import {
+  nodeAdversaryUtils,
+  NodeAdversaryUtilsProps,
+  StixDomainObjectFromDiamond,
+} from './nodeAdversaryUtils';
 
 import { DiamondEntityEnum } from '../diamondEnums';
 
@@ -16,9 +20,7 @@ describe('nodeAdversaryUtils', () => {
         entity_type: DiamondEntityEnum.threatActorGroup,
         aliases: ['Alias'],
         attributedFrom: {
-          edges: [
-            { node: { from: { name: 'Campaign test' } } },
-          ],
+          edges: [{ node: { from: { name: 'Campaign test' } } }],
         },
       } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',
@@ -38,9 +40,7 @@ describe('nodeAdversaryUtils', () => {
         entity_type: DiamondEntityEnum.malware,
         aliases: ['Alias'],
         usedBy: {
-          edges: [
-            { node: { from: { name: 'Malware test' } } },
-          ],
+          edges: [{ node: { from: { name: 'Malware test' } } }],
         },
       } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',
@@ -57,19 +57,13 @@ describe('nodeAdversaryUtils', () => {
         entity_type: DiamondEntityEnum.campaign,
         aliases: ['Alias'],
         usedBy: {
-          edges: [
-            { node: { from: { name: 'Malware test' } } },
-          ],
+          edges: [{ node: { from: { name: 'Malware test' } } }],
         },
         attributedFrom: {
-          edges: [
-            { node: { from: { name: 'Campaign test' } } },
-          ],
+          edges: [{ node: { from: { name: 'Campaign test' } } }],
         },
         attributedTo: {
-          edges: [
-            { node: { to: { name: 'Threat Actor test' } } },
-          ],
+          edges: [{ node: { to: { name: 'Threat Actor test' } } }],
         },
       } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',

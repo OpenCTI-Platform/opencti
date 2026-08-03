@@ -36,19 +36,13 @@ class NoteDetailsComponent extends Component {
         <Card title={t('Entity details')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={9}>
-              <Label>
-                {t('Abstract')}
-              </Label>
+              <Label>{t('Abstract')}</Label>
               <MarkdownDisplay
                 content={note.attribute_abstract}
                 remarkGfmPlugin={true}
                 resolveImageUrl={noteImageResolver}
               />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Content')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Content')}</Label>
               <MarkdownDisplay
                 content={note.content}
                 remarkGfmPlugin={true}
@@ -57,24 +51,15 @@ class NoteDetailsComponent extends Component {
               />
             </Grid>
             <Grid item xs={3}>
-              <Label>
-                {t('Note types')}
-              </Label>
+              <Label>{t('Note types')}</Label>
               <FieldOrEmpty source={note.note_types}>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
                   {note.note_types?.map((noteType) => (
-                    <Tag
-                      key={noteType}
-                      label={noteType}
-                    />
+                    <Tag key={noteType} label={noteType} />
                   ))}
                 </Stack>
               </FieldOrEmpty>
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Likelihood')}
-              </Label>
+              <Label sx={{ marginTop: 2 }}>{t('Likelihood')}</Label>
               <ItemLikelihood likelihood={note.likelihood} />
             </Grid>
           </Grid>

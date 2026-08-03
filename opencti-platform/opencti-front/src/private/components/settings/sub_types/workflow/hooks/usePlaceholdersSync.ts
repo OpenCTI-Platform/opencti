@@ -17,7 +17,9 @@ export const usePlaceholdersSync = (nodes: Node[], edges: Edge[]) => {
       .join(',');
 
     const edgeConnections = edges
-      .flatMap((e) => (!e.id.includes(WorkflowNodeType.placeholder) ? [`${e.source}->${e.target}`] : []))
+      .flatMap((e) =>
+        !e.id.includes(WorkflowNodeType.placeholder) ? [`${e.source}->${e.target}`] : [],
+      )
       .sort()
       .join(',');
 
@@ -31,10 +33,9 @@ export const usePlaceholdersSync = (nodes: Node[], edges: Edge[]) => {
     const transitionNodeIds = new Set(transitionNodes.map((n) => n.id));
 
     // 3. Find node statuses that need a placeholder
-    const endStatuses = statusNodes.filter((node) =>
-      !edges.some((edge) =>
-        edge.source === node.id && transitionNodeIds.has(edge.target),
-      ),
+    const endStatuses = statusNodes.filter(
+      (node) =>
+        !edges.some((edge) => edge.source === node.id && transitionNodeIds.has(edge.target)),
     );
 
     const requiredPlaceholderNodes: Node[] = endStatuses.map((status) => ({
@@ -64,8 +65,9 @@ export const usePlaceholdersSync = (nodes: Node[], edges: Edge[]) => {
 
     const nextPlaceholderIds = requiredPlaceholderNodes.map((n) => n.id).sort();
 
-    const hasChanged = currentPlaceholderIds.length !== nextPlaceholderIds.length
-      || !currentPlaceholderIds.every((id, index) => id === nextPlaceholderIds[index]);
+    const hasChanged =
+      currentPlaceholderIds.length !== nextPlaceholderIds.length ||
+      !currentPlaceholderIds.every((id, index) => id === nextPlaceholderIds[index]);
 
     if (hasChanged) {
       // Remove old placeholders and add new ones
@@ -75,9 +77,10 @@ export const usePlaceholdersSync = (nodes: Node[], edges: Edge[]) => {
       ]);
 
       setEdges((eds) => [
-        ...eds.filter((e) => (
-          !e.id.includes(WorkflowNodeType.placeholder) && e.type !== WorkflowNodeType.placeholder
-        )),
+        ...eds.filter(
+          (e) =>
+            !e.id.includes(WorkflowNodeType.placeholder) && e.type !== WorkflowNodeType.placeholder,
+        ),
         ...requiredPlaceholderEdges,
       ]);
     }

@@ -10,17 +10,11 @@ export interface GraphToolbarDisplayToolsProps {
   onUnfixNodes: () => void;
 }
 
-const GraphToolbarDisplayTools = ({
-  onUnfixNodes,
-}: GraphToolbarDisplayToolsProps) => {
+const GraphToolbarDisplayTools = ({ onUnfixNodes }: GraphToolbarDisplayToolsProps) => {
   const { t_i18n } = useFormatter();
 
   const {
-    graphState: {
-      mode3D,
-      modeTree,
-      withForces,
-    },
+    graphState: { mode3D, modeTree, withForces },
   } = useGraphContext();
 
   const {
@@ -51,7 +45,9 @@ const GraphToolbarDisplayTools = ({
         disabled={!withForces}
         color={modeTree === 'td' ? 'secondary' : 'primary'}
         onClick={toggleVerticalTree}
-        title={modeTree ? t_i18n('Disable vertical tree mode') : t_i18n('Enable vertical tree mode')}
+        title={
+          modeTree ? t_i18n('Disable vertical tree mode') : t_i18n('Enable vertical tree mode')
+        }
       />
 
       <GraphToolbarItem
@@ -59,7 +55,9 @@ const GraphToolbarDisplayTools = ({
         disabled={!withForces}
         color={modeTree === 'lr' ? 'secondary' : 'primary'}
         onClick={toggleHorizontalTree}
-        title={modeTree ? t_i18n('Disable horizontal tree mode') : t_i18n('Enable horizontal tree mode')}
+        title={
+          modeTree ? t_i18n('Disable horizontal tree mode') : t_i18n('Enable horizontal tree mode')
+        }
       />
 
       <GraphToolbarItem

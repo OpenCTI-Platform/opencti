@@ -16,7 +16,11 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
@@ -28,11 +32,7 @@ const campaignMutationFieldPatch = graphql`
     $references: [String]
   ) {
     campaignEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...CampaignEditionOverview_campaign
         ...Campaign_campaign
       }
@@ -41,10 +41,7 @@ const campaignMutationFieldPatch = graphql`
 `;
 
 export const campaignEditionOverviewFocus = graphql`
-  mutation CampaignEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation CampaignEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     campaignEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -89,19 +86,20 @@ const CampaignEditionOverviewComponent = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
 
-  const { mandatoryAttributes } = useIsMandatoryAttribute(
-    CAMPAIGN_TYPE,
-  );
+  const { mandatoryAttributes } = useIsMandatoryAttribute(CAMPAIGN_TYPE);
 
-  const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
-    confidence: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    references: Yup.array(),
-    createdBy: Yup.object().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      name: Yup.string().trim().min(2),
+      confidence: Yup.number().nullable(),
+      description: Yup.string().nullable(),
+      references: Yup.array(),
+      createdBy: Yup.object().nullable(),
+      x_opencti_workflow_id: Yup.object(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
 
   const campaignValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
@@ -111,12 +109,7 @@ const CampaignEditionOverviewComponent = (props) => {
     relationDelete: campaignMutationRelationDelete,
     editionFocus: campaignEditionOverviewFocus,
   };
-  const editor = useFormEditor(
-    campaign,
-    enableReferences,
-    queries,
-    campaignValidator,
-  );
+  const editor = useFormEditor(campaign, enableReferences, queries, campaignValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -137,8 +130,7 @@ const CampaignEditionOverviewComponent = (props) => {
       variables: {
         id: campaign.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -186,28 +178,19 @@ const CampaignEditionOverviewComponent = (props) => {
       validateOnBlur={true}
       onSubmit={onSubmit}
     >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
         <Form style={{ marginTop: theme.spacing(2) }}>
           <AlertConfidenceForEntity entity={campaign} />
           <Field
             component={TextField}
             name="name"
             label={t_i18n('Name')}
-            required={(mandatoryAttributes.includes('name'))}
+            required={mandatoryAttributes.includes('name')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="name" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <ConfidenceField
             onFocus={editor.changeFocus}
@@ -222,7 +205,7 @@ const CampaignEditionOverviewComponent = (props) => {
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows="4"
@@ -230,9 +213,7 @@ const CampaignEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           {campaign.workflowEnabled && (
             <StatusField
@@ -242,31 +223,22 @@ const CampaignEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={(
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              )}
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />}
             />
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={context} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking" />}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />

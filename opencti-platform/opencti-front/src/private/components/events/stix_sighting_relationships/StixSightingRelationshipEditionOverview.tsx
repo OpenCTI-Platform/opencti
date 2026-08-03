@@ -13,7 +13,12 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useDynamicSchemaEditionValidation, useIsEnforceReference, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useDynamicSchemaEditionValidation,
+  useIsEnforceReference,
+  useIsMandatoryAttribute,
+  yupShapeConditionalRequired,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { buildDate, formatDate } from '../../../../utils/Time';
@@ -76,11 +81,7 @@ const stixSightingRelationshipMutationFieldPatch = graphql`
     $references: [String]
   ) {
     stixSightingRelationshipEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage, references: $references) {
         ...StixSightingRelationshipEditionOverview_stixSightingRelationship
       }
     }
@@ -88,10 +89,7 @@ const stixSightingRelationshipMutationFieldPatch = graphql`
 `;
 
 export const stixSightingRelationshipEditionFocus = graphql`
-  mutation StixSightingRelationshipEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation StixSightingRelationshipEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixSightingRelationshipEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -162,38 +160,41 @@ interface StixSightingRelationshipAddInput {
   references?: FieldOption[];
 }
 
-const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixSightingRelationshipEditionOverviewProps, 'queryRef'>> = ({
-  handleClose,
-  stixSightingRelationship,
-  inferred,
-  noStoreUpdate,
-}) => {
+const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<
+  Omit<StixSightingRelationshipEditionOverviewProps, 'queryRef'>
+> = ({ handleClose, stixSightingRelationship, inferred, noStoreUpdate }) => {
   const { t_i18n } = useFormatter();
   const enableReferences = useIsEnforceReference(STIX_SIGHTING_TYPE);
 
   const { editContext } = stixSightingRelationship;
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(STIX_SIGHTING_TYPE);
-  const basicShape = yupShapeConditionalRequired({
-    attribute_count: Yup.number()
-      .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number')),
-    confidence: Yup.number()
-      .typeError(t_i18n('The value must be a number'))
-      .integer(t_i18n('The value must be a number')),
-    first_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    last_seen: Yup.date()
-      .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    description: Yup.string().nullable(),
-    x_opencti_negative: Yup.boolean(),
-    x_opencti_workflow_id: Yup.object(),
-    createdBy: Yup.object().nullable(),
-    objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
-  const stixSightingRelationshipValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
+  const basicShape = yupShapeConditionalRequired(
+    {
+      attribute_count: Yup.number()
+        .typeError(t_i18n('The value must be a number'))
+        .integer(t_i18n('The value must be a number')),
+      confidence: Yup.number()
+        .typeError(t_i18n('The value must be a number'))
+        .integer(t_i18n('The value must be a number')),
+      first_seen: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .nullable(),
+      last_seen: Yup.date()
+        .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+        .nullable(),
+      description: Yup.string().nullable(),
+      x_opencti_negative: Yup.boolean(),
+      x_opencti_workflow_id: Yup.object(),
+      createdBy: Yup.object().nullable(),
+      objectMarking: Yup.array().nullable(),
+    },
+    mandatoryAttributes,
+  );
+  const stixSightingRelationshipValidator = useDynamicSchemaEditionValidation(
+    mandatoryAttributes,
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: stixSightingRelationshipMutationFieldPatch,
@@ -201,9 +202,17 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     relationDelete: stixSightingRelationshipMutationRelationDelete,
     editionFocus: stixSightingRelationshipEditionFocus,
   };
-  const editor = useFormEditor(stixSightingRelationship as GenericData, enableReferences, queries, stixSightingRelationshipValidator);
+  const editor = useFormEditor(
+    stixSightingRelationship as GenericData,
+    enableReferences,
+    queries,
+    stixSightingRelationshipValidator,
+  );
 
-  const onSubmit: FormikConfig<StixSightingRelationshipAddInput>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<StixSightingRelationshipAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -261,13 +270,11 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             variant="standard"
             name="attribute_count"
             label={t_i18n('Count')}
-            required={(mandatoryAttributes.includes('attribute_count'))}
+            required={mandatoryAttributes.includes('attribute_count')}
             fullWidth={true}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
-            helperText={
-              <SubscriptionFocus context={editContext} fieldName="attribute_count" />
-            }
+            helperText={<SubscriptionFocus context={editContext} fieldName="attribute_count" />}
             disabled={inferred}
           />
           <ConfidenceField
@@ -286,13 +293,11 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             onChange={editor.changeField}
             textFieldProps={{
               label: t_i18n('First seen'),
-              required: (mandatoryAttributes.includes('first_seen')),
+              required: mandatoryAttributes.includes('first_seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={editContext} fieldName="first_seen" />
-              ),
+              helperText: <SubscriptionFocus context={editContext} fieldName="first_seen" />,
             }}
             disabled={inferred}
           />
@@ -303,13 +308,11 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             onChange={editor.changeField}
             textFieldProps={{
               label: t_i18n('Last seen'),
-              required: (mandatoryAttributes.includes('last_seen')),
+              required: mandatoryAttributes.includes('last_seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
-              helperText: (
-                <SubscriptionFocus context={editContext} fieldName="last_seen" />
-              ),
+              helperText: <SubscriptionFocus context={editContext} fieldName="last_seen" />,
             }}
             disabled={inferred}
           />
@@ -317,7 +320,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
-            required={(mandatoryAttributes.includes('description'))}
+            required={mandatoryAttributes.includes('description')}
             fullWidth={true}
             multiline={true}
             rows={4}
@@ -325,9 +328,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             uploadEntityId={stixSightingRelationship.id}
-            helperText={
-              <SubscriptionFocus context={editContext} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={editContext} fieldName="description" />}
             disabled={inferred}
           />
           {stixSightingRelationship.workflowEnabled && (
@@ -345,22 +346,18 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
           )}
           <CreatedByField
             name="createdBy"
-            required={(mandatoryAttributes.includes('createdBy'))}
+            required={mandatoryAttributes.includes('createdBy')}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={editContext} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={editContext} fieldName="createdBy" />}
             disabled={inferred}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
-            required={(mandatoryAttributes.includes('objectMarking'))}
+            required={mandatoryAttributes.includes('objectMarking')}
             style={fieldSpacingContainerStyle}
-            helpertext={
-              <SubscriptionFocus context={editContext} fieldname="objectMarking" />
-            }
+            helpertext={<SubscriptionFocus context={editContext} fieldname="objectMarking" />}
             disabled={inferred}
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
@@ -372,17 +369,16 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             label={t_i18n('False positive')}
             containerstyle={{ marginTop: 20 }}
             onChange={editor.changeField}
-            helperText={
-              <SubscriptionFocus context={editContext} fieldName="x_opencti_negative" />
-            }
+            helperText={<SubscriptionFocus context={editContext} fieldName="x_opencti_negative" />}
             disabled={inferred}
           />
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
-          }}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
+            }}
           >
             {enableReferences && (
               <CommitMessage
@@ -402,19 +398,28 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
   );
 };
 
-const StixSightingRelationshipEditionOverview: FunctionComponent<Omit<StixSightingRelationshipEditionOverviewProps, 'stixSightingRelationship'>> = (
-  props,
-) => {
+const StixSightingRelationshipEditionOverview: FunctionComponent<
+  Omit<StixSightingRelationshipEditionOverviewProps, 'stixSightingRelationship'>
+> = (props) => {
   const queryData = usePreloadedQuery(stixSightingRelationshipEditionOverviewQuery, props.queryRef);
   if (queryData.stixSightingRelationship === null) {
     return <ErrorNotFound />;
   }
   // eslint-disable-next-line max-len
-  const stixSightingRelationship = useFragment<StixSightingRelationshipEditionOverview_stixSightingRelationship$key>(StixSightingRelationshipEditionOverviewFragment, queryData.stixSightingRelationship);
+  const stixSightingRelationship =
+    useFragment<StixSightingRelationshipEditionOverview_stixSightingRelationship$key>(
+      StixSightingRelationshipEditionOverviewFragment,
+      queryData.stixSightingRelationship,
+    );
   if (!stixSightingRelationship) {
     return null;
   }
-  return <StixSightingRelationshipEditionOverviewComponent {...props} stixSightingRelationship={stixSightingRelationship} />;
+  return (
+    <StixSightingRelationshipEditionOverviewComponent
+      {...props}
+      stixSightingRelationship={stixSightingRelationship}
+    />
+  );
 };
 
 export default StixSightingRelationshipEditionOverview;

@@ -15,13 +15,11 @@ export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
   fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
     name
     id
-  }`;
+  }
+`;
 
 const groupSetDefaultGroupForIngestionUsersMutationFieldPatch = graphql`
-  mutation GroupSetDefaultGroupForIngestionUsersMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
+  mutation GroupSetDefaultGroupForIngestionUsersMutation($id: ID!, $input: [EditInput]!) {
     groupEdit(id: $id) {
       fieldPatch(input: $input) {
         ...GroupSetDefaultGroupForIngestionUsersFragment
@@ -31,9 +29,7 @@ const groupSetDefaultGroupForIngestionUsersMutationFieldPatch = graphql`
 `;
 
 export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
-  query GroupSetDefaultGroupForIngestionUsersQuery(
-    $filters: FilterGroup
-  ) {
+  query GroupSetDefaultGroupForIngestionUsersQuery($filters: FilterGroup) {
     groups(filters: $filters) {
       edges {
         node {
@@ -47,11 +43,18 @@ export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
 interface GroupSetDefaultGroupForIngestionUsersComponentProps {
   queryRef: PreloadedQuery<GroupSetDefaultGroupForIngestionUsersQuery>;
 }
-const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
+const GroupSetDefaultGroupForIngestionUsersComponent = ({
+  queryRef,
+}: GroupSetDefaultGroupForIngestionUsersComponentProps) => {
   const { t_i18n } = useFormatter();
-  const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
-  const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
-    { id: string | undefined; name: string | undefined }>({ id: undefined, name: undefined });
+  const [commitFieldPatch] = useApiMutation(
+    groupSetDefaultGroupForIngestionUsersMutationFieldPatch,
+  );
+  const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] =
+    useState<{ id: string | undefined; name: string | undefined }>({
+      id: undefined,
+      name: undefined,
+    });
   const { groups } = usePreloadedQuery(groupSetDefaultGroupForIngestionUsersQuery, queryRef);
 
   const initialGroup = groups?.edges?.[0]?.node
@@ -60,7 +63,10 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 
   useEffect(() => {
     if (groups?.edges?.[0]?.node) {
-      setCurrentGroupForAutoIntegrationAssignation({ id: groups.edges[0].node.id, name: groups.edges[0].node.name });
+      setCurrentGroupForAutoIntegrationAssignation({
+        id: groups.edges[0].node.id,
+        name: groups.edges[0].node.name,
+      });
     }
   }, []);
 
@@ -96,8 +102,10 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     <Grid item xs={6}>
       <Card title={t_i18n('User policy')}>
         <Alert severity="info" variant="outlined">
-          {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'
-            + 'Service accounts will have specific rights (no ability to login via UI). ')}
+          {t_i18n(
+            'Define a group that will be assigned to each service account created on the fly for each ingestion type. \n' +
+              'Service accounts will have specific rights (no ability to login via UI). ',
+          )}
         </Alert>
         <Formik
           initialValues={{ default_group_for_ingestion_users: initialGroup }}
@@ -119,28 +127,25 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
 };
 
 const GroupSetDefaultGroupForIngestionUsers = () => {
-  const queryRef = useQueryLoading<GroupSetDefaultGroupForIngestionUsersQuery>(groupSetDefaultGroupForIngestionUsersQuery, {
-    filters: {
-      mode: 'and',
-      filters: [
-        {
-          key: ['auto_integration_assignation'],
-          values: [
-            'global',
-          ],
-        },
-      ],
-      filterGroups: [],
+  const queryRef = useQueryLoading<GroupSetDefaultGroupForIngestionUsersQuery>(
+    groupSetDefaultGroupForIngestionUsersQuery,
+    {
+      filters: {
+        mode: 'and',
+        filters: [
+          {
+            key: ['auto_integration_assignation'],
+            values: ['global'],
+          },
+        ],
+        filterGroups: [],
+      },
     },
-  });
+  );
 
   return (
     <Suspense fallback={<Loader />}>
-      {queryRef && (
-        <GroupSetDefaultGroupForIngestionUsersComponent
-          queryRef={queryRef}
-        />
-      )}
+      {queryRef && <GroupSetDefaultGroupForIngestionUsersComponent queryRef={queryRef} />}
     </Suspense>
   );
 };

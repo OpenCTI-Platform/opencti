@@ -26,7 +26,11 @@ import { capitalizeFirstLetter } from '../../../../../../../utils/String';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../../utils/field';
 import { isEmptyField } from '../../../../../../../utils/utils';
 import PlaybookActionValueField from './PlaybookActionValueField';
-import { attributesMultiple, PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+import {
+  attributesMultiple,
+  PlaybookUpdateAction,
+  PlaybookUpdateActionsForm,
+} from './playbookAction-types';
 import useActionFieldOptions from './useActionFieldOptions';
 
 interface PlaybookFlowFieldActionsProps {
@@ -57,12 +61,14 @@ const PlaybookFlowFieldActions = ({
    * Returns the label for a given option.
    * Handles both string values and FieldOption objects.
    */
-  const getOptionLabel = (options: FieldOption[]) => (option: string | FieldOption): string => {
-    if (typeof option === 'string') {
-      return options.find((o) => o.value === option)?.label ?? option;
-    }
-    return option.label ?? '';
-  };
+  const getOptionLabel =
+    (options: FieldOption[]) =>
+    (option: string | FieldOption): string => {
+      if (typeof option === 'string') {
+        return options.find((o) => o.value === option)?.label ?? option;
+      }
+      return option.label ?? '';
+    };
 
   /**
    * Reset the action when the operation changes.
@@ -80,7 +86,11 @@ const PlaybookFlowFieldActions = ({
    * Reset the action value when the attribute changes.
    * Keeps the current operation and sets the new attribute.
    */
-  const handleAttributeChange = (index: number, currentOp: string | undefined, val: FieldOption | null) => {
+  const handleAttributeChange = (
+    index: number,
+    currentOp: string | undefined,
+    val: FieldOption | null,
+  ) => {
     const newAttribute = val?.value;
     const newAction: PlaybookUpdateAction = { op: currentOp };
     if (newAttribute) newAction.attribute = newAttribute;
@@ -111,16 +121,17 @@ const PlaybookFlowFieldActions = ({
 
             return (
               <div key={i}>
-                <div style={{
-                  position: 'relative',
-                  width: '100%',
-                  margin: '0 0 20px 0',
-                  padding: '15px',
-                  verticalAlign: 'middle',
-                  border: `1px solid ${theme.palette.primary.main}`,
-                  borderRadius: 4,
-                  display: 'flex',
-                }}
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    margin: '0 0 20px 0',
+                    padding: '15px',
+                    verticalAlign: 'middle',
+                    border: `1px solid ${theme.palette.primary.main}`,
+                    borderRadius: 4,
+                    display: 'flex',
+                  }}
                 >
                   <Grid container spacing={3} sx={{ width: '100%', alignItems: 'flex-end' }}>
                     <Grid size={{ xs: 3 }}>
@@ -133,9 +144,13 @@ const PlaybookFlowFieldActions = ({
                           label: t_i18n('Action type'),
                         }}
                         options={operationOptions}
-                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
+                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) =>
+                          option.value === (typeof val === 'string' ? val : val.value)
+                        }
                         getOptionLabel={getOptionLabel(operationOptions)}
-                        onInternalChange={(_: string, val: FieldOption | null) => handleOperationChange(i, val)}
+                        onInternalChange={(_: string, val: FieldOption | null) =>
+                          handleOperationChange(i, val)
+                        }
                       />
                     </Grid>
                     <Grid size={{ xs: 3 }}>
@@ -150,16 +165,17 @@ const PlaybookFlowFieldActions = ({
                         }}
                         options={fieldOptions}
                         noOptionsText={t_i18n('None')}
-                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) => option.value === (typeof val === 'string' ? val : val.value)}
+                        isOptionEqualToValue={(option: FieldOption, val: string | FieldOption) =>
+                          option.value === (typeof val === 'string' ? val : val.value)
+                        }
                         getOptionLabel={getOptionLabel(fieldOptions)}
-                        onInternalChange={(_: string, val: FieldOption | null) => handleAttributeChange(i, action.op, val)}
+                        onInternalChange={(_: string, val: FieldOption | null) =>
+                          handleAttributeChange(i, action.op, val)
+                        }
                       />
                     </Grid>
                     <Grid size={{ xs: 5 }}>
-                      <PlaybookActionValueField
-                        action={action}
-                        index={i}
-                      />
+                      <PlaybookActionValueField action={action} index={i} />
                     </Grid>
 
                     <Grid
@@ -178,7 +194,6 @@ const PlaybookFlowFieldActions = ({
                         <DeleteOutlined />
                       </IconButton>
                     </Grid>
-
                   </Grid>
                 </div>
               </div>

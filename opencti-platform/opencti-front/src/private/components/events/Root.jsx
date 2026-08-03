@@ -9,7 +9,9 @@ const RootIncident = lazy(() => import('./incidents/Root'));
 const ObservedDatas = lazy(() => import('./ObservedDatas'));
 const RootObservedData = lazy(() => import('./observed_data/Root'));
 const StixSightingRelationships = lazy(() => import('./StixSightingRelationships'));
-const StixSightingRelationship = lazy(() => import('./stix_sighting_relationships/StixSightingRelationship'));
+const StixSightingRelationship = lazy(
+  () => import('./stix_sighting_relationships/StixSightingRelationship'),
+);
 
 const Root = () => {
   let redirect;
@@ -27,26 +29,14 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/events/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/incidents"
-          element={boundaryWrapper(Incidents)}
-        />
-        <Route
-          path="/incidents/:incidentId/*"
-          element={boundaryWrapper(RootIncident)}
-        />
-        <Route
-          path="/observed_data"
-          element={boundaryWrapper(ObservedDatas)}
-        />
+        <Route path="/incidents" element={boundaryWrapper(Incidents)} />
+        <Route path="/incidents/:incidentId/*" element={boundaryWrapper(RootIncident)} />
+        <Route path="/observed_data" element={boundaryWrapper(ObservedDatas)} />
         <Route
           path="/observed_data/:observedDataId/*"
           element={boundaryWrapper(RootObservedData)}
         />
-        <Route
-          path="/sightings"
-          element={boundaryWrapper(StixSightingRelationships)}
-        />
+        <Route path="/sightings" element={boundaryWrapper(StixSightingRelationships)} />
         <Route
           path="/sightings/:sightingId/*"
           element={boundaryWrapper(StixSightingRelationship)}

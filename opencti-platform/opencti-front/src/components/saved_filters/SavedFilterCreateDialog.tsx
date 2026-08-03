@@ -49,7 +49,11 @@ interface SavedFilterFormValues {
   authorized_members: AuthorizedMembersFieldValue;
 }
 
-const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: SavedFilterDialogProps) => {
+const SavedFilterCreateDialog = ({
+  isOpen,
+  onClose,
+  setCurrentSavedFilter,
+}: SavedFilterDialogProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
 
@@ -65,13 +69,9 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
 
   const [filterName, setFilterName] = useState<string>();
 
-  const [commit] = useApiMutation(
-    savedFilterCreateDialogMutation,
-    undefined,
-    {
-      successMessage: t_i18n('Saved filter successfully created'),
-    },
-  );
+  const [commit] = useApiMutation(savedFilterCreateDialogMutation, undefined, {
+    successMessage: t_i18n('Saved filter successfully created'),
+  });
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.value === '') setFilterName(undefined);
@@ -113,12 +113,7 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      size="medium"
-      title={t_i18n('Save filter')}
-    >
+    <Dialog open={isOpen} onClose={onClose} size="medium" title={t_i18n('Save filter')}>
       <Formik<SavedFilterFormValues>
         initialValues={{ authorized_members: null }}
         onSubmit={handleSubmitSaveFilter}
@@ -133,13 +128,15 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
               onChange={handleChange}
             />
             <Security needs={[KNOWLEDGE_KNSHAREFILTERS]}>
-              <SavedFilterSharingSection
-                owner={owner}
-              />
+              <SavedFilterSharingSection owner={owner} />
             </Security>
             <DialogActions>
-              <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
-              <Button onClick={submitForm} disabled={!filterName}>{t_i18n('Save')}</Button>
+              <Button variant="secondary" onClick={onClose}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button onClick={submitForm} disabled={!filterName}>
+                {t_i18n('Save')}
+              </Button>
             </DialogActions>
           </Form>
         )}

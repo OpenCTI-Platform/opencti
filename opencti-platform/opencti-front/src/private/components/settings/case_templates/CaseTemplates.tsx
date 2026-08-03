@@ -4,7 +4,10 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
-import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
+import {
+  CaseTemplateLinesPaginationQuery,
+  CaseTemplateLinesPaginationQuery$variables,
+} from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 import CaseTemplateCreation from './CaseTemplateCreation';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines';
@@ -29,14 +32,15 @@ const CaseTemplates = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Case Templates | Taxonomies | Settings'));
   const classes = useStyles();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTemplateLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE_TEMPLATES,
-    {
-      searchTerm: '',
-      sortBy: 'name',
-      orderAsc: false,
-    },
-  );
+  const { viewStorage, helpers, paginationOptions } =
+    usePaginationLocalStorage<CaseTemplateLinesPaginationQuery$variables>(
+      LOCAL_STORAGE_KEY_CASE_TEMPLATES,
+      {
+        searchTerm: '',
+        sortBy: 'name',
+        orderAsc: false,
+      },
+    );
 
   const renderLines = () => {
     const { sortBy, orderAsc, searchTerm } = viewStorage;
@@ -51,7 +55,9 @@ const CaseTemplates = () => {
         label: 'Description',
         width: '50%',
         isSortable: false,
-        render: (data: CaseTemplateLine_node$data) => (<FieldOrEmpty source={data.description}>{data.description}</FieldOrEmpty>),
+        render: (data: CaseTemplateLine_node$data) => (
+          <FieldOrEmpty source={data.description}>{data.description}</FieldOrEmpty>
+        ),
       },
       tasks: {
         label: 'Tasks',
@@ -81,18 +87,15 @@ const CaseTemplates = () => {
         {queryRef && (
           <>
             <React.Suspense
-              fallback={(
+              fallback={
                 <>
                   {Array(20)
                     .fill(0)
                     .map((_, idx) => (
-                      <CaseTemplateLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
+                      <CaseTemplateLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
-              )}
+              }
             >
               <CaseTemplateLines
                 queryRef={queryRef}
@@ -109,7 +112,13 @@ const CaseTemplates = () => {
 
   return (
     <div className={classes.container} data-testid="case-template-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Taxonomies') },
+          { label: t_i18n('Case templates'), current: true },
+        ]}
+      />
       {renderLines()}
     </div>
   );

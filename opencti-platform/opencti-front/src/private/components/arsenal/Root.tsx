@@ -31,34 +31,13 @@ const Root = () => {
           path="/"
           element={<Navigate to={`/dashboard/arsenal/${redirect}`} replace={true} />}
         />
-        <Route
-          path="/malwares"
-          element={boundaryWrapper(Malwares)}
-        />
-        <Route
-          path="/malwares/:malwareId/*"
-          element={boundaryWrapper(RootMalware)}
-        />
-        <Route
-          path="/channels"
-          element={boundaryWrapper(Channels)}
-        />
-        <Route
-          path="/channels/:channelId/*"
-          element={boundaryWrapper(RootChannel)}
-        />
-        <Route
-          path="/tools"
-          element={boundaryWrapper(Tools)}
-        />
-        <Route
-          path="/tools/:toolId/*"
-          element={boundaryWrapper(RootTool)}
-        />
-        <Route
-          path="/vulnerabilities"
-          element={boundaryWrapper(Vulnerabilities)}
-        />
+        <Route path="/malwares" element={boundaryWrapper(Malwares)} />
+        <Route path="/malwares/:malwareId/*" element={boundaryWrapper(RootMalware)} />
+        <Route path="/channels" element={boundaryWrapper(Channels)} />
+        <Route path="/channels/:channelId/*" element={boundaryWrapper(RootChannel)} />
+        <Route path="/tools" element={boundaryWrapper(Tools)} />
+        <Route path="/tools/:toolId/*" element={boundaryWrapper(RootTool)} />
+        <Route path="/vulnerabilities" element={boundaryWrapper(Vulnerabilities)} />
         <Route
           path="/vulnerabilities/:vulnerabilityId/*"
           element={boundaryWrapper(RootVulnerabilities)}

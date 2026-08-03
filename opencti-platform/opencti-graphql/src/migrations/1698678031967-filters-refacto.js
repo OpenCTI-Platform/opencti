@@ -1,10 +1,22 @@
 import { head, last, toPairs } from 'ramda';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_FEED, ENTITY_TYPE_RETENTION_RULE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
+import {
+  ENTITY_TYPE_BACKGROUND_TASK,
+  ENTITY_TYPE_FEED,
+  ENTITY_TYPE_RETENTION_RULE,
+  ENTITY_TYPE_STREAM_COLLECTION,
+  ENTITY_TYPE_TAXII_COLLECTION,
+} from '../schema/internalObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { logApp } from '../config/conf';
-import { fromBase64, toBase64, isEmptyField, READ_DATA_INDICES, isNotEmptyField } from '../database/utils';
+import {
+  fromBase64,
+  toBase64,
+  isEmptyField,
+  READ_DATA_INDICES,
+  isNotEmptyField,
+} from '../database/utils';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
@@ -70,21 +82,22 @@ export const up = async (next) => {
       if (instance_trigger && key === 'elementId') {
         key = 'connectedToId';
       }
-      if (valIds.includes(null)) { // values cannot contains 'null' anymore, new nil operator
-        const nilOperator = (operator === 'not_eq') ? 'not_nil' : 'nil'; // replace the operator
-        if (valIds.length === 1) { // if there is only 'null' in values
+      if (valIds.includes(null)) {
+        // values cannot contains 'null' anymore, new nil operator
+        const nilOperator = operator === 'not_eq' ? 'not_nil' : 'nil'; // replace the operator
+        if (valIds.length === 1) {
+          // if there is only 'null' in values
           newFiltersContent.push({ key: [key], values: [], operator: nilOperator, mode }); // replace by a filter with nil and values = []
-        } else { // if there is other values
-          newFilterGroupsContent.push(
-            {
-              mode,
-              filters: [
-                { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
-                { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
-              ],
-              filterGroups: [],
-            },
-          );
+        } else {
+          // if there is other values
+          newFilterGroupsContent.push({
+            mode,
+            filters: [
+              { key: [key], values: valIds.filter((id) => id !== null), operator, mode }, // remove null id
+              { key: [key], values: [], operator: nilOperator, mode }, // create a filter for the former null id
+            ],
+            filterGroups: [],
+          });
         }
       } else {
         newFiltersContent.push({ key: [key], values: valIds, operator, mode });
@@ -99,26 +112,28 @@ export const up = async (next) => {
   };
 
   // 01. feeds, taxiiCollections, triggers, streams, retention rules
-  const entitiesToRefacto = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_TRIGGER, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_RETENTION_RULE],
-  );
+  const entitiesToRefacto = await fullEntitiesList(context, SYSTEM_USER, [
+    ENTITY_TYPE_FEED,
+    ENTITY_TYPE_TAXII_COLLECTION,
+    ENTITY_TYPE_TRIGGER,
+    ENTITY_TYPE_STREAM_COLLECTION,
+    ENTITY_TYPE_RETENTION_RULE,
+  ]);
 
   let entitiesFiltersConvertor = {};
-  entitiesToRefacto
-    .forEach((n) => {
-      const instance_trigger = n.entity_type === ENTITY_TYPE_TRIGGER && n.instance_trigger === true;
-      entitiesFiltersConvertor = {
-        ...entitiesFiltersConvertor,
-        [n.internal_id]: convertFilters(n.filters, false, instance_trigger),
-      };
-    });
+  entitiesToRefacto.forEach((n) => {
+    const instance_trigger = n.entity_type === ENTITY_TYPE_TRIGGER && n.instance_trigger === true;
+    entitiesFiltersConvertor = {
+      ...entitiesFiltersConvertor,
+      [n.internal_id]: convertFilters(n.filters, false, instance_trigger),
+    };
+  });
 
   const entitiesUpdateQuery = {
     script: {
       params: { convertor: entitiesFiltersConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.filters = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.filters = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {
@@ -160,28 +175,23 @@ export const up = async (next) => {
   );
 
   // 02. not finished query background tasks
-  const tasks = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_BACKGROUND_TASK],
-    {
-      filters: {
-        mode: 'and',
-        filters: [
-          {
-            key: 'type',
-            values: ['QUERY'],
-          },
-          {
-            key: 'completed',
-            values: ['false'],
-          },
-        ],
-        filterGroups: [],
-      },
-      noFiltersChecking: true,
+  const tasks = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], {
+    filters: {
+      mode: 'and',
+      filters: [
+        {
+          key: 'type',
+          values: ['QUERY'],
+        },
+        {
+          key: 'completed',
+          values: ['false'],
+        },
+      ],
+      filterGroups: [],
     },
-  );
+    noFiltersChecking: true,
+  });
 
   let tasksFiltersConvertor = {};
   tasks
@@ -196,7 +206,8 @@ export const up = async (next) => {
   const tasksUpdateQuery = {
     script: {
       params: { convertor: tasksFiltersConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.task_filters = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.task_filters = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {
@@ -215,62 +226,58 @@ export const up = async (next) => {
   );
 
   // 03. Workspaces
-  const workspaces = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_WORKSPACE],
-  );
+  const workspaces = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE]);
 
   let workspacesManifestConvertor = {};
-  workspaces
-    .forEach((workspace) => {
-      if (isNotEmptyField(workspace.manifest)) {
-        const decodedManifest = JSON.parse(fromBase64(workspace.manifest));
-        const { widgets } = decodedManifest;
-        const widgetEntries = Object.entries(widgets);
-        const newWidgets = {};
-        for (let i = 0; i < widgetEntries.length; i += 1) {
-          const [key, value] = widgetEntries[i];
-          const { dataSelection } = value;
-          if (dataSelection) {
-            const newDataSelection = dataSelection.map((selection) => {
-              const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
-              const newFilters = convertFilters(filters, true);
-              const newDynamicFrom = convertFilters(dynamicFrom, true);
-              const newDynamicTo = convertFilters(dynamicTo, true);
-              return {
-                ...selection,
-                filters: newFilters,
-                dynamicFrom: newDynamicFrom,
-                dynamicTo: newDynamicTo,
-              };
-            });
-            newWidgets[key] = {
-              ...value,
-              dataSelection: newDataSelection,
+  workspaces.forEach((workspace) => {
+    if (isNotEmptyField(workspace.manifest)) {
+      const decodedManifest = JSON.parse(fromBase64(workspace.manifest));
+      const { widgets } = decodedManifest;
+      const widgetEntries = Object.entries(widgets);
+      const newWidgets = {};
+      for (let i = 0; i < widgetEntries.length; i += 1) {
+        const [key, value] = widgetEntries[i];
+        const { dataSelection } = value;
+        if (dataSelection) {
+          const newDataSelection = dataSelection.map((selection) => {
+            const { filters = null, dynamicFrom = null, dynamicTo = null } = selection;
+            const newFilters = convertFilters(filters, true);
+            const newDynamicFrom = convertFilters(dynamicFrom, true);
+            const newDynamicTo = convertFilters(dynamicTo, true);
+            return {
+              ...selection,
+              filters: newFilters,
+              dynamicFrom: newDynamicFrom,
+              dynamicTo: newDynamicTo,
             };
-          } else {
-            newWidgets[key] = {
-              ...value,
-            };
-          }
+          });
+          newWidgets[key] = {
+            ...value,
+            dataSelection: newDataSelection,
+          };
+        } else {
+          newWidgets[key] = {
+            ...value,
+          };
         }
-        const newManifest = {
-          ...decodedManifest,
-          widgets: newWidgets,
-        };
-        const newEncodedManifest = toBase64(JSON.stringify(newManifest));
-        workspacesManifestConvertor = {
-          ...workspacesManifestConvertor,
-          [workspace.internal_id]: newEncodedManifest,
-        };
       }
-    });
+      const newManifest = {
+        ...decodedManifest,
+        widgets: newWidgets,
+      };
+      const newEncodedManifest = toBase64(JSON.stringify(newManifest));
+      workspacesManifestConvertor = {
+        ...workspacesManifestConvertor,
+        [workspace.internal_id]: newEncodedManifest,
+      };
+    }
+  });
 
   const workspacesUpdateQuery = {
     script: {
       params: { convertor: workspacesManifestConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.manifest = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.manifest = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {
@@ -292,50 +299,47 @@ export const up = async (next) => {
   );
 
   // 04. Playbooks
-  const playbooks = await fullEntitiesList(
-    context,
-    SYSTEM_USER,
-    [ENTITY_TYPE_PLAYBOOK],
-  );
+  const playbooks = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK]);
 
   let playbooksDefinitionConvertor = {};
-  playbooks
-    .forEach((playbook) => {
-      const playbookDefinition = JSON.parse(playbook.playbook_definition);
-      const definitionNodes = playbookDefinition.nodes;
-      const newDefinitionNodes = [];
-      for (let i = 0; i < definitionNodes.length; i += 1) {
-        const node = definitionNodes[i];
-        const nodeConfiguration = JSON.parse(node.configuration);
-        const { filters } = nodeConfiguration;
-        if (filters) {
-          const newFilters = convertFilters(filters);
-          const newNode = {
-            ...node,
-            configuration: JSON.stringify({
-              ...nodeConfiguration,
-              filters: newFilters,
-            }),
-          };
-          newDefinitionNodes.push(newNode);
-        } else { // no conversion to do
-          newDefinitionNodes.push(node);
-        }
+  playbooks.forEach((playbook) => {
+    const playbookDefinition = JSON.parse(playbook.playbook_definition);
+    const definitionNodes = playbookDefinition.nodes;
+    const newDefinitionNodes = [];
+    for (let i = 0; i < definitionNodes.length; i += 1) {
+      const node = definitionNodes[i];
+      const nodeConfiguration = JSON.parse(node.configuration);
+      const { filters } = nodeConfiguration;
+      if (filters) {
+        const newFilters = convertFilters(filters);
+        const newNode = {
+          ...node,
+          configuration: JSON.stringify({
+            ...nodeConfiguration,
+            filters: newFilters,
+          }),
+        };
+        newDefinitionNodes.push(newNode);
+      } else {
+        // no conversion to do
+        newDefinitionNodes.push(node);
       }
-      const newPlaybookDefinition = {
-        ...playbookDefinition,
-        nodes: newDefinitionNodes,
-      };
-      playbooksDefinitionConvertor = {
-        ...playbooksDefinitionConvertor,
-        [playbook.internal_id]: JSON.stringify(newPlaybookDefinition),
-      };
-    });
+    }
+    const newPlaybookDefinition = {
+      ...playbookDefinition,
+      nodes: newDefinitionNodes,
+    };
+    playbooksDefinitionConvertor = {
+      ...playbooksDefinitionConvertor,
+      [playbook.internal_id]: JSON.stringify(newPlaybookDefinition),
+    };
+  });
 
   const playbooksUpdateQuery = {
     script: {
       params: { convertor: playbooksDefinitionConvertor },
-      source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
+      source:
+        'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
       bool: {
