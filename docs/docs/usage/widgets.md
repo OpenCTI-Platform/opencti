@@ -72,7 +72,7 @@ In certain views, you can access buttons like `+`, `+ Relationships,` or `+ Enti
 
 #### Saved filters in widgets
 
-In widgets (dashboards or custom views), you can either create custom filters or select a saved filter. Use the button to switch between both modes.
+In widgets (dashboards or custom views), you can either create custom filters or select a saved filter. Use the button to switch between the two modes.
 
 ![Button to switch between saved and custom filters in widgets](assets/widget-savedFilters-button.png)
 
@@ -87,9 +87,9 @@ Only saved filters compatible with the selected perspective are available:
 ![Widget saved filters list](assets/widget-savedFilters-list.png)
 
 When you duplicate a dashboard, saved filter references used by widgets are preserved.
-When you export a widget, a dashboard, or a custom view, or when creating a public dashboard, saved filter references are resolved and replaced with the saved filter content.
+When you export a widget, a dashboard, or a custom view, or when you create a public dashboard, saved filter references are resolved and replaced with the saved filter content.
 
-If a saved filter is no longer available anymore, the widget cannot be displayed. Exports and public dashboard creations will fail. In this case, recreate the saved filter or remove it before retrying.
+If a saved filter is no longer available, the widget cannot be displayed. Exports and public dashboard creations will fail. In this case, recreate the saved filter or remove it before retrying.
 
 ![Widget saved filters unavailable](assets/widget-savedFilters-unavailable.png)
 
