@@ -82,18 +82,19 @@ export default defineConfig([
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/member-delimiter-style': ['error', { singleline: { requireLast: false } }],
       '@stylistic/semi': ['error', 'always'],
-      'import/extensions': [
+      'import/extensions': ['error', 'ignorePackages', { js: 'never', ts: 'never' }],
+      'max-len': [
         'error',
-        'ignorePackages',
-        { js: 'never', ts: 'never' },
+        100,
+        2,
+        {
+          ignoreUrls: true,
+          ignoreComments: false,
+          ignoreRegExpLiterals: true,
+          ignoreStrings: true,
+          ignoreTemplateLiterals: true,
+        },
       ],
-      'max-len': ['error', 180, 2, {
-        ignoreUrls: true,
-        ignoreComments: false,
-        ignoreRegExpLiterals: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-      }],
       camelcase: 'off',
       'no-underscore-dangle': 'off',
       'no-await-in-loop': 'off',
@@ -116,7 +117,7 @@ export default defineConfig([
         },
       ],
 
-      'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
+      'import-newlines/enforce': ['error', { items: 20, 'max-len': 100 }],
       '@typescript-eslint/no-floating-promises': 'error',
     },
   },

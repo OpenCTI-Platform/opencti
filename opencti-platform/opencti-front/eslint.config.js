@@ -119,7 +119,7 @@ export default defineConfig([
       'arrow-body-style': 'off',
       'max-len': [
         'error',
-        180,
+        100,
         2,
         {
           ignoreUrls: true,
@@ -152,7 +152,7 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      'import-newlines/enforce': ['error', { 'items': 20, 'max-len': 180 }],
+      'import-newlines/enforce': ['error', { items: 20, 'max-len': 100 }],
       'import/no-extraneous-dependencies': [
         'error',
         {
