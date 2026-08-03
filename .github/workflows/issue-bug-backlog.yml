@@ -1,0 +1,37 @@
+name: Move bug issues to Bugs backlog milestone
+on:
+  issues:
+    types: [unlabeled]
+
+jobs:
+  move-to-bug-backlog:
+    name: Assign Bugs backlog milestone when needs triage is removed
+    runs-on: ubuntu-latest
+    if: >
+      github.event.label.name == 'needs triage' &&
+      github.event.issue.state == 'open' &&
+      contains(github.event.issue.labels.*.name, 'bug')
+    permissions:
+      issues: write
+    steps:
+      - name: Get Bugs backlog milestone
+        id: milestone
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          MILESTONE_NUMBER=$(gh api repos/$REPO/milestones --paginate --jq '.[] | select(.title == "Bugs backlog") | .number' | head -1)
+          if [ -z "$MILESTONE_NUMBER" ]; then
+            echo "::error::Milestone 'Bugs backlog' not found. Please create it before using this workflow."
+            exit 1
+          fi
+          echo "number=$MILESTONE_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Assign issue to Bugs backlog milestone
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          MILESTONE_NUMBER: ${{ steps.milestone.outputs.number }}
+        run: |
+          gh api repos/$REPO/issues/$ISSUE_NUMBER --method PATCH --field milestone=$MILESTONE_NUMBER
