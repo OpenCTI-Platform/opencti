@@ -87,11 +87,15 @@ const Loader: FunctionComponent<LoaderProps> = ({
   }
   if (variant === 'inline') {
     return (
-      <div style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        role='progressbar'
+        aria-label={'Loading...'}
+        style={{ display: 'inline-flex', width: '4rem', height: 35, alignItems: 'center', justifyContent: 'center' }}>
         {hasFiligranLoader ? (
           <FiligranLoader height={24} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
+            aria-hidden
             size={24}
             thickness={1}
             className={classes.loaderCircle}
@@ -111,13 +115,15 @@ const Loader: FunctionComponent<LoaderProps> = ({
       style={
         variant === 'inElement'
           ? {
-              paddingRight: withRightPadding ? 200 : 0,
-              marginTop: withTopMargin ? 200 : 0,
-            }
+            paddingRight: withRightPadding ? 200 : 0,
+            marginTop: withTopMargin ? 200 : 0,
+          }
           : {}
       }
     >
       <div
+        role='progressbar'
+        aria-label={'Loading...'}
         className={
           variant === 'inElement' ? classes.loaderInElement : classes.loader
         }
@@ -131,6 +137,7 @@ const Loader: FunctionComponent<LoaderProps> = ({
           <FiligranLoader height={variant === 'inElement' ? 40 : 80} color={theme?.palette?.common?.grey} />
         ) : (
           <CircularProgress
+            aria-hidden
             size={variant === 'inElement' ? 40 : 80}
             thickness={1}
             className={classes.loaderCircle}
