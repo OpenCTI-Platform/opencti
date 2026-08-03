@@ -112,10 +112,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       const targetUser = targetUsers[index];
       const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
       const userContext = { ...context, user_inside_platform_organization };
-      const accessFlags = await Promise.all(
-        bundle.objects.map((o) => checkUserCanAccessStixElement(userContext, targetUser, o, hasPlatformOrg)),
-      );
-      const stixElements = bundle.objects.filter((_, i) => accessFlags[i]);
+      const stixElements = bundle.objects.filter((o) => checkUserCanAccessStixElement(userContext, targetUser, o, hasPlatformOrg));
       if (stixElements.length === 0) {
         continue;
       }
