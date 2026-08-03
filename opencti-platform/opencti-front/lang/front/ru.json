@@ -2014,6 +2014,7 @@
   "Eye Color": "Цвет глаз",
   "Failed": "Не удалось",
   "Failed to create draft workspace.": "Не удалось создать черновое рабочее пространство.",
+  "Failed to export dashboard": "Не удалось экспортировать информационную панель",
   "Failed to export widget": "Не удалось экспортировать виджет",
   "Failed to import theme": "Не удалось импортировать тему",
   "Failed to load custom view": "Не удалось загрузить настраиваемый вид",

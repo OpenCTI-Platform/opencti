@@ -2014,6 +2014,7 @@
   "Eye Color": "눈 색깔",
   "Failed": "실패",
   "Failed to create draft workspace.": "초안 작업 공간을 만들지 못했습니다.",
+  "Failed to export dashboard": "대시보드 내보내기에 실패했습니다",
   "Failed to export widget": "위젯 내보내기에 실패했습니다.",
   "Failed to import theme": "테마를 가져오지 못했습니다",
   "Failed to load custom view": "사용자 지정 보기 로드에 실패했습니다.",

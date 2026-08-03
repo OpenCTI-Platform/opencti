@@ -2014,6 +2014,7 @@
   "Eye Color": "Colore degli occhi",
   "Failed": "Fallito",
   "Failed to create draft workspace.": "Impossibile creare l'area di lavoro della bozza.",
+  "Failed to export dashboard": "Impossibile esportare la dashboard",
   "Failed to export widget": "Impossibile esportare il widget",
   "Failed to import theme": "Importazione fallita del tema",
   "Failed to load custom view": "Impossibile caricare la vista personalizzata",

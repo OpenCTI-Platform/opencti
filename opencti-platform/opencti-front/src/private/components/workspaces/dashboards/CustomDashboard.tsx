@@ -94,11 +94,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     try {
       const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
         .toPromise() as CustomDashboardWidgetExportQuery$data;
-      if (!data.workspace) {
+      const exportString = data.workspace?.toWidgetExport;
+      if (!exportString) {
         MESSAGING$.notifyError(t_i18n('Failed to export widget'));
         return null;
       }
-      return data.workspace.toWidgetExport;
+      return exportString;
     } catch (e) {
       MESSAGING$.notifyRelayError(e);
       return null;

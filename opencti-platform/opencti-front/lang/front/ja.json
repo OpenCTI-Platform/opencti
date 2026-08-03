@@ -2014,6 +2014,7 @@
   "Eye Color": "目の色",
   "Failed": "失敗",
   "Failed to create draft workspace.": "ドラフトワークスペースの作成に失敗しました。",
+  "Failed to export dashboard": "ダッシュボードのエクスポートに失敗しました",
   "Failed to export widget": "ウィジェットのエクスポートに失敗しました",
   "Failed to import theme": "テーマのインポートに失敗しました",
   "Failed to load custom view": "カスタムビューの読み込みに失敗しました",

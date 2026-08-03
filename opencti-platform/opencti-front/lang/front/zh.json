@@ -2014,6 +2014,7 @@
   "Eye Color": "眼睛的颜色",
   "Failed": "失败",
   "Failed to create draft workspace.": "创建草稿工作区失败。",
+  "Failed to export dashboard": "导出仪表盘失败",
   "Failed to export widget": "导出小部件失败",
   "Failed to import theme": "导入主题失败",
   "Failed to load custom view": "加载自定义视图失败",

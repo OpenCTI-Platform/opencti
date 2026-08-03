@@ -2014,6 +2014,7 @@
   "Eye Color": "Eye Color",
   "Failed": "Failed",
   "Failed to create draft workspace.": "Failed to create draft workspace.",
+  "Failed to export dashboard": "Failed to export dashboard",
   "Failed to export widget": "Failed to export widget",
   "Failed to import theme": "Failed to import theme",
   "Failed to load custom view": "Failed to load custom view",
