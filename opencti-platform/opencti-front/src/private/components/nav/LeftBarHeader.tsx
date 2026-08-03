@@ -31,6 +31,7 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
   external,
   onClick,
 }) => {
+  const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const Component = href ? 'a' : to ? Link : 'div';
 
