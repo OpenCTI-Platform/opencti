@@ -17,6 +17,7 @@ import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Security from '../../utils/Security';
 import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
+import FilterBuilderButton from '../filters/FilterBuilderButton';
 import { useFormatter } from '../i18n';
 import { useDataTableContext } from './components/DataTableContext';
 import DataTablePagination from './DataTablePagination';
@@ -82,7 +83,7 @@ const DataTableFilters = ({
     setPage,
     useDataTablePaginationLocalStorage: {
       helpers,
-      viewStorage: { numberOfElements, openExports },
+      viewStorage: { numberOfElements, openExports, filters },
     },
   } = useDataTableContext();
   const { selectedElements } = useEntityToggle(storageKey);
@@ -136,6 +137,18 @@ const DataTableFilters = ({
               availableRelationshipTypes={availableRelationshipTypes}
               availableRelationFilterTypes={availableRelationFilterTypes}
               hideSavedFilters={hideSavedFilters}
+            />
+          )}
+          {hasFilters && (
+            <FilterBuilderButton
+              filters={filters ?? { mode: 'and', filters: [], filterGroups: [] }}
+              onSubmit={helpers.handleSetFilters}
+              availableFilterKeys={availableFilterKeys}
+              entityTypes={searchContextFinal?.entityTypes ?? ['Stix-Core-Object']}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              searchContext={searchContextFinal}
             />
           )}
         </div>
