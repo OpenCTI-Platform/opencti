@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
@@ -539,9 +539,17 @@ describe('check safeRender on real files', () => {
       const templateFile = `${testFilePath.substring(0, testFilePath.lastIndexOf('.'))}.${name}`;
       const template = await fs.readFile(templateFile, 'utf8');
       const escape = name.includes('.json') ? customEscapeFunction : undefined;
-      const safeRendered = await safeRender(template, data, { useNotificationTool: true, escape });
-      const unsafeRendered = ejs.render(template, data);
-      expect(safeRendered).toEqual(unsafeRendered);
+      // Some templates embed a live `new Date()`/timestamp. Freeze the clock so both renders
+      // below see the exact same instant, avoiding a flaky 1-second drift across the second boundary.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date());
+      try {
+        const safeRendered = await safeRender(template, data, { useNotificationTool: true, escape });
+        const unsafeRendered = ejs.render(template, data);
+        expect(safeRendered).toEqual(unsafeRendered);
+      } finally {
+        vi.useRealTimers();
+      }
     },
   );
 });
