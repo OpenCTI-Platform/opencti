@@ -112,8 +112,6 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       const targetUser = targetUsers[index];
       const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
       const userContext = { ...context, user_inside_platform_organization };
-      // Use checkUserCanAccessStixElement here (sync predicate):
-      // isUserCanAccessStixElement is async and must not be used directly in Array.filter.
       const accessFlags = await Promise.all(
         bundle.objects.map((o) => checkUserCanAccessStixElement(userContext, targetUser, o, hasPlatformOrg)),
       );
