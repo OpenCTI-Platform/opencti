@@ -84,8 +84,14 @@ Only saved filters compatible with the selected perspective are available:
 - In **Knowledge Graph**, only saved filters created from relationship lists are available.
 - In **Entities**, saved filters from entity lists are available (for example Reports, Malware, and Advanced Search).
 
+![Widget saved filters list](assets/widget-savedFilters-list.png)
+
 When you duplicate a dashboard, saved filter references used by widgets are preserved.
 When you export a widget, a dashboard, or a custom view, or when creating a public dashboard, saved filter references are resolved and replaced with the saved filter content.
+
+If a saved filter is no longer available anymore, the widget cannot be displayed. Exports and public dashboard creations will fail. In this case, recreate the saved filter or remove it before retrying.
+
+![Widget saved filters unavailable](assets/widget-savedFilters-unavailable.png)
 
 #### 4. Parameters
 
