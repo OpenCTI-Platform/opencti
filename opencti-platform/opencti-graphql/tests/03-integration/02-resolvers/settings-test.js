@@ -62,6 +62,16 @@ const EDIT_FIELD_QUERY = gql`
 `;
 
 const CONTEXT_PATCH_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: EditContext) {
+    settingsEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+const CONTEXT_CLEAN_QUERY = gql`
   mutation SettingsEdit($id: ID!) {
     settingsEdit(id: $id) {
       contextClean {
