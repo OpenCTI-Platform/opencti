@@ -685,6 +685,7 @@ export const rabbitMQInit = async () => {
   logApp.info('[CHECK] Checking if RabbitMq is available');
   await rabbitMQIsAlive();
   logApp.info('[CHECK] RabbitMq is alive');
+  return true;
 };
 
 export const rabbitMQIsAlive = async () => {
