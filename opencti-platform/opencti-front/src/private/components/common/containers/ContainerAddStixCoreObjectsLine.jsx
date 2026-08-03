@@ -274,7 +274,7 @@ export const ContainerAddStixCoreObjecstLineDummy = ({ dataColumns }) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      style={{ minWidth: 40 }}
+      style={{ minWidth: 40, paddingLeft: 20 }}
     >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
