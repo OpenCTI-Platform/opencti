@@ -101,15 +101,20 @@ const useCustomViewDashboardEdit = ({ customView }: {
   };
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
-    const data = await fetchQuery(customViewExportWidgetQuery, { id, widgetId: widget.id })
-      .toPromise();
-    const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
-    const exportString = result.customView?.toWidgetExport;
-    if (!exportString) {
-      MESSAGING$.notifyError(t_i18n('Failed to export widget'));
+    try {
+      const data = await fetchQuery(customViewExportWidgetQuery, { id, widgetId: widget.id })
+        .toPromise();
+      const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
+      const exportString = result.customView?.toWidgetExport;
+      if (!exportString) {
+        MESSAGING$.notifyError(t_i18n('Failed to export widget'));
+        return null;
+      }
+      return exportString;
+    } catch (e) {
+      MESSAGING$.notifyRelayError(e);
       return null;
     }
-    return exportString;
   };
 
   const onImportWidget = (id: string, widgetConfig: unknown, manifestEncoded: string) => {
