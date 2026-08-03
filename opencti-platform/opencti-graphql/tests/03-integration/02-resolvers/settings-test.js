@@ -152,20 +152,20 @@ describe('Settings resolver standard behavior', () => {
 
     await queryAsUserWithSuccess(USER_SECURITY, {
       query: EDIT_FIELD_QUERY,
-      variables: { id: settingsInternalId, input: { key: 'local_auth', value: ['{"enabled":true}'] } },
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
     });
 
     // Restore default test value.
     await queryAsAdmin({
       query: EDIT_FIELD_QUERY,
-      variables: { id: settingsInternalId, input: { key: 'local_auth', value: ['{"enabled":true}'] } },
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
     });
   });
   it('should reject updating local_auth without SETTINGS_SETAUTH capability', async () => {
     const settingsInternalId = await settingsId();
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: EDIT_FIELD_QUERY,
-      variables: { id: settingsInternalId, input: { key: 'local_auth', value: ['{"enabled":true}'] } },
+      variables: { id: settingsInternalId, input: { key: 'local_auth', value: [{ enabled: true }] } },
     });
   });
   it('should context patch settings', async () => {
@@ -183,7 +183,7 @@ describe('Settings resolver standard behavior', () => {
   it('should context clean settings', async () => {
     const settingsInternalId = await settingsId();
     const queryResult = await queryAsAdmin({
-      query: CONTEXT_PATCH_QUERY,
+      query: CONTEXT_CLEAN_QUERY,
       variables: { id: settingsInternalId },
     });
     expect(queryResult.data.settingsEdit.contextClean.id).toEqual(settingsInternalId);
