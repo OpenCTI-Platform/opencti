@@ -7,7 +7,7 @@ import { ExperienceFieldPatchMutation$data } from '@components/settings/__genera
 import getEEWarningMessage from '@components/settings/EEActivation';
 import SupportPackages from '@components/settings/support/SupportPackages';
 import XtmHubSettings from '@components/settings/xtm-hub/XtmHubSettings';
-import { AutoAwesomeOutlined, ManageSearchOutlined, MoreHorizOutlined, PrecisionManufacturingOutlined, RocketLaunchOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined, FileDownloadOutlined, ManageSearchOutlined, MoreHorizOutlined, PrecisionManufacturingOutlined, RocketLaunchOutlined } from '@mui/icons-material';
 import { Stack, Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -37,6 +37,8 @@ import ExperienceDetailRow from './experience/ExperienceDetailRow';
 import ExperienceFeatureTile from './experience/ExperienceFeatureTile';
 import ValidateTermsOfUseDialog from './ValidateTermsOfUseDialog';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
+import Divider from '@mui/material/Divider';
+import GlobalExportBundleDrawer, { GlobalExportBundleSelection } from '@components/settings/experience/GlobarExportBundleDrawer';
 
 export enum CGUStatus {
   pending = 'pending',
@@ -111,6 +113,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionByXtmOne = isEnterpriseEditionFromXtmOne(enterpriseEdition);
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
+  const [openGlobalExport, setOpenGlobalExport] = useState(false);
   const experienceValidation = () => Yup.object().shape({
     enterprise_license: Yup.string().nullable(),
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
@@ -158,6 +161,15 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     setOpenValidateTermsOfUse(false);
   };
 
+  const handleExportBootstrapPlatformBundle = () => {
+    setOpenGlobalExport(true);
+  };
+
+  const handlePlatformBundleExport = (selection: GlobalExportBundleSelection) => {
+    // TODO: brancher l'appel réel (mutation/API) avec `selection`
+    setOpenGlobalExport(false);
+  };
+
   const eeAccent = theme.palette.ee.main ?? '#00f18d';
 
   const eeStatusChip = (() => {
@@ -201,6 +213,27 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           {t_i18n('Discover OpenCTI EE')}
         </Button>
       );
+
+  const footerContent = (
+    <Stack direction="column" gap={1.5} sx={{ width: '100%' }}>
+      <Stack direction="row" gap={1.5} flexWrap="wrap" justifyContent="flex-end">
+        {isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
+      </Stack>
+      {isGrantedToParameters && (
+        <>
+          <Divider sx={{ width: '100%' }} />
+          <Button
+            variant="secondary"
+            size="default"
+            startIcon={<FileDownloadOutlined />}
+            onClick={handleExportBootstrapPlatformBundle}
+          >
+            {t_i18n('Export Bootstrap Platform Bundle')}
+          </Button>
+        </>
+      )}
+    </Stack>
+  );
 
   const eeActivatedBody = (
     <div>
@@ -339,7 +372,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             title={t_i18n('Enterprise Edition')}
             accent={eeAccent}
             statusChip={eeStatusChip}
-            footer={isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
+            footer={footerContent}
             testId="experience-enterprise-edition-card"
           >
             {isEnterpriseEditionActivated ? eeActivatedBody : eeCommunityBody}
@@ -389,6 +422,11 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           </Grid>
         )}
       </Grid>
+      <GlobalExportBundleDrawer
+        open={openGlobalExport}
+        onClose={() => setOpenGlobalExport(false)}
+        onExport={handlePlatformBundleExport}
+      />
     </div>
   );
 };
