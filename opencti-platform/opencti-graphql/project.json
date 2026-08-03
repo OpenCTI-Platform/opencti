@@ -34,6 +34,36 @@
         "description": "Lint the OpenCTI GraphQL server"
       }
     },
+    "lint-oxlint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn lint:oxlint"
+      },
+      "metadata": {
+        "description": "Lint the OpenCTI GraphQL server with Oxlint"
+      }
+    },
+    "fmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn fmt"
+      },
+      "metadata": {
+        "description": "Format the OpenCTI GraphQL server with Oxfmt"
+      }
+    },
+    "fmt-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn fmt:check"
+      },
+      "metadata": {
+        "description": "Check the OpenCTI GraphQL server formatting with Oxfmt"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {

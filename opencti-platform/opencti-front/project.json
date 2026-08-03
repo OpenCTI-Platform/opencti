@@ -34,6 +34,36 @@
         "description": "Check TS, lint and verify translations in the OpenCTI front"
       }
     },
+    "lint-oxlint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn lint:oxlint"
+      },
+      "metadata": {
+        "description": "Lint the OpenCTI front with Oxlint"
+      }
+    },
+    "fmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn fmt"
+      },
+      "metadata": {
+        "description": "Format the OpenCTI front with Oxfmt"
+      }
+    },
+    "fmt-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/opencti-front",
+        "command": "yarn fmt:check"
+      },
+      "metadata": {
+        "description": "Check the OpenCTI front formatting with Oxfmt"
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {
