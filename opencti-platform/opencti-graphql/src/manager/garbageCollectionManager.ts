@@ -28,7 +28,7 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
       return;
     }
     for (let i = 0; i < allRedisLargeEventFiles?.KeyCount; i += 1) {
-      const file = allRedisLargeEventFiles?.Contents[0];
+      const file = allRedisLargeEventFiles?.Contents[i];
       if (!file.Key) {
         continue;
       }
