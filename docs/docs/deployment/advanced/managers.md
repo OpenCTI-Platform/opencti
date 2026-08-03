@@ -88,7 +88,7 @@ The trash manager is responsible to delete permanently elements stored in the [t
 ## Data sanity manager
 
 The data sanity manager runs periodic or on demand operations to improve data consistency.
-There is no UI yet, but some graphQL operation can be found [in dedicated page](../../usage/dataSanityManager.md)
+There is no UI yet, but some GraphQL operations can be found in the dedicated page: [Data sanity manager](../../usage/dataSanityManager.md).
 
 ## Filigran telemetry manager
 

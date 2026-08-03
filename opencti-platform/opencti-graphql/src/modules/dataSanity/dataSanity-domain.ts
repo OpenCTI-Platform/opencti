@@ -232,8 +232,10 @@ export const stopOperation = async (context: AuthContext, user: AuthUser, operat
       { key: 'is_running', value: [false] },
       { key: 'force_run', value: [false] },
       { key: 'last_run_date', value: [utcDate().toISOString()] },
+      { key: 'last_execution_time', value: [0] },
       { key: 'last_run_success', value: [false] },
       { key: 'last_run_message', value: [OPERATION_STOPPED_MESSAGE] },
+      { key: 'last_run_output', value: [''] },
     ]);
     return existing.internal_id;
   }

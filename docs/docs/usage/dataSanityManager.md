@@ -1,6 +1,6 @@
 # Data sanity manager
 
-The data sanity manager goal is to run periodic or on demand operations to improve data consistency.
+The goal of the data sanity manager is to run periodic or on-demand operations to improve data consistency.
 
 ## GraphQL API
 
