@@ -102,6 +102,7 @@ const TruncatedRawValue: FunctionComponent<TruncatedRawValueProps> = ({ value, v
             padding: 0,
             background: 'none',
             textAlign: 'left',
+            whiteSpace: 'pre-wrap',
           }}
         >
           {value.substring(0, MAX_LENGTH)}...
