@@ -106,12 +106,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
 
   const onExport = async (id: string) => {
-    const data = await fetchQuery(dashboardExportQuery, { id })
-      .toPromise() as CustomDashboardExportQuery$data;
-    if (!data.workspace) {
+    try {
+      const data = await fetchQuery(dashboardExportQuery, { id })
+        .toPromise() as CustomDashboardExportQuery$data;
+      if (!data.workspace) {
+        return null;
+      }
+      return data.workspace.toConfigurationExport;
+    } catch (e) {
+      MESSAGING$.notifyRelayError(e);
       return null;
     }
-    return data.workspace.toConfigurationExport;
   };
 
   const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
