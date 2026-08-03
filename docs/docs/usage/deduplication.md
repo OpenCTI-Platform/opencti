@@ -75,12 +75,12 @@ STIX ID used by the original source, such as a TAXII feed or an external CTI
 repository.
 
 This behavior is expected when OpenCTI needs to deduplicate and consolidate
-objects from multiple sources. Source STIX IDs can still be stored as additional
-OpenCTI STIX IDs when available, but users should not assume that the visible
+objects from multiple sources. Source STIX IDs can still be stored under `Other
+STIX IDs` when available, but users should not assume that the visible
 `Standard STIX ID` always matches the original source object's STIX ID.
 
-When correlating OpenCTI data with external sources, check the object's additional
-STIX IDs and external references when they are available, especially for data
+When correlating OpenCTI data with external sources, check the object's `Other
+STIX IDs` and external references (if any), especially for data
 imported from TAXII feeds or third-party CTI repositories.
 
 ## Update behavior
